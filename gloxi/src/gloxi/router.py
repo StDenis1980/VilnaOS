@@ -17,9 +17,9 @@ measurements (roadmap 2.4).
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Protocol
 from urllib.parse import urlsplit
 
 from gloxi.config import RouterPolicy
@@ -27,9 +27,20 @@ from gloxi.llm import ChatClient, Message
 
 Target = Literal["local", "cloud"]
 
-# Placeholder for the privacy gateway: called on every message bound for the
-# cloud. Until it exists, messages leave unmasked (see `Router.masks_cloud`).
-OutboundFilter = Callable[[Sequence[Message]], Sequence[Message]]
+
+class CloudGuard(Protocol):
+    """Masks what goes to the cloud and puts the real values back in the answer.
+
+    ``privacy_gateway.Masker`` is one. A guard lives as long as one
+    conversation, so the same value keeps the same placeholder across turns.
+    """
+
+    def mask_messages(self, messages: Iterable[Message]) -> list[Message]: ...
+
+    def unmask_stream(self, chunks: Iterable[str]) -> Iterator[str]: ...
+
+
+GuardFactory = Callable[[], CloudGuard]
 
 
 class CloudNotAllowed(Exception):
@@ -51,12 +62,13 @@ class Router:
         cloud: ChatClient | None,
         policy: RouterPolicy,
         *,
-        outbound_filter: OutboundFilter | None = None,
+        guard_factory: GuardFactory | None = None,
     ) -> None:
         self.local = local
         self.cloud = cloud
         self.policy = policy
-        self.outbound_filter = outbound_filter
+        self._guard_factory = guard_factory
+        self.guard: CloudGuard | None = guard_factory() if guard_factory else None
 
     @property
     def cloud_enabled(self) -> bool:
@@ -64,7 +76,12 @@ class Router:
 
     @property
     def masks_cloud(self) -> bool:
-        return self.outbound_filter is not None
+        return self.guard is not None
+
+    def new_conversation(self) -> None:
+        """Forget the masked values of the previous conversation."""
+        if self._guard_factory:
+            self.guard = self._guard_factory()
 
     def decide(self, text: str, *, force: Target | None = None) -> Route:
         if force == "cloud" or (force is None and self.policy.mode == "cloud"):
@@ -90,8 +107,11 @@ class Router:
             return
         if not self.cloud_enabled:
             raise CloudNotAllowed("the cloud is turned off")
-        outgoing = self.outbound_filter(messages) if self.outbound_filter else messages
-        yield from self.cloud.stream(outgoing)
+        if self.guard is None:
+            yield from self.cloud.stream(messages)
+            return
+        masked = self.guard.mask_messages(messages)
+        yield from self.guard.unmask_stream(self.cloud.stream(masked))
 
     def _route(self, target: Target, reason: str) -> Route:
         client = self.local if target == "local" else self.cloud
