@@ -80,7 +80,7 @@
 | `backup.run_now`, `backup.set_schedule`, `backup.set_paths` | R2 | Перший раз, далі за постійним дозволом |
 | `backup.restore` з перезаписом файлів | R3 | Щоразу, з переліком файлів, що будуть замінені |
 | `backup.restore` у нову папку | R2 | Перший раз |
-| `backup.devices.list` | R0 | Ніколи |
+| `backup.devices.list` | R1 | Один раз |
 | `backup.devices.block` | R3 | Щоразу |
 | `backup.forget`, `backup.change_destination`, `backup.rotate_keys`, `backup.reissue_repository` | R4 | Щоразу |
 
