@@ -238,3 +238,22 @@ def test_model_setup_downloads_after_yes_and_starts(tmp_path):
     assert view.events[-1] == ("hide",)
     setup.stop()
     assert setup.engine is None
+
+
+def test_model_switcher_choices():
+    from gloxi.gui.controller import current_choice, model_choices
+
+    _, _, conv = make(FakeLlamaServer())
+    choices = model_choices(conv.router)
+    assert [c.mode for c in choices] == ["local"]  # the cloud is off: nothing to switch to
+    assert current_choice(conv.router) == "local"
+
+    _, _, conv = make(
+        FakeLlamaServer(), cloud=FakeLlamaServer(), policy=RouterPolicy(cloud_allowed=True)
+    )
+    choices = model_choices(conv.router)
+    assert [c.mode for c in choices] == ["auto", "local", "cloud"]
+    assert "NOT masked" in choices[-1].detail
+    assert current_choice(conv.router) == "auto"
+    conv.router.set_mode("cloud")
+    assert current_choice(conv.router) == "cloud"

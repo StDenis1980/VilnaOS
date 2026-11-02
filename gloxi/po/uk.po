@@ -403,8 +403,16 @@ msgid "[local]"
 msgstr "[локально]"
 
 #: src/gloxi/gui/controller.py
+msgid "Auto"
+msgstr "Авто"
+
+#: src/gloxi/gui/controller.py
 msgid "Cannot reach the cloud model."
 msgstr "Не вдається з'єднатися з хмарною моделлю."
+
+#: src/gloxi/gui/controller.py
+msgid "Cloud"
+msgstr "Хмара"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud off: everything stays on this computer"
@@ -433,10 +441,18 @@ msgid "Gloxi, backups"
 msgstr "Gloxi, резервні копії"
 
 #: src/gloxi/gui/controller.py
+msgid "Local"
+msgstr "Локальна"
+
+#: src/gloxi/gui/controller.py
 msgid "On this computer"
 msgstr "На цьому комп'ютері"
 
 #: src/gloxi/gui/controller.py
+msgid "Short messages stay on this computer, long ones go to the cloud"
+msgstr "Короткі повідомлення лишаються на цьому комп'ютері, довгі йдуть у хмару"
+
+#: src/gloxi/gui/controller.py src/gloxi/gui/window.py
 msgid "The cloud is turned off in the settings."
 msgstr "Хмару вимкнено в налаштуваннях."
 
@@ -448,6 +464,21 @@ msgstr "Локальна модель не запущена. Запустіть 
 #, python-brace-format
 msgid "The model returned an error: {error}"
 msgstr "Модель повернула помилку: {error}"
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "{model} at {host}, NOT masked"
+msgstr "{model} на {host}, БЕЗ маскування"
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "{model} at {host}, private data masked"
+msgstr "{model} на {host}, особисті дані маскуються"
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "{model}, on this computer"
+msgstr "{model}, на цьому комп'ютері"
 
 #: src/gloxi/gui/window.py
 msgid "Add folder…"
@@ -487,6 +518,10 @@ msgid "Herkos could not restart: {why}"
 msgstr "Не вдалося перезапустити Herkos: {why}"
 
 #: src/gloxi/gui/window.py
+msgid "Model"
+msgstr "Модель"
+
+#: src/gloxi/gui/window.py
 msgid "New conversation"
 msgstr "Нова розмова"
 
@@ -497,6 +532,10 @@ msgstr "Тек ще немає: Gloxi не бачить жодного вашо�
 #: src/gloxi/gui/window.py
 msgid "Not now"
 msgstr "Не зараз"
+
+#: src/gloxi/gui/window.py
+msgid "Only the local model: turn the cloud on in the settings to choose another"
+msgstr "Лише локальна модель: щоб обрати іншу, увімкніть хмару в налаштуваннях"
 
 #: src/gloxi/gui/window.py
 msgid "Send"

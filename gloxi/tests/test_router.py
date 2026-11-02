@@ -129,3 +129,25 @@ def test_no_silent_fallback_to_cloud_when_local_fails():
     with pytest.raises(ModelError):
         ask(conv, "коротко")
     assert cloud.requests == []
+
+
+def test_mode_can_change_in_the_middle_of_a_conversation():
+    router = make_router(
+        FakeLlamaServer(), cloud=FakeLlamaServer(), policy=RouterPolicy(cloud_allowed=True)
+    )
+    assert router.decide("hi").target == "local"
+    router.set_mode("cloud")
+    assert router.mode == "cloud"
+    assert router.decide("hi").target == "cloud"
+    assert router.decide("hi", force="local").target == "local"  # /local still wins
+    router.set_mode("local")
+    assert router.decide("x" * 5000).target == "local"
+    with pytest.raises(ValueError):
+        router.set_mode("fast")
+
+
+def test_cloud_mode_needs_the_cloud_turned_on():
+    router = make_router(FakeLlamaServer(), cloud=FakeLlamaServer())
+    with pytest.raises(CloudNotAllowed):
+        router.set_mode("cloud")
+    assert router.mode == "auto"
