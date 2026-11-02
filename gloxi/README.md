@@ -17,6 +17,8 @@ Gloxi («Глоксі», від *glaux* — сова Афіни) — AI-асис
 
 ## Запуск для розробки
 
+Покрокова інструкція для тестувальників — у [`../docs/getting-started.uk.md`](../docs/getting-started.uk.md) ([English](../docs/getting-started.md), [Español](../docs/getting-started.es.md)).
+
 Потрібні Python ≥ 3.11 і [uv](https://docs.astral.sh/uv/).
 
 1. Запустіть локальну модель через [llama.cpp](https://github.com/ggml-org/llama.cpp) ([ADR 0004](../docs/adr/0004-local-model-engine.md)). Підійде будь-яка мала instruct-модель у форматі GGUF. За замірами пропонуємо Qwen3 4B без «роздумів» ([ADR 0008](../docs/adr/0008-default-local-model.md)):
@@ -49,9 +51,11 @@ sudo apt install python3-gi gir1.2-gtk-4.0 gir1.2-adw-1
 
 cd gloxi
 python3 -m venv --system-site-packages .venv-gtk
-.venv-gtk/bin/pip install -e .
+.venv-gtk/bin/pip install -e ../privacy-gateway -e ../mcp/files -e ../herkos -e ".[tools]"
 .venv-gtk/bin/gloxi-gtk
 ```
+
+Локальні пакети треба перелічити явно: pip не читає `[tool.uv.sources]` і шукав би їх на PyPI.
 
 У заголовку вікна видно, чи ввімкнена хмара. Над кожною відповіддю написано, де її отримано: «On this computer» або «Cloud: host, masked». `/local` і `/cloud` на початку повідомлення працюють так само, як у терміналі. Кнопка «+» починає нову розмову. Тексти інтерфейсу поки англійські. Переклади українською й англійською (gettext) додамо під час пакування у Flatpak.
 
@@ -100,6 +104,7 @@ mask_cloud = true            # шлюз приватності: маскуват
 
 - Видаляти файли Gloxi 0.1 не може: це R3, а Herkos-lite виконує лише R0–R2.
 - Після читання чи пошуку розмова вважається «забрудненою» (у ній є чужий текст), тож Herkos-lite відхиляє зміни файлів до нової розмови (`/reset` або «Нова розмова»).
+- Вміст файлів модель бачить лише всередині меж Keros (`herkos.keros.wrap`), які текст файлу не може закрити. Якщо Keros знаходить у файлі ознаки ін'єкції (наприклад, «ignore all previous instructions»), Gloxi показує попередження в чаті, а модель отримує примітку не виконувати цих вказівок.
 - Вміст файлів не потрапляє в історію розмови, а хмарна модель функцій не отримує: файли лишаються на цьому комп'ютері.
 - Модель має вміти викликати функції: `llama-server` потрібен із шаблоном чату, що знає інструменти (`--jinja`, у свіжих збірках так за замовчуванням).
 - `[tools] enabled = false` або `GLOXI_TOOLS=0` вимикає функції. Без Herkos Gloxi просто розмовляє.

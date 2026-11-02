@@ -117,7 +117,13 @@ class Connection:
         if method == "herkos.session":
             return _result(
                 id_,
-                {"tainted": self.session.tainted, "taint_sources": self.session.taint_sources},
+                {
+                    "tainted": self.session.tainted,
+                    "taint_sources": self.session.taint_sources,
+                    "findings": [
+                        {"source": src, **f.to_json()} for src, f in self.session.keros.findings
+                    ],
+                },
             )
         return _error(id_, METHOD_NOT_FOUND, f"unknown method {method}")
 
