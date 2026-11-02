@@ -82,6 +82,18 @@ def _rate(hits: int, n: int) -> str:
     return f"{hits}/{n}" if n else "-"
 
 
+def show(rows: list[Row], out: TextIO = sys.stdout) -> None:
+    """One line per text: what it is, what the rules and the model said."""
+    mark = {True: "yes", False: "no", None: "-"}
+    for r in rows:
+        print(
+            f"{r.sample.id:8} {r.sample.label:9} rules={mark[r.rules]:3} "
+            f"model={mark[r.model]:3} {r.seconds:5.1f}s",
+            file=out,
+        )
+    print(file=out)
+
+
 def report(rows: list[Row], out: TextIO = sys.stdout) -> None:
     by_lang: dict[str, list[Row]] = defaultdict(list)
     for r in rows:

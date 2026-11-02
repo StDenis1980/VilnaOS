@@ -221,6 +221,8 @@ def build_parser() -> argparse.ArgumentParser:
         help='llama-server URL on this device, or "off" (default: keros_model from the config)',
     )
     bench.add_argument("--budget", type=float, default=60.0, help="seconds per text")
+    bench.add_argument("--ids", help="comma-separated sample ids or prefixes (e.g. uk-,en-i01)")
+    bench.add_argument("--show", action="store_true", help="print the answer for every text")
     bench.set_defaults(func=_keros_bench)
     return p
 
@@ -238,7 +240,13 @@ def _keros_bench(args: argparse.Namespace) -> int:
             print(f"herkos: {e}", file=sys.stderr)
             return 1
         model = ModelCheck(LlamaServerJudge(url), args.budget)
-    rows = keros_bench.run(keros_bench.load_corpus(args.corpus), model)
+    samples = keros_bench.load_corpus(args.corpus)
+    if args.ids:
+        wanted = [w.strip() for w in args.ids.split(",") if w.strip()]
+        samples = [s for s in samples if any(s.id.startswith(w) for w in wanted)]
+    rows = keros_bench.run(samples, model)
+    if args.show:
+        keros_bench.show(rows)
     keros_bench.report(rows)
     return 0
 
