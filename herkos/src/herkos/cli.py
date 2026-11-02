@@ -30,6 +30,7 @@ from herkos.server import Server, SocketError
 from herkos.tools import ToolRegistry
 
 FILES_TOOL = "org.vilna.mcp.files"
+BACKUP_TOOL = "org.vilna.mcp.backup"
 
 
 def _serve(args: argparse.Namespace) -> int:
@@ -48,6 +49,9 @@ def _serve(args: argparse.Namespace) -> int:
     files = start_files_tool(config)
     if files is not None:
         tools.register(FILES_TOOL, files)
+    backup = start_backup_tool()
+    if backup is not None:
+        tools.register(BACKUP_TOOL, backup)
     gate = Gate(config, ManifestRegistry.builtin(), tools, grants, journal, confirmer)
     path = socket_path()
     journal.append("start", {"server": f"herkos-lite/{__version__}", "socket": str(path)})
@@ -59,8 +63,9 @@ def _serve(args: argparse.Namespace) -> int:
         pass
     finally:
         path.unlink(missing_ok=True)
-        if files is not None:
-            files.stop()
+        for tool in (files, backup):
+            if tool is not None:
+                tool.stop()
     return 0
 
 
@@ -81,6 +86,21 @@ def start_files_tool(config) -> McpStdioExecutor | None:
         executor.start()
     except McpError as e:
         print(f"herkos: files tool failed to start: {e}", file=sys.stderr)
+        executor.stop()
+        return None
+    return executor
+
+
+def start_backup_tool() -> McpStdioExecutor | None:
+    """Start the backup MCP server (mcp/backup), if installed (ADR 0007)."""
+    if importlib.util.find_spec("vilna_mcp_backup") is None:
+        print("herkos: vilna-mcp-backup is not installed; no backup tool", file=sys.stderr)
+        return None
+    executor = McpStdioExecutor([sys.executable, "-m", "vilna_mcp_backup"])
+    try:
+        executor.start()
+    except McpError as e:
+        print(f"herkos: backup tool failed to start: {e}", file=sys.stderr)
         executor.stop()
         return None
     return executor

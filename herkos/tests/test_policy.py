@@ -93,6 +93,18 @@ def test_not_undoable_change_is_at_least_r3():
     assert run(r, manifest=m).level == Level.R3
 
 
+def test_reversible_change_stays_at_its_level():
+    m = parse_manifest(
+        {"tool": "org.example.t", "operations": {"set": {"level": "R2", "reversible": True}}}
+    )
+    r = parse_request({"tool": "org.example.t", "operation": "set", "reason": "t"})
+    assert run(r, manifest=m).level == Level.R2
+    # ... but taint still raises it, as for any change.
+    s = SessionState()
+    s.taint("org.vilna.mcp.files.read")
+    assert run(r, manifest=m, session=s).level == Level.R3
+
+
 def test_egress_is_at_least_r3():
     m = parse_manifest(
         {"tool": "org.example.t", "operations": {"up": {"level": "R1", "egress": True}}}
