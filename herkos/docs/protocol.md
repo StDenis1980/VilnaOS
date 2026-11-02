@@ -1,6 +1,6 @@
 # Протокол Gloxi ↔ Herkos і формат маніфестів
 
-Стан: **v0.1** (листопад 2026), реалізовано в Herkos-lite ([`../src/herkos/`](../src/herkos/)). Це контракт: системний Herkos на Rust (етап 2) реалізує той самий протокол, і тести [`../tests/test_protocol.py`](../tests/test_protocol.py) стануть для нього тестами відповідності. Модель дозволів, на яку спирається документ, — [`permissions.md`](permissions.md); вибір транспорту — [ADR 0005](../../docs/adr/0005-gloxi-herkos-channel.md).
+Стан: **v0.1** (листопад 2026), реалізовано в Herkos-lite ([`../src/herkos/`](../src/herkos/)). Це контракт: системний Herkos на Rust (етап 2) реалізує той самий протокол, а тести відповідності [`../conformance/`](../conformance/) перевіряють обидві реалізації через сокет ([ADR 0013](../../docs/adr/0013-herkos-rust.md)). Модель дозволів, на яку спирається документ, — [`permissions.md`](permissions.md); вибір транспорту — [ADR 0005](../../docs/adr/0005-gloxi-herkos-channel.md).
 
 ## 1. Транспорт
 

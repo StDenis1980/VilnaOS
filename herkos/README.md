@@ -34,3 +34,23 @@ uv run herkos undo <action_id>           # скасувати зміну (id —
 Мова вікна й терміналу береться з системи (`LANG`); переклади — файли gettext `.po` у [`src/herkos/locale/`](src/herkos/locale/) (зараз українська). Повідомлення для моделі й журналу лишаються англійською.
 
 Налаштування: `~/.config/herkos/config.toml` (див. [`src/herkos/config.py`](src/herkos/config.py)): `allowed_roots` (типово `~/Documents`), `bulk_threshold`, `confirm_timeout`, `keros_model` (типово `http://127.0.0.1:8080/v1`, або `"off"`), `keros_budget`. Замір Keros: `herkos keros-bench` ([`docs/keros-bench.md`](docs/keros-bench.md)).
+
+## Тести відповідності
+
+[`conformance/`](conformance/) говорить з Herkos лише через сокет, як Gloxi, тому ті самі тести перевіряють і Herkos-lite, і `herkosd`. Програму задає змінна `HERKOS_SERVE` (типово Herkos-lite):
+
+```sh
+cd herkos
+uv run pytest conformance                                                  # Herkos-lite
+HERKOS_SERVE="rs/target/debug/herkosd serve --confirm deny" uv run pytest conformance
+```
+
+## herkosd (Rust, етап 2)
+
+Системний Herkos ([ADR 0013](../docs/adr/0013-herkos-rust.md)) у [`rs/`](rs/): `herkos-core` (рішення без вводу-виводу) і `herkosd` (сокет і протокол). Зараз це каркас: протокол, `SO_PEERCRED` і розбір запиту дії вже працюють, а інструментів ще немає, тому кожна дія отримує `denied_unknown`.
+
+```sh
+cd herkos/rs
+cargo test
+cargo run -p herkosd -- serve --confirm deny
+```

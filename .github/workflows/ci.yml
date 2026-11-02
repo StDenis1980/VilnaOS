@@ -57,6 +57,30 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest
+      - name: Conformance tests against Herkos-lite
+        run: uv run pytest conformance
+
+  herkos-rs:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: herkos/rs
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: rustup toolchain install stable --profile minimal -c rustfmt,clippy && rustup default stable
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - run: cargo build --locked
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - name: Conformance tests against herkosd
+        working-directory: herkos
+        env:
+          HERKOS_SERVE: rs/target/debug/herkosd serve --confirm deny
+        run: uv sync --locked && uv run pytest conformance
 
   privacy-gateway:
     runs-on: ubuntu-latest
