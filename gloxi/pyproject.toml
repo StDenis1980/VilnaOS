@@ -11,6 +11,10 @@ dependencies = [
     "vilna-privacy-gateway",
 ]
 
+[project.optional-dependencies]
+# The files tool goes through Herkos; without it Gloxi just chats.
+tools = ["herkos"]
+
 [project.scripts]
 gloxi = "gloxi.cli:main"
 gloxi-gtk = "gloxi.gui.window:main"
@@ -20,10 +24,15 @@ gloxi-bench = "gloxi.bench.__main__:main"
 dev = [
     "pytest>=8",
     "ruff>=0.6",
+    "herkos",
+    # The files tool server, for the end-to-end test through Herkos.
+    "vilna-mcp-files",
 ]
 
 [tool.uv.sources]
 vilna-privacy-gateway = { path = "../privacy-gateway", editable = true }
+herkos = { path = "../herkos", editable = true }
+vilna-mcp-files = { path = "../mcp/files", editable = true }
 
 [build-system]
 requires = ["hatchling>=1.26"]

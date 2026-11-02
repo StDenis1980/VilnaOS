@@ -37,6 +37,7 @@ class ChatView(Protocol):
     def finish_answer(self) -> None: ...
     def show_error(self, text: str) -> None: ...
     def set_busy(self, busy: bool) -> None: ...
+    def show_note(self, text: str) -> None: ...
 
 
 def route_label(route: Route, masks_cloud: bool) -> str:
@@ -64,6 +65,7 @@ class ChatController:
         self.view = view
         self.runner = runner
         self.busy = False
+        conversation.on_tool = lambda outcome: view.show_note(outcome.summary())
 
     def submit(self, raw: str) -> bool:
         """Handle one line of input. Returns False if it was ignored."""

@@ -19,6 +19,7 @@ from gloxi.gui.controller import ChatController, cloud_status  # noqa: E402
 from gloxi.llm import ChatClient  # noqa: E402
 from gloxi.privacy import guard_factory  # noqa: E402
 from gloxi.router import Router  # noqa: E402
+from gloxi.tools import file_tools  # noqa: E402
 
 CSS = """
 .bubble { padding: 8px 12px; border-radius: 12px; }
@@ -137,6 +138,10 @@ class ChatWindow(Adw.ApplicationWindow):
         self.toasts.add_toast(Adw.Toast(title=text, timeout=6))
 
     @_idle
+    def show_note(self, text: str) -> None:
+        self.toasts.add_toast(Adw.Toast(title=text, timeout=4))
+
+    @_idle
     def set_busy(self, busy: bool) -> None:
         self.send_button.set_sensitive(not busy)
         if not busy:
@@ -171,12 +176,15 @@ class GloxiApp(Adw.Application):
         cloud = ChatClient(settings.cloud) if settings.cloud else None
         self._clients = [c for c in (local, cloud) if c]
         router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))
-        conversation = Conversation(router, settings.system_prompt)
+        self._tools = file_tools(settings.tools_enabled)
+        conversation = Conversation(router, settings.system_prompt, tools=self._tools)
         return ChatWindow(self, conversation)
 
     def do_shutdown(self) -> None:
         for client in self._clients:
             client.close()
+        if getattr(self, "_tools", None):
+            self._tools.close()
         Adw.Application.do_shutdown(self)
 
 

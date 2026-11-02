@@ -10,18 +10,38 @@ from __future__ import annotations
 import contextlib
 import json
 from collections.abc import Iterator, Sequence
-from typing import Literal, TypedDict
+from dataclasses import dataclass
+from typing import Any, Literal, NotRequired, TypedDict
 
 import httpx
 
 from gloxi.config import ModelEndpoint
 
-Role = Literal["system", "user", "assistant"]
+Role = Literal["system", "user", "assistant", "tool"]
 
 
 class Message(TypedDict):
     role: Role
-    content: str
+    content: str | None
+    # Only in the short-lived exchange of one turn with tools (OpenAI format).
+    tool_calls: NotRequired[list[dict[str, Any]]]
+    tool_call_id: NotRequired[str]
+
+
+@dataclass(frozen=True)
+class ToolCall:
+    """A function call the model asked for; ``arguments`` is raw JSON text."""
+
+    id: str
+    name: str
+    arguments: str
+
+    def as_message_part(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "type": "function",
+            "function": {"name": self.name, "arguments": self.arguments},
+        }
 
 
 class ModelError(Exception):
@@ -56,8 +76,13 @@ class ChatClient:
     def __exit__(self, *exc_info: object) -> None:
         self.close()
 
-    def _payload(self, messages: Sequence[Message], stream: bool) -> dict:
-        return {"model": self.endpoint.model, "messages": list(messages), "stream": stream}
+    def _payload(
+        self, messages: Sequence[Message], stream: bool, tools: Sequence[dict] | None = None
+    ) -> dict:
+        payload = {"model": self.endpoint.model, "messages": list(messages), "stream": stream}
+        if tools:
+            payload["tools"] = list(tools)
+        return payload
 
     def is_available(self) -> bool:
         """True if the endpoint answers ``GET /models``."""
@@ -80,9 +105,21 @@ class ChatClient:
 
     def stream(self, messages: Sequence[Message]) -> Iterator[str]:
         """Yield the reply in pieces as the model produces them (SSE)."""
+        for event in self.stream_events(messages):
+            if isinstance(event, str):
+                yield event
+
+    def stream_events(
+        self, messages: Sequence[Message], tools: Sequence[dict] | None = None
+    ) -> Iterator[str | ToolCall]:
+        """Like ``stream``, offering ``tools``: text pieces first, then any tool calls.
+
+        For a local model, llama-server needs a chat template that knows tools
+        (``--jinja``, the default in current builds).
+        """
         try:
             with self._http.stream(
-                "POST", "/chat/completions", json=self._payload(messages, True)
+                "POST", "/chat/completions", json=self._payload(messages, True, tools)
             ) as response:
                 if response.status_code >= 400:
                     response.read()
@@ -104,13 +141,15 @@ def _raise_for_status(response: httpx.Response) -> None:
     raise ModelError(f"model endpoint returned HTTP {response.status_code}: {detail}")
 
 
-def _parse_sse(lines: Iterator[str]) -> Iterator[str]:
+def _parse_sse(lines: Iterator[str]) -> Iterator[str | ToolCall]:
+    # Tool calls arrive in fragments keyed by index; hand them out whole at the end.
+    calls: dict[int, dict[str, str]] = {}
     for line in lines:
         if not line.startswith("data:"):
             continue
         data = line[len("data:") :].strip()
         if data == "[DONE]":
-            return
+            break
         try:
             chunk = json.loads(data)
         except json.JSONDecodeError as exc:
@@ -118,6 +157,17 @@ def _parse_sse(lines: Iterator[str]) -> Iterator[str]:
         if "error" in chunk:
             raise ModelError(str(chunk["error"]))
         for choice in chunk.get("choices", []):
-            piece = (choice.get("delta") or {}).get("content")
+            delta = choice.get("delta") or {}
+            piece = delta.get("content")
             if piece:
                 yield piece
+            for part in delta.get("tool_calls") or []:
+                slot = calls.setdefault(part.get("index", 0), {"id": "", "name": "", "args": ""})
+                if part.get("id"):
+                    slot["id"] = part["id"]
+                fn = part.get("function") or {}
+                slot["name"] += fn.get("name") or ""
+                slot["args"] += fn.get("arguments") or ""
+    for index in sorted(calls):
+        slot = calls[index]
+        yield ToolCall(slot["id"] or f"call_{index}", slot["name"], slot["args"] or "{}")
