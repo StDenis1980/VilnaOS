@@ -21,11 +21,9 @@ finish-args:
   # The local model server on 127.0.0.1 and, only if the person turns it on,
   # the cloud model.
   - --share=network
-  # Herkos runs outside the sandbox: its socket is $XDG_RUNTIME_DIR/vilna/herkos.sock
-  # (ADR 0005). Gloxi has no access to files; it asks Herkos.
-  - --filesystem=xdg-run/vilna
-  # Herkos's allowed folders, so Gloxi can tell the model which ones it may ask for.
-  - --filesystem=xdg-config/herkos:ro
+  # No access to files. Herkos-lite and the files tool run inside this sandbox
+  # (gloxi/herkos_local.py); the folders the person chooses with the system
+  # folder chooser come in through the document portal, and nothing else.
 
 cleanup:
   - "*.pyc~"
@@ -99,7 +97,7 @@ modules:
         url: https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl
         sha256: 481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8
 
-  # Gloxi, the privacy gateway and the Herkos client, straight from this
+  # Gloxi, the privacy gateway, Herkos-lite and the files tool, straight from this
   # repository. They are pure Python with no build step, so they are copied in
   # rather than built with hatchling (which the SDK does not have).
   - name: gloxi
@@ -108,9 +106,11 @@ modules:
       - >
         SITE="$(python3 -c 'import sysconfig; print(sysconfig.get_path("purelib", vars={"base": "/app"}))')"
         && mkdir -p "${SITE}"
-        && cp -r gloxi/src/gloxi privacy-gateway/src/privacy_gateway herkos/src/herkos "${SITE}/"
+        && cp -r gloxi/src/gloxi privacy-gateway/src/privacy_gateway herkos/src/herkos
+        mcp-files/src/vilna_mcp_files "${SITE}/"
         && rm -rf "${SITE}"/*/__pycache__ "${SITE}"/*/*/__pycache__
         && python3 -m compileall -q "${SITE}/gloxi" "${SITE}/privacy_gateway" "${SITE}/herkos"
+        "${SITE}/vilna_mcp_files"
       - install -Dm755 gloxi/flatpak/gloxi-gtk "${FLATPAK_DEST}/bin/gloxi-gtk"
       - install -Dm755 gloxi/flatpak/gloxi "${FLATPAK_DEST}/bin/gloxi"
       - install -Dm644 gloxi/data/io.github.stdenis1980.Gloxi.desktop -t "${FLATPAK_DEST}/share/applications"
@@ -130,4 +130,8 @@ modules:
       - type: dir
         path: ../../herkos
         dest: herkos
+        skip: [".venv", "__pycache__"]
+      - type: dir
+        path: ../../mcp/files
+        dest: mcp-files
         skip: [".venv", "__pycache__"]

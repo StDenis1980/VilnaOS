@@ -149,8 +149,13 @@ class FileTools:
     # -- offering -------------------------------------------------------------
 
     def available(self) -> bool:
-        """Offer tools only when Herkos seems to be running."""
-        return not self._lost and self._available()
+        """Offer tools only when Herkos seems to be running and a folder is allowed."""
+        return not self._lost and bool(self.roots) and self._available()
+
+    def set_roots(self, roots: Sequence[Path]) -> None:
+        """The allowed folders changed (Herkos restarted): start a new connection."""
+        self.roots = tuple(roots)
+        self.reset()
 
     def definitions(self) -> list[dict]:
         out = []

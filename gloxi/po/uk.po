@@ -450,12 +450,20 @@ msgid "The model returned an error: {error}"
 msgstr "Модель повернула помилку: {error}"
 
 #: src/gloxi/gui/window.py
+msgid "Add folder…"
+msgstr "Додати теку…"
+
+#: src/gloxi/gui/window.py
 msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr "Запитайте Gloxi… (/local або /cloud, щоб вибрати модель)"
 
 #: src/gloxi/gui/window.py
 msgid "Cancel"
 msgstr "Скасувати"
+
+#: src/gloxi/gui/window.py
+msgid "Choose a folder for Gloxi"
+msgstr "Оберіть теку для Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Download"
@@ -466,8 +474,25 @@ msgid "Download the language model?"
 msgstr "Завантажити мовну модель?"
 
 #: src/gloxi/gui/window.py
+msgid "Folders Gloxi may use"
+msgstr "Теки, з якими може працювати Gloxi"
+
+#: src/gloxi/gui/window.py
+msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
+msgstr "Gloxi бачить лише теки, які ви тут оберете, і кожна дія в них іде через Herkos, який спершу питає вас."
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "Herkos could not restart: {why}"
+msgstr "Не вдалося перезапустити Herkos: {why}"
+
+#: src/gloxi/gui/window.py
 msgid "New conversation"
 msgstr "Нова розмова"
+
+#: src/gloxi/gui/window.py
+msgid "No folders yet: Gloxi cannot see any of your files."
+msgstr "Тек ще немає: Gloxi не бачить жодного вашого файлу."
 
 #: src/gloxi/gui/window.py
 msgid "Not now"
@@ -476,6 +501,10 @@ msgstr "Не зараз"
 #: src/gloxi/gui/window.py
 msgid "Send"
 msgstr "Надіслати"
+
+#: src/gloxi/gui/window.py
+msgid "Stop sharing this folder"
+msgstr "Більше не давати цю теку"
 
 #: src/gloxi/tools.py
 #, python-brace-format

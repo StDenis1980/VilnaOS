@@ -442,11 +442,19 @@ msgid "The model returned an error: {error}"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Add folder…"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Cancel"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Choose a folder for Gloxi"
 msgstr ""
 
 #: src/gloxi/gui/window.py
@@ -458,7 +466,24 @@ msgid "Download the language model?"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Folders Gloxi may use"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
+msgstr ""
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "Herkos could not restart: {why}"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "New conversation"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "No folders yet: Gloxi cannot see any of your files."
 msgstr ""
 
 #: src/gloxi/gui/window.py
@@ -467,6 +492,10 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Send"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Stop sharing this folder"
 msgstr ""
 
 #: src/gloxi/tools.py

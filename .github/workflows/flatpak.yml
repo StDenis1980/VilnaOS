@@ -5,9 +5,9 @@ name: Flatpak
 on:
   push:
     branches: [main]
-    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", ".github/workflows/flatpak.yml"]
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", ".github/workflows/flatpak.yml"]
   pull_request:
-    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", ".github/workflows/flatpak.yml"]
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", ".github/workflows/flatpak.yml"]
   workflow_dispatch:
 
 permissions:
@@ -41,6 +41,20 @@ jobs:
             "import gi; gi.require_version('Adw', '1'); from gloxi.gui import window; \
             from gi.repository import Adw; assert hasattr(Adw, 'AlertDialog'); \
             import herkos.client, privacy_gateway"
+      - name: The bundled Herkos starts inside the sandbox
+        run: |
+          flatpak run --command=python3 io.github.stdenis1980.Gloxi -c "
+          import sys
+          import vilna_mcp_files
+          from gloxi.herkos_local import LocalHerkos, alive, ensure_config, in_flatpak
+          assert in_flatpak()
+          ensure_config()
+          h = LocalHerkos([sys.executable, '-m', 'herkos', 'serve', '--confirm', 'deny'])
+          h.start()
+          assert alive(h.socket), h.socket
+          h.stop()
+          print('herkos ok', h.socket)
+          "
       - name: The bundled llama-server runs a model through Gloxi's engine
         run: |
           # A tiny test model (not the real one): this checks the build, not the answers.

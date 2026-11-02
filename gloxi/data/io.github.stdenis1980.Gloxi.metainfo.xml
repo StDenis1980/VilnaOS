@@ -23,9 +23,19 @@
       <li xml:lang="uk">Розмова з локальною моделлю через llama.cpp або будь-який OpenAI-сумісний сервер</li>
       <li>If you turn the cloud on with your own key, personal data is masked before it leaves</li>
       <li xml:lang="uk">Якщо ви вмикаєте хмару власним ключем, особисті дані маскуються, перш ніж покинуть комп'ютер</li>
-      <li>Works with your files only through Herkos, which asks you first</li>
-      <li xml:lang="uk">Працює з вашими файлами лише через Herkos, який спершу питає вас</li>
+      <li>Works only in the folders you choose, and only through Herkos, which asks you first</li>
+      <li xml:lang="uk">Працює лише в теках, які ви обрали, і лише через Herkos, який спершу питає вас</li>
     </ul>
+    <p>
+      In this package Herkos runs in the same sandbox as Gloxi. That is weaker
+      than in Vilna OS, where Herkos is a system service kept apart from your
+      session.
+    </p>
+    <p xml:lang="uk">
+      У цьому пакеті Herkos працює в тій самій пісочниці, що й Gloxi. Це слабший
+      захист, ніж у Vilna OS, де Herkos — системна служба, відокремлена від
+      вашого сеансу.
+    </p>
     <p>This is a preview for testers.</p>
     <p xml:lang="uk">Це попередня версія для тестувальників.</p>
   </description>
