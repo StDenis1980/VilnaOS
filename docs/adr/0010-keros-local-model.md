@@ -1,6 +1,6 @@
 # 0010. Локальний класифікатор Keros: та сама модель, що й у Gloxi
 
-- Стан: Запропоновано (замір проведено, чекає згоди Denys)
+- Стан: Прийнято (Denys, 2026-11-02)
 - Дата: 2026-11-02
 - Пов'язано: [`herkos/docs/permissions.md`](../../herkos/docs/permissions.md) розд. 6 і 11, [`herkos/docs/protocol.md`](../../herkos/docs/protocol.md) розд. 7, [ADR 0004](0004-local-model-engine.md), [ADR 0008](0008-default-local-model.md), [ADR 0009](0009-languages.md)
 
