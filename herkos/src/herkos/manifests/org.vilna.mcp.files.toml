@@ -8,28 +8,40 @@ description = "Files in the folders the user allowed"
 level = "R1"
 summary = "List a folder"
 returns_external = true
+resource_args = ["path"]
 
 [operations.search]
 level = "R1"
 summary = "Search files by name and text"
 returns_external = true
+resource_args = ["path"]
 
 [operations.read]
 level = "R1"
 summary = "Read a file"
 returns_external = true
+resource_args = ["path"]
 
 [operations.create]
 level = "R2"
 summary = "Create a file"
 undoable = true
+resource_args = ["path"]
 
 [operations.write]
 level = "R2"
 summary = "Change a file"
 undoable = true
+resource_args = ["path"]
 
 [operations.delete]
 level = "R3"
 summary = "Delete a file"
 undoable = true
+resource_args = ["path"]
+
+[operations.restore]
+level = "R2"
+summary = "Undo an earlier change to a file"
+undoable = true
+resource_args = ["path"]

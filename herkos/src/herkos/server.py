@@ -109,6 +109,11 @@ class Connection:
                 return _error(id_, INVALID_PARAMS, str(e))
             outcome = self.gate.handle(request, self.session)
             return _result(id_, outcome.to_json())
+        if method == "herkos.undo":
+            action_id = params.get("action_id") if isinstance(params, dict) else None
+            if not isinstance(action_id, str) or not action_id.isalnum() or len(action_id) > 64:
+                return _error(id_, INVALID_PARAMS, "'action_id' must be an action id")
+            return _result(id_, self.gate.undo(action_id, self.session).to_json())
         if method == "herkos.session":
             return _result(
                 id_,
