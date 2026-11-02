@@ -1,0 +1,133 @@
+# Ukrainian translation of Herkos.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: uk\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# Window and terminal
+msgid "Herkos: permission"
+msgstr "Herkos: дозвіл"
+
+msgid "Herkos: Gloxi asks for permission"
+msgstr "Herkos: Gloxi просить дозволу"
+
+msgid "Gloxi's reason: "
+msgstr "Пояснення Gloxi: "
+
+msgid "… and {n} more"
+msgstr "… і ще {n}"
+
+msgid "Can be undone."
+msgstr "Можна скасувати."
+
+msgid "Cannot be undone."
+msgstr "Скасувати не можна."
+
+msgid "Riskier than usual: {why}."
+msgstr "Ризикованіше, ніж зазвичай: {why}."
+
+msgid "Untrusted content came from: {src}"
+msgstr "Ненадійний вміст надійшов з: {src}"
+
+msgid "Deny"
+msgstr "Відхилити"
+
+msgid "Allow once"
+msgstr "Дозволити один раз"
+
+msgid "Allow for this session"
+msgstr "Дозволити на цей сеанс"
+
+msgid "Always allow"
+msgstr "Дозволяти завжди"
+
+msgid "[o] allow once"
+msgstr "[o] дозволити один раз"
+
+msgid "[s] allow for this session"
+msgstr "[s] дозволити на цей сеанс"
+
+msgid "[a] always allow"
+msgstr "[a] дозволяти завжди"
+
+msgid "[n] deny"
+msgstr "[n] відхилити"
+
+msgid "Allowed."
+msgstr "Дозволено."
+
+msgid "Denied."
+msgstr "Відхилено."
+
+msgid "No answer: denied."
+msgstr "Немає відповіді: відхилено."
+
+# Why an action is riskier (policy)
+msgid "the tool has no Herkos manifest"
+msgstr "інструмент не має маніфесту Herkos"
+
+msgid "the tool describes this operation as riskier"
+msgstr "сам інструмент позначає цю операцію як ризикованішу"
+
+msgid "untrusted content is in the conversation"
+msgstr "у розмові є ненадійний вміст"
+
+msgid "content read earlier {kinds}"
+msgstr "прочитаний раніше вміст {kinds}"
+
+msgid "it touches something outside the allowed folders"
+msgstr "дія зачіпає щось поза дозволеними папками"
+
+msgid "it touches more than {n} items at once"
+msgstr "дія зачіпає понад {n} об'єктів одразу"
+
+msgid "it cannot be undone"
+msgstr "її не можна скасувати"
+
+msgid "data leaves this device"
+msgstr "дані виходять за межі пристрою"
+
+msgid "it sends data to an address that came from untrusted content"
+msgstr "дані йдуть на адресу з ненадійного вмісту"
+
+# Keros findings
+msgid "asks the assistant to ignore its instructions"
+msgstr "просить асистента ігнорувати його інструкції"
+
+msgid "tries to give the assistant a new role or new instructions"
+msgstr "намагається дати асистенту нову роль чи нові інструкції"
+
+msgid "contains chat-template or system markers"
+msgstr "містить службові позначки чату"
+
+msgid "contains text hidden from people (HTML/CSS)"
+msgstr "містить прихований від людини текст (HTML/CSS)"
+
+msgid "contains a link that could carry data away"
+msgstr "містить посилання, яким можна винести дані"
+
+msgid "contains invisible or direction-changing characters"
+msgstr "містить невидимі символи або символи зміни напрямку тексту"
+
+# Tool operations (manifest summaries)
+msgid "List a folder"
+msgstr "Переглянути папку"
+
+msgid "Search files by name and text"
+msgstr "Шукати файли за назвою і текстом"
+
+msgid "Read a file"
+msgstr "Прочитати файл"
+
+msgid "Create a file"
+msgstr "Створити файл"
+
+msgid "Change a file"
+msgstr "Змінити файл"
+
+msgid "Delete a file"
+msgstr "Видалити файл"
+
+msgid "Undo an earlier change to a file"
+msgstr "Скасувати попередню зміну файлу"

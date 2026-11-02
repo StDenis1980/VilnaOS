@@ -13,6 +13,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from herkos.i18n import _
 from herkos.keros import Keros
 from herkos.manifest import Manifest, Operation
 from herkos.request import ActionRequest, Resource
@@ -100,7 +101,7 @@ def assess(
             level=base,
             base=base,
             operation=None,
-            raises=("the tool has no Herkos manifest",),
+            raises=(_("the tool has no Herkos manifest"),),
             roots=roots,
             known_tool=False,
         )
@@ -120,29 +121,29 @@ def assess(
         hinted = level_from_annotations(annotations)
         if hinted > level:
             level = hinted
-            raises.append("the tool describes this operation as riskier")
+            raises.append(_("the tool describes this operation as riskier"))
 
     if session.tainted and level >= Level.R2:
         level = level.raised()
-        raises.append("untrusted content is in the conversation")
+        raises.append(_("untrusted content is in the conversation"))
     if session.keros.suspicious and level >= Level.R1:
         level = level.raised()
-        kinds = sorted({f.description for _, f in session.keros.findings})
-        raises.append("content read earlier " + "; ".join(kinds))
+        kinds = sorted({_(f.description) for _src, f in session.keros.findings})
+        raises.append(_("content read earlier {kinds}").format(kinds="; ".join(kinds)))
     if not all(r is not None for r in roots):
         level = level.raised()
-        raises.append("it touches something outside the allowed folders")
+        raises.append(_("it touches something outside the allowed folders"))
     if len(request.resources) > bulk_threshold:
         level = level.raised()
-        raises.append(f"it touches more than {bulk_threshold} items at once")
+        raises.append(_("it touches more than {n} items at once").format(n=bulk_threshold))
     if op.changes_state and not op.undoable and level < Level.R3:
         level = Level.R3
-        raises.append("it cannot be undone")
+        raises.append(_("it cannot be undone"))
     if op.egress and level < Level.R3:
         level = Level.R3
-        raises.append("data leaves this device")
+        raises.append(_("data leaves this device"))
     if op.egress and session.keros.leaks(request.arguments):
         level = Level.R4
-        raises.append("it sends data to an address that came from untrusted content")
+        raises.append(_("it sends data to an address that came from untrusted content"))
 
     return Assessment(level=level, base=base, operation=op, raises=tuple(raises), roots=roots)

@@ -31,4 +31,6 @@ uv run herkos permissions list
 uv run herkos undo <action_id>           # скасувати зміну (id — з журналу)
 ```
 
+Мова вікна й терміналу береться з системи (`LANG`); переклади — файли gettext `.po` у [`src/herkos/locale/`](src/herkos/locale/) (зараз українська). Повідомлення для моделі й журналу лишаються англійською.
+
 Налаштування: `~/.config/herkos/config.toml` (див. [`src/herkos/config.py`](src/herkos/config.py)): `allowed_roots` (типово `~/Documents`), `bulk_threshold`, `confirm_timeout`.
