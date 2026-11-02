@@ -7,7 +7,7 @@
 
 # Vilna
 
-**English** · [Українська](README.uk.md)
+**English** · [Українська](README.uk.md) · [Español](README.es.md)
 
 Vilna is a free Linux operating system for everyone in Europe, with a built-in AI assistant, **Gloxi**, and a security layer, **Herkos**, that every action of the assistant has to pass through.
 
@@ -69,7 +69,7 @@ This is a monorepo: each component lives in its own top-level folder with its ow
 | [`obs/`](obs/) | Vilna project and RPM packages in the Open Build Service |
 | [`docs/`](docs/) | Roadmap, [architecture decisions](docs/adr/), [benchmarks](docs/benchmarks.md), [design brief](docs/design/brief.md) |
 
-Most project documents are in Ukrainian for now. The entry points, this README and the getting-started guide, are in English and Ukrainian.
+Most project documents are in Ukrainian for now. The entry points, this README and the getting-started guide, are in English, Ukrainian and Spanish.
 
 ## Contributing
 

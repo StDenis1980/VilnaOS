@@ -17,7 +17,7 @@ Gloxi («Глоксі», від *glaux* — сова Афіни) — AI-асис
 
 ## Запуск для розробки
 
-Покрокова інструкція для тестувальників — у [`../docs/getting-started.uk.md`](../docs/getting-started.uk.md) ([English](../docs/getting-started.md)).
+Покрокова інструкція для тестувальників — у [`../docs/getting-started.uk.md`](../docs/getting-started.uk.md) ([English](../docs/getting-started.md), [Español](../docs/getting-started.es.md)).
 
 Потрібні Python ≥ 3.11 і [uv](https://docs.astral.sh/uv/).
 

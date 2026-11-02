@@ -6,7 +6,7 @@
 
 ## Документи
 
-- [`getting-started.uk.md`](getting-started.uk.md) — як зібрати й запустити Gloxi 0.1 preview з коду ([English](getting-started.md)).
+- [`getting-started.uk.md`](getting-started.uk.md) — як зібрати й запустити Gloxi 0.1 preview з коду ([English](getting-started.md), [Español](getting-started.es.md)).
 - [`roadmap.md`](roadmap.md) — дорожня карта: етапи, віхи, залежності, ризики (чернетка v0.3): перший випуск — Gloxi для Linux у січні 2027.
 - [`design/brief.md`](design/brief.md) — бриф візуального дизайну: настрій, палітра, шрифти, петриківка, анімації (чернетка v0.1).
 - [`adr/`](adr/) — архітектурні рішення (ADR 0001–0008).

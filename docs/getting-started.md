@@ -1,6 +1,6 @@
 # Getting started: build and run Gloxi 0.1 preview
 
-**English** · [Українська](getting-started.uk.md)
+**English** · [Українська](getting-started.uk.md) · [Español](getting-started.es.md)
 
 This guide runs Gloxi from source on your own Linux computer. It is for testers and developers: Gloxi 0.1 preview has not been released yet, and there is no package or Flatpak to install. A user guide will follow closer to the release.
 
