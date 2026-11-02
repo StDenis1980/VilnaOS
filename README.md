@@ -1,42 +1,80 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/design/logo/Vilna_logo_dark-bg.svg">
+    <img src="docs/design/logo/Vilna_logo_color.svg" alt="Vilna" width="180">
+  </picture>
+</p>
+
 # Vilna
 
-Vilna — вільна операційна система на базі Linux для всієї Європи, із вбудованим AI-асистентом **Gloxi** і шаром безпеки **Herkos**.
+**English** · [Українська](README.uk.md) · [Español](README.es.md)
+
+Vilna is a free Linux operating system for everyone in Europe, with a built-in AI assistant, **Gloxi**, and a security layer, **Herkos**, that every action of the assistant has to pass through.
 
 *Free as in freedom.*
 
-> Стан: ранній етап. Код ще не написано, у репозиторії поки структура і проєктна документація.
+> **Status: early development.** Nothing has been released yet. The first release, **Gloxi 0.1 preview** for ordinary Linux desktops with GNOME, is planned for the end of January 2027. You can already build and run it from source: see [Getting started](docs/getting-started.md).
 
-## Що таке Vilna
+## What Vilna is
 
-- **База:** openSUSE Aeon / Kalpa (MicroOS): незмінна система, транзакційні оновлення, відкат через знімки btrfs. Запасний варіант — Fedora Atomic (bootc).
-- **Gloxi** — асистент, що працює як системний сервіс: доступ до системи й програм, секретар, організація часу.
-- **Herkos** — шар безпеки, через який проходять *усі* дії Gloxi. Містить єдиний шлюз дозволів, фільтр prompt injection (Keros), журнал і відкат (Mitos) та шлюз приватності.
-- **Інструменти** — MCP-сервери (файли, програми, налаштування, календар CalDAV, пошта IMAP).
-- **Моделі:** маршрутизатор відправляє приватні й прості запити до локальної малої моделі, складні — у хмару. Модель за замовчуванням можна замінити будь-якою OpenAI-сумісною.
-- **Мінімальне залізо:** Intel Core 8-го покоління / AMD Ryzen 2000, 8 ГБ RAM (рекомендовано 16 ГБ для локальної моделі 7–8B).
+- **Base:** openSUSE Aeon (GNOME) first, Kalpa (KDE) later. The system is immutable, updates are transactional and can be rolled back with btrfs snapshots. Fedora Atomic (bootc) is the fallback.
+- **Gloxi** is the assistant. It runs as a system service, can work with files, apps and settings, keeps your calendar and helps organise your time. It never touches the system directly.
+- **Herkos** is the security layer. Every action Gloxi wants to take goes through one permission gate, which checks the risk level, asks you when needed and writes a tamper-evident journal. It also includes a prompt-injection filter (Keros) and undo through journal and snapshots (Mitos). Specification: [`herkos/docs/permissions.md`](herkos/docs/permissions.md).
+- **Privacy gateway.** Before anything goes to a cloud model, personal data (email addresses, phone numbers, IBANs, document numbers, keys and passwords) is replaced on your device with placeholders like `[EMAIL_1]`, and the real values are put back into the answer.
+- **Tools** are MCP servers: files, apps, settings, CalDAV calendar, IMAP mail.
+- **Models.** A router sends private and simple requests to a small local model, and complex ones to the cloud only if you turn the cloud on and give your own key. The default local model is Qwen3 4B ([ADR 0008](docs/adr/0008-default-local-model.md)); any OpenAI-compatible server can replace it.
+- **Minimum hardware:** Intel Core 8th gen or AMD Ryzen 2000, 8 GB RAM. 16 GB is recommended for comfortable work with the local model.
 
-## Структура репозиторію
+## Try Gloxi 0.1 preview
 
-Це монорепозиторій: кожен компонент живе у власній папці верхнього рівня.
+Gloxi currently runs as a development build on openSUSE Aeon, Fedora, Ubuntu or any other Linux with Python 3.11 or newer. In short:
 
-| Папка | Що там |
+```sh
+llama-server -hf Qwen/Qwen3-4B-GGUF:Q4_K_M --port 8080 -c 4096 --jinja \
+  --chat-template-kwargs '{"enable_thinking":false}'
+
+git clone https://github.com/StDenis1980/VilnaOS.git
+cd VilnaOS/gloxi
+uv sync
+uv run gloxi
+```
+
+The full guide covers installing llama.cpp and uv, the GTK window, working with files through Herkos, an optional cloud model, and common problems: [docs/getting-started.md](docs/getting-started.md).
+
+## Roadmap
+
+| When | What |
 | --- | --- |
-| [`gloxi/`](gloxi/) | Асистент Gloxi: системний сервіс, маршрутизатор моделей, клієнти MCP |
-| [`herkos/`](herkos/) | Шар безпеки: шлюз дозволів, Keros, Mitos, шлюз приватності. Специфікація: [`herkos/docs/permissions.md`](herkos/docs/permissions.md) |
-| [`image/`](image/) | Збірка образу системи на базі openSUSE Aeon / Kalpa |
-| [`backup/`](backup/) | Зашифровані резервні копії даних Vilna (restic, ключі в Herkos). Специфікація: [`backup/docs/design.md`](backup/docs/design.md) |
-| [`obs/`](obs/) | Проєкт і RPM-пакети Vilna в Open Build Service |
-| [`privacy-gateway/`](privacy-gateway/) | Шлюз приватності (Apache-2.0) |
-| [`mcp/`](mcp/) | MCP-сервери інструментів (Apache-2.0) |
-| [`sdk/`](sdk/) | SDK для сторонніх розробників (Apache-2.0) |
-| [`docs/`](docs/) | Загальна документація проєкту й [записи архітектурних рішень](docs/adr/) |
+| January 2027 | **Gloxi 0.1 preview**: chat with a local model, model router, privacy gateway, Herkos-lite with a files tool |
+| February to March 2027 | Gloxi 0.2: calendar, GNOME settings, side panel window, Flathub |
+| April to September 2027 | First Vilna image on openSUSE Aeon, Gloxi as a system service, system Herkos in Rust |
+| by March 2028 | Vilna alpha |
+| 2028 | Public beta |
 
-Нові компоненти (наприклад, MCP-сервери інструментів або спільний шлюз приватності) додаються як нові папки верхнього рівня з власним `README.md`.
+Dates are a plan, not a promise. Details: [`docs/roadmap.md`](docs/roadmap.md) (in Ukrainian).
 
-## Ліцензія
+## Repository layout
 
-За замовчуванням [GPL-3.0-or-later](LICENSE). Спільні компоненти, призначені для використання поза Vilna (шлюз приватності, MCP-сервери, SDK), виходять під Apache-2.0. Подробиці — у [`LICENSING.md`](LICENSING.md).
+This is a monorepo: each component lives in its own top-level folder with its own `README.md`.
 
-## Відкриті питання
+| Folder | Contents |
+| --- | --- |
+| [`gloxi/`](gloxi/) | The Gloxi assistant: terminal chat, GTK window, model router, files tool client |
+| [`herkos/`](herkos/) | Security layer: permission gate, Keros, Mitos. Herkos-lite (Python) for Gloxi 0.1 |
+| [`privacy-gateway/`](privacy-gateway/) | Privacy gateway library: reversible on-device masking (Apache-2.0) |
+| [`mcp/`](mcp/) | MCP tool servers, starting with files (Apache-2.0) |
+| [`sdk/`](sdk/) | SDK for third-party developers (Apache-2.0) |
+| [`image/`](image/) | The Vilna system image on openSUSE Aeon / Kalpa |
+| [`backup/`](backup/) | Encrypted backups of Vilna data (restic, keys in Herkos) |
+| [`obs/`](obs/) | Vilna project and RPM packages in the Open Build Service |
+| [`docs/`](docs/) | Roadmap, [architecture decisions](docs/adr/), [benchmarks](docs/benchmarks.md), [design brief](docs/design/brief.md) |
 
-- **Угода автора внеску (CLA)** — потрібна до прийому зовнішніх внесків.
+Most project documents are in Ukrainian for now. The entry points, this README and the getting-started guide, are in English, Ukrainian and Spanish.
+
+## Contributing
+
+The project is not accepting outside code contributions yet: a contributor licence agreement (CLA) has to be in place first. Bug reports and ideas are welcome as issues.
+
+## Licence
+
+[GPL-3.0-or-later](LICENSE) by default: the OS, Gloxi and Herkos. Shared components meant to be used outside Vilna (privacy gateway, MCP servers, SDK) are Apache-2.0, each with its own `LICENSE` file. Details: [`LICENSING.md`](LICENSING.md).

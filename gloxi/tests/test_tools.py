@@ -15,7 +15,7 @@ from gloxi.chat import Conversation
 from gloxi.config import RouterPolicy
 from gloxi.llm import ChatClient
 from gloxi.router import Router
-from gloxi.tools import FILES_TOOL, MAX_REASON, FileTools
+from gloxi.tools import FILES_TOOL, MAX_REASON, FileTools, file_tools
 
 herkos_client = pytest.importorskip("herkos.client")
 HerkosUnavailable = herkos_client.HerkosUnavailable
@@ -488,3 +488,10 @@ def test_end_to_end_keros_warns_about_injected_text(real_herkos):
     content = server.requests[1]["messages"][-1]["content"]
     header, result = external(content)
     assert header["warnings"] and "Ignore all previous" in result["text"]
+
+
+def test_no_runtime_dir_means_no_tools(monkeypatch, tmp_path):
+    # An ssh shell or a container may have no XDG_RUNTIME_DIR: Gloxi just chats.
+    monkeypatch.delenv("XDG_RUNTIME_DIR", raising=False)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    assert file_tools(True) is None
