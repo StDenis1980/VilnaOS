@@ -5,6 +5,7 @@
 //! Herkos-lite in Python is their reference implementation and the
 //! conformance tests in `herkos/conformance/` check both.
 
+pub mod keros;
 pub mod manifest;
 pub mod policy;
 pub mod request;

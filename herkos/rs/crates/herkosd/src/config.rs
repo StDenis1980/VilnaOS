@@ -84,33 +84,6 @@ fn number(v: &Value) -> Option<f64> {
     }
 }
 
-/// Accept only http(s) URLs on this machine: content must not leave it
-/// (ADR 0010). The full check moves here with Keros in step 4.
-fn require_loopback(url: &str) -> Result<String, String> {
-    let rest = url
-        .strip_prefix("http://")
-        .or_else(|| url.strip_prefix("https://"))
-        .ok_or_else(|| format!("not an http URL: {url:?}"))?;
-    let authority = &rest[..rest.find('/').unwrap_or(rest.len())];
-    if authority.contains('@') {
-        return Err("the model URL must not carry credentials".into());
-    }
-    let host = match authority.strip_prefix('[') {
-        Some(v6) => &v6[..v6.find(']').unwrap_or(v6.len())],
-        None => &authority[..authority.rfind(':').unwrap_or(authority.len())],
-    };
-    let loopback = host.eq_ignore_ascii_case("localhost")
-        || host
-            .parse::<std::net::IpAddr>()
-            .is_ok_and(|ip| ip.is_loopback());
-    if !loopback {
-        return Err(format!(
-            "the Keros model must run on this device (loopback), not {host:?}"
-        ));
-    }
-    Ok(url.trim_end_matches('/').to_owned())
-}
-
 pub fn parse_config(text: &str, source: &Path) -> Result<Config, String> {
     let at = source.display();
     let data: Table = text.parse().map_err(|e| format!("{at}: {e}"))?;
@@ -160,9 +133,10 @@ pub fn parse_config(text: &str, source: &Path) -> Result<Config, String> {
     if let Some(m) = data.get("keros_model") {
         c.keros_model = match m.as_str() {
             Some("off") => None,
-            Some(url) => {
-                Some(require_loopback(url).map_err(|e| format!("{at}: keros_model: {e}"))?)
-            }
+            Some(url) => Some(
+                crate::keros_model::require_loopback(url)
+                    .map_err(|e| format!("{at}: keros_model: {e}"))?,
+            ),
             None => return Err(format!("{at}: keros_model must be a URL or \"off\"")),
         };
     }
@@ -220,17 +194,5 @@ mod tests {
         ] {
             assert!(parse(text).is_err(), "{text}");
         }
-    }
-
-    #[test]
-    fn loopback() {
-        for ok in [
-            "http://127.0.0.1:8080/v1/",
-            "http://localhost/v1",
-            "http://[::1]:8080/v1",
-        ] {
-            assert!(require_loopback(ok).is_ok(), "{ok}");
-        }
-        assert!(require_loopback("http://127.0.0.1.example.org/v1").is_err());
     }
 }

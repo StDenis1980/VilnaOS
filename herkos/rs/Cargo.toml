@@ -19,6 +19,9 @@ serde_json = { version = "1", features = ["float_roundtrip"] }
 # TOML for manifests and config.toml, SHA-256 for the Mitos hash chain.
 toml = { version = "0.9", default-features = false, features = ["parse", "serde", "std"] }
 sha2 = "0.10"
+# Keros rules (same patterns as keros.py) and NFKC folding of look-alike letters.
+regex = "1"
+unicode-normalization = "0.1"
 rustix = { version = "1", default-features = false, features = ["std", "net", "process", "rand", "fs"] }
 
 [workspace.lints.rust]

@@ -16,6 +16,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
+use herkos_core::keros::{Finding, Report};
 use herkos_core::manifest::{Operation, Registry};
 use herkos_core::policy::{Assessment, Limits, SessionState, assess};
 use herkos_core::request::{ActionRequest, normpath, parse_request};
@@ -24,6 +25,7 @@ use serde_json::{Map, Value, json};
 
 use crate::config::Config;
 use crate::grants::{Duration, GrantStore, grant_record};
+use crate::keros_model::ModelCheck;
 use crate::mitos::{Journal, JournalError, digest, read_records};
 use crate::rpc::new_action_id;
 
@@ -95,8 +97,10 @@ pub trait Tools: Send + Sync {
     fn execute(&self, request: &ActionRequest) -> Result<Value, String>;
 }
 
+#[cfg(test)]
 pub struct NoTools;
 
+#[cfg(test)]
 impl Tools for NoTools {
     fn running(&self, _tool: &str) -> bool {
         false
@@ -119,6 +123,8 @@ pub struct Outcome {
     pub code: &'static str,
     pub message: String,
     pub result: Option<Value>,
+    /// For results with external content: where it came from and what Keros saw.
+    pub keros: Option<Value>,
 }
 
 impl Outcome {
@@ -136,6 +142,7 @@ impl Outcome {
             code,
             message,
             result: None,
+            keros: None,
         }
     }
 
@@ -153,6 +160,9 @@ impl Outcome {
         });
         if self.code == "allowed" {
             out["result"] = self.result.clone().unwrap_or(Value::Null);
+            if let Some(k) = &self.keros {
+                out["keros"] = k.clone();
+            }
         }
         out
     }
@@ -220,6 +230,8 @@ pub struct Gate {
     confirmer: Box<dyn Confirmer>,
     /// One question on screen at a time.
     ask_lock: Mutex<()>,
+    /// The local model check of Keros (ADR 0010), unless it is off.
+    model_check: Option<ModelCheck>,
 }
 
 fn decision_record(o: &Outcome) -> Value {
@@ -248,7 +260,14 @@ impl Gate {
             journal,
             confirmer,
             ask_lock: Mutex::new(()),
+            model_check: None,
         }
+    }
+
+    #[must_use]
+    pub fn with_model_check(mut self, check: Option<ModelCheck>) -> Gate {
+        self.model_check = check;
+        self
     }
 
     pub fn journal(&self) -> &Journal {
@@ -452,10 +471,31 @@ impl Gate {
             "result".into(),
             result.as_ref().map_or(Value::Null, |r| json!(digest(r))),
         );
-        if result.is_some() && op.returns_external {
-            // Keros inspects the content here in step 4.
-            session.taint(&format!("{}.{}", request.tool, request.operation));
-            record.insert("keros".into(), json!([]));
+        let mut keros = None;
+        if let (Some(r), true) = (&result, op.returns_external) {
+            let source = format!("{}.{}", request.tool, request.operation);
+            session.taint(&source);
+            let check = self
+                .model_check
+                .as_ref()
+                .map(|m| move |text: &str| m.check(text));
+            let model: Option<&dyn Fn(&str) -> Report> =
+                check.as_ref().map(|c| c as &dyn Fn(&str) -> Report);
+            let findings = session.keros.inspect(&source, r, model);
+            let mut k = json!({
+                "source": source,
+                "untrusted": true,
+                "findings": findings.iter().map(Finding::to_json).collect::<Vec<_>>(),
+            });
+            record.insert(
+                "keros".into(),
+                json!(findings.iter().map(|f| &f.rule).collect::<Vec<_>>()),
+            );
+            if let Some(report) = &session.keros.last_report {
+                k["model"] = report.to_json();
+                record.insert("keros_model".into(), json!(report.status));
+            }
+            keros = Some(k);
         }
         if let Some(undo) = result.as_ref().and_then(|r| undo_info(request, op, r)) {
             record.insert("undo".into(), undo);
@@ -470,6 +510,7 @@ impl Gate {
                 code: "denied_journal",
                 message: e.0,
                 result: None,
+                keros: None,
                 ..outcome
             };
         }
@@ -478,6 +519,7 @@ impl Gate {
             code,
             message,
             result,
+            keros,
             ..outcome
         }
     }
