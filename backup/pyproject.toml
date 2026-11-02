@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[project]
+name = "vilna-backup"
+version = "0.1.0.dev0"
+description = "Encrypted backups of Vilna OS user data (restic format, prototype)"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.11"
+# Runtime: standard library only, plus the restic program (and secret-tool
+# from libsecret for keeping the repository password in GNOME Keyring).
+dependencies = []
+
+[project.scripts]
+vilna-backup = "vilna_backup.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vilna_backup"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]

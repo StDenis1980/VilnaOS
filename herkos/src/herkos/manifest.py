@@ -34,7 +34,15 @@ from herkos.risk import Level
 
 FORBIDDEN = "forbidden"
 _NAME = re.compile(r"^[a-z0-9][a-z0-9_.-]{0,127}$")
-_OPERATION_KEYS = {"level", "summary", "undoable", "returns_external", "egress", "resource_args"}
+_OPERATION_KEYS = {
+    "level",
+    "summary",
+    "undoable",
+    "reversible",
+    "returns_external",
+    "egress",
+    "resource_args",
+}
 
 
 class ManifestError(Exception):
@@ -48,6 +56,11 @@ class Operation:
     summary: str
     # The tool can take a backup before the change, so Mitos can undo it.
     undoable: bool = False
+    # The change loses nothing, so it needs no backup to be undone: it only
+    # adds (a new snapshot in an append-only place, files in a new folder) or
+    # sets something that can be set back. Spares it the "cannot be undone"
+    # raise to R3 (permissions.md 4.2; first used for backups, ADR 0007).
+    reversible: bool = False
     # The result carries content Herkos did not write (files, mail, web):
     # after it, the session is tainted (permissions.md, section 6).
     returns_external: bool = False
@@ -111,7 +124,7 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
             except ValueError as e:
                 raise ManifestError(f"{where}: {e}") from None
         flags = {}
-        for key in ("undoable", "returns_external", "egress"):
+        for key in ("undoable", "reversible", "returns_external", "egress"):
             value = op.get(key, False)
             if not isinstance(value, bool):
                 raise ManifestError(f"{where}: '{key}' must be true or false")

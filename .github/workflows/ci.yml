@@ -71,6 +71,53 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run pytest
 
+  backup:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: backup
+    env:
+      RESTIC_VERSION: "0.18.1"
+      RESTIC_SHA256: "680838f19d67151adba227e1570cdd8af12c19cf1735783ed1ba928bc41f363d"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install restic (pinned, checksum verified)
+        run: |
+          curl -sSLf -o restic.bz2 "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic_${RESTIC_VERSION}_linux_amd64.bz2"
+          echo "${RESTIC_SHA256}  restic.bz2" | sha256sum -c -
+          bunzip2 restic.bz2
+          sudo install -m 0755 restic /usr/local/bin/restic
+          rm restic
+          restic version
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  mcp-backup:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: mcp/backup
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
   mcp-files:
     runs-on: ubuntu-latest
     strategy:

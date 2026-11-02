@@ -136,7 +136,7 @@ def assess(
     if len(request.resources) > bulk_threshold:
         level = level.raised()
         raises.append(_("it touches more than {n} items at once").format(n=bulk_threshold))
-    if op.changes_state and not op.undoable and level < Level.R3:
+    if op.changes_state and not (op.undoable or op.reversible) and level < Level.R3:
         level = Level.R3
         raises.append(_("it cannot be undone"))
     if op.egress and level < Level.R3:

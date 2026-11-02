@@ -17,12 +17,16 @@ herkos = "herkos.cli:main"
 dev = [
     "pytest>=8",
     "ruff>=0.6",
-    # The files tool server, for the end-to-end tests.
+    # The tool servers, for the end-to-end tests.
     "vilna-mcp-files",
+    "vilna-mcp-backup",
+    "vilna-backup",
 ]
 
 [tool.uv.sources]
 vilna-mcp-files = { path = "../mcp/files", editable = true }
+vilna-mcp-backup = { path = "../mcp/backup", editable = true }
+vilna-backup = { path = "../backup", editable = true }
 
 [build-system]
 requires = ["hatchling>=1.26"]

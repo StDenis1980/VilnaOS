@@ -222,7 +222,9 @@ class Gate:
             operation=request.operation,
             resources=tuple(r.uri for r in request.resources),
             level=a.level,
-            undoable=a.operation.undoable or not a.operation.changes_state,
+            undoable=(
+                a.operation.undoable or a.operation.reversible or not a.operation.changes_state
+            ),
             raises=a.raises,
             taint_sources=tuple(session.taint_sources),
             choices=choices_for(a.level, a.in_bounds),

@@ -1,0 +1,74 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "backup" MCP server (mcp/backup), encrypted backups.
+# Levels follow backup/docs/design.md, section 5, and ADR 0007.
+#
+# A regular backup is R2 although data leaves the device: an exception to
+# permissions.md 4.2 recorded in ADR 0007. Only content encrypted on the
+# device goes out, and only to the place the person already approved (R3,
+# once, in the terminal or the Herkos window). So run_now has no `egress`,
+# and is `reversible`: it only adds a snapshot to an append-only place.
+tool = "org.vilna.mcp.backup"
+description = "Encrypted backups of the person's data"
+
+[operations.status]
+level = "R0"
+summary = "See whether backups are on and how the last one went"
+
+[operations.list_snapshots]
+level = "R0"
+summary = "List the backups"
+
+[operations.overview]
+level = "R1"
+summary = "See how much space the folders take"
+
+[operations.run_now]
+level = "R2"
+summary = "Make a backup now"
+reversible = true
+
+[operations.set_schedule]
+level = "R2"
+summary = "Change how often backups are made"
+reversible = true
+
+[operations.set_paths]
+level = "R2"
+summary = "Change what goes into backups"
+reversible = true
+
+[operations.restore]
+level = "R2"
+summary = "Bring a backup back into a new folder"
+reversible = true
+resource_args = ["target"]
+
+# For the person, not for Gloxi: Herkos-lite carries out R0-R2 only, and the
+# server does not offer these. Listed so their levels are fixed here.
+
+[operations.configure_destination]
+level = "R3"
+summary = "Choose where backups are kept"
+egress = true
+
+[operations.restore_in_place]
+level = "R3"
+summary = "Bring files back over the current ones"
+
+[operations.forget]
+level = "R4"
+summary = "Delete backups"
+
+[operations.change_destination]
+level = "R4"
+summary = "Move backups to another place"
+egress = true
+
+[operations.rotate_keys]
+level = "R4"
+summary = "Replace the backup keys"
+
+[operations.reissue_repository]
+level = "R4"
+summary = "Protect backups after a device was stolen"
+egress = true

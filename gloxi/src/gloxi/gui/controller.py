@@ -14,6 +14,7 @@ from collections.abc import Callable
 from gettext import gettext as _
 from typing import Protocol
 
+from gloxi.backup_intro import BackupIntro, Turn
 from gloxi.chat import Conversation
 from gloxi.cli import split_command
 from gloxi.llm import ModelError, ModelUnavailable
@@ -59,11 +60,17 @@ def cloud_status(conversation: Conversation) -> str:
 
 class ChatController:
     def __init__(
-        self, conversation: Conversation, view: ChatView, *, runner: Runner = thread_runner
+        self,
+        conversation: Conversation,
+        view: ChatView,
+        *,
+        runner: Runner = thread_runner,
+        intro: BackupIntro | None = None,
     ) -> None:
         self.conversation = conversation
         self.view = view
         self.runner = runner
+        self.intro = intro
         self.busy = False
         conversation.on_tool = lambda outcome: view.show_note(outcome.summary())
 
@@ -72,6 +79,11 @@ class ChatController:
         text = raw.strip()
         if not text or self.busy:
             return False
+        if text == "/backup":
+            return self.offer_intro(always=True)
+        if self.intro and self.intro.active:
+            self.view.show_user_message(text)
+            return self._intro_step(lambda: self.intro.answer(text))
         force, text = split_command(text)
         if not text:
             return False
@@ -86,6 +98,35 @@ class ChatController:
         self.view.show_user_message(text)
         self.view.start_answer(route_label(route, self.conversation.router.masks_cloud))
         self.runner(lambda: self._stream(text, route))
+        return True
+
+    def offer_intro(self, *, always: bool = False) -> bool:
+        """The backup talk (design.md 2a): on start if due, or on /backup."""
+        if self.busy or self.intro is None:
+            if always and self.intro is None:
+                self.view.show_error(_("Backups need Herkos, and it is not running."))
+            return False
+        if not always and not self.intro.due():
+            return False
+        return self._intro_step(self.intro.start)
+
+    def _intro_step(self, step: Callable[[], Turn | None]) -> bool:
+        # Herkos may show its window and wait for the person: off the UI thread.
+        self.busy = True
+        self.view.set_busy(True)
+
+        def job() -> None:
+            try:
+                turn = step()
+                if turn is not None:
+                    self.view.start_answer(_("Gloxi, backups"))
+                    self.view.append_answer(turn.render())
+                    self.view.finish_answer()
+            finally:
+                self.busy = False
+                self.view.set_busy(False)
+
+        self.runner(job)
         return True
 
     def reset(self) -> None:

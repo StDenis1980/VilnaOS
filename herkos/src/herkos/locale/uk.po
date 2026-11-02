@@ -134,3 +134,43 @@ msgstr "Видалити файл"
 
 msgid "Undo an earlier change to a file"
 msgstr "Скасувати попередню зміну файлу"
+
+# Backups (org.vilna.mcp.backup)
+msgid "See whether backups are on and how the last one went"
+msgstr "Подивитися, чи ввімкнено копії і як пройшла остання"
+
+msgid "List the backups"
+msgstr "Переглянути список копій"
+
+msgid "See how much space the folders take"
+msgstr "Подивитися, скільки місця займають папки"
+
+msgid "Make a backup now"
+msgstr "Зробити копію зараз"
+
+msgid "Change how often backups are made"
+msgstr "Змінити, як часто робити копії"
+
+msgid "Change what goes into backups"
+msgstr "Змінити, що потрапляє в копії"
+
+msgid "Bring a backup back into a new folder"
+msgstr "Відновити копію в нову папку"
+
+msgid "Choose where backups are kept"
+msgstr "Вибрати, де зберігати копії"
+
+msgid "Bring files back over the current ones"
+msgstr "Відновити файли поверх теперішніх"
+
+msgid "Delete backups"
+msgstr "Видалити копії"
+
+msgid "Move backups to another place"
+msgstr "Перенести копії в інше місце"
+
+msgid "Replace the backup keys"
+msgstr "Замінити ключі копій"
+
+msgid "Protect backups after a device was stolen"
+msgstr "Захистити копії після крадіжки пристрою"
