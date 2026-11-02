@@ -23,7 +23,7 @@ from typing import Literal, Protocol
 from urllib.parse import urlsplit
 
 from gloxi.config import RouterPolicy
-from gloxi.llm import ChatClient, Message
+from gloxi.llm import ChatClient, Message, ToolCall
 
 Target = Literal["local", "cloud"]
 
@@ -112,6 +112,19 @@ class Router:
             return
         masked = self.guard.mask_messages(messages)
         yield from self.guard.unmask_stream(self.cloud.stream(masked))
+
+    def stream_events(
+        self, messages: Sequence[Message], route: Route, tools: Sequence[dict] | None = None
+    ) -> Iterator[str | ToolCall]:
+        """``stream`` with tools. Tools are offered to the local model only.
+
+        File contents and paths from tools stay on this computer: the cloud
+        model gets no tools, and the conversation keeps no tool messages.
+        """
+        if route.target == "local":
+            yield from self.local.stream_events(messages, tools)
+            return
+        yield from self.stream(messages, route)
 
     def _route(self, target: Target, reason: str) -> Route:
         client = self.local if target == "local" else self.cloud

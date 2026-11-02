@@ -38,3 +38,39 @@ class FakeLlamaServer:
         return httpx.Response(
             200, content=text.encode(), headers={"content-type": "text/event-stream"}
         )
+
+
+class ScriptedLlamaServer(FakeLlamaServer):
+    """Answers each request with the next turn: text, or tool calls.
+
+    A turn is a string, or a list of ``(name, arguments_json)`` tool calls.
+    Tool calls are streamed in fragments, the way llama-server does it.
+    """
+
+    def __init__(self, *turns) -> None:
+        super().__init__()
+        self.turns = list(turns)
+
+    def _handle(self, request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/models"):
+            return httpx.Response(200, json={"data": [{"id": "local"}]})
+        self.requests.append(json.loads(request.content))
+        turn = self.turns.pop(0) if self.turns else "(no more turns)"
+        events = [{"choices": [{"delta": {"role": "assistant"}}]}]
+        if isinstance(turn, str):
+            events += [{"choices": [{"delta": {"content": turn}}]}]
+        else:
+            for index, (name, args) in enumerate(turn):
+                head = {"index": index, "id": f"c{index}", "type": "function"}
+                head["function"] = {"name": name, "arguments": ""}
+                half = len(args) // 2
+                events.append({"choices": [{"delta": {"tool_calls": [head]}}]})
+                for part in (args[:half], args[half:]):
+                    frag = {"index": index, "function": {"arguments": part}}
+                    events.append({"choices": [{"delta": {"tool_calls": [frag]}}]})
+            events.append({"choices": [{"delta": {}, "finish_reason": "tool_calls"}]})
+        text = "".join(f"data: {json.dumps(e, ensure_ascii=False)}\n\n" for e in events)
+        text += "data: [DONE]\n\n"
+        return httpx.Response(
+            200, content=text.encode(), headers={"content-type": "text/event-stream"}
+        )

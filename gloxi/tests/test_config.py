@@ -77,3 +77,11 @@ def test_masking_is_on_by_default_and_can_be_turned_off(tmp_path):
     path = tmp_path / "config.toml"
     path.write_text("[router]\nmask_cloud = false\n")
     assert not load_settings(path, env={}).router.mask_cloud
+
+
+def test_tools_flag(tmp_path):
+    path = tmp_path / "c.toml"
+    assert load_settings(path, env={}).tools_enabled is True
+    path.write_text("[tools]\nenabled = false\n")
+    assert load_settings(path, env={}).tools_enabled is False
+    assert load_settings(path, env={"GLOXI_TOOLS": "1"}).tools_enabled is True
