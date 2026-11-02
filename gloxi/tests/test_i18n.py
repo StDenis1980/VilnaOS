@@ -14,7 +14,7 @@ from gloxi.cli import HELP
 from gloxi.i18n import DOMAIN, LOCALE_DIR
 from gloxi.tools import ToolOutcome
 
-TOOL = Path(__file__).resolve().parents[2] / "tools" / "i18n.py"
+TOOL = Path(__file__).resolve().parents[1] / "tools" / "i18n.py"
 
 
 def _tool():

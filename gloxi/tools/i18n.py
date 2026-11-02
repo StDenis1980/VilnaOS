@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Translation catalogues for Gloxi (ADR 0009), with the standard library only.
 
-    python tools/i18n.py extract   # source → gloxi/po/gloxi.pot
-    python tools/i18n.py update    # gloxi.pot → every <lang>.po (keeps translations)
-    python tools/i18n.py compile   # <lang>.po → gloxi/src/gloxi/locale/<lang>/LC_MESSAGES/gloxi.mo
-    python tools/i18n.py check     # what CI runs: all of the above are up to date
+    python3 tools/i18n.py extract   # source → po/gloxi.pot
+    python3 tools/i18n.py update    # gloxi.pot → every po/<lang>.po (keeps translations)
+    python3 tools/i18n.py compile   # po/<lang>.po → src/gloxi/locale/<lang>/LC_MESSAGES/gloxi.mo
+    python3 tools/i18n.py check     # what CI runs: all of the above are up to date
 
 Strings are found by reading the source (``ast``): calls to ``_("...")`` and
 ``N_("...")`` with a literal argument. The .po files are plain GNU gettext
@@ -22,9 +22,10 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+# The gloxi folder: it is also the root of the RPM source tarball.
 ROOT = Path(__file__).resolve().parent.parent
-SOURCES = ROOT / "gloxi" / "src" / "gloxi"
-PO_DIR = ROOT / "gloxi" / "po"
+SOURCES = ROOT / "src" / "gloxi"
+PO_DIR = ROOT / "po"
 POT = PO_DIR / "gloxi.pot"
 LOCALE_DIR = SOURCES / "locale"
 DOMAIN = "gloxi"
@@ -252,7 +253,7 @@ def cmd_compile() -> None:
 def cmd_check() -> int:
     problems = []
     if not POT.exists() or POT.read_text(encoding="utf-8") != pot_text():
-        problems.append("gloxi/po/gloxi.pot is out of date: run `python tools/i18n.py update`")
+        problems.append("po/gloxi.pot is out of date: run `python3 tools/i18n.py update`")
     for lang in MAIN_LANGUAGES:
         path = PO_DIR / f"{lang}.po"
         if not path.exists():
@@ -261,7 +262,7 @@ def cmd_check() -> int:
         header, entries = read_po(path)
         new_header, expected = merged(lang)
         if write_po(None, header, entries) != write_po(None, new_header, expected):
-            problems.append(f"{lang}.po is out of date: run `python tools/i18n.py update`")
+            problems.append(f"{lang}.po is out of date: run `python3 tools/i18n.py update`")
         missing = [e.msgid for e in entries.values() if not e.msgstr or e.fuzzy]
         broken = [
             e.msgid for e in entries.values() if e.msgstr and _braces(e.msgid) != _braces(e.msgstr)
@@ -271,7 +272,7 @@ def cmd_check() -> int:
         if lang in COMPLETE_NOW and missing:
             problems.append(f"{lang}: {len(missing)} strings not translated, e.g. {missing[0]!r}")
         if not mo_path(lang).exists() or mo_path(lang).read_bytes() != mo_bytes(header, entries):
-            problems.append(f"{lang}: stale .mo: run `python tools/i18n.py compile`")
+            problems.append(f"{lang}: stale .mo: run `python3 tools/i18n.py compile`")
         done = len(entries) - len(missing)
         print(f"{lang}: {done}/{len(entries)} translated")
     for p in problems:

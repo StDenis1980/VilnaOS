@@ -128,9 +128,9 @@ mask_cloud = true            # шлюз приватності: маскуват
 - Новий рядок у коді: `_("...")` там, де текст показуємо, або `N_("...")` для сталих. Потім:
 
   ```sh
-  python3 ../tools/i18n.py update    # оновити .pot і всі .po
-  python3 ../tools/i18n.py compile   # зібрати .mo в src/gloxi/locale
-  python3 ../tools/i18n.py check     # те саме перевіряє CI
+  python3 tools/i18n.py update    # оновити .pot і всі .po
+  python3 tools/i18n.py compile   # зібрати .mo в src/gloxi/locale
+  python3 tools/i18n.py check     # те саме перевіряє CI
   ```
 
   Плейсхолдери на кшталт `{host}` у перекладі мають лишатися такими самими: `check` це перевіряє.
@@ -144,7 +144,7 @@ mask_cloud = true            # шлюз приватності: маскуват
 ```sh
 uv run pytest
 uv run ruff check . && uv run ruff format --check .
-python3 ../tools/i18n.py check
+python3 tools/i18n.py check
 ```
 
 Тести не потребують справжньої моделі: `tests/fake_server.py` імітує API `llama-server`.
