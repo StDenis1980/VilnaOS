@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<component type="desktop-application">
+  <id>io.github.stdenis1980.Gloxi</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Gloxi</name>
+  <summary>AI assistant that acts only with your permission</summary>
+  <summary xml:lang="uk">AI-асистент, який діє лише з вашого дозволу</summary>
+
+  <description>
+    <p>
+      Gloxi is the assistant of Vilna OS. It talks to a small language model on
+      your own computer, so by default nothing you write leaves it.
+    </p>
+    <p xml:lang="uk">
+      Gloxi — асистент Vilna OS. Він говорить із малою мовною моделлю на вашому
+      комп'ютері, тож за замовчуванням ніщо з написаного вами його не покидає.
+    </p>
+    <ul>
+      <li>Chats with a local model through llama.cpp or any OpenAI-compatible server</li>
+      <li xml:lang="uk">Розмова з локальною моделлю через llama.cpp або будь-який OpenAI-сумісний сервер</li>
+      <li>If you turn the cloud on with your own key, personal data is masked before it leaves</li>
+      <li xml:lang="uk">Якщо ви вмикаєте хмару власним ключем, особисті дані маскуються, перш ніж покинуть комп'ютер</li>
+      <li>Works with your files only through Herkos, which asks you first</li>
+      <li xml:lang="uk">Працює з вашими файлами лише через Herkos, який спершу питає вас</li>
+    </ul>
+    <p>This is a preview for testers.</p>
+    <p xml:lang="uk">Це попередня версія для тестувальників.</p>
+  </description>
+
+  <launchable type="desktop-id">io.github.stdenis1980.Gloxi.desktop</launchable>
+  <provides>
+    <binary>gloxi</binary>
+    <binary>gloxi-gtk</binary>
+  </provides>
+
+  <developer id="io.github.stdenis1980">
+    <name>Vilna OS</name>
+  </developer>
+
+  <url type="homepage">https://github.com/StDenis1980/VilnaOS</url>
+  <url type="bugtracker">https://github.com/StDenis1980/VilnaOS/issues</url>
+  <url type="vcs-browser">https://github.com/StDenis1980/VilnaOS</url>
+  <url type="translate">https://github.com/StDenis1980/VilnaOS/tree/main/gloxi/po</url>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#2D6BFF</color>
+    <color type="primary" scheme_preference="dark">#1F345C</color>
+  </branding>
+
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-info">mild</content_attribute>
+  </content_rating>
+
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </supports>
+
+  <releases>
+    <release version="0.1.0~dev0" type="development" date="2026-11-02">
+      <description>
+        <p>First preview package for testers.</p>
+      </description>
+    </release>
+  </releases>
+</component>

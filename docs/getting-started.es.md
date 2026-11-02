@@ -106,7 +106,7 @@ python3 -m venv --system-site-packages .venv-gtk
 
 Los paquetes locales hay que indicarlos explícitamente, porque pip no lee la configuración de uv y los buscaría en PyPI.
 
-El título de la ventana muestra si la nube está activada. Encima de cada respuesta se ve de dónde viene: «On this computer» o «Cloud: host, masked». El botón «+» empieza una conversación nueva. Por ahora los textos de la interfaz están en inglés; las traducciones llegarán con el paquete Flatpak.
+El título de la ventana muestra si la nube está activada. Encima de cada respuesta se ve de dónde viene: «On this computer» o «Cloud: host, masked». El botón «+» empieza una conversación nueva. La interfaz sigue el idioma del sistema: por ahora en ucraniano o inglés; el español y otros idiomas llegarán pronto.
 
 ## 6. Archivos a través de Herkos (opcional)
 
