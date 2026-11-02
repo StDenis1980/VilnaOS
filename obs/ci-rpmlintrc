@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# rpmlint filters for CI only: checks that differ from a real OBS build.
+# OBS fills %changelog from the .changes file:
+addFilter("no-changelogname-tag")
+# OBS sets SOURCE_DATE_EPOCH, so .py and .pyc mtimes match there:
+addFilter("python-bytecode-inconsistent-mtime")
+# Tarballs are made from this repository, not downloaded:
+addFilter("invalid-url Source0")
+addFilter("spelling-error")
+addFilter("no-%check-section")

@@ -1,0 +1,17 @@
+# Vilna service defaults, see systemd.preset(5).
+# The first matching line in any preset file wins, so this file (50-)
+# overrides the openSUSE and Aeon presets (90- and later).
+
+# Network services that open ports: installed but off by default
+# (decision of 2026-11-02, image/docs/composition.md, section 5).
+# Users turn them on in Settings; Gloxi may do it only as an R3 action.
+disable avahi-daemon.service
+disable avahi-daemon.socket
+disable smb.service
+disable nmb.service
+disable sshd.service
+disable sshd.socket
+
+# Vilna components (no effect until the units are installed)
+enable herkos.service
+enable gloxi.service

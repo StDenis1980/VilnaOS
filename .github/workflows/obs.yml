@@ -1,0 +1,93 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Builds the OBS packages (obs/packages) as RPMs on openSUSE Tumbleweed,
+# and on main uploads them to build.opensuse.org. See obs/README.md.
+name: OBS packages
+
+on:
+  push:
+    branches: [main]
+    paths: ["obs/**", "gloxi/**", "LICENSE", ".github/workflows/obs.yml"]
+  pull_request:
+    paths: ["obs/**", "gloxi/**", "LICENSE", ".github/workflows/obs.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  rpm:
+    runs-on: ubuntu-latest
+    container: opensuse/tumbleweed
+    steps:
+      - name: Install build tools
+        run: >
+          zypper -n --gpg-auto-import-keys install --no-recommends
+          git python3 rpm-build rpmlint python-rpm-macros systemd-rpm-macros tar gzip
+      - uses: actions/checkout@v4
+      - name: Assemble packages
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          python3 obs/tools/obs_sync.py assemble build/obs
+      - name: Build RPMs
+        run: |
+          set -e
+          for dir in build/obs/*/; do
+            name=$(basename "$dir")
+            spec="$dir$name.spec"
+            echo "::group::$name"
+            deps=$(rpmspec -q --buildrequires "$spec" | sort -u)
+            if [ -n "$deps" ]; then
+              echo "$deps" | xargs -d '\n' zypper -n install --no-recommends
+            fi
+            rpmbuild -ba --define "_sourcedir $PWD/$dir" --define "_topdir $PWD/build/rpm" "$spec"
+            echo "::endgroup::"
+          done
+      - name: rpmlint
+        run: |
+          rpmlint --ignore-unused-rpmlintrc -r obs/ci-rpmlintrc build/rpm/RPMS/*/*.rpm \
+            || echo "::warning::rpmlint reported problems, see the log"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rpms
+          path: build/rpm/RPMS/
+
+  upload:
+    # Runs only after OBS_PROJECT, OBS_USER (variables) and OBS_PASSWORD
+    # (secret) are set in the repository settings, see obs/README.md.
+    needs: rpm
+    if: >
+      github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+      && vars.OBS_PROJECT != ''
+    runs-on: ubuntu-latest
+    container: opensuse/tumbleweed
+    concurrency: obs-upload
+    steps:
+      - name: Install osc
+        run: zypper -n --gpg-auto-import-keys install --no-recommends git python3 osc
+      - uses: actions/checkout@v4
+      - name: Configure osc
+        env:
+          OBS_USER: ${{ vars.OBS_USER }}
+          OBS_PASSWORD: ${{ secrets.OBS_PASSWORD }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          mkdir -p ~/.config/osc
+          umask 077
+          cat > ~/.config/osc/oscrc <<EOF
+          [general]
+          apiurl = https://api.opensuse.org
+
+          [https://api.opensuse.org]
+          user = $OBS_USER
+          pass = $OBS_PASSWORD
+          credentials_mgr_class = osc.credentials.PlaintextConfigFileCredentialsManager
+          EOF
+      - name: Upload to OBS
+        run: >
+          python3 obs/tools/obs_sync.py upload
+          --project "${{ vars.OBS_PROJECT }}" --user "${{ vars.OBS_USER }}"
+          --message "Update from git ${GITHUB_SHA::12}"

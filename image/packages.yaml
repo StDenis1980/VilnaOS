@@ -3,6 +3,7 @@
 #
 # status:
 #   planned  — пакет ще не існує, його треба створити
+#   obs      — spec є в obs/packages/, пакет збирається в OBS-проєкті
 #   upstream — пакет є в openSUSE, перевірити актуальність
 #   decide   — рішення ще не ухвалене (див. розд. 8 composition.md)
 
@@ -25,13 +26,14 @@ base:
     hicolor-icon-theme-branding-openSUSE: hicolor-icon-theme-branding-Vilna
     systemd-icon-branding-openSUSE: systemd-icon-branding-Vilna
   # Пакети залишаються, служби не вмикаються (рішення 2026-11-02)
+  packaged_branding: [Vilna-release, distribution-logos-Vilna, vilna-presets]  # obs/packages/; vilna-presets later becomes systemd-presets-branding-Vilna
   disable_by_default: [avahi-daemon.service, smb.service, nmb.service, sshd.service]
 
 vilna:
   pattern: vilna_base
   packages:
     - {name: patterns-vilna,               license: GPL-3.0-or-later, status: planned}
-    - {name: Vilna-release,                license: GPL-3.0-or-later, status: planned}
+    - {name: Vilna-release,                license: GPL-3.0-or-later, status: obs}
     # Herkos
     - {name: herkos,                       license: GPL-3.0-or-later, status: planned}
     - {name: herkos-polkit,                license: GPL-3.0-or-later, status: planned}
@@ -39,7 +41,7 @@ vilna:
     - {name: herkos-dialog,                license: GPL-3.0-or-later, status: planned}
     - {name: herkos-manifests,             license: GPL-3.0-or-later, status: planned}
     # Gloxi
-    - {name: gloxi,                        license: GPL-3.0-or-later, status: planned}
+    - {name: gloxi,                        license: GPL-3.0-or-later, status: obs}
     - {name: gloxi-session,                license: GPL-3.0-or-later, status: planned}
     - {name: gloxi-gnome-shell-extension,  license: GPL-3.0-or-later, status: decide}
     # Спільні компоненти
