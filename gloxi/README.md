@@ -121,7 +121,7 @@ mask_cloud = true            # шлюз приватності: маскуват
 
 ### Flatpak
 
-Маніфест — [`flatpak/io.github.stdenis1980.Gloxi.yml`](flatpak/io.github.stdenis1980.Gloxi.yml): рантайм GNOME, бібліотеки Python у версіях з `uv.lock` (це перевіряє `tests/test_flatpak.py`), сам Gloxi, шлюз приватності й клієнт Herkos. CI збирає пакет і перевіряє, що він запускається; готовий `gloxi.flatpak` лежить в артефактах запуску.
+Маніфест — [`flatpak/io.github.stdenis1980.Gloxi.yml`](flatpak/io.github.stdenis1980.Gloxi.yml): рантайм GNOME, бібліотеки Python у версіях з `uv.lock` (це перевіряє `tests/test_flatpak.py`), сам Gloxi, шлюз приватності, Herkos-lite та інструмент «файли». CI збирає пакет і перевіряє, що він запускається; готовий `gloxi.flatpak` лежить в артефактах запуску.
 
 ```sh
 flatpak-builder --user --install --force-clean build flatpak/io.github.stdenis1980.Gloxi.yml
@@ -129,7 +129,7 @@ flatpak run io.github.stdenis1980.Gloxi                      # вікно
 flatpak run --command=gloxi io.github.stdenis1980.Gloxi      # термінал
 ```
 
-У пісочниці Gloxi має мережу (локальна модель на `127.0.0.1` і хмара, якщо її ввімкнено), сокет Herkos (`xdg-run/vilna`, [ADR 0005](../docs/adr/0005-gloxi-herkos-channel.md)) і лише читання налаштувань Herkos, щоб знати дозволені теки. До файлів доступу немає: їх читає й змінює Herkos поза пісочницею. Налаштування Gloxi лежать у `~/.var/app/io.github.stdenis1980.Gloxi/config/gloxi/config.toml`.
+У пісочниці Gloxi має мережу (локальна модель на `127.0.0.1` і хмара, якщо її ввімкнено) і більше нічого: доступу до файлів немає. Herkos-lite і інструмент «файли» лежать у тому ж пакеті; Gloxi сам запускає Herkos окремим процесом (`src/gloxi/herkos_local.py`), і сокет лишається всередині пісочниці. Теки, з якими Gloxi може працювати, людина обирає кнопкою з текою в заголовку вікна: відкривається системне вікно вибору (портал документів), і лише обрані теки стають видимими й потрапляють у `allowed_roots` Herkos. Поки тек не обрано, інструментів немає. Це слабше, ніж у Vilna, де Herkos — системна служба поза сеансом людини; опис пакета про це каже. Налаштування Gloxi лежать у `~/.var/app/io.github.stdenis1980.Gloxi/config/gloxi/config.toml`, Herkos — поруч, у `config/herkos/config.toml`.
 
 У пакеті є `llama-server` (llama.cpp b12048, CPU і Vulkan). Якщо на `[local] url` ніхто не відповідає, Gloxi запускає його сам, лише на `127.0.0.1` ([ADR 0004](../docs/adr/0004-local-model-engine.md)). Моделі в пакеті немає: на першому запуску Gloxi питає, чи завантажити Qwen3 4B (≈2,5 ГБ, [ADR 0008](../docs/adr/0008-default-local-model.md)), і без «так» нічого не завантажує. Файл перевіряється за SHA-256 з `src/gloxi/engine.py` і лежить у `~/.var/app/io.github.stdenis1980.Gloxi/data/gloxi/models`; перерване завантаження продовжується. Вимкнути запуск: `[local] start_server = false` або `GLOXI_START_SERVER=0`.
 
