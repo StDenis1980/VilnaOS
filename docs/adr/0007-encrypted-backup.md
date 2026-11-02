@@ -1,6 +1,6 @@
 # 0007. Зашифровані резервні копії даних Vilna: формат restic, ключі в Herkos
 
-- Стан: Запропоновано
+- Стан: Прийнято (місце зберігання обрав засновник 2026-11-02: свій сервер, S3 людини і локальний диск)
 - Дата: 2026-11-02
 - Пов'язано: [`backup/docs/design.md`](../../backup/docs/design.md), [`herkos/docs/permissions.md`](../../herkos/docs/permissions.md), [roadmap](../roadmap.md), [`image/docs/composition.md`](../../image/docs/composition.md)
 

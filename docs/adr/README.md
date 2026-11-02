@@ -10,7 +10,7 @@
 | [0004](0004-local-model-engine.md) | Локальний рушій моделі: llama.cpp / llama-server (Р5) | Прийнято |
 | [0005](0005-gloxi-herkos-channel.md) | Канал Gloxi ↔ Herkos: Unix-сокет із `SO_PEERCRED` (Р6) | Прийнято |
 | [0006](0006-conversational-installer.md) | Діалогове встановлення з Gloxi; ваги моделі в образі | Прийнято |
-| [0007](0007-encrypted-backup.md) | Зашифровані резервні копії: формат restic, ключі в Herkos | Запропоновано |
+| [0007](0007-encrypted-backup.md) | Зашифровані резервні копії: формат restic, ключі в Herkos | Прийнято |
 
 Рішення Р4 (збірка образу) потрібне лише на етапі 2 і буде записане тоді.
 
