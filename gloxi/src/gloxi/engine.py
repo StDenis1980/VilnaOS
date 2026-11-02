@@ -50,8 +50,8 @@ DEFAULT_MODEL = ModelFile(
     name="Qwen3 4B (Q4_K_M)",
     filename="Qwen3-4B-Q4_K_M.gguf",
     url="https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf",
-    sha256="0" * 64,
-    size=2_500_000_000,
+    sha256="7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+    size=2_497_280_256,
     source="Qwen (Alibaba Cloud) on Hugging Face",
     licence="Apache-2.0",
 )
