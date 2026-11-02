@@ -203,3 +203,15 @@ def test_run_log_keeps_no_paths(ready):
     rec = json.loads(log.splitlines()[-1])
     assert set(rec) >= {"time", "kind", "ok", "snapshot"}
     assert "zvit" not in log
+
+
+def test_set_up_keeps_the_choices_from_the_dialog(backup, tmp_path, layout):
+    backup.set_paths(
+        preset="settings", add=[str(layout.home / "Videos")], gloxi_history=True, limit_bytes=10**9
+    )
+    backup.set_schedule("weekly")
+    backup.set_up(parse_destination(str(tmp_path / "usb")))
+    s = backup.settings
+    assert s.preset == "settings" and s.include == (str(layout.home / "Videos"),)
+    assert s.gloxi_history and s.limit_bytes == 10**9 and s.schedule == "weekly"
+    assert not s.enabled

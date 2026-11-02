@@ -103,7 +103,18 @@ class Backup:
         current = self.settings
         if current.destination is not None and current.recovery_confirmed:
             raise BackupError("backups are already set up; changing the place is R4")
-        settings = Settings(destination=destination, preset=current.preset)
+        # Keep what the person already chose in the first-run dialog (what,
+        # how much, how often); only the place and the keys are new.
+        settings = Settings(
+            destination=destination,
+            preset=current.preset,
+            include=current.include,
+            exclude=current.exclude,
+            gloxi_history=current.gloxi_history,
+            system_secrets=current.system_secrets,
+            limit_bytes=current.limit_bytes,
+            schedule=current.schedule,
+        )
         for name, value in (credentials or {}).items():
             self.store.put(settings.repo_id, name.lower(), value)
         password = keys.new_repo_password()

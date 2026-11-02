@@ -82,9 +82,7 @@ def _setup(b: Backup, args: argparse.Namespace) -> int:
         except BackupError as e:
             print(f"  {e}")
             continue
-        print("\nКопії увімкнено. / Backups are on.")
-        note = b.set_schedule(b.settings.schedule)["note"]
-        print(f"Розклад / Schedule: {note}")
+        _turn_on(b)
         return 0
     print(
         "\nКлюч не підтверджено: копії вимкнені. Запустіть `vilna-backup confirm`, коли аркуш "
@@ -96,9 +94,17 @@ def _setup(b: Backup, args: argparse.Namespace) -> int:
 
 def _confirm(b: Backup, args: argparse.Namespace) -> int:
     b.confirm_recovery(getpass.getpass("Ключ відновлення / Recovery key: "))
-    print("Копії увімкнено. / Backups are on.")
-    print(b.set_schedule(b.settings.schedule)["note"])
+    _turn_on(b)
     return 0
+
+
+def _turn_on(b: Backup) -> None:
+    """After the sheet is confirmed: the timer, and the first backup right away (2a, step 8)."""
+    print("\nКопії увімкнено. / Backups are on.")
+    print(f"Розклад / Schedule: {b.set_schedule(b.settings.schedule)['note']}")
+    started = b.start()
+    if started.get("started"):
+        print("Перша копія почалася. / The first backup has started: vilna-backup status")
 
 
 def _recover(b: Backup, args: argparse.Namespace) -> int:
