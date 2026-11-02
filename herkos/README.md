@@ -19,7 +19,7 @@ Herkos (гомерівська огорожа двору; внутрішня н�
 
 Python-реалізація шлюзу дозволів для сеансу користувача (ADR 0003, 0005). Залежностей під час роботи немає, лише стандартна бібліотека.
 
-Стан: шлюз дозволів (рівні R0–R2, маніфести, модифікатори ризику), дозволи на клас дій, журнал Mitos з ланцюжком хешів, сокет JSON-RPC, MCP-клієнт і інструмент «файли» ([`../mcp/files/`](../mcp/files/)) зі скасуванням змін (`herkos undo`). Є також вікно підтвердження GTK (`herkos.dialog`) і клієнт для Gloxi (`herkos.client`). Gloxi вже викликає інструмент «файли» через цей клієнт (`gloxi/src/gloxi/tools.py`). Якщо встановлено [`../mcp/backup/`](../mcp/backup/), Herkos запускає й інструмент «копії» (ADR 0007). Keros-lite перевіряє вміст файлів на ознаки prompt injection (правила, без класифікатора). Herkos-lite працює під тим самим користувачем, що й Gloxi, і **не дає гарантій ізоляції** системного Herkos.
+Стан: шлюз дозволів (рівні R0–R2, маніфести, модифікатори ризику), дозволи на клас дій, журнал Mitos з ланцюжком хешів, сокет JSON-RPC, MCP-клієнт і інструмент «файли» ([`../mcp/files/`](../mcp/files/)) зі скасуванням змін (`herkos undo`). Є також вікно підтвердження GTK (`herkos.dialog`) і клієнт для Gloxi (`herkos.client`). Gloxi вже викликає інструмент «файли» через цей клієнт (`gloxi/src/gloxi/tools.py`). Якщо встановлено [`../mcp/backup/`](../mcp/backup/), Herkos запускає й інструмент «копії» (ADR 0007). Keros-lite перевіряє вміст файлів на ознаки prompt injection: спершу правила, потім, якщо вони нічого не знайшли, локальна модель Gloxi ([ADR 0010](../docs/adr/0010-keros-local-model.md)). Herkos-lite працює під тим самим користувачем, що й Gloxi, і **не дає гарантій ізоляції** системного Herkos.
 
 ```sh
 cd herkos
@@ -33,4 +33,4 @@ uv run herkos undo <action_id>           # скасувати зміну (id —
 
 Мова вікна й терміналу береться з системи (`LANG`); переклади — файли gettext `.po` у [`src/herkos/locale/`](src/herkos/locale/) (зараз українська). Повідомлення для моделі й журналу лишаються англійською.
 
-Налаштування: `~/.config/herkos/config.toml` (див. [`src/herkos/config.py`](src/herkos/config.py)): `allowed_roots` (типово `~/Documents`), `bulk_threshold`, `confirm_timeout`.
+Налаштування: `~/.config/herkos/config.toml` (див. [`src/herkos/config.py`](src/herkos/config.py)): `allowed_roots` (типово `~/Documents`), `bulk_threshold`, `confirm_timeout`, `keros_model` (типово `http://127.0.0.1:8080/v1`, або `"off"`), `keros_budget`. Замір Keros: `herkos keros-bench` ([`docs/keros-bench.md`](docs/keros-bench.md)).

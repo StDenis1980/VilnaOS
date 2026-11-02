@@ -13,6 +13,11 @@ The config file is ``$XDG_CONFIG_HOME/herkos/config.toml``::
     # Seconds to wait for the user before a confirmation counts as "deny".
     confirm_timeout = 120
 
+    # Local model for Keros (ADR 0010): the llama-server Gloxi uses, on this
+    # device only, or "off". Seconds it may spend on one tool result.
+    keros_model = "http://127.0.0.1:8080/v1"
+    keros_budget = 20
+
 The highest level Herkos-lite will carry out is R2 (roadmap 2.3); this is not
 a setting. Runtime state lives in ``$XDG_STATE_HOME/herkos/`` (journal,
 permissions) and the socket in ``$XDG_RUNTIME_DIR/vilna/herkos.sock`` (ADR 0005).
@@ -33,6 +38,8 @@ LITE_MAX_LEVEL = Level.R2
 DEFAULT_ALLOWED_ROOTS = ("~/Documents",)
 DEFAULT_BULK_THRESHOLD = 20
 DEFAULT_CONFIRM_TIMEOUT = 120.0
+DEFAULT_KEROS_MODEL = "http://127.0.0.1:8080/v1"
+DEFAULT_KEROS_BUDGET = 20.0
 # A "session" permission lapses after this much idle time (permissions.md 5.3).
 SESSION_IDLE_SECONDS = 30 * 60
 
@@ -63,6 +70,8 @@ class Config:
     bulk_threshold: int = DEFAULT_BULK_THRESHOLD
     confirm_timeout: float = DEFAULT_CONFIRM_TIMEOUT
     max_level: Level = LITE_MAX_LEVEL
+    keros_model: str | None = DEFAULT_KEROS_MODEL  # None: off
+    keros_budget: float = DEFAULT_KEROS_BUDGET
     state_dir: Path = field(
         default_factory=lambda: _xdg("XDG_STATE_HOME", ".local/state") / "herkos"
     )
@@ -99,7 +108,8 @@ def load_config(path: Path | None = None) -> Config:
     except (OSError, tomllib.TOMLDecodeError) as e:
         raise ConfigError(f"{path}: {e}") from None
 
-    unknown = set(data) - {"allowed_roots", "bulk_threshold", "confirm_timeout"}
+    known = {"allowed_roots", "bulk_threshold", "confirm_timeout", "keros_model", "keros_budget"}
+    unknown = set(data) - known
     if unknown:
         raise ConfigError(f"{path}: unknown keys {sorted(unknown)}")
     kwargs: dict = {}
@@ -121,4 +131,22 @@ def load_config(path: Path | None = None) -> Config:
         if not isinstance(t, int | float) or isinstance(t, bool) or not 1 <= t <= 3600:
             raise ConfigError(f"{path}: confirm_timeout must be 1-3600 seconds")
         kwargs["confirm_timeout"] = float(t)
+    if "keros_model" in data:
+        m = data["keros_model"]
+        if m == "off":
+            kwargs["keros_model"] = None
+        else:
+            from herkos.keros_model import require_loopback
+
+            try:
+                kwargs["keros_model"] = require_loopback(m) if isinstance(m, str) else None
+            except ValueError as e:
+                raise ConfigError(f"{path}: keros_model: {e}") from None
+            if kwargs["keros_model"] is None:
+                raise ConfigError(f'{path}: keros_model must be a URL or "off"')
+    if "keros_budget" in data:
+        b = data["keros_budget"]
+        if not isinstance(b, int | float) or isinstance(b, bool) or not 1 <= b <= 300:
+            raise ConfigError(f"{path}: keros_budget must be 1-300 seconds")
+        kwargs["keros_budget"] = float(b)
     return Config(**kwargs)

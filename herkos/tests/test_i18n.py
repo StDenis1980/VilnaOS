@@ -7,7 +7,7 @@ import pytest
 from herkos import i18n
 from herkos.confirm import _LABELS, Question, choices_for, render
 from herkos.dialog import LABELS
-from herkos.keros import RULES
+from herkos.keros import MODEL_FINDING, RULES
 from herkos.manifest import ManifestRegistry
 from herkos.risk import Level
 
@@ -20,6 +20,7 @@ def used_messages() -> set[str]:
         found |= set(re.findall(r'_\("((?:[^"\\]|\\.)*)"\)', py.read_text(encoding="utf-8")))
     found |= {r.description for r in RULES}
     found.add("contains invisible or direction-changing characters")
+    found.add(MODEL_FINDING.description)
     found |= set(_LABELS.values()) | set(LABELS.values())
     for tool in ("org.vilna.mcp.files",):
         found |= {op.summary for op in ManifestRegistry.builtin().get(tool).operations.values()}

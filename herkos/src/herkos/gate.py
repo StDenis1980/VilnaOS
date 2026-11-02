@@ -27,6 +27,7 @@ from herkos.config import Config
 from herkos.confirm import Answer, Confirmer, Question, choices_for
 from herkos.grants import GrantStore
 from herkos.i18n import _
+from herkos.keros_model import ModelCheck
 from herkos.manifest import ManifestRegistry, Operation
 from herkos.mitos import Journal, JournalError, digest, read_records
 from herkos.policy import Assessment, SessionState, assess
@@ -103,8 +104,10 @@ class Gate:
         grants: GrantStore,
         journal: Journal,
         confirmer: Confirmer,
+        model_check: ModelCheck | None = None,
     ) -> None:
         self.config = config
+        self.model_check = model_check
         self.manifests = manifests
         self.tools = tools
         self.grants = grants
@@ -278,13 +281,17 @@ class Gate:
         if ok and op.returns_external:
             source = f"{request.tool}.{request.operation}"
             session.taint(source)
-            findings = session.keros.inspect(source, result)
+            findings = session.keros.inspect(source, result, model=self.model_check)
             keros = {
                 "source": source,
                 "untrusted": True,
                 "findings": [f.to_json() for f in findings],
             }
             record["keros"] = [f.rule for f in findings]
+            report = session.keros.last_report
+            if report is not None:
+                keros["model"] = report.to_json()
+                record["keros_model"] = report.status
         undo = undo_info(request, op, result) if ok else None
         if undo:
             record["undo"] = undo
