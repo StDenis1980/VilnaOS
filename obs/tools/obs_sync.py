@@ -62,6 +62,9 @@ def pyproject_version(folder: str) -> Callable[[], str]:
 
 TARBALLS: dict[str, Tarball] = {
     "gloxi": Tarball("gloxi", pyproject_version("gloxi"), extra=(("LICENSE", "LICENSE"),)),
+    "python-vilna-privacy-gateway": Tarball(
+        "privacy-gateway", pyproject_version("privacy-gateway")
+    ),
 }
 
 

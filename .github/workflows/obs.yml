@@ -6,9 +6,9 @@ name: OBS packages
 on:
   push:
     branches: [main]
-    paths: ["obs/**", "gloxi/**", "LICENSE", ".github/workflows/obs.yml"]
+    paths: ["obs/**", "gloxi/**", "privacy-gateway/**", "LICENSE", ".github/workflows/obs.yml"]
   pull_request:
-    paths: ["obs/**", "gloxi/**", "LICENSE", ".github/workflows/obs.yml"]
+    paths: ["obs/**", "gloxi/**", "privacy-gateway/**", "LICENSE", ".github/workflows/obs.yml"]
   workflow_dispatch:
 
 permissions:
@@ -35,10 +35,17 @@ jobs:
       - name: Build RPMs
         run: |
           set -e
-          for dir in build/obs/*/; do
+          # Packages built here can be build dependencies of the next ones
+          # (gloxi needs python3-vilna-privacy-gateway), as on OBS: serve them
+          # as a local repository and build the python-* libraries first.
+          mkdir -p build/rpm/RPMS
+          zypper -n addrepo --no-gpgcheck --type plaindir "$PWD/build/rpm/RPMS" local-build
+          dirs="$(ls -d build/obs/python-*/ 2>/dev/null || true) $(ls -d build/obs/*/ | grep -v '/python-')"
+          for dir in $dirs; do
             name=$(basename "$dir")
             spec="$dir$name.spec"
             echo "::group::$name"
+            zypper -n --gpg-auto-import-keys refresh local-build
             deps=$(rpmspec -q --buildrequires "$spec" | sort -u)
             if [ -n "$deps" ]; then
               echo "$deps" | xargs -d '\n' zypper -n install --no-recommends

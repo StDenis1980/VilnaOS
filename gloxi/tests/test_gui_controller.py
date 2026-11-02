@@ -95,3 +95,13 @@ def test_cloud_status_text():
         FakeLlamaServer(), cloud=FakeLlamaServer(), policy=RouterPolicy(cloud_allowed=True)
     )
     assert "NOT masked" in cloud_status(conv)
+
+
+def test_cloud_status_when_masked():
+    from gloxi.privacy import guard_factory
+
+    on = RouterPolicy(cloud_allowed=True)
+    _, _, conv = make(
+        FakeLlamaServer(), cloud=FakeLlamaServer(), policy=on, guard_factory=guard_factory(on)
+    )
+    assert cloud_status(conv) == "Cloud on, private data is masked"

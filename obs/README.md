@@ -20,6 +20,7 @@
 | `distribution-logos-Vilna` | Іконка `vilna-logo` (звичайна й symbolic) і `/usr/share/pixmaps/distribution-logos/`. **Логотип — тимчасова заглушка** до готового логотипа | `distribution-logos-openSUSE-Aeon` |
 | `vilna-presets` | `50-vilna.preset`: avahi, samba, openssh вимкнені за замовчуванням; `herkos` і `gloxi` увімкнені | Поки що **доповнює** пресети Aeon, а не замінює їх; згодом стане `systemd-presets-branding-Vilna` (див. нижче) |
 | `gloxi` | Gloxi 0.1 preview: команда `gloxi` (чат у терміналі з локальною моделлю). Тарбол робиться з папки [`../gloxi/`](../gloxi/), версія береться з `gloxi/pyproject.toml` | — |
+| `python-vilna-privacy-gateway` | Шлюз приватності (`python3-vilna-privacy-gateway`), потрібен Gloxi. Тарбол — з папки [`../privacy-gateway/`](../privacy-gateway/), версія — з її `pyproject.toml` | — |
 
 Пакет `gloxi` збирається з поточного коду `gloxi/`. Коли в Gloxi з'являться нові залежності, системний сервіс чи користувач `gloxi`, треба оновити `packages/gloxi/gloxi.spec`; CI на PR покаже, якщо spec відстав від коду.
 

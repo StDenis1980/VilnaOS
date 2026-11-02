@@ -20,10 +20,13 @@ BuildRequires:  %{python_module hatchling >= 1.26}
 BuildRequires:  %{python_module httpx >= 0.27}
 BuildRequires:  %{python_module pip}
 BuildRequires:  %{python_module pytest >= 8}
+BuildRequires:  %{python_module vilna-privacy-gateway}
 BuildRequires:  %{python_module wheel}
 BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
 Requires:       python3-httpx >= 0.27
+# Masks personal data before it goes to the cloud (on by default).
+Requires:       python3-vilna-privacy-gateway
 # The chat window (gloxi-gtk): PyGObject with GTK 4 and libadwaita.
 Requires:       python3-gobject
 Requires:       typelib(Adw) = 1

@@ -70,3 +70,21 @@ def test_split_command():
     assert split_command("/local") == ("local", "")
     assert split_command("/cloudy day") == (None, "/cloudy day")
     assert split_command("hello") == (None, "hello")
+
+
+def test_repl_cloud_answer_is_masked_and_restored():
+    from gloxi.privacy import guard_factory
+
+    on = RouterPolicy(cloud_allowed=True)
+    cloud = FakeLlamaServer("Надіслано на [EMAIL_1]")
+    code, out, _conv = run(
+        ["/cloud напиши на olena@example.com", "/exit"],
+        FakeLlamaServer(),
+        cloud=cloud,
+        policy=on,
+        guard_factory=guard_factory(on),
+    )
+    assert code == 0
+    assert "NOT masked" not in out
+    assert "[cloud: api.example.eu, masked] Надіслано на olena@example.com" in out
+    assert "olena@example.com" not in str(cloud.requests)

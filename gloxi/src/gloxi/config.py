@@ -19,6 +19,7 @@ environment variables. The config file lives at
     mode = "auto"                # auto | local | cloud
     cloud_allowed = false        # the cloud is off until the user turns it on
     long_message_chars = 1500    # auto: longer messages go to the cloud
+    mask_cloud = true            # privacy gateway: mask personal data sent to the cloud
 """
 
 from __future__ import annotations
@@ -59,6 +60,7 @@ class RouterPolicy:
     mode: str = "auto"
     cloud_allowed: bool = False
     long_message_chars: int = 1500
+    mask_cloud: bool = True
 
 
 @dataclass(frozen=True)
@@ -117,6 +119,7 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         long_message_chars=int(
             _number(_get(env, "", router, "long_message_chars", 1500), "long_message_chars")
         ),
+        mask_cloud=_flag(_get(env, "GLOXI_MASK_CLOUD", router, "mask_cloud", True)),
     )
     if policy.cloud_allowed and cloud_endpoint is None:
         raise ConfigError("cloud_allowed is on, but no [cloud] url is configured")
