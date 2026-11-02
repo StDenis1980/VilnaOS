@@ -20,6 +20,9 @@ environment variables. The config file lives at
     cloud_allowed = false        # the cloud is off until the user turns it on
     long_message_chars = 1500    # auto: longer messages go to the cloud
     mask_cloud = true            # privacy gateway: mask personal data sent to the cloud
+
+    [tools]
+    enabled = true               # files tool through Herkos, when Herkos is running
 """
 
 from __future__ import annotations
@@ -69,6 +72,7 @@ class Settings:
     cloud: ModelEndpoint | None = None
     router: RouterPolicy = field(default_factory=RouterPolicy)
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
+    tools_enabled: bool = True
 
 
 def config_path(env: dict[str, str] | None = None) -> Path:
@@ -91,6 +95,7 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
     local = _table(data, "local", path)
     cloud = _table(data, "cloud", path)
     router = _table(data, "router", path)
+    tools = _table(data, "tools", path)
 
     local_endpoint = ModelEndpoint(
         url=_get(env, "GLOXI_LOCAL_URL", local, "url", DEFAULT_LOCAL_URL).rstrip("/"),
@@ -130,6 +135,7 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         cloud=cloud_endpoint,
         router=policy,
         system_prompt=str(system_prompt),
+        tools_enabled=_flag(_get(env, "GLOXI_TOOLS", tools, "enabled", True)),
     )
 
 

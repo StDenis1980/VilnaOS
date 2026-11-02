@@ -28,6 +28,9 @@ class RecordingView:
     def set_busy(self, busy):
         self.events.append(("busy", busy))
 
+    def show_note(self, text):
+        self.events.append(("note", text))
+
     def answer(self):
         return "".join(e[1] for e in self.events if e[0] == "piece")
 
@@ -105,3 +108,25 @@ def test_cloud_status_when_masked():
         FakeLlamaServer(), cloud=FakeLlamaServer(), policy=on, guard_factory=guard_factory(on)
     )
     assert cloud_status(conv) == "Cloud on, private data is masked"
+
+
+def test_tool_calls_are_shown_as_notes():
+    import json
+
+    from fake_server import ScriptedLlamaServer
+    from helpers import LOCAL
+    from test_tools import Connector, tools
+
+    from gloxi.chat import Conversation
+    from gloxi.llm import ChatClient
+    from gloxi.router import Router
+
+    call = [("files_read", json.dumps({"path": "/home/u/Documents/a", "reason": "r"}))]
+    server = ScriptedLlamaServer(call, "Готово.")
+    router = Router(ChatClient(LOCAL, transport=server.transport()), None, RouterPolicy())
+    conv = Conversation(router, "SYS", tools=tools(Connector()))
+    view = RecordingView()
+    ctl = ChatController(conv, view, runner=sync)
+    assert ctl.submit("прочитай a")
+    assert ("note", "files: read /home/u/Documents/a (done)") in view.events
+    assert view.answer() == "Готово."

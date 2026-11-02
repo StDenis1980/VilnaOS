@@ -88,3 +88,25 @@ def test_repl_cloud_answer_is_masked_and_restored():
     assert "NOT masked" not in out
     assert "[cloud: api.example.eu, masked] Надіслано на olena@example.com" in out
     assert "olena@example.com" not in str(cloud.requests)
+
+
+def test_repl_shows_tool_calls():
+    import json
+
+    from fake_server import ScriptedLlamaServer
+    from helpers import LOCAL
+    from test_tools import Connector, tools
+
+    from gloxi.chat import Conversation
+    from gloxi.llm import ChatClient
+    from gloxi.router import Router
+
+    call = [("files_list", json.dumps({"path": "/home/u/Documents", "reason": "r"}))]
+    server = ScriptedLlamaServer(call, "Там два файли.")
+    router = Router(ChatClient(LOCAL, transport=server.transport()), None, RouterPolicy())
+    conv = Conversation(router, "SYS", tools=tools(Connector()))
+    out = io.StringIO()
+    inputs = iter(["що в документах?"])
+    repl(conv, read=lambda _p: next(inputs, None) or (_ for _ in ()).throw(EOFError()), out=out)
+    assert "[files: list /home/u/Documents (done)]" in out.getvalue()
+    assert "Там два файли." in out.getvalue()

@@ -20,6 +20,7 @@ from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
 from gloxi.llm import ChatClient, ModelError, ModelUnavailable
 from gloxi.privacy import guard_factory
 from gloxi.router import CloudNotAllowed, Route, Router, Target
+from gloxi.tools import ToolOutcome, file_tools
 
 HELP = (
     "Commands: /local <text> or /cloud <text> picks the model for one message, "
@@ -66,9 +67,14 @@ def route_label(route: Route, router: Router) -> str:
     return f"[cloud: {route.destination}, {masked}]"
 
 
+def tool_note(outcome: ToolOutcome) -> str:
+    return f"\n[{outcome.summary()}]\n"
+
+
 def _answer(
     conversation: Conversation, text: str, out: TextIO, *, force: Target | None = None
 ) -> bool:
+    conversation.on_tool = lambda outcome: out.write(tool_note(outcome))
     try:
         route = conversation.route(text, force=force)
         out.write(route_label(route, conversation.router) + " ")
@@ -156,7 +162,10 @@ def main(argv: list[str] | None = None) -> int:
         local = stack.enter_context(ChatClient(settings.local))
         cloud = stack.enter_context(ChatClient(settings.cloud)) if settings.cloud else None
         router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))
-        conversation = Conversation(router, settings.system_prompt)
+        tools = file_tools(settings.tools_enabled)
+        if tools:
+            stack.callback(tools.close)
+        conversation = Conversation(router, settings.system_prompt, tools=tools)
         if args.command == "ask":
             force, text = split_command(" ".join(args.question))
             return 0 if _answer(conversation, text, sys.stdout, force=force) else 1

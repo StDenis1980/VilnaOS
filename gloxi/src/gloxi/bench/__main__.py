@@ -4,11 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from gloxi.bench import (
+    AnonPeak,
     load_tasks,
     machine_info,
     markdown_report,
@@ -46,7 +48,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     endpoint = ModelEndpoint(url=args.url.rstrip("/"), model=args.model, timeout=args.timeout)
-    with ChatClient(endpoint) as client:
+    sampler = AnonPeak(args.server_pid) if args.server_pid else None
+    with ChatClient(endpoint) as client, sampler or contextlib.nullcontext():
         if not client.is_available():
             print(f"gloxi-bench: no model answers at {endpoint.url}", file=sys.stderr)
             return 1
@@ -68,6 +71,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     if args.server_pid:
         meta["server_peak_mb"] = peak_rss_mb(args.server_pid)
+        meta["server_anon_peak_mb"] = sampler.peak_mb
     summary = summarise(results)
     report = write_results(args.out, meta, summary, results)
     print(markdown_report(meta, summary, results))
