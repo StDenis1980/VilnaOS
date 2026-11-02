@@ -24,6 +24,7 @@ class Conversation:
 
     def reset(self) -> None:
         self.history.clear()
+        self.router.new_conversation()
 
     def messages(self) -> list[Message]:
         # One turn is a user message and the assistant's answer.

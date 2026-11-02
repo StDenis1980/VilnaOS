@@ -53,7 +53,7 @@ def cloud_status(conversation: Conversation) -> str:
         return _("Cloud off: everything stays on this computer")
     if router.masks_cloud:
         return _("Cloud on, private data is masked")
-    return _("Cloud on, messages are NOT masked yet")
+    return _("Cloud on, masking is off: messages are NOT masked")
 
 
 class ChatController:

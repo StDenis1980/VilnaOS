@@ -17,6 +17,7 @@ from gloxi.config import ConfigError, load_settings  # noqa: E402
 from gloxi.gui import APP_ID  # noqa: E402
 from gloxi.gui.controller import ChatController, cloud_status  # noqa: E402
 from gloxi.llm import ChatClient  # noqa: E402
+from gloxi.privacy import guard_factory  # noqa: E402
 from gloxi.router import Router  # noqa: E402
 
 CSS = """
@@ -169,7 +170,8 @@ class GloxiApp(Adw.Application):
         local = ChatClient(settings.local)
         cloud = ChatClient(settings.cloud) if settings.cloud else None
         self._clients = [c for c in (local, cloud) if c]
-        conversation = Conversation(Router(local, cloud, settings.router), settings.system_prompt)
+        router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))
+        conversation = Conversation(router, settings.system_prompt)
         return ChatWindow(self, conversation)
 
     def do_shutdown(self) -> None:

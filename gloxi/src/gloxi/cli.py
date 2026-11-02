@@ -18,6 +18,7 @@ from gloxi import __version__
 from gloxi.chat import Conversation
 from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
 from gloxi.llm import ChatClient, ModelError, ModelUnavailable
+from gloxi.privacy import guard_factory
 from gloxi.router import CloudNotAllowed, Route, Router, Target
 
 HELP = (
@@ -32,7 +33,7 @@ LLAMA_HINT = (
 )
 
 UNMASKED_WARNING = (
-    "Note: the privacy gateway is not built yet, so messages sent to the cloud are NOT masked."
+    "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
 )
 
 
@@ -154,7 +155,7 @@ def main(argv: list[str] | None = None) -> int:
     with ExitStack() as stack:
         local = stack.enter_context(ChatClient(settings.local))
         cloud = stack.enter_context(ChatClient(settings.cloud)) if settings.cloud else None
-        router = Router(local, cloud, settings.router)
+        router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))
         conversation = Conversation(router, settings.system_prompt)
         if args.command == "ask":
             force, text = split_command(" ".join(args.question))

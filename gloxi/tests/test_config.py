@@ -68,3 +68,12 @@ def test_bad_router_mode_and_missing_cloud_model(tmp_path):
         load_settings(tmp_path / "none.toml", env={"GLOXI_ROUTER_MODE": "turbo"})
     with pytest.raises(ConfigError, match="model"):
         load_settings(tmp_path / "none.toml", env={"GLOXI_CLOUD_URL": "https://x/v1"})
+
+
+def test_masking_is_on_by_default_and_can_be_turned_off(tmp_path):
+    assert load_settings(tmp_path / "x.toml", env={}).router.mask_cloud
+    s = load_settings(tmp_path / "x.toml", env={"GLOXI_MASK_CLOUD": "false"})
+    assert not s.router.mask_cloud
+    path = tmp_path / "config.toml"
+    path.write_text("[router]\nmask_cloud = false\n")
+    assert not load_settings(path, env={}).router.mask_cloud
