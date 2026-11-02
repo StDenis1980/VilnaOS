@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "herkosd"
+description = "Herkos, the permission gate of Vilna OS: the service Gloxi talks to"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+herkos-core = { path = "../herkos-core" }
+serde_json.workspace = true
+rustix.workspace = true
+
+[lints]
+workspace = true

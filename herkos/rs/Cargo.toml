@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The system Herkos (ADR 0003, ADR 0012). Same contracts as Herkos-lite:
+# herkos/docs/protocol.md, the manifests, the Mitos journal format.
+[workspace]
+resolver = "3"
+members = ["crates/herkos-core", "crates/herkosd"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/StDenis1980/VilnaOS"
+
+[workspace.dependencies]
+# Every crate here is part of the security boundary: keep the list short.
+serde_json = "1"
+rustix = { version = "1", default-features = false, features = ["std", "net", "process", "rand", "fs"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+unwrap_used = "deny"
+
+[profile.release]
+panic = "abort"
+lto = true
