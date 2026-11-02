@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! herkosd: the Herkos service Gloxi talks to over a Unix socket.
 //!
-//! Step 2 of the Rust plan (docs/adr/0013-herkos-rust.md): the protocol and the
-//! socket, without decisions yet. Herkos-lite (Python) stays the reference;
+//! Steps 2-3 of the Rust plan (docs/adr/0013-herkos-rust.md): the protocol,
+//! the socket, the gate's decisions and the Mitos journal. Tools arrive in
+//! step 4; until then a known tool is `denied_no_tool`. Herkos-lite (Python)
+//! stays the reference;
 //! `herkos/conformance/` checks that both answer the same way.
 
+mod config;
+mod gate;
+mod grants;
+mod mitos;
 mod rpc;
 
 use std::fs;
@@ -13,6 +19,7 @@ use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::sync::Arc;
 use std::thread;
 
 use serde_json::Value;
@@ -20,8 +27,7 @@ use serde_json::Value;
 /// A longer message closes the connection (protocol.md).
 const MAX_LINE: usize = 1024 * 1024;
 
-const USAGE: &str =
-    "usage: herkosd serve [--socket PATH] [--confirm deny]\n       herkosd --version";
+const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm deny]\n       herkosd journal verify\n       herkosd --version";
 
 fn default_socket() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")
@@ -62,7 +68,7 @@ fn encode(msg: &Value) -> Vec<u8> {
     out
 }
 
-fn serve_connection(stream: UnixStream, uid: u32) {
+fn serve_connection(stream: UnixStream, uid: u32, gate: Arc<gate::Gate>) {
     // Not ours, or unknown: no answer at all.
     match rustix::net::sockopt::socket_peercred(&stream) {
         Ok(cred) if cred.uid.as_raw() == uid => {}
@@ -72,7 +78,7 @@ fn serve_connection(stream: UnixStream, uid: u32) {
         return;
     };
     let mut reader = BufReader::new(stream);
-    let mut conn = rpc::Connection::default();
+    let mut conn = rpc::Connection::new(gate);
     let mut line = Vec::new();
     loop {
         line.clear();
@@ -98,7 +104,27 @@ fn serve_connection(stream: UnixStream, uid: u32) {
     }
 }
 
+fn build_gate() -> Result<gate::Gate, String> {
+    let config = config::load_config(&config::default_config_path())?;
+    let journal = mitos::Journal::open(&config.journal_path())
+        .map_err(|e| format!("the journal is broken, refusing to start: {e}"))?;
+    let grants = grants::GrantStore::new(&config.grants_path(), grants::now);
+    if let Some(e) = &grants.load_error {
+        eprintln!("herkosd: permissions ignored: {e}");
+    }
+    let manifests = herkos_core::manifest::Registry::builtin().map_err(|e| e.0)?;
+    Ok(gate::Gate::new(
+        config,
+        manifests,
+        Box::new(gate::NoTools),
+        grants,
+        journal,
+        Box::new(gate::DenyAll),
+    ))
+}
+
 fn serve(socket: &Path) -> Result<(), String> {
+    let gate = Arc::new(build_gate()?);
     prepare_socket_dir(socket)?;
     // Born 0600: nobody else gets a window between bind and chmod.
     let old = rustix::process::umask(rustix::fs::Mode::from_raw_mode(0o177));
@@ -107,13 +133,21 @@ fn serve(socket: &Path) -> Result<(), String> {
     let listener = bound.map_err(|e| format!("{}: {e}", socket.display()))?;
     fs::set_permissions(socket, fs::Permissions::from_mode(0o600))
         .map_err(|e| format!("{}: {e}", socket.display()))?;
-    // Herkos-lite and this skeleton serve one person: the uid that started them.
+    // Until step 6 herkosd serves one person: the uid that started it.
     let uid = rustix::process::getuid().as_raw();
+    let start = serde_json::json!({
+        "server": concat!("herkosd/", env!("CARGO_PKG_VERSION")),
+        "socket": socket.display().to_string(),
+    });
+    gate.journal()
+        .append("start", start, None)
+        .map_err(|e| e.0)?;
     eprintln!("herkosd: listening on {}", socket.display());
     for stream in listener.incoming() {
         match stream {
             Ok(s) => {
-                thread::spawn(move || serve_connection(s, uid));
+                let gate = Arc::clone(&gate);
+                thread::spawn(move || serve_connection(s, uid, gate));
             }
             Err(e) => eprintln!("herkosd: accept: {e}"),
         }
@@ -126,6 +160,16 @@ fn run(args: &[String]) -> Result<(), String> {
         Some("--version") => {
             println!("herkosd {}", env!("CARGO_PKG_VERSION"));
             Ok(())
+        }
+        Some("journal") if args.get(1).map(String::as_str) == Some("verify") => {
+            let path = config::load_config(&config::default_config_path())?.journal_path();
+            match mitos::verify(&path) {
+                Ok(v) => {
+                    println!("journal OK: {} records ({})", v.records, path.display());
+                    Ok(())
+                }
+                Err((line, why)) => Err(format!("journal BROKEN at line {line}: {why}")),
+            }
         }
         Some("serve") => {
             let mut socket = None;

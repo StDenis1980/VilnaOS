@@ -5,7 +5,10 @@
 //! Herkos-lite in Python is their reference implementation and the
 //! conformance tests in `herkos/conformance/` check both.
 
+pub mod manifest;
+pub mod policy;
 pub mod request;
+pub mod risk;
 
 /// Version of the Gloxi <-> Herkos protocol (herkos/docs/protocol.md).
 pub const PROTOCOL_VERSION: &str = "0.1";

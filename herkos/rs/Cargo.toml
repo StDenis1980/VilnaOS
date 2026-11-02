@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# The system Herkos (ADR 0003, ADR 0012). Same contracts as Herkos-lite:
+# The system Herkos (ADR 0003, ADR 0013). Same contracts as Herkos-lite:
 # herkos/docs/protocol.md, the manifests, the Mitos journal format.
 [workspace]
 resolver = "3"
@@ -14,7 +14,11 @@ repository = "https://github.com/StDenis1980/VilnaOS"
 
 [workspace.dependencies]
 # Every crate here is part of the security boundary: keep the list short.
-serde_json = "1"
+# float_roundtrip: floats read back exactly as written (permission timestamps).
+serde_json = { version = "1", features = ["float_roundtrip"] }
+# TOML for manifests and config.toml, SHA-256 for the Mitos hash chain.
+toml = { version = "0.9", default-features = false, features = ["parse", "serde", "std"] }
+sha2 = "0.10"
 rustix = { version = "1", default-features = false, features = ["std", "net", "process", "rand", "fs"] }
 
 [workspace.lints.rust]
