@@ -12,6 +12,7 @@ Herkos (гомерівська огорожа двору; внутрішня н�
 Документи:
 
 - Модель дозволів: [`docs/permissions.md`](docs/permissions.md) (чернетка v0.1).
+- Пристрої людини: підключення, перелік і блокування: [`docs/devices.md`](docs/devices.md) (чернетка v0.1).
 - Протокол Gloxi ↔ Herkos, журнал і формат маніфестів: [`docs/protocol.md`](docs/protocol.md) (v0.1).
 
 ## Herkos-lite (Gloxi 0.1 preview)
