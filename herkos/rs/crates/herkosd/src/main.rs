@@ -10,6 +10,8 @@
 mod config;
 mod gate;
 mod grants;
+mod keros_model;
+mod mcp;
 mod mitos;
 mod rpc;
 
@@ -113,14 +115,70 @@ fn build_gate() -> Result<gate::Gate, String> {
         eprintln!("herkosd: permissions ignored: {e}");
     }
     let manifests = herkos_core::manifest::Registry::builtin().map_err(|e| e.0)?;
+    let tools = start_tools(&config);
+    let model_check = match &config.keros_model {
+        None => None,
+        Some(url) => match keros_model::Judge::new(url) {
+            Ok(judge) => Some(keros_model::ModelCheck::new(judge, config.keros_budget)),
+            Err(e) => {
+                eprintln!("herkosd: Keros model check off: {e}");
+                None
+            }
+        },
+    };
     Ok(gate::Gate::new(
         config,
         manifests,
-        Box::new(gate::NoTools),
+        Box::new(tools),
         grants,
         journal,
         Box::new(gate::DenyAll),
-    ))
+    )
+    .with_model_check(model_check))
+}
+
+/// An executable on PATH (the tool servers are installed like any program).
+fn which(name: &str) -> Option<PathBuf> {
+    let path = std::env::var_os("PATH")?;
+    std::env::split_paths(&path)
+        .map(|dir| dir.join(name))
+        .find(|p| fs::metadata(p).is_ok_and(|m| m.is_file() && m.mode() & 0o111 != 0))
+}
+
+fn start_tool(tools: &mut mcp::McpTools, name: &str, program: &str, args: Vec<String>) {
+    let Some(path) = which(program) else {
+        eprintln!("herkosd: {program} is not installed; no {name}");
+        return;
+    };
+    let mut command = vec![path.display().to_string()];
+    command.extend(args);
+    match mcp::McpStdio::start(name, &command, mcp::CALL_TIMEOUT) {
+        Ok(t) => tools.add(t),
+        Err(e) => eprintln!("herkosd: {name} failed to start: {e}"),
+    }
+}
+
+/// The files tool on the allowed folders and the backup tool (ADR 0007), if installed.
+fn start_tools(config: &config::Config) -> mcp::McpTools {
+    let mut tools = mcp::McpTools::default();
+    let roots: Vec<&PathBuf> = config.allowed_roots.iter().filter(|r| r.is_dir()).collect();
+    if roots.is_empty() {
+        eprintln!("herkosd: none of allowed_roots exists; no files tool");
+    } else {
+        let backups = config.state_dir.join("backups").join("files");
+        let mut args = vec!["--backup-dir".to_owned(), backups.display().to_string()];
+        for r in roots {
+            args.extend(["--root".to_owned(), r.display().to_string()]);
+        }
+        start_tool(&mut tools, "org.vilna.mcp.files", "vilna-mcp-files", args);
+    }
+    start_tool(
+        &mut tools,
+        "org.vilna.mcp.backup",
+        "vilna-mcp-backup",
+        Vec::new(),
+    );
+    tools
 }
 
 fn serve(socket: &Path) -> Result<(), String> {
@@ -159,6 +217,19 @@ fn run(args: &[String]) -> Result<(), String> {
     match args.first().map(String::as_str) {
         Some("--version") => {
             println!("herkosd {}", env!("CARGO_PKG_VERSION"));
+            Ok(())
+        }
+        // For the conformance tests: Keros rules over JSON values, one per line.
+        Some("keros-scan") => {
+            for line in std::io::stdin().lines() {
+                let line = line.map_err(|e| e.to_string())?;
+                let value: Value = serde_json::from_str(&line).map_err(|e| e.to_string())?;
+                let rules: Vec<String> = herkos_core::keros::scan(&value)
+                    .into_iter()
+                    .map(|f| f.rule)
+                    .collect();
+                println!("{}", serde_json::json!(rules));
+            }
             Ok(())
         }
         Some("journal") if args.get(1).map(String::as_str) == Some("verify") => {

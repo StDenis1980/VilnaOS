@@ -42,12 +42,13 @@ uv run herkos undo <action_id>           # скасувати зміну (id —
 ```sh
 cd herkos
 uv run pytest conformance                                                  # Herkos-lite
-HERKOS_SERVE="rs/target/debug/herkosd serve --confirm deny" uv run pytest conformance
+HERKOS_SERVE="rs/target/debug/herkosd serve --confirm deny" HERKOSD=$PWD/rs/target/debug/herkosd \
+    uv run pytest conformance                                              # herkosd
 ```
 
 ## herkosd (Rust, етап 2)
 
-Системний Herkos ([ADR 0013](../docs/adr/0013-herkos-rust.md)) у [`rs/`](rs/): `herkos-core` (запит дії, маніфести, оцінка ризику, без вводу-виводу) і `herkosd` (сокет, протокол, шлюз рішень, дозволи, журнал Mitos). Уже працюють кроки 1–3: рішення ухвалюються так само, як у Herkos-lite, з тими самими маніфестами, `config.toml`, `permissions.json` і журналом (`herkos journal verify` перевіряє журнал `herkosd`, і навпаки: `herkosd journal verify`). Інструментів ще немає (крок 4), тому дія відомого інструмента, яку можна виконати, отримує `denied_no_tool`; підтвердження поки завжди «ні» (агент — крок 5).
+Системний Herkos ([ADR 0013](../docs/adr/0013-herkos-rust.md)) у [`rs/`](rs/): `herkos-core` (запит дії, маніфести, оцінка ризику, правила Keros, без вводу-виводу) і `herkosd` (сокет, протокол, шлюз рішень, дозволи, журнал Mitos, клієнт MCP, перевірка Keros моделлю). Кроки 1–4 готові: `herkosd` ухвалює ті самі рішення, що й Herkos-lite, з тими самими маніфестами, `config.toml`, `permissions.json` і журналом (`herkos journal verify` перевіряє журнал `herkosd`, і навпаки: `herkosd journal verify`), сам запускає інструменти «файли» й «копії» (`vilna-mcp-files`, `vilna-mcp-backup` з `PATH`), а Keros знаходить те саме, що й у Python (`conformance/test_keros_rules.py` порівнює їх на всьому наборі текстів). Модель Keros `herkosd` питає лише через `http://` на петльовій адресі. Чого ще немає: вікна підтвердження (крок 5), тому зараз кожне питання до людини — «ні».
 
 ```sh
 cd herkos/rs

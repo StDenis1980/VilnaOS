@@ -117,13 +117,14 @@ impl Connection {
                     _ => error(id, INVALID_PARAMS, "'action_id' must be an action id"),
                 }
             }
-            // Keros findings arrive in step 4.
             "herkos.session" => result(
                 id,
                 json!({
                     "tainted": self.session.tainted,
                     "taint_sources": self.session.taint_sources,
-                    "findings": [],
+                    "findings": self.session.keros.findings.iter().map(|(src, f)| {
+                        json!({"source": src, "rule": f.rule, "description": f.description})
+                    }).collect::<Vec<_>>(),
                 }),
             ),
             _ => error(id, METHOD_NOT_FOUND, &format!("unknown method {method}")),
