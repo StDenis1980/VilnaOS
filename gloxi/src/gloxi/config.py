@@ -9,6 +9,16 @@ environment variables. The config file lives at
     url = "http://127.0.0.1:8080/v1"
     model = "local"
     timeout = 120
+
+    [cloud]                      # optional: the user's own provider and key
+    url = "https://api.mistral.ai/v1"
+    model = "mistral-small-latest"
+    # api_key = "..."            # better: GLOXI_CLOUD_API_KEY in the environment
+
+    [router]
+    mode = "auto"                # auto | local | cloud
+    cloud_allowed = false        # the cloud is off until the user turns it on
+    long_message_chars = 1500    # auto: longer messages go to the cloud
 """
 
 from __future__ import annotations
@@ -41,9 +51,21 @@ class ModelEndpoint:
     api_key: str | None = field(default=None, repr=False)
 
 
+ROUTER_MODES = ("auto", "local", "cloud")
+
+
+@dataclass(frozen=True)
+class RouterPolicy:
+    mode: str = "auto"
+    cloud_allowed: bool = False
+    long_message_chars: int = 1500
+
+
 @dataclass(frozen=True)
 class Settings:
     local: ModelEndpoint
+    cloud: ModelEndpoint | None = None
+    router: RouterPolicy = field(default_factory=RouterPolicy)
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
 
 
@@ -64,21 +86,77 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         except (OSError, tomllib.TOMLDecodeError) as exc:
             raise ConfigError(f"cannot read {path}: {exc}") from exc
 
-    local = data.get("local", {})
-    if not isinstance(local, dict):
-        raise ConfigError(f"{path}: [local] must be a table")
+    local = _table(data, "local", path)
+    cloud = _table(data, "cloud", path)
+    router = _table(data, "router", path)
 
-    url = env.get("GLOXI_LOCAL_URL") or local.get("url") or DEFAULT_LOCAL_URL
-    model = env.get("GLOXI_LOCAL_MODEL") or local.get("model") or "local"
-    timeout_raw = env.get("GLOXI_LOCAL_TIMEOUT") or local.get("timeout") or 120
-    try:
-        timeout = float(timeout_raw)
-    except (TypeError, ValueError) as exc:
-        raise ConfigError(f"timeout must be a number, got {timeout_raw!r}") from exc
+    local_endpoint = ModelEndpoint(
+        url=_get(env, "GLOXI_LOCAL_URL", local, "url", DEFAULT_LOCAL_URL).rstrip("/"),
+        model=_get(env, "GLOXI_LOCAL_MODEL", local, "model", "local"),
+        timeout=_number(_get(env, "GLOXI_LOCAL_TIMEOUT", local, "timeout", 120), "timeout"),
+    )
+
+    cloud_endpoint = None
+    cloud_url = _get(env, "GLOXI_CLOUD_URL", cloud, "url", "")
+    if cloud_url:
+        cloud_endpoint = ModelEndpoint(
+            url=cloud_url.rstrip("/"),
+            model=_get(env, "GLOXI_CLOUD_MODEL", cloud, "model", ""),
+            timeout=_number(_get(env, "GLOXI_CLOUD_TIMEOUT", cloud, "timeout", 120), "timeout"),
+            api_key=_get(env, "GLOXI_CLOUD_API_KEY", cloud, "api_key", "") or None,
+        )
+        if not cloud_endpoint.model:
+            raise ConfigError("[cloud] needs a model name")
+
+    mode = _get(env, "GLOXI_ROUTER_MODE", router, "mode", "auto")
+    if mode not in ROUTER_MODES:
+        raise ConfigError(f"router mode must be one of {', '.join(ROUTER_MODES)}, got {mode!r}")
+    policy = RouterPolicy(
+        mode=mode,
+        cloud_allowed=_flag(_get(env, "GLOXI_CLOUD_ALLOWED", router, "cloud_allowed", False)),
+        long_message_chars=int(
+            _number(_get(env, "", router, "long_message_chars", 1500), "long_message_chars")
+        ),
+    )
+    if policy.cloud_allowed and cloud_endpoint is None:
+        raise ConfigError("cloud_allowed is on, but no [cloud] url is configured")
 
     system_prompt = data.get("system_prompt") or DEFAULT_SYSTEM_PROMPT
-
     return Settings(
-        local=ModelEndpoint(url=str(url).rstrip("/"), model=str(model), timeout=timeout),
+        local=local_endpoint,
+        cloud=cloud_endpoint,
+        router=policy,
         system_prompt=str(system_prompt),
     )
+
+
+def _table(data: dict, name: str, path: Path) -> dict:
+    value = data.get(name, {})
+    if not isinstance(value, dict):
+        raise ConfigError(f"{path}: [{name}] must be a table")
+    return value
+
+
+def _get(env: dict[str, str], env_name: str, table: dict, key: str, default):
+    if env_name and env.get(env_name):
+        return env[env_name]
+    value = table.get(key)
+    return default if value is None or value == "" else value
+
+
+def _number(raw, name: str) -> float:
+    try:
+        return float(raw)
+    except (TypeError, ValueError) as exc:
+        raise ConfigError(f"{name} must be a number, got {raw!r}") from exc
+
+
+def _flag(raw) -> bool:
+    if isinstance(raw, bool):
+        return raw
+    text = str(raw).strip().lower()
+    if text in ("1", "true", "yes", "on"):
+        return True
+    if text in ("0", "false", "no", "off", ""):
+        return False
+    raise ConfigError(f"expected true or false, got {raw!r}")

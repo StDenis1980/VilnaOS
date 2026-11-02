@@ -2,16 +2,13 @@
 import io
 
 from fake_server import FakeLlamaServer
+from helpers import make_conversation
 
-from gloxi.chat import Conversation
-from gloxi.cli import repl
-from gloxi.config import ModelEndpoint
-from gloxi.llm import ChatClient
-
-ENDPOINT = ModelEndpoint(url="http://127.0.0.1:8080/v1", model="local")
+from gloxi.cli import repl, split_command
+from gloxi.config import RouterPolicy
 
 
-def run(lines, server):
+def run(lines, server, **kwargs):
     inputs = iter(lines)
 
     def read(_prompt):
@@ -21,7 +18,7 @@ def run(lines, server):
             raise EOFError from None
 
     out = io.StringIO()
-    conv = Conversation(ChatClient(ENDPOINT, transport=server.transport()), "SYS")
+    conv = make_conversation(server, **kwargs)
     code = repl(conv, read=read, out=out)
     return code, out.getvalue(), conv
 
@@ -29,7 +26,8 @@ def run(lines, server):
 def test_repl_answers_and_exits():
     code, out, conv = run(["привіт", "/exit"], FakeLlamaServer("Привіт! Я Gloxi."))
     assert code == 0
-    assert "Привіт! Я Gloxi." in out
+    assert "[local] Привіт! Я Gloxi." in out
+    assert "Cloud: off" in out
     assert len(conv.history) == 2
 
 
@@ -45,3 +43,30 @@ def test_repl_survives_model_error(capsys):
     assert code == 0
     assert "HTTP 500" in capsys.readouterr().err
     assert conv.history == []
+
+
+def test_repl_cloud_command_and_unmasked_warning():
+    cloud = FakeLlamaServer("з хмари")
+    code, out, _conv = run(
+        ["/cloud поясни", "/exit"],
+        FakeLlamaServer(),
+        cloud=cloud,
+        policy=RouterPolicy(cloud_allowed=True),
+    )
+    assert code == 0
+    assert "NOT masked" in out
+    assert "[cloud: api.example.eu, not masked] з хмари" in out
+
+
+def test_repl_cloud_command_refused_when_off(capsys):
+    cloud = FakeLlamaServer()
+    run(["/cloud поясни", "/exit"], FakeLlamaServer(), cloud=cloud)
+    assert "turned off" in capsys.readouterr().err
+    assert cloud.requests == []
+
+
+def test_split_command():
+    assert split_command("/cloud hi there") == ("cloud", "hi there")
+    assert split_command("/local") == ("local", "")
+    assert split_command("/cloudy day") == (None, "/cloudy day")
+    assert split_command("hello") == (None, "hello")
