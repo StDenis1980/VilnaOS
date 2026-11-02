@@ -165,7 +165,7 @@
 | Призначення | Програма | Чому важливо для Gloxi |
 | --- | --- | --- |
 | Браузер | Firefox | — |
-| Офіс | **Tinta Office** (пропозиція Denys 2.11.2026, [ADR 0011](../../docs/adr/0011-default-office-suite.md)): Tinta Texto, Tinta Cálculo, Tinta Presenta, Tinta PDF, Tinta Correo. Поки — LibreOffice поруч (розд. 8, п. 2) | Файли DOCX/XLSX/PPTX/ODT, з якими працює інструмент «файли»; Tinta має вбудований MCP-сервер, яким Gloxi може керувати через Herkos |
+| Офіс | **Tinta Office** (пропозиція Denys 2.11.2026, [ADR 0011](../../docs/adr/0011-default-office-suite.md)): Tinta Texto, Tinta Calculo, Tinta Presenta, Tinta PDF, Tinta Correo. Поки — LibreOffice поруч (розд. 8, п. 2) | Файли DOCX/XLSX/PPTX/ODT, з якими працює інструмент «файли»; Tinta має вбудований MCP-сервер, яким Gloxi може керувати через Herkos |
 | Пошта | Thunderbird (поки; див. розд. 8, п. 2) | Та сама скринька IMAP, що й MCP-сервер «пошта» |
 | Календар, контакти | GNOME Calendar, GNOME Contacts | Показують події, які створює Gloxi |
 | Базові | Text Editor, Loupe (зображення), Papers (PDF), Calculator, Clocks, Weather | — |
