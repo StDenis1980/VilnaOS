@@ -1,0 +1,9 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Gloxi in the terminal inside the Flatpak: flatpak run --command=gloxi io.github.stdenis1980.Gloxi"""
+
+import sys
+
+from gloxi.cli import main
+
+sys.exit(main())

@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Builds the Gloxi Flatpak (gloxi/flatpak) and checks that it starts.
+name: Flatpak
+
+on:
+  push:
+    branches: [main]
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", ".github/workflows/flatpak.yml"]
+  pull_request:
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", ".github/workflows/flatpak.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gloxi:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-50
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the metadata
+        run: |
+          desktop-file-validate gloxi/data/io.github.stdenis1980.Gloxi.desktop
+          appstreamcli validate --no-net --explain gloxi/data/io.github.stdenis1980.Gloxi.metainfo.xml
+      - uses: flathub-infra/flatpak-github-actions/flatpak-builder@933e9e8ca36e85046ebca8e211f0785c6becac40
+        with:
+          bundle: gloxi.flatpak
+          manifest-path: gloxi/flatpak/io.github.stdenis1980.Gloxi.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+      - name: The package starts
+        run: |
+          flatpak install -y --noninteractive --bundle gloxi.flatpak
+          flatpak run --command=gloxi io.github.stdenis1980.Gloxi --version
+          LANGUAGE=uk flatpak run --command=python3 io.github.stdenis1980.Gloxi -c \
+            "from gloxi.i18n import setup; setup(); from gettext import gettext as _; \
+            from gloxi.cli import HELP; t = _(HELP); print(t); assert t.startswith('Команди')"
+          flatpak run --command=python3 io.github.stdenis1980.Gloxi -c \
+            "import gi; gi.require_version('Adw', '1'); from gloxi.gui import window; import herkos.client, privacy_gateway"

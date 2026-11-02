@@ -106,7 +106,7 @@ python3 -m venv --system-site-packages .venv-gtk
 
 The local packages have to be listed explicitly, because pip does not read uv's settings and would look for them on PyPI.
 
-The window title shows whether the cloud is on. Above each answer you can see where it came from: "On this computer" or "Cloud: host, masked". The "+" button starts a new conversation. Interface texts are in English for now; Ukrainian and English translations will come with the Flatpak package.
+The window title shows whether the cloud is on. Above each answer you can see where it came from: "On this computer" or "Cloud: host, masked". The "+" button starts a new conversation. The interface follows the system language: Ukrainian or English for now, with more languages on the way.
 
 ## 6. Files through Herkos (optional)
 

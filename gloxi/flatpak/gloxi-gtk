@@ -1,0 +1,9 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""The Gloxi window inside the Flatpak."""
+
+import sys
+
+from gloxi.gui.window import main
+
+sys.exit(main())
