@@ -273,7 +273,11 @@ def file_tools(enabled: bool) -> FileTools | None:
         roots = load_config().allowed_roots
     except (ConfigError, OSError):
         roots = ()
-    sock = socket_path()
+    try:
+        sock = socket_path()
+    except ConfigError:
+        # No XDG_RUNTIME_DIR (e.g. an ssh shell or a container): no Herkos, just chat.
+        return None
     return FileTools(lambda: HerkosClient.connect(sock), roots, available=sock.exists)
 
 
