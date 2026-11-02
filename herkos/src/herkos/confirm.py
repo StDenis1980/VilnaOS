@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol, TextIO
 
+from herkos.i18n import _
 from herkos.risk import Level
 
 
@@ -81,25 +82,26 @@ _LABELS = {
     Answer.ONCE: "[o] allow once",
     Answer.SESSION: "[s] allow for this session",
     Answer.ALWAYS: "[a] always allow",
-}
+}  # translated when shown
 
 
 def render(question: Question) -> str:
     lines = [
         "",
-        "─── Herkos: Gloxi asks for permission ───",
+        f"─── {_('Herkos: Gloxi asks for permission')} ───",
         f"  {question.summary}  ({question.level.name})",
-        f"  Gloxi's reason: {question.reason}",
+        "  " + _("Gloxi's reason: ") + question.reason,
     ]
     lines += [f"    • {r}" for r in question.resources[:10]]
     if len(question.resources) > 10:
-        lines.append(f"    … and {len(question.resources) - 10} more")
-    lines.append("  Can be undone." if question.undoable else "  Cannot be undone.")
+        lines.append("    " + _("… and {n} more").format(n=len(question.resources) - 10))
+    lines.append("  " + (_("Can be undone.") if question.undoable else _("Cannot be undone.")))
     for why in question.raises:
-        lines.append(f"  Riskier than usual: {why}.")
+        lines.append("  " + _("Riskier than usual: {why}.").format(why=why))
     if question.taint_sources:
-        lines.append("  Untrusted content came from: " + ", ".join(question.taint_sources))
-    options = [_LABELS[c] for c in question.choices] + ["[n] deny"]
+        src = ", ".join(question.taint_sources)
+        lines.append("  " + _("Untrusted content came from: {src}").format(src=src))
+    options = [_(_LABELS[c]) for c in question.choices] + [_("[n] deny")]
     lines.append("  " + "   ".join(options))
     return "\n".join(lines) + "\n> "
 
@@ -124,13 +126,13 @@ class Terminal:
         tty.flush()
         ready, _, _ = select.select([tty], [], [], timeout)
         if not ready:
-            tty.write("\n  No answer: denied.\n")
+            tty.write("\n  " + _("No answer: denied.") + "\n")
             return Answer.DENY
         key = tty.readline().strip().lower()[:1]
         answer = _KEYS.get(key, Answer.DENY)
         if answer not in question.choices:
             answer = Answer.DENY
-        tty.write(f"  {'Denied' if answer is Answer.DENY else 'Allowed'}.\n")
+        tty.write("  " + (_("Denied.") if answer is Answer.DENY else _("Allowed.")) + "\n")
         return answer
 
 

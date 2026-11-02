@@ -26,6 +26,7 @@ from typing import Any
 from herkos.config import Config
 from herkos.confirm import Answer, Confirmer, Question, choices_for
 from herkos.grants import GrantStore
+from herkos.i18n import _
 from herkos.manifest import ManifestRegistry, Operation
 from herkos.mitos import Journal, JournalError, digest, read_records
 from herkos.policy import Assessment, SessionState, assess
@@ -212,7 +213,7 @@ class Gate:
     ) -> Outcome:
         assert a.level is not None and a.operation is not None
         question = Question(
-            summary=a.operation.summary,
+            summary=_(a.operation.summary),
             reason=request.reason,
             tool=request.tool,
             operation=request.operation,
