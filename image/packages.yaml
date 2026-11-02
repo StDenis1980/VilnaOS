@@ -67,19 +67,16 @@ vilna:
 flatpak_defaults:
   # Встановлюються з Flathub під час першого запуску
   - org.mozilla.firefox
-  # Tinta Office (ADR 0011): MIT OR Apache-2.0; поки не на Flathub — з власного Flatpak-сховища Vilna
+  # Tinta Office (ADR 0011, рішення Denys 2026-11-02): замість LibreOffice, Thunderbird,
+  # GNOME Calendar, GNOME Contacts і Papers; ті людина ставить сама з Flathub.
+  # MIT OR Apache-2.0; поки не на Flathub — з власного Flatpak-сховища Vilna
   - io.github.stdenis1980.tintatexto
   - io.github.stdenis1980.tintacalculo
   - io.github.stdenis1980.tintapresenta
   - io.github.stdenis1980.tintapdf
   - io.github.stdenis1980.ibercorreo
-  - org.libreoffice.LibreOffice    # decide: поряд із Tinta Office чи прибрати (composition.md розд. 8, п. 2)
-  - org.mozilla.Thunderbird        # decide: поряд із Tinta Correo чи прибрати
-  - org.gnome.Calendar
-  - org.gnome.Contacts
   - org.gnome.TextEditor
   - org.gnome.Loupe
-  - org.gnome.Papers               # decide: поряд із Tinta PDF чи прибрати
   - org.gnome.Calculator
   - org.gnome.clocks
   - org.gnome.Weather

@@ -160,15 +160,14 @@
 
 ## 6. Програми за замовчуванням (Flatpak)
 
-Встановлюються під час першого запуску з Flathub (Tinta Office — з власного Flatpak-сховища Vilna, поки його немає на Flathub). Список — пропозиція для обговорення.
+Встановлюються під час першого запуску з Flathub (Tinta Office — з власного Flatpak-сховища Vilna, поки його немає на Flathub). Список — пропозиція для обговорення. LibreOffice, Thunderbird, Papers та інші програми людина може поставити сама з Flathub (через «Програмне забезпечення» або попросивши Gloxi).
 
 | Призначення | Програма | Чому важливо для Gloxi |
 | --- | --- | --- |
 | Браузер | Firefox | — |
-| Офіс | **Tinta Office** (пропозиція Denys 2.11.2026, [ADR 0011](../../docs/adr/0011-default-office-suite.md)): Tinta Texto, Tinta Calculo, Tinta Presenta, Tinta PDF, Tinta Correo. Поки — LibreOffice поруч (розд. 8, п. 2) | Файли DOCX/XLSX/PPTX/ODT, з якими працює інструмент «файли»; Tinta має вбудований MCP-сервер, яким Gloxi може керувати через Herkos |
-| Пошта | Thunderbird (поки; див. розд. 8, п. 2) | Та сама скринька IMAP, що й MCP-сервер «пошта» |
-| Календар, контакти | GNOME Calendar, GNOME Contacts | Показують події, які створює Gloxi |
-| Базові | Text Editor, Loupe (зображення), Papers (PDF), Calculator, Clocks, Weather | — |
+| Офіс | **Tinta Office** (рішення 2.11.2026, [ADR 0011](../../docs/adr/0011-default-office-suite.md)): Tinta Texto, Tinta Calculo, Tinta Presenta, Tinta PDF. Замість LibreOffice і Papers | Файли DOCX/XLSX/PPTX/ODT, з якими працює інструмент «файли»; Tinta має вбудований MCP-сервер, яким Gloxi може керувати через Herkos |
+| Пошта, календар, контакти | **Tinta Correo** (частина Tinta Office). Замість Thunderbird, GNOME Calendar і GNOME Contacts | Та сама скринька IMAP і ті самі календарі CalDAV, що й у MCP-серверів «пошта» і «календар»: події, які створює Gloxi, видно в Tinta Correo |
+| Базові | Text Editor, Loupe (зображення), Calculator, Clocks, Weather | — |
 | Менеджер паролів | **KeePassXC** (рішення 2.11.2026): офлайн, відкритий формат KDBX, інтеграція з браузером. Синхронізація — пізніше через зашифровану хмару компанії (файл бази в її папці). Розглянути після бети: підтримка браузера в GNOME Secrets для рідного вигляду GNOME | Herkos забороняє читати паролі; має бути зрозуміле місце для них |
 
 ## 7. Репозиторії й збірка
@@ -181,4 +180,4 @@
 ## 8. Відкриті питання
 
 1. Яку локальну модель брати за замовчуванням і як перевіряти її ліцензію?
-2. Tinta Office йде **поряд** із LibreOffice, Thunderbird і Papers чи **замість** них? Пропозиція: поряд до стабільної версії Tinta Office, перегляд перед альфою ([ADR 0011](../../docs/adr/0011-default-office-suite.md)).
+2. ~~Tinta Office поряд із LibreOffice чи замість?~~ Вирішено 2.11.2026: замість ([ADR 0011](../../docs/adr/0011-default-office-suite.md)), за умови, що до виходу Vilna Tinta Office стабільний. Перевірити цю умову перед альфою.
