@@ -9,6 +9,7 @@ environment variables. The config file lives at
     url = "http://127.0.0.1:8080/v1"
     model = "local"
     timeout = 120
+    start_server = true          # start the bundled llama-server if nothing answers at url
 
     [cloud]                      # optional: the user's own provider and key
     url = "https://api.mistral.ai/v1"
@@ -73,6 +74,8 @@ class Settings:
     router: RouterPolicy = field(default_factory=RouterPolicy)
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     tools_enabled: bool = True
+    # Start the bundled llama-server (engine.py) when nothing answers at local.url.
+    start_server: bool = True
 
 
 def config_path(env: dict[str, str] | None = None) -> Path:
@@ -136,6 +139,7 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         router=policy,
         system_prompt=str(system_prompt),
         tools_enabled=_flag(_get(env, "GLOXI_TOOLS", tools, "enabled", True)),
+        start_server=_flag(_get(env, "GLOXI_START_SERVER", local, "start_server", True)),
     )
 
 

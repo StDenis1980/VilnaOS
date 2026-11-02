@@ -16,7 +16,7 @@ from gloxi.backup_intro import BackupIntro, backup_intro  # noqa: E402
 from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
 from gloxi.gui import APP_ID  # noqa: E402
-from gloxi.gui.controller import ChatController, cloud_status  # noqa: E402
+from gloxi.gui.controller import ChatController, ModelSetup, cloud_status  # noqa: E402
 from gloxi.i18n import setup  # noqa: E402
 from gloxi.llm import ChatClient  # noqa: E402
 from gloxi.privacy import guard_factory  # noqa: E402
@@ -75,8 +75,13 @@ class ChatWindow(Adw.ApplicationWindow):
         bottom.append(self.send_button)
 
         self.toasts = Adw.ToastOverlay(child=self.scroller)
+        # The bundled model: download progress and start-up (ModelSetup).
+        self.model_banner = Adw.Banner(revealed=False)
+        self.model_banner.connect("button-clicked", self._on_cancel_download)
+        self.model_setup: ModelSetup | None = None
         view = Adw.ToolbarView(content=self.toasts)
         view.add_top_bar(header)
+        view.add_top_bar(self.model_banner)
         view.add_bottom_bar(bottom)
         self.set_content(view)
         self.entry.grab_focus()
@@ -93,6 +98,34 @@ class ChatWindow(Adw.ApplicationWindow):
         self.controller.reset()
         while child := self.messages.get_first_child():
             self.messages.remove(child)
+
+    def _on_cancel_download(self, *_args) -> None:
+        if self.model_setup is not None:
+            self.model_setup.cancel()
+
+    # -- ModelSetupView -----------------------------------------------------
+
+    @_idle
+    def ask_model_download(self, text: str, answer) -> None:
+        dialog = Adw.AlertDialog(heading=_("Download the language model?"), body=text)
+        dialog.add_response("later", _("Not now"))
+        dialog.add_response("download", _("Download"))
+        dialog.set_response_appearance("download", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_default_response("download")
+        dialog.set_close_response("later")
+        dialog.connect("response", lambda _d, response: answer(response == "download"))
+        dialog.present(self)
+
+    @_idle
+    def show_model_progress(self, text: str, fraction: float | None) -> None:
+        self.model_banner.set_title(text)
+        # Only a download can be cancelled; starting takes seconds.
+        self.model_banner.set_button_label(_("Cancel") if fraction is not None else None)
+        self.model_banner.set_revealed(True)
+
+    @_idle
+    def hide_model_progress(self) -> None:
+        self.model_banner.set_revealed(False)
 
     # -- ChatView -----------------------------------------------------------
 
@@ -184,6 +217,8 @@ class GloxiApp(Adw.Application):
         conversation = Conversation(router, settings.system_prompt, tools=self._tools)
         self._intro = backup_intro(settings.tools_enabled)
         window = ChatWindow(self, conversation, self._intro)
+        self._model_setup = window.model_setup = ModelSetup(settings, window)
+        self._model_setup.begin()
         GLib.idle_add(lambda: window.controller.offer_intro() and False)
         return window
 
@@ -194,6 +229,8 @@ class GloxiApp(Adw.Application):
             self._tools.close()
         if getattr(self, "_intro", None):
             self._intro.close()
+        if getattr(self, "_model_setup", None):
+            self._model_setup.stop()
         Adw.Application.do_shutdown(self)
 
 

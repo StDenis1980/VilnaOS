@@ -19,6 +19,7 @@ from gloxi import __version__
 from gloxi.backup_intro import BackupIntro, backup_intro
 from gloxi.chat import Conversation
 from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
+from gloxi.engine import Engine, EngineError, Plan, download, human_size, plan
 from gloxi.i18n import N_, setup
 from gloxi.llm import ChatClient, ModelError, ModelUnavailable
 from gloxi.privacy import guard_factory
@@ -39,6 +40,80 @@ LLAMA_HINT = N_(
 UNMASKED_WARNING = N_(
     "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
 )
+
+
+MODEL_CONSENT = N_(
+    "Gloxi needs a language model on this computer to answer. It is {name}, "
+    "{size}, licence {licence}, from {source}. It will be kept in {folder}. "
+    "Only the file is downloaded: nothing about you is sent."
+)
+
+NO_MODEL_HINT = N_("There is no language model yet. Run gloxi in a terminal once to download it.")
+
+YES = {"y", "yes", "т", "так"}
+
+
+def model_consent_text(p: Plan) -> str:
+    return _(MODEL_CONSENT).format(
+        name=p.model.name,
+        size=human_size(p.model.size),
+        licence=p.model.licence,
+        source=p.model.source,
+        folder=p.folder,
+    )
+
+
+def prepare_engine(
+    settings: Settings,
+    *,
+    read: Callable[[str], str] = input,
+    out: TextIO = sys.stdout,
+    interactive: bool = True,
+    planner: Callable[..., Plan] = plan,
+    fetch: Callable[..., object] = download,
+    engine_type: Callable[..., Engine] = Engine,
+) -> Engine | None:
+    """Start the bundled model if needed; download it first only after a yes."""
+    p = planner(settings.local.url, start_server=settings.start_server)
+    if p.action in ("ready", "none"):
+        return None
+    model_path = p.model_path
+    if p.action == "download":
+        if not interactive:
+            print(_(NO_MODEL_HINT), file=out)
+            return None
+        print(model_consent_text(p), file=out)
+        try:
+            answer = read(_("Download it now? [y/N] ")).strip().casefold()
+        except (EOFError, KeyboardInterrupt):
+            answer = ""
+        if answer not in YES | {_("yes").casefold()}:
+            print(_("Not downloaded. Gloxi will ask again next time."), file=out)
+            return None
+        last = -1
+
+        def progress(done: int, total: int) -> None:
+            nonlocal last
+            percent = done * 100 // max(total, 1)
+            if percent != last:
+                last = percent
+                out.write("\r" + _("Downloading the model: {percent}%").format(percent=percent))
+                out.flush()
+
+        try:
+            model_path = fetch(p.model, p.folder, progress=progress)
+        except (EngineError, KeyboardInterrupt) as exc:
+            print("\n" + _("The model was not downloaded: {why}").format(why=exc), file=out)
+            return None
+        print("\n" + _("The model is ready."), file=out)
+    print(_("Starting the model on this computer…"), file=out)
+    engine = engine_type(p.binary, model_path, settings.local.url)
+    try:
+        engine.start()
+    except EngineError as exc:
+        print(_("The model could not be started: {why}").format(why=exc), file=out)
+        return None
+    return engine
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -189,6 +264,9 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     with ExitStack() as stack:
+        engine = prepare_engine(settings, interactive=sys.stdin.isatty())
+        if engine:
+            stack.callback(engine.stop)
         local = stack.enter_context(ChatClient(settings.local))
         cloud = stack.enter_context(ChatClient(settings.cloud)) if settings.cloud else None
         router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))

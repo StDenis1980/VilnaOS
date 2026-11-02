@@ -291,7 +291,7 @@ msgstr "налаштування і документи"
 msgid "settings and the folders you chose"
 msgstr "налаштування і вибрані вами теки"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/cli.py
 msgid "yes"
 msgstr "так"
 
@@ -335,6 +335,20 @@ msgid "Conversation cleared."
 msgstr "Розмову очищено."
 
 #: src/gloxi/cli.py
+msgid "Download it now? [y/N] "
+msgstr "Завантажити зараз? [т/Н] "
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "Downloading the model: {percent}%"
+msgstr "Завантаження моделі: {percent}%"
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "Gloxi needs a language model on this computer to answer. It is {name}, {size}, licence {licence}, from {source}. It will be kept in {folder}. Only the file is downloaded: nothing about you is sent."
+msgstr "Щоб відповідати, Gloxi потрібна мовна модель на цьому комп'ютері. Це {name}, {size}, ліцензія {licence}, джерело: {source}. Її буде збережено в {folder}. Завантажується лише файл: нічого про вас не надсилається."
+
+#: src/gloxi/cli.py
 msgid ""
 "Is llama-server running? For example:\n"
 "  llama-server -m model.gguf --port 8080\n"
@@ -344,9 +358,35 @@ msgstr ""
 "  llama-server -m model.gguf --port 8080\n"
 "або вкажіть Gloxi іншу адресу через GLOXI_LOCAL_URL."
 
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Not downloaded. Gloxi will ask again next time."
+msgstr "Не завантажено. Gloxi спитає ще раз наступного разу."
+
 #: src/gloxi/cli.py
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
 msgstr "Увага: маскування вимкнено (mask_cloud = false), тож повідомлення до хмари НЕ маскуються."
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Starting the model on this computer…"
+msgstr "Запуск моделі на цьому комп'ютері…"
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "The model could not be started: {why}"
+msgstr "Не вдалося запустити модель: {why}"
+
+#: src/gloxi/cli.py
+msgid "The model is ready."
+msgstr "Модель готова."
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "The model was not downloaded: {why}"
+msgstr "Модель не завантажено: {why}"
+
+#: src/gloxi/cli.py
+msgid "There is no language model yet. Run gloxi in a terminal once to download it."
+msgstr "Мовної моделі ще немає. Запустіть gloxi один раз у терміналі, щоб завантажити її."
 
 #: src/gloxi/cli.py
 #, python-brace-format
@@ -414,8 +454,24 @@ msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr "Запитайте Gloxi… (/local або /cloud, щоб вибрати модель)"
 
 #: src/gloxi/gui/window.py
+msgid "Cancel"
+msgstr "Скасувати"
+
+#: src/gloxi/gui/window.py
+msgid "Download"
+msgstr "Завантажити"
+
+#: src/gloxi/gui/window.py
+msgid "Download the language model?"
+msgstr "Завантажити мовну модель?"
+
+#: src/gloxi/gui/window.py
 msgid "New conversation"
 msgstr "Нова розмова"
+
+#: src/gloxi/gui/window.py
+msgid "Not now"
+msgstr "Не зараз"
 
 #: src/gloxi/gui/window.py
 msgid "Send"

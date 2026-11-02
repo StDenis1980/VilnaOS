@@ -156,3 +156,85 @@ def test_backup_talk_without_herkos():
     controller, view, _ = make(FakeLlamaServer())
     assert not controller.submit("/backup")
     assert view.kinds() == ["error"]
+
+
+class SetupView:
+    def __init__(self, yes):
+        self.yes = yes
+        self.events = []
+
+    def ask_model_download(self, text, answer):
+        self.events.append(("ask", text))
+        answer(self.yes)
+
+    def show_model_progress(self, text, fraction):
+        self.events.append(("progress", text, fraction))
+
+    def hide_model_progress(self):
+        self.events.append(("hide",))
+
+    def show_error(self, text):
+        self.events.append(("error", text))
+
+    def show_note(self, text):
+        self.events.append(("note", text))
+
+
+class StubEngine:
+    def __init__(self, binary, model_path, url):
+        self.model_path = model_path
+        self.running = False
+
+    def start(self):
+        self.running = True
+
+    def stop(self):
+        self.running = False
+
+
+def _setup(tmp_path, yes, fetched):
+    from dataclasses import replace
+
+    from gloxi.config import load_settings
+    from gloxi.engine import DEFAULT_MODEL, Plan
+    from gloxi.gui.controller import ModelSetup
+
+    view = SetupView(yes)
+    p = Plan("download", model=DEFAULT_MODEL, binary="/bin/llama-server", folder=tmp_path)
+
+    def fetch(model, folder, progress, cancelled):
+        fetched.append(model.filename)
+        progress(model.size // 2, model.size)
+        return folder / model.filename
+
+    settings = replace(load_settings(tmp_path / "none.toml", env={}), start_server=True)
+    setup = ModelSetup(
+        settings,
+        view,
+        runner=lambda job: job(),
+        planner=lambda url, **kw: p,
+        fetch=fetch,
+        engine_type=StubEngine,
+    )
+    return setup, view
+
+
+def test_model_setup_asks_and_respects_no(tmp_path):
+    fetched = []
+    setup, view = _setup(tmp_path, False, fetched)
+    setup.begin()
+    assert view.events[0][0] == "ask" and "Qwen3 4B" in view.events[0][1]
+    assert fetched == [] and setup.engine is None
+    assert view.events[-1][0] == "note"
+
+
+def test_model_setup_downloads_after_yes_and_starts(tmp_path):
+    fetched = []
+    setup, view = _setup(tmp_path, True, fetched)
+    setup.begin()
+    assert fetched == ["Qwen3-4B-Q4_K_M.gguf"]
+    assert ("progress", "Downloading the model: 50%", 0.5) in view.events
+    assert setup.engine is not None and setup.engine.running
+    assert view.events[-1] == ("hide",)
+    setup.stop()
+    assert setup.engine is None

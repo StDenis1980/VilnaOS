@@ -35,6 +35,9 @@ jobs:
       - run: uv run ruff format --check .
       - name: Translations are up to date (ADR 0009)
         run: python3 tools/i18n.py check
+      - name: The pinned model is the one Hugging Face serves
+        if: matrix.python == '3.13'
+        run: uv run python tools/check_model.py
       - run: uv run pytest
 
   herkos:

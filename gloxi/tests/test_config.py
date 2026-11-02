@@ -85,3 +85,11 @@ def test_tools_flag(tmp_path):
     path.write_text("[tools]\nenabled = false\n")
     assert load_settings(path, env={}).tools_enabled is False
     assert load_settings(path, env={"GLOXI_TOOLS": "1"}).tools_enabled is True
+
+
+def test_start_server(tmp_path):
+    path = tmp_path / "config.toml"
+    assert load_settings(path, env={}).start_server is True
+    path.write_text("[local]\nstart_server = false\n")
+    assert load_settings(path, env={}).start_server is False
+    assert load_settings(path, env={"GLOXI_START_SERVER": "yes"}).start_server is True

@@ -31,6 +31,44 @@ cleanup:
   - "*.pyc~"
 
 modules:
+  # llama.cpp's server, the local model engine (ADR 0004). The build measured in
+  # docs/benchmarks.md. CPU backends for every x86 generation are loaded at run
+  # time, plus Vulkan for the GPU. Only llama-server is built; the model itself
+  # is downloaded by Gloxi after the person agrees (gloxi/engine.py).
+  # Needed only to build llama.cpp's Vulkan backend; nothing of it is shipped.
+  - name: spirv-headers
+    buildsystem: cmake-ninja
+    cleanup: ["*"]
+    sources:
+      - type: git
+        url: https://github.com/KhronosGroup/SPIRV-Headers.git
+        tag: vulkan-sdk-1.4.335.0
+        commit: b824a462d4256d720bebb40e78b9eb8f78bbb305
+
+  - name: llama-cpp
+    buildsystem: simple
+    build-commands:
+      - >
+        cmake -B build -G Ninja
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_RPATH='$ORIGIN'
+        -DBUILD_SHARED_LIBS=ON -DGGML_BACKEND_DL=ON -DGGML_NATIVE=OFF -DGGML_CPU_ALL_VARIANTS=ON
+        -DGGML_VULKAN=ON
+        -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_APP=OFF
+        -DLLAMA_BUILD_UI=OFF -DLLAMA_USE_PREBUILT_UI=OFF -DLLAMA_CONNECT=OFF -DLLAMA_OPENSSL=OFF
+      - cmake --build build --target llama-server
+      # The server, its libraries and the backends side by side: the backends
+      # are looked up next to the executable.
+      - mkdir -p "${FLATPAK_DEST}/lib/llama" "${FLATPAK_DEST}/bin"
+      - cp -a build/bin/llama-server build/bin/*.so* "${FLATPAK_DEST}/lib/llama/"
+      - ln -s ../lib/llama/llama-server "${FLATPAK_DEST}/bin/llama-server"
+      - install -Dm644 LICENSE "${FLATPAK_DEST}/share/licenses/llama.cpp/LICENSE"
+    sources:
+      - type: git
+        url: https://github.com/ggml-org/llama.cpp.git
+        tag: b12048
+        commit: 2c93f0b6e1f8417d898e21a729ba324032ed16d4
+
   - name: python3-httpx
     buildsystem: simple
     build-commands:
