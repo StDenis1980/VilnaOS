@@ -24,6 +24,7 @@ Vilna — вільна операційна система на базі Linux �
 | [`gloxi/`](gloxi/) | Асистент Gloxi: системний сервіс, маршрутизатор моделей, клієнти MCP |
 | [`herkos/`](herkos/) | Шар безпеки: шлюз дозволів, Keros, Mitos, шлюз приватності. Специфікація: [`herkos/docs/permissions.md`](herkos/docs/permissions.md) |
 | [`image/`](image/) | Збірка образу системи на базі openSUSE Aeon / Kalpa |
+| [`backup/`](backup/) | Зашифровані резервні копії даних Vilna (restic, ключі в Herkos). Специфікація: [`backup/docs/design.md`](backup/docs/design.md) |
 | [`obs/`](obs/) | Проєкт і RPM-пакети Vilna в Open Build Service |
 | [`privacy-gateway/`](privacy-gateway/) | Шлюз приватності (Apache-2.0) |
 | [`mcp/`](mcp/) | MCP-сервери інструментів (Apache-2.0) |
