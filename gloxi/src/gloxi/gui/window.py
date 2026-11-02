@@ -12,6 +12,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
+from gloxi.backup_intro import BackupIntro, backup_intro  # noqa: E402
 from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
 from gloxi.gui import APP_ID  # noqa: E402
@@ -38,9 +39,11 @@ def _idle(func):
 
 
 class ChatWindow(Adw.ApplicationWindow):
-    def __init__(self, app: Adw.Application, conversation: Conversation) -> None:
+    def __init__(
+        self, app: Adw.Application, conversation: Conversation, intro: BackupIntro | None = None
+    ) -> None:
         super().__init__(application=app, title="Gloxi", default_width=520, default_height=680)
-        self.controller = ChatController(conversation, self)
+        self.controller = ChatController(conversation, self, intro=intro)
         self._answer_label: Gtk.Label | None = None
 
         header = Adw.HeaderBar()
@@ -178,13 +181,18 @@ class GloxiApp(Adw.Application):
         router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))
         self._tools = file_tools(settings.tools_enabled)
         conversation = Conversation(router, settings.system_prompt, tools=self._tools)
-        return ChatWindow(self, conversation)
+        self._intro = backup_intro(settings.tools_enabled)
+        window = ChatWindow(self, conversation, self._intro)
+        GLib.idle_add(lambda: window.controller.offer_intro() and False)
+        return window
 
     def do_shutdown(self) -> None:
         for client in self._clients:
             client.close()
         if getattr(self, "_tools", None):
             self._tools.close()
+        if getattr(self, "_intro", None):
+            self._intro.close()
         Adw.Application.do_shutdown(self)
 
 

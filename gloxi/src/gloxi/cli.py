@@ -15,6 +15,7 @@ from dataclasses import replace
 from typing import TextIO
 
 from gloxi import __version__
+from gloxi.backup_intro import BackupIntro, backup_intro
 from gloxi.chat import Conversation
 from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
 from gloxi.llm import ChatClient, ModelError, ModelUnavailable
@@ -24,7 +25,7 @@ from gloxi.tools import ToolOutcome, file_tools
 
 HELP = (
     "Commands: /local <text> or /cloud <text> picks the model for one message, "
-    "/reset clears the conversation, /exit quits."
+    "/reset clears the conversation, /backup sets up backups, /exit quits."
 )
 
 LLAMA_HINT = (
@@ -100,6 +101,7 @@ def repl(
     *,
     read: Callable[[str], str] = input,
     out: TextIO = sys.stdout,
+    intro: BackupIntro | None = None,
 ) -> int:
     print(f"Gloxi {__version__}. {HELP}", file=out)
     router = conversation.router
@@ -109,6 +111,8 @@ def repl(
             print(UNMASKED_WARNING, file=out)
     else:
         print("Cloud: off. Everything stays on this computer.", file=out)
+    if intro and intro.due():
+        run_intro(intro, read, out)
     while True:
         try:
             text = read("> ").strip()
@@ -123,6 +127,12 @@ def repl(
             conversation.reset()
             print("Conversation cleared.", file=out)
             continue
+        if text == "/backup":
+            if intro:
+                run_intro(intro, read, out)
+            else:
+                print("Backups need Herkos, and it is not running.", file=out)
+            continue
         if text == "/help":
             print(HELP, file=out)
             continue
@@ -134,6 +144,22 @@ def repl(
             _answer(conversation, text, out, force=force)
         except KeyboardInterrupt:
             print("\n(interrupted)", file=out)
+
+
+def run_intro(intro: BackupIntro, read: Callable[[str], str], out: TextIO) -> None:
+    """The backup talk (design.md 2a) in the terminal; Ctrl+D leaves it."""
+    turn = intro.start()
+    while turn is not None:
+        print(f"\nGloxi: {turn.render()}", file=out)
+        if turn.done:
+            break
+        try:
+            text = read("> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print(file=out)
+            break
+        turn = intro.answer(text)
+    print(file=out)
 
 
 def _settings(args: argparse.Namespace) -> Settings:
@@ -169,4 +195,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "ask":
             force, text = split_command(" ".join(args.question))
             return 0 if _answer(conversation, text, sys.stdout, force=force) else 1
-        return repl(conversation)
+        intro = backup_intro(settings.tools_enabled)
+        if intro:
+            stack.callback(intro.close)
+        return repl(conversation, intro=intro)

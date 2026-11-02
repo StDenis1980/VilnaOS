@@ -130,3 +130,29 @@ def test_tool_calls_are_shown_as_notes():
     assert ctl.submit("прочитай a")
     assert ("note", "files: read /home/u/Documents/a (done)") in view.events
     assert view.answer() == "Готово."
+
+
+def test_backup_talk_in_the_window(tmp_path):
+    from test_backup_intro import FakeHerkos
+
+    from gloxi.backup_intro import BackupIntro
+
+    server = FakeLlamaServer()
+    view = RecordingView()
+    intro = BackupIntro(FakeHerkos(), path=tmp_path / "intro.json")
+    controller = ChatController(make_conversation(server), view, runner=sync, intro=intro)
+    assert controller.offer_intro()
+    assert "Shall I keep backups" in view.answer()
+    assert controller.submit("2")  # "Later": goes to the talk, not to the model
+    assert "ask once more" in view.answer()
+    assert ("user", "2") in view.events
+    assert not controller.offer_intro()  # not due any more
+    assert controller.submit("/backup")  # but always on request
+    assert view.answer().count("Shall I keep backups") == 2
+    assert server.requests == []
+
+
+def test_backup_talk_without_herkos():
+    controller, view, _ = make(FakeLlamaServer())
+    assert not controller.submit("/backup")
+    assert view.kinds() == ["error"]
