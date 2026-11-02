@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "files" MCP server (mcp/files, Gloxi 0.1).
+# Levels follow herkos/docs/permissions.md, section 4.
+tool = "org.vilna.mcp.files"
+description = "Files in the folders the user allowed"
+
+[operations.list]
+level = "R1"
+summary = "List a folder"
+returns_external = true
+
+[operations.search]
+level = "R1"
+summary = "Search files by name and text"
+returns_external = true
+
+[operations.read]
+level = "R1"
+summary = "Read a file"
+returns_external = true
+
+[operations.create]
+level = "R2"
+summary = "Create a file"
+undoable = true
+
+[operations.write]
+level = "R2"
+summary = "Change a file"
+undoable = true
+
+[operations.delete]
+level = "R3"
+summary = "Delete a file"
+undoable = true
