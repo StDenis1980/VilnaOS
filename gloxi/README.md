@@ -19,10 +19,11 @@ Gloxi («Глоксі», від *glaux* — сова Афіни) — AI-асис
 
 Потрібні Python ≥ 3.11 і [uv](https://docs.astral.sh/uv/).
 
-1. Запустіть локальну модель через [llama.cpp](https://github.com/ggml-org/llama.cpp) ([ADR 0004](../docs/adr/0004-local-model-engine.md)). Підійде будь-яка мала instruct-модель у форматі GGUF; конкретну модель за замовчуванням оберемо на замірах:
+1. Запустіть локальну модель через [llama.cpp](https://github.com/ggml-org/llama.cpp) ([ADR 0004](../docs/adr/0004-local-model-engine.md)). Підійде будь-яка мала instruct-модель у форматі GGUF. За замірами пропонуємо Qwen3 4B без «роздумів» ([ADR 0008](../docs/adr/0008-default-local-model.md)):
 
    ```sh
-   llama-server -m ~/models/model-q4_k_m.gguf --port 8080
+   llama-server -hf Qwen/Qwen3-4B-GGUF:Q4_K_M --port 8080 -c 4096 \
+     --chat-template-kwargs '{"enable_thinking":false}'
    ```
 
 2. Поговоріть з Gloxi:

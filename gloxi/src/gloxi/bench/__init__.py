@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 import time
 import tomllib
 from collections.abc import Callable, Iterable
@@ -176,6 +177,48 @@ def peak_rss_mb(pid: int, proc: Path = Path("/proc")) -> float | None:
     return round(int(m.group(1)) / 1024, 1) if m else None
 
 
+class AnonPeak:
+    """Samples a process's ``RssAnon`` (its own memory, without the mapped model
+    file) while the tasks run, and keeps the highest value in MB.
+
+    ``VmHWM`` also counts the model file mapped into memory, which the kernel
+    can drop and re-read under pressure, so it overstates what the model
+    needs: on the November run VmHWM said 6.5 GB where systemd's cgroup peak
+    was about 4 GB.
+    """
+
+    def __init__(self, pid: int, *, proc: Path = Path("/proc"), interval: float = 0.5) -> None:
+        self._path = proc / str(pid) / "status"
+        self._interval = interval
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self.peak_mb: float | None = None
+
+    def sample(self) -> None:
+        try:
+            status = self._path.read_text()
+        except OSError:
+            return
+        m = re.search(r"^RssAnon:\s+(\d+) kB", status, re.M)
+        if m:
+            mb = round(int(m.group(1)) / 1024, 1)
+            self.peak_mb = mb if self.peak_mb is None else max(self.peak_mb, mb)
+
+    def _run(self) -> None:
+        while not self._stop.is_set():
+            self.sample()
+            self._stop.wait(self._interval)
+
+    def __enter__(self) -> AnonPeak:
+        self._thread.start()
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self._stop.set()
+        self._thread.join()
+        self.sample()
+
+
 def machine_info(proc: Path = Path("/proc")) -> dict:
     info: dict = {}
     try:
@@ -224,7 +267,10 @@ def markdown_report(meta: dict, summary: dict, results: list[Result]) -> str:
         f"- Дата: {meta.get('date', '?')}",
         f"- Машина: {meta.get('cpu', '?')}, {meta.get('cpu_threads', '?')} потоків, "
         f"{meta.get('ram_gb', '?')} ГБ RAM",
-        f"- Пам'ять сервера моделі (пік): {meta.get('server_peak_mb') or 'не виміряно'} МБ",
+        f"- Пам'ять сервера моделі (пік VmHWM, разом із файлом моделі): "
+        f"{meta.get('server_peak_mb') or 'не виміряно'} МБ",
+        f"- Власна пам'ять сервера (пік RssAnon, без файлу моделі): "
+        f"{meta.get('server_anon_peak_mb') or 'не виміряно'} МБ",
         f"- Пройдено: **{summary['passed']} з {summary['tasks']}**, помилок: {summary['errors']}",
         f"- Медіана: перший токен {summary['median_first_token_s']} с, уся відповідь "
         f"{summary['median_total_s']} с, {summary['median_chars_per_s']} символів/с",
