@@ -1,0 +1,82 @@
+# Склад образу Vilna — чернетка v0.2 (2026-11-02)
+# Пояснення і причини: docs/composition.md
+#
+# status:
+#   planned  — пакет ще не існує, його треба створити
+#   upstream — пакет є в openSUSE, перевірити актуальність
+#   decide   — рішення ще не ухвалене (див. розд. 8 composition.md)
+
+base:
+  # Беремо патерн Aeon цілком; зміни лише через заміну брендування
+  pattern: aeon_base
+  source: https://src.opensuse.org/rpm/patterns-aeon
+  replace_branding:
+    Aeon-release: Vilna-release
+    branding-openSUSE: branding-Vilna
+    distribution-logos-openSUSE-Aeon: distribution-logos-Vilna
+    gdm-branding-Aeon: gdm-branding-Vilna
+    gnome-branding-Aeon: gnome-branding-Vilna
+    systemd-presets-branding-Aeon: systemd-presets-branding-Vilna
+    systemd-repart-branding-Aeon: systemd-repart-branding-Vilna
+    x86_64_v3-branding-Aeon: x86_64_v3-branding-Vilna
+    gtk2-branding-openSUSE: gtk2-branding-Vilna
+    gtk3-branding-openSUSE: gtk3-branding-Vilna
+    gtk4-branding-openSUSE: gtk4-branding-Vilna
+    hicolor-icon-theme-branding-openSUSE: hicolor-icon-theme-branding-Vilna
+    systemd-icon-branding-openSUSE: systemd-icon-branding-Vilna
+  # Пакети залишаються, служби не вмикаються (рішення 2026-11-02)
+  disable_by_default: [avahi-daemon.service, smb.service, nmb.service, sshd.service]
+
+vilna:
+  pattern: vilna_base
+  packages:
+    - {name: patterns-vilna,               license: GPL-3.0-or-later, status: planned}
+    - {name: Vilna-release,                license: GPL-3.0-or-later, status: planned}
+    # Herkos
+    - {name: herkos,                       license: GPL-3.0-or-later, status: planned}
+    - {name: herkos-polkit,                license: GPL-3.0-or-later, status: planned}
+    - {name: herkos-selinux,               license: GPL-3.0-or-later, status: planned}
+    - {name: herkos-dialog,                license: GPL-3.0-or-later, status: planned}
+    - {name: herkos-manifests,             license: GPL-3.0-or-later, status: planned}
+    # Gloxi
+    - {name: gloxi,                        license: GPL-3.0-or-later, status: planned}
+    - {name: gloxi-session,                license: GPL-3.0-or-later, status: planned}
+    - {name: gloxi-gnome-shell-extension,  license: GPL-3.0-or-later, status: decide}
+    # Спільні компоненти
+    - {name: vilna-privacy-gateway,        license: Apache-2.0,       status: planned}
+    - {name: vilna-mcp-files,              license: Apache-2.0,       status: planned}
+    - {name: vilna-mcp-settings,           license: Apache-2.0,       status: planned}
+    - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: planned}
+    - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}
+    - {name: vilna-mcp-mail,               license: Apache-2.0,       status: planned}
+    # Локальна модель
+    - {name: llama.cpp,                    license: MIT,              status: upstream}
+    - {name: vilna-model-default,          license: model,            status: planned}  # ваги 1–3B в образі (ADR 0006)
+    - {name: vilna-model-fetch,            license: GPL-3.0-or-later, status: planned}  # більші моделі за бажанням
+    # Встановлення
+    - {name: vilna-installer,              license: GPL-3.0-or-later, status: planned}  # з етапу 3
+    - {name: vilna-mcp-installer,          license: Apache-2.0,       status: planned}
+    # Перший запуск, мови, вигляд
+    - {name: vilna-initial-setup,          license: GPL-3.0-or-later, status: planned}
+    - {name: vilna-locale,                 license: GPL-3.0-or-later, status: planned}
+    - {name: vilna-wallpapers,             license: decide,           status: planned}
+  enable_services: [herkos.service, gloxi.service]
+
+flatpak_defaults:
+  # Встановлюються з Flathub під час першого запуску
+  - org.mozilla.firefox
+  - org.libreoffice.LibreOffice
+  - org.mozilla.Thunderbird
+  - org.gnome.Calendar
+  - org.gnome.Contacts
+  - org.gnome.TextEditor
+  - org.gnome.Loupe
+  - org.gnome.Papers
+  - org.gnome.Calculator
+  - org.gnome.clocks
+  - org.gnome.Weather
+  - org.keepassxc.KeePassXC   # рішення 2026-11-02
+
+not_in_image:
+  # Завантажується окремо, не входить в ISO
+  - larger model weights (7–8B, GGUF) — via vilna-model-fetch

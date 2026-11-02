@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  licences:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check SPDX headers
+        run: python3 tools/check_spdx.py
+
+  gloxi:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: gloxi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
