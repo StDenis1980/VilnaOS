@@ -17,7 +17,7 @@ def request(env: Env, op: str, *paths, tool="org.vilna.mcp.files"):
             "operation": op,
             "reason": "the user asked",
             "resources": [env.uri(p) for p in paths],
-            "arguments": {"text": "secret contents"},
+            "arguments": {"path": str(paths[0]) if paths else "/", "text": "secret contents"},
         }
     )
 

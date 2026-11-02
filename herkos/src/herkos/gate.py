@@ -15,23 +15,36 @@ Every failure along the way is a denial, never an allowance.
 
 from __future__ import annotations
 
+import posixpath
 import secrets
 import threading
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from herkos.config import Config
 from herkos.confirm import Answer, Confirmer, Question, choices_for
 from herkos.grants import GrantStore
-from herkos.manifest import ManifestRegistry
-from herkos.mitos import Journal, JournalError, digest
+from herkos.manifest import ManifestRegistry, Operation
+from herkos.mitos import Journal, JournalError, digest, read_records
 from herkos.policy import Assessment, SessionState, assess
-from herkos.request import ActionRequest
+from herkos.request import ActionRequest, parse_request
 from herkos.risk import Level
 from herkos.tools import ToolError, ToolRegistry
 
 JOURNAL_MAX_RESOURCES = 50
+
+
+def undo_info(request: ActionRequest, op: Operation, result: Any) -> dict | None:
+    """What Mitos needs to undo a change later: the tool's backup id and the file."""
+    if not op.undoable or not isinstance(result, dict):
+        return None
+    backup_id = result.get("backup_id")
+    path = request.arguments.get(op.resource_args[0]) if op.resource_args else None
+    if isinstance(backup_id, str) and backup_id.isalnum() and isinstance(path, str):
+        return {"backup_id": backup_id, "path": posixpath.normpath(path)}
+    return None
 
 
 @dataclass(frozen=True)
@@ -41,7 +54,7 @@ class Outcome:
     level: Level | None
     # Machine-readable (herkos/docs/protocol.md): allowed, tool_error (allowed,
     # but the tool failed), denied_unknown, denied_forbidden, denied_level,
-    # denied_user, denied_no_tool, denied_journal, denied_error.
+    # denied_user, denied_no_tool, denied_mismatch, denied_journal, denied_error.
     code: str
     message: str
     result: Any = None
@@ -57,6 +70,18 @@ class Outcome:
         if self.code == "allowed":
             out["result"] = self.result
         return out
+
+
+def undeclared_resource(request: ActionRequest, op: Operation) -> str | None:
+    """Name of the first resource argument that is not a declared file resource."""
+    declared = {r.path for r in request.resources if r.path is not None}
+    for name in op.resource_args:
+        value = request.arguments.get(name)
+        if not isinstance(value, str) or not value.startswith("/") or "\x00" in value:
+            return name
+        if posixpath.normpath(value) not in declared:
+            return name
+    return None
 
 
 def new_action_id() -> str:
@@ -144,6 +169,15 @@ class Gate:
         if a.forbidden:
             return Outcome(
                 action_id, False, None, "denied_forbidden", "this action is never allowed"
+            )
+        mismatch = undeclared_resource(request, a.operation)
+        if mismatch:
+            return Outcome(
+                action_id,
+                False,
+                a.level,
+                "denied_mismatch",
+                f"argument '{mismatch}' names something not declared in resources",
             )
         assert a.level is not None
         if a.level > self.config.max_level:
@@ -234,16 +268,45 @@ class Gate:
             result, ok, code, message = None, False, "tool_error", f"tool failed: {name}"
         if ok and op.returns_external:
             session.taint(f"{request.tool}.{request.operation}")
+        record: dict[str, Any] = {"ok": ok, "code": code, "result": digest(result) if ok else None}
+        undo = undo_info(request, op, result) if ok else None
+        if undo:
+            record["undo"] = undo
         try:
-            self.journal.append(
-                "result",
-                {"ok": ok, "code": code, "result": digest(result) if ok else None},
-                action_id,
-            )
+            self.journal.append("result", record, action_id)
         except JournalError as e:
             # Already done, but Gloxi gets nothing it cannot account for.
             return Outcome(action_id, False, outcome.level, "denied_journal", str(e))
         return Outcome(action_id, True, outcome.level, code, message, result if ok else None)
+
+    def undo(self, action_id: str, session: SessionState) -> Outcome:
+        """Undo an earlier action by its journal id: a new ``restore`` request.
+
+        The undo goes through the gate like any other action (and is
+        journalled), so it is confirmed and can itself be undone.
+        """
+        tool, undo = None, None
+        if self.config.journal_path.exists():
+            for _, rec in read_records(self.config.journal_path):
+                if not rec or rec.get("action_id") != action_id:
+                    continue
+                data = rec.get("data") or {}
+                if rec.get("kind") == "request":
+                    tool = data.get("tool")
+                elif rec.get("kind") == "result":
+                    undo = data.get("undo")
+        if not tool or not isinstance(undo, dict):
+            return Outcome(new_action_id(), False, None, "denied_unknown", "nothing to undo")
+        request = parse_request(
+            {
+                "tool": tool,
+                "operation": "restore",
+                "resources": [Path(undo["path"]).as_uri()],
+                "reason": f"Undo action {action_id}",
+                "arguments": {"path": undo["path"], "backup_id": undo["backup_id"]},
+            }
+        )
+        return self.handle(request, session)
 
     @staticmethod
     def _describe(request: ActionRequest, session: SessionState) -> dict[str, Any]:

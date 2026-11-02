@@ -72,6 +72,11 @@ class Config:
         return self.state_dir / "journal.jsonl"
 
     @property
+    def backup_dir(self) -> Path:
+        """Backups the files tool keeps for undo (retention: permissions.md 11)."""
+        return self.state_dir / "backups" / "files"
+
+    @property
     def grants_path(self) -> Path:
         return self.state_dir / "permissions.json"
 

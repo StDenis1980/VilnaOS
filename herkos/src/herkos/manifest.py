@@ -15,6 +15,7 @@ A manifest is a TOML file, one per tool::
     level = "R2"
     summary = "Change a file"
     undoable = true
+    resource_args = ["path"]
 
 Anything the manifest does not name is denied (permissions.md, principle 8).
 """
@@ -33,7 +34,7 @@ from herkos.risk import Level
 
 FORBIDDEN = "forbidden"
 _NAME = re.compile(r"^[a-z0-9][a-z0-9_.-]{0,127}$")
-_OPERATION_KEYS = {"level", "summary", "undoable", "returns_external", "egress"}
+_OPERATION_KEYS = {"level", "summary", "undoable", "returns_external", "egress", "resource_args"}
 
 
 class ManifestError(Exception):
@@ -52,6 +53,9 @@ class Operation:
     returns_external: bool = False
     # Data leaves the device (network, cloud, another person).
     egress: bool = False
+    # Arguments that name files: each must be one of the request's declared
+    # resources, so the model cannot declare one path and touch another.
+    resource_args: tuple[str, ...] = ()
 
     @property
     def forbidden(self) -> bool:
@@ -112,10 +116,21 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
             if not isinstance(value, bool):
                 raise ManifestError(f"{where}: '{key}' must be true or false")
             flags[key] = value
+        resource_args = op.get("resource_args", [])
+        if not isinstance(resource_args, list) or not all(
+            isinstance(a, str) and a for a in resource_args
+        ):
+            raise ManifestError(f"{where}: 'resource_args' must be a list of argument names")
         summary = op.get("summary", name)
         if not isinstance(summary, str):
             raise ManifestError(f"{where}: 'summary' must be a string")
-        operations[name] = Operation(name=name, level=level, summary=summary, **flags)
+        operations[name] = Operation(
+            name=name,
+            level=level,
+            summary=summary,
+            resource_args=tuple(resource_args),
+            **flags,
+        )
     return Manifest(tool=tool, description=description, operations=operations)
 
 

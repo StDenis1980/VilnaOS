@@ -12,19 +12,24 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import importlib.util
 import json
+import socket
 import sys
 from collections import deque
 
-from herkos import __version__
+from herkos import PROTOCOL_VERSION, __version__
 from herkos.config import ConfigError, load_config, socket_path
 from herkos.confirm import DenyAll, Terminal, default_confirmer
 from herkos.gate import Gate
 from herkos.grants import GrantStore
 from herkos.manifest import ManifestError, ManifestRegistry
+from herkos.mcp_client import McpError, McpStdioExecutor
 from herkos.mitos import Journal, JournalError, read_records, verify
 from herkos.server import Server, SocketError
 from herkos.tools import ToolRegistry
+
+FILES_TOOL = "org.vilna.mcp.files"
 
 
 def _serve(args: argparse.Namespace) -> int:
@@ -38,7 +43,11 @@ def _serve(args: argparse.Namespace) -> int:
     grants = GrantStore(config.grants_path)
     if grants.load_error:
         print(f"herkos: ignoring unreadable permissions: {grants.load_error}", file=sys.stderr)
-    gate = Gate(config, ManifestRegistry.builtin(), ToolRegistry(), grants, journal, confirmer)
+    tools = ToolRegistry()
+    files = start_files_tool(config)
+    if files is not None:
+        tools.register(FILES_TOOL, files)
+    gate = Gate(config, ManifestRegistry.builtin(), tools, grants, journal, confirmer)
     path = socket_path()
     journal.append("start", {"server": f"herkos-lite/{__version__}", "socket": str(path)})
     server = Server(gate, path)
@@ -49,7 +58,60 @@ def _serve(args: argparse.Namespace) -> int:
         pass
     finally:
         path.unlink(missing_ok=True)
+        if files is not None:
+            files.stop()
     return 0
+
+
+def start_files_tool(config) -> McpStdioExecutor | None:
+    """Start the files MCP server (mcp/files) on the allowed folders, if installed."""
+    if importlib.util.find_spec("vilna_mcp_files") is None:
+        print("herkos: vilna-mcp-files is not installed; no files tool", file=sys.stderr)
+        return None
+    roots = [r for r in config.allowed_roots if r.is_dir()]
+    if not roots:
+        print("herkos: none of allowed_roots exists; no files tool", file=sys.stderr)
+        return None
+    command = [sys.executable, "-m", "vilna_mcp_files", "--backup-dir", str(config.backup_dir)]
+    for r in roots:
+        command += ["--root", str(r)]
+    executor = McpStdioExecutor(command)
+    try:
+        executor.start()
+    except McpError as e:
+        print(f"herkos: files tool failed to start: {e}", file=sys.stderr)
+        executor.stop()
+        return None
+    return executor
+
+
+def _undo(args: argparse.Namespace) -> int:
+    path = socket_path()
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+            s.connect(str(path))
+            f = s.makefile("rwb")
+            answer = None
+            for i, (method, params) in enumerate(
+                [
+                    ("herkos.hello", {"protocol": [PROTOCOL_VERSION], "client": "herkos-cli"}),
+                    ("herkos.undo", {"action_id": args.action_id}),
+                ],
+                start=1,
+            ):
+                msg = {"jsonrpc": "2.0", "id": i, "method": method, "params": params}
+                f.write(json.dumps(msg).encode() + b"\n")
+                f.flush()
+                answer = json.loads(f.readline())
+                if "error" in answer:
+                    print(f"herkos: {answer['error']['message']}", file=sys.stderr)
+                    return 1
+    except OSError as e:
+        print(f"herkos: is `herkos serve` running? ({e})", file=sys.stderr)
+        return 1
+    result = answer["result"]
+    print(f"{result['decision']}: {result['message']} (action {result['action_id']})")
+    return 0 if result["code"] == "allowed" else 1
 
 
 def _journal_verify(args: argparse.Namespace) -> int:
@@ -120,6 +182,10 @@ def build_parser() -> argparse.ArgumentParser:
     revoke = perms.add_parser("revoke")
     revoke.add_argument("id")
     revoke.set_defaults(func=_permissions_revoke)
+
+    undo = sub.add_parser("undo", help="undo a change by its action id")
+    undo.add_argument("action_id")
+    undo.set_defaults(func=_undo)
     return p
 
 

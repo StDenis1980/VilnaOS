@@ -106,6 +106,7 @@ def test_request_action_roundtrip(served):
             "tool": "org.vilna.mcp.files",
             "operation": "read",
             "resources": [(env.docs / "a.txt").as_uri()],
+            "arguments": {"path": str(env.docs / "a.txt")},
             "reason": "the user asked to summarise a.txt",
             "origin": {"user_turn": 3},
             "level": "R0",
@@ -157,6 +158,7 @@ def test_taint_is_per_connection(served):
             "tool": "org.vilna.mcp.files",
             "operation": "read",
             "resources": [(env.docs / "a").as_uri()],
+            "arguments": {"path": str(env.docs / "a")},
             "reason": "r",
         },
     )
@@ -211,3 +213,13 @@ def test_regular_file_in_place_of_socket_is_refused(tmp_path):
     path.write_text("not a socket")
     with pytest.raises(SocketError):
         prepare_socket_dir(path)
+
+
+def test_undo_method(served):
+    _, path, _ = served
+    c = Client(path)
+    c.hello()
+    assert c.call("herkos.undo", {"action_id": "../x"})["error"]["code"] == -32602
+    r = c.call("herkos.undo", {"action_id": "deadbeef"})["result"]
+    assert r["decision"] == "denied" and r["code"] == "denied_unknown"
+    c.close()
