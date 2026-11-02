@@ -49,7 +49,8 @@ vilna:
     - {name: vilna-mcp-files,              license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-settings,           license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: planned}
-    - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}
+    - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}  # ADR 0012
+    - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: planned}  # «Рекомендовано Vilna», ADR 0012
     - {name: vilna-mcp-mail,               license: Apache-2.0,       status: planned}
     # Локальна модель
     - {name: llama.cpp,                    license: MIT,              status: upstream}

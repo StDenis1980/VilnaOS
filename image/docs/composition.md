@@ -1,6 +1,6 @@
 # Структура і склад образу Vilna
 
-Стан: **чернетка v0.4** (2 листопада 2026). Документ визначає, з яких шарів складається Vilna, що ми беремо з openSUSE Aeon без змін, що замінюємо і що додаємо. Машиночитний список пакетів — [`../packages.yaml`](../packages.yaml).
+Стан: **чернетка v0.5** (2 листопада 2026). Документ визначає, з яких шарів складається Vilna, що ми беремо з openSUSE Aeon без змін, що замінюємо і що додаємо. Машиночитний список пакетів — [`../packages.yaml`](../packages.yaml).
 
 Збірка образу запланована на етап 2 дорожньої карти (квітень–вересень 2027, див. [`../../docs/roadmap.md`](../../docs/roadmap.md)). Склад визначаємо вже зараз, паралельно з Gloxi 0.1, щоб компоненти Gloxi й Herkos одразу писалися під реальну систему.
 
@@ -99,7 +99,8 @@
 | `vilna-mcp-files` | MCP-сервер «файли» | Apache-2.0 |
 | `vilna-mcp-settings` | MCP-сервер «налаштування GNOME» (через GSettings / D-Bus) | Apache-2.0 |
 | `vilna-mcp-calendar` | MCP-сервер «календар» (CalDAV / GNOME Online Accounts) | Apache-2.0 |
-| `vilna-mcp-apps` | MCP-сервер «програми» (запуск, встановлення Flatpak через portal) | Apache-2.0 |
+| `vilna-mcp-apps` | MCP-сервер «програми»: пошук, запуск, встановлення, оновлення і видалення Flatpak через libflatpak, лише через Herkos ([ADR 0012](../../docs/adr/0012-recommended-apps-and-install-via-gloxi.md)) | Apache-2.0 |
+| `vilna-software-picks` | Добірка «Рекомендовано Vilna»: метадані AppStream, за якими GNOME Software показує вибрані програми Flathub (ADR 0012) | GPL-3.0-or-later |
 | `vilna-mcp-mail` | MCP-сервер «пошта» (IMAP / SMTP) | Apache-2.0 |
 | `llama.cpp` (`llama-server`) | Рушій локальної моделі. Перевірити, чи є актуальний пакет у Tumbleweed; якщо ні — збираємо самі | MIT (upstream) |
 | `vilna-model-default` | Ваги моделі за замовчуванням (GGUF; пропозиція — Qwen3 4B Q4_K_M, ≈2,5 ГБ, ADR 0008) у `/usr/share/vilna/models`; оновлюється рідко | Ліцензія моделі |
@@ -161,6 +162,8 @@
 ## 6. Програми за замовчуванням (Flatpak)
 
 Встановлюються під час першого запуску з Flathub (Tinta Office — з власного Flatpak-сховища Vilna, поки його немає на Flathub). Список — пропозиція для обговорення. LibreOffice, Thunderbird, Papers та інші програми людина може поставити сама з Flathub (через «Програмне забезпечення» або попросивши Gloxi).
+
+**Менеджер програм** — GNOME Software («Програмне забезпечення») з Flathub, як в Aeon. Vilna додає в нього добірку **«Рекомендовано Vilna»** (пакет `vilna-software-picks`) і дає змогу ставити програми через Gloxi: Gloxi пропонує програму, Herkos показує діалог підтвердження (дія R3), `vilna-mcp-apps` її встановлює. Критерії добірки й рівні дозволів — у [ADR 0012](../../docs/adr/0012-recommended-apps-and-install-via-gloxi.md); у дорожній карті це окремий крок наприкінці етапу 2.
 
 | Призначення | Програма | Чому важливо для Gloxi |
 | --- | --- | --- |
