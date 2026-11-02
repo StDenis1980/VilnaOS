@@ -24,6 +24,10 @@ BuildRequires:  %{python_module wheel}
 BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
 Requires:       python3-httpx >= 0.27
+# The chat window (gloxi-gtk): PyGObject with GTK 4 and libadwaita.
+Requires:       python3-gobject
+Requires:       typelib(Adw) = 1
+Requires:       typelib(Gtk) = 4.0
 # llama-server is optional: Gloxi can talk to any OpenAI-compatible server.
 Recommends:     llama.cpp
 BuildArch:      noarch
@@ -33,8 +37,8 @@ Gloxi is the AI assistant of Vilna OS. It answers simple and private
 requests with a small local model and does everything on the system only
 through the Herkos permission gateway.
 
-This 0.1 preview is a terminal chat with a local model served by
-llama-server (or any OpenAI-compatible API).
+This 0.1 preview is a chat (GTK window and terminal) with a local model
+served by llama-server (or any OpenAI-compatible API).
 
 %prep
 %autosetup -p1
@@ -45,6 +49,8 @@ llama-server (or any OpenAI-compatible API).
 %install
 %pyproject_install
 %python_expand %fdupes %{buildroot}%{$python_sitelib}
+install -Dm0644 data/io.github.stdenis1980.Gloxi.desktop \
+  %{buildroot}%{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
 
 %check
 %pytest
@@ -53,6 +59,8 @@ llama-server (or any OpenAI-compatible API).
 %license LICENSE
 %doc README.md
 %{_bindir}/gloxi
+%{_bindir}/gloxi-gtk
+%{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
 %{python_sitelib}/gloxi
 %{python_sitelib}/gloxi-*.dist-info
 
