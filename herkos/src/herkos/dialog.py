@@ -17,13 +17,14 @@ from __future__ import annotations
 
 import json
 import sys
-from gettext import gettext as _
+
+from herkos.i18n import _
 
 LABELS = {
-    "once": _("Allow once"),
-    "session": _("Allow for this session"),
-    "always": _("Always allow"),
-}
+    "once": "Allow once",
+    "session": "Allow for this session",
+    "always": "Always allow",
+}  # translated when shown
 
 
 def main() -> int:
@@ -87,7 +88,7 @@ def main() -> int:
         buttons.append(deny)
         for choice in question.get("choices", []):
             if choice in LABELS:
-                b = Gtk.Button(label=LABELS[choice])
+                b = Gtk.Button(label=_(LABELS[choice]))
                 b.connect("clicked", lambda _b, c=choice: finish(c))
                 buttons.append(b)
         box.append(buttons)
