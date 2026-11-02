@@ -1,6 +1,6 @@
 # 0008. Локальна модель за замовчуванням: Qwen3 4B Q4_K_M без «роздумів»
 
-- Стан: Запропоновано
+- Стан: Прийнято (Denys, 2026-11-02)
 - Дата: 2026-11-02
 - Пов'язано: [ADR 0004](0004-local-model-engine.md), [ADR 0006](0006-conversational-installer.md), [заміри](../benchmarks.md), [`image/docs/composition.md`](../../image/docs/composition.md) розд. 4.4
 
