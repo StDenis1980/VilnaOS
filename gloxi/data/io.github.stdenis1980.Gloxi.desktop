@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[Desktop Entry]
+Type=Application
+Name=Gloxi
+Comment=AI assistant that acts only with your permission
+Comment[uk]=AI-асистент, який діє лише з вашого дозволу
+Exec=gloxi-gtk
+Icon=io.github.stdenis1980.Gloxi
+Terminal=false
+Categories=Utility;GTK;
+Keywords=assistant;AI;chat;
+StartupNotify=true

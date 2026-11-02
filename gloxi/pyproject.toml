@@ -12,6 +12,7 @@ dependencies = [
 
 [project.scripts]
 gloxi = "gloxi.cli:main"
+gloxi-gtk = "gloxi.gui.window:main"
 
 [dependency-groups]
 dev = [

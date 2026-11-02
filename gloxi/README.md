@@ -13,7 +13,7 @@ Gloxi («Глоксі», від *glaux* — сова Афіни) — AI-асис
 
 ## Стан
 
-Каркас Gloxi 0.1 preview (див. [roadmap](../docs/roadmap.md), розд. 2.3–2.4): чат у терміналі з локальною моделлю через `llama-server` і маршрутизатор «локально / хмара за ключем користувача». Шлюзу приватності, Herkos-lite і вікна GTK ще немає, тому **хмара поки отримує повідомлення без маскування**, і Gloxi про це попереджає.
+Каркас Gloxi 0.1 preview (див. [roadmap](../docs/roadmap.md), розд. 2.3–2.4): чат у терміналі з локальною моделлю через `llama-server` і маршрутизатор «локально / хмара за ключем користувача». Є вікно чату на GTK 4 / libadwaita. Шлюзу приватності й Herkos-lite ще немає, тому **хмара поки отримує повідомлення без маскування**, і Gloxi про це попереджає.
 
 ## Запуск для розробки
 
@@ -35,6 +35,24 @@ Gloxi («Глоксі», від *glaux* — сова Афіни) — AI-асис
    ```
 
 Gloxi говорить з моделлю лише через OpenAI-сумісний API, тож замість `llama-server` можна вказати Ollama чи інший сервер: `--url http://127.0.0.1:11434/v1 --model qwen2.5:1.5b` або змінна `GLOXI_LOCAL_URL`.
+
+### Вікно чату (GTK)
+
+Вікно потребує PyGObject, GTK 4 і libadwaita із системи (у Flatpak вони прийдуть із рантайму GNOME). На Aeon усе ставимо в toolbox, на Fedora чи Ubuntu — прямо в систему:
+
+```sh
+# Fedora / toolbox на Aeon
+sudo dnf install python3-gobject gtk4 libadwaita
+# Ubuntu / Debian
+sudo apt install python3-gi gir1.2-gtk-4.0 gir1.2-adw-1
+
+cd gloxi
+python3 -m venv --system-site-packages .venv-gtk
+.venv-gtk/bin/pip install -e .
+.venv-gtk/bin/gloxi-gtk
+```
+
+У заголовку вікна видно, чи ввімкнена хмара. Над кожною відповіддю написано, де її отримано: «On this computer» або «Cloud: host, not masked». `/local` і `/cloud` на початку повідомлення працюють так само, як у терміналі. Кнопка «+» починає нову розмову. Тексти інтерфейсу поки англійські. Переклади українською й англійською (gettext) додамо під час пакування у Flatpak.
 
 ### Налаштування
 
@@ -85,4 +103,6 @@ uv run ruff check . && uv run ruff format --check .
 | `gloxi/llm.py` | Клієнт OpenAI-сумісного API (звичайна і потокова відповідь) — спільний для локальної моделі й хмари |
 | `gloxi/router.py` | Маршрутизатор: куди йде повідомлення (локально чи в хмару) і чому; місце для шлюзу приватності перед хмарою |
 | `gloxi/chat.py` | Розмова: системна підказка й історія, обрізана до останніх реплік |
+| `gloxi/gui/controller.py` | Логіка вікна без GTK: маршрут, потокова відповідь у фоні, помилки (тестується без дисплея) |
+| `gloxi/gui/window.py` | Вікно GTK 4 / libadwaita і застосунок `io.github.stdenis1980.Gloxi` |
 | `gloxi/cli.py` | Чат у терміналі (інструмент розробника; вікно GTK використовуватиме ту саму `Conversation`) |
