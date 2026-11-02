@@ -160,9 +160,13 @@ class Osc:
         print("+ osc " + " ".join(args), flush=True)
         if self.dry_run and args[0] in {"meta", "commit", "ci"}:
             return ""
-        return subprocess.run(
-            ["osc", *args], cwd=cwd, input=stdin, check=True, capture_output=True, text=True
-        ).stdout
+        result = subprocess.run(
+            ["osc", *args], check=False, cwd=cwd, input=stdin, capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            sys.stderr.write(result.stdout + result.stderr)
+            raise SystemExit(f"osc {args[0]} failed with exit code {result.returncode}")
+        return result.stdout
 
 
 def upload(project: str, user: str, message: str, dry_run: bool) -> None:
@@ -183,8 +187,9 @@ def upload(project: str, user: str, message: str, dry_run: bool) -> None:
             osc("meta", "pkg", project, name, "-F", str(meta))
             if dry_run:
                 continue
-            osc("checkout", "--output-dir", str(work / "co" / name), project, name)
             co = work / "co" / name
+            co.parent.mkdir(exist_ok=True)  # osc creates only the last directory
+            osc("checkout", "--output-dir", str(co), project, name)
             for old in co.iterdir():
                 if old.name != ".osc":
                     old.unlink()
