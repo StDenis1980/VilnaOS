@@ -12,6 +12,8 @@ repository.workspace = true
 herkos-core = { path = "../herkos-core" }
 serde_json.workspace = true
 rustix.workspace = true
+toml.workspace = true
+sha2.workspace = true
 
 [lints]
 workspace = true

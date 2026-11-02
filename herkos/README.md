@@ -47,7 +47,7 @@ HERKOS_SERVE="rs/target/debug/herkosd serve --confirm deny" uv run pytest confor
 
 ## herkosd (Rust, етап 2)
 
-Системний Herkos ([ADR 0013](../docs/adr/0013-herkos-rust.md)) у [`rs/`](rs/): `herkos-core` (рішення без вводу-виводу) і `herkosd` (сокет і протокол). Зараз це каркас: протокол, `SO_PEERCRED` і розбір запиту дії вже працюють, а інструментів ще немає, тому кожна дія отримує `denied_unknown`.
+Системний Herkos ([ADR 0013](../docs/adr/0013-herkos-rust.md)) у [`rs/`](rs/): `herkos-core` (запит дії, маніфести, оцінка ризику, без вводу-виводу) і `herkosd` (сокет, протокол, шлюз рішень, дозволи, журнал Mitos). Уже працюють кроки 1–3: рішення ухвалюються так само, як у Herkos-lite, з тими самими маніфестами, `config.toml`, `permissions.json` і журналом (`herkos journal verify` перевіряє журнал `herkosd`, і навпаки: `herkosd journal verify`). Інструментів ще немає (крок 4), тому дія відомого інструмента, яку можна виконати, отримує `denied_no_tool`; підтвердження поки завжди «ні» (агент — крок 5).
 
 ```sh
 cd herkos/rs

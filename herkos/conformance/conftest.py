@@ -40,6 +40,7 @@ class Herkos:
     docs: Path
     state: Path
     process: subprocess.Popen
+    env: dict[str, str]
 
 
 class Client:
@@ -114,7 +115,7 @@ def herkos(tmp_path: Path):
             proc.kill()
             pytest.fail("Herkos did not create its socket in 20 s")
         time.sleep(0.05)
-    yield Herkos(path, docs, tmp_path / "state", proc)
+    yield Herkos(path, docs, tmp_path / "state", proc, env)
     proc.terminate()
     try:
         proc.wait(5)

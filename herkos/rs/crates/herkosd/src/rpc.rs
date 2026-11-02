@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! JSON-RPC 2.0 dispatch for one connection (herkos/docs/protocol.md).
 //!
-//! Mirrors `Connection` in `herkos/src/herkos/server.py`. This skeleton knows
-//! no tools yet: every action is denied with `denied_unknown`, which is what
-//! the protocol prescribes for a tool without a manifest.
+//! Mirrors `Connection` in `herkos/src/herkos/server.py`. Each connection
+//! is one conversation: its own session state (taint), shared gate.
 
+use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use herkos_core::PROTOCOL_VERSION;
+use herkos_core::policy::SessionState;
 use herkos_core::request::parse_request;
 use serde_json::{Value, json};
+
+use crate::gate::Gate;
 
 pub const PARSE_ERROR: i64 = -32700;
 pub const INVALID_REQUEST: i64 = -32600;
@@ -17,9 +20,6 @@ pub const METHOD_NOT_FOUND: i64 = -32601;
 pub const INVALID_PARAMS: i64 = -32602;
 pub const HELLO_REQUIRED: i64 = -32001;
 pub const PROTOCOL_MISMATCH: i64 = -32002;
-
-/// The highest risk level this build can grant (R0 until decisions land).
-const MAX_LEVEL: &str = "R0";
 
 pub fn result(id: &Value, result: Value) -> Value {
     json!({"jsonrpc": "2.0", "id": id, "result": result})
@@ -29,34 +29,37 @@ pub fn error(id: &Value, code: i64, message: &str) -> Value {
     json!({"jsonrpc": "2.0", "id": id, "error": {"code": code, "message": message}})
 }
 
+/// `n` random bytes as hex. On failure the bytes stay zero: ids built with
+/// it also carry a timestamp, and grant ids are checked for duplicates.
+pub fn random_hex(n: usize) -> String {
+    let mut rnd = vec![0u8; n];
+    let _ = rustix::rand::getrandom(&mut rnd, rustix::rand::GetRandomFlags::empty());
+    rnd.iter().map(|b| format!("{b:02x}")).collect()
+}
+
 /// Time-ordered and unique enough for one journal: ms timestamp + random.
 pub fn new_action_id() -> String {
     let ms = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_or(0, |d| d.as_millis());
-    let mut rnd = [0u8; 6];
-    // On failure the buffer stays zero; the timestamp alone still orders ids.
-    let _ = rustix::rand::getrandom(&mut rnd, rustix::rand::GetRandomFlags::empty());
-    let hex: String = rnd.iter().map(|b| format!("{b:02x}")).collect();
-    format!("{ms:013x}{hex}")
+    format!("{ms:013x}{}", random_hex(6))
 }
 
-fn denied(code: &str, message: &str) -> Value {
-    json!({
-        "action_id": new_action_id(),
-        "decision": "denied",
-        "code": code,
-        "level": "forbidden",
-        "message": message,
-    })
-}
-
-#[derive(Default)]
 pub struct Connection {
+    gate: Arc<Gate>,
+    session: SessionState,
     hello: bool,
 }
 
 impl Connection {
+    pub fn new(gate: Arc<Gate>) -> Connection {
+        Connection {
+            gate,
+            session: SessionState::default(),
+            hello: false,
+        }
+    }
+
     /// The response to one decoded message, or `None` for a notification.
     pub fn dispatch(&mut self, msg: &Value) -> Option<Value> {
         let null = Value::Null;
@@ -99,10 +102,7 @@ impl Connection {
         match method {
             "herkos.request_action" => match parse_request(params) {
                 Err(e) => error(id, INVALID_PARAMS, &e.0),
-                Ok(request) => result(
-                    id,
-                    denied("denied_unknown", &format!("unknown tool {}", request.tool)),
-                ),
+                Ok(request) => result(id, self.gate.handle(&request, &mut self.session).to_json()),
             },
             "herkos.undo" => {
                 let action_id = params.get("action_id").and_then(Value::as_str);
@@ -112,14 +112,19 @@ impl Connection {
                             && a.chars().count() <= 64
                             && a.chars().all(char::is_alphanumeric) =>
                     {
-                        result(id, denied("denied_unknown", "nothing to undo"))
+                        result(id, self.gate.undo(a, &mut self.session).to_json())
                     }
                     _ => error(id, INVALID_PARAMS, "'action_id' must be an action id"),
                 }
             }
+            // Keros findings arrive in step 4.
             "herkos.session" => result(
                 id,
-                json!({"tainted": false, "taint_sources": [], "findings": []}),
+                json!({
+                    "tainted": self.session.tainted,
+                    "taint_sources": self.session.taint_sources,
+                    "findings": [],
+                }),
             ),
             _ => error(id, METHOD_NOT_FOUND, &format!("unknown method {method}")),
         }
@@ -147,7 +152,7 @@ impl Connection {
             json!({
                 "protocol": PROTOCOL_VERSION,
                 "server": concat!("herkosd/", env!("CARGO_PKG_VERSION")),
-                "max_level": MAX_LEVEL,
+                "max_level": self.gate.config.max_level.name(),
             }),
         )
     }
@@ -156,6 +161,29 @@ impl Connection {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::parse_config;
+    use crate::gate::{DenyAll, NoTools};
+    use crate::grants::{GrantStore, now};
+    use crate::mitos::Journal;
+    use herkos_core::manifest::Registry;
+
+    fn conn(name: &str) -> Connection {
+        let dir = std::env::temp_dir().join(format!("herkosd-rpc-{}-{name}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let mut config = parse_config("", std::path::Path::new("t")).expect("config");
+        config.state_dir = dir;
+        let journal = Journal::open(&config.journal_path()).expect("journal");
+        let grants = GrantStore::new(&config.grants_path(), now);
+        let gate = Gate::new(
+            config,
+            Registry::builtin().expect("manifests"),
+            Box::new(NoTools),
+            grants,
+            journal,
+            Box::new(DenyAll),
+        );
+        Connection::new(Arc::new(gate))
+    }
 
     fn hello(c: &mut Connection) {
         let r = c.dispatch(&json!({"jsonrpc": "2.0", "id": 1, "method": "herkos.hello",
@@ -169,7 +197,7 @@ mod tests {
 
     #[test]
     fn hello_first() {
-        let mut c = Connection::default();
+        let mut c = conn("t1");
         let r = c.dispatch(&json!({"jsonrpc": "2.0", "id": 2, "method": "herkos.session"}));
         assert_eq!(code(r), HELLO_REQUIRED);
         hello(&mut c);
@@ -179,7 +207,7 @@ mod tests {
 
     #[test]
     fn bad_envelopes() {
-        let mut c = Connection::default();
+        let mut c = conn("t2");
         for m in [
             json!([]),
             json!({"id": 1, "method": "x"}),
@@ -193,7 +221,7 @@ mod tests {
 
     #[test]
     fn notifications_and_ids() {
-        let mut c = Connection::default();
+        let mut c = conn("t3");
         hello(&mut c);
         assert!(
             c.dispatch(&json!({"jsonrpc": "2.0", "method": "herkos.session"}))
@@ -204,14 +232,21 @@ mod tests {
     }
 
     #[test]
-    fn actions_are_denied_unknown() {
-        let mut c = Connection::default();
+    fn actions_go_through_the_gate() {
+        let mut c = conn("t4");
         hello(&mut c);
         let r = c.dispatch(
             &json!({"jsonrpc": "2.0", "id": 3, "method": "herkos.request_action",
             "params": {"tool": "org.vilna.mcp.files", "operation": "read", "reason": "r"}}),
         );
-        assert!(r.is_some_and(|r| r["result"]["code"] == "denied_unknown"));
+        assert!(r.is_some_and(|r| r["result"]["code"] == "denied_mismatch"));
+        let r = c.dispatch(
+            &json!({"jsonrpc": "2.0", "id": 5, "method": "herkos.request_action",
+            "params": {"tool": "org.example.what", "operation": "read", "reason": "r"}}),
+        );
+        assert!(r.is_some_and(
+            |r| r["result"]["code"] == "denied_unknown" && r["result"]["level"] == "R4"
+        ));
         let r = c.dispatch(&json!({"jsonrpc": "2.0", "id": 4, "method": "herkos.undo",
             "params": {"action_id": "../x"}}));
         assert_eq!(code(r), INVALID_PARAMS);
