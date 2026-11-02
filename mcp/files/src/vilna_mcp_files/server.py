@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from vilna_mcp_files import __version__
-from vilna_mcp_files.files import Files, FilesError
+from vilna_mcp_files.files import DEFAULT_KEEP_DAYS, Files, FilesError
 
 PROTOCOL_VERSIONS = ("2025-06-18", "2025-03-26", "2024-11-05")
 
@@ -186,9 +186,21 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="vilna-mcp-files")
     p.add_argument("--root", action="append", required=True, help="allowed folder (repeatable)")
     p.add_argument("--backup-dir", required=True, help="where backups for undo are kept")
+    p.add_argument(
+        "--keep-days",
+        type=float,
+        default=DEFAULT_KEEP_DAYS,
+        help=f"how long backups are kept (default {DEFAULT_KEEP_DAYS}, as OneDrive)",
+    )
     args = p.parse_args(argv)
+    if args.keep_days <= 0:
+        p.error("--keep-days must be positive")
     try:
-        files = Files([Path(r).expanduser() for r in args.root], Path(args.backup_dir))
+        files = Files(
+            [Path(r).expanduser() for r in args.root],
+            Path(args.backup_dir),
+            keep_days=args.keep_days,
+        )
     except FilesError as e:
         print(f"vilna-mcp-files: {e}", file=sys.stderr)
         return 2

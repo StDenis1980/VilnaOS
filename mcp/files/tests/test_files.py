@@ -139,3 +139,20 @@ def test_mcp_session(files):
     assert r[2]["result"]["structuredContent"]["backup_id"]
     assert r[3]["result"]["isError"] is True
     assert r[4]["result"]["isError"] is True
+
+
+def test_backups_expire_after_30_days(tmp_path):
+    now = [1_000_000.0]
+    d = tmp_path / "Documents"
+    d.mkdir()
+    files = Files([d], tmp_path / "backups", clock=lambda: now[0])
+    a = d / "a.txt"
+    a.write_text("v1")
+    old = files.write(str(a), "v2")["backup_id"]
+    now[0] += 29 * 86400
+    files.restore(str(a), old)  # still there after 29 days
+    assert a.read_text() == "v1"
+    now[0] += 2 * 86400
+    assert files.prune() >= 1
+    with pytest.raises(FilesError, match="30 days"):
+        files.restore(str(a), old)

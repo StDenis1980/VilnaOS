@@ -22,6 +22,9 @@ MAX_WRITE_BYTES = 10 * 1024 * 1024
 MAX_LIST = 1000
 MAX_SEARCH_RESULTS = 200
 MAX_SEARCH_FILE_BYTES = 2 * 1024 * 1024
+# Backups for undo are kept as long as OneDrive keeps version history and
+# deleted files for personal accounts: 30 days (decision of 2 November 2026).
+DEFAULT_KEEP_DAYS = 30
 
 
 class FilesError(Exception):
@@ -29,11 +32,37 @@ class FilesError(Exception):
 
 
 class Files:
-    def __init__(self, roots: Iterable[Path], backup_dir: Path) -> None:
+    def __init__(
+        self,
+        roots: Iterable[Path],
+        backup_dir: Path,
+        *,
+        keep_days: float = DEFAULT_KEEP_DAYS,
+        clock=time.time,
+    ) -> None:
         self.roots = tuple(Path(os.path.realpath(r)) for r in roots)
         if not self.roots:
             raise FilesError("at least one root folder is required")
         self.backup_dir = Path(backup_dir)
+        self.keep_seconds = keep_days * 86400
+        self.clock = clock
+        self.prune()
+
+    def prune(self) -> int:
+        """Delete backups older than the retention period. Returns how many."""
+        if not self.backup_dir.is_dir():
+            return 0
+        removed, now = 0, self.clock()
+        for folder in self.backup_dir.iterdir():
+            meta = folder / "meta.json"
+            try:
+                created = json.loads(meta.read_text(encoding="utf-8"))["time"]
+            except (OSError, ValueError, KeyError, TypeError):
+                continue  # not ours or half-written: leave it alone
+            if now - created > self.keep_seconds:
+                shutil.rmtree(folder, ignore_errors=True)
+                removed += 1
+        return removed
 
     # -- paths -------------------------------------------------------------
 
@@ -145,7 +174,9 @@ class Files:
         try:
             meta = json.loads((folder / "meta.json").read_text(encoding="utf-8"))
         except (OSError, ValueError):
-            raise FilesError(f"no backup {backup_id}") from None
+            raise FilesError(
+                f"no backup {backup_id} (backups are kept {self.keep_seconds / 86400:g} days)"
+            ) from None
         target = self.resolve(meta["path"])
         if target != self.resolve(path):
             raise FilesError(f"backup {backup_id} belongs to another file")
@@ -161,13 +192,14 @@ class Files:
         return {"path": str(target), "restored": backup_id, "backup_id": undo}
 
     def _backup(self, f: Path) -> str:
-        backup_id = f"{int(time.time())}{secrets.token_hex(6)}"
+        self.prune()
+        backup_id = f"{int(self.clock())}{secrets.token_hex(6)}"
         folder = self.backup_dir / backup_id
         folder.mkdir(parents=True, mode=0o700)
         existed = f.is_file()
         if existed:
             shutil.copy2(f, folder / "content")
-        meta = {"path": str(f), "existed": existed, "time": time.time()}
+        meta = {"path": str(f), "existed": existed, "time": self.clock()}
         (folder / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
         return backup_id
 
