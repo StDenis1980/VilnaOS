@@ -67,7 +67,7 @@ vilna:
 flatpak_defaults:
   # Встановлюються з Flathub під час першого запуску
   - org.mozilla.firefox
-  # Tinta Office (ADR 0010): MIT OR Apache-2.0; поки не на Flathub — з власного Flatpak-сховища Vilna
+  # Tinta Office (ADR 0011): MIT OR Apache-2.0; поки не на Flathub — з власного Flatpak-сховища Vilna
   - io.github.stdenis1980.tintatexto
   - io.github.stdenis1980.tintacalculo
   - io.github.stdenis1980.tintapresenta
