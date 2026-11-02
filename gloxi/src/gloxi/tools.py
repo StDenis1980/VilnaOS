@@ -27,6 +27,7 @@ import json
 import os
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from gettext import gettext as _
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -117,11 +118,15 @@ class ToolOutcome:
         what = f"files: {self.operation}"
         if self.path:
             what += f" {_short(self.path)}"
+        if self.status == "denied":
+            return _("{what} (denied: {message})").format(what=what, message=self.message)
         if self.status != "done":
-            return f"{what} ({self.status}: {self.message})"
+            return _("{what} (error: {message})").format(what=what, message=self.message)
         if self.warnings:
-            return f"{what} (done; warning: the content {'; '.join(self.warnings)})"
-        return f"{what} (done)"
+            return _("{what} (done; warning: the content {warnings})").format(
+                what=what, warnings="; ".join(self.warnings)
+            )
+        return _("{what} (done)").format(what=what)
 
 
 class FileTools:

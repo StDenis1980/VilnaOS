@@ -17,6 +17,7 @@ from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
 from gloxi.gui import APP_ID  # noqa: E402
 from gloxi.gui.controller import ChatController, cloud_status  # noqa: E402
+from gloxi.i18n import setup  # noqa: E402
 from gloxi.llm import ChatClient  # noqa: E402
 from gloxi.privacy import guard_factory  # noqa: E402
 from gloxi.router import Router  # noqa: E402
@@ -197,6 +198,7 @@ class GloxiApp(Adw.Application):
 
 
 def main(argv: list[str] | None = None) -> int:
+    setup()
     GLib.set_application_name("Gloxi")
     app = GloxiApp()
     return app.run(sys.argv[:1] if argv is None else argv)
