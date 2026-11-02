@@ -13,8 +13,10 @@ Everything a tool returns is external content. Keros
    (``Keros.leaks``).
 
 A finding never blocks reading. It raises the risk of later actions and is
-shown to the user. Keros is not the barrier on its own: rules miss things,
-which is why levels and confirmations do not depend on it (permissions.md 6).
+shown to the user. When rules find nothing, the local model can look too
+(``keros_model``, ADR 0010); like a rule, it can only add a finding. Keros
+is not the barrier on its own: rules and models miss things, which is why
+levels and confirmations do not depend on it (permissions.md 6).
 """
 
 from __future__ import annotations
@@ -24,7 +26,10 @@ import secrets
 import unicodedata
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from herkos.keros_model import ModelCheck, Report
 
 MAX_SCAN_CHARS = 2 * 1024 * 1024
 MAX_REMEMBERED = 5000
@@ -48,12 +53,17 @@ RULES: tuple[Rule, ...] = (
         "asks the assistant to ignore its instructions",
         _rx(
             r"\b(ignore|disregard|forget|override)\b.{0,40}\b(previous|prior|above|earlier|all|"
-            r"your|system)\b.{0,20}\b(instructions?|prompts?|rules|guidelines|directions)",
+            r"your|system)\b.{0,20}\b(instructions?|prompts?|rules|guidelines|guidance|directions)",
             r"\b(ігноруй|ігноруйте|забудь|забудьте|не зважай)\w*\b.{0,40}"
             r"\b(попередн|інструкці|правил|вказівк)",
             r"\b(игнорируй|забудь)\w*\b.{0,40}\b(предыдущ|инструкц|правил)",
             r"\b(ignoriere|vergiss)\b.{0,40}\b(vorherigen|anweisungen|regeln)",
             r"\b(zignoruj|zapomnij)\b.{0,40}\b(poprzednie|instrukcje|polecenia)",
+            r"\b(ignora|olvida|ignore|oublie|dimentica)\w*\b.{0,40}"
+            r"\b(instrucciones|indicaciones|reglas|instructions|consignes|règles|istruzioni|regole)",
+            r"\b(ignor[ăa]|uit[ăa])\b.{0,40}\b(instruc[țţt]iuni|regulile)",
+            r"\b(ignoruj|zapome[ňn])\w*\b.{0,40}\b(pokyny|instrukce|pravidla)",
+            r"\b(ignoruok|pamir[šs]k)\w*\b.{0,40}\b(instrukcij|taisykl)",
         ),
     ),
     Rule(
@@ -65,6 +75,16 @@ RULES: tuple[Rule, ...] = (
             r"\b(теперь ты|новые инструкции)\b",
             r"\b(note|message|instructions?) (to|for) (the )?(ai|assistant|model|llm|gloxi)\b",
             r"\b(ai|assistant|gloxi),? (please )?(do|run|send|delete|open|forward)\b",
+            # "Note to the AI", "Nota para la IA", "Hinweis an die KI", "P.S. для ШІ"...
+            r"\b(note|nota|notă|hinweis|poznámka|pastaba|ps|p\.s\.)\b.{0,15}"
+            r"\b(ia|ai|ki|di|ші|ии)\b",
+            # "the AI that reads this", "ШІ, який читає", "whoever processes this message"
+            r"\b(ai|ia|ki|di|ші|ии|model\w*|модел\w*|assistant\w*|асистент\w*)\b,? "
+            r"(that|which|who|який|яка|що|que|qui|che|care|která|kuris|die|der|który)\s+"
+            r"(reads|is reading|processes|читає|обробляє|lee|lit|legge|citește|čte|skaito|"
+            r"liest|verarbeitet|czyta)\b",
+            r"\b(whoever|anyone|any (ai|model|assistant))\b.{0,20}\b(reads|reading|processes|"
+            r"processing)\b.{0,20}\b(this|these)\b",
         ),
     ),
     Rule(
@@ -185,15 +205,25 @@ def wrap(text: str, source: str) -> str:
     )
 
 
+MODEL_FINDING = Finding("model", "the local check found text addressed to the assistant")
+
+
 @dataclass
 class Keros:
     """Per-session memory of what came in from outside."""
 
     findings: list[tuple[str, Finding]] = field(default_factory=list)  # (source, finding)
     _seen: set[str] = field(default_factory=set)
+    last_report: Report | None = None  # the model check of the latest inspect()
 
-    def inspect(self, source: str, result: Any) -> list[Finding]:
+    def inspect(self, source: str, result: Any, model: ModelCheck | None = None) -> list[Finding]:
         found = scan(result)
+        self.last_report = None
+        # The model is slow: ask it only when the rules saw nothing.
+        if model is not None and not found:
+            self.last_report = model.check("\n".join(strings(result)))
+            if self.last_report.status == "injection":
+                found.append(MODEL_FINDING)
         for f in found:
             if (source, f) not in self.findings:
                 self.findings.append((source, f))

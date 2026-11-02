@@ -17,12 +17,14 @@ import json
 import socket
 import sys
 from collections import deque
+from pathlib import Path
 
 from herkos import PROTOCOL_VERSION, __version__
 from herkos.config import ConfigError, load_config, socket_path
 from herkos.confirm import DenyAll, Dialog, Terminal, default_confirmer
 from herkos.gate import Gate
 from herkos.grants import GrantStore
+from herkos.keros_model import LlamaServerJudge, ModelCheck
 from herkos.manifest import ManifestError, ManifestRegistry
 from herkos.mcp_client import McpError, McpStdioExecutor
 from herkos.mitos import Journal, JournalError, read_records, verify
@@ -48,7 +50,10 @@ def _serve(args: argparse.Namespace) -> int:
     files = start_files_tool(config)
     if files is not None:
         tools.register(FILES_TOOL, files)
-    gate = Gate(config, ManifestRegistry.builtin(), tools, grants, journal, confirmer)
+    model_check = None
+    if config.keros_model:
+        model_check = ModelCheck(LlamaServerJudge(config.keros_model), config.keros_budget)
+    gate = Gate(config, ManifestRegistry.builtin(), tools, grants, journal, confirmer, model_check)
     path = socket_path()
     journal.append("start", {"server": f"herkos-lite/{__version__}", "socket": str(path)})
     server = Server(gate, path)
@@ -188,7 +193,34 @@ def build_parser() -> argparse.ArgumentParser:
     undo = sub.add_parser("undo", help="undo a change by its action id")
     undo.add_argument("action_id")
     undo.set_defaults(func=_undo)
+
+    bench = sub.add_parser("keros-bench", help="measure Keros rules and model on test texts")
+    bench.add_argument("--corpus", type=Path, help="JSONL file (default: the built-in set)")
+    bench.add_argument(
+        "--model",
+        help='llama-server URL on this device, or "off" (default: keros_model from the config)',
+    )
+    bench.add_argument("--budget", type=float, default=60.0, help="seconds per text")
+    bench.set_defaults(func=_keros_bench)
     return p
+
+
+def _keros_bench(args: argparse.Namespace) -> int:
+    from herkos import keros_bench
+    from herkos.keros_model import require_loopback
+
+    url = args.model if args.model is not None else load_config().keros_model
+    model = None
+    if url and url != "off":
+        try:
+            url = require_loopback(url)
+        except ValueError as e:
+            print(f"herkos: {e}", file=sys.stderr)
+            return 1
+        model = ModelCheck(LlamaServerJudge(url), args.budget)
+    rows = keros_bench.run(keros_bench.load_corpus(args.corpus), model)
+    keros_bench.report(rows)
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:

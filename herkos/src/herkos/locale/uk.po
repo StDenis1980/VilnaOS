@@ -110,6 +110,9 @@ msgstr "містить посилання, яким можна винести д
 msgid "contains invisible or direction-changing characters"
 msgstr "містить невидимі символи або символи зміни напрямку тексту"
 
+msgid "the local check found text addressed to the assistant"
+msgstr "локальна перевірка знайшла текст, звернений до асистента"
+
 # Tool operations (manifest summaries)
 msgid "List a folder"
 msgstr "Переглянути папку"
