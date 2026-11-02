@@ -8,7 +8,6 @@ import sys
 from pathlib import Path
 
 import pytest
-from herkos.config import load_config
 
 from gloxi import herkos_local
 from gloxi.herkos_local import (
@@ -20,6 +19,11 @@ from gloxi.herkos_local import (
     remove_folder,
 )
 from gloxi.tools import FileTools
+
+
+def load_config(path):
+    # Herkos is not installed in the RPM build of Gloxi alone.
+    return pytest.importorskip("herkos.config").load_config(path)
 
 
 def test_folders_round_trip_and_herkos_reads_them(tmp_path):
@@ -77,6 +81,7 @@ def sandbox(tmp_path):
 
 
 def test_real_herkos_starts_restarts_and_stops(sandbox, tmp_path):
+    pytest.importorskip("herkos")
     cfg = Path(sandbox["XDG_CONFIG_HOME"]) / "herkos" / "config.toml"
     ensure_config(cfg)
     (tmp_path / "docs").mkdir()
