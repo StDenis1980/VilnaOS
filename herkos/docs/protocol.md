@@ -99,7 +99,9 @@
 5. Аргументи з `resource_args` маніфесту (наприклад, `path`) мають збігатися з одним із заявлених `resources`, інакше `denied_mismatch`: модель не може показати користувачу один файл, а змінити інший.
 6. Після успішної операції з `returns_external = true` сеанс стає забрудненим: вміст файлів — зовнішні дані (розд. 6).
 
-Діалог у Herkos-lite — у терміналі самого Herkos (`herkos serve --confirm terminal`); без терміналу всі питання отримують «ні». Вікно GTK з'явиться разом із вікном Gloxi.
+Діалог у Herkos-lite — окреме вікно GTK 4 / libadwaita, яке Herkos запускає як власний процес (`python -m herkos.dialog`, питання — JSON на stdin, відповідь — рядок `deny|once|session|always` на stdout). Кнопка за замовчуванням — «Відхилити»; закриття вікна, збій або таймаут — «ні». Без робочого столу Herkos питає у своєму терміналі, а без терміналу всі питання отримують «ні» (`herkos serve --confirm auto|gui|terminal|deny`). Обмеження preview: інша програма того самого користувача теоретично може натиснути кнопку через AT-SPI; у Vilna це закриває системний Herkos.
+
+Клієнт для Gloxi — [`../src/herkos/client.py`](../src/herkos/client.py) (`HerkosClient.connect()`, `request_action`, `undo`, `session`).
 
 ## 4. Журнал Mitos-lite
 

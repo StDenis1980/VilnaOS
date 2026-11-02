@@ -223,3 +223,25 @@ def test_undo_method(served):
     r = c.call("herkos.undo", {"action_id": "deadbeef"})["result"]
     assert r["decision"] == "denied" and r["code"] == "denied_unknown"
     c.close()
+
+
+def test_python_client(served):
+    from herkos.client import HerkosClient, HerkosError, HerkosUnavailable
+
+    env, path, _ = served
+    with HerkosClient.connect(path) as h:
+        assert h.server["protocol"] == PROTOCOL_VERSION
+        out = h.request_action(
+            tool="org.vilna.mcp.files",
+            operation="read",
+            resources=[(env.docs / "a").as_uri()],
+            arguments={"path": str(env.docs / "a")},
+            reason="r",
+            user_turn=1,
+        )
+        assert out["decision"] == "allowed"
+        assert h.session()["tainted"] is True
+        with pytest.raises(HerkosError):
+            h.request_action(tool="x", operation="y", reason="")
+    with pytest.raises(HerkosUnavailable):
+        HerkosClient.connect(path.parent / "nothing.sock")

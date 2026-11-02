@@ -20,7 +20,7 @@ from collections import deque
 
 from herkos import PROTOCOL_VERSION, __version__
 from herkos.config import ConfigError, load_config, socket_path
-from herkos.confirm import DenyAll, Terminal, default_confirmer
+from herkos.confirm import DenyAll, Dialog, Terminal, default_confirmer
 from herkos.gate import Gate
 from herkos.grants import GrantStore
 from herkos.manifest import ManifestError, ManifestRegistry
@@ -34,7 +34,8 @@ FILES_TOOL = "org.vilna.mcp.files"
 
 def _serve(args: argparse.Namespace) -> int:
     config = load_config()
-    confirmer = {"terminal": Terminal(), "deny": DenyAll()}.get(args.confirm) or default_confirmer()
+    choices = {"gui": Dialog, "terminal": Terminal, "deny": DenyAll}
+    confirmer = choices[args.confirm]() if args.confirm in choices else default_confirmer()
     try:
         journal = Journal(config.journal_path)
     except JournalError as e:
@@ -161,9 +162,10 @@ def build_parser() -> argparse.ArgumentParser:
     serve = sub.add_parser("serve", help="run the gate")
     serve.add_argument(
         "--confirm",
-        choices=["auto", "terminal", "deny"],
+        choices=["auto", "gui", "terminal", "deny"],
         default="auto",
-        help="how to ask the user (auto: this terminal if there is one, else deny)",
+        help="how to ask the user (auto: a window if there is a desktop, else this "
+        "terminal, else deny)",
     )
     serve.set_defaults(func=_serve)
 

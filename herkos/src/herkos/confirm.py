@@ -2,15 +2,18 @@
 """Asking the user (permissions.md 5.2).
 
 The question is shown by Herkos, never by Gloxi, so the model cannot change
-its wording or answer it. Herkos-lite has two ways to ask: on the terminal
-Herkos itself runs in, or not at all (every question is a "no"). The GTK
-dialog comes with Gloxi 0.1's window. No answer within the timeout is a "no".
+its wording or answer it. Herkos-lite can ask in its own GTK window
+(``Dialog``, a separate process), on the terminal Herkos itself runs in, or
+not at all (every question is a "no"). No answer within the timeout is a "no".
 """
 
 from __future__ import annotations
 
+import importlib.util
+import json
 import os
 import select
+import subprocess
 import sys
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -131,5 +134,63 @@ class Terminal:
         return answer
 
 
+def question_to_json(question: Question) -> dict:
+    return {
+        "summary": question.summary,
+        "reason": question.reason,
+        "tool": question.tool,
+        "operation": question.operation,
+        "resources": list(question.resources),
+        "level": question.level.name,
+        "undoable": question.undoable,
+        "raises": list(question.raises),
+        "taint_sources": list(question.taint_sources),
+        "choices": [c.value for c in question.choices],
+    }
+
+
+class Dialog:
+    """Ask in Herkos's own window: a separate process (``herkos.dialog``)."""
+
+    def __init__(self, command: list[str] | None = None) -> None:
+        self.command = command or [sys.executable, "-m", "herkos.dialog"]
+
+    def ask(self, question: Question, timeout: float) -> Answer:
+        try:
+            done = subprocess.run(
+                self.command,
+                input=json.dumps(question_to_json(question)).encode(),
+                capture_output=True,
+                timeout=timeout,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return Answer.DENY  # run() kills the window on timeout
+        lines = done.stdout.decode(errors="replace").strip().splitlines()
+        try:
+            answer = Answer(lines[-1].strip()) if lines else Answer.DENY
+        except ValueError:
+            return Answer.DENY
+        return answer if answer in question.choices else Answer.DENY
+
+
+def gui_available() -> bool:
+    if not (os.environ.get("WAYLAND_DISPLAY") or os.environ.get("DISPLAY")):
+        return False
+    try:
+        if importlib.util.find_spec("gi") is None:
+            return False
+        import gi
+
+        gi.require_version("Gtk", "4.0")
+        gi.require_version("Adw", "1")
+    except (ImportError, ValueError):
+        return False
+    return True
+
+
 def default_confirmer() -> Confirmer:
+    """The window if there is a desktop, else this terminal, else always "no"."""
+    if gui_available():
+        return Dialog()
     return Terminal() if sys.stdin.isatty() else DenyAll()
