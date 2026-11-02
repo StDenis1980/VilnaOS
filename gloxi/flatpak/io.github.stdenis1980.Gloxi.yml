@@ -35,6 +35,16 @@ modules:
   # docs/benchmarks.md. CPU backends for every x86 generation are loaded at run
   # time, plus Vulkan for the GPU. Only llama-server is built; the model itself
   # is downloaded by Gloxi after the person agrees (gloxi/engine.py).
+  # Needed only to build llama.cpp's Vulkan backend; nothing of it is shipped.
+  - name: spirv-headers
+    buildsystem: cmake-ninja
+    cleanup: ["*"]
+    sources:
+      - type: git
+        url: https://github.com/KhronosGroup/SPIRV-Headers.git
+        tag: vulkan-sdk-1.4.335.0
+        commit: b824a462d4256d720bebb40e78b9eb8f78bbb305
+
   - name: llama-cpp
     buildsystem: simple
     build-commands:
