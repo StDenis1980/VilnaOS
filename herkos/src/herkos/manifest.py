@@ -1,0 +1,158 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Tool manifests: what each tool operation is allowed to be (herkos/docs/manifests.md).
+
+A manifest is a TOML file, one per tool::
+
+    tool = "org.vilna.mcp.files"
+    description = "Files in the folders the user allowed"
+
+    [operations.read]
+    level = "R1"
+    summary = "Read a file"
+    returns_external = true
+
+    [operations.write]
+    level = "R2"
+    summary = "Change a file"
+    undoable = true
+
+Anything the manifest does not name is denied (permissions.md, principle 8).
+"""
+
+from __future__ import annotations
+
+import re
+import tomllib
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
+from importlib import resources
+from pathlib import Path
+from typing import Any
+
+from herkos.risk import Level
+
+FORBIDDEN = "forbidden"
+_NAME = re.compile(r"^[a-z0-9][a-z0-9_.-]{0,127}$")
+_OPERATION_KEYS = {"level", "summary", "undoable", "returns_external", "egress"}
+
+
+class ManifestError(Exception):
+    """A manifest file is malformed. The tool stays unknown (and so denied)."""
+
+
+@dataclass(frozen=True)
+class Operation:
+    name: str
+    level: Level | None  # None: forbidden even with confirmation
+    summary: str
+    # The tool can take a backup before the change, so Mitos can undo it.
+    undoable: bool = False
+    # The result carries content Herkos did not write (files, mail, web):
+    # after it, the session is tainted (permissions.md, section 6).
+    returns_external: bool = False
+    # Data leaves the device (network, cloud, another person).
+    egress: bool = False
+
+    @property
+    def forbidden(self) -> bool:
+        return self.level is None
+
+    @property
+    def changes_state(self) -> bool:
+        return self.level is not None and self.level >= Level.R2
+
+
+@dataclass(frozen=True)
+class Manifest:
+    tool: str
+    description: str
+    operations: Mapping[str, Operation]
+
+    def operation(self, name: str) -> Operation | None:
+        return self.operations.get(name)
+
+
+def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manifest:
+    tool = data.get("tool")
+    if not isinstance(tool, str) or not _NAME.match(tool):
+        raise ManifestError(f"{source}: 'tool' must be a reverse-DNS name")
+    unknown = set(data) - {"tool", "description", "operations"}
+    if unknown:
+        raise ManifestError(f"{source}: unknown keys {sorted(unknown)}")
+    description = data.get("description", "")
+    if not isinstance(description, str):
+        raise ManifestError(f"{source}: 'description' must be a string")
+    ops_data = data.get("operations")
+    if not isinstance(ops_data, dict) or not ops_data:
+        raise ManifestError(f"{source}: at least one [operations.<name>] is required")
+
+    operations: dict[str, Operation] = {}
+    for name, op in ops_data.items():
+        where = f"{source}: operations.{name}"
+        if not _NAME.match(name):
+            raise ManifestError(f"{where}: bad operation name")
+        if not isinstance(op, dict):
+            raise ManifestError(f"{where}: must be a table")
+        unknown = set(op) - _OPERATION_KEYS
+        if unknown:
+            raise ManifestError(f"{where}: unknown keys {sorted(unknown)}")
+        raw_level = op.get("level")
+        if not isinstance(raw_level, str):
+            raise ManifestError(f"{where}: 'level' is required (R0-R4 or 'forbidden')")
+        if raw_level == FORBIDDEN:
+            level = None
+        else:
+            try:
+                level = Level.parse(raw_level)
+            except ValueError as e:
+                raise ManifestError(f"{where}: {e}") from None
+        flags = {}
+        for key in ("undoable", "returns_external", "egress"):
+            value = op.get(key, False)
+            if not isinstance(value, bool):
+                raise ManifestError(f"{where}: '{key}' must be true or false")
+            flags[key] = value
+        summary = op.get("summary", name)
+        if not isinstance(summary, str):
+            raise ManifestError(f"{where}: 'summary' must be a string")
+        operations[name] = Operation(name=name, level=level, summary=summary, **flags)
+    return Manifest(tool=tool, description=description, operations=operations)
+
+
+def load_manifest(path: Path) -> Manifest:
+    try:
+        with path.open("rb") as f:
+            data = tomllib.load(f)
+    except (OSError, tomllib.TOMLDecodeError) as e:
+        raise ManifestError(f"{path}: {e}") from None
+    return parse_manifest(data, str(path))
+
+
+class ManifestRegistry:
+    """The manifests Herkos knows. A tool not in here is unknown."""
+
+    def __init__(self, manifests: Iterable[Manifest] = ()) -> None:
+        self._by_tool: dict[str, Manifest] = {}
+        for m in manifests:
+            self.add(m)
+
+    def add(self, manifest: Manifest) -> None:
+        if manifest.tool in self._by_tool:
+            raise ManifestError(f"duplicate manifest for {manifest.tool}")
+        self._by_tool[manifest.tool] = manifest
+
+    def get(self, tool: str) -> Manifest | None:
+        return self._by_tool.get(tool)
+
+    def __contains__(self, tool: str) -> bool:
+        return tool in self._by_tool
+
+    @classmethod
+    def builtin(cls) -> ManifestRegistry:
+        """Manifests shipped with Herkos (``herkos/manifests/*.toml``)."""
+        registry = cls()
+        for entry in sorted(resources.files("herkos.manifests").iterdir(), key=lambda e: e.name):
+            if entry.name.endswith(".toml"):
+                data = tomllib.loads(entry.read_text(encoding="utf-8"))
+                registry.add(parse_manifest(data, entry.name))
+        return registry
