@@ -288,7 +288,7 @@ msgstr ""
 msgid "settings and the folders you chose"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/cli.py
 msgid "yes"
 msgstr ""
 
@@ -330,14 +330,54 @@ msgid "Conversation cleared."
 msgstr ""
 
 #: src/gloxi/cli.py
+msgid "Download it now? [y/N] "
+msgstr ""
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "Downloading the model: {percent}%"
+msgstr ""
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "Gloxi needs a language model on this computer to answer. It is {name}, {size}, licence {licence}, from {source}. It will be kept in {folder}. Only the file is downloaded: nothing about you is sent."
+msgstr ""
+
+#: src/gloxi/cli.py
 msgid ""
 "Is llama-server running? For example:\n"
 "  llama-server -m model.gguf --port 8080\n"
 "or point Gloxi elsewhere with GLOXI_LOCAL_URL."
 msgstr ""
 
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Not downloaded. Gloxi will ask again next time."
+msgstr ""
+
 #: src/gloxi/cli.py
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
+msgstr ""
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Starting the model on this computer…"
+msgstr ""
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "The model could not be started: {why}"
+msgstr ""
+
+#: src/gloxi/cli.py
+msgid "The model is ready."
+msgstr ""
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "The model was not downloaded: {why}"
+msgstr ""
+
+#: src/gloxi/cli.py
+msgid "There is no language model yet. Run gloxi in a terminal once to download it."
 msgstr ""
 
 #: src/gloxi/cli.py
@@ -406,7 +446,23 @@ msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Cancel"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Download"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Download the language model?"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "New conversation"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Not now"
 msgstr ""
 
 #: src/gloxi/gui/window.py

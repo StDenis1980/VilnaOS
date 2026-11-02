@@ -38,4 +38,24 @@ jobs:
             "from gloxi.i18n import setup; setup(); from gettext import gettext as _; \
             from gloxi.cli import HELP; t = _(HELP); print(t); assert t.startswith('Команди')"
           flatpak run --command=python3 io.github.stdenis1980.Gloxi -c \
-            "import gi; gi.require_version('Adw', '1'); from gloxi.gui import window; import herkos.client, privacy_gateway"
+            "import gi; gi.require_version('Adw', '1'); from gloxi.gui import window; \
+            from gi.repository import Adw; assert hasattr(Adw, 'AlertDialog'); \
+            import herkos.client, privacy_gateway"
+      - name: The bundled llama-server runs a model through Gloxi's engine
+        run: |
+          # A tiny test model (not the real one): this checks the build, not the answers.
+          mkdir -p "$PWD/smoke"
+          curl -fsSL -o "$PWD/smoke/tiny.gguf" \
+            https://huggingface.co/ggml-org/models/resolve/main/tinyllamas/stories260K.gguf
+          flatpak run --filesystem="$PWD/smoke" --command=python3 io.github.stdenis1980.Gloxi -c "
+          from pathlib import Path
+          import httpx
+          from gloxi.engine import Engine, server_binary
+          url = 'http://127.0.0.1:18080/v1'
+          e = Engine(server_binary(), Path('$PWD/smoke/tiny.gguf'), url)
+          e.start(timeout=120)
+          r = httpx.post(url + '/completions', json={'prompt': 'Once', 'max_tokens': 8}, timeout=60)
+          print(r.status_code, r.json()['choices'][0]['text'])
+          assert r.status_code == 200
+          e.stop()
+          "

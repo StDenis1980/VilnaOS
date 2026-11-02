@@ -16,7 +16,9 @@ from typing import Protocol
 
 from gloxi.backup_intro import BackupIntro, Turn
 from gloxi.chat import Conversation
-from gloxi.cli import split_command
+from gloxi.cli import model_consent_text, split_command
+from gloxi.config import Settings
+from gloxi.engine import Engine, EngineError, Plan, download, plan
 from gloxi.llm import ModelError, ModelUnavailable
 from gloxi.router import CloudNotAllowed, Route
 
@@ -150,3 +152,92 @@ class ChatController:
             self.view.finish_answer()
             self.busy = False
             self.view.set_busy(False)
+
+
+class ModelSetupView(Protocol):
+    """What ``ModelSetup`` needs from a window; calls may come from a worker."""
+
+    def ask_model_download(self, text: str, answer: Callable[[bool], None]) -> None: ...
+    def show_model_progress(self, text: str, fraction: float | None) -> None: ...
+    def hide_model_progress(self) -> None: ...
+    def show_error(self, text: str) -> None: ...
+    def show_note(self, text: str) -> None: ...
+
+
+class ModelSetup:
+    """The bundled engine on start-up: ask before downloading, then start it."""
+
+    def __init__(
+        self,
+        settings: Settings,
+        view: ModelSetupView,
+        *,
+        runner: Runner = thread_runner,
+        planner: Callable[..., Plan] = plan,
+        fetch: Callable[..., object] = download,
+        engine_type: Callable[..., Engine] = Engine,
+    ) -> None:
+        self.settings = settings
+        self.view = view
+        self.runner = runner
+        self.planner = planner
+        self.fetch = fetch
+        self.engine_type = engine_type
+        self.engine: Engine | None = None
+        self._plan: Plan | None = None
+        self._cancel = threading.Event()
+
+    def begin(self) -> None:
+        self.runner(self._look)
+
+    def _look(self) -> None:
+        p = self.planner(self.settings.local.url, start_server=self.settings.start_server)
+        self._plan = p
+        if p.action == "download":
+            self.view.ask_model_download(model_consent_text(p), self.answer)
+        elif p.action == "start":
+            self._start(p.model_path)
+
+    def answer(self, yes: bool) -> None:
+        if not yes:
+            self.view.show_note(_("Not downloaded. Gloxi will ask again next time."))
+            return
+        self.runner(self._download)
+
+    def cancel(self) -> None:
+        self._cancel.set()
+
+    def _download(self) -> None:
+        p = self._plan
+        self._cancel.clear()
+
+        def progress(done: int, total: int) -> None:
+            fraction = done / max(total, 1)
+            text = _("Downloading the model: {percent}%").format(percent=int(fraction * 100))
+            self.view.show_model_progress(text, fraction)
+
+        try:
+            path = self.fetch(p.model, p.folder, progress=progress, cancelled=self._cancel.is_set)
+        except EngineError as exc:
+            self.view.hide_model_progress()
+            self.view.show_error(_("The model was not downloaded: {why}").format(why=exc))
+            return
+        self._start(path)
+
+    def _start(self, model_path) -> None:
+        self.view.show_model_progress(_("Starting the model on this computer…"), None)
+        engine = self.engine_type(self._plan.binary, model_path, self.settings.local.url)
+        try:
+            engine.start()
+        except EngineError as exc:
+            self.view.show_error(_("The model could not be started: {why}").format(why=exc))
+            return
+        finally:
+            self.view.hide_model_progress()
+        self.engine = engine
+
+    def stop(self) -> None:
+        self._cancel.set()
+        if self.engine is not None:
+            self.engine.stop()
+            self.engine = None

@@ -131,7 +131,9 @@ flatpak run --command=gloxi io.github.stdenis1980.Gloxi      # термінал
 
 У пісочниці Gloxi має мережу (локальна модель на `127.0.0.1` і хмара, якщо її ввімкнено), сокет Herkos (`xdg-run/vilna`, [ADR 0005](../docs/adr/0005-gloxi-herkos-channel.md)) і лише читання налаштувань Herkos, щоб знати дозволені теки. До файлів доступу немає: їх читає й змінює Herkos поза пісочницею. Налаштування Gloxi лежать у `~/.var/app/io.github.stdenis1980.Gloxi/config/gloxi/config.toml`.
 
-Поки що модель запускається окремо, як і в розробці. Іконка тимчасова (знак Vilna), знімків екрана для Flathub ще немає.
+У пакеті є `llama-server` (llama.cpp b12048, CPU і Vulkan). Якщо на `[local] url` ніхто не відповідає, Gloxi запускає його сам, лише на `127.0.0.1` ([ADR 0004](../docs/adr/0004-local-model-engine.md)). Моделі в пакеті немає: на першому запуску Gloxi питає, чи завантажити Qwen3 4B (≈2,5 ГБ, [ADR 0008](../docs/adr/0008-default-local-model.md)), і без «так» нічого не завантажує. Файл перевіряється за SHA-256 з `src/gloxi/engine.py` і лежить у `~/.var/app/io.github.stdenis1980.Gloxi/data/gloxi/models`; перерване завантаження продовжується. Вимкнути запуск: `[local] start_server = false` або `GLOXI_START_SERVER=0`.
+
+Іконка тимчасова (знак Vilna), знімків екрана для Flathub ще немає.
 
 ### Мови інтерфейсу
 
@@ -168,6 +170,7 @@ python3 tools/i18n.py check
 | Модуль | Що робить |
 | --- | --- |
 | `gloxi/config.py` | Налаштування: типові значення, файл TOML, змінні середовища |
+| `gloxi/engine.py` | Вбудована модель: завантаження за згодою з перевіркою SHA-256, запуск `llama-server` на 127.0.0.1 |
 | `gloxi/i18n.py` | Мова інтерфейсу: gettext, каталоги в `gloxi/locale` |
 | `gloxi/llm.py` | Клієнт OpenAI-сумісного API (звичайна і потокова відповідь) — спільний для локальної моделі й хмари |
 | `gloxi/router.py` | Маршрутизатор: куди йде повідомлення (локально чи в хмару) і чому; маскування перед хмарою через `CloudGuard` |
