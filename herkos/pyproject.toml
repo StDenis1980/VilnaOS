@@ -12,6 +12,8 @@ dependencies = []
 
 [project.scripts]
 herkos = "herkos.cli:main"
+# The confirmation window, also for herkosd (Rust) as its session agent.
+herkos-dialog = "herkos.dialog:main"
 
 [dependency-groups]
 dev = [

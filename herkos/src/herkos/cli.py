@@ -38,7 +38,10 @@ BACKUP_TOOL = "org.vilna.mcp.backup"
 def _serve(args: argparse.Namespace) -> int:
     config = load_config()
     choices = {"gui": Dialog, "terminal": Terminal, "deny": DenyAll}
-    confirmer = choices[args.confirm]() if args.confirm in choices else default_confirmer()
+    if args.confirm_command:
+        confirmer = Dialog([args.confirm_command])
+    else:
+        confirmer = choices[args.confirm]() if args.confirm in choices else default_confirmer()
     try:
         journal = Journal(config.journal_path)
     except JournalError as e:
@@ -191,6 +194,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="how to ask the user (auto: a window if there is a desktop, else this "
         "terminal, else deny)",
+    )
+    serve.add_argument(
+        "--confirm-command",
+        metavar="PATH",
+        help="a window program other than herkos.dialog: the question as JSON on its stdin, "
+        "the answer as the last line of its stdout (for tests)",
     )
     serve.set_defaults(func=_serve)
 

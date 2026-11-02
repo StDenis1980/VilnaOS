@@ -35,6 +35,53 @@ impl SessionState {
     }
 }
 
+/// Why the level is higher than the manifest's. `msgid` is the English
+/// message id shared with Herkos-lite's translations; `args` fill its
+/// `{placeholders}` (a list is joined with "; ", each item translatable).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Raise {
+    pub msgid: &'static str,
+    pub args: Map<String, Value>,
+}
+
+impl Raise {
+    fn plain(msgid: &'static str) -> Raise {
+        Raise {
+            msgid,
+            args: Map::new(),
+        }
+    }
+
+    fn with(msgid: &'static str, key: &str, value: Value) -> Raise {
+        let mut args = Map::new();
+        args.insert(key.to_owned(), value);
+        Raise { msgid, args }
+    }
+
+    /// The English text, as Herkos-lite shows it untranslated.
+    pub fn text(&self) -> String {
+        let mut out = self.msgid.to_owned();
+        for (k, v) in &self.args {
+            let value = match v {
+                Value::String(s) => s.clone(),
+                Value::Array(items) => items
+                    .iter()
+                    .filter_map(Value::as_str)
+                    .collect::<Vec<_>>()
+                    .join("; "),
+                other => other.to_string(),
+            };
+            out = out.replace(&format!("{{{k}}}"), &value);
+        }
+        out
+    }
+
+    /// For the confirmation window, which translates it.
+    pub fn to_json(&self) -> Value {
+        serde_json::json!({"msgid": self.msgid, "args": self.args})
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Assessment {
     /// `None`: forbidden, or an operation the manifest does not name.
@@ -42,7 +89,7 @@ pub struct Assessment {
     pub base: Option<Level>,
     pub operation: Option<Operation>,
     /// Human-readable reasons for every raise, for the dialog and the journal.
-    pub raises: Vec<String>,
+    pub raises: Vec<Raise>,
     /// Allowed root that holds each resource; `None` if out of bounds.
     pub roots: Vec<Option<PathBuf>>,
     pub known_tool: bool,
@@ -120,7 +167,7 @@ pub fn assess(
             level: Some(base),
             base: Some(base),
             operation: None,
-            raises: vec!["the tool has no Herkos manifest".to_owned()],
+            raises: vec![Raise::plain("the tool has no Herkos manifest")],
             roots,
             known_tool: false,
         };
@@ -134,8 +181,8 @@ pub fn assess(
     };
 
     let mut level = base;
-    let mut raises: Vec<String> = Vec::new();
-    let mut raise = |level: &mut Level, to: Level, why: String| {
+    let mut raises: Vec<Raise> = Vec::new();
+    let mut raise = |level: &mut Level, to: Level, why: Raise| {
         *level = to;
         raises.push(why);
     };
@@ -146,7 +193,7 @@ pub fn assess(
             raise(
                 &mut level,
                 hinted,
-                "the tool describes this operation as riskier".into(),
+                Raise::plain("the tool describes this operation as riskier"),
             );
         }
     }
@@ -155,7 +202,7 @@ pub fn assess(
         raise(
             &mut level,
             to,
-            "untrusted content is in the conversation".into(),
+            Raise::plain("untrusted content is in the conversation"),
         );
     }
     if session.keros.suspicious() && level >= Level::R1 {
@@ -165,9 +212,10 @@ pub fn assess(
             .iter()
             .map(|(_, f)| f.description.as_str())
             .collect();
-        let why = format!(
-            "content read earlier {}",
-            kinds.into_iter().collect::<Vec<_>>().join("; ")
+        let why = Raise::with(
+            "content read earlier {kinds}",
+            "kinds",
+            serde_json::json!(kinds),
         );
         let to = level.raised();
         raise(&mut level, to, why);
@@ -177,22 +225,27 @@ pub fn assess(
         raise(
             &mut level,
             to,
-            "it touches something outside the allowed folders".into(),
+            Raise::plain("it touches something outside the allowed folders"),
         );
     }
     if request.resources.len() > limits.bulk_threshold {
         let to = level.raised();
-        let why = format!(
-            "it touches more than {} items at once",
-            limits.bulk_threshold
+        let why = Raise::with(
+            "it touches more than {n} items at once",
+            "n",
+            serde_json::json!(limits.bulk_threshold),
         );
         raise(&mut level, to, why);
     }
     if op.changes_state() && !(op.undoable || op.reversible) && level < Level::R3 {
-        raise(&mut level, Level::R3, "it cannot be undone".into());
+        raise(&mut level, Level::R3, Raise::plain("it cannot be undone"));
     }
     if op.egress && level < Level::R3 {
-        raise(&mut level, Level::R3, "data leaves this device".into());
+        raise(
+            &mut level,
+            Level::R3,
+            Raise::plain("data leaves this device"),
+        );
     }
     if op.egress
         && !session
@@ -200,7 +253,7 @@ pub fn assess(
             .leaks(&Value::Object(request.arguments.clone()))
             .is_empty()
     {
-        let why = "it sends data to an address that came from untrusted content".into();
+        let why = Raise::plain("it sends data to an address that came from untrusted content");
         raise(&mut level, Level::R4, why);
     }
 
@@ -331,9 +384,14 @@ mod tests {
         );
         let a = check(files("read", &["file:///home/u/Documents/a"]), &s);
         assert_eq!(a.level, Some(Level::R2));
+        let texts: Vec<String> = a.raises.iter().map(Raise::text).collect();
         assert_eq!(
-            a.raises,
+            texts,
             ["content read earlier asks the assistant to ignore its instructions"]
+        );
+        assert_eq!(
+            a.raises[0].to_json()["args"]["kinds"][0],
+            "asks the assistant to ignore its instructions"
         );
         let m = parse_manifest_str(
             "tool = \"t\"\n[operations.send]\nlevel = \"R1\"\negress = true",

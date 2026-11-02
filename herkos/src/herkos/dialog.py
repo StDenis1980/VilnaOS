@@ -20,6 +20,29 @@ import sys
 
 from herkos.i18n import _
 
+
+def translated_raises(question: dict) -> list[str]:
+    """Reasons for the higher level, in the window's language.
+
+    herkosd sends them untranslated with their message ids (``raises_i18n``);
+    Herkos-lite translates them itself and sends only ``raises``.
+    """
+    structured = question.get("raises_i18n")
+    if not isinstance(structured, list):
+        return [str(r) for r in question.get("raises", [])]
+    out = []
+    for r in structured:
+        args = {
+            k: "; ".join(_(str(x)) for x in v) if isinstance(v, list) else v
+            for k, v in (r.get("args") or {}).items()
+        }
+        try:
+            out.append(_(r["msgid"]).format(**args))
+        except (KeyError, IndexError, ValueError):
+            out.append(str(r.get("msgid", "")))
+    return out
+
+
 LABELS = {
     "once": "Allow once",
     "session": "Allow for this session",
@@ -57,7 +80,7 @@ def main() -> int:
 
         title = Gtk.Label(xalign=0, wrap=True)
         title.set_markup(
-            f"<b>{GLib.markup_escape_text(question['summary'])}</b>  ({question['level']})"
+            f"<b>{GLib.markup_escape_text(_(question['summary']))}</b>  ({question['level']})"
         )
         box.append(title)
 
@@ -73,7 +96,8 @@ def main() -> int:
             box.append(Gtk.Label(label=listing, xalign=0, wrap=True, selectable=True))
 
         notes = [_("Can be undone.") if question.get("undoable") else _("Cannot be undone.")]
-        notes += [_("Riskier than usual: {why}.").format(why=w) for w in question.get("raises", [])]
+        why_riskier = translated_raises(question)
+        notes += [_("Riskier than usual: {why}.").format(why=w) for w in why_riskier]
         if question.get("taint_sources"):
             notes.append(
                 _("Untrusted content came from: {src}").format(
