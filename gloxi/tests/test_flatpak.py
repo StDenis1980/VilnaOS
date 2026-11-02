@@ -50,7 +50,12 @@ def test_wheels_match_uv_lock():
 
 def test_local_packages_are_copied():
     text = MANIFEST.read_text(encoding="utf-8")
-    for pkg in ("gloxi/src/gloxi", "privacy-gateway/src/privacy_gateway", "herkos/src/herkos"):
+    for pkg in (
+        "gloxi/src/gloxi",
+        "privacy-gateway/src/privacy_gateway",
+        "herkos/src/herkos",
+        "mcp-files/src/vilna_mcp_files",
+    ):
         assert pkg in text
     assert (ROOT / "flatpak" / "gloxi-gtk").is_file()
     assert (ROOT / "flatpak" / "gloxi").is_file()
@@ -66,3 +71,9 @@ def test_desktop_metainfo_and_icon_agree():
     assert meta.findtext("id") == APP_ID
     assert meta.find("launchable").text == f"{APP_ID}.desktop"
     assert meta.findtext("project_license") == "GPL-3.0-or-later"
+
+
+def test_no_file_access_in_the_sandbox():
+    """Files come only through the document portal (folders the person chooses)."""
+    text = MANIFEST.read_text(encoding="utf-8")
+    assert "--filesystem" not in text

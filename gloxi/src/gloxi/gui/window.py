@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import sys
+import threading
 from gettext import gettext as _
+from pathlib import Path
 
 import gi
 
@@ -17,6 +19,13 @@ from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
 from gloxi.gui import APP_ID  # noqa: E402
 from gloxi.gui.controller import ChatController, ModelSetup, cloud_status  # noqa: E402
+from gloxi.herkos_local import (  # noqa: E402
+    LocalHerkos,
+    add_folder,
+    allowed_folders,
+    remove_folder,
+    start_if_needed,
+)
 from gloxi.i18n import setup  # noqa: E402
 from gloxi.llm import ChatClient  # noqa: E402
 from gloxi.privacy import guard_factory  # noqa: E402
@@ -53,6 +62,14 @@ class ChatWindow(Adw.ApplicationWindow):
         new_button = Gtk.Button(icon_name="list-add-symbolic", tooltip_text=_("New conversation"))
         new_button.connect("clicked", self._on_new)
         header.pack_start(new_button)
+        # Only with the Herkos bundled in the Flatpak: the folders it may use.
+        self.herkos: LocalHerkos | None = None
+        self.tools = None
+        self.folders_button = Gtk.Button(
+            icon_name="folder-symbolic", tooltip_text=_("Folders Gloxi may use"), visible=False
+        )
+        self.folders_button.connect("clicked", self._on_folders)
+        header.pack_end(self.folders_button)
 
         self.messages = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         for side in ("top", "bottom", "start", "end"):
@@ -98,6 +115,81 @@ class ChatWindow(Adw.ApplicationWindow):
         self.controller.reset()
         while child := self.messages.get_first_child():
             self.messages.remove(child)
+
+    # -- folders (bundled Herkos) -----------------------------------------------
+
+    def enable_folders(self, herkos: LocalHerkos, tools) -> None:
+        self.herkos, self.tools = herkos, tools
+        self.folders_button.set_visible(True)
+
+    def _on_folders(self, *_args) -> None:
+        dialog = Adw.PreferencesDialog(title=_("Folders Gloxi may use"))
+        page = Adw.PreferencesPage()
+        self._folders_group = Adw.PreferencesGroup(
+            description=_(
+                "Gloxi sees only the folders you choose here, and every action in them "
+                "goes through Herkos, which asks you first."
+            )
+        )
+        add = Gtk.Button(label=_("Add folder…"), valign=Gtk.Align.CENTER)
+        add.add_css_class("suggested-action")
+        add.connect("clicked", self._on_add_folder)
+        self._folders_group.set_header_suffix(add)
+        page.add(self._folders_group)
+        dialog.add(page)
+        self._folder_rows: list = []
+        self._fill_folders()
+        dialog.present(self)
+
+    def _fill_folders(self) -> None:
+        for row in self._folder_rows:
+            self._folders_group.remove(row)
+        self._folder_rows = []
+        folders = allowed_folders()
+        if not folders:
+            row = Adw.ActionRow(title=_("No folders yet: Gloxi cannot see any of your files."))
+            self._folders_group.add(row)
+            self._folder_rows.append(row)
+        for folder in folders:
+            row = Adw.ActionRow(title=folder.name or str(folder), subtitle=str(folder))
+            remove = Gtk.Button(
+                icon_name="user-trash-symbolic",
+                tooltip_text=_("Stop sharing this folder"),
+                valign=Gtk.Align.CENTER,
+            )
+            remove.add_css_class("flat")
+            remove.connect("clicked", lambda _b, f=folder: self._apply(remove_folder(f)))
+            row.add_suffix(remove)
+            self._folders_group.add(row)
+            self._folder_rows.append(row)
+
+    def _on_add_folder(self, *_args) -> None:
+        chooser = Gtk.FileDialog(title=_("Choose a folder for Gloxi"))
+
+        def done(dialog, result) -> None:
+            try:
+                chosen = dialog.select_folder_finish(result)
+            except GLib.Error:
+                return  # cancelled
+            path = chosen.get_path() if chosen else None
+            if path:
+                self._apply(add_folder(Path(path)))
+
+        chooser.select_folder(self, None, done)
+
+    def _apply(self, folders) -> None:
+        self._fill_folders()
+
+        def job() -> None:
+            try:
+                self.herkos.restart()
+            except Exception as exc:  # noqa: BLE001 - shown to the person
+                self.show_error(_("Herkos could not restart: {why}").format(why=exc))
+                return
+            if self.tools is not None:
+                self.tools.set_roots(folders)
+
+        threading.Thread(target=job, daemon=True).start()
 
     def _on_cancel_download(self, *_args) -> None:
         if self.model_setup is not None:
@@ -213,10 +305,13 @@ class GloxiApp(Adw.Application):
         cloud = ChatClient(settings.cloud) if settings.cloud else None
         self._clients = [c for c in (local, cloud) if c]
         router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))
+        self._herkos = start_if_needed(settings.tools_enabled)
         self._tools = file_tools(settings.tools_enabled)
         conversation = Conversation(router, settings.system_prompt, tools=self._tools)
         self._intro = backup_intro(settings.tools_enabled)
         window = ChatWindow(self, conversation, self._intro)
+        if self._herkos is not None:
+            window.enable_folders(self._herkos, self._tools)
         self._model_setup = window.model_setup = ModelSetup(settings, window)
         self._model_setup.begin()
         GLib.idle_add(lambda: window.controller.offer_intro() and False)
@@ -231,6 +326,8 @@ class GloxiApp(Adw.Application):
             self._intro.close()
         if getattr(self, "_model_setup", None):
             self._model_setup.stop()
+        if getattr(self, "_herkos", None):
+            self._herkos.stop()
         Adw.Application.do_shutdown(self)
 
 

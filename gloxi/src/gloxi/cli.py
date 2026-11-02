@@ -20,6 +20,7 @@ from gloxi.backup_intro import BackupIntro, backup_intro
 from gloxi.chat import Conversation
 from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
 from gloxi.engine import Engine, EngineError, Plan, download, human_size, plan
+from gloxi.herkos_local import start_if_needed
 from gloxi.i18n import N_, setup
 from gloxi.llm import ChatClient, ModelError, ModelUnavailable
 from gloxi.privacy import guard_factory
@@ -270,6 +271,9 @@ def main(argv: list[str] | None = None) -> int:
         local = stack.enter_context(ChatClient(settings.local))
         cloud = stack.enter_context(ChatClient(settings.cloud)) if settings.cloud else None
         router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))
+        herkos = start_if_needed(settings.tools_enabled)
+        if herkos:
+            stack.callback(herkos.stop)
         tools = file_tools(settings.tools_enabled)
         if tools:
             stack.callback(tools.close)
