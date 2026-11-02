@@ -13,6 +13,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from herkos.keros import Keros
 from herkos.manifest import Manifest, Operation
 from herkos.request import ActionRequest, Resource
 from herkos.risk import Level
@@ -44,6 +45,7 @@ class SessionState:
 
     tainted: bool = False
     taint_sources: list[str] = field(default_factory=list)
+    keros: Keros = field(default_factory=Keros)
 
     def taint(self, source: str) -> None:
         self.tainted = True
@@ -123,6 +125,10 @@ def assess(
     if session.tainted and level >= Level.R2:
         level = level.raised()
         raises.append("untrusted content is in the conversation")
+    if session.keros.suspicious and level >= Level.R1:
+        level = level.raised()
+        kinds = sorted({f.description for _, f in session.keros.findings})
+        raises.append("content read earlier " + "; ".join(kinds))
     if not all(r is not None for r in roots):
         level = level.raised()
         raises.append("it touches something outside the allowed folders")
@@ -135,5 +141,8 @@ def assess(
     if op.egress and level < Level.R3:
         level = Level.R3
         raises.append("data leaves this device")
+    if op.egress and session.keros.leaks(request.arguments):
+        level = Level.R4
+        raises.append("it sends data to an address that came from untrusted content")
 
     return Assessment(level=level, base=base, operation=op, raises=tuple(raises), roots=roots)

@@ -58,6 +58,8 @@ class Outcome:
     code: str
     message: str
     result: Any = None
+    # For results with external content: where it came from and what Keros saw.
+    keros: dict[str, Any] | None = None
 
     def to_json(self) -> dict[str, Any]:
         out: dict[str, Any] = {
@@ -69,6 +71,8 @@ class Outcome:
         }
         if self.code == "allowed":
             out["result"] = self.result
+            if self.keros is not None:
+                out["keros"] = self.keros
         return out
 
 
@@ -266,9 +270,18 @@ class Gate:
         except Exception as e:  # the tool must not take the gate down with it
             name = type(e).__name__
             result, ok, code, message = None, False, "tool_error", f"tool failed: {name}"
-        if ok and op.returns_external:
-            session.taint(f"{request.tool}.{request.operation}")
+        keros = None
         record: dict[str, Any] = {"ok": ok, "code": code, "result": digest(result) if ok else None}
+        if ok and op.returns_external:
+            source = f"{request.tool}.{request.operation}"
+            session.taint(source)
+            findings = session.keros.inspect(source, result)
+            keros = {
+                "source": source,
+                "untrusted": True,
+                "findings": [f.to_json() for f in findings],
+            }
+            record["keros"] = [f.rule for f in findings]
         undo = undo_info(request, op, result) if ok else None
         if undo:
             record["undo"] = undo
@@ -277,7 +290,7 @@ class Gate:
         except JournalError as e:
             # Already done, but Gloxi gets nothing it cannot account for.
             return Outcome(action_id, False, outcome.level, "denied_journal", str(e))
-        return Outcome(action_id, True, outcome.level, code, message, result if ok else None)
+        return Outcome(action_id, True, outcome.level, code, message, result if ok else None, keros)
 
     def undo(self, action_id: str, session: SessionState) -> Outcome:
         """Undo an earlier action by its journal id: a new ``restore`` request.
