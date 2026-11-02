@@ -1,0 +1,434 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: gloxi\n"
+"Report-Msgid-Bugs-To: https://github.com/StDenis1980/VilnaOS/issues\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "All right. I will ask once more in a week. You can also type /backup any time."
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "An external disk"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "Choose a number from 1 to {n}."
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Choose a number from the list, or type an amount in GB, e.g. 120"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Choose myself"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Choose what goes into backups"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Desktop"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Documents"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Downloads"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Dropbox, OneDrive, Google Drive"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Every day, recommended"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Every hour"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Every week"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Everything in the home folder"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "Everything in the home folder, without caches and Downloads ({size})"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Gloxi checks that the backup fits"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Gloxi checks whether backups are set up"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Gloxi measures how much space your folders take"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid ""
+"Have your recovery sheet ready and run this in a terminal:\n"
+"  vilna-backup recover <where the backups are>\n"
+"Then: vilna-backup restore --in-place"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Herkos sent an answer Gloxi does not understand"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Herkos, the permission service, is not available"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "How much space are you ready to give to backups?"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "How often?"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "I could not continue: {why}. We can go on later: type /backup."
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "I had Vilna before: restore from a backup"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "I will back up {what} (about {size}) {how} {where}."
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Keep Gloxi conversations in backups"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Keep your conversations with Gloxi in backups too?"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Later"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Leave large folders out of backups"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Leave out Gloxi history"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Music"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "My own storage (S3, SFTP)"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "No"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "No limit"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "No, I will give more space"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "Only settings ({size})"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Passwords and accounts are switched on by you only:"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Pictures"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Set how much space backups may take"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Set how often backups are made"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "Settings and documents, recommended ({size})"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Settings are always kept. Which folders to add? Type their numbers, for example: 1 3"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Settings, passwords, Gloxi and Herkos"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Shall I keep backups of your data, so you do not lose it along with the computer?"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "The Vilna cloud is not open yet in this preview. Choose another place."
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "The last step is yours, because it is about keys: run this in a terminal. It shows the recovery key once; write it on paper and keep it away from the computer. Without it, backups cannot be restored if this computer is lost. The first backup starts right after."
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "These are US companies: they see your account, the size and time of backups (not the contents), and a broken device could delete the backups. They are not in this preview yet. Choose another place."
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Type an amount in GB, e.g. 120"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Type the numbers of the folders, for example: 1 3"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Videos"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Vilna cloud (EU)"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "We are not talking about backups now."
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "What shall we keep? This is how much space it takes now:"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Where shall we keep them? Everything is encrypted on this computer first."
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Yes"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "Yes, leave them out"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "every day"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "every hour"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "every week"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "everything in the home folder"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "in your own storage"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "no"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "on the external disk"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "settings"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "settings and documents"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "settings and the folders you chose"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+msgid "yes"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+#, python-brace-format
+msgid ""
+"{size} does not fit into {limit}. Leave out these large folders (about {after} remains)?\n"
+"{folders}"
+msgstr ""
+
+#: gloxi/src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "{size} does not fit. Choose a larger amount."
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+msgid "(interrupted)"
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py gloxi/src/gloxi/gui/controller.py
+msgid "Backups need Herkos, and it is not running."
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+msgid "Cloud: off. Everything stays on this computer."
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+#, python-brace-format
+msgid "Cloud: on ({mode} mode)."
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /exit quits."
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+msgid "Conversation cleared."
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+msgid ""
+"Is llama-server running? For example:\n"
+"  llama-server -m model.gguf --port 8080\n"
+"or point Gloxi elsewhere with GLOXI_LOCAL_URL."
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+#, python-brace-format
+msgid "[cloud: {host}, masked]"
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+#, python-brace-format
+msgid "[cloud: {host}, not masked]"
+msgstr ""
+
+#: gloxi/src/gloxi/cli.py
+msgid "[local]"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+msgid "Cannot reach the cloud model."
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+msgid "Cloud off: everything stays on this computer"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+msgid "Cloud on, masking is off: messages are NOT masked"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+msgid "Cloud on, private data is masked"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "Cloud: {host}, masked"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "Cloud: {host}, not masked"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+msgid "Gloxi, backups"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+msgid "On this computer"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+msgid "The cloud is turned off in the settings."
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+msgid "The local model is not running. Start llama-server and try again."
+msgstr ""
+
+#: gloxi/src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "The model returned an error: {error}"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/window.py
+msgid "Ask Gloxi… (/local or /cloud to pick the model)"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/window.py
+msgid "New conversation"
+msgstr ""
+
+#: gloxi/src/gloxi/gui/window.py
+msgid "Send"
+msgstr ""
+
+#: gloxi/src/gloxi/tools.py
+#, python-brace-format
+msgid "{what} (denied: {message})"
+msgstr ""
+
+#: gloxi/src/gloxi/tools.py
+#, python-brace-format
+msgid "{what} (done)"
+msgstr ""
+
+#: gloxi/src/gloxi/tools.py
+#, python-brace-format
+msgid "{what} (done; warning: the content {warnings})"
+msgstr ""
+
+#: gloxi/src/gloxi/tools.py
+#, python-brace-format
+msgid "{what} (error: {message})"
+msgstr ""

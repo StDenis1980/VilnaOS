@@ -12,29 +12,31 @@ import sys
 from collections.abc import Callable
 from contextlib import ExitStack
 from dataclasses import replace
+from gettext import gettext as _
 from typing import TextIO
 
 from gloxi import __version__
 from gloxi.backup_intro import BackupIntro, backup_intro
 from gloxi.chat import Conversation
 from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
+from gloxi.i18n import N_, setup
 from gloxi.llm import ChatClient, ModelError, ModelUnavailable
 from gloxi.privacy import guard_factory
 from gloxi.router import CloudNotAllowed, Route, Router, Target
 from gloxi.tools import ToolOutcome, file_tools
 
-HELP = (
+HELP = N_(
     "Commands: /local <text> or /cloud <text> picks the model for one message, "
     "/reset clears the conversation, /backup sets up backups, /exit quits."
 )
 
-LLAMA_HINT = (
+LLAMA_HINT = N_(
     "Is llama-server running? For example:\n"
     "  llama-server -m model.gguf --port 8080\n"
     "or point Gloxi elsewhere with GLOXI_LOCAL_URL."
 )
 
-UNMASKED_WARNING = (
+UNMASKED_WARNING = N_(
     "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
 )
 
@@ -63,9 +65,10 @@ def split_command(text: str) -> tuple[Target | None, str]:
 
 def route_label(route: Route, router: Router) -> str:
     if route.target == "local":
-        return "[local]"
-    masked = "masked" if router.masks_cloud else "not masked"
-    return f"[cloud: {route.destination}, {masked}]"
+        return _("[local]")
+    if router.masks_cloud:
+        return _("[cloud: {host}, masked]").format(host=route.destination)
+    return _("[cloud: {host}, not masked]").format(host=route.destination)
 
 
 def tool_note(outcome: ToolOutcome) -> str:
@@ -86,7 +89,7 @@ def _answer(
         print(f"\n{exc}", file=sys.stderr)
         return False
     except ModelUnavailable as exc:
-        hint = LLAMA_HINT if conversation.last_route.target == "local" else ""
+        hint = _(LLAMA_HINT) if conversation.last_route.target == "local" else ""
         print(f"\n{exc}\n{hint}".rstrip(), file=sys.stderr)
         return False
     except ModelError as exc:
@@ -103,14 +106,14 @@ def repl(
     out: TextIO = sys.stdout,
     intro: BackupIntro | None = None,
 ) -> int:
-    print(f"Gloxi {__version__}. {HELP}", file=out)
+    print(f"Gloxi {__version__}. {_(HELP)}", file=out)
     router = conversation.router
     if router.cloud_enabled:
-        print(f"Cloud: on ({router.policy.mode} mode).", file=out)
+        print(_("Cloud: on ({mode} mode).").format(mode=router.policy.mode), file=out)
         if not router.masks_cloud:
-            print(UNMASKED_WARNING, file=out)
+            print(_(UNMASKED_WARNING), file=out)
     else:
-        print("Cloud: off. Everything stays on this computer.", file=out)
+        print(_("Cloud: off. Everything stays on this computer."), file=out)
     if intro and intro.due():
         run_intro(intro, read, out)
     while True:
@@ -125,25 +128,25 @@ def repl(
             return 0
         if text == "/reset":
             conversation.reset()
-            print("Conversation cleared.", file=out)
+            print(_("Conversation cleared."), file=out)
             continue
         if text == "/backup":
             if intro:
                 run_intro(intro, read, out)
             else:
-                print("Backups need Herkos, and it is not running.", file=out)
+                print(_("Backups need Herkos, and it is not running."), file=out)
             continue
         if text == "/help":
-            print(HELP, file=out)
+            print(_(HELP), file=out)
             continue
         force, text = split_command(text)
         if not text:
-            print(HELP, file=out)
+            print(_(HELP), file=out)
             continue
         try:
             _answer(conversation, text, out, force=force)
         except KeyboardInterrupt:
-            print("\n(interrupted)", file=out)
+            print("\n" + _("(interrupted)"), file=out)
 
 
 def run_intro(intro: BackupIntro, read: Callable[[str], str], out: TextIO) -> None:
@@ -177,6 +180,7 @@ def _settings(args: argparse.Namespace) -> Settings:
 
 
 def main(argv: list[str] | None = None) -> int:
+    setup()
     args = build_parser().parse_args(argv)
     try:
         settings = _settings(args)
