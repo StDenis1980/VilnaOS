@@ -1,0 +1,260 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Rules that find personal and secret data in text.
+
+Every rule returns spans ``(start, end)`` of the value to hide, never the label
+around it: in ``Email: a@b.eu`` only ``a@b.eu`` is hidden, so the model still
+sees what kind of value was there.
+
+The rules are regular expressions plus checksums where a format has one
+(payment cards, IBAN, the Ukrainian taxpayer number), which keeps false alarms
+down. They do not find names or places in free text: that needs a language
+model on the device and comes later. Until then a name is hidden only when it
+is labelled (``Ім'я: ...``, ``Name: ...``).
+"""
+
+from __future__ import annotations
+
+import re
+from collections.abc import Callable, Iterable, Iterator
+from dataclasses import dataclass
+from enum import StrEnum
+
+
+class Kind(StrEnum):
+    """What a value is. The name is shown to the model in the placeholder."""
+
+    SECRET = "SECRET"
+    EMAIL = "EMAIL"
+    IBAN = "IBAN"
+    CARD = "CARD"
+    TAX_ID = "TAX_ID"
+    PASSPORT = "PASSPORT"
+    PHONE = "PHONE"
+    IP = "IP"
+    PROFILE = "PROFILE"
+    NAME = "NAME"
+    BIRTH_DATE = "BIRTH_DATE"
+    ADDRESS = "ADDRESS"
+
+
+Span = tuple[int, int]
+
+
+@dataclass(frozen=True)
+class Finding:
+    kind: Kind
+    start: int
+    end: int
+    value: str
+
+
+# --- contacts -----------------------------------------------------------------
+
+EMAIL_RE = re.compile(
+    r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}"
+)
+
+PHONE_CANDIDATE_RE = re.compile(r"(?<![\w+])(?:\+|00)?(?:\(?\d{1,4}\)?[\s.\-]*){3,6}\d{2,4}(?!\w)")
+DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}|\d{1,2}[./]\d{1,2}[./]\d{2,4}")
+
+# A profile link: the site and a user name, nothing after it. Longer links
+# (a repository, a post) are left alone: they are usually what the user asks about.
+PROFILE_RE = re.compile(
+    r"(?:https?://)?(?:[\w-]+\.)?"
+    r"(?:linkedin\.com/in|t\.me|telegram\.me|github\.com|facebook\.com|fb\.com"
+    r"|instagram\.com|twitter\.com|x\.com|threads\.net|tiktok\.com|mastodon\.social)"
+    r"/@?[\w.%+-]++/?+(?![\w/])",
+    re.I,
+)
+
+IPV4_RE = re.compile(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")
+
+# --- identifiers and money ----------------------------------------------------
+
+IBAN_RE = re.compile(r"\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
+CARD_RE = re.compile(r"(?<![\d-])\d(?:[ -]?\d){12,18}(?![\d-])")
+TAX_ID_RE = re.compile(r"(?<!\d)\d{10}(?!\d)")
+# Ukrainian passport book: two Cyrillic capitals and six digits.
+PASSPORT_RE = re.compile(r"(?<![\w])[А-ЯІЇЄҐ]{2} ?\d{6}(?!\d)")
+
+# --- secrets ------------------------------------------------------------------
+
+SECRET_RES = (
+    re.compile(r"\bsk-(?:proj-|ant-)?[A-Za-z0-9_-]{20,}"),  # OpenAI, Anthropic style keys
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}"),  # GitHub tokens
+    re.compile(r"\bgithub_pat_[A-Za-z0-9_]{40,}"),
+    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),  # AWS access key id
+    re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}"),  # Slack
+    re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b"),  # Google API key
+    re.compile(r"(?<=Bearer )[A-Za-z0-9._~+/-]{20,}=*"),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]+?-----END [A-Z ]*PRIVATE KEY-----"),
+)
+
+# --- labelled fields: ``Label: value`` on one line ------------------------------
+
+
+def _labelled(labels: str) -> re.Pattern[str]:
+    return re.compile(
+        rf"(?im)^[ \t]*(?:[-*•][ \t]*)?(?:{labels})[ \t]*[:\-–—][ \t]*(?P<value>\S[^\n]*?)[ \t]*$"
+    )
+
+
+NAME_LABEL_RE = _labelled(
+    r"ПІБ|П\.І\.Б\.|ім.?я(?:[ \t]+(?:та|і)[ \t]+прізвище)?|прізвище|по[ \t]+батькові"
+    r"|full[ \t]*name|first[ \t]*name|last[ \t]*name|surname|name"
+)
+BIRTH_LABEL_RE = _labelled(
+    r"дата[ \t]+народження|народи(?:вся|лася)|date[ \t]+of[ \t]+birth|d\.?o\.?b\.?|birthday|born"
+)
+ADDRESS_LABEL_RE = _labelled(
+    r"адреса(?:[ \t]+проживання|[ \t]+реєстрації)?|address|home[ \t]+address|місце[ \t]+проживання"
+)
+PASSPORT_LABEL_RE = _labelled(r"паспорт|passport(?:[ \t]+(?:no\.?|number))?|ID[ \t]+card|ID-картка")
+SECRET_LABEL_RE = _labelled(r"пароль|password|passwd|pin|PIN-код|api[ _-]?key|token|secret")
+
+
+# --- checks ---------------------------------------------------------------------
+
+
+def _digits(s: str) -> str:
+    return re.sub(r"\D", "", s)
+
+
+def luhn_ok(number: str) -> bool:
+    total = 0
+    for i, ch in enumerate(reversed(number)):
+        d = int(ch)
+        if i % 2:
+            d *= 2
+            if d > 9:
+                d -= 9
+        total += d
+    return total % 10 == 0
+
+
+def iban_ok(raw: str) -> bool:
+    iban = raw.replace(" ", "")
+    if not 15 <= len(iban) <= 34:
+        return False
+    moved = iban[4:] + iban[:4]
+    as_digits = "".join(str(int(c, 36)) for c in moved)
+    return int(as_digits) % 97 == 1
+
+
+_TAX_WEIGHTS = (-1, 5, 7, 9, 4, 6, 10, 5, 7)
+
+
+def tax_id_ok(number: str) -> bool:
+    """Checksum of the Ukrainian taxpayer number (РНОКПП)."""
+    if len(number) != 10 or not number.isdigit():
+        return False
+    total = sum(int(d) * w for d, w in zip(number, _TAX_WEIGHTS, strict=False))
+    return total % 11 % 10 == int(number[9])
+
+
+# 1 250 000 000 or 6,500,000: an amount, not a phone.
+AMOUNT_RE = re.compile(r"\d{1,3}(?:([ ,\u00a0])\d{3})(?:\1\d{3})+")
+
+
+def looks_like_phone(raw: str) -> bool:
+    digits = _digits(raw)
+    if not 10 <= len(digits) <= 15:
+        return False
+    return not DATE_RE.search(raw) and not AMOUNT_RE.fullmatch(raw)
+
+
+def ipv4_ok(raw: str) -> bool:
+    parts = raw.split(".")
+    return all(int(p) <= 255 and (p == "0" or not p.startswith("0")) for p in parts)
+
+
+# --- finders --------------------------------------------------------------------
+
+Finder = Callable[[str], Iterable[Span]]
+
+
+def _spans(pattern: re.Pattern[str], check: Callable[[str], bool] | None = None) -> Finder:
+    def find(text: str) -> Iterator[Span]:
+        for m in pattern.finditer(text):
+            if check is None or check(m.group(0)):
+                yield m.span()
+
+    return find
+
+
+def _value_spans(pattern: re.Pattern[str]) -> Finder:
+    def find(text: str) -> Iterator[Span]:
+        for m in pattern.finditer(text):
+            yield m.span("value")
+
+    return find
+
+
+def _secrets(text: str) -> Iterator[Span]:
+    for pattern in SECRET_RES:
+        for m in pattern.finditer(text):
+            yield m.span()
+
+
+def _cards(text: str) -> Iterator[Span]:
+    for m in CARD_RE.finditer(text):
+        digits = _digits(m.group(0))
+        # Card numbers start with 2-6 (Mastercard, Amex, Visa, Discover, UnionPay).
+        if 13 <= len(digits) <= 19 and digits[0] in "23456" and luhn_ok(digits):
+            yield m.span()
+
+
+def _tax_ids(text: str) -> Iterator[Span]:
+    for m in TAX_ID_RE.finditer(text):
+        number = m.group(0)
+        # A ten-digit number starting with 0 is a Ukrainian phone, not a tax number.
+        if not number.startswith("0") and tax_id_ok(number):
+            yield m.span()
+
+
+@dataclass(frozen=True)
+class Rule:
+    kind: Kind
+    find: Finder
+
+
+# Earlier rules win when two findings overlap (then the longer one wins).
+RULES: tuple[Rule, ...] = (
+    Rule(Kind.SECRET, _secrets),
+    Rule(Kind.SECRET, _value_spans(SECRET_LABEL_RE)),
+    Rule(Kind.NAME, _value_spans(NAME_LABEL_RE)),
+    Rule(Kind.BIRTH_DATE, _value_spans(BIRTH_LABEL_RE)),
+    Rule(Kind.ADDRESS, _value_spans(ADDRESS_LABEL_RE)),
+    Rule(Kind.PASSPORT, _value_spans(PASSPORT_LABEL_RE)),
+    Rule(Kind.EMAIL, _spans(EMAIL_RE)),
+    Rule(Kind.PROFILE, _spans(PROFILE_RE)),
+    Rule(Kind.IBAN, _spans(IBAN_RE, iban_ok)),
+    Rule(Kind.CARD, _cards),
+    Rule(Kind.TAX_ID, _tax_ids),
+    Rule(Kind.PASSPORT, _spans(PASSPORT_RE)),
+    Rule(Kind.IP, _spans(IPV4_RE, ipv4_ok)),
+    Rule(Kind.PHONE, _spans(PHONE_CANDIDATE_RE, looks_like_phone)),
+)
+
+
+def detect(text: str, kinds: Iterable[Kind] | None = None) -> list[Finding]:
+    """Find what to hide in ``text``, without overlaps, in text order."""
+    wanted = set(kinds) if kinds is not None else set(Kind)
+    candidates: list[tuple[int, int, int, Kind]] = []
+    for rank, rule in enumerate(RULES):
+        if rule.kind not in wanted:
+            continue
+        for start, end in rule.find(text):
+            if end > start:
+                candidates.append((rank, start, end, rule.kind))
+    candidates.sort(key=lambda c: (c[0], -(c[2] - c[1]), c[1]))
+
+    taken: list[Span] = []
+    found: list[Finding] = []
+    for _, start, end, kind in candidates:
+        if any(start < t_end and t_start < end for t_start, t_end in taken):
+            continue
+        taken.append((start, end))
+        found.append(Finding(kind, start, end, text[start:end]))
+    found.sort(key=lambda f: f.start)
+    return found

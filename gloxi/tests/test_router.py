@@ -3,6 +3,7 @@ import pytest
 from fake_server import FakeLlamaServer
 from helpers import ask, make_conversation, make_router
 
+from gloxi.chat import Conversation
 from gloxi.config import RouterPolicy
 from gloxi.llm import ModelError
 from gloxi.router import CloudNotAllowed
@@ -61,21 +62,65 @@ def test_messages_reach_only_the_chosen_model():
     assert conv.last_route.target == "cloud"
 
 
-def test_outbound_filter_applies_only_to_cloud():
-    seen = []
+class FakeGuard:
+    def __init__(self):
+        self.masked = 0
 
-    def mask(messages):
-        seen.append(len(messages))
+    def mask_messages(self, messages):
+        self.masked += 1
         return [{**m, "content": m["content"].replace("Олена", "[NAME_1]")} for m in messages]
 
-    local, cloud = FakeLlamaServer(), FakeLlamaServer()
-    router = make_router(local, cloud, ON, outbound_filter=mask)
+    def unmask_stream(self, chunks):
+        yield "".join(chunks).replace("[NAME_1]", "Олена")
+
+
+def test_guard_applies_only_to_cloud():
+    guards = []
+
+    def factory():
+        guards.append(FakeGuard())
+        return guards[-1]
+
+    local, cloud = FakeLlamaServer("Олена"), FakeLlamaServer("Привіт, [NAME_1]")
+    router = make_router(local, cloud, ON, guard_factory=factory)
     assert router.masks_cloud
-    list(router.stream([{"role": "user", "content": "Олена"}], router.decide("Олена")))
-    list(router.stream([{"role": "user", "content": "Олена"}], router.decide("hi", force="cloud")))
+    msgs = [{"role": "user", "content": "Олена"}]
+    assert "".join(router.stream(msgs, router.decide("Олена"))) == "Олена"
+    assert "".join(router.stream(msgs, router.decide("hi", force="cloud"))) == "Привіт, Олена"
     assert local.requests[0]["messages"][0]["content"] == "Олена"
     assert cloud.requests[0]["messages"][0]["content"] == "[NAME_1]"
-    assert seen == [1]
+    assert guards[0].masked == 1
+
+
+def test_new_conversation_gets_a_new_guard():
+    made = []
+    router = make_router(FakeLlamaServer(), guard_factory=lambda: made.append(1) or FakeGuard())
+    conv = Conversation(router, "SYS")
+    first = router.guard
+    conv.reset()
+    assert router.guard is not first
+    assert len(made) == 2
+
+
+def test_real_gateway_masks_and_restores():
+    pytest.importorskip("privacy_gateway")
+    from gloxi.privacy import guard_factory
+
+    local = FakeLlamaServer()
+    cloud = FakeLlamaServer("Готово, лист для [EMAIL_1].")
+    conv = make_conversation(local, cloud=cloud, policy=ON, guard_factory=guard_factory(ON))
+    answer = ask(conv, "Напиши на olena@example.com", force="cloud")
+    assert answer == "Готово, лист для olena@example.com."
+    sent = cloud.requests[0]["messages"][-1]["content"]
+    assert sent == "Напиши на [EMAIL_1]"
+    # The history keeps the real values; only the wire sees placeholders.
+    assert conv.history[-1]["content"] == answer
+
+
+def test_masking_off_sends_as_is():
+    from gloxi.privacy import guard_factory
+
+    assert guard_factory(RouterPolicy(mask_cloud=False)) is None
 
 
 def test_no_silent_fallback_to_cloud_when_local_fails():

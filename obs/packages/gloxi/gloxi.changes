@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov  2 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Mask personal data before it goes to the cloud (privacy gateway,
+  on by default; mask_cloud = false turns it off)
+
+-------------------------------------------------------------------
 Mon Nov  2 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: Gloxi 0.1 preview (terminal chat with a local

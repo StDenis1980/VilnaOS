@@ -8,16 +8,21 @@ license = "GPL-3.0-or-later"
 requires-python = ">=3.11"
 dependencies = [
     "httpx>=0.27",
+    "vilna-privacy-gateway",
 ]
 
 [project.scripts]
 gloxi = "gloxi.cli:main"
+gloxi-gtk = "gloxi.gui.window:main"
 
 [dependency-groups]
 dev = [
     "pytest>=8",
     "ruff>=0.6",
 ]
+
+[tool.uv.sources]
+vilna-privacy-gateway = { path = "../privacy-gateway", editable = true }
 
 [build-system]
 requires = ["hatchling>=1.26"]
