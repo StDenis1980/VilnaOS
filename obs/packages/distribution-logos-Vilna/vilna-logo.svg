@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- PLACEHOLDER: replace with the final Vilna logo (brush-stroke circle with a swallow). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <circle cx="64" cy="64" r="54" fill="none" stroke="#0057b8" stroke-width="12"/>
+  <path d="M30 46 Q50 52 64 92 Q78 52 98 46 Q78 62 64 76 Q50 62 30 46 Z" fill="#ffd700"/>
+</svg>

@@ -1,0 +1,6 @@
+-------------------------------------------------------------------
+Mon Nov  2 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: Vilna service presets (avahi, samba, openssh
+  off by default; herkos and gloxi on)
+

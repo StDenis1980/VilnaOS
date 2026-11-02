@@ -1,0 +1,10 @@
+# Vilna operating system identification, see os-release(5).
+# HOME_URL, SUPPORT_URL and BUG_REPORT_URL: add once the project domain is chosen.
+NAME="Vilna"
+PRETTY_NAME="Vilna @VERSION@ (pre-alpha)"
+ID="vilna"
+ID_LIKE="opensuse-tumbleweed opensuse suse"
+VERSION="@VERSION@ (pre-alpha)"
+VERSION_ID="@VERSION@"
+ANSI_COLOR="0;38;2;0;87;184"
+LOGO="vilna-logo"
