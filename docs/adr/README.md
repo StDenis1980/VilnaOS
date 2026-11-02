@@ -15,6 +15,7 @@
 | [0009](0009-languages.md) | Основні мови: uk, en, es, pl, de, fr, it, ro, cs, lt; решта через Weblate | Прийнято |
 | [0010](0010-keros-local-model.md) | Класифікатор Keros — та сама локальна модель, що й у Gloxi; лише на пристрої, лише підвищує ризик | Прийнято |
 | [0011](0011-default-office-suite.md) | Офісний пакет за замовчуванням: Tinta Office (Flatpak) замість LibreOffice, Thunderbird, Papers | Прийнято |
+| [0012](0012-recommended-apps-and-install-via-gloxi.md) | Добірка «Рекомендовано Vilna» в GNOME Software і встановлення програм через Gloxi (R3 у Herkos) | Прийнято |
 
 Рішення Р4 (збірка образу) потрібне лише на етапі 2 і буде записане тоді.
 
