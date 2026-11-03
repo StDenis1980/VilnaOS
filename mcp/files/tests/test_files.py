@@ -156,3 +156,11 @@ def test_backups_expire_after_30_days(tmp_path):
     assert files.prune() >= 1
     with pytest.raises(FilesError, match="30 days"):
         files.restore(str(a), old)
+
+
+def test_backups_are_private(files, tmp_path):
+    (files.roots[0] / "x.txt").write_text("a")
+    files.write(str(files.roots[0] / "x.txt"), "b")
+    assert files.backup_dir.stat().st_mode & 0o777 == 0o700
+    for folder in files.backup_dir.iterdir():
+        assert folder.stat().st_mode & 0o777 == 0o700

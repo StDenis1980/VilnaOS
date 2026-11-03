@@ -478,3 +478,43 @@ def test_system_herkos_asks_for_r3_and_r4(system):
     finally:
         subprocess.run([*(SUDO or []), "kill", str(agent.pid)], check=False)
         agent.wait(timeout=10)
+
+
+def test_a_tool_that_stopped_is_started_again(system):
+    home = pwd.getpwnam("hkt-anna").pw_dir
+    note = f"{home}/Documents/again.txt"
+    root("sh", "-c", f"echo again > {note} && chown hkt-anna:hkt-anna {note}")
+    agent = as_user(
+        "hkt-anna",
+        [
+            PYTHON,
+            "-m",
+            "herkos.agent",
+            "--socket",
+            str(system.socket),
+            "--window-command",
+            str(system.base / "window"),
+        ],
+        pythonpath=str(system.base / "py"),
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        assert "registered" in agent.stderr.readline()
+        root("sh", "-c", f"echo session > {system.base / 'agent' / 'answer'}")
+        read = msg(2, "herkos.request_action", read_request(note))
+        _, r = system.rpc("hkt-gloxi-a", HELLO, read)
+        assert r["result"]["decision"] == "allowed", r
+        # The tool dies (out of memory, killed): the call that finds out fails,
+        # the next one gets a fresh tool, still running as Anna.
+        subprocess.run([*(SUDO or []), "pkill", "-u", "hkt-anna", "-f", "vilna_mcp_files"])
+        time.sleep(0.5)
+        _, broken, again = system.rpc("hkt-gloxi-a", HELLO, read, {**read, "id": 3})
+        log = (system.base / "herkosd.log").read_text()
+        assert broken["result"]["code"] == "tool_error", broken
+        assert again["result"]["code"] == "allowed", (again, log)
+        assert "again" in json.dumps(again["result"]["result"])
+        assert "started again" in log
+    finally:
+        subprocess.run([*(SUDO or []), "kill", str(agent.pid)], check=False)
+        agent.wait(timeout=10)

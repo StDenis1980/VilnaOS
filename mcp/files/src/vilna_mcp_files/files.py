@@ -195,7 +195,11 @@ class Files:
         self.prune()
         backup_id = f"{int(self.clock())}{secrets.token_hex(6)}"
         folder = self.backup_dir / backup_id
-        folder.mkdir(parents=True, mode=0o700)
+        # Copies of the person's files: only the person may even list them,
+        # whatever the umask and the mode of their home.
+        self.backup_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self.backup_dir.chmod(0o700)
+        folder.mkdir(mode=0o700)
         existed = f.is_file()
         if existed:
             shutil.copy2(f, folder / "content")

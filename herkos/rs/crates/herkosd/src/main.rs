@@ -171,7 +171,13 @@ fn start_tool(tools: &mut mcp::McpTools, name: &str, program: &str, args: Vec<St
     let mut command = vec![path.display().to_string()];
     command.extend(args);
     match mcp::McpStdio::start(name, &command, mcp::CALL_TIMEOUT) {
-        Ok(t) => tools.add(t),
+        Ok(t) => {
+            let name = name.to_owned();
+            tools.add_relaunching(
+                t,
+                Box::new(move || mcp::McpStdio::start(&name, &command, mcp::CALL_TIMEOUT)),
+            );
+        }
         Err(e) => eprintln!("herkosd: {name} failed to start: {e}"),
     }
 }

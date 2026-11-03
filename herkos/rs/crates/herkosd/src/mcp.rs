@@ -4,17 +4,18 @@
 //!
 //! Herkos, not Gloxi, owns the tool processes (permissions.md 9.5). One
 //! request at a time per server; a server that dies, is slow or answers
-//! nonsense is stopped and every further call fails, which is a denial for
-//! Gloxi, never a bypass.
+//! nonsense is stopped and the call fails, which is a denial for Gloxi, never
+//! a bypass. Herkos then starts a fresh server for the next request, at most
+//! once per `RETRY_AFTER`; the broken one never answers again.
 
 use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::os::unix::net::UnixStream;
 use std::process::{Child, Command, Stdio};
-use std::sync::Mutex;
 use std::sync::mpsc::{Receiver, RecvTimeoutError, sync_channel};
+use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use herkos_core::request::ActionRequest;
 use serde_json::{Map, Value, json};
@@ -24,6 +25,8 @@ use crate::gate::Tools;
 pub const MCP_PROTOCOL_VERSION: &str = "2025-06-18";
 const MAX_RESPONSE: usize = 16 * 1024 * 1024;
 pub const CALL_TIMEOUT: Duration = Duration::from_secs(60);
+/// How often Herkos tries to start again a tool that stopped.
+pub const RETRY_AFTER: Duration = Duration::from_secs(30);
 
 enum Line {
     Message(Vec<u8>),
@@ -230,8 +233,8 @@ impl McpStdio {
         self.annotations.get(operation).cloned()
     }
 
-    #[cfg(test)]
-    pub fn running(&self) -> bool {
+    /// Whether the server still answers: false once a call broke it.
+    pub fn alive(&self) -> bool {
         self.state.lock().is_ok_and(|s| s.is_some())
     }
 
@@ -290,20 +293,90 @@ impl Drop for McpStdio {
     }
 }
 
+/// Starts a tool server again after the old one stopped.
+pub type Relaunch = Box<dyn Fn() -> Result<McpStdio, String> + Send + Sync>;
+
+struct Slot {
+    current: Mutex<Arc<McpStdio>>,
+    relaunch: Option<Relaunch>,
+    /// When we last tried to start it again; held while we try.
+    last_try: Mutex<Option<Instant>>,
+}
+
 /// The tool servers this Herkos started, by tool name.
-#[derive(Default)]
 pub struct McpTools {
-    tools: Vec<McpStdio>,
+    tools: Vec<(String, Slot)>,
+    retry_after: Duration,
+}
+
+impl Default for McpTools {
+    fn default() -> McpTools {
+        McpTools {
+            tools: Vec::new(),
+            retry_after: RETRY_AFTER,
+        }
+    }
 }
 
 impl McpTools {
+    #[cfg(test)]
     pub fn add(&mut self, tool: McpStdio) {
-        self.tools.push(tool);
+        self.add_slot(tool, None);
     }
 
-    fn get(&self, name: &str) -> Option<&McpStdio> {
-        self.tools.iter().find(|t| t.name() == name)
+    /// A tool that is started again when it stops (killed, out of memory, broken).
+    pub fn add_relaunching(&mut self, tool: McpStdio, relaunch: Relaunch) {
+        self.add_slot(tool, Some(relaunch));
     }
+
+    fn add_slot(&mut self, tool: McpStdio, relaunch: Option<Relaunch>) {
+        let slot = Slot {
+            current: Mutex::new(Arc::new(tool)),
+            relaunch,
+            last_try: Mutex::new(None),
+        };
+        self.tools.push((slot_name(&slot), slot));
+    }
+
+    fn get(&self, name: &str) -> Option<Arc<McpStdio>> {
+        let (_, slot) = self.tools.iter().find(|(n, _)| n == name)?;
+        let current = Arc::clone(&*slot.current.lock().ok()?);
+        let Some(relaunch) = &slot.relaunch else {
+            return Some(current);
+        };
+        if current.alive() {
+            return Some(current);
+        }
+        let mut last_try = slot.last_try.lock().ok()?;
+        // Another request may have started it while we waited for the lock.
+        let now_current = Arc::clone(&*slot.current.lock().ok()?);
+        if now_current.alive() {
+            return Some(now_current);
+        }
+        if last_try.is_some_and(|t| t.elapsed() < self.retry_after) {
+            return Some(current);
+        }
+        *last_try = Some(Instant::now());
+        match relaunch() {
+            Ok(fresh) => {
+                eprintln!("herkosd: {name} started again");
+                let fresh = Arc::new(fresh);
+                *slot.current.lock().ok()? = Arc::clone(&fresh);
+                Some(fresh)
+            }
+            Err(e) => {
+                eprintln!("herkosd: {name} did not start again: {e}");
+                Some(current)
+            }
+        }
+    }
+}
+
+fn slot_name(slot: &Slot) -> String {
+    slot.current
+        .lock()
+        .map(|t| t.name().to_owned())
+        .unwrap_or_default()
 }
 
 impl Tools for McpTools {
@@ -366,9 +439,62 @@ mod tests {
             t.execute(&req("read")),
             Err("the tool did not answer".into())
         );
-        assert!(!t.running());
+        assert!(!t.alive());
         assert_eq!(
             t.execute(&req("read")),
+            Err("the tool is not running".into())
+        );
+    }
+
+    /// Answers setup and one call, then exits.
+    const ONE_CALL: &str = r#"
+        read l; echo '{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18"}}'
+        read l
+        read l; echo '{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"read"}]}}'
+        read l; echo '{"jsonrpc":"2.0","id":3,"result":{"structuredContent":{"n":1}}}'
+    "#;
+
+    #[test]
+    fn a_stopped_tool_is_started_again() {
+        let start = || McpStdio::start("t", &fake(ONE_CALL), Duration::from_secs(2));
+        let starts = Arc::new(Mutex::new(0));
+        let counted = Arc::clone(&starts);
+        let mut tools = McpTools {
+            retry_after: Duration::ZERO,
+            ..McpTools::default()
+        };
+        tools.add_relaunching(
+            start().expect("start"),
+            Box::new(move || {
+                *counted.lock().expect("count") += 1;
+                start()
+            }),
+        );
+        assert_eq!(tools.execute(&req("read")), Ok(json!({"n": 1})));
+        // The server exited: this call fails, and it is not retried.
+        assert!(tools.execute(&req("read")).is_err());
+        assert_eq!(*starts.lock().expect("count"), 0);
+        // The next request finds it stopped and gets a fresh server.
+        assert!(tools.running("t"));
+        assert_eq!(tools.execute(&req("read")), Ok(json!({"n": 1})));
+        assert_eq!(*starts.lock().expect("count"), 1);
+
+        // Without a relaunch, a stopped tool stays stopped; and not more
+        // often than retry_after.
+        let mut once = McpTools::default();
+        once.add_relaunching(start().expect("start"), Box::new(|| Err("no".into())));
+        assert!(once.execute(&req("read")).is_ok());
+        assert!(once.execute(&req("read")).is_err());
+        assert_eq!(
+            once.execute(&req("read")),
+            Err("the tool is not running".into())
+        );
+        let mut plain = McpTools::default();
+        plain.add(start().expect("start"));
+        assert!(plain.execute(&req("read")).is_ok());
+        assert!(plain.execute(&req("read")).is_err());
+        assert_eq!(
+            plain.execute(&req("read")),
             Err("the tool is not running".into())
         );
     }
