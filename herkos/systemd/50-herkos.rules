@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// The system Herkos (user herkos) may start and stop its tool units for
+// people (uid 1000-59999), and nothing else in systemd. It never gets to
+// start a unit of its choice: that would be as good as root.
+polkit.addRule(function (action, subject) {
+    if (subject.user !== "herkos") {
+        return polkit.Result.NOT_HANDLED;
+    }
+    if (action.id !== "org.freedesktop.systemd1.manage-units") {
+        return polkit.Result.NO;
+    }
+    var verb = action.lookup("verb");
+    var m = /^vilna-mcp-(files|backup)@([0-9]+)\.service$/.exec(action.lookup("unit") || "");
+    if (m && (verb === "start" || verb === "stop")) {
+        var uid = parseInt(m[2], 10);
+        if (uid >= 1000 && uid < 60000) {
+            return polkit.Result.YES;
+        }
+    }
+    return polkit.Result.NO;
+});

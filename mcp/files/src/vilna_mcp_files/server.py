@@ -183,7 +183,9 @@ def _tool_error(message: str) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(prog="vilna-mcp-files")
+    # @FILE: arguments from a file, one per line (how the system Herkos passes
+    # the allowed folders, herkos/systemd/vilna-mcp-files@.service).
+    p = argparse.ArgumentParser(prog="vilna-mcp-files", fromfile_prefix_chars="@")
     p.add_argument("--root", action="append", required=True, help="allowed folder (repeatable)")
     p.add_argument("--backup-dir", required=True, help="where backups for undo are kept")
     p.add_argument(

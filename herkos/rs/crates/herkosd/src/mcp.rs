@@ -9,7 +9,8 @@
 
 use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Read, Write};
-use std::process::{Child, ChildStdin, Command, Stdio};
+use std::os::unix::net::UnixStream;
+use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 use std::sync::mpsc::{Receiver, RecvTimeoutError, sync_channel};
 use std::thread;
@@ -30,23 +31,28 @@ enum Line {
 }
 
 struct Running {
-    child: Child,
-    stdin: ChildStdin,
+    /// The server process, when this Herkos started it itself (else systemd did).
+    child: Option<Child>,
+    stdin: Box<dyn Write + Send>,
     lines: Receiver<Line>,
     next_id: u64,
 }
 
 impl Running {
-    fn stop(mut self) {
+    fn stop(self) {
+        // End of input: a server stops by itself.
         drop(self.stdin);
+        let Some(mut child) = self.child else {
+            return;
+        };
         for _ in 0..20 {
-            if matches!(self.child.try_wait(), Ok(Some(_))) {
+            if matches!(child.try_wait(), Ok(Some(_))) {
                 return;
             }
             thread::sleep(Duration::from_millis(100));
         }
-        let _ = self.child.kill();
-        let _ = self.child.wait();
+        let _ = child.kill();
+        let _ = child.wait();
     }
 }
 
@@ -143,12 +149,33 @@ impl McpStdio {
             let _ = child.kill();
             return Err("no pipes to the tool".into());
         };
-        let mut run = Running {
-            child,
-            stdin,
+        let run = Running {
+            child: Some(child),
+            stdin: Box::new(stdin),
             lines: reader(stdout),
             next_id: 0,
         };
+        McpStdio::setup(name, run, timeout)
+    }
+
+    /// A server that systemd started and connected to us (`StandardInput=file:`
+    /// of a socket, see herkos/systemd/vilna-mcp-files@.service).
+    pub fn over_socket(
+        name: &str,
+        stream: UnixStream,
+        timeout: Duration,
+    ) -> Result<McpStdio, String> {
+        let reading = stream.try_clone().map_err(|e| e.to_string())?;
+        let run = Running {
+            child: None,
+            stdin: Box::new(stream),
+            lines: reader(reading),
+            next_id: 0,
+        };
+        McpStdio::setup(name, run, timeout)
+    }
+
+    fn setup(name: &str, mut run: Running, timeout: Duration) -> Result<McpStdio, String> {
         let setup = (|| {
             let init = json!({
                 "protocolVersion": MCP_PROTOCOL_VERSION,

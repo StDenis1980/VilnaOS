@@ -20,11 +20,15 @@ User=herkos
 Group=herkos
 StateDirectory=herkos
 StateDirectoryMode=0700
+# Where the tools started for each person connect (units.rs).
+RuntimeDirectory=herkos-tools
+RuntimeDirectoryMode=0711
 UMask=0077
 Restart=on-failure
 
-# Hardening: herkosd reads the person's settings and passwd, writes only
-# its own state.
+# Hardening: herkosd reads the settings and passwd, writes only its own
+# state. It cannot become anybody: tools that act as a person are template
+# units it may only start (vilna-mcp-*@<uid>.service, 50-herkos.rules).
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes

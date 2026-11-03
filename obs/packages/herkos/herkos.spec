@@ -28,6 +28,11 @@ BuildRequires:  python-rpm-macros
 BuildRequires:  sysuser-tools
 BuildRequires:  systemd-rpm-macros
 %sysusers_requires
+# 50-herkos.rules: herkosd may start only its tool units.
+Requires:       polkit
+# The tools run as the person (vilna-mcp-*@.service); packaged separately.
+Recommends:     vilna-mcp-files
+Recommends:     vilna-mcp-backup
 %{?systemd_ordering}
 
 %description
@@ -74,6 +79,12 @@ cargo build --manifest-path rs/Cargo.toml --release --offline --locked -p herkos
 install -Dm0755 rs/target/release/herkosd %{buildroot}%{_libexecdir}/herkos/herkosd
 install -Dm0644 systemd/herkosd.socket %{buildroot}%{_unitdir}/herkosd.socket
 install -Dm0644 systemd/herkosd.service %{buildroot}%{_unitdir}/herkosd.service
+%{_unitdir}/vilna-mcp-files@.service
+%{_unitdir}/vilna-mcp-backup@.service
+%{_datadir}/polkit-1/rules.d/50-herkos.rules
+install -Dm0644 systemd/vilna-mcp-files@.service %{buildroot}%{_unitdir}/vilna-mcp-files@.service
+install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-mcp-backup@.service
+install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos.rules
 install -Dm0644 systemd/herkos.sysusers %{buildroot}%{_sysusersdir}/herkos.conf
 install -Dm0644 systemd/system.toml %{buildroot}%{_sysconfdir}/herkos/system.toml
 install -Dm0644 systemd/herkos-agent.service %{buildroot}%{_userunitdir}/herkos-agent.service

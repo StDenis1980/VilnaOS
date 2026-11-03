@@ -17,6 +17,7 @@ mod mitos;
 mod passwd;
 mod rpc;
 mod system;
+mod units;
 
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
@@ -32,7 +33,7 @@ use serde_json::Value;
 /// A longer message closes the connection (protocol.md).
 const MAX_LINE: usize = 1024 * 1024;
 
-const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH]\n       herkosd journal verify [--file PATH]\n       herkosd --version";
+const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd --version";
 
 fn default_socket() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")
@@ -288,6 +289,12 @@ fn run_system(args: &[String]) -> Result<(), String> {
         .filter(|p| p.is_absolute())
         .unwrap_or_else(|| PathBuf::from(system::STATE));
     let mut passwd_path = PathBuf::from("/etc/passwd");
+    // systemd's RuntimeDirectory=herkos-tools: where the tools connect.
+    let mut tools_dir = std::env::var_os("RUNTIME_DIRECTORY")
+        .map(PathBuf::from)
+        .filter(|p| p.is_absolute())
+        .unwrap_or_else(|| PathBuf::from("/run/herkos-tools"));
+    let mut start = PathBuf::from("systemctl");
     let mut rest = args.iter();
     while let Some(a) = rest.next() {
         match a.as_str() {
@@ -296,6 +303,9 @@ fn run_system(args: &[String]) -> Result<(), String> {
             "--config" => config_path = absolute(a, rest.next())?,
             "--state" => state = absolute(a, rest.next())?,
             "--passwd" => passwd_path = absolute(a, rest.next())?,
+            "--tools-dir" => tools_dir = absolute(a, rest.next())?,
+            // A stand-in for systemctl (tests).
+            "--start-command" => start = absolute(a, rest.next())?,
             _ => return Err(format!("unknown argument {a}\n{USAGE}")),
         }
     }
@@ -311,8 +321,12 @@ fn run_system(args: &[String]) -> Result<(), String> {
         Some(p) => bind_public(p)?,
         None => socket_from_stdin()?,
     };
-    // Tools that act as the person come with the launcher (see system.rs).
-    let tools: Box<system::ToolsFor> = Box::new(|_, _| Box::new(mcp::McpTools::default()));
+    let units = units::Units {
+        dir: tools_dir,
+        start,
+    };
+    let tools: Box<system::ToolsFor> =
+        Box::new(move |config, person| units.tools_for(config, person));
     let sys = Arc::new(system::System::new(people, config_path, state, tools));
     eprintln!(
         "herkosd: system service for {} people",

@@ -18,6 +18,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from pathlib import Path
 
@@ -25,6 +26,7 @@ import pytest
 
 HERKOSD = os.environ.get("HERKOSD")
 SRC = Path(__file__).resolve().parents[1] / "src" / "herkos"
+MCP_FILES = Path(__file__).resolve().parents[2] / "mcp" / "files" / "src" / "vilna_mcp_files"
 # Run as other users: the system Python, not a virtualenv in a private checkout.
 PYTHON = "/usr/bin/python3" if Path("/usr/bin/python3").exists() else sys.executable
 USERS = ["hkt-herkos", "hkt-gloxi-a", "hkt-gloxi-b", "hkt-anna", "hkt-bohdan", "hkt-other"]
@@ -96,6 +98,60 @@ print(json.dumps(out))
 """
 
 
+# Stands in for systemctl: herkosd asks it to start a tool unit.
+FAKE_SYSTEMCTL = """\
+#!/bin/sh
+case "$3" in
+    vilna-mcp-files@*.service) echo "$3" > "{spool}/$3" ;;
+    *) exit 1 ;;
+esac
+"""
+
+# What systemd does for vilna-mcp-files@.service: connect stdin and stdout
+# to herkosd's socket as root, then become the person and run the tool.
+LAUNCH = """\
+import os, pwd, socket, sys
+uid, path, cmd = int(sys.argv[1]), sys.argv[2], sys.argv[3:]
+s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+s.connect(path)
+os.dup2(s.fileno(), 0)
+os.dup2(s.fileno(), 1)
+pw = pwd.getpwuid(uid)
+os.setgroups([])
+os.setgid(pw.pw_gid)
+os.setuid(uid)
+os.environ["HOME"] = pw.pw_dir
+os.execv(cmd[0], cmd)
+"""
+
+# The confirmation window of the agent: logs the question, gives the answer
+# written in the file "answer" next to it.
+WINDOW = """\
+#!{python}
+import json, pathlib, sys
+here = pathlib.Path(__file__).parent / "agent"
+with (here / "questions.jsonl").open("a") as f:
+    f.write(json.dumps(json.load(sys.stdin)) + "\\n")
+answer = here / "answer"
+print(answer.read_text().strip() if answer.exists() else "deny")
+"""
+
+
+def fake_systemd(base: Path, stop: threading.Event) -> None:
+    spool = base / "spool"
+    while not stop.is_set():
+        for req in sorted(spool.iterdir()) if spool.exists() else []:
+            unit = req.name
+            uid = unit.split("@")[1].split(".")[0]
+            subprocess.run([*(SUDO or []), "rm", "-f", str(req)], check=False)
+            sock = base / "tools" / uid / "files.sock"
+            args = base / "tools" / uid / "files.args"
+            cmd = [*(SUDO or []), "env", f"PYTHONPATH={base / 'py'}", PYTHON]
+            cmd += [str(base / "launch.py"), uid, str(sock), PYTHON, "-m", "vilna_mcp_files"]
+            subprocess.Popen([*cmd, f"@{args}"], stderr=subprocess.DEVNULL)
+        stop.wait(0.05)
+
+
 class System:
     def __init__(self, base: Path, process: subprocess.Popen) -> None:
         self.base = base
@@ -132,7 +188,17 @@ def system(users):
         base.chmod(0o755)
         shutil.copy2(HERKOSD, base / "herkosd")
         shutil.copytree(SRC, base / "py" / "herkos", ignore=shutil.ignore_patterns("__pycache__"))
+        shutil.copytree(
+            MCP_FILES, base / "py" / "vilna_mcp_files", ignore=shutil.ignore_patterns("__pycache__")
+        )
         (base / "rpc.py").write_text(RPC, encoding="utf-8")
+        (base / "launch.py").write_text(LAUNCH, encoding="utf-8")
+        (base / "fake-systemctl").write_text(
+            FAKE_SYSTEMCTL.format(spool=base / "spool"), encoding="utf-8"
+        )
+        (base / "window").write_text(WINDOW.format(python=PYTHON), encoding="utf-8")
+        (base / "fake-systemctl").chmod(0o755)
+        (base / "window").chmod(0o755)
         (base / "system.toml").write_text(
             '[[person]]\nuser = "hkt-anna"\ngloxi = "hkt-gloxi-a"\n'
             '[[person]]\nuser = "hkt-bohdan"\ngloxi = "hkt-gloxi-b"\n',
@@ -140,9 +206,11 @@ def system(users):
         )
         (base / "config.toml").write_text('keros_model = "off"\n', encoding="utf-8")
         subprocess.run(["chmod", "-R", "a+rX", str(base)], check=True)
-        for d in ("run", "state"):
+        for d in ("run", "state", "spool", "tools"):
             (base / d).mkdir()
             root("chown", "hkt-herkos:hkt-herkos", str(base / d))
+        (base / "agent").mkdir()
+        root("chown", "hkt-anna:hkt-anna", str(base / "agent"))
         root("chmod", "0700", str(base / "state"))
         args = [str(base / "herkosd"), "system", "--socket", str(base / "run" / "herkos.sock")]
         args += [
@@ -151,7 +219,10 @@ def system(users):
             "--config",
             str(base / "config.toml"),
         ]
-        args += ["--state", str(base / "state")]
+        args += ["--state", str(base / "state"), "--tools-dir", str(base / "tools")]
+        args += ["--start-command", str(base / "fake-systemctl")]
+        stop = threading.Event()
+        threading.Thread(target=fake_systemd, args=(base, stop), daemon=True).start()
         log = (base / "herkosd.log").open("wb")
         proc = as_user("hkt-herkos", args, stdout=log, stderr=subprocess.STDOUT)
         s = System(base, proc)
@@ -162,6 +233,8 @@ def system(users):
             time.sleep(0.05)
         yield s
     finally:
+        if "stop" in locals():
+            stop.set()
         if "proc" in locals():
             subprocess.run([*(SUDO or []), "kill", str(proc.pid)], check=False)
             proc.wait(timeout=10)
@@ -262,10 +335,10 @@ def test_socket_from_systemd(users, tmp_path):
         c = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         c.settimeout(5)
         c.connect(str(path))
-        c.sendall(json.dumps(HELLO).encode() + b"\n")
         try:
+            c.sendall(json.dumps(HELLO).encode() + b"\n")
             answer = c.recv(100)
-        except ConnectionResetError:
+        except (BrokenPipeError, ConnectionResetError):
             answer = b""
         assert answer == b""  # nobody is listed: no answer
     finally:
@@ -280,3 +353,56 @@ def test_socket_from_systemd(users, tmp_path):
         check=False,
     )
     assert done.returncode == 2 and "not a listening socket" in done.stderr
+
+
+def read_request(path: str) -> dict:
+    return {
+        "tool": "org.vilna.mcp.files",
+        "operation": "read",
+        "reason": "conformance",
+        "resources": [Path(path).as_uri()],
+        "arguments": {"path": path},
+    }
+
+
+def test_tools_act_as_the_person(system):
+    home = pwd.getpwnam("hkt-anna").pw_dir
+    note = f"{home}/Documents/note.txt"
+    root(
+        "sh",
+        "-c",
+        f"echo 'Buy milk.' > {note} && chown hkt-anna:hkt-anna {note} && chmod 600 {note}",
+    )
+    agent = as_user(
+        "hkt-anna",
+        [
+            PYTHON,
+            "-m",
+            "herkos.agent",
+            "--socket",
+            str(system.socket),
+            "--window-command",
+            str(system.base / "window"),
+        ],
+        pythonpath=str(system.base / "py"),
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        assert "registered" in agent.stderr.readline()
+        root("sh", "-c", f"echo once > {system.base / 'agent' / 'answer'}")
+        _, r = system.rpc("hkt-gloxi-a", HELLO, msg(2, "herkos.request_action", read_request(note)))
+        r = r["result"]
+        log = (system.base / "herkosd.log").read_text()
+        assert (r["decision"], r["code"]) == ("allowed", "allowed"), (r, log)
+        assert "Buy milk." in json.dumps(r["result"])
+        questions = (system.base / "agent" / "questions.jsonl").read_text().splitlines()
+        assert json.loads(questions[-1])["resources"] == [Path(note).as_uri()]
+
+        # Bohdan's Gloxi cannot read Anna's file: nobody of Bohdan's answers,
+        # and his tool would run as Bohdan anyway.
+        _, r = system.rpc("hkt-gloxi-b", HELLO, msg(2, "herkos.request_action", read_request(note)))
+        assert r["result"]["decision"] == "denied" and "result" not in r["result"]
+    finally:
+        subprocess.run([*(SUDO or []), "kill", str(agent.pid)], check=False)
+        agent.wait(timeout=10)
