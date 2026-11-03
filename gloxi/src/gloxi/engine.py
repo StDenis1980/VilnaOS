@@ -69,8 +69,8 @@ LARGE_MODEL = ModelFile(
         "https://huggingface.co/mistralai/Ministral-3-8B-Instruct-2512-GGUF/resolve/main/"
         "Ministral-3-8B-Instruct-2512-Q4_K_M.gguf"
     ),
-    sha256="0" * 64,  # copied from tools/check_model.py's output in CI
-    size=5_200_000_000,
+    sha256="33e7a72cf5e6e2cfc2f2847075acc013d68bba023e35310cef86b5cf8fdca761",
+    size=5_198_911_904,
     source=N_("Mistral AI on Hugging Face"),
     licence="Apache-2.0",
 )
