@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The files tool for the person with uid %i, started by the system Herkos
+# (herkosd may start only these units: 50-herkos.rules). Its stdin and
+# stdout are one connection to herkosd's private socket.
+[Unit]
+Description=Files tool of Herkos for uid %i
+ConditionPathExists=/run/herkos-tools/%i/files.sock
+StopWhenUnneeded=no
+
+[Service]
+Type=simple
+User=%i
+ExecStart=/usr/bin/vilna-mcp-files @/run/herkos-tools/%i/files.args
+StandardInput=file:/run/herkos-tools/%i/files.sock
+StandardOutput=file:/run/herkos-tools/%i/files.sock
+StandardError=journal
+# The tool stops when herkosd closes the connection; no restarts behind its back.
+Restart=no
+
+# Sandbox: the person's files and nothing else, no network.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=-/home -/var/home
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

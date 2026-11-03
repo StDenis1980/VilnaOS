@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The backup tool (ADR 0007) for the person with uid %i, started by the
+# system Herkos (50-herkos.rules). It runs vilna-backup as the person:
+# the backup keys and settings are theirs.
+[Unit]
+Description=Backup tool of Herkos for uid %i
+ConditionPathExists=/run/herkos-tools/%i/backup.sock
+
+[Service]
+Type=simple
+User=%i
+ExecStart=/usr/bin/vilna-mcp-backup
+StandardInput=file:/run/herkos-tools/%i/backup.sock
+StandardOutput=file:/run/herkos-tools/%i/backup.sock
+StandardError=journal
+Restart=no
+
+# Sandbox: the person's files; network for the backup server.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=-/home -/var/home
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

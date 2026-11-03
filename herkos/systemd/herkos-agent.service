@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The session agent: shows the system Herkos's questions on this person's
+# screen (systemctl --user). It decides nothing; herkosd checks every answer.
+[Unit]
+Description=Herkos confirmation windows for this session
+PartOf=graphical-session.target
+After=graphical-session.target
+ConditionPathExists=/run/herkos/herkos.sock
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/herkos-agent
+# herkosd restarted (an update): connect again.
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

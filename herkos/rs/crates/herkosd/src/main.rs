@@ -14,7 +14,10 @@ mod grants;
 mod keros_model;
 mod mcp;
 mod mitos;
+mod passwd;
 mod rpc;
+mod system;
+mod units;
 
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
@@ -30,7 +33,7 @@ use serde_json::Value;
 /// A longer message closes the connection (protocol.md).
 const MAX_LINE: usize = 1024 * 1024;
 
-const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd journal verify\n       herkosd --version";
+const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd --version";
 
 fn default_socket() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")
@@ -71,33 +74,44 @@ fn encode(msg: &Value) -> Vec<u8> {
     out
 }
 
-fn serve_connection(stream: UnixStream, uid: u32, gate: Arc<gate::Gate>) {
-    // Not ours, or unknown: no answer at all.
-    match rustix::net::sockopt::socket_peercred(&stream) {
-        Ok(cred) if cred.uid.as_raw() == uid => {}
-        _ => return,
+/// One line of the protocol, as read from a connection.
+enum Message {
+    Json(Value),
+    Bad,
+    TooLong,
+    End,
+}
+
+fn read_message(reader: &mut BufReader<UnixStream>) -> Message {
+    let mut line = Vec::new();
+    let limit = (MAX_LINE + 1) as u64;
+    match reader.take(limit).read_until(b'\n', &mut line) {
+        Ok(0) | Err(_) => return Message::End,
+        Ok(_) => {}
     }
+    if line.len() > MAX_LINE && line.last() != Some(&b'\n') {
+        return Message::TooLong;
+    }
+    serde_json::from_slice(&line).map_or(Message::Bad, Message::Json)
+}
+
+/// Gloxi's side of the protocol; the caller has checked who is calling.
+fn serve_connection(stream: UnixStream, gate: Arc<gate::Gate>) {
     let Ok(mut writer) = stream.try_clone() else {
         return;
     };
     let mut reader = BufReader::new(stream);
     let mut conn = rpc::Connection::new(gate);
-    let mut line = Vec::new();
     loop {
-        line.clear();
-        let limit = (MAX_LINE + 1) as u64;
-        match (&mut reader).take(limit).read_until(b'\n', &mut line) {
-            Ok(0) | Err(_) => return,
-            Ok(_) => {}
-        }
-        if line.len() > MAX_LINE && line.last() != Some(&b'\n') {
-            let msg = rpc::error(&Value::Null, rpc::INVALID_REQUEST, "message too long");
-            let _ = writer.write_all(&encode(&msg));
-            return;
-        }
-        let response = match serde_json::from_slice::<Value>(&line) {
-            Err(_) => Some(rpc::error(&Value::Null, rpc::PARSE_ERROR, "not valid JSON")),
-            Ok(msg) => conn.dispatch(&msg),
+        let response = match read_message(&mut reader) {
+            Message::End => return,
+            Message::TooLong => {
+                let msg = rpc::error(&Value::Null, rpc::INVALID_REQUEST, "message too long");
+                let _ = writer.write_all(&encode(&msg));
+                return;
+            }
+            Message::Bad => Some(rpc::error(&Value::Null, rpc::PARSE_ERROR, "not valid JSON")),
+            Message::Json(msg) => conn.dispatch(&msg),
         };
         if let Some(r) = response {
             if writer.write_all(&encode(&r)).is_err() {
@@ -109,6 +123,15 @@ fn serve_connection(stream: UnixStream, uid: u32, gate: Arc<gate::Gate>) {
 
 fn build_gate(confirmer: Box<dyn gate::Confirmer>) -> Result<gate::Gate, String> {
     let config = config::load_config(&config::default_config_path())?;
+    let tools = start_tools(&config);
+    build_gate_from(config, Box::new(tools), confirmer)
+}
+
+fn build_gate_from(
+    config: config::Config,
+    tools: Box<dyn gate::Tools>,
+    confirmer: Box<dyn gate::Confirmer>,
+) -> Result<gate::Gate, String> {
     let journal = mitos::Journal::open(&config.journal_path())
         .map_err(|e| format!("the journal is broken, refusing to start: {e}"))?;
     let grants = grants::GrantStore::new(&config.grants_path(), grants::now);
@@ -116,7 +139,6 @@ fn build_gate(confirmer: Box<dyn gate::Confirmer>) -> Result<gate::Gate, String>
         eprintln!("herkosd: permissions ignored: {e}");
     }
     let manifests = herkos_core::manifest::Registry::builtin().map_err(|e| e.0)?;
-    let tools = start_tools(&config);
     let model_check = match &config.keros_model {
         None => None,
         Some(url) => match keros_model::Judge::new(url) {
@@ -127,15 +149,10 @@ fn build_gate(confirmer: Box<dyn gate::Confirmer>) -> Result<gate::Gate, String>
             }
         },
     };
-    Ok(gate::Gate::new(
-        config,
-        manifests,
-        Box::new(tools),
-        grants,
-        journal,
-        confirmer,
+    Ok(
+        gate::Gate::new(config, manifests, tools, grants, journal, confirmer)
+            .with_model_check(model_check),
     )
-    .with_model_check(model_check))
 }
 
 /// An executable on PATH (the tool servers are installed like any program).
@@ -206,11 +223,116 @@ fn serve(socket: &Path, confirmer: Box<dyn gate::Confirmer>) -> Result<(), Strin
         match stream {
             Ok(s) => {
                 let gate = Arc::clone(&gate);
-                thread::spawn(move || serve_connection(s, uid, gate));
+                // Not ours, or unknown: no answer at all.
+                match rustix::net::sockopt::socket_peercred(&s) {
+                    Ok(cred) if cred.uid.as_raw() == uid => {
+                        thread::spawn(move || serve_connection(s, gate));
+                    }
+                    _ => {}
+                }
             }
             Err(e) => eprintln!("herkosd: accept: {e}"),
         }
     }
+    Ok(())
+}
+
+/// The listening socket systemd passes as stdin (`StandardInput=socket`
+/// in `herkosd.service`; adopting fd 3 instead would need `unsafe`).
+fn socket_from_stdin() -> Result<UnixListener, String> {
+    use std::os::fd::AsFd;
+    let stdin = std::io::stdin();
+    let fd = stdin.as_fd();
+    let is_socket = rustix::fs::fstat(fd).is_ok_and(|st| {
+        rustix::fs::FileType::from_raw_mode(st.st_mode) == rustix::fs::FileType::Socket
+    });
+    if !is_socket || !rustix::net::sockopt::socket_acceptconn(fd).unwrap_or(false) {
+        return Err(
+            "stdin is not a listening socket: start herkosd.socket, or pass --socket".into(),
+        );
+    }
+    let owned = fd.try_clone_to_owned().map_err(|e| e.to_string())?;
+    Ok(UnixListener::from(owned))
+}
+
+/// A socket of our own for `system --socket` (tests, development): anybody
+/// may connect, as with `herkosd.socket`; the uid decides who gets answers.
+fn bind_public(path: &Path) -> Result<UnixListener, String> {
+    let folder = path.parent().ok_or("the socket path has no folder")?;
+    fs::create_dir_all(folder).map_err(|e| format!("{}: {e}", folder.display()))?;
+    if let Ok(m) = fs::symlink_metadata(path) {
+        if !m.file_type().is_socket() {
+            return Err(format!("{} exists and is not a socket", path.display()));
+        }
+        fs::remove_file(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    }
+    let listener = UnixListener::bind(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    fs::set_permissions(path, fs::Permissions::from_mode(0o666))
+        .map_err(|e| format!("{}: {e}", path.display()))?;
+    Ok(listener)
+}
+
+fn absolute(flag: &str, value: Option<&String>) -> Result<PathBuf, String> {
+    match value {
+        Some(p) if Path::new(p).is_absolute() => Ok(PathBuf::from(p)),
+        _ => Err(format!("{flag} needs an absolute path")),
+    }
+}
+
+fn run_system(args: &[String]) -> Result<(), String> {
+    let mut socket = None;
+    let mut system_config = PathBuf::from(system::SYSTEM_CONFIG);
+    let mut config_path = PathBuf::from(system::CONFIG);
+    // systemd's StateDirectory=herkos, else the usual place.
+    let mut state = std::env::var_os("STATE_DIRECTORY")
+        .map(PathBuf::from)
+        .filter(|p| p.is_absolute())
+        .unwrap_or_else(|| PathBuf::from(system::STATE));
+    let mut passwd_path = PathBuf::from("/etc/passwd");
+    // systemd's RuntimeDirectory=herkos-tools: where the tools connect.
+    let mut tools_dir = std::env::var_os("RUNTIME_DIRECTORY")
+        .map(PathBuf::from)
+        .filter(|p| p.is_absolute())
+        .unwrap_or_else(|| PathBuf::from("/run/herkos-tools"));
+    let mut start = PathBuf::from("systemctl");
+    let mut rest = args.iter();
+    while let Some(a) = rest.next() {
+        match a.as_str() {
+            "--socket" => socket = Some(absolute(a, rest.next())?),
+            "--system-config" => system_config = absolute(a, rest.next())?,
+            "--config" => config_path = absolute(a, rest.next())?,
+            "--state" => state = absolute(a, rest.next())?,
+            "--passwd" => passwd_path = absolute(a, rest.next())?,
+            "--tools-dir" => tools_dir = absolute(a, rest.next())?,
+            // A stand-in for systemctl (tests).
+            "--start-command" => start = absolute(a, rest.next())?,
+            _ => return Err(format!("unknown argument {a}\n{USAGE}")),
+        }
+    }
+    let accounts = passwd::load(&passwd_path)?;
+    let people = system::load_system(&system_config, &accounts)?;
+    if people.people.is_empty() {
+        eprintln!(
+            "herkosd: nobody is listed in {}; every caller is refused",
+            system_config.display()
+        );
+    }
+    let listener = match &socket {
+        Some(p) => bind_public(p)?,
+        None => socket_from_stdin()?,
+    };
+    let units = units::Units {
+        dir: tools_dir,
+        start,
+    };
+    let tools: Box<system::ToolsFor> =
+        Box::new(move |config, person| units.tools_for(config, person));
+    let sys = Arc::new(system::System::new(people, config_path, state, tools));
+    eprintln!(
+        "herkosd: system service for {} people",
+        sys.config.people.len()
+    );
+    system::serve(&listener, sys);
     Ok(())
 }
 
@@ -233,8 +355,13 @@ fn run(args: &[String]) -> Result<(), String> {
             }
             Ok(())
         }
+        Some("system") => run_system(&args[1..]),
         Some("journal") if args.get(1).map(String::as_str) == Some("verify") => {
-            let path = config::load_config(&config::default_config_path())?.journal_path();
+            let path = match args.get(2).map(String::as_str) {
+                Some("--file") => absolute("--file", args.get(3))?,
+                Some(a) => return Err(format!("unknown argument {a}\n{USAGE}")),
+                None => config::load_config(&config::default_config_path())?.journal_path(),
+            };
             match mitos::verify(&path) {
                 Ok(v) => {
                     println!("journal OK: {} records ({})", v.records, path.display());
