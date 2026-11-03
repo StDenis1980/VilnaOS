@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# statichost.eu site "gloxi": the dashboard's working directory is
+# `site/redirect-gloxi`. It only sends gloxi.eu, gloxi.org, gloxi.es and
+# gloxi.online (and their www) to https://vilnaos.com/gloxi/ (site/README.md).
+public: public

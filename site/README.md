@@ -71,6 +71,14 @@ HTTPS-сертифікат statichost випускає сам після пер�
 
 Переадресацію за доменом (host → host) документація statichost не описує, а `_redirects` працює лише за шляхом. Поки ці три домени стоять лише із захисними поштовими записами й не відкривають сайт. Варіанти пізніше: спитати підтримку statichost про переадресацію доменів-синонімів або увімкнути переадресацію в Arsys, якщо вона працює через HTTPS.
 
+### Домени Gloxi: gloxi.eu, gloxi.org, gloxi.es, gloxi.online
+
+Вони ведуть на https://vilnaos.com/gloxi/, а не на головну, тому мають окремий сайт у statichost: [`redirect-gloxi/`](redirect-gloxi/) з одним `_redirects` (`/* → https://vilnaos.com/gloxi/ 301!`).
+
+1. statichost: новий сайт `gloxi`, той самий репозиторій і гілка `main`, **working directory: `site/redirect-gloxi`**; webhook `https://builder.statichost.eu/gloxi`.
+2. Domains: основний `gloxi.eu`, плюс `www.gloxi.eu`, `gloxi.org`, `www.gloxi.org`, `gloxi.es`, `www.gloxi.es`, `gloxi.online`, `www.gloxi.online` (без «Redirect to primary»: усі адреси й так ведуть на vilnaos.com/gloxi/).
+3. Arsys, для кожного з чотирьох доменів: «Gestión libre», видалити записи заглушки, тоді A і AAAA як у vilnaos.com, `www` CNAME → `gloxi.statichost.page`, TXT `v=spf1 -all`, `_dmarc` TXT `v=DMARC1; p=reject`.
+
 ### Перевірка після підключення
 
 ```sh
