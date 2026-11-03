@@ -35,6 +35,18 @@ Vilna має з першого запуску вміти працювати з �
 - **Що треба зробити в Tinta Office** (запити вже передано проєкту Tinta Office): Flatpak-збірки всіх п'яти програм з ідентифікаторами Tinta і подання на Flathub, перевірка в GNOME/Wayland на Aeon; мови ro, cs, lt; системна згода на звіти про помилки; опис MCP-серверів для Gloxi.
 - Поки Tinta Office не на Flathub, Vilna підтримує власне Flatpak-сховище; це додаткова робота для збірки образу (етап 2).
 
+## Інтеграція з системою (рішення Denys 2026-11-03)
+
+Tinta Office відповів на запит Vilna документом [vilna-integration.md](https://github.com/StDenis1980/tintaoffice-web/blob/main/docs/vilna-integration.md) (приватний репозиторій tintaoffice-web, issue #16). Уже зроблено: системна відповідь про звіти (змінна `TINTA_OFFICE_REPORTS`, у Flatpak — через `flatpak override --system --env=…` або `/etc/environment.d/`), позначки `readOnlyHint` на всіх інструментах MCP, `mailto:`/`.ics`/`.vcf`/`.eml` у Tinta Correo і одне вікно на скриньку. Щоб Correo став типовим для цих типів, Vilna прописує його в `/etc/xdg/gnome-mimeapps.list`.
+
+Відповіді Vilna на питання Tinta:
+
+1. **Формат — Flatpak** (див. рішення вище). Tinta Correo отримує `--talk-name=org.gnome.OnlineAccounts`, а для подій у панелі годинника `--filesystem=xdg-config/evolution/sources:create` і `--filesystem=xdg-data/tinta-correo:create`. Herkos має знати про ці дозволи.
+2. **Провайдери GNOME Online Accounts** — стандартний набір GNOME 49: Nextcloud (тестовий випадок), Google, Microsoft 365, IMAP і SMTP. Що з цього Correo справді бере, Tinta перевіряє на GNOME 49.
+3. **Панель годинника без затримки.** Подія, яку створив Gloxi або людина в Correo, має з'явитися в панелі одразу: Correo після зміни просить Evolution Data Server оновити джерело.
+
+Обмеження, які стосуються Herkos, поки Tinta їх не виправить (запит tintaoffice-web #20): у Tinta Calculo MCP-сервер не вміє обмежувати файли теками, тож його стримує лише пісочниця Flatpak; канал керування Tinta Presenta (`--control`) не має ключа, тож Vilna не запускає Presenta з `--control`. Для Texto, Presenta і PDF Gloxi використовує headless-сервер MCP з коренями читання й запису в теці, яку дозволила людина.
+
 ## Розглянуті варіанти
 
 - **RPM-пакети в OBS-проєкті Vilna.** У репозиторіях Tinta уже є опис `.rpm` (nfpm), але це порушує принцип «хост мінімальний, програми — Flatpak»: кожне оновлення офісу йшло б через `transactional-update` і перезавантаження, а Flathub дає Tinta Office й іншим дистрибутивам.
