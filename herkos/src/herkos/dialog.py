@@ -43,6 +43,24 @@ def translated_raises(question: dict) -> list[str]:
     return out
 
 
+MAX_CONTENT_LINES = 40
+
+
+def content_text(question: dict) -> str | None:
+    """The exact arguments of an R4 action, as the person will read them.
+
+    The system ``herkosd`` sends them as ``content`` for every R4 question:
+    "allow" there means "allow exactly this", so the text must be visible.
+    """
+    if "content" not in question or question["content"] is None:
+        return None
+    text = json.dumps(question["content"], ensure_ascii=False, indent=2)
+    lines = text.splitlines()
+    if len(lines) > MAX_CONTENT_LINES:
+        lines = [*lines[:MAX_CONTENT_LINES], "…"]
+    return "\n".join(lines)
+
+
 LABELS = {
     "once": "Allow once",
     "session": "Allow for this session",
@@ -105,6 +123,13 @@ def main() -> int:
                 )
             )
         box.append(Gtk.Label(label="\n".join(notes), xalign=0, wrap=True))
+
+        content = content_text(question)
+        if content is not None:
+            box.append(Gtk.Label(label=_("Exactly this will be done:"), xalign=0))
+            shown = Gtk.Label(label=content, xalign=0, wrap=True, selectable=True)
+            shown.add_css_class("monospace")
+            box.append(shown)
 
         buttons = Gtk.Box(spacing=8, halign=Gtk.Align.END)
         deny = Gtk.Button(label=_("Deny"))

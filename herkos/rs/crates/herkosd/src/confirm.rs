@@ -134,6 +134,14 @@ pub fn render(q: &Question) -> String {
             .iter()
             .map(|r| format!("  Riskier than usual: {}.", Raise::text(r))),
     );
+    if let Some(content) = &q.content {
+        let text = serde_json::to_string_pretty(content).unwrap_or_default();
+        lines.push("  Exactly this will be done:".to_owned());
+        lines.extend(text.lines().take(40).map(|l| format!("    {l}")));
+        if text.lines().count() > 40 {
+            lines.push("    …".to_owned());
+        }
+    }
     if !q.taint_sources.is_empty() {
         lines.push(format!(
             "  Untrusted content came from: {}",
@@ -230,6 +238,7 @@ mod tests {
             raises: Vec::new(),
             taint_sources: Vec::new(),
             choices,
+            content: None,
         }
     }
 

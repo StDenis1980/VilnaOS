@@ -30,6 +30,9 @@ msgstr "Ризикованіше, ніж зазвичай: {why}."
 msgid "Untrusted content came from: {src}"
 msgstr "Ненадійний вміст надійшов з: {src}"
 
+msgid "Exactly this will be done:"
+msgstr "Буде виконано саме це:"
+
 msgid "Deny"
 msgstr "Відхилити"
 

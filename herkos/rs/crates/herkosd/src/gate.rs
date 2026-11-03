@@ -80,6 +80,8 @@ pub struct Question {
     pub raises: Vec<Raise>,
     pub taint_sources: Vec<String>,
     pub choices: Vec<Answer>,
+    /// R4: exactly what will be done, the action's arguments (permissions.md 5.2).
+    pub content: Option<Value>,
 }
 
 impl Question {
@@ -98,6 +100,7 @@ impl Question {
             "raises_i18n": self.raises.iter().map(Raise::to_json).collect::<Vec<_>>(),
             "taint_sources": self.taint_sources,
             "choices": self.choices.iter().map(|c| c.name()).collect::<Vec<_>>(),
+            "content": self.content,
         })
     }
 }
@@ -399,11 +402,15 @@ impl Gate {
                 "R0: no permission needed".into(),
             ));
         }
-        let found = self
-            .grants
-            .lock()
-            .map_err(|_| JournalError("permissions lock poisoned".into()))?
-            .find(&request.tool, &request.operation, &a.roots, level);
+        // R4 is asked every time: no permission covers it (permissions.md 5.1).
+        let found = if level >= Level::R4 {
+            None
+        } else {
+            self.grants
+                .lock()
+                .map_err(|_| JournalError("permissions lock poisoned".into()))?
+                .find(&request.tool, &request.operation, &a.roots, level)
+        };
         if let Some(g) = found {
             let msg = format!("permission {} ({})", g.id, g.duration.name());
             return Ok(Outcome::new(id, true, a.level, "allowed", msg));
@@ -431,6 +438,7 @@ impl Gate {
             raises: a.raises.clone(),
             taint_sources: session.taint_sources.clone(),
             choices: choices_for(level, a.in_bounds()),
+            content: (level >= Level::R4).then(|| Value::Object(request.arguments.clone())),
         };
         let answer = {
             // A poisoned lock still serialises; a broken dialog is a "no".
@@ -652,7 +660,7 @@ mod tests {
         }
         fn execute(&self, request: &ActionRequest) -> Result<Value, String> {
             match request.operation.as_str() {
-                "write" | "restore" => Ok(json!({"backup_id": "b1"})),
+                "write" | "restore" | "delete" => Ok(json!({"backup_id": "b1"})),
                 "read" => Ok(json!({"text": "hello"})),
                 _ => Err("boom".into()),
             }
@@ -746,6 +754,87 @@ mod tests {
         assert_eq!(u.code, "allowed", "{u:?}");
         assert_eq!(g.undo("0123", &mut s).code, "denied_unknown");
         assert!(verify(g.journal().path()).is_ok());
+    }
+
+    /// Answers from a list, one per question, and keeps the questions.
+    struct Script(Mutex<(Vec<Answer>, Vec<Question>)>);
+
+    impl Confirmer for Script {
+        fn ask(&self, q: &Question, _t: f64) -> Answer {
+            let mut s = self.0.lock().expect("script");
+            s.1.push(q.clone());
+            if s.0.is_empty() {
+                Answer::Deny
+            } else {
+                s.0.remove(0)
+            }
+        }
+    }
+
+    #[test]
+    fn system_herkos_asks_for_r3_and_r4() {
+        let (base, docs) = gate("r34", Answer::Deny);
+        let script = std::sync::Arc::new(Script(Mutex::new((
+            vec![
+                Answer::Session,
+                Answer::Once,
+                Answer::Session,
+                Answer::Once,
+                Answer::Once,
+            ],
+            Vec::new(),
+        ))));
+        struct Shared(std::sync::Arc<Script>);
+        impl Confirmer for Shared {
+            fn ask(&self, q: &Question, t: f64) -> Answer {
+                self.0.ask(q, t)
+            }
+        }
+        let mut config = base.config.clone();
+        config.max_level = Level::R4;
+        let journal = Journal::open(&config.state_dir.join("j2.jsonl")).expect("journal");
+        let grants = GrantStore::new(&config.state_dir.join("p2.json"), now);
+        let g = Gate::new(
+            config,
+            Registry::builtin().expect("manifests"),
+            Box::new(FakeTools),
+            grants,
+            journal,
+            Box::new(Shared(std::sync::Arc::clone(&script))),
+        );
+        let mut s = SessionState::default();
+        // R3: every time or for the session, never for good.
+        let o = g.handle(&files("delete", &docs.join("a.txt")), &mut s);
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R3)), "{o:?}");
+        let o = g.handle(&files("delete", &docs.join("b.txt")), &mut s);
+        assert!(o.allowed && o.message.starts_with("permission "), "{o:?}");
+        {
+            let qs = &script.0.lock().expect("script").1;
+            assert_eq!(qs.len(), 1);
+            assert_eq!(qs[0].choices, vec![Answer::Once, Answer::Session]);
+            assert!(qs[0].content.is_none());
+        }
+        // Untrusted content read: a delete is R4 now. Asked every time, with
+        // exactly what will be done; "session" is not on offer.
+        assert!(
+            g.handle(&files("read", &docs.join("a.txt")), &mut s)
+                .allowed
+        );
+        let o = g.handle(&files("delete", &docs.join("c.txt")), &mut s);
+        assert_eq!((o.code, o.level), ("denied_user", Some(Level::R4)), "{o:?}");
+        let o = g.handle(&files("delete", &docs.join("c.txt")), &mut s);
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R4)), "{o:?}");
+        let o = g.handle(&files("delete", &docs.join("c.txt")), &mut s);
+        assert_eq!(o.code, "allowed");
+        let qs = &script.0.lock().expect("script").1;
+        assert_eq!(qs.len(), 5, "R4 is asked every time");
+        let q = &qs[4];
+        assert_eq!(q.choices, vec![Answer::Once]);
+        assert_eq!(q.level, Level::R4);
+        let p = docs.join("c.txt").display().to_string();
+        assert_eq!(q.content, Some(json!({"path": p})));
+        assert_eq!(q.to_json()["content"], json!({"path": p}));
+        assert_eq!(q.taint_sources, vec!["org.vilna.mcp.files.read".to_owned()]);
     }
 
     #[test]
