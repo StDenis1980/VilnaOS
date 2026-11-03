@@ -46,3 +46,15 @@ def test_dialog_garbage_crash_or_timeout_is_deny():
 def test_question_json_has_no_surprises():
     data = question_to_json(q())
     assert data["level"] == "R2" and data["undoable"] is True
+
+
+def test_dialog_shows_r4_content_exactly():
+    from herkos.dialog import MAX_CONTENT_LINES, content_text
+
+    assert content_text({"level": "R3"}) is None
+    assert content_text({"content": None}) is None
+    shown = content_text({"content": {"path": "/home/ola/Звіт.odt"}})
+    assert "/home/ola/Звіт.odt" in shown
+    long = content_text({"content": {"lines": list(range(100))}})
+    assert long.splitlines()[-1] == "…"
+    assert len(long.splitlines()) == MAX_CONTENT_LINES + 1

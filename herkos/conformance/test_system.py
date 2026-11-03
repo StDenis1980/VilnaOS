@@ -266,7 +266,7 @@ def test_gloxi_speaks_for_its_person(system):
         ),
     )
     assert hello["result"]["protocol"] == PROTOCOL
-    assert hello["result"]["max_level"] == "R2"
+    assert hello["result"]["max_level"] == "R4"  # the system herkosd does R3–R4 (step 7)
     assert act["result"]["decision"] == "denied"
     # Each person has a journal of their own, in herkosd's state folder.
     anna = pwd.getpwnam("hkt-anna").pw_uid
@@ -405,6 +405,71 @@ def test_tools_act_as_the_person(system):
         # and his tool would run as Bohdan anyway.
         _, r = system.rpc("hkt-gloxi-b", HELLO, msg(2, "herkos.request_action", read_request(note)))
         assert r["result"]["decision"] == "denied" and "result" not in r["result"]
+    finally:
+        subprocess.run([*(SUDO or []), "kill", str(agent.pid)], check=False)
+        agent.wait(timeout=10)
+
+
+def files_request(operation: str, path: str) -> dict:
+    return {**read_request(path), "operation": operation}
+
+
+def test_system_herkos_asks_for_r3_and_r4(system):
+    home = pwd.getpwnam("hkt-anna").pw_dir
+    docs = f"{home}/Documents"
+    names = ("a.txt", "b.txt", "c.txt")
+    script = " && ".join(f"echo {n} > {docs}/{n}" for n in names)
+    root("sh", "-c", f"{script} && chown hkt-anna:hkt-anna {docs}/*.txt")
+    agent = as_user(
+        "hkt-anna",
+        [
+            PYTHON,
+            "-m",
+            "herkos.agent",
+            "--socket",
+            str(system.socket),
+            "--window-command",
+            str(system.base / "window"),
+        ],
+        pythonpath=str(system.base / "py"),
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    answer = system.base / "agent" / "answer"
+    questions = system.base / "agent" / "questions.jsonl"
+    try:
+        assert "registered" in agent.stderr.readline()
+        # R3: Anna allows for the session, the second delete needs no question.
+        root("sh", "-c", f"echo session > {answer}")
+        _, a, b = system.rpc(
+            "hkt-gloxi-a",
+            HELLO,
+            msg(2, "herkos.request_action", files_request("delete", f"{docs}/a.txt")),
+            msg(3, "herkos.request_action", files_request("delete", f"{docs}/b.txt")),
+        )
+        log = (system.base / "herkosd.log").read_text()
+        assert (a["result"]["code"], a["result"]["level"]) == ("allowed", "R3"), (a, log)
+        assert b["result"]["decision"] == "allowed", b
+        asked = [json.loads(q) for q in questions.read_text().splitlines()]
+        assert len(asked) == 1 and asked[0]["choices"] == ["once", "session"]
+        assert asked[0].get("content") is None
+        assert not Path(f"{docs}/a.txt").exists() and not Path(f"{docs}/b.txt").exists()
+
+        # After a read, the session holds untrusted content: a delete is R4,
+        # "session" is not on offer (so the window's "session" is a no), and
+        # the question shows exactly what will be done.
+        _, read, denied = system.rpc(
+            "hkt-gloxi-a",
+            HELLO,
+            msg(2, "herkos.request_action", read_request(f"{docs}/c.txt")),
+            msg(3, "herkos.request_action", files_request("delete", f"{docs}/c.txt")),
+        )
+        assert read["result"]["decision"] == "allowed", read
+        assert (denied["result"]["code"], denied["result"]["level"]) == ("denied_user", "R4")
+        q = json.loads(questions.read_text().splitlines()[-1])
+        assert q["level"] == "R4" and q["choices"] == ["once"]
+        assert q["content"] == {"path": f"{docs}/c.txt"}
+        assert Path(f"{docs}/c.txt").exists()
     finally:
         subprocess.run([*(SUDO or []), "kill", str(agent.pid)], check=False)
         agent.wait(timeout=10)

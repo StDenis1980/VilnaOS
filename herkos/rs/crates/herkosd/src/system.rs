@@ -282,7 +282,10 @@ impl System {
         if let Some(g) = gates.get(&uid) {
             return Ok(Arc::clone(g));
         }
-        let config = crate::config::load_config_for(&self.config_path, &self.owner(person))?;
+        let mut config = crate::config::load_config_for(&self.config_path, &self.owner(person))?;
+        // The system Herkos isolates Gloxi from the person: it carries out
+        // R3-R4 too, asking every time (ADR 0013, step 7).
+        config.max_level = herkos_core::risk::Level::R4;
         let tools = (self.tools)(&config, person);
         let confirmer = AgentConfirmer {
             uid,
@@ -491,6 +494,7 @@ mod tests {
             raises: Vec::new(),
             taint_sources: Vec::new(),
             choices,
+            content: None,
         }
     }
 

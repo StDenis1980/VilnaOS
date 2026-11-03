@@ -7,8 +7,8 @@ use std::path::{Path, PathBuf};
 use herkos_core::risk::Level;
 use toml::{Table, Value};
 
-/// Until `herkosd` runs as its own system user (step 6 of ADR 0013) it
-/// isolates nothing more than Herkos-lite, so it carries out R0-R2 only.
+/// `herkosd serve` runs in the person's session, like Herkos-lite, and so
+/// isolates nothing more: R0-R2 only. `herkosd system` raises it to R4.
 pub const MAX_LEVEL: Level = Level::R2;
 /// A "session" permission lapses after this much idle time (permissions.md 5.3).
 pub const SESSION_IDLE_SECONDS: f64 = 30.0 * 60.0;
