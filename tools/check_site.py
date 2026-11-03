@@ -10,7 +10,9 @@
 - No inline style or event-handler attributes, so a strict
   Content-Security-Policy (site/README.md) holds.
 - Every local link and resource exists.
-- Every Ukrainian page has its English twin under /en/ and back.
+- Every page exists in all site languages (English at the root, the others
+  under /<lang>/), each with the right lang, and site/public matches what
+  tools/build_site.py generates from site/src.
 - security.txt has a Contact and an Expires date in the future.
 
 Stdlib only, so it runs anywhere CI does.
@@ -23,6 +25,8 @@ from datetime import UTC, datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
+
+import build_site
 
 ROOT = Path(__file__).resolve().parent.parent
 RESOURCE_ATTRS = {"src", "srcset", "poster", "data"}
@@ -102,19 +106,16 @@ def check(public: Path) -> list[str]:
                 problems.append(f"{rel}: {url} points outside the site")
             elif not dest.is_file():
                 problems.append(f"{rel}: {url} does not exist")
-        # Language twins: /x/index.html <-> /en/x/index.html (404 is shared).
-        if rel.name == "404.html":
-            continue
-        if rel.parts[0] == "en":
-            twin = public.joinpath(*rel.parts[1:])
-            want = "en"
-        else:
-            twin = public / "en" / rel
-            want = "uk"
-        if parser.lang and parser.lang != want:
-            problems.append(f"{rel}: lang is {parser.lang}, expected {want}")
-        if not twin.is_file():
-            problems.append(f"{rel}: no translation at {twin.relative_to(public)}")
+        # Language twins: /x <-> /<lang>/x for every site language.
+        first = rel.parts[0] if len(rel.parts) > 1 else ""
+        lang = first if first in build_site.LANGUAGES else build_site.DEFAULT
+        if parser.lang and parser.lang != lang:
+            problems.append(f"{rel}: lang is {parser.lang}, expected {lang}")
+        base = rel if lang == build_site.DEFAULT else Path(*rel.parts[1:])
+        for other in build_site.LANGUAGES:
+            twin = base if other == build_site.DEFAULT else Path(other) / base
+            if not (public / twin).is_file():
+                problems.append(f"{rel}: no {other} translation at {twin}")
     problems += check_security_txt(public)
     return problems
 
@@ -146,6 +147,8 @@ def check_security_txt(public: Path) -> list[str]:
 def main(argv: list[str]) -> int:
     public = Path(argv[1]) if len(argv) > 1 else ROOT / "site" / "public"
     problems = check(public)
+    if public.resolve() == build_site.PUBLIC.resolve() and build_site.main(["", "--check"]):
+        problems.append("site/public is out of date: run python3 tools/build_site.py")
     for p in problems:
         print(p, file=sys.stderr)
     if not problems:

@@ -1,0 +1,60 @@
+<!-- title: {{gloxi_title}} · Vilna OS -->
+<!-- description: {{gloxi_desc}} -->
+<!-- nav: <nav class="site" aria-label="{{sections}}"><a href="{{home_url}}">{{nav_home}}</a> <a href="{{gloxi_url}}"{{gloxi_current}}>Gloxi</a> <a href="{{repo_url}}">{{nav_code}}</a></nav> -->
+<!-- footer: {{gloxi_footer}} · GPL-3.0-or-later -->
+  <section class="hero">
+    <div>
+      <span class="badge">{{gloxi_badge}}</span>
+      <h1>Gloxi 0.1</h1>
+      <p class="lead">{{gloxi_lead}}</p>
+    </div>
+    <img src="/assets/gloxi.svg" alt="{{gloxi_icon_alt}}" width="140" height="140">
+  </section>
+
+  <div class="cards">
+    <div class="card">
+      <h3>{{gloxi_local_h}}</h3>
+      <p>{{gloxi_local_p}}</p>
+    </div>
+    <div class="card">
+      <h3>{{gloxi_cloud_h}}</h3>
+      <p>{{gloxi_cloud_p}}</p>
+    </div>
+    <div class="card">
+      <h3>{{gloxi_asks_h}}</h3>
+      <p>{{gloxi_asks_p}}</p>
+    </div>
+  </div>
+
+  <div class="card warn">
+    <h3>{{gloxi_warn_h}}</h3>
+    <p>{{gloxi_warn_p}}</p>
+  </div>
+
+  <h2>{{gloxi_need_h}}</h2>
+  <ul>
+    <li>{{gloxi_need_os}}</li>
+    <li>{{gloxi_need_cpu}}</li>
+    <li>{{gloxi_need_ram}}</li>
+  </ul>
+
+  <h2 id="install">{{gloxi_install_h}}</h2>
+  <p>{{gloxi_install_soon}}</p>
+  <ol class="steps">
+    <li>{{gloxi_step_download}}
+      <br><a class="button" href="{{repo_url}}/releases">{{gloxi_releases}}</a></li>
+    <li>{{gloxi_step_verify}}
+<pre><code>sha256sum -c gloxi.flatpak.sha256</code></pre></li>
+    <li>{{gloxi_step_install}}
+<pre><code>flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install --user flathub org.gnome.Platform//50
+flatpak install --user gloxi.flatpak</code></pre></li>
+    <li>{{gloxi_step_run}}</li>
+  </ol>
+  <p>{{gloxi_remove}}</p>
+
+  <h2 id="feedback">{{gloxi_feedback_h}}</h2>
+  <p>{{gloxi_feedback_p}}</p>
+  <p><a class="button" href="{{repo_url}}/issues/new?template=gloxi-feedback.yml">{{gloxi_feedback_btn}}</a>
+     <a class="button secondary" href="{{repo_url}}/issues?q=label%3Agloxi-feedback">{{gloxi_feedback_others}}</a></p>
+  <p>{{gloxi_feedback_public}}</p>
