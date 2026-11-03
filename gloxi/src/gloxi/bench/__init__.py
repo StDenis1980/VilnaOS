@@ -113,7 +113,8 @@ _WORDS = {
     "tale pot dar cum acest",
     "cs": "ano a i je se na v že to není jsem pro jak můžete s by nebo všechny vaše "
     "mohu ale co tak být opravdu jsi už jen ještě",
-    "lt": "ir yra kad ne su į tai kaip jūs galite man aš bet iš arba visi jūsų galiu nes taip būti",
+    "lt": "ir yra kad ne su į tai kaip jūs galite man aš bet iš arba visi jūsų "
+    "galiu nes taip būti kuris kuri gali jei bus tik dar šis šį šiuo norint",
 }
 _LETTERS = {  # letters that (among these ten) mostly belong to one language
     "es": "ñ¿¡",
