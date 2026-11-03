@@ -1,6 +1,6 @@
 # 0014. Віддалене стирання вкраденого пристрою
 
-- Стан: Запропоновано
+- Стан: Прийнято (Denys, 2026-11-03)
 - Дата: 2026-11-03
 - Пов'язано: [`herkos/docs/devices.md`](../../herkos/docs/devices.md) (розд. 4–6), [`herkos/docs/permissions.md`](../../herkos/docs/permissions.md), [ADR 0006](0006-conversational-installer.md) (шифрування з TPM2), [ADR 0007](0007-encrypted-backup.md), [ADR 0013](0013-herkos-rust.md), `backup/docs/design.md` (реєстр пристроїв)
 
