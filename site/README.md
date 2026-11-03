@@ -28,37 +28,44 @@ python3 tools/check_site.py
 2. Додайте англійську пару під `en/` (перевірка без неї не пройде).
 3. Шапка й підвал однакові на всіх сторінках; якщо змінюєте меню — змінюйте всюди. Коли сторінок стане більше десятка, перейдемо на генератор (Zola).
 
-## Розгортання
+## Розгортання: statichost.eu
 
-Домени (Arsys): vilnaos.com — головний; vilnaos.es, vilnaos.eu, vilnaos.online — переадресації; gloxi.eu ще не куплено. На доменах без пошти — `MX 0 .`, `v=spf1 -all`, `_dmarc` `v=DMARC1; p=reject`.
+Хостинг — [statichost.eu](https://statichost.eu/) (рішення Denys 3.11.2026). Публікує й змінює DNS лише Denys або за його згодою.
 
-Публікує й змінює DNS лише Denys або за його згодою. План: документ «План сайту й доменів Vilna OS» у проєкті.
+- [`statichost.yml`](statichost.yml): збірки немає, публікується тека `public/` як є.
+- [`public/_headers`](public/_headers): заголовки безпеки для всього сайту (CSP без сторонніх джерел, HSTS на тиждень, `no-referrer`). Через місяць без проблем — `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
+- На кожній сторінці `<link rel="canonical">` на https://vilnaos.com/…, тож копії на інших адресах не заважають пошуку.
 
-Що налаштувати на хостингу:
+### Один раз у панелі statichost.eu
 
-**Переадресації (301)**
+1. Створити сайт (назва, наприклад, `vilnaos`), репозиторій `https://github.com/StDenis1980/VilnaOS.git` (публічний, ключ не потрібен), гілка `main`, **working directory: `site`**.
+2. Settings → Domains: додати `vilnaos.com` і `www.vilnaos.com`. Точну адресу для DNS (`<назва>.statichost.page`) показує ця ж сторінка.
+3. Автооновлення: у GitHub, Settings → Webhooks → Add webhook, payload URL `https://builder.statichost.eu/<назва сайту>`, content type `application/json`, «Just the push event».
 
-| Звідки | Куди |
-| --- | --- |
-| `http://*` | `https://` та сама адреса |
-| `www.vilnaos.com/*` | `https://vilnaos.com/*` |
-| `vilnaos.es/*`, `vilnaos.eu/*`, `vilnaos.online/*` (і `www.`) | `https://vilnaos.com/*` |
-| `gloxi.eu/*`, `www.gloxi.eu/*` (якщо домен буде куплено) | `https://vilnaos.com/gloxi/` |
+### Записи DNS в Arsys
 
-**Заголовки (для всіх відповідей)**
+| Домен | Тип | Значення |
+| --- | --- | --- |
+| `vilnaos.com` | ALIAS, якщо Arsys його має; інакше A + AAAA | `<назва>.statichost.page.` або `95.217.26.94` і `2a01:4f9:c01f:8002::` ([документація](https://www.statichost.eu/docs/domains/), звірити з панеллю) |
+| `www.vilnaos.com` | CNAME | `<назва>.statichost.page.` |
+| `vilnaos.com` | CAA | `0 issue "letsencrypt.org"` — лише після того, як statichost підтвердить, який центр сертифікації він використовує |
+| `vilnaos.com`, `.es`, `.eu`, `.online` | MX | `0 .` (пошти поки немає) |
+| ті самі | TXT | `v=spf1 -all` |
+| `_dmarc.` кожного | TXT | `v=DMARC1; p=reject` |
 
+HTTPS-сертифікат statichost випускає сам після першого запиту на домен.
+
+### vilnaos.es, vilnaos.eu, vilnaos.online
+
+Переадресацію за доменом (host → host) документація statichost не описує, а `_redirects` працює лише за шляхом. Поки ці три домени стоять лише із захисними поштовими записами й не відкривають сайт. Варіанти пізніше: спитати підтримку statichost про переадресацію доменів-синонімів або увімкнути переадресацію в Arsys, якщо вона працює через HTTPS.
+
+### Перевірка після підключення
+
+```sh
+curl -sI https://vilnaos.com/ | grep -i -E "^(HTTP|content-security|strict-transport)"
+curl -s https://vilnaos.com/.well-known/security.txt | head -3   # тека з крапкою має віддаватися
+curl -sI http://vilnaos.com/ | head -3                           # має вести на https
 ```
-Content-Security-Policy: default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
-Strict-Transport-Security: max-age=604800
-Referrer-Policy: no-referrer
-X-Content-Type-Options: nosniff
-Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
-Cross-Origin-Opener-Policy: same-origin
-```
-
-Через місяць без проблем — `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
-
-**Журнали:** без IP-адрес або не довше 7 днів.
 
 ## Запуск
 

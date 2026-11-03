@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# statichost.eu: the dashboard's working directory is `site`, so this file is
+# read from here. No image and no command: public/ is published as it is.
+public: public
