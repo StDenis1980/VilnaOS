@@ -135,6 +135,13 @@ flatpak run --command=gloxi io.github.stdenis1980.Gloxi      # термінал
 
 Іконка тимчасова (знак Vilna), знімків екрана для Flathub ще немає.
 
+**Випуск.** Пакет для тестувальників виходить на GitHub Releases. Щоб випустити версію:
+
+1. Записати її в `pyproject.toml` (`version = "0.1.0"`) і першим `<release>` у `data/io.github.stdenis1980.Gloxi.metainfo.xml` (`version="0.1.0"`, дата, опис англійською й українською). Для попередніх версій у metainfo пишемо `~`: `0.2.0rc1` → `0.2.0~rc1`.
+2. Поставити на main тег `gloxi-v0.1.0` і запушити його.
+
+CI збирає пакет, проганяє ті самі перевірки, що й для PR, а `tools/release.py` звіряє тег, `pyproject.toml` і metainfo. Лише якщо все зійшлося, CI публікує `gloxi.flatpak` і його `gloxi.flatpak.sha256`. До 1.0 кожен випуск позначається як попередній (pre-release). Опис випуску береться з metainfo, тож пишемо його в одному місці.
+
 ### Мови інтерфейсу
 
 Рядки інтерфейсу пишемо англійською в коді й перекладаємо через gettext (домен `gloxi`, [ADR 0009](../docs/adr/0009-languages.md)). Мову Gloxi бере з системи (`LANGUAGE`, `LANG`), як і всі застосунки GNOME; спробувати можна так: `LANGUAGE=uk uv run gloxi`.
