@@ -55,9 +55,11 @@ def root(*argv: str) -> None:
 def as_user(name: str, argv: list[str], **kw) -> subprocess.Popen:
     pw = pwd.getpwnam(name)
     cmd = [*(SUDO or []), "setpriv", f"--reuid={pw.pw_uid}", f"--regid={pw.pw_gid}"]
-    cmd += ["--clear-groups", "--", *argv]
-    env = {"PATH": "/usr/bin:/bin", "HOME": pw.pw_dir, "PYTHONPATH": kw.pop("pythonpath", "")}
-    return subprocess.Popen(cmd, env=env, **kw)
+    # The environment is set after sudo, which would drop PYTHONPATH.
+    env = ["env", "-i", "PATH=/usr/bin:/bin", f"HOME={pw.pw_dir}"]
+    env.append(f"PYTHONPATH={kw.pop('pythonpath', '')}")
+    cmd += ["--clear-groups", "--", *env, *argv]
+    return subprocess.Popen(cmd, **kw)
 
 
 @pytest.fixture(scope="module")
