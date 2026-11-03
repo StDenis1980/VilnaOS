@@ -37,11 +37,14 @@ BACKUP_TOOL = "org.vilna.mcp.backup"
 
 def _serve(args: argparse.Namespace) -> int:
     config = load_config()
-    choices = {"gui": Dialog, "terminal": Terminal, "deny": DenyAll}
+    fd = args.confirm_fd
+    choices = {"gui": Dialog, "terminal": lambda: Terminal(fd=fd), "deny": DenyAll}
     if args.confirm_command:
         confirmer = Dialog([args.confirm_command])
+    elif args.confirm in choices:
+        confirmer = choices[args.confirm]()
     else:
-        confirmer = choices[args.confirm]() if args.confirm in choices else default_confirmer()
+        confirmer = default_confirmer(fd)
     try:
         journal = Journal(config.journal_path)
     except JournalError as e:
@@ -194,6 +197,13 @@ def build_parser() -> argparse.ArgumentParser:
         default="auto",
         help="how to ask the user (auto: a window if there is a desktop, else this "
         "terminal, else deny)",
+    )
+    serve.add_argument(
+        "--confirm-fd",
+        type=int,
+        metavar="FD",
+        help="an open terminal to ask on instead of this one's (Gloxi hands over its own "
+        "when it starts Herkos-lite)",
     )
     serve.add_argument(
         "--confirm-command",

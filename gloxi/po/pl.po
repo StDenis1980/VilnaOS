@@ -381,6 +381,10 @@ msgid "There is no language model yet. Run gloxi in a terminal once to download 
 msgstr ""
 
 #: src/gloxi/cli.py
+msgid "Without a language model Gloxi cannot answer. Run gloxi again when you want to download it."
+msgstr ""
+
+#: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, masked]"
 msgstr ""
@@ -392,6 +396,24 @@ msgstr ""
 
 #: src/gloxi/cli.py
 msgid "[local]"
+msgstr ""
+
+#: src/gloxi/engine.py
+msgid "."
+msgstr ""
+
+#: src/gloxi/engine.py
+msgid "Qwen (Alibaba Cloud) on Hugging Face"
+msgstr ""
+
+#: src/gloxi/engine.py
+#, python-brace-format
+msgid "{value} GB"
+msgstr ""
+
+#: src/gloxi/engine.py
+#, python-brace-format
+msgid "{value} MB"
 msgstr ""
 
 #: src/gloxi/gui/controller.py

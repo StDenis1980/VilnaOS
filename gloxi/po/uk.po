@@ -389,6 +389,10 @@ msgid "There is no language model yet. Run gloxi in a terminal once to download 
 msgstr "Мовної моделі ще немає. Запустіть gloxi один раз у терміналі, щоб завантажити її."
 
 #: src/gloxi/cli.py
+msgid "Without a language model Gloxi cannot answer. Run gloxi again when you want to download it."
+msgstr "Без мовної моделі Gloxi не може відповідати. Запустіть gloxi ще раз, коли захочете її завантажити."
+
+#: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, masked]"
 msgstr "[хмара: {host}, з маскуванням]"
@@ -401,6 +405,24 @@ msgstr "[хмара: {host}, без маскування]"
 #: src/gloxi/cli.py
 msgid "[local]"
 msgstr "[локально]"
+
+#: src/gloxi/engine.py
+msgid "."
+msgstr ","
+
+#: src/gloxi/engine.py
+msgid "Qwen (Alibaba Cloud) on Hugging Face"
+msgstr "Qwen (Alibaba Cloud) на Hugging Face"
+
+#: src/gloxi/engine.py
+#, python-brace-format
+msgid "{value} GB"
+msgstr "{value} ГБ"
+
+#: src/gloxi/engine.py
+#, python-brace-format
+msgid "{value} MB"
+msgstr "{value} МБ"
 
 #: src/gloxi/gui/controller.py
 msgid "Auto"

@@ -16,6 +16,7 @@ says so.
 
 from __future__ import annotations
 
+import fcntl
 import os
 import socket
 import subprocess
@@ -135,9 +136,18 @@ def alive(sock: Path) -> bool:
 class LocalHerkos:
     """``herkos serve`` as a child of Gloxi, restarted when the folders change."""
 
-    def __init__(self, command: list[str] | None = None, env: dict[str, str] | None = None):
+    def __init__(
+        self,
+        command: list[str] | None = None,
+        env: dict[str, str] | None = None,
+        confirm_fd: int | None = None,
+    ):
         self.command = command or [sys.executable, "-m", "herkos", "serve", "--confirm", "auto"]
         self.env = env
+        # Gloxi's terminal, for asking when there is no desktop: Herkos runs in
+        # its own session (Ctrl+C in the chat must not stop it), so it has no
+        # controlling terminal of its own.
+        self.confirm_fd = confirm_fd
         self._proc: subprocess.Popen | None = None
 
     @property
@@ -156,14 +166,26 @@ class LocalHerkos:
         if alive(sock):
             return  # another Gloxi in this sandbox already started it
         sock.unlink(missing_ok=True)  # a stale socket from a crash
-        self._proc = subprocess.Popen(
-            self.command,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            env=self.env,
-            start_new_session=True,
-        )
+        command, fds = list(self.command), ()
+        if self.confirm_fd is not None and os.isatty(self.confirm_fd):
+            # A copy above 2: the terminal is often Gloxi's stdin (fd 0), and
+            # the child's fd 0 is /dev/null.
+            fd = fcntl.fcntl(self.confirm_fd, fcntl.F_DUPFD_CLOEXEC, 3)
+            command += ["--confirm-fd", str(fd)]
+            fds = (fd,)
+        try:
+            self._proc = subprocess.Popen(
+                command,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env=self.env,
+                pass_fds=fds,
+                start_new_session=True,
+            )
+        finally:
+            for fd in fds:
+                os.close(fd)
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             if self._proc.poll() is not None:
@@ -191,15 +213,18 @@ class LocalHerkos:
         self.start()
 
 
-def start_if_needed(tools_enabled: bool) -> LocalHerkos | None:
-    """In the Flatpak, start the bundled Herkos unless one already listens."""
+def start_if_needed(tools_enabled: bool, confirm_fd: int | None = None) -> LocalHerkos | None:
+    """In the Flatpak, start the bundled Herkos unless one already listens.
+
+    ``confirm_fd`` is the terminal Herkos may ask on (the chat in a terminal).
+    """
     if not tools_enabled or not in_flatpak():
         return None
     sock = socket_file()
     if sock is None:
         return None
     ensure_config()
-    herkos = LocalHerkos()
+    herkos = LocalHerkos(confirm_fd=confirm_fd)
     try:
         herkos.start()
     except HerkosStartError as exc:

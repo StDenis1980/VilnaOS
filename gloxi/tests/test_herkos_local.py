@@ -106,3 +106,59 @@ def test_a_crash_is_reported(sandbox):
     herkos = LocalHerkos([sys.executable, "-c", "raise SystemExit(4)"], env=sandbox)
     with pytest.raises(HerkosStartError, match="exit 4"):
         herkos.start()
+
+
+def test_without_a_desktop_herkos_asks_on_gloxis_terminal(sandbox, tmp_path):
+    """The chat in a terminal: Herkos runs in its own session and asks on Gloxi's tty."""
+    pytest.importorskip("herkos")
+    pytest.importorskip("vilna_mcp_files")
+    import pty
+    import select
+
+    from herkos.client import HerkosClient
+
+    cfg = Path(sandbox["XDG_CONFIG_HOME"]) / "herkos" / "config.toml"
+    ensure_config(cfg)
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "note.txt").write_text("synthetic note\n")
+    add_folder(docs, cfg)
+    parent, child = pty.openpty()
+    # The terminal is Gloxi's stdin, fd 0, as in `flatpak run --command=gloxi`;
+    # the child's own fd 0 is /dev/null, so Herkos must get it on another number.
+    saved = os.dup(0)
+    os.dup2(child, 0)
+    try:
+        herkos = LocalHerkos(env=sandbox, confirm_fd=0)
+        herkos.start()
+    finally:
+        os.dup2(saved, 0)
+        os.close(saved)
+    try:
+        os.write(parent, b"o\n")  # typed ahead: "allow once"
+        with HerkosClient.connect(herkos.socket) as client:
+            result = client.request_action(
+                tool="org.vilna.mcp.files",
+                operation="read",
+                reason="the person asked",
+                resources=[(docs / "note.txt").as_uri()],
+                arguments={"path": str(docs / "note.txt")},
+            )
+        shown = b""
+        while select.select([parent], [], [], 0.2)[0]:
+            shown += os.read(parent, 65536)
+        assert result["code"] == "allowed", result
+        assert result["result"]["text"] == "synthetic note\n"
+        assert "Herkos" in shown.decode(errors="replace")
+    finally:
+        herkos.stop()
+        os.close(parent)
+        os.close(child)
+
+
+def test_the_flatpak_offers_no_backup_talk(monkeypatch):
+    """Backups are part of Vilna: the Flatpak has no backup tool to talk about."""
+    from gloxi.backup_intro import backup_intro
+
+    monkeypatch.setenv("FLATPAK_ID", "io.github.stdenis1980.Gloxi")
+    assert backup_intro(True) is None

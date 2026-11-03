@@ -15,7 +15,7 @@ import httpx
 import pytest
 
 from gloxi import engine
-from gloxi.cli import prepare_engine
+from gloxi.cli import NoModel, prepare_engine
 from gloxi.config import load_settings
 from gloxi.engine import DownloadCancelled, Engine, EngineError, ModelFile, Plan, download
 
@@ -202,15 +202,16 @@ def download_plan(tmp_path):
 
 def test_terminal_does_not_download_without_yes(tmp_path):
     fetched, out = [], io.StringIO()
-    result = prepare_engine(
-        settings(tmp_path),
-        read=lambda prompt: "",
-        out=out,
-        planner=lambda url, **kw: download_plan(tmp_path),
-        fetch=lambda *a, **kw: fetched.append(a),
-        engine_type=FakeEngine,
-    )
-    assert result is None and fetched == []
+    with pytest.raises(NoModel):
+        prepare_engine(
+            settings(tmp_path),
+            read=lambda prompt: "",
+            out=out,
+            planner=lambda url, **kw: download_plan(tmp_path),
+            fetch=lambda *a, **kw: fetched.append(a),
+            engine_type=FakeEngine,
+        )
+    assert fetched == []
     assert "Test model" in out.getvalue() and "Not downloaded" in out.getvalue()
 
 

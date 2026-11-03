@@ -66,9 +66,38 @@ def test_taint_from_a_read_raises_the_next_write(tmp_path):
     assert env.gate.handle(request(env, "write", env.docs / "a"), s).allowed  # R2, clean
     assert env.gate.handle(request(env, "read", env.docs / "mail.eml"), s).allowed
     assert s.tainted
-    # The same write is now R3: the permission no longer covers it, and lite denies.
+    # The same write is now R3: the permission no longer covers it. Lite asks
+    # again, "once" only, so the answer "always" counts as a no.
     out = env.gate.handle(request(env, "write", env.docs / "a"), s)
-    assert out.code == "denied_level" and "untrusted" in out.message
+    assert out.code == "denied_user" and out.level == Level.R3
+    q = env.confirmer.questions[-1]
+    assert q.choices == (Answer.ONCE,)
+
+
+def test_a_tainted_write_shows_exactly_what_will_be_written(tmp_path):
+    """Decision 2026-11-03: "find a note and change it" works in one conversation."""
+    env = Env(tmp_path, Answer.ONCE)
+    s = SessionState()
+    assert env.gate.handle(request(env, "read", env.docs / "note.txt"), s).allowed
+    out = env.gate.handle(request(env, "write", env.docs / "note.txt"), s)
+    assert out.allowed and out.level == Level.R3
+    q = env.confirmer.questions[-1]
+    assert q.content == {"path": str(env.docs / "note.txt"), "text": "secret contents"}
+    assert "untrusted content is in the conversation" in q.raises
+    # Never a lasting permission: the next write asks again.
+    before = len(env.confirmer.questions)
+    assert env.gate.handle(request(env, "write", env.docs / "note.txt"), s).allowed
+    assert len(env.confirmer.questions) == before + 1
+
+
+def test_a_tainted_write_raised_for_more_than_taint_is_still_denied(tmp_path):
+    env = Env(tmp_path, Answer.ONCE)
+    s = SessionState()
+    s.taint("org.vilna.mcp.files.read")
+    out = env.gate.handle(request(env, "write", env.other / "x"), s)  # also out of bounds
+    assert out.code == "denied_level"
+    out = env.gate.handle(request(env, "delete", env.docs / "a"), s)  # R3 on its own
+    assert out.code == "denied_level"
 
 
 def test_out_of_bounds_read_never_gets_a_lasting_permission(tmp_path):

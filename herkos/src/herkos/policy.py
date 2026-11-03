@@ -30,6 +30,8 @@ class Assessment:
     # Allowed root that holds each file resource; None if out of bounds.
     roots: tuple[Path | None, ...] = ()
     known_tool: bool = True
+    # The only raise is "untrusted content is in the conversation".
+    taint_only: bool = False
 
     @property
     def forbidden(self) -> bool:
@@ -123,7 +125,8 @@ def assess(
             level = hinted
             raises.append(_("the tool describes this operation as riskier"))
 
-    if session.tainted and level >= Level.R2:
+    tainted_raise = session.tainted and level >= Level.R2
+    if tainted_raise:
         level = level.raised()
         raises.append(_("untrusted content is in the conversation"))
     if session.keros.suspicious and level >= Level.R1:
@@ -146,4 +149,11 @@ def assess(
         level = Level.R4
         raises.append(_("it sends data to an address that came from untrusted content"))
 
-    return Assessment(level=level, base=base, operation=op, raises=tuple(raises), roots=roots)
+    return Assessment(
+        level=level,
+        base=base,
+        operation=op,
+        raises=tuple(raises),
+        roots=roots,
+        taint_only=tainted_raise and len(raises) == 1,
+    )
