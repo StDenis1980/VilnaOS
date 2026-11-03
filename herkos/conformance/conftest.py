@@ -13,6 +13,7 @@ turns the Keros model off. It must answer "no" to every confirmation
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import shlex
@@ -74,8 +75,40 @@ class Client:
         self.sock.close()
 
 
-@pytest.fixture
-def herkos(tmp_path: Path):
+AGENT = """\
+#!{python}
+# A scripted confirmation window: logs each question, answers from a file.
+import json, os, sys
+d = os.environ["HERKOS_TEST_AGENT"]
+q = json.load(sys.stdin)
+with open(os.path.join(d, "questions.jsonl"), "a", encoding="utf-8") as f:
+    f.write(json.dumps(q, ensure_ascii=False) + "\\n")
+try:
+    with open(os.path.join(d, "answer"), encoding="utf-8") as f:
+        print(f.read().strip())
+except FileNotFoundError:
+    print("deny")
+"""
+
+
+@dataclass
+class Agent:
+    """The person, played by a script: what it was asked, what it answers."""
+
+    dir: Path
+
+    def answer(self, value: str) -> None:
+        (self.dir / "answer").write_text(value, encoding="utf-8")
+
+    def questions(self) -> list[dict]:
+        path = self.dir / "questions.jsonl"
+        if not path.exists():
+            return []
+        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+
+@contextlib.contextmanager
+def start_herkos(tmp_path: Path, extra_args=(), extra_env=None):
     runtime = tmp_path / "run"
     runtime.mkdir(mode=0o700)
     docs = tmp_path / "home" / "Documents"
@@ -96,11 +129,12 @@ def herkos(tmp_path: Path):
         LC_ALL="",
         LC_MESSAGES="",
     )
+    env.update(extra_env or {})
     env.pop("DISPLAY", None)
     env.pop("WAYLAND_DISPLAY", None)
     path = runtime / "vilna" / "herkos.sock"
     proc = subprocess.Popen(
-        serve_command(),
+        serve_command() + list(extra_args),
         env=env,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
@@ -124,6 +158,26 @@ def herkos(tmp_path: Path):
         proc.wait(5)
     if proc.stderr:
         proc.stderr.close()
+
+
+@pytest.fixture
+def herkos(tmp_path: Path):
+    with start_herkos(tmp_path) as h:
+        yield h
+
+
+@pytest.fixture
+def with_agent(tmp_path: Path):
+    """Herkos that asks a scripted window; the window answers what the test says."""
+    agent_dir = tmp_path / "agent"
+    agent_dir.mkdir()
+    script = agent_dir / "window"
+    script.write_text(AGENT.format(python=sys.executable), encoding="utf-8")
+    script.chmod(0o700)
+    agent = Agent(agent_dir)
+    extra = ["--confirm-command", str(script)]
+    with start_herkos(tmp_path, extra, {"HERKOS_TEST_AGENT": str(agent_dir)}) as h:
+        yield h, agent
 
 
 @pytest.fixture

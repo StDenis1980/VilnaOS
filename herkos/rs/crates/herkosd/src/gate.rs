@@ -18,7 +18,7 @@ use std::sync::Mutex;
 
 use herkos_core::keros::{Finding, Report};
 use herkos_core::manifest::{Operation, Registry};
-use herkos_core::policy::{Assessment, Limits, SessionState, assess};
+use herkos_core::policy::{Assessment, Limits, Raise, SessionState, assess};
 use herkos_core::request::{ActionRequest, normpath, parse_request};
 use herkos_core::risk::Level;
 use serde_json::{Map, Value, json};
@@ -48,6 +48,12 @@ impl Answer {
             Answer::Always => "always",
         }
     }
+
+    pub fn parse(text: &str) -> Option<Answer> {
+        [Answer::Deny, Answer::Once, Answer::Session, Answer::Always]
+            .into_iter()
+            .find(|a| a.name() == text)
+    }
 }
 
 /// Durations the person may pick (permissions.md 5.1, 5.3).
@@ -63,7 +69,6 @@ pub fn choices_for(level: Level, in_bounds: bool) -> Vec<Answer> {
 
 /// What the confirmation window shows.
 #[derive(Debug, Clone)]
-#[expect(dead_code, reason = "read by the session agent (step 5 of ADR 0013)")]
 pub struct Question {
     pub summary: String,
     pub reason: String,
@@ -72,9 +77,29 @@ pub struct Question {
     pub resources: Vec<String>,
     pub level: Level,
     pub undoable: bool,
-    pub raises: Vec<String>,
+    pub raises: Vec<Raise>,
     pub taint_sources: Vec<String>,
     pub choices: Vec<Answer>,
+}
+
+impl Question {
+    /// What the window gets on stdin: Herkos-lite's `question_to_json`, plus
+    /// `raises_i18n` so the window can translate the reasons itself.
+    pub fn to_json(&self) -> Value {
+        json!({
+            "summary": self.summary,
+            "reason": self.reason,
+            "tool": self.tool,
+            "operation": self.operation,
+            "resources": self.resources,
+            "level": self.level.name(),
+            "undoable": self.undoable,
+            "raises": self.raises.iter().map(Raise::text).collect::<Vec<_>>(),
+            "raises_i18n": self.raises.iter().map(Raise::to_json).collect::<Vec<_>>(),
+            "taint_sources": self.taint_sources,
+            "choices": self.choices.iter().map(|c| c.name()).collect::<Vec<_>>(),
+        })
+    }
 }
 
 pub trait Confirmer: Send + Sync {
@@ -349,7 +374,11 @@ impl Gate {
             let why = if a.raises.is_empty() {
                 "its base level".to_owned()
             } else {
-                a.raises.join("; ")
+                a.raises
+                    .iter()
+                    .map(Raise::text)
+                    .collect::<Vec<_>>()
+                    .join("; ")
             };
             let msg = format!("{level} actions need the system Herkos (raised by: {why})");
             return deny(a.level, "denied_level", msg);

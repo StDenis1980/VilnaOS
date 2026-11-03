@@ -8,6 +8,7 @@
 //! `herkos/conformance/` checks that both answer the same way.
 
 mod config;
+mod confirm;
 mod gate;
 mod grants;
 mod keros_model;
@@ -29,7 +30,7 @@ use serde_json::Value;
 /// A longer message closes the connection (protocol.md).
 const MAX_LINE: usize = 1024 * 1024;
 
-const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm deny]\n       herkosd journal verify\n       herkosd --version";
+const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd journal verify\n       herkosd --version";
 
 fn default_socket() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")
@@ -106,7 +107,7 @@ fn serve_connection(stream: UnixStream, uid: u32, gate: Arc<gate::Gate>) {
     }
 }
 
-fn build_gate() -> Result<gate::Gate, String> {
+fn build_gate(confirmer: Box<dyn gate::Confirmer>) -> Result<gate::Gate, String> {
     let config = config::load_config(&config::default_config_path())?;
     let journal = mitos::Journal::open(&config.journal_path())
         .map_err(|e| format!("the journal is broken, refusing to start: {e}"))?;
@@ -132,7 +133,7 @@ fn build_gate() -> Result<gate::Gate, String> {
         Box::new(tools),
         grants,
         journal,
-        Box::new(gate::DenyAll),
+        confirmer,
     )
     .with_model_check(model_check))
 }
@@ -181,8 +182,8 @@ fn start_tools(config: &config::Config) -> mcp::McpTools {
     tools
 }
 
-fn serve(socket: &Path) -> Result<(), String> {
-    let gate = Arc::new(build_gate()?);
+fn serve(socket: &Path, confirmer: Box<dyn gate::Confirmer>) -> Result<(), String> {
+    let gate = Arc::new(build_gate(confirmer)?);
     prepare_socket_dir(socket)?;
     // Born 0600: nobody else gets a window between bind and chmod.
     let old = rustix::process::umask(rustix::fs::Mode::from_raw_mode(0o177));
@@ -244,14 +245,20 @@ fn run(args: &[String]) -> Result<(), String> {
         }
         Some("serve") => {
             let mut socket = None;
+            let mut mode = "auto".to_owned();
+            let mut window: Option<PathBuf> = None;
             let mut rest = args[1..].iter();
             while let Some(a) = rest.next() {
                 match a.as_str() {
                     "--socket" => socket = rest.next().map(PathBuf::from),
-                    // No decisions yet, so nothing to confirm: every action is denied.
                     "--confirm" => match rest.next().map(String::as_str) {
-                        Some("deny") => {}
-                        _ => return Err("--confirm: only 'deny' is supported for now".into()),
+                        Some(m @ ("auto" | "gui" | "terminal" | "deny")) => mode = m.to_owned(),
+                        _ => return Err("--confirm: auto, gui, terminal or deny".into()),
+                    },
+                    // A window program other than herkos-dialog (for tests).
+                    "--confirm-command" => match rest.next() {
+                        Some(p) if Path::new(p).is_absolute() => window = Some(PathBuf::from(p)),
+                        _ => return Err("--confirm-command needs an absolute path".into()),
                     },
                     _ => return Err(format!("unknown argument {a}\n{USAGE}")),
                 }
@@ -261,7 +268,18 @@ fn run(args: &[String]) -> Result<(), String> {
                 Some(_) => return Err("--socket must be an absolute path".into()),
                 None => default_socket()?,
             };
-            serve(&socket)
+            let custom = window.is_some();
+            let window = window.or_else(|| which("herkos-dialog"));
+            let confirmer: Box<dyn gate::Confirmer> = match (mode.as_str(), window) {
+                // An explicit window program wins over the mode, as in Herkos-lite.
+                (_, Some(w)) if custom => Box::new(confirm::Window::new(&w)),
+                ("deny", _) => Box::new(gate::DenyAll),
+                ("terminal", _) => Box::new(confirm::Terminal),
+                ("gui", Some(w)) => Box::new(confirm::Window::new(&w)),
+                ("gui", None) => return Err("--confirm gui: herkos-dialog is not installed".into()),
+                (_, w) => confirm::auto(w),
+            };
+            serve(&socket, confirmer)
         }
         _ => Err(USAGE.into()),
     }
