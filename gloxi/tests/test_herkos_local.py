@@ -124,8 +124,16 @@ def test_without_a_desktop_herkos_asks_on_gloxis_terminal(sandbox, tmp_path):
     (docs / "note.txt").write_text("synthetic note\n")
     add_folder(docs, cfg)
     parent, child = pty.openpty()
-    herkos = LocalHerkos(env=sandbox, confirm_fd=child)
-    herkos.start()
+    # The terminal is Gloxi's stdin, fd 0, as in `flatpak run --command=gloxi`;
+    # the child's own fd 0 is /dev/null, so Herkos must get it on another number.
+    saved = os.dup(0)
+    os.dup2(child, 0)
+    try:
+        herkos = LocalHerkos(env=sandbox, confirm_fd=0)
+        herkos.start()
+    finally:
+        os.dup2(saved, 0)
+        os.close(saved)
     try:
         os.write(parent, b"o\n")  # typed ahead: "allow once"
         with HerkosClient.connect(herkos.socket) as client:

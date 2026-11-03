@@ -55,7 +55,7 @@ def test_dialog_shows_r4_content_exactly():
     assert content_text({"content": None}) is None
     shown = content_text({"content": {"path": "/home/ola/Звіт.odt"}})
     assert "/home/ola/Звіт.odt" in shown
-    long = content_text({"content": {"lines": list(range(100))}})
+    long = content_text({"content": {"text": "\n".join(map(str, range(100)))}})
     assert long.splitlines()[-1] == "…"
     assert len(long.splitlines()) == MAX_CONTENT_LINES + 1
 
@@ -97,3 +97,26 @@ def test_dialog_id_fits_the_flatpak_sandbox():
     assert application_id({}) == DIALOG_ID
     gloxi = "io.github.stdenis1980.Gloxi"
     assert application_id({"FLATPAK_ID": gloxi}).startswith(gloxi + ".")
+
+
+def test_questions_are_readable_for_a_person():
+    """Seen on the laptop: %D0%BD… paths and JSON with \\n in the R3 window."""
+    from dataclasses import replace
+
+    from herkos.confirm import content_lines, readable_resource, render
+    from herkos.dialog import content_text
+
+    uri = "file:///home/u/%D0%BD%D0%BE%D1%82%D0%B0%D1%82%D0%BA%D0%B0.txt"
+    assert readable_resource(uri) == "/home/u/нотатка.txt"
+    assert readable_resource("https://example.org/a%20b") == "https://example.org/a%20b"
+    content = {"path": "/home/u/нотатка.txt", "text": "Дата: 12.11\nДемо: п'ятниця"}
+    assert content_lines(content) == [
+        "path: /home/u/нотатка.txt",
+        "text:",
+        "  Дата: 12.11",
+        "  Демо: п'ятниця",
+    ]
+    shown = render(replace(q(), resources=(uri,), content=content))
+    assert "/home/u/нотатка.txt" in shown and "%D0" not in shown
+    assert "  Демо: п'ятниця" in shown and "\\n" not in shown
+    assert "\\n" not in content_text({"content": content})

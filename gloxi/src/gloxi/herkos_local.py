@@ -16,6 +16,7 @@ says so.
 
 from __future__ import annotations
 
+import fcntl
 import os
 import socket
 import subprocess
@@ -167,17 +168,24 @@ class LocalHerkos:
         sock.unlink(missing_ok=True)  # a stale socket from a crash
         command, fds = list(self.command), ()
         if self.confirm_fd is not None and os.isatty(self.confirm_fd):
-            command += ["--confirm-fd", str(self.confirm_fd)]
-            fds = (self.confirm_fd,)
-        self._proc = subprocess.Popen(
-            command,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            env=self.env,
-            pass_fds=fds,
-            start_new_session=True,
-        )
+            # A copy above 2: the terminal is often Gloxi's stdin (fd 0), and
+            # the child's fd 0 is /dev/null.
+            fd = fcntl.fcntl(self.confirm_fd, fcntl.F_DUPFD_CLOEXEC, 3)
+            command += ["--confirm-fd", str(fd)]
+            fds = (fd,)
+        try:
+            self._proc = subprocess.Popen(
+                command,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env=self.env,
+                pass_fds=fds,
+                start_new_session=True,
+            )
+        finally:
+            for fd in fds:
+                os.close(fd)
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             if self._proc.poll() is not None:

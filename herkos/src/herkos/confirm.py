@@ -19,6 +19,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol, TextIO
+from urllib.parse import unquote, urlsplit
 
 from herkos.i18n import _
 from herkos.risk import Level
@@ -87,6 +88,30 @@ _LABELS = {
 }  # translated when shown
 
 
+def readable_resource(uri: str) -> str:
+    """``file:///home/ola/%D0%97%D0%B2%D1%96%D1%82`` → ``/home/ola/Звіт``."""
+    if uri.startswith("file://"):
+        return unquote(urlsplit(uri).path)
+    return uri
+
+
+def content_lines(content: dict) -> list[str]:
+    """The arguments as a person reads them: text as text, not as JSON with ``\\n``.
+
+    Every argument is shown; a multi-line value is shown line by line, indented.
+    """
+    lines: list[str] = []
+    for key, value in content.items():
+        if isinstance(value, str) and ("\n" in value or key == "text"):
+            lines.append(f"{key}:")
+            lines += [f"  {line}" for line in value.split("\n")]
+        elif isinstance(value, str):
+            lines.append(f"{key}: {value}")
+        else:
+            lines.append(f"{key}: {json.dumps(value, ensure_ascii=False)}")
+    return lines
+
+
 def render(question: Question) -> str:
     lines = [
         "",
@@ -94,7 +119,7 @@ def render(question: Question) -> str:
         f"  {question.summary}  ({question.level.name})",
         "  " + _("Gloxi's reason: ") + question.reason,
     ]
-    lines += [f"    • {r}" for r in question.resources[:10]]
+    lines += [f"    • {readable_resource(r)}" for r in question.resources[:10]]
     if len(question.resources) > 10:
         lines.append("    " + _("… and {n} more").format(n=len(question.resources) - 10))
     lines.append("  " + (_("Can be undone.") if question.undoable else _("Cannot be undone.")))
@@ -105,8 +130,7 @@ def render(question: Question) -> str:
         lines.append("  " + _("Untrusted content came from: {src}").format(src=src))
     if question.content is not None:
         lines.append("  " + _("Exactly this will be done:"))
-        shown = json.dumps(question.content, ensure_ascii=False, indent=2).splitlines()
-        lines += [f"    {line}" for line in shown]
+        lines += [f"    {line}" for line in content_lines(question.content)]
     options = [_(_LABELS[c]) for c in question.choices] + [_("[n] deny")]
     lines.append("  " + "   ".join(options))
     return "\n".join(lines) + "\n> "
