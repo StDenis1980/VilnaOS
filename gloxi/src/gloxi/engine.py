@@ -25,10 +25,13 @@ import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from gettext import gettext as _
 from pathlib import Path
 from urllib.parse import urlsplit
 
 import httpx
+
+from gloxi.i18n import N_
 
 CHUNK = 1 << 20
 
@@ -52,7 +55,7 @@ DEFAULT_MODEL = ModelFile(
     url="https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf",
     sha256="7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
     size=2_497_280_256,
-    source="Qwen (Alibaba Cloud) on Hugging Face",
+    source=N_("Qwen (Alibaba Cloud) on Hugging Face"),
     licence="Apache-2.0",
 )
 
@@ -85,7 +88,15 @@ def server_binary() -> str | None:
 
 
 def human_size(size: int) -> str:
-    return f"{size / 1e9:.1f} GB" if size >= 1e9 else f"{size / 1e6:.0f} MB"
+    if size >= 1e9:
+        # The decimal separator of the interface language ("2,5 ГБ").
+        value = f"{size / 1e9:.1f}".replace(".", _(DECIMAL_POINT))
+        return _("{value} GB").format(value=value)
+    return _("{value} MB").format(value=f"{size / 1e6:.0f}")
+
+
+# Translators: the decimal separator, e.g. "," in Ukrainian.
+DECIMAL_POINT = N_(".")
 
 
 # -- download ---------------------------------------------------------------------

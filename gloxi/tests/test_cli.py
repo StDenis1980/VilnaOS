@@ -110,3 +110,34 @@ def test_repl_shows_tool_calls():
     repl(conv, read=lambda _p: next(inputs, None) or (_ for _ in ()).throw(EOFError()), out=out)
     assert "[files: list /home/u/Documents (done)]" in out.getvalue()
     assert "Там два файли." in out.getvalue()
+
+
+def test_closing_the_terminal_still_stops_the_children(tmp_path):
+    """SIGHUP/SIGTERM leave through the ExitStack, which stops llama-server and Herkos."""
+    import signal
+    import subprocess
+    import sys
+
+    stopped = tmp_path / "stopped"
+    script = f"""
+import signal, sys, time
+from contextlib import ExitStack
+from gloxi import cli
+for s in (signal.SIGTERM, signal.SIGHUP):
+    signal.signal(s, cli._leave)
+with ExitStack() as stack:
+    stack.callback(lambda: open({str(stopped)!r}, "w").write("yes"))
+    print("ready", flush=True)
+    input()
+"""
+    for signum in (signal.SIGHUP, signal.SIGTERM):
+        stopped.unlink(missing_ok=True)
+        proc = subprocess.Popen(
+            [sys.executable, "-c", script], stdin=subprocess.PIPE, stdout=subprocess.PIPE
+        )
+        assert proc.stdout.readline().strip() == b"ready"
+        proc.send_signal(signum)
+        assert proc.wait(timeout=10) == 128 + signum
+        assert stopped.read_text() == "yes"
+        proc.stdin.close()
+        proc.stdout.close()

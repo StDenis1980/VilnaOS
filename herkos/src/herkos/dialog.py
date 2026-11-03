@@ -16,6 +16,7 @@ The system Herkos in Vilna closes this (permissions.md 5.2).
 from __future__ import annotations
 
 import json
+import os
 import sys
 
 from herkos.i18n import _
@@ -61,6 +62,15 @@ def content_text(question: dict) -> str | None:
     return "\n".join(lines)
 
 
+DIALOG_ID = "io.github.stdenis1980.Herkos.Dialog"
+
+
+def application_id(env) -> str:
+    """A Flatpak may only use names under its own id (Gloxi bundles Herkos-lite)."""
+    flatpak = env.get("FLATPAK_ID")
+    return f"{flatpak}.HerkosDialog" if flatpak else DIALOG_ID
+
+
 LABELS = {
     "once": "Allow once",
     "session": "Allow for this session",
@@ -81,7 +91,14 @@ def main() -> int:
     from gi.repository import Adw, GLib, Gtk
 
     answer = ["deny"]
-    app = Adw.Application(application_id="io.github.stdenis1980.Herkos.Dialog")
+    from gi.repository import Gio
+
+    # One window per question: never ask the bus for a name (NON_UNIQUE).
+    # The id must still sit under the app's own id inside a Flatpak.
+    app = Adw.Application(
+        application_id=application_id(os.environ),
+        flags=Gio.ApplicationFlags.NON_UNIQUE,
+    )
 
     def finish(value: str) -> None:
         answer[0] = value

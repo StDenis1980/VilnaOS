@@ -58,3 +58,42 @@ def test_dialog_shows_r4_content_exactly():
     long = content_text({"content": {"lines": list(range(100))}})
     assert long.splitlines()[-1] == "…"
     assert len(long.splitlines()) == MAX_CONTENT_LINES + 1
+
+
+def test_terminal_asks_on_a_handed_over_terminal():
+    """Gloxi starts Herkos-lite in a new session and hands over its own terminal."""
+    import os
+    import pty
+    import select
+
+    from herkos.confirm import Terminal, default_confirmer
+
+    parent, child = pty.openpty()
+    try:
+        os.write(parent, b"o\n")
+        assert Terminal(fd=child).ask(q(), timeout=5) is Answer.ONCE
+        shown = b""
+        while select.select([parent], [], [], 0.2)[0]:
+            shown += os.read(parent, 65536)
+        shown = shown.decode()
+        assert "Change a file" in shown and "Allowed" in shown
+        assert isinstance(default_confirmer(child), (Terminal, Dialog))
+    finally:
+        os.close(parent)
+        os.close(child)
+
+
+def test_a_handed_over_non_terminal_is_deny(tmp_path):
+    from herkos.confirm import Terminal
+
+    with open(tmp_path / "plain", "w+") as f:
+        assert Terminal(fd=f.fileno()).ask(q(), timeout=1) is Answer.DENY
+
+
+def test_dialog_id_fits_the_flatpak_sandbox():
+    """A Flatpak may own only names under its own id; the dialog must not need more."""
+    from herkos.dialog import DIALOG_ID, application_id
+
+    assert application_id({}) == DIALOG_ID
+    gloxi = "io.github.stdenis1980.Gloxi"
+    assert application_id({"FLATPAK_ID": gloxi}).startswith(gloxi + ".")

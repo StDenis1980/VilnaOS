@@ -135,9 +135,18 @@ def alive(sock: Path) -> bool:
 class LocalHerkos:
     """``herkos serve`` as a child of Gloxi, restarted when the folders change."""
 
-    def __init__(self, command: list[str] | None = None, env: dict[str, str] | None = None):
+    def __init__(
+        self,
+        command: list[str] | None = None,
+        env: dict[str, str] | None = None,
+        confirm_fd: int | None = None,
+    ):
         self.command = command or [sys.executable, "-m", "herkos", "serve", "--confirm", "auto"]
         self.env = env
+        # Gloxi's terminal, for asking when there is no desktop: Herkos runs in
+        # its own session (Ctrl+C in the chat must not stop it), so it has no
+        # controlling terminal of its own.
+        self.confirm_fd = confirm_fd
         self._proc: subprocess.Popen | None = None
 
     @property
@@ -156,12 +165,17 @@ class LocalHerkos:
         if alive(sock):
             return  # another Gloxi in this sandbox already started it
         sock.unlink(missing_ok=True)  # a stale socket from a crash
+        command, fds = list(self.command), ()
+        if self.confirm_fd is not None and os.isatty(self.confirm_fd):
+            command += ["--confirm-fd", str(self.confirm_fd)]
+            fds = (self.confirm_fd,)
         self._proc = subprocess.Popen(
-            self.command,
+            command,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             env=self.env,
+            pass_fds=fds,
             start_new_session=True,
         )
         deadline = time.monotonic() + timeout
@@ -191,15 +205,18 @@ class LocalHerkos:
         self.start()
 
 
-def start_if_needed(tools_enabled: bool) -> LocalHerkos | None:
-    """In the Flatpak, start the bundled Herkos unless one already listens."""
+def start_if_needed(tools_enabled: bool, confirm_fd: int | None = None) -> LocalHerkos | None:
+    """In the Flatpak, start the bundled Herkos unless one already listens.
+
+    ``confirm_fd`` is the terminal Herkos may ask on (the chat in a terminal).
+    """
     if not tools_enabled or not in_flatpak():
         return None
     sock = socket_file()
     if sock is None:
         return None
     ensure_config()
-    herkos = LocalHerkos()
+    herkos = LocalHerkos(confirm_fd=confirm_fd)
     try:
         herkos.start()
     except HerkosStartError as exc:

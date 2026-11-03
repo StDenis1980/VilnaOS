@@ -107,32 +107,47 @@ def render(question: Question) -> str:
 
 
 class Terminal:
-    """Ask on Herkos's own controlling terminal (not on Gloxi's)."""
+    """Ask on a terminal: Herkos's own controlling one, or one handed over.
 
-    def __init__(self, tty_path: str = "/dev/tty") -> None:
+    ``fd`` is a terminal Herkos was given when it started (Gloxi's, when
+    Gloxi runs Herkos-lite as its child in a new session: such a child has no
+    controlling terminal). The person types the answer; the model cannot.
+    """
+
+    def __init__(self, tty_path: str = "/dev/tty", fd: int | None = None) -> None:
         self.tty_path = tty_path
+        self.fd = fd
 
     def ask(self, question: Question, timeout: float) -> Answer:
         try:
-            fd = os.open(self.tty_path, os.O_RDWR | os.O_NOCTTY)
+            if self.fd is not None:
+                if not os.isatty(self.fd):
+                    return Answer.DENY
+                fd = os.dup(self.fd)
+            else:
+                fd = os.open(self.tty_path, os.O_RDWR | os.O_NOCTTY)
         except OSError:
             return Answer.DENY
-        with os.fdopen(fd, "r+", encoding="utf-8", buffering=1) as tty:
-            return self._ask(tty, question, timeout)
+        # A terminal cannot seek, so it gets a reader and a writer (not "r+").
+        with (
+            os.fdopen(fd, "r", encoding="utf-8") as reader,
+            os.fdopen(os.dup(fd), "w", encoding="utf-8", buffering=1) as writer,
+        ):
+            return self._ask(reader, writer, question, timeout)
 
     @staticmethod
-    def _ask(tty: TextIO, question: Question, timeout: float) -> Answer:
-        tty.write(render(question))
-        tty.flush()
-        ready, _, _ = select.select([tty], [], [], timeout)
+    def _ask(reader: TextIO, writer: TextIO, question: Question, timeout: float) -> Answer:
+        writer.write(render(question))
+        writer.flush()
+        ready, _unused, _none = select.select([reader], [], [], timeout)
         if not ready:
-            tty.write("\n  " + _("No answer: denied.") + "\n")
+            writer.write("\n  " + _("No answer: denied.") + "\n")
             return Answer.DENY
-        key = tty.readline().strip().lower()[:1]
+        key = reader.readline().strip().lower()[:1]
         answer = _KEYS.get(key, Answer.DENY)
         if answer not in question.choices:
             answer = Answer.DENY
-        tty.write("  " + (_("Denied.") if answer is Answer.DENY else _("Allowed.")) + "\n")
+        writer.write("  " + (_("Denied.") if answer is Answer.DENY else _("Allowed.")) + "\n")
         return answer
 
 
@@ -191,8 +206,13 @@ def gui_available() -> bool:
     return True
 
 
-def default_confirmer() -> Confirmer:
-    """The window if there is a desktop, else this terminal, else always "no"."""
+def default_confirmer(tty_fd: int | None = None) -> Confirmer:
+    """The window if there is a desktop, else a terminal, else always "no".
+
+    The terminal is ``tty_fd`` if Herkos was handed one, else its own stdin's.
+    """
     if gui_available():
         return Dialog()
+    if tty_fd is not None and os.isatty(tty_fd):
+        return Terminal(fd=tty_fd)
     return Terminal() if sys.stdin.isatty() else DenyAll()
