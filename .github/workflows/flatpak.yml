@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Builds the Gloxi Flatpak (gloxi/flatpak) and checks that it starts.
+# On a tag gloxi-v<version> it also publishes the checked bundle as a
+# GitHub release (a pre-release before 1.0); see gloxi/tools/release.py.
 name: Flatpak
 
 on:
   push:
     branches: [main]
+    tags: ["gloxi-v*"]
     paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", ".github/workflows/flatpak.yml"]
   pull_request:
     paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", ".github/workflows/flatpak.yml"]
@@ -73,3 +76,38 @@ jobs:
           assert r.status_code == 200
           e.stop()
           "
+      - name: Keep the checked bundle for the release
+        if: startsWith(github.ref, 'refs/tags/gloxi-v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: gloxi-release
+          path: gloxi.flatpak
+          if-no-files-found: error
+
+  release:
+    # Only after every check above passed on this very bundle.
+    if: startsWith(github.ref, 'refs/tags/gloxi-v')
+    needs: gloxi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency: gloxi-release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: gloxi-release
+      - name: The tag, pyproject.toml and the metainfo agree
+        id: check
+        run: python3 gloxi/tools/release.py "$GITHUB_REF_NAME" notes.md >> "$GITHUB_OUTPUT"
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.check.outputs.version }}
+          PRERELEASE: ${{ steps.check.outputs.prerelease }}
+        run: |
+          sha256sum gloxi.flatpak > gloxi.flatpak.sha256
+          flag=""
+          if [ "$PRERELEASE" = true ]; then flag="--prerelease"; fi
+          gh release create "$GITHUB_REF_NAME" gloxi.flatpak gloxi.flatpak.sha256 \
+            --verify-tag --title "Gloxi $VERSION" --notes-file notes.md $flag
