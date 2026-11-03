@@ -29,7 +29,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--url", default=DEFAULT_LOCAL_URL, help="OpenAI-compatible endpoint")
     p.add_argument("--model", default="local", help="model name (also names the report)")
-    p.add_argument("--tasks", type=Path, help="tasks file (default: the built-in set)")
+    p.add_argument(
+        "--tasks",
+        default="default",
+        help="tasks file, or a built-in set: default (ten languages) or uk-quality",
+    )
     p.add_argument("--only", help="run only tasks whose id or category contains this")
     p.add_argument("--server-pid", type=int, help="PID of llama-server, to report its peak RAM")
     p.add_argument("--timeout", type=float, default=300, help="seconds per answer")

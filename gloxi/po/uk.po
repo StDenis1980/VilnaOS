@@ -411,6 +411,10 @@ msgid "."
 msgstr ","
 
 #: src/gloxi/engine.py
+msgid "Mistral AI on Hugging Face"
+msgstr "Mistral AI на Hugging Face"
+
+#: src/gloxi/engine.py
 msgid "Qwen (Alibaba Cloud) on Hugging Face"
 msgstr "Qwen (Alibaba Cloud) на Hugging Face"
 

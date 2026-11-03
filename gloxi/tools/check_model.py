@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Check that the model pinned in gloxi.engine is the file Hugging Face serves.
+"""Check that the models pinned in gloxi.engine are the files Hugging Face serves.
 
     uv run python tools/check_model.py
 
@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from gloxi.engine import DEFAULT_MODEL
+from gloxi.engine import MODELS
 
 
 def published(url: str) -> dict:
@@ -31,16 +31,18 @@ def published(url: str) -> dict:
 
 
 def main() -> int:
-    m = DEFAULT_MODEL
-    entry = published(m.url)
-    lfs = entry.get("lfs") or {}
-    sha, size = lfs.get("oid"), lfs.get("size", entry.get("size"))
-    if (sha, size) != (m.sha256, m.size):
-        print(f"{m.filename}: pinned sha256={m.sha256} size={m.size}", file=sys.stderr)
-        print(f"{m.filename}: published sha256={sha} size={size}", file=sys.stderr)
-        return 1
-    print(f"{m.filename}: matches Hugging Face ({size} bytes)")
-    return 0
+    failed = 0
+    for m in MODELS:
+        entry = published(m.url)
+        lfs = entry.get("lfs") or {}
+        sha, size = lfs.get("oid"), lfs.get("size", entry.get("size"))
+        if (sha, size) != (m.sha256, m.size):
+            print(f"{m.filename}: pinned sha256={m.sha256} size={m.size}", file=sys.stderr)
+            print(f"{m.filename}: published sha256={sha} size={size}", file=sys.stderr)
+            failed = 1
+        else:
+            print(f"{m.filename}: matches Hugging Face ({size} bytes)")
+    return failed
 
 
 if __name__ == "__main__":

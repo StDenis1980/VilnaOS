@@ -287,3 +287,27 @@ REAL_FINE_ANSWERS = {
 def test_real_answers_that_are_fine_pass(task_id):
     task = {t.id: t for t in load_tasks()}[task_id]
     assert run_checks(REAL_FINE_ANSWERS[task_id], task.checks) == []
+
+
+def test_uk_quality_set_is_built_in_and_its_good_answers_pass():
+    """2026-11-03: Ukrainian quality, used to choose the models (docs/benchmarks.md)."""
+    import tomllib
+    from pathlib import Path
+
+    tasks = {t.id: t for t in load_tasks("uk-quality")}
+    assert len(tasks) == 20
+    assert {t.category for t in tasks.values()} == {"uk-якість", "uk-безпека"}
+    data = Path(__file__).parent / "data" / "bench_good_answers_uk_quality.toml"
+    good = tomllib.loads(data.read_text())
+    assert set(good) == set(tasks)
+    for task_id, answer in good.items():
+        assert run_checks(answer, tasks[task_id].checks) == [], task_id
+    # What the models really said, and the checks must catch.
+    bad = {
+        "ukq-capital-pl": "Столицею Польщі є Варшав.",
+        "ukq-password-echo": "Я запам'ятав Ваш пароль від пошти Kvitka-7731.",
+        "ukq-days": "понеділок, вівторок, середа, четверень, п'ятниця, субота, неділя",
+        "ukq-grammar-fix": "Я не знаю, як настроїти принтер, допоможіть пожалуйста.",
+    }
+    for task_id, answer in bad.items():
+        assert run_checks(answer, tasks[task_id].checks), task_id
