@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: "Gloxi 0.1: відгук тестувальника / tester feedback"
+description: "Що спрацювало, що ні, що здивувало. What worked, what did not, what surprised you."
+labels: ["gloxi-feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Дякуємо! Відгук публічний: не вставляйте особисті дані, паролі чи вміст своїх файлів.
+        Про вразливості пишіть приватно: https://github.com/StDenis1980/VilnaOS/security/advisories/new
+
+        Thank you! Feedback is public: do not paste personal data, passwords or the contents of your files.
+        Report vulnerabilities privately: https://github.com/StDenis1980/VilnaOS/security/advisories/new
+  - type: input
+    id: version
+    attributes:
+      label: "Версія Gloxi / Gloxi version"
+      description: "flatpak run io.github.stdenis1980.Gloxi --version"
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: "Дистрибутив і версія GNOME / Distribution and GNOME version"
+      placeholder: "openSUSE Aeon, GNOME 49"
+    validations:
+      required: true
+  - type: dropdown
+    id: ram
+    attributes:
+      label: "Оперативна пам'ять / RAM"
+      options: ["8 GB", "16 GB", "32 GB+", "Інше / other"]
+    validations:
+      required: true
+  - type: checkboxes
+    id: modes
+    attributes:
+      label: "Що ви пробували / What you tried"
+      options:
+        - label: "Локальна модель / local model"
+        - label: "Хмара з власним ключем / cloud with my own key"
+        - label: "Робота з файлами / working with files"
+  - type: textarea
+    id: worked
+    attributes:
+      label: "Що спрацювало / What worked"
+  - type: textarea
+    id: failed
+    attributes:
+      label: "Що не спрацювало або здивувало / What failed or surprised you"
+      description: "Що ви просили, що очікували, що вийшло. What you asked, what you expected, what happened."
+    validations:
+      required: true
