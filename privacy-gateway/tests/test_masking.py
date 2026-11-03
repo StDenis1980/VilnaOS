@@ -58,3 +58,13 @@ def test_unmask_stream_flushes_a_dangling_bracket():
 def test_only_selected_kinds():
     m = Masker(kinds=[Kind.EMAIL])
     assert m.mask("a@example.com +380671234567") == "[EMAIL_1] +380671234567"
+
+
+def test_conceal_never_puts_a_password_back():
+    m = Masker(kinds=[Kind.SECRET])
+    masked = m.mask("Мій пароль від пошти Kvitka-7731.")
+    assert "Kvitka-7731" not in masked and "[SECRET_1]" in masked
+    answer = ["Запам'ятав: [SEC", "RET_1]. А [EMAIL_9] не знаю."]
+    shown = "".join(m.conceal_stream(answer, shown="***"))
+    assert shown == "Запам'ятав: ***. А [EMAIL_9] не знаю."
+    assert m.conceal("[SECRET_1]") == "••••••"

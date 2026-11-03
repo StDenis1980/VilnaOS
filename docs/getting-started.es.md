@@ -152,7 +152,7 @@ y pon la clave en una variable de entorno, no en el archivo:
 export GLOXI_CLOUD_API_KEY=...
 ```
 
-Con `mode = "auto"`, los mensajes cortos se quedan en local y los de más de 1500 caracteres van a la nube; `/cloud <texto>` envía allí un mensaje a propósito. Antes de enviar nada, la [pasarela de privacidad](../privacy-gateway/README.md) sustituye correos, teléfonos, IBAN, números de tarjetas y documentos, claves y contraseñas por marcadores como `[EMAIL_1]` y restituye los valores reales en la respuesta. Los nombres en texto libre todavía no se reconocen. El modelo en la nube nunca recibe la herramienta de archivos. Todos los ajustes y variables de entorno están en [`gloxi/README.md`](../gloxi/README.md#налаштування) (en ucraniano).
+Con `mode = "auto"`, los mensajes cortos se quedan en local y los de más de 1500 caracteres van a la nube; `/cloud <texto>` envía allí un mensaje a propósito. Antes de enviar nada, la [pasarela de privacidad](../privacy-gateway/README.md) sustituye correos, teléfonos, IBAN, números de tarjetas y documentos, claves y contraseñas por marcadores como `[EMAIL_1]` y restituye los valores reales en la respuesta. Los nombres en texto libre todavía no se reconocen. Las contraseñas y claves escritas en el chat se ocultan a todos los modelos, también al local, y se muestran como `••••••` si un modelo las repite. El modelo en la nube nunca recibe la herramienta de archivos. Todos los ajustes y variables de entorno están en [`gloxi/README.md`](../gloxi/README.md#налаштування) (en ucraniano).
 
 ## 8. Pruebas y comprobaciones
 
