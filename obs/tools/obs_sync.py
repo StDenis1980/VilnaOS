@@ -71,6 +71,12 @@ TARBALLS: dict[str, Tarball] = {
         extra=(("LICENSE", "LICENSE"),),
         cargo="herkos/rs/Cargo.toml",
     ),
+    "vilna-mcp-backup": Tarball(
+        "mcp/backup", pyproject_version("mcp/backup"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
+    "vilna-mcp-files": Tarball(
+        "mcp/files", pyproject_version("mcp/files"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
     "python-vilna-privacy-gateway": Tarball(
         "privacy-gateway", pyproject_version("privacy-gateway")
     ),

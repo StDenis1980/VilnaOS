@@ -30,6 +30,7 @@ use crate::system::Person;
 /// How long systemd may take to start a tool and connect it.
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(15);
 
+#[derive(Clone)]
 pub struct Units {
     /// `RuntimeDirectory=herkos-tools` of herkosd.service.
     pub dir: PathBuf,
@@ -80,13 +81,32 @@ impl Units {
         let files = args_file(&dir.join("files.args"), &args)
             .and_then(|()| self.launch("org.vilna.mcp.files", "vilna-mcp-files", uid, &dir));
         let backup = self.launch("org.vilna.mcp.backup", "vilna-mcp-backup", uid, &dir);
-        for (name, started) in [("files", files), ("backup", backup)] {
+        for (name, unit, started) in [
+            ("org.vilna.mcp.files", "vilna-mcp-files", files),
+            ("org.vilna.mcp.backup", "vilna-mcp-backup", backup),
+        ] {
             match started {
-                Ok(t) => tools.add(t),
-                Err(e) => eprintln!("herkosd: {name} tool for {}: {e}", person.account.name),
+                Ok(t) => tools.add_relaunching(t, self.relaunch(name, unit, uid, &dir)),
+                Err(e) => eprintln!("herkosd: {name} for {}: {e}", person.account.name),
             }
         }
         Box::new(tools)
+    }
+
+    /// Stops what is left of a tool that broke (it may hang rather than
+    /// exit), then starts its unit again. polkit lets `herkos` stop and start
+    /// these units, not restart them.
+    fn relaunch(&self, name: &str, unit: &str, uid: u32, dir: &Path) -> mcp::Relaunch {
+        let units = self.clone();
+        let (name, unit, dir) = (name.to_owned(), unit.to_owned(), dir.to_owned());
+        Box::new(move || {
+            let _ = Command::new(&units.start)
+                .args(["stop", &format!("{unit}@{uid}.service")])
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .status();
+            units.launch(&name, &unit, uid, &dir)
+        })
     }
 
     fn launch(&self, name: &str, unit: &str, uid: u32, dir: &Path) -> Result<McpStdio, String> {

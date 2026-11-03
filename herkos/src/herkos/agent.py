@@ -139,6 +139,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"herkos-agent: registered with {args.socket}", file=sys.stderr)
     try:
         agent.serve()
+        print(f"herkos-agent: {args.socket} closed the connection", file=sys.stderr)
     except (OSError, ValueError) as e:
         print(f"herkos-agent: {e}", file=sys.stderr)
     # Herkos went away (restart, update): systemd starts the agent again.
