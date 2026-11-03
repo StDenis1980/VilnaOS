@@ -74,6 +74,8 @@ def load_tasks(path: Path | None = None) -> list[Task]:
         unknown = set(t.checks) - set(CHECK_NAMES)
         if unknown:
             raise ValueError(f"{t.id}: unknown checks {sorted(unknown)}")
+        if t.checks.get("lang", "uk") not in LANGUAGES:
+            raise ValueError(f"{t.id}: unknown language {t.checks['lang']!r}")
     return tasks
 
 
@@ -88,6 +90,66 @@ def cyrillic_share(text: str) -> float:
     if not letters:
         return 0.0
     return len(_CYRILLIC.findall(text)) / len(letters)
+
+
+# The ten main languages (ADR 0009). Only Ukrainian is written in Cyrillic, so
+# for the others a rough guess from common words and letters is enough to tell
+# "answered in Polish" from "fell back to English".
+LANGUAGES = ("uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
+
+_WORDS = {
+    "en": "yes the and is are you your to of it that with this can for not all would will",
+    "es": "sí el la los las que es y en un una para por con tu tus puedes no del "
+    "se todos puedo pero como esto",
+    "pl": "i w nie się jest to na z że do jak czy możesz jeśli lub dla wszystkie "
+    "twoje mogę ale co tak być",
+    "de": "ja der die das und ist nicht ich sie du mit ein eine zu auf kann den "
+    "alle deine dein aber wie auch",
+    "fr": "oui le la les et est vous de des un une pas pour que dans avec je tous "
+    "vos votre mais comme cela",
+    "it": "sì il la che di e è non per un una sono con puoi del della gli tutti "
+    "tuoi tuo posso ma come questo",
+    "ro": "da și este în nu de la cu un o sunt pentru că care poți să sau toate "
+    "tale pot dar cum acest",
+    "cs": "ano a i je se na v že to není jsem pro jak můžete s by nebo všechny vaše "
+    "mohu ale co tak být opravdu jsi už jen ještě",
+    "lt": "ir yra kad ne su į tai kaip jūs galite man aš bet iš arba visi jūsų galiu nes taip būti",
+}
+_LETTERS = {  # letters that (among these ten) mostly belong to one language
+    "es": "ñ¿¡",
+    "pl": "łśźżń",
+    "de": "äöüß",
+    "fr": "çœêèû",
+    "it": "ìò",
+    "ro": "ășțşţ",
+    "cs": "řůěť",
+    "lt": "ėįųū",
+}
+_TOKEN = re.compile(r"[^\W\d_]+")
+
+
+def guess_language(text: str) -> str | None:
+    """One of LANGUAGES, or None when there is nothing to go by."""
+    if cyrillic_share(text) >= 0.6:
+        return "uk"
+    low = text.lower()
+    words = _TOKEN.findall(low)
+    scores = {}
+    for lang, common in _WORDS.items():
+        vocab = set(common.split())
+        scores[lang] = sum(w in vocab for w in words)
+        scores[lang] += 2 * sum(low.count(ch) for ch in _LETTERS.get(lang, ""))
+    best = max(scores, key=scores.get)
+    if scores[best] == 0 or list(scores.values()).count(scores[best]) > 1:
+        return None  # nothing to go by, or a tie
+    return best
+
+
+def _lang_ok(answer: str, lang: str) -> bool:
+    if lang == "uk":
+        # Russian letters in a "Ukrainian" answer mean the model mixed them up.
+        return cyrillic_share(answer) >= 0.6 and not re.search(r"[ыэъёЫЭЪЁ]", answer)
+    return cyrillic_share(answer) <= 0.1 and guess_language(answer) == lang
 
 
 def _json_object(text: str) -> dict | None:
@@ -108,9 +170,7 @@ def run_checks(answer: str, checks: dict) -> list[str]:
     low = answer.lower()
     failed = []
     lang = checks.get("lang")
-    if lang == "uk" and cyrillic_share(answer) < 0.6:
-        failed.append("lang")
-    if lang == "en" and cyrillic_share(answer) > 0.1:
+    if lang is not None and not _lang_ok(answer, lang):
         failed.append("lang")
     if "contains_any" in checks and not any(s.lower() in low for s in checks["contains_any"]):
         failed.append("contains_any")
