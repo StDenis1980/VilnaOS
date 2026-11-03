@@ -30,6 +30,8 @@ python3 tools/check_site.py
 
 ## Розгортання
 
+Домени (Arsys): vilnaos.com — головний; vilnaos.es, vilnaos.eu, vilnaos.online — переадресації; gloxi.eu ще не куплено. На доменах без пошти — `MX 0 .`, `v=spf1 -all`, `_dmarc` `v=DMARC1; p=reject`.
+
 Публікує й змінює DNS лише Denys або за його згодою. План: документ «План сайту й доменів Vilna OS» у проєкті.
 
 Що налаштувати на хостингу:
@@ -40,7 +42,8 @@ python3 tools/check_site.py
 | --- | --- |
 | `http://*` | `https://` та сама адреса |
 | `www.vilnaos.com/*` | `https://vilnaos.com/*` |
-| `gloxi.eu/*`, `www.gloxi.eu/*` | `https://vilnaos.com/gloxi/` |
+| `vilnaos.es/*`, `vilnaos.eu/*`, `vilnaos.online/*` (і `www.`) | `https://vilnaos.com/*` |
+| `gloxi.eu/*`, `www.gloxi.eu/*` (якщо домен буде куплено) | `https://vilnaos.com/gloxi/` |
 
 **Заголовки (для всіх відповідей)**
 
