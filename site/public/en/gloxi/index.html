@@ -1,0 +1,91 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gloxi 0.1 preview — for testers · Vilna OS</title>
+<meta name="description" content="Gloxi is an AI assistant for GNOME that runs on your own computer and acts only with your permission. A preview for testers.">
+<link rel="icon" href="/assets/gloxi.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="canonical" href="https://vilnaos.com/en/gloxi/">
+<link rel="alternate" hreflang="uk" href="https://vilnaos.com/gloxi/">
+<link rel="alternate" hreflang="en" href="https://vilnaos.com/en/gloxi/">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site"><div class="wrap">
+  <a class="brand" href="/en/"><img src="/assets/vilna-icon.svg" alt="" width="36" height="36">Vilna OS</a>
+  <nav class="site" aria-label="Sections">
+    <a href="/en/">Home</a>
+    <a href="/en/gloxi/" aria-current="page">Gloxi</a>
+    <a href="https://github.com/StDenis1980/VilnaOS">Code</a>
+    <a href="/gloxi/" hreflang="uk" lang="uk">Українська</a>
+  </nav>
+</div></header>
+
+<main id="main"><div class="wrap">
+  <section class="hero">
+    <div>
+      <span class="badge">Preview for testers</span>
+      <h1>Gloxi 0.1</h1>
+      <p class="lead">An AI assistant for GNOME that talks to a model on your own computer and acts only with your permission.</p>
+    </div>
+    <img src="/assets/gloxi.svg" alt="Gloxi icon" width="140" height="140">
+  </section>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Local by default</h3>
+      <p>A small language model runs on your computer. Without the cloud, nothing you write leaves it.</p>
+    </div>
+    <div class="card">
+      <h3>Cloud only with your key</h3>
+      <p>You can connect any OpenAI-compatible service with your own key. Personal data is masked before it leaves your computer.</p>
+    </div>
+    <div class="card">
+      <h3>Asks first</h3>
+      <p>Gloxi works only in the folders you choose, and only through Herkos, which shows what will change, asks you and keeps a log.</p>
+    </div>
+  </div>
+
+  <div class="card warn">
+    <h3>An honest word about the preview</h3>
+    <p>This is an early version for testing. On a regular Linux, Herkos runs in the same sandbox as Gloxi, so the protection is weaker than it will be in Vilna OS, where Herkos is a separate system service. Do not give Gloxi folders you cannot afford to lose, and keep backups.</p>
+  </div>
+
+  <h2>What you need</h2>
+  <ul>
+    <li>Linux with GNOME and Flatpak (openSUSE Aeon, Fedora Workstation, Ubuntu with Flatpak and so on).</li>
+    <li>A 64-bit Intel or AMD processor; a graphics card is optional.</li>
+    <li>At least 8 GB of RAM, 16 GB is better; about 3 GB of free space for the model.</li>
+  </ul>
+
+  <h2 id="install">Install</h2>
+  <p>Gloxi 0.1 comes out at the end of January 2027. Until then you can <a href="https://github.com/StDenis1980/VilnaOS/blob/main/docs/getting-started.md">build it from source</a>.</p>
+  <ol class="steps">
+    <li>Download <code>gloxi.flatpak</code> and <code>gloxi.flatpak.sha256</code> from the latest release:
+      <br><a class="button" href="https://github.com/StDenis1980/VilnaOS/releases">Releases on GitHub</a></li>
+    <li>Check that the file is complete and has not been replaced:
+<pre><code>sha256sum -c gloxi.flatpak.sha256</code></pre></li>
+    <li>Install the GNOME runtime from Flathub (if you do not have it yet) and Gloxi itself:
+<pre><code>flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install --user flathub org.gnome.Platform//50
+flatpak install --user gloxi.flatpak</code></pre></li>
+    <li>Start Gloxi from the app menu or with <code>flatpak run io.github.stdenis1980.Gloxi</code>. On the first start Gloxi asks before it downloads the model (Qwen3 4B, about 2.5 GB) and checks its checksum. Nothing about you is sent.</li>
+  </ol>
+  <p>To remove it: <code>flatpak uninstall --user io.github.stdenis1980.Gloxi</code> (add <code>--delete-data</code> to erase the model and settings too).</p>
+
+  <h2 id="feedback">Feedback</h2>
+  <p>We most want to know what worked, what did not, and where Gloxi surprised you. Please mention your distribution, how much memory you have and what you asked.</p>
+  <p><a class="button" href="https://github.com/StDenis1980/VilnaOS/issues/new?template=gloxi-feedback.yml">Leave feedback</a>
+     <a class="button secondary" href="https://github.com/StDenis1980/VilnaOS/issues?q=label%3Agloxi-feedback">Feedback from others</a></p>
+  <p>Feedback is public. Do not paste personal data, passwords or the contents of your files. Report vulnerabilities privately — see <a href="/.well-known/security.txt">security.txt</a>.</p>
+</div></main>
+
+<footer class="site"><div class="wrap">
+  <span>Gloxi is part of Vilna OS · GPL-3.0-or-later</span>
+  <span><a href="/en/privacy/">Privacy</a> · <a href="/.well-known/security.txt">Security</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,3 @@
+# Closed to search engines until Gloxi 0.1 is released (site/README.md, "Launch").
+User-agent: *
+Disallow: /
