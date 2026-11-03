@@ -395,7 +395,15 @@ msgid "[local]"
 msgstr ""
 
 #: src/gloxi/gui/controller.py
+msgid "Auto"
+msgstr ""
+
+#: src/gloxi/gui/controller.py
 msgid "Cannot reach the cloud model."
+msgstr ""
+
+#: src/gloxi/gui/controller.py
+msgid "Cloud"
 msgstr ""
 
 #: src/gloxi/gui/controller.py
@@ -425,10 +433,18 @@ msgid "Gloxi, backups"
 msgstr ""
 
 #: src/gloxi/gui/controller.py
+msgid "Local"
+msgstr ""
+
+#: src/gloxi/gui/controller.py
 msgid "On this computer"
 msgstr ""
 
 #: src/gloxi/gui/controller.py
+msgid "Short messages stay on this computer, long ones go to the cloud"
+msgstr ""
+
+#: src/gloxi/gui/controller.py src/gloxi/gui/window.py
 msgid "The cloud is turned off in the settings."
 msgstr ""
 
@@ -439,6 +455,21 @@ msgstr ""
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model returned an error: {error}"
+msgstr ""
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "{model} at {host}, NOT masked"
+msgstr ""
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "{model} at {host}, private data masked"
+msgstr ""
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "{model}, on this computer"
 msgstr ""
 
 #: src/gloxi/gui/window.py
@@ -479,6 +510,10 @@ msgid "Herkos could not restart: {why}"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Model"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "New conversation"
 msgstr ""
 
@@ -488,6 +523,10 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Not now"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Only the local model: turn the cloud on in the settings to choose another"
 msgstr ""
 
 #: src/gloxi/gui/window.py

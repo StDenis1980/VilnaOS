@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Callable
+from dataclasses import dataclass
 from gettext import gettext as _
 from typing import Protocol
+from urllib.parse import urlsplit
 
 from gloxi.backup_intro import BackupIntro, Turn
 from gloxi.chat import Conversation
@@ -20,7 +22,7 @@ from gloxi.cli import model_consent_text, split_command
 from gloxi.config import Settings
 from gloxi.engine import Engine, EngineError, Plan, download, plan
 from gloxi.llm import ModelError, ModelUnavailable
-from gloxi.router import CloudNotAllowed, Route
+from gloxi.router import CloudNotAllowed, Route, Router
 
 # Runs a callable on a worker; replaced by a synchronous runner in tests.
 Runner = Callable[[Callable[[], None]], None]
@@ -58,6 +60,45 @@ def cloud_status(conversation: Conversation) -> str:
     if router.masks_cloud:
         return _("Cloud on, private data is masked")
     return _("Cloud on, masking is off: messages are NOT masked")
+
+
+@dataclass(frozen=True)
+class ModelChoice:
+    mode: str  # auto | local | cloud
+    label: str  # shown in the switcher
+    detail: str  # where messages go, shown as its tooltip
+
+
+def current_choice(router: Router) -> str:
+    """The switcher's selection; with the cloud off every message is local."""
+    return router.mode if router.cloud_enabled else "local"
+
+
+def model_choices(router: Router) -> list[ModelChoice]:
+    """The model switcher in the header: the cloud only when it is turned on."""
+    local = router.local.endpoint.model
+    if local == "local":  # the default name says nothing
+        here = _("On this computer")
+    else:
+        here = _("{model}, on this computer").format(model=local)
+    choices = [ModelChoice("local", _("Local"), here)]
+    if router.cloud_enabled:
+        cloud = router.cloud.endpoint
+        host = urlsplit(cloud.url).hostname or cloud.url
+        if router.masks_cloud:
+            where = _("{model} at {host}, private data masked")
+        else:
+            where = _("{model} at {host}, NOT masked")
+        choices.insert(
+            0,
+            ModelChoice(
+                "auto",
+                _("Auto"),
+                _("Short messages stay on this computer, long ones go to the cloud"),
+            ),
+        )
+        choices.append(ModelChoice("cloud", _("Cloud"), where.format(model=cloud.model, host=host)))
+    return choices
 
 
 class ChatController:

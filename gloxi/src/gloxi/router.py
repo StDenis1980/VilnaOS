@@ -18,11 +18,11 @@ measurements (roadmap 2.4).
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Iterator, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Literal, Protocol
 from urllib.parse import urlsplit
 
-from gloxi.config import RouterPolicy
+from gloxi.config import ROUTER_MODES, RouterPolicy
 from gloxi.llm import ChatClient, Message, ToolCall
 
 Target = Literal["local", "cloud"]
@@ -77,6 +77,22 @@ class Router:
     @property
     def masks_cloud(self) -> bool:
         return self.guard is not None
+
+    @property
+    def mode(self) -> str:
+        return self.policy.mode
+
+    def set_mode(self, mode: str) -> None:
+        """Pick the model by hand, also in the middle of a conversation.
+
+        It holds from the next message until changed again or Gloxi closes;
+        the config file is not touched.
+        """
+        if mode not in ROUTER_MODES:
+            raise ValueError(f"unknown mode {mode!r}")
+        if mode == "cloud" and not self.cloud_enabled:
+            raise CloudNotAllowed("the cloud is turned off")
+        self.policy = replace(self.policy, mode=mode)
 
     def new_conversation(self) -> None:
         """Forget the masked values of the previous conversation."""
