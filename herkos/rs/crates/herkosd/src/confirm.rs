@@ -41,14 +41,30 @@ impl Window {
     }
 }
 
-impl Confirmer for Window {
-    fn ask(&self, question: &Question, timeout: f64) -> Answer {
-        let Ok(mut child) = Command::new(&self.program)
+/// Start the window program. "Text file busy" means a program was just
+/// written and another thread forked meanwhile (still holding it open):
+/// that passes in a moment, so try again a few times.
+fn spawn(program: &Path) -> Option<std::process::Child> {
+    for _ in 0..10 {
+        match Command::new(program)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
             .spawn()
-        else {
+        {
+            Ok(child) => return Some(child),
+            Err(e) if e.kind() == std::io::ErrorKind::ExecutableFileBusy => {
+                thread::sleep(Duration::from_millis(20));
+            }
+            Err(_) => return None,
+        }
+    }
+    None
+}
+
+impl Confirmer for Window {
+    fn ask(&self, question: &Question, timeout: f64) -> Answer {
+        let Some(mut child) = spawn(&self.program) else {
             return Answer::Deny;
         };
         let (Some(mut stdin), Some(stdout)) = (child.stdin.take(), child.stdout.take()) else {

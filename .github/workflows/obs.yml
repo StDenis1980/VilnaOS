@@ -26,7 +26,8 @@ jobs:
       - name: Install build tools
         run: >
           zypper -n --gpg-auto-import-keys install --no-recommends
-          git python3 rpm-build rpmlint python-rpm-macros systemd-rpm-macros tar gzip xz cargo
+          git python3 rpm-build rpmlint python-rpm-macros systemd-rpm-macros sysuser-tools
+          tar gzip xz cargo
       - uses: actions/checkout@v4
       - name: Assemble packages
         run: |
