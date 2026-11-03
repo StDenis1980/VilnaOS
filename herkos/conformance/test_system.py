@@ -52,6 +52,11 @@ def root(*argv: str) -> None:
     subprocess.run([*(SUDO or []), *argv], check=True, capture_output=True)
 
 
+def exists(path: str) -> bool:
+    """Whether the path exists, seen as root: the test may run as a user without access."""
+    return subprocess.run([*(SUDO or []), "test", "-e", path], check=False).returncode == 0
+
+
 def as_user(name: str, argv: list[str], **kw) -> subprocess.Popen:
     pw = pwd.getpwnam(name)
     cmd = [*(SUDO or []), "setpriv", f"--reuid={pw.pw_uid}", f"--regid={pw.pw_gid}"]
@@ -453,7 +458,7 @@ def test_system_herkos_asks_for_r3_and_r4(system):
         asked = [json.loads(q) for q in questions.read_text().splitlines()]
         assert len(asked) == 1 and asked[0]["choices"] == ["once", "session"]
         assert asked[0].get("content") is None
-        assert not Path(f"{docs}/a.txt").exists() and not Path(f"{docs}/b.txt").exists()
+        assert not exists(f"{docs}/a.txt") and not exists(f"{docs}/b.txt")
 
         # After a read, the session holds untrusted content: a delete is R4,
         # "session" is not on offer (so the window's "session" is a no), and
@@ -469,7 +474,7 @@ def test_system_herkos_asks_for_r3_and_r4(system):
         q = json.loads(questions.read_text().splitlines()[-1])
         assert q["level"] == "R4" and q["choices"] == ["once"]
         assert q["content"] == {"path": f"{docs}/c.txt"}
-        assert Path(f"{docs}/c.txt").exists()
+        assert exists(f"{docs}/c.txt")
     finally:
         subprocess.run([*(SUDO or []), "kill", str(agent.pid)], check=False)
         agent.wait(timeout=10)
