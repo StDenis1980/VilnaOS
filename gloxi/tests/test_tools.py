@@ -434,7 +434,7 @@ def test_end_to_end_through_the_real_herkos(real_herkos):
         [("files_read", args(path=plan, reason="Переказати план"))],
         "Зустріч у вівторок.",
         write,
-        "Не можу змінити файл після читання.",
+        "Добре, лишаю як є.",
     )
     conv = conversation(server, file_tools)
     seen = []
@@ -448,17 +448,20 @@ def test_end_to_end_through_the_real_herkos(real_herkos):
         assert ask(conv, "Що в плані?") == "Зустріч у вівторок."
         header, result = external(server.requests[3]["messages"][-1]["content"])
         assert header["external_data"] and "вівторок" in result["text"]
-        # 3. After a read the same connection is tainted: a change becomes R3,
-        #    which Herkos-lite does not run at all.
+        # 3. After a read the same connection is tainted: a change becomes R3.
+        #    Herkos-lite asks "once" only and shows exactly what will be written.
         ask(conv, "Перепиши план")
     finally:
         file_tools.close()
     assert [(o.operation, o.code) for o in seen] == [
         ("write", "denied_user"),
         ("read", "allowed"),
-        ("write", "denied_level"),
+        ("write", "denied_user"),
     ]
-    assert len(confirmer.questions) == 2  # the R3 write was refused without asking
+    assert len(confirmer.questions) == 3
+    tainted = confirmer.questions[-1]
+    assert tainted.level.name == "R3" and [c.value for c in tainted.choices] == ["once"]
+    assert tainted.content["text"] == "зламано"
     assert (docs / "plan.txt").read_text(encoding="utf-8") == "Зустріч у вівторок о 10:00"
     journal = config.journal_path.read_text(encoding="utf-8")
     turns = [json.loads(line)["data"].get("user_turn") for line in journal.splitlines()]

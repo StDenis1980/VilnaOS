@@ -8,6 +8,7 @@ uses the same ``Conversation``.
 from __future__ import annotations
 
 import argparse
+import signal
 import sys
 from collections.abc import Callable
 from contextlib import ExitStack
@@ -51,7 +52,15 @@ MODEL_CONSENT = N_(
 
 NO_MODEL_HINT = N_("There is no language model yet. Run gloxi in a terminal once to download it.")
 
+NO_MODEL_EXIT = N_(
+    "Without a language model Gloxi cannot answer. Run gloxi again when you want to download it."
+)
+
 YES = {"y", "yes", "т", "так"}
+
+
+class NoModel(Exception):
+    """The model is needed but missing: declined, failed to download or to start."""
 
 
 def model_consent_text(p: Plan) -> str:
@@ -59,7 +68,7 @@ def model_consent_text(p: Plan) -> str:
         name=p.model.name,
         size=human_size(p.model.size),
         licence=p.model.licence,
-        source=p.model.source,
+        source=_(p.model.source),
         folder=p.folder,
     )
 
@@ -74,7 +83,10 @@ def prepare_engine(
     fetch: Callable[..., object] = download,
     engine_type: Callable[..., Engine] = Engine,
 ) -> Engine | None:
-    """Start the bundled model if needed; download it first only after a yes."""
+    """Start the bundled model if needed; download it first only after a yes.
+
+    Raises ``NoModel`` if the model is needed and still missing afterwards.
+    """
     p = planner(settings.local.url, start_server=settings.start_server)
     if p.action in ("ready", "none"):
         return None
@@ -90,7 +102,7 @@ def prepare_engine(
             answer = ""
         if answer not in YES | {_("yes").casefold()}:
             print(_("Not downloaded. Gloxi will ask again next time."), file=out)
-            return None
+            raise NoModel
         last = -1
 
         def progress(done: int, total: int) -> None:
@@ -105,7 +117,7 @@ def prepare_engine(
             model_path = fetch(p.model, p.folder, progress=progress)
         except (EngineError, KeyboardInterrupt) as exc:
             print("\n" + _("The model was not downloaded: {why}").format(why=exc), file=out)
-            return None
+            raise NoModel from None
         print("\n" + _("The model is ready."), file=out)
     print(_("Starting the model on this computer…"), file=out)
     engine = engine_type(p.binary, model_path, settings.local.url)
@@ -113,7 +125,7 @@ def prepare_engine(
         engine.start()
     except EngineError as exc:
         print(_("The model could not be started: {why}").format(why=exc), file=out)
-        return None
+        raise NoModel from None
     return engine
 
 
@@ -255,6 +267,10 @@ def _settings(args: argparse.Namespace) -> Settings:
     return settings
 
 
+def _leave(signum: int, _frame: object) -> None:
+    raise SystemExit(128 + signum)
+
+
 def main(argv: list[str] | None = None) -> int:
     setup()
     args = build_parser().parse_args(argv)
@@ -264,14 +280,26 @@ def main(argv: list[str] | None = None) -> int:
         print(f"gloxi: {exc}", file=sys.stderr)
         return 2
 
+    # Closing the terminal (SIGHUP) or `kill` (SIGTERM) must stop the model
+    # and Herkos too: leave through the ExitStack below, as Ctrl+C does.
+    for signum in (signal.SIGTERM, signal.SIGHUP):
+        signal.signal(signum, _leave)
+
     with ExitStack() as stack:
-        engine = prepare_engine(settings, interactive=sys.stdin.isatty())
+        try:
+            engine = prepare_engine(settings, interactive=sys.stdin.isatty())
+        except NoModel:
+            if not settings.cloud:
+                print(_(NO_MODEL_EXIT))
+                return 1
+            engine = None  # the cloud still answers
         if engine:
             stack.callback(engine.stop)
         local = stack.enter_context(ChatClient(settings.local))
         cloud = stack.enter_context(ChatClient(settings.cloud)) if settings.cloud else None
         router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))
-        herkos = start_if_needed(settings.tools_enabled)
+        tty = sys.stdin.fileno() if sys.stdin.isatty() else None
+        herkos = start_if_needed(settings.tools_enabled, confirm_fd=tty)
         if herkos:
             stack.callback(herkos.stop)
         tools = file_tools(settings.tools_enabled)

@@ -19,6 +19,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol, TextIO
+from urllib.parse import unquote, urlsplit
 
 from herkos.i18n import _
 from herkos.risk import Level
@@ -43,6 +44,8 @@ class Question:
     raises: tuple[str, ...]  # why the level is higher than usual
     taint_sources: tuple[str, ...]
     choices: tuple[Answer, ...]  # what the user may pick besides DENY
+    # The exact arguments, when "allow" means "allow exactly this".
+    content: dict | None = None
 
 
 def choices_for(level: Level, in_bounds: bool) -> tuple[Answer, ...]:
@@ -85,6 +88,30 @@ _LABELS = {
 }  # translated when shown
 
 
+def readable_resource(uri: str) -> str:
+    """``file:///home/ola/%D0%97%D0%B2%D1%96%D1%82`` → ``/home/ola/Звіт``."""
+    if uri.startswith("file://"):
+        return unquote(urlsplit(uri).path)
+    return uri
+
+
+def content_lines(content: dict) -> list[str]:
+    """The arguments as a person reads them: text as text, not as JSON with ``\\n``.
+
+    Every argument is shown; a multi-line value is shown line by line, indented.
+    """
+    lines: list[str] = []
+    for key, value in content.items():
+        if isinstance(value, str) and ("\n" in value or key == "text"):
+            lines.append(f"{key}:")
+            lines += [f"  {line}" for line in value.split("\n")]
+        elif isinstance(value, str):
+            lines.append(f"{key}: {value}")
+        else:
+            lines.append(f"{key}: {json.dumps(value, ensure_ascii=False)}")
+    return lines
+
+
 def render(question: Question) -> str:
     lines = [
         "",
@@ -92,7 +119,7 @@ def render(question: Question) -> str:
         f"  {question.summary}  ({question.level.name})",
         "  " + _("Gloxi's reason: ") + question.reason,
     ]
-    lines += [f"    • {r}" for r in question.resources[:10]]
+    lines += [f"    • {readable_resource(r)}" for r in question.resources[:10]]
     if len(question.resources) > 10:
         lines.append("    " + _("… and {n} more").format(n=len(question.resources) - 10))
     lines.append("  " + (_("Can be undone.") if question.undoable else _("Cannot be undone.")))
@@ -101,38 +128,56 @@ def render(question: Question) -> str:
     if question.taint_sources:
         src = ", ".join(question.taint_sources)
         lines.append("  " + _("Untrusted content came from: {src}").format(src=src))
+    if question.content is not None:
+        lines.append("  " + _("Exactly this will be done:"))
+        lines += [f"    {line}" for line in content_lines(question.content)]
     options = [_(_LABELS[c]) for c in question.choices] + [_("[n] deny")]
     lines.append("  " + "   ".join(options))
     return "\n".join(lines) + "\n> "
 
 
 class Terminal:
-    """Ask on Herkos's own controlling terminal (not on Gloxi's)."""
+    """Ask on a terminal: Herkos's own controlling one, or one handed over.
 
-    def __init__(self, tty_path: str = "/dev/tty") -> None:
+    ``fd`` is a terminal Herkos was given when it started (Gloxi's, when
+    Gloxi runs Herkos-lite as its child in a new session: such a child has no
+    controlling terminal). The person types the answer; the model cannot.
+    """
+
+    def __init__(self, tty_path: str = "/dev/tty", fd: int | None = None) -> None:
         self.tty_path = tty_path
+        self.fd = fd
 
     def ask(self, question: Question, timeout: float) -> Answer:
         try:
-            fd = os.open(self.tty_path, os.O_RDWR | os.O_NOCTTY)
+            if self.fd is not None:
+                if not os.isatty(self.fd):
+                    return Answer.DENY
+                fd = os.dup(self.fd)
+            else:
+                fd = os.open(self.tty_path, os.O_RDWR | os.O_NOCTTY)
         except OSError:
             return Answer.DENY
-        with os.fdopen(fd, "r+", encoding="utf-8", buffering=1) as tty:
-            return self._ask(tty, question, timeout)
+        # A terminal cannot seek, so it gets a reader and a writer (not "r+").
+        with (
+            os.fdopen(fd, "r", encoding="utf-8") as reader,
+            os.fdopen(os.dup(fd), "w", encoding="utf-8", buffering=1) as writer,
+        ):
+            return self._ask(reader, writer, question, timeout)
 
     @staticmethod
-    def _ask(tty: TextIO, question: Question, timeout: float) -> Answer:
-        tty.write(render(question))
-        tty.flush()
-        ready, _, _ = select.select([tty], [], [], timeout)
+    def _ask(reader: TextIO, writer: TextIO, question: Question, timeout: float) -> Answer:
+        writer.write(render(question))
+        writer.flush()
+        ready, _unused, _none = select.select([reader], [], [], timeout)
         if not ready:
-            tty.write("\n  " + _("No answer: denied.") + "\n")
+            writer.write("\n  " + _("No answer: denied.") + "\n")
             return Answer.DENY
-        key = tty.readline().strip().lower()[:1]
+        key = reader.readline().strip().lower()[:1]
         answer = _KEYS.get(key, Answer.DENY)
         if answer not in question.choices:
             answer = Answer.DENY
-        tty.write("  " + (_("Denied.") if answer is Answer.DENY else _("Allowed.")) + "\n")
+        writer.write("  " + (_("Denied.") if answer is Answer.DENY else _("Allowed.")) + "\n")
         return answer
 
 
@@ -148,6 +193,7 @@ def question_to_json(question: Question) -> dict:
         "raises": list(question.raises),
         "taint_sources": list(question.taint_sources),
         "choices": [c.value for c in question.choices],
+        "content": question.content,
     }
 
 
@@ -191,8 +237,13 @@ def gui_available() -> bool:
     return True
 
 
-def default_confirmer() -> Confirmer:
-    """The window if there is a desktop, else this terminal, else always "no"."""
+def default_confirmer(tty_fd: int | None = None) -> Confirmer:
+    """The window if there is a desktop, else a terminal, else always "no".
+
+    The terminal is ``tty_fd`` if Herkos was handed one, else its own stdin's.
+    """
     if gui_available():
         return Dialog()
+    if tty_fd is not None and os.isatty(tty_fd):
+        return Terminal(fd=tty_fd)
     return Terminal() if sys.stdin.isatty() else DenyAll()

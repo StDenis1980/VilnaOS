@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import signal
 import sys
 import threading
 from gettext import gettext as _
@@ -392,7 +393,16 @@ def main(argv: list[str] | None = None) -> int:
     setup()
     GLib.set_application_name("Gloxi")
     app = GloxiApp()
+    # Closing the terminal or `kill` must stop the model and Herkos too:
+    # quitting runs do_shutdown, which stops them.
+    for signum in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
+        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signum, _quit, app)
     return app.run(sys.argv[:1] if argv is None else argv)
+
+
+def _quit(app: Adw.Application) -> bool:
+    app.quit()
+    return GLib.SOURCE_REMOVE
 
 
 if __name__ == "__main__":

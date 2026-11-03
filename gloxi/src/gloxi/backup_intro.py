@@ -468,8 +468,13 @@ def _short(path: str) -> str:
 
 
 def backup_intro(enabled: bool) -> BackupIntro | None:
-    """The talk wired to the real Herkos, or None if tools are off or Herkos is missing."""
-    if not enabled:
+    """The talk wired to the real Herkos, or None if tools are off or Herkos is missing.
+
+    The Flatpak has no backup tool (backups are part of Vilna), so no talk there.
+    """
+    from gloxi.herkos_local import in_flatpak
+
+    if not enabled or in_flatpak():
         return None
     try:
         from herkos.client import HerkosClient

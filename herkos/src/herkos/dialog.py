@@ -16,8 +16,10 @@ The system Herkos in Vilna closes this (permissions.md 5.2).
 from __future__ import annotations
 
 import json
+import os
 import sys
 
+from herkos.confirm import content_lines, readable_resource
 from herkos.i18n import _
 
 
@@ -54,11 +56,23 @@ def content_text(question: dict) -> str | None:
     """
     if "content" not in question or question["content"] is None:
         return None
-    text = json.dumps(question["content"], ensure_ascii=False, indent=2)
-    lines = text.splitlines()
+    content = question["content"]
+    if isinstance(content, dict):
+        lines = content_lines(content)
+    else:
+        lines = json.dumps(content, ensure_ascii=False, indent=2).splitlines()
     if len(lines) > MAX_CONTENT_LINES:
         lines = [*lines[:MAX_CONTENT_LINES], "…"]
     return "\n".join(lines)
+
+
+DIALOG_ID = "io.github.stdenis1980.Herkos.Dialog"
+
+
+def application_id(env) -> str:
+    """A Flatpak may only use names under its own id (Gloxi bundles Herkos-lite)."""
+    flatpak = env.get("FLATPAK_ID")
+    return f"{flatpak}.HerkosDialog" if flatpak else DIALOG_ID
 
 
 LABELS = {
@@ -78,14 +92,27 @@ def main() -> int:
 
     gi.require_version("Gtk", "4.0")
     gi.require_version("Adw", "1")
-    from gi.repository import Adw, GLib, Gtk
+    from gi.repository import Adw, GLib, Gtk, Pango
 
     answer = ["deny"]
-    app = Adw.Application(application_id="io.github.stdenis1980.Herkos.Dialog")
+    from gi.repository import Gio
+
+    # One window per question: never ask the bus for a name (NON_UNIQUE).
+    # The id must still sit under the app's own id inside a Flatpak.
+    app = Adw.Application(
+        application_id=application_id(os.environ),
+        flags=Gio.ApplicationFlags.NON_UNIQUE,
+    )
 
     def finish(value: str) -> None:
         answer[0] = value
         app.quit()
+
+    def narrow(label: Gtk.Label) -> Gtk.Label:
+        # Long paths and lines wrap anywhere instead of widening the window.
+        label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        label.set_max_width_chars(60)
+        return label
 
     def build(app: Adw.Application) -> None:
         win = Adw.Window(application=app, title=_("Herkos: permission"), modal=True)
@@ -108,10 +135,10 @@ def main() -> int:
 
         resources = question.get("resources", [])
         if resources:
-            listing = "\n".join(f"• {r}" for r in resources[:10])
+            listing = "\n".join(f"• {readable_resource(r)}" for r in resources[:10])
             if len(resources) > 10:
                 listing += "\n" + _("… and {n} more").format(n=len(resources) - 10)
-            box.append(Gtk.Label(label=listing, xalign=0, wrap=True, selectable=True))
+            box.append(narrow(Gtk.Label(label=listing, xalign=0, wrap=True, selectable=True)))
 
         notes = [_("Can be undone.") if question.get("undoable") else _("Cannot be undone.")]
         why_riskier = translated_raises(question)
@@ -127,7 +154,7 @@ def main() -> int:
         content = content_text(question)
         if content is not None:
             box.append(Gtk.Label(label=_("Exactly this will be done:"), xalign=0))
-            shown = Gtk.Label(label=content, xalign=0, wrap=True, selectable=True)
+            shown = narrow(Gtk.Label(label=content, xalign=0, wrap=True, selectable=True))
             shown.add_css_class("monospace")
             box.append(shown)
 
