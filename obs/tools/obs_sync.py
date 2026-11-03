@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import io
+import lzma
 import re
 import shutil
 import subprocess
@@ -45,6 +46,8 @@ class Tarball:
     folder: str  # repository folder with the code
     version: Callable[[], str]  # RPM version of the code
     extra: tuple[tuple[str, str], ...] = ()  # (repo path, path in tarball)
+    # Cargo.lock of Rust code: its crates go to vendor.tar.xz (OBS builds offline).
+    cargo: str | None = None
 
 
 def pep440_to_rpm(version: str) -> str:
@@ -62,6 +65,12 @@ def pyproject_version(folder: str) -> Callable[[], str]:
 
 TARBALLS: dict[str, Tarball] = {
     "gloxi": Tarball("gloxi", pyproject_version("gloxi"), extra=(("LICENSE", "LICENSE"),)),
+    "herkos": Tarball(
+        "herkos",
+        pyproject_version("herkos"),
+        extra=(("LICENSE", "LICENSE"),),
+        cargo="herkos/rs/Cargo.toml",
+    ),
     "python-vilna-privacy-gateway": Tarball(
         "privacy-gateway", pyproject_version("privacy-gateway")
     ),
@@ -104,6 +113,34 @@ def make_tarball(name: str, spec: Tarball, version: str, out: Path) -> Path:
     return path
 
 
+def make_vendor(manifest: str, out: Path) -> Path:
+    """The crates of a Cargo.lock as vendor.tar.xz, the same for the same lock."""
+    if shutil.which("cargo") is None:
+        raise SystemExit("cargo is not installed: it is needed to vendor Rust crates")
+    mtime = source_date()
+    path = out / "vendor.tar.xz"
+    with tempfile.TemporaryDirectory(prefix="vilna-vendor-") as tmp:
+        subprocess.run(
+            ["cargo", "vendor", "--locked", "--versioned-dirs", "--manifest-path",
+             str(ROOT / manifest), str(Path(tmp) / "vendor")],
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+        files = sorted(p for p in Path(tmp).rglob("*") if p.is_file())
+        buf = io.BytesIO()
+        with tarfile.open(fileobj=buf, mode="w", format=tarfile.PAX_FORMAT) as tar:
+            for f in files:
+                data = f.read_bytes()
+                info = tarfile.TarInfo(f.relative_to(tmp).as_posix())
+                info.size = len(data)
+                info.mtime = mtime
+                info.mode = 0o755 if f.stat().st_mode & 0o111 else 0o644
+                info.uname = info.gname = "root"
+                tar.addfile(info, io.BytesIO(data))
+        path.write_bytes(lzma.compress(buf.getvalue(), preset=6))
+    return path
+
+
 def set_spec_version(spec: Path, version: str) -> None:
     text = spec.read_text(encoding="utf-8")
     new, n = re.subn(r"(?m)^(Version:\s*)\S+$", rf"\g<1>{version}", text, count=1)
@@ -130,6 +167,8 @@ def assemble(out: Path) -> list[str]:
             set_spec_version(dest / f"{name}.spec", version)
             tar = make_tarball(name, spec, version, dest)
             print(f"{name}: {tar.name}")
+            if spec.cargo:
+                print(f"{name}: {make_vendor(spec.cargo, dest).name}")
         else:
             print(f"{name}: {len(list(dest.iterdir()))} files")
     return names

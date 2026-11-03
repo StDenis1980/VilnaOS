@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# /etc/herkos/system.toml: who the system Herkos answers.
+#
+# One [[person]] per person on this computer. "gloxi" is the system user
+# their Gloxi runs as: Gloxi of one person never acts for another. The
+# installer of Vilna writes this file; until somebody is listed, herkosd
+# refuses everybody.
+#
+# [[person]]
+# user = "denys"
+# gloxi = "gloxi-denys"

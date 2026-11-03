@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The system Herkos: one service for everybody, as the system user herkos.
+# Permissions and the Mitos journal of each person live in
+# /var/lib/herkos/<uid>/, where no process of the person can reach them.
+[Unit]
+Description=Herkos permission gate of Vilna OS
+Documentation=https://github.com/StDenis1980/VilnaOS/tree/main/herkos
+Requires=herkosd.socket
+After=herkosd.socket
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/herkos/herkosd system
+# The listening socket arrives as stdin (herkosd forbids unsafe code, and
+# adopting fd 3 would need it); stdout and stderr go to the journal.
+StandardInput=socket
+StandardOutput=journal
+StandardError=journal
+User=herkos
+Group=herkos
+StateDirectory=herkos
+StateDirectoryMode=0700
+UMask=0077
+Restart=on-failure
+
+# Hardening: herkosd reads the person's settings and passwd, writes only
+# its own state.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+# Unix sockets for Gloxi and the agents; loopback TCP for the Keros model.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+
+[Install]
+Also=herkosd.socket

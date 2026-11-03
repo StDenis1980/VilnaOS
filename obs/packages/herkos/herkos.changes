@@ -1,0 +1,6 @@
+-------------------------------------------------------------------
+Tue Nov  3 07:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- First package: herkosd as a system service (socket activation, system
+  user herkos) and herkos-agent, the session agent with the
+  confirmation window.

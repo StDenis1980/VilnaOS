@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The system user of the system Herkos (herkosd.service).
+u herkos - "Herkos permission gate" /var/lib/herkos /usr/sbin/nologin

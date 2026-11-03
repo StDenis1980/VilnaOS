@@ -54,25 +54,42 @@ pub fn default_config_path() -> PathBuf {
         .join("config.toml")
 }
 
-fn expand_user(path: &str) -> PathBuf {
+fn expand_user(path: &str, home: &Path) -> PathBuf {
     if path == "~" {
-        home()
+        home.to_path_buf()
     } else if let Some(rest) = path.strip_prefix("~/") {
-        home().join(rest)
+        home.join(rest)
     } else {
         PathBuf::from(path)
     }
 }
 
-fn defaults() -> Config {
+/// Whose settings these are: `~` in `allowed_roots` is this person's home,
+/// and Herkos keeps their permissions and journal in `state_dir`.
+pub struct Owner {
+    pub home: PathBuf,
+    pub state_dir: PathBuf,
+}
+
+impl Owner {
+    /// The person running this herkosd, as Herkos-lite does it.
+    pub fn current() -> Owner {
+        Owner {
+            home: home(),
+            state_dir: xdg("XDG_STATE_HOME", ".local/state").join("herkos"),
+        }
+    }
+}
+
+fn defaults(owner: &Owner) -> Config {
     Config {
-        allowed_roots: vec![expand_user("~/Documents")],
+        allowed_roots: vec![expand_user("~/Documents", &owner.home)],
         bulk_threshold: 20,
         confirm_timeout: 120.0,
         max_level: MAX_LEVEL,
         keros_model: Some("http://127.0.0.1:8080/v1".to_owned()),
         keros_budget: 20.0,
-        state_dir: xdg("XDG_STATE_HOME", ".local/state").join("herkos"),
+        state_dir: owner.state_dir.clone(),
     }
 }
 
@@ -84,7 +101,12 @@ fn number(v: &Value) -> Option<f64> {
     }
 }
 
+#[cfg(test)]
 pub fn parse_config(text: &str, source: &Path) -> Result<Config, String> {
+    parse_config_for(text, source, &Owner::current())
+}
+
+pub fn parse_config_for(text: &str, source: &Path, owner: &Owner) -> Result<Config, String> {
     let at = source.display();
     let data: Table = text.parse().map_err(|e| format!("{at}: {e}"))?;
     let known = [
@@ -102,12 +124,16 @@ pub fn parse_config(text: &str, source: &Path) -> Result<Config, String> {
         unknown.sort();
         return Err(format!("{at}: unknown keys {unknown:?}"));
     }
-    let mut c = defaults();
+    let mut c = defaults(owner);
     if let Some(roots) = data.get("allowed_roots") {
         let list: Option<Vec<PathBuf>> = roots.as_array().and_then(|items| {
             items
                 .iter()
-                .map(|r| r.as_str().filter(|s| !s.is_empty()).map(expand_user))
+                .map(|r| {
+                    r.as_str()
+                        .filter(|s| !s.is_empty())
+                        .map(|s| expand_user(s, &owner.home))
+                })
                 .collect()
         });
         let list = list.ok_or_else(|| format!("{at}: allowed_roots must be a list of folders"))?;
@@ -149,9 +175,13 @@ pub fn parse_config(text: &str, source: &Path) -> Result<Config, String> {
 }
 
 pub fn load_config(path: &Path) -> Result<Config, String> {
+    load_config_for(path, &Owner::current())
+}
+
+pub fn load_config_for(path: &Path, owner: &Owner) -> Result<Config, String> {
     match std::fs::read_to_string(path) {
-        Ok(text) => parse_config(&text, path),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(defaults()),
+        Ok(text) => parse_config_for(&text, path, owner),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(defaults(owner)),
         Err(e) => Err(format!("{}: {e}", path.display())),
     }
 }

@@ -6,9 +6,9 @@ name: OBS packages
 on:
   push:
     branches: [main]
-    paths: ["obs/**", "gloxi/**", "privacy-gateway/**", "LICENSE", ".github/workflows/obs.yml"]
+    paths: ["obs/**", "gloxi/**", "herkos/**", "privacy-gateway/**", "LICENSE", ".github/workflows/obs.yml"]
   pull_request:
-    paths: ["obs/**", "gloxi/**", "privacy-gateway/**", "LICENSE", ".github/workflows/obs.yml"]
+    paths: ["obs/**", "gloxi/**", "herkos/**", "privacy-gateway/**", "LICENSE", ".github/workflows/obs.yml"]
   workflow_dispatch:
 
 permissions:
@@ -26,7 +26,7 @@ jobs:
       - name: Install build tools
         run: >
           zypper -n --gpg-auto-import-keys install --no-recommends
-          git python3 rpm-build rpmlint python-rpm-macros systemd-rpm-macros tar gzip
+          git python3 rpm-build rpmlint python-rpm-macros systemd-rpm-macros tar gzip xz cargo
       - uses: actions/checkout@v4
       - name: Assemble packages
         run: |
@@ -74,7 +74,7 @@ jobs:
     concurrency: obs-upload
     steps:
       - name: Install osc
-        run: zypper -n --gpg-auto-import-keys install --no-recommends git python3 osc
+        run: zypper -n --gpg-auto-import-keys install --no-recommends git python3 osc cargo
       - uses: actions/checkout@v4
       - name: Configure osc
         env:
