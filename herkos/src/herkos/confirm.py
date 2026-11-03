@@ -43,6 +43,8 @@ class Question:
     raises: tuple[str, ...]  # why the level is higher than usual
     taint_sources: tuple[str, ...]
     choices: tuple[Answer, ...]  # what the user may pick besides DENY
+    # The exact arguments, when "allow" means "allow exactly this".
+    content: dict | None = None
 
 
 def choices_for(level: Level, in_bounds: bool) -> tuple[Answer, ...]:
@@ -101,6 +103,10 @@ def render(question: Question) -> str:
     if question.taint_sources:
         src = ", ".join(question.taint_sources)
         lines.append("  " + _("Untrusted content came from: {src}").format(src=src))
+    if question.content is not None:
+        lines.append("  " + _("Exactly this will be done:"))
+        shown = json.dumps(question.content, ensure_ascii=False, indent=2).splitlines()
+        lines += [f"    {line}" for line in shown]
     options = [_(_LABELS[c]) for c in question.choices] + [_("[n] deny")]
     lines.append("  " + "   ".join(options))
     return "\n".join(lines) + "\n> "
@@ -163,6 +169,7 @@ def question_to_json(question: Question) -> dict:
         "raises": list(question.raises),
         "taint_sources": list(question.taint_sources),
         "choices": [c.value for c in question.choices],
+        "content": question.content,
     }
 
 

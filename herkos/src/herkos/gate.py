@@ -188,7 +188,8 @@ class Gate:
                 f"argument '{mismatch}' names something not declared in resources",
             )
         assert a.level is not None
-        if a.level > self.config.max_level:
+        exact = self._exact_only(a)
+        if a.level > self.config.max_level and not exact:
             why = "; ".join(a.raises) or "its base level"
             return Outcome(
                 action_id,
@@ -204,15 +205,41 @@ class Gate:
         if a.level == Level.R0:
             return Outcome(action_id, True, a.level, "allowed", "R0: no permission needed")
 
-        grant = self.grants.find(request.tool, request.operation, a.roots, a.level)
+        grant = (
+            None if exact else self.grants.find(request.tool, request.operation, a.roots, a.level)
+        )
         if grant is not None:
             return Outcome(
                 action_id, True, a.level, "allowed", f"permission {grant.id} ({grant.duration})"
             )
-        return self._ask(action_id, request, session, a)
+        return self._ask(action_id, request, session, a, exact=exact)
+
+    def _exact_only(self, a: Assessment) -> bool:
+        """One level above the limit only because the conversation is tainted.
+
+        Herkos-lite still lets the person allow such an action, but only once,
+        no permission covers it, and the question shows exactly what will be
+        done, so a command smuggled in through a file is in plain sight
+        (decision of 2026-11-03: "find a note and change it" in one chat). It
+        must stay inside the allowed folders and be undoable.
+        """
+        op = a.operation
+        return (
+            a.taint_only
+            and a.level == self.config.max_level.raised()
+            and a.in_bounds
+            and op is not None
+            and (op.undoable or op.reversible)
+        )
 
     def _ask(
-        self, action_id: str, request: ActionRequest, session: SessionState, a: Assessment
+        self,
+        action_id: str,
+        request: ActionRequest,
+        session: SessionState,
+        a: Assessment,
+        *,
+        exact: bool = False,
     ) -> Outcome:
         assert a.level is not None and a.operation is not None
         question = Question(
@@ -227,7 +254,8 @@ class Gate:
             ),
             raises=a.raises,
             taint_sources=tuple(session.taint_sources),
-            choices=choices_for(a.level, a.in_bounds),
+            choices=(Answer.ONCE,) if exact else choices_for(a.level, a.in_bounds),
+            content=dict(request.arguments) if exact else None,
         )
         with self._ask_lock:
             try:
