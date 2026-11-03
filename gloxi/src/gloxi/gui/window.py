@@ -18,7 +18,13 @@ from gloxi.backup_intro import BackupIntro, backup_intro  # noqa: E402
 from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
 from gloxi.gui import APP_ID  # noqa: E402
-from gloxi.gui.controller import ChatController, ModelSetup, cloud_status  # noqa: E402
+from gloxi.gui.controller import (  # noqa: E402
+    ChatController,
+    ModelSetup,
+    cloud_status,
+    current_choice,
+    model_choices,
+)
 from gloxi.herkos_local import (  # noqa: E402
     LocalHerkos,
     add_folder,
@@ -29,7 +35,7 @@ from gloxi.herkos_local import (  # noqa: E402
 from gloxi.i18n import setup  # noqa: E402
 from gloxi.llm import ChatClient  # noqa: E402
 from gloxi.privacy import guard_factory  # noqa: E402
-from gloxi.router import Router  # noqa: E402
+from gloxi.router import CloudNotAllowed, Router  # noqa: E402
 from gloxi.tools import file_tools  # noqa: E402
 
 CSS = """
@@ -62,6 +68,12 @@ class ChatWindow(Adw.ApplicationWindow):
         new_button = Gtk.Button(icon_name="list-add-symbolic", tooltip_text=_("New conversation"))
         new_button.connect("clicked", self._on_new)
         header.pack_start(new_button)
+        # The model switcher (brief 10.3: in the input bar, Ctrl+/), also in the
+        # middle of a conversation; it holds from the next message.
+        self.model_switch = Gtk.DropDown(valign=Gtk.Align.CENTER)
+        self.model_switch.update_property([Gtk.AccessibleProperty.LABEL], [_("Model")])
+        self._fill_model_switch()
+        self.model_switch.connect("notify::selected", self._on_model_selected)
         # Only with the Herkos bundled in the Flatpak: the folders it may use.
         self.herkos: LocalHerkos | None = None
         self.tools = None
@@ -88,7 +100,17 @@ class ChatWindow(Adw.ApplicationWindow):
         bottom = Gtk.Box(spacing=8)
         for side in ("top", "bottom", "start", "end"):
             getattr(bottom, f"set_margin_{side}")(12)
+        bottom.append(self.model_switch)
         bottom.append(self.entry)
+        # Capture phase: the entry itself binds Ctrl+/ to "select all".
+        shortcuts = Gtk.ShortcutController(propagation_phase=Gtk.PropagationPhase.CAPTURE)
+        shortcuts.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.ShortcutTrigger.parse_string("<Control>slash"),
+                action=Gtk.CallbackAction.new(lambda *_a: self.model_switch.activate()),
+            )
+        )
+        self.add_controller(shortcuts)
         bottom.append(self.send_button)
 
         self.toasts = Adw.ToastOverlay(child=self.scroller)
@@ -115,6 +137,41 @@ class ChatWindow(Adw.ApplicationWindow):
         self.controller.reset()
         while child := self.messages.get_first_child():
             self.messages.remove(child)
+
+    # -- model switcher -----------------------------------------------------------
+
+    def _fill_model_switch(self) -> None:
+        router = self.controller.conversation.router
+        self._choices = model_choices(router)
+        self._filling = True
+        self.model_switch.set_model(Gtk.StringList.new([c.label for c in self._choices]))
+        modes = [c.mode for c in self._choices]
+        self.model_switch.set_selected(modes.index(current_choice(router)))
+        self._filling = False
+        self._show_model_choice()
+        if len(self._choices) == 1:
+            self.model_switch.set_sensitive(False)
+            self.model_switch.set_tooltip_text(
+                _("Only the local model: turn the cloud on in the settings to choose another")
+            )
+
+    def _show_model_choice(self) -> None:
+        if len(self._choices) > 1:
+            choice = self._choices[self.model_switch.get_selected()]
+            self.model_switch.set_tooltip_text(choice.detail)
+        self.title.set_subtitle(cloud_status(self.controller.conversation))
+
+    def _on_model_selected(self, *_args) -> None:
+        if self._filling:
+            return
+        choice = self._choices[self.model_switch.get_selected()]
+        try:
+            self.controller.conversation.router.set_mode(choice.mode)
+        except CloudNotAllowed:
+            self.show_error(_("The cloud is turned off in the settings."))
+            self._fill_model_switch()
+            return
+        self._show_model_choice()
 
     # -- folders (bundled Herkos) -----------------------------------------------
 
