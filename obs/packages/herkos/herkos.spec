@@ -79,9 +79,6 @@ cargo build --manifest-path rs/Cargo.toml --release --offline --locked -p herkos
 install -Dm0755 rs/target/release/herkosd %{buildroot}%{_libexecdir}/herkos/herkosd
 install -Dm0644 systemd/herkosd.socket %{buildroot}%{_unitdir}/herkosd.socket
 install -Dm0644 systemd/herkosd.service %{buildroot}%{_unitdir}/herkosd.service
-%{_unitdir}/vilna-mcp-files@.service
-%{_unitdir}/vilna-mcp-backup@.service
-%{_datadir}/polkit-1/rules.d/50-herkos.rules
 install -Dm0644 systemd/vilna-mcp-files@.service %{buildroot}%{_unitdir}/vilna-mcp-files@.service
 install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-mcp-backup@.service
 install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos.rules
@@ -120,6 +117,9 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{_libexecdir}/herkos/herkosd
 %{_unitdir}/herkosd.socket
 %{_unitdir}/herkosd.service
+%{_unitdir}/vilna-mcp-files@.service
+%{_unitdir}/vilna-mcp-backup@.service
+%{_datadir}/polkit-1/rules.d/50-herkos.rules
 %{_sysusersdir}/herkos.conf
 %dir %{_sysconfdir}/herkos
 %config(noreplace) %{_sysconfdir}/herkos/system.toml
