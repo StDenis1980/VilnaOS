@@ -41,11 +41,11 @@ Tinta Office відповів на запит Vilna документом [vilna-
 
 Відповіді Vilna на питання Tinta:
 
-1. **Формат — Flatpak** (див. рішення вище). Tinta Correo отримує `--talk-name=org.gnome.OnlineAccounts`, а для подій у панелі годинника `--filesystem=xdg-config/evolution/sources:create` і `--filesystem=xdg-data/tinta-correo:create`. Herkos має знати про ці дозволи.
+1. **Формат — Flatpak** (див. рішення вище). Tinta Correo отримує `--talk-name=org.gnome.OnlineAccounts`, а для подій у панелі годинника `--filesystem=xdg-config/evolution/sources:create`, `--filesystem=xdg-data/tinta-correo:create`, `--talk-name=org.gnome.evolution.dataserver.Sources5` і `--talk-name=org.gnome.evolution.dataserver.Calendar8` (без двох останніх календар з'являється лише після наступного входу, а зміни чекають оновлення EDS). Herkos має знати про ці дозволи.
 2. **Провайдери GNOME Online Accounts** — стандартний набір GNOME 49: Nextcloud (тестовий випадок), Google, Microsoft 365, IMAP і SMTP. Що з цього Correo справді бере, Tinta перевіряє на GNOME 49.
 3. **Панель годинника без затримки.** Подія, яку створив Gloxi або людина в Correo, має з'явитися в панелі одразу: Correo після зміни просить Evolution Data Server оновити джерело.
 
-Обмеження, які стосуються Herkos, поки Tinta їх не виправить (запит tintaoffice-web #20): у Tinta Calculo MCP-сервер не вміє обмежувати файли теками, тож його стримує лише пісочниця Flatpak; канал керування Tinta Presenta (`--control`) не має ключа, тож Vilna не запускає Presenta з `--control`. Для Texto, Presenta і PDF Gloxi використовує headless-сервер MCP з коренями читання й запису в теці, яку дозволила людина.
+Відповідь Tinta (2026-11-03, злито ibercorreo#55, gridcraft#42, deckcraft#24): Correo бере облікові записи з GNOME Online Accounts (Nextcloud і WebDAV — календарі й контакти; Google і IMAP/SMTP — пошта, у Google ще календарі), секрет щоразу питає в GOA і не зберігає; власний календар Correo публікується в EDS як «Tinta Correo», а після зміни календаря облікового запису GOA Correo просить EDS оновитися. Microsoft 365 через GOA у GNOME 46 дає лише файли, тож треба перевірити на GNOME 49, як і справжній обмін з Nextcloud. Обмеження для Herkos знято: `gridcraft-cli mcp` має `--automation-read-root`, `--automation-write-root` і `--allow-commands`, а канал керування Presenta вимагає ключ (`$XDG_RUNTIME_DIR/deckcraft/control-<port>.token` або `DECKCRAFT_CONTROL_TOKEN`). Для Texto, Calculo, Presenta і PDF Gloxi використовує headless-сервер MCP з коренями читання й запису в теці, яку дозволила людина; до відкритого вікна підключається лише з ключем.
 
 ## Розглянуті варіанти
 
