@@ -312,6 +312,10 @@ msgstr ""
 msgid "Backups need Herkos, and it is not running."
 msgstr ""
 
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Checking how fast this computer runs the model (about a minute)…"
+msgstr ""
+
 #: src/gloxi/cli.py
 msgid "Cloud: off. Everything stays on this computer."
 msgstr ""
@@ -336,6 +340,10 @@ msgstr ""
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Downloading the model: {percent}%"
+msgstr ""
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Gloxi keeps the current model and will not ask again."
 msgstr ""
 
 #: src/gloxi/cli.py
@@ -372,12 +380,21 @@ msgid "The model is ready."
 msgstr ""
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "The model is ready. Gloxi will use it from the next start."
+msgstr ""
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model was not downloaded: {why}"
 msgstr ""
 
 #: src/gloxi/cli.py
 msgid "There is no language model yet. Run gloxi in a terminal once to download it."
+msgstr ""
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "This computer is fast enough for a better model: {name}, {size}, licence {licence}, from {source}. It answers better, in Ukrainian too; Gloxi expects about {speed} tokens per second here. It will be kept in {folder}, next to the current model, and Gloxi will use it from the next start. Only the file is downloaded: nothing about you is sent."
 msgstr ""
 
 #: src/gloxi/cli.py
