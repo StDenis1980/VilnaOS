@@ -129,6 +129,7 @@ mask_cloud = true            # шлюз приватності: маскуват
 flatpak-builder --user --install --force-clean build flatpak/io.github.stdenis1980.Gloxi.yml
 flatpak run io.github.stdenis1980.Gloxi                      # вікно
 flatpak run --command=gloxi io.github.stdenis1980.Gloxi      # термінал
+flatpak run --command=gloxi io.github.stdenis1980.Gloxi check  # чи потягне залізо; блок для відгуку
 ```
 
 У пісочниці Gloxi має мережу (локальна модель на `127.0.0.1` і хмара, якщо її ввімкнено) і більше нічого: доступу до файлів немає. Herkos-lite і інструмент «файли» лежать у тому ж пакеті; Gloxi сам запускає Herkos окремим процесом (`src/gloxi/herkos_local.py`), і сокет лишається всередині пісочниці. Теки, з якими Gloxi може працювати, людина обирає кнопкою з текою в заголовку вікна: відкривається системне вікно вибору (портал документів), і лише обрані теки стають видимими й потрапляють у `allowed_roots` Herkos. Поки тек не обрано, інструментів немає. Це слабше, ніж у Vilna, де Herkos — системна служба поза сеансом людини; опис пакета про це каже. Налаштування Gloxi лежать у `~/.var/app/io.github.stdenis1980.Gloxi/config/gloxi/config.toml`, Herkos — поруч, у `config/herkos/config.toml`, журнал дій Herkos — у `.local/state/herkos/journal.jsonl` там само.

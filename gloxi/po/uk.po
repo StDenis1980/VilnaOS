@@ -309,6 +309,47 @@ msgstr ""
 msgid "{size} does not fit. Choose a larger amount."
 msgstr "{size} не вміщується. Виберіть більший обсяг."
 
+#: src/gloxi/check.py
+msgid "Could not read the memory size; the local model may still work."
+msgstr "Не вдалося прочитати обсяг пам'яті; локальна модель усе одно може працювати."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "Free disk space: {free}. The model needs {size}."
+msgstr "Вільно на диску: {free}. Моделі потрібно {size}."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "Memory: {ram}. The local model needs at least 8 GB; Gloxi can still answer through the cloud with your own key."
+msgstr "Пам'ять: {ram}. Локальній моделі потрібно щонайменше 8 ГБ; Gloxi все одно може відповідати через хмару з вашим ключем."
+
+#: src/gloxi/check.py
+msgid "The processor has no AVX2 (it is older than Intel Core 8th generation or Ryzen 2000), so the local model will be slow."
+msgstr "Процесор не має AVX2 (він старший за Intel Core 8-го покоління чи Ryzen 2000), тому локальна модель працюватиме повільно."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "This computer can run {name}."
+msgstr "Цей комп'ютер потягне {name}."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "This computer can run {name}. Gloxi will measure once whether the larger model would be fast enough."
+msgstr "Цей комп'ютер потягне {name}. Gloxi один раз виміряє, чи буде достатньо швидкою більша модель."
+
+#: src/gloxi/check.py
+msgid "This computer is below the minimum for the local model."
+msgstr "Цей комп'ютер слабший за мінімум для локальної моделі."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "This computer is fast enough for the larger model, {name}."
+msgstr "Цей комп'ютер достатньо швидкий для більшої моделі, {name}."
+
+#: src/gloxi/check.py
+msgid "To paste into the feedback form:"
+msgstr "Щоб вставити у форму відгуку:"
+
 #: src/gloxi/cli.py
 msgid "(interrupted)"
 msgstr "(перервано)"

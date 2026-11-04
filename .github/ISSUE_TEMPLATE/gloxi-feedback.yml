@@ -18,6 +18,12 @@ body:
       description: "flatpak run io.github.stdenis1980.Gloxi --version"
     validations:
       required: true
+  - type: textarea
+    id: check
+    attributes:
+      label: "Результат gloxi check / gloxi check output"
+      description: "flatpak run --command=gloxi io.github.stdenis1980.Gloxi check — лише залізо, нічого особистого / hardware only, nothing personal"
+      render: text
   - type: input
     id: system
     attributes:

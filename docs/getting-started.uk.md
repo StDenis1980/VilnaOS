@@ -18,6 +18,8 @@
 - 64-бітний процесор Intel чи AMD; відеокарта не потрібна.
 - `git`, Python 3.11 або новіший і [uv](https://docs.astral.sh/uv/).
 
+`gloxi check` (або `flatpak run --command=gloxi io.github.stdenis1980.Gloxi check`) каже, чи вистачить цього комп'ютера для локальної моделі, і друкує короткий опис заліза для форми відгуку, без нічого особистого.
+
 **На openSUSE Aeon** система незмінна, тож усе, що нижче, робіть у контейнері [Distrobox](https://distrobox.it/), який є в Aeon:
 
 ```sh

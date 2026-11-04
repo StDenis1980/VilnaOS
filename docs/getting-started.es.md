@@ -18,6 +18,8 @@ Lo que tendrás al final:
 - Un procesador Intel o AMD de 64 bits; no hace falta tarjeta gráfica.
 - `git`, Python 3.11 o posterior y [uv](https://docs.astral.sh/uv/).
 
+`gloxi check` (o `flatpak run --command=gloxi io.github.stdenis1980.Gloxi check`) dice si este ordenador basta para el modelo local e imprime un breve resumen del hardware para el formulario de comentarios, sin nada personal.
+
 **En openSUSE Aeon** el sistema es inmutable, así que haz todo lo que sigue dentro de un contenedor [Distrobox](https://distrobox.it/), que viene con Aeon:
 
 ```sh
