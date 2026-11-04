@@ -1,0 +1,5 @@
+# Vilna defaults for user services (systemd.preset(5), user presets).
+# The first matching line in any preset file wins.
+
+# Herkos confirmation windows in every graphical session
+enable herkos-agent.service

@@ -3,8 +3,10 @@
 """Assemble Vilna's OBS packages from this repository and upload them.
 
 Each folder in ``obs/packages/`` is one OBS package: its files go to OBS
-as they are. Packages built from code in this repository also get a
-source tarball made here (see ``TARBALLS``), and their spec ``Version:``
+as they are. Each folder in ``obs/images/`` is one KIWI image, built by OBS
+in the project's ``images`` repository from the packages of the
+``openSUSE_Tumbleweed`` one. Packages built from code in this repository
+also get a source tarball made here (see ``TARBALLS``), and their spec ``Version:``
 is taken from the code, so the spec never drifts from it.
 
     obs_sync.py assemble OUT            # write every package to OUT/<name>/
@@ -36,6 +38,10 @@ from xml.sax.saxutils import escape
 ROOT = Path(__file__).resolve().parents[2]
 OBS = ROOT / "obs"
 PACKAGES = OBS / "packages"
+IMAGES = OBS / "images"
+# OBS repositories (obs/project/_meta): RPMs build in the first, images in the second.
+RPM_REPOSITORY = "openSUSE_Tumbleweed"
+IMAGE_REPOSITORY = "images"
 PROJECT = OBS / "project"
 
 
@@ -72,7 +78,9 @@ TARBALLS: dict[str, Tarball] = {
         cargo="herkos/rs/Cargo.toml",
     ),
     "vilna-mcp-backup": Tarball(
-        "mcp/backup", pyproject_version("mcp/backup"), extra=(("mcp/LICENSE", "LICENSE"),)
+        "mcp/backup",
+        pyproject_version("mcp/backup"),
+        extra=(("mcp/LICENSE", "LICENSE"),),
     ),
     "vilna-mcp-files": Tarball(
         "mcp/files", pyproject_version("mcp/files"), extra=(("mcp/LICENSE", "LICENSE"),)
@@ -159,9 +167,24 @@ def package_names() -> list[str]:
     return sorted(p.name for p in PACKAGES.iterdir() if p.is_dir())
 
 
+def image_names() -> list[str]:
+    if not IMAGES.is_dir():
+        return []
+    return sorted(p.name for p in IMAGES.iterdir() if p.is_dir())
+
+
 def assemble(out: Path) -> list[str]:
     out.mkdir(parents=True, exist_ok=True)
     names = package_names()
+    images = image_names()
+    if clash := set(names) & set(images):
+        raise SystemExit(f"both a package and an image: {', '.join(sorted(clash))}")
+    for name in images:
+        dest = out / name
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(IMAGES / name, dest)
+        print(f"{name}: image, {len(list(dest.iterdir()))} files")
     for name in names:
         dest = out / name
         if dest.exists():
@@ -177,7 +200,7 @@ def assemble(out: Path) -> list[str]:
                 print(f"{name}: {make_vendor(spec.cargo, dest).name}")
         else:
             print(f"{name}: {len(list(dest.iterdir()))} files")
-    return names
+    return images + names
 
 
 def render_meta(project: str, user: str) -> str:
@@ -186,16 +209,28 @@ def render_meta(project: str, user: str) -> str:
     return text.replace("@PROJECT@", project).replace("@USER@", user)
 
 
-def package_meta(project: str, name: str, spec: Path) -> str:
+def package_meta(project: str, name: str, folder: Path) -> str:
+    """Package meta; an RPM builds only in the RPM repository, an image only in images."""
     summary = ""
-    for line in spec.read_text(encoding="utf-8").splitlines():
-        if line.startswith("Summary:"):
-            summary = line.split(":", 1)[1].strip()
-            break
+    spec = folder / f"{name}.spec"
+    kiwi = folder / f"{name}.kiwi"
+    if spec.is_file():
+        other = IMAGE_REPOSITORY
+        for line in spec.read_text(encoding="utf-8").splitlines():
+            if line.startswith("Summary:"):
+                summary = line.split(":", 1)[1].strip()
+                break
+    elif kiwi.is_file():
+        other = RPM_REPOSITORY
+        found = re.search(r"<specification>(.*?)</specification>", kiwi.read_text(encoding="utf-8"))
+        summary = found.group(1).strip() if found else name
+    else:
+        raise SystemExit(f"{folder}: neither {spec.name} nor {kiwi.name}")
     return (
         f'<package name="{escape(name)}" project="{escape(project)}">\n'
         f"  <title>{escape(summary)}</title>\n"
         f"  <description>{escape(summary)}</description>\n"
+        f'  <build><disable repository="{other}"/></build>\n'
         "</package>\n"
     )
 
@@ -209,7 +244,12 @@ class Osc:
         if self.dry_run and args[0] in {"meta", "commit", "ci"}:
             return ""
         result = subprocess.run(
-            ["osc", *args], check=False, cwd=cwd, input=stdin, capture_output=True, text=True
+            ["osc", *args],
+            check=False,
+            cwd=cwd,
+            input=stdin,
+            capture_output=True,
+            text=True,
         )
         if result.returncode != 0:
             sys.stderr.write(result.stdout + result.stderr)
@@ -231,7 +271,7 @@ def upload(project: str, user: str, message: str, dry_run: bool) -> None:
         names = assemble(built)
         for name in names:
             meta = work / f"{name}.meta"
-            meta.write_text(package_meta(project, name, built / name / f"{name}.spec"))
+            meta.write_text(package_meta(project, name, built / name))
             osc("meta", "pkg", project, name, "-F", str(meta))
             if dry_run:
                 continue

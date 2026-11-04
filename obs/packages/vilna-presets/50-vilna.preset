@@ -12,6 +12,8 @@ disable nmb.service
 disable sshd.service
 disable sshd.socket
 
-# Vilna components (no effect until the units are installed)
-enable herkos.service
-enable gloxi.service
+# Vilna components (no effect until the units are installed).
+# herkosd starts on demand through its socket; Gloxi has no system
+# service yet, it runs in the person's session.
+enable herkosd.socket
+enable vilna-flatpak-defaults.service

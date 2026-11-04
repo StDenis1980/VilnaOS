@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- OBS-ExclusiveArch: x86_64 -->
+<!--
+  Vilna OS image, first skeleton (image/README.md, image/docs/composition.md).
+
+  Base: the aeon_base pattern of openSUSE Aeon, with Vilna branding
+  instead of Aeon's (obs/project/_prjconf prefers our packages) and the
+  Vilna packages built in the same OBS project.
+
+  This is a virtual-machine disk (qcow2) for trying the system in
+  GNOME Boxes or virt-manager. The installer ISO (tik, as in Aeon) and
+  the conversational installer with Gloxi come later (stage 2,
+  image/docs/installer.md).
+
+  schemaversion 7.6 on purpose: every KIWI from 9.24 on reads it, and
+  newer ones convert it themselves (btrfs_root_is_snapshot becomes
+  btrfs_root_is_snapper_snapshot in 8.3).
+-->
+<image schemaversion="7.6" name="Vilna">
+  <description type="system">
+    <author>Vilna contributors</author>
+    <contact>https://github.com/StDenis1980/VilnaOS/issues</contact>
+    <specification>Vilna OS: openSUSE Aeon base with the Gloxi assistant and the Herkos permission gate</specification>
+  </description>
+  <preferences>
+    <version>0.0.1</version>
+    <packagemanager>zypper</packagemanager>
+    <bootsplash-theme>bgrt</bootsplash-theme>
+    <rpm-excludedocs>false</rpm-excludedocs>
+    <rpm-check-signatures>false</rpm-check-signatures>
+    <locale>en_US</locale>
+    <timezone>UTC</timezone>
+    <type
+      image="oem"
+      format="qcow2"
+      filesystem="btrfs"
+      firmware="uefi"
+      bootpartition="false"
+      efipartsize="512"
+      devicepersistency="by-uuid"
+      btrfs_root_is_snapshot="true"
+      btrfs_root_is_readonly_snapshot="true"
+      btrfs_quota_groups="true"
+      kernelcmdline="quiet splash security=selinux selinux=1 enforcing=1"
+    >
+      <bootloader name="systemd_boot" timeout="1"/>
+      <systemdisk>
+        <volume name="home"/>
+        <volume name="root"/>
+        <volume name="opt"/>
+        <volume name="srv"/>
+        <volume name="boot/writable"/>
+        <volume name="usr/local"/>
+        <volume name="var" copy_on_write="false"/>
+      </systemdisk>
+      <size unit="G">24</size>
+      <oemconfig>
+        <oem-resize>true</oem-resize>
+      </oemconfig>
+    </type>
+  </preferences>
+  <!-- OBS gives the image the repositories of the build repository:
+       this project's openSUSE_Tumbleweed and openSUSE Tumbleweed itself. -->
+  <repository type="rpm-md">
+    <source path="obsrepositories:/"/>
+  </repository>
+  <packages type="image">
+    <!-- openSUSE Aeon as it is: GNOME, transactional-update, snapper,
+         SELinux, flatpak, firmware (composition.md, section 3) -->
+    <namedCollection name="aeon_base"/>
+    <!-- Vilna branding instead of Aeon's (composition.md, section 4.5).
+         The remaining *-branding-Vilna packages are still to be made. -->
+    <package name="Vilna-release"/>
+    <package name="distribution-logos-Vilna"/>
+    <package name="vilna-presets"/>
+    <!-- Vilna components -->
+    <package name="herkos"/>
+    <package name="herkos-agent"/>
+    <package name="gloxi"/>
+    <package name="vilna-mcp-files"/>
+    <package name="vilna-mcp-backup"/>
+    <package name="vilna-flatpak-defaults"/>
+    <!-- Not yet packaged, added here once they build on OBS:
+         vilna-model-default   default model weights in the image (ADR 0006, 0008)
+         vilna-software-picks  "Recommended by Vilna" in GNOME Software (ADR 0012)
+         gnome-shell-extension-vilna  password layout, always on top, Gloxi panel strip
+         patterns-vilna        the vilna_base pattern that replaces this list -->
+    <!-- Boot and first boot of a disk image -->
+    <package name="kernel-default"/>
+    <package name="dracut-kiwi-oem-repart"/>
+    <package name="systemd-boot"/>
+    <package name="sdbootutil"/>
+  </packages>
+  <packages type="bootstrap">
+    <package name="filesystem"/>
+    <package name="glibc-locale-base"/>
+    <package name="ca-certificates-mozilla"/>
+    <package name="Vilna-release"/>
+  </packages>
+</image>
