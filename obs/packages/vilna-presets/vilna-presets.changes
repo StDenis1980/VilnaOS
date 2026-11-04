@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Nov  4 22:15:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.2:
+  * enable herkosd.socket (the unit Herkos really ships) instead of
+    herkos.service; drop gloxi.service, which does not exist yet
+  * enable vilna-flatpak-defaults.service
+  * new user preset: enable herkos-agent.service
+
+-------------------------------------------------------------------
 Mon Nov  2 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: Vilna service presets (avahi, samba, openssh

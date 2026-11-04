@@ -35,7 +35,7 @@ vilna:
     - {name: patterns-vilna,               license: GPL-3.0-or-later, status: planned}
     - {name: Vilna-release,                license: GPL-3.0-or-later, status: obs}
     # Herkos
-    - {name: herkos,                       license: GPL-3.0-or-later, status: planned}
+    - {name: herkos,                       license: GPL-3.0-or-later, status: obs}
     - {name: herkos-polkit,                license: GPL-3.0-or-later, status: planned}
     - {name: herkos-selinux,               license: GPL-3.0-or-later, status: planned}
     - {name: herkos-dialog,                license: GPL-3.0-or-later, status: planned}
@@ -46,10 +46,11 @@ vilna:
     - {name: gloxi-gnome-shell-extension,  license: GPL-3.0-or-later, status: decide}
     # Спільні компоненти
     - {name: vilna-privacy-gateway,        license: Apache-2.0,       status: planned}
-    - {name: vilna-mcp-files,              license: Apache-2.0,       status: planned}
+    - {name: vilna-mcp-files,              license: Apache-2.0,       status: obs}
     - {name: vilna-mcp-settings,           license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}  # ADR 0012
+    - {name: vilna-flatpak-defaults,       license: GPL-3.0-or-later, status: obs}      # програми з Flathub при першому запуску
     - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: planned}  # «Рекомендовано Vilna», ADR 0012
     - {name: vilna-mcp-mail,               license: Apache-2.0,       status: planned}
     # Локальна модель
@@ -63,7 +64,7 @@ vilna:
     - {name: vilna-initial-setup,          license: GPL-3.0-or-later, status: planned}
     - {name: vilna-locale,                 license: GPL-3.0-or-later, status: planned}
     - {name: vilna-wallpapers,             license: decide,           status: planned}
-  enable_services: [herkos.service, gloxi.service]
+  enable_services: [herkosd.socket, vilna-flatpak-defaults.service]  # user: herkos-agent.service; Gloxi has no system service yet
 
 flatpak_defaults:
   # Встановлюються з Flathub під час першого запуску

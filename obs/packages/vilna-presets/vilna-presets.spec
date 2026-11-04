@@ -6,12 +6,13 @@
 #
 
 Name:           vilna-presets
-Version:        0.1
+Version:        0.2
 Release:        0
 Summary:        Vilna defaults for which systemd services are enabled
 License:        GPL-3.0-or-later
 URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        50-vilna.preset
+Source1:        50-vilna-user.preset
 BuildRequires:  systemd-rpm-macros
 BuildArch:      noarch
 # Adds Vilna's changes on top of the Aeon presets. Becomes
@@ -20,7 +21,8 @@ BuildArch:      noarch
 
 %description
 Service presets for Vilna: avahi, samba and openssh stay installed but
-are not enabled by default; the Herkos and Gloxi services are enabled.
+are not enabled by default; the Herkos socket, the Herkos confirmation
+agent and the first-boot install of default Flatpak apps are enabled.
 
 %prep
 
@@ -28,8 +30,10 @@ are not enabled by default; the Herkos and Gloxi services are enabled.
 
 %install
 install -D -m 0644 %{SOURCE0} %{buildroot}%{_presetdir}/50-vilna.preset
+install -D -m 0644 %{SOURCE1} %{buildroot}%{_userpresetdir}/50-vilna.preset
 
 %files
 %{_presetdir}/50-vilna.preset
+%{_userpresetdir}/50-vilna.preset
 
 %changelog

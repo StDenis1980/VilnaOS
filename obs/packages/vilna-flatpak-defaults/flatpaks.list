@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Flatpak apps Vilna installs from Flathub on first boot, one id per line
+# (image/packages.yaml, flatpak_defaults; composition.md, section 6).
+org.mozilla.firefox
+org.gnome.TextEditor
+org.gnome.Loupe
+org.gnome.Calculator
+org.gnome.clocks
+org.gnome.Weather
+# Password manager (decision of 2026-11-02)
+org.keepassxc.KeePassXC
+# Tinta Office (ADR 0011) joins this list once it is on Flathub or in
+# Vilna's own Flatpak repository:
+#   io.github.stdenis1980.tintatexto  io.github.stdenis1980.tintacalculo
+#   io.github.stdenis1980.tintapresenta  io.github.stdenis1980.tintapdf
+#   io.github.stdenis1980.ibercorreo

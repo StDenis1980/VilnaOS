@@ -2,3 +2,13 @@
 # Project configuration for the Vilna OBS project.
 # Everything not set here comes from openSUSE:Factory. Keep this file
 # small: spec files must also build with plain rpmbuild in CI.
+
+# Repository "images": KIWI images from obs/images/. openSUSE:Factory
+# sets the same for its own "images" repository.
+%if "%_repository" == "images"
+Type: kiwi
+Repotype: staticlinks
+Patterntype: none
+# Vilna branding wins wherever a package needs "a release" or "logos"
+Prefer: Vilna-release distribution-logos-Vilna
+%endif

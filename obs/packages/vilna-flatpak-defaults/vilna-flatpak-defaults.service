@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[Unit]
+Description=Install Vilna's default Flatpak apps
+Documentation=https://github.com/StDenis1980/VilnaOS/blob/main/image/docs/composition.md
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=!/var/lib/vilna/flatpak-defaults.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/vilna-flatpak-defaults
+# Big downloads on a slow line
+TimeoutStartSec=1h
+Nice=10
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=multi-user.target
