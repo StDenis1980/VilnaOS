@@ -85,10 +85,5 @@
         </ul>
       </description>
     </release>
-    <release version="0.1.0~dev0" type="development" date="2026-11-02">
-      <description>
-        <p>First preview package for testers.</p>
-      </description>
-    </release>
   </releases>
 </component>
