@@ -59,6 +59,45 @@ DEFAULT_MODEL = ModelFile(
     licence="Apache-2.0",
 )
 
+# Decision of 2026-11-03 (ADR 0008, measurements in docs/benchmarks.md): on
+# computers with 16 GB of RAM or more Gloxi offers Ministral 3 8B, the best of
+# seven candidates (56 of 63 tasks, Ukrainian 24 of 27), instead of Qwen3 4B.
+LARGE_MODEL = ModelFile(
+    name="Ministral 3 8B (Q4_K_M)",
+    filename="Ministral-3-8B-Instruct-2512-Q4_K_M.gguf",
+    url=(
+        "https://huggingface.co/mistralai/Ministral-3-8B-Instruct-2512-GGUF/resolve/main/"
+        "Ministral-3-8B-Instruct-2512-Q4_K_M.gguf"
+    ),
+    sha256="33e7a72cf5e6e2cfc2f2847075acc013d68bba023e35310cef86b5cf8fdca761",
+    size=5_198_911_904,
+    source=N_("Mistral AI on Hugging Face"),
+    licence="Apache-2.0",
+)
+
+MODELS = (DEFAULT_MODEL, LARGE_MODEL)
+
+# "16 GB" computers report a little less (15.3 GiB on the test laptop), and the
+# 8B model needs ~8 GB of its own: 14 GiB keeps 8 GB machines on Qwen3 4B.
+LARGE_MODEL_MIN_RAM = 14 * 1024**3
+
+
+def total_ram(meminfo: Path = Path("/proc/meminfo")) -> int | None:
+    """MemTotal in bytes, or None if it cannot be read."""
+    try:
+        for line in meminfo.read_text().splitlines():
+            if line.startswith("MemTotal:"):
+                return int(line.split()[1]) * 1024
+    except (OSError, ValueError, IndexError):
+        return None
+    return None
+
+
+def model_for(ram: int | None) -> ModelFile:
+    """The model to offer on a computer with this much RAM."""
+    return LARGE_MODEL if ram is not None and ram >= LARGE_MODEL_MIN_RAM else DEFAULT_MODEL
+
+
 SERVER_ARGS = (
     "--ctx-size",
     "4096",
@@ -266,14 +305,24 @@ class Plan:
     folder: Path | None = None
 
 
-def plan(url: str, *, start_server: bool = True, env: dict[str, str] | None = None) -> Plan:
+def plan(
+    url: str,
+    *,
+    start_server: bool = True,
+    env: dict[str, str] | None = None,
+    ram: int | None = None,
+) -> Plan:
+    """What start-up needs. A model already downloaded is used as it is (no
+    surprise downloads); otherwise the model for this much RAM is offered."""
     if listening(url):
         return Plan("ready")
     binary = server_binary()
     if not start_server or binary is None or not is_local_url(url):
         return Plan("none")
     folder = models_dir(env)
-    path = verified(DEFAULT_MODEL, folder)
-    if path is not None:
-        return Plan("start", model_path=path, binary=binary, folder=folder)
-    return Plan("download", binary=binary, folder=folder)
+    wanted = model_for(total_ram() if ram is None else ram)
+    for model in (wanted, *(m for m in MODELS if m is not wanted)):
+        path = verified(model, folder)
+        if path is not None:
+            return Plan("start", model=model, model_path=path, binary=binary, folder=folder)
+    return Plan("download", model=wanted, binary=binary, folder=folder)

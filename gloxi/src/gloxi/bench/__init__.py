@@ -61,11 +61,19 @@ class Result:
     error: str | None = None
 
 
-def load_tasks(path: Path | None = None) -> list[Task]:
-    if path is None:
-        text = resources.files("gloxi.bench").joinpath("tasks.toml").read_text(encoding="utf-8")
+# Built-in sets: the ten-language commands, and Ukrainian quality (2026-11-03:
+# grammar, translation, explanations, facts, and whether a password is repeated).
+BUILTIN_SETS = {"default": "tasks.toml", "uk-quality": "uk_quality.toml"}
+
+
+def load_tasks(path: Path | str | None = None) -> list[Task]:
+    """A tasks file, or a built-in set by name (``BUILTIN_SETS``)."""
+    name = "default" if path is None else str(path)
+    if name in BUILTIN_SETS and not Path(name).exists():
+        res = resources.files("gloxi.bench").joinpath(BUILTIN_SETS[name])
+        text = res.read_text(encoding="utf-8")
     else:
-        text = path.read_text(encoding="utf-8")
+        text = Path(path).read_text(encoding="utf-8")
     tasks = [Task(**raw) for raw in tomllib.loads(text)["task"]]
     ids = [t.id for t in tasks]
     if len(ids) != len(set(ids)):
