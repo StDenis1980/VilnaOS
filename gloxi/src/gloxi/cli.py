@@ -16,17 +16,30 @@ from dataclasses import replace
 from gettext import gettext as _
 from typing import TextIO
 
-from gloxi import __version__
+import httpx
+
+from gloxi import __version__, upgrade
 from gloxi.backup_intro import BackupIntro, backup_intro
 from gloxi.chat import Conversation
 from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
-from gloxi.engine import Engine, EngineError, Plan, download, human_size, plan
+from gloxi.engine import (
+    DECIMAL_POINT,
+    LARGE_MODEL,
+    Engine,
+    EngineError,
+    Plan,
+    download,
+    human_size,
+    plan,
+    total_ram,
+)
 from gloxi.herkos_local import start_if_needed
 from gloxi.i18n import N_, setup
 from gloxi.llm import ChatClient, ModelError, ModelUnavailable
 from gloxi.privacy import guard_factory
 from gloxi.router import CloudNotAllowed, Route, Router, Target
 from gloxi.tools import ToolOutcome, file_tools
+from gloxi.upgrade import SpeedResult, measure_speed
 
 HELP = N_(
     "Commands: /local <text> or /cloud <text> picks the model for one message, "
@@ -48,6 +61,14 @@ MODEL_CONSENT = N_(
     "Gloxi needs a language model on this computer to answer. It is {name}, "
     "{size}, licence {licence}, from {source}. It will be kept in {folder}. "
     "Only the file is downloaded: nothing about you is sent."
+)
+
+UPGRADE_CONSENT = N_(
+    "This computer is fast enough for a better model: {name}, {size}, licence {licence}, "
+    "from {source}. It answers better, in Ukrainian too; Gloxi expects about {speed} "
+    "tokens per second here. It will be kept in {folder}, next to the current model, "
+    "and Gloxi will use it from the next start. Only the file is downloaded: nothing "
+    "about you is sent."
 )
 
 NO_MODEL_HINT = N_("There is no language model yet. Run gloxi in a terminal once to download it.")
@@ -73,6 +94,21 @@ def model_consent_text(p: Plan) -> str:
     )
 
 
+def upgrade_consent_text(folder, expected: float) -> str:
+    return _(UPGRADE_CONSENT).format(
+        name=LARGE_MODEL.name,
+        size=human_size(LARGE_MODEL.size),
+        licence=LARGE_MODEL.licence,
+        source=_(LARGE_MODEL.source),
+        speed=human_number(expected),
+        folder=folder,
+    )
+
+
+def human_number(value: float) -> str:
+    return f"{value:.1f}".replace(".", _(DECIMAL_POINT))
+
+
 def prepare_engine(
     settings: Settings,
     *,
@@ -82,8 +118,12 @@ def prepare_engine(
     planner: Callable[..., Plan] = plan,
     fetch: Callable[..., object] = download,
     engine_type: Callable[..., Engine] = Engine,
+    ram: int | None | Callable[[], int | None] = total_ram,
+    measure: Callable[..., SpeedResult] = measure_speed,
 ) -> Engine | None:
     """Start the bundled model if needed; download it first only after a yes.
+
+    On a 16 GB computer, once, the speed test may then offer the larger model.
 
     Raises ``NoModel`` if the model is needed and still missing afterwards.
     """
@@ -103,18 +143,8 @@ def prepare_engine(
         if answer not in YES | {_("yes").casefold()}:
             print(_("Not downloaded. Gloxi will ask again next time."), file=out)
             raise NoModel
-        last = -1
-
-        def progress(done: int, total: int) -> None:
-            nonlocal last
-            percent = done * 100 // max(total, 1)
-            if percent != last:
-                last = percent
-                out.write("\r" + _("Downloading the model: {percent}%").format(percent=percent))
-                out.flush()
-
         try:
-            model_path = fetch(p.model, p.folder, progress=progress)
+            model_path = fetch(p.model, p.folder, progress=_percent_printer(out))
         except (EngineError, KeyboardInterrupt) as exc:
             print("\n" + _("The model was not downloaded: {why}").format(why=exc), file=out)
             raise NoModel from None
@@ -126,7 +156,53 @@ def prepare_engine(
     except EngineError as exc:
         print(_("The model could not be started: {why}").format(why=exc), file=out)
         raise NoModel from None
+    if interactive:
+        _offer_large_model(p, settings, ram() if callable(ram) else ram, read, out, fetch, measure)
     return engine
+
+
+def _offer_large_model(p, settings, ram, read, out, fetch, measure) -> None:
+    """The speed test of gloxi.upgrade and, if it says so, the question."""
+    if upgrade.needs_test(p, ram):
+        print(_("Checking how fast this computer runs the model (about 30 seconds)…"), file=out)
+        try:
+            upgrade.record_result(p.folder, measure(settings.local.url))
+        except (httpx.HTTPError, ValueError, OSError):
+            return  # try again next time; the chat must not wait for this
+    if not upgrade.should_offer(p.folder):
+        return
+    expected = upgrade.load_state(p.folder).get("large_expected", 0.0)
+    print(upgrade_consent_text(p.folder, expected), file=out)
+    try:
+        answer = read(_("Download it now? [y/N] ")).strip().casefold()
+    except (EOFError, KeyboardInterrupt):
+        answer = ""
+    yes = answer in YES | {_("yes").casefold()}
+    upgrade.record_answer(p.folder, yes)
+    if not yes:
+        print(_("Gloxi keeps the current model and will not ask again."), file=out)
+        return
+    try:
+        fetch(LARGE_MODEL, p.folder, progress=_percent_printer(out))
+    except (EngineError, KeyboardInterrupt) as exc:
+        print("\n" + _("The model was not downloaded: {why}").format(why=exc), file=out)
+        upgrade.record_answer_reset(p.folder)
+        return
+    print("\n" + _("The model is ready. Gloxi will use it from the next start."), file=out)
+
+
+def _percent_printer(out):
+    last = -1
+
+    def progress(done: int, total: int) -> None:
+        nonlocal last
+        percent = done * 100 // max(total, 1)
+        if percent != last:
+            last = percent
+            out.write("\r" + _("Downloading the model: {percent}%").format(percent=percent))
+            out.flush()
+
+    return progress
 
 
 def build_parser() -> argparse.ArgumentParser:

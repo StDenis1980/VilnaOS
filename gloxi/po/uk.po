@@ -317,6 +317,10 @@ msgstr "(перервано)"
 msgid "Backups need Herkos, and it is not running."
 msgstr "Для резервних копій потрібен Herkos, а він не запущений."
 
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Checking how fast this computer runs the model (about 30 seconds)…"
+msgstr "Перевіряю, як швидко цей комп'ютер працює з моделлю (близько 30 секунд)…"
+
 #: src/gloxi/cli.py
 msgid "Cloud: off. Everything stays on this computer."
 msgstr "Хмара: вимкнена. Усе залишається на цьому комп'ютері."
@@ -342,6 +346,10 @@ msgstr "Завантажити зараз? [т/Н] "
 #, python-brace-format
 msgid "Downloading the model: {percent}%"
 msgstr "Завантаження моделі: {percent}%"
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Gloxi keeps the current model and will not ask again."
+msgstr "Gloxi лишає поточну модель і більше не питатиме."
 
 #: src/gloxi/cli.py
 #, python-brace-format
@@ -380,6 +388,10 @@ msgid "The model is ready."
 msgstr "Модель готова."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "The model is ready. Gloxi will use it from the next start."
+msgstr "Модель готова. Gloxi використовуватиме її з наступного запуску."
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model was not downloaded: {why}"
 msgstr "Модель не завантажено: {why}"
@@ -387,6 +399,11 @@ msgstr "Модель не завантажено: {why}"
 #: src/gloxi/cli.py
 msgid "There is no language model yet. Run gloxi in a terminal once to download it."
 msgstr "Мовної моделі ще немає. Запустіть gloxi один раз у терміналі, щоб завантажити її."
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "This computer is fast enough for a better model: {name}, {size}, licence {licence}, from {source}. It answers better, in Ukrainian too; Gloxi expects about {speed} tokens per second here. It will be kept in {folder}, next to the current model, and Gloxi will use it from the next start. Only the file is downloaded: nothing about you is sent."
+msgstr "Цей комп'ютер достатньо швидкий для кращої моделі: {name}, {size}, ліцензія {licence}, від {source}. Вона краще відповідає, зокрема українською; Gloxi очікує тут близько {speed} токенів за секунду. Її буде збережено в {folder}, поруч із поточною моделлю, і Gloxi використовуватиме її з наступного запуску. Завантажується лише файл: нічого про вас не надсилається."
 
 #: src/gloxi/cli.py
 msgid "Without a language model Gloxi cannot answer. Run gloxi again when you want to download it."

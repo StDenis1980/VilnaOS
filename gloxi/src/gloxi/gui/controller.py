@@ -16,11 +16,14 @@ from gettext import gettext as _
 from typing import Protocol
 from urllib.parse import urlsplit
 
+import httpx
+
+from gloxi import upgrade
 from gloxi.backup_intro import BackupIntro, Turn
 from gloxi.chat import Conversation
-from gloxi.cli import model_consent_text, split_command
+from gloxi.cli import model_consent_text, split_command, upgrade_consent_text
 from gloxi.config import Settings
-from gloxi.engine import Engine, EngineError, Plan, download, plan
+from gloxi.engine import LARGE_MODEL, Engine, EngineError, Plan, download, plan, total_ram
 from gloxi.llm import ModelError, ModelUnavailable
 from gloxi.router import CloudNotAllowed, Route, Router
 
@@ -217,8 +220,12 @@ class ModelSetup:
         planner: Callable[..., Plan] = plan,
         fetch: Callable[..., object] = download,
         engine_type: Callable[..., Engine] = Engine,
+        ram: Callable[[], int | None] = total_ram,
+        measure: Callable[..., upgrade.SpeedResult] = upgrade.measure_speed,
     ) -> None:
         self.settings = settings
+        self.ram = ram
+        self.measure = measure
         self.view = view
         self.runner = runner
         self.planner = planner
@@ -276,6 +283,53 @@ class ModelSetup:
         finally:
             self.view.hide_model_progress()
         self.engine = engine
+        self._offer_large_model()
+
+    # -- the larger model, once, after the speed test (gloxi.upgrade) ----------------
+
+    def _offer_large_model(self) -> None:
+        p = self._plan
+        if upgrade.needs_test(p, self.ram()):
+            self.view.show_model_progress(
+                _("Checking how fast this computer runs the model (about 30 seconds)…"), None
+            )
+            try:
+                upgrade.record_result(p.folder, self.measure(self.settings.local.url))
+            except (httpx.HTTPError, ValueError, OSError):
+                return
+            finally:
+                self.view.hide_model_progress()
+        if upgrade.should_offer(p.folder):
+            expected = upgrade.load_state(p.folder).get("large_expected", 0.0)
+            self.view.ask_model_download(
+                upgrade_consent_text(p.folder, expected), self.answer_large
+            )
+
+    def answer_large(self, yes: bool) -> None:
+        upgrade.record_answer(self._plan.folder, yes)
+        if yes:
+            self.runner(self._download_large)
+        else:
+            self.view.show_note(_("Gloxi keeps the current model and will not ask again."))
+
+    def _download_large(self) -> None:
+        folder = self._plan.folder
+        self._cancel.clear()
+
+        def progress(done: int, total: int) -> None:
+            fraction = done / max(total, 1)
+            text = _("Downloading the model: {percent}%").format(percent=int(fraction * 100))
+            self.view.show_model_progress(text, fraction)
+
+        try:
+            self.fetch(LARGE_MODEL, folder, progress=progress, cancelled=self._cancel.is_set)
+        except EngineError as exc:
+            upgrade.record_answer_reset(folder)
+            self.view.show_error(_("The model was not downloaded: {why}").format(why=exc))
+            return
+        finally:
+            self.view.hide_model_progress()
+        self.view.show_note(_("The model is ready. Gloxi will use it from the next start."))
 
     def stop(self) -> None:
         self._cancel.set()

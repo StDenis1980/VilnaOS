@@ -92,7 +92,6 @@ def test_cancel_keeps_the_part_for_later(tmp_path):
 
 def test_plan(monkeypatch, tmp_path):
     env = {"XDG_DATA_HOME": str(tmp_path)}
-    monkeypatch.setattr(engine, "total_ram", lambda: 8 * 1024**3)
     monkeypatch.setattr(engine, "listening", lambda url, **kw: False)
     monkeypatch.setattr(engine, "server_binary", lambda: "/app/bin/llama-server")
     url = "http://127.0.0.1:8080/v1"
@@ -115,26 +114,20 @@ def test_plan(monkeypatch, tmp_path):
 GIB = 1024**3
 
 
-def test_the_model_offered_depends_on_ram(monkeypatch, tmp_path):
-    """Decision 2026-11-03: Qwen3 4B up to ~12 GB, Ministral 3 8B from 16 GB."""
-    assert engine.model_for(None) is engine.DEFAULT_MODEL
-    assert engine.model_for(8 * GIB) is engine.DEFAULT_MODEL
-    assert engine.model_for(12 * GIB) is engine.DEFAULT_MODEL
-    assert engine.model_for(int(15.3 * GIB)) is engine.LARGE_MODEL  # a "16 GB" laptop
+def test_qwen_is_offered_first_and_a_downloaded_large_model_is_used(monkeypatch, tmp_path):
+    """Decision 2026-11-04: Ministral only after the speed test (gloxi.upgrade)."""
     env = {"XDG_DATA_HOME": str(tmp_path)}
     monkeypatch.setattr(engine, "listening", lambda url, **kw: False)
     monkeypatch.setattr(engine, "server_binary", lambda: "/app/bin/llama-server")
     url = "http://127.0.0.1:8080/v1"
-    p = engine.plan(url, env=env, ram=16 * GIB)
-    assert p.action == "download" and p.model is engine.LARGE_MODEL
-    assert engine.plan(url, env=env, ram=8 * GIB).model is engine.DEFAULT_MODEL
-    # A model already downloaded is used: no surprise download after an upgrade.
+    p = engine.plan(url, env=env)
+    assert p.action == "download" and p.model is engine.DEFAULT_MODEL
     p.folder.mkdir(parents=True)
-    small = p.folder / engine.DEFAULT_MODEL.filename
-    with small.open("wb") as f:
-        f.truncate(engine.DEFAULT_MODEL.size)
-    p = engine.plan(url, env=env, ram=16 * GIB)
-    assert p.action == "start" and p.model_path == small and p.model is engine.DEFAULT_MODEL
+    for m in (engine.DEFAULT_MODEL, engine.LARGE_MODEL):
+        with (p.folder / m.filename).open("wb") as f:
+            f.truncate(m.size)
+        p = engine.plan(url, env=env)
+        assert p.action == "start" and p.model is m
 
 
 def test_total_ram_reads_meminfo(tmp_path):

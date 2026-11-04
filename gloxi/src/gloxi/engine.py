@@ -59,9 +59,10 @@ DEFAULT_MODEL = ModelFile(
     licence="Apache-2.0",
 )
 
-# Decision of 2026-11-03 (ADR 0008, measurements in docs/benchmarks.md): on
-# computers with 16 GB of RAM or more Gloxi offers Ministral 3 8B, the best of
-# seven candidates (56 of 63 tasks, Ukrainian 24 of 27), instead of Qwen3 4B.
+# Decisions of 2026-11-03 and 2026-11-04 (ADR 0008, docs/benchmarks.md): the best
+# of seven candidates (56 of 63 tasks, Ukrainian 24 of 27). Gloxi offers it on
+# computers with 16 GB of RAM or more, and only after a speed test shows that it
+# will be fast enough there (gloxi.upgrade).
 LARGE_MODEL = ModelFile(
     name="Ministral 3 8B (Q4_K_M)",
     filename="Ministral-3-8B-Instruct-2512-Q4_K_M.gguf",
@@ -78,7 +79,7 @@ LARGE_MODEL = ModelFile(
 MODELS = (DEFAULT_MODEL, LARGE_MODEL)
 
 # "16 GB" computers report a little less (15.3 GiB on the test laptop), and the
-# 8B model needs ~8 GB of its own: 14 GiB keeps 8 GB machines on Qwen3 4B.
+# 8B model needs ~7 GB of its own: 14 GiB keeps 8 GB machines out of the test.
 LARGE_MODEL_MIN_RAM = 14 * 1024**3
 
 
@@ -91,11 +92,6 @@ def total_ram(meminfo: Path = Path("/proc/meminfo")) -> int | None:
     except (OSError, ValueError, IndexError):
         return None
     return None
-
-
-def model_for(ram: int | None) -> ModelFile:
-    """The model to offer on a computer with this much RAM."""
-    return LARGE_MODEL if ram is not None and ram >= LARGE_MODEL_MIN_RAM else DEFAULT_MODEL
 
 
 SERVER_ARGS = (
@@ -310,19 +306,17 @@ def plan(
     *,
     start_server: bool = True,
     env: dict[str, str] | None = None,
-    ram: int | None = None,
 ) -> Plan:
-    """What start-up needs. A model already downloaded is used as it is (no
-    surprise downloads); otherwise the model for this much RAM is offered."""
+    """What start-up needs. The larger model is used if the person downloaded
+    it; otherwise Qwen3 4B, which is the first model offered everywhere."""
     if listening(url):
         return Plan("ready")
     binary = server_binary()
     if not start_server or binary is None or not is_local_url(url):
         return Plan("none")
     folder = models_dir(env)
-    wanted = model_for(total_ram() if ram is None else ram)
-    for model in (wanted, *(m for m in MODELS if m is not wanted)):
+    for model in (LARGE_MODEL, DEFAULT_MODEL):
         path = verified(model, folder)
         if path is not None:
             return Plan("start", model=model, model_path=path, binary=binary, folder=folder)
-    return Plan("download", model=wanted, binary=binary, folder=folder)
+    return Plan("download", model=DEFAULT_MODEL, binary=binary, folder=folder)
