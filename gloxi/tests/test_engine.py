@@ -14,7 +14,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from gloxi import engine
+from gloxi import engine, localkey
 from gloxi.cli import NoModel, prepare_engine
 from gloxi.config import load_settings
 from gloxi.engine import DownloadCancelled, Engine, EngineError, ModelFile, Plan, download
@@ -161,9 +161,19 @@ FAKE_SERVER = textwrap.dedent(
     assert args[args.index("--host") + 1] == "127.0.0.1"
     assert '{"enable_thinking":false}' in args
     port = int(args[args.index("--port") + 1])
+    assert "--api-key" not in args  # never on the command line
+    with open(args[args.index("--api-key-file") + 1]) as f:
+        key = f.read().strip()
     class H(BaseHTTPRequestHandler):
         def do_GET(self):
-            self.send_response(200 if self.path == "/health" else 404)
+            if self.path == "/health":
+                code = 200
+            elif self.path == "/v1/props":
+                ok = self.headers.get("Authorization") == "Bearer " + key
+                code = 200 if ok else 401
+            else:
+                code = 404
+            self.send_response(code)
             self.end_headers()
         def log_message(self, *a):
             pass
@@ -193,6 +203,20 @@ def test_engine_starts_and_stops(fake_binary, tmp_path):
     assert engine.listening(url)
     e.stop()
     assert not engine.listening(url, timeout=0.5)
+
+
+def test_engine_needs_gloxis_key_and_deletes_the_key_file(fake_binary, tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+    url = f"http://127.0.0.1:{free_port()}/v1"
+    e = Engine(fake_binary, tmp_path / "m.gguf", url)
+    e.start(timeout=20)
+    try:
+        assert not list(tmp_path.glob("gloxi-key-*"))
+        assert httpx.get(f"{url}/props", timeout=5).status_code == 401
+        headers = localkey.headers_for(url)
+        assert httpx.get(f"{url}/props", headers=headers, timeout=5).status_code == 200
+    finally:
+        e.stop()
 
 
 def test_engine_reports_a_crash(tmp_path):
