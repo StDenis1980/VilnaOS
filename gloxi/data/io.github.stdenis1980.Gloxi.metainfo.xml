@@ -74,9 +74,15 @@
   </supports>
 
   <releases>
-    <release version="0.1.0~dev0" type="development" date="2026-11-02">
+    <release version="0.1.0~a1" type="development" date="2026-11-04">
       <description>
-        <p>First preview package for testers.</p>
+        <p>First trial release for testers: it checks the release path from the tag to the download.</p>
+        <ul>
+          <li>Chat with a local model (Qwen3 4B); on fast computers with 16 GB or more Gloxi offers Ministral 3 8B after a one-minute speed test</li>
+          <li>Optional cloud model with your own key; sensitive data and passwords are masked on this computer</li>
+          <li>Files in the folders you choose, only with your confirmation through Herkos, and undo</li>
+          <li>gloxi check: whether this computer is enough for the local model</li>
+        </ul>
       </description>
     </release>
   </releases>
