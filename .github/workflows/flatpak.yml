@@ -68,10 +68,16 @@ jobs:
           from pathlib import Path
           import httpx
           from gloxi.engine import Engine, server_binary
+          from gloxi.localkey import headers_for
           url = 'http://127.0.0.1:18080/v1'
           e = Engine(server_binary(), Path('$PWD/smoke/tiny.gguf'), url)
           e.start(timeout=120)
-          r = httpx.post(url + '/completions', json={'prompt': 'Once', 'max_tokens': 8}, timeout=60)
+          body = {'prompt': 'Once', 'max_tokens': 8}
+          # Without Gloxi's key the model does not answer (ADR 0016, point 1).
+          r = httpx.post(url + '/completions', json=body, timeout=60)
+          print('no key:', r.status_code)
+          assert r.status_code == 401
+          r = httpx.post(url + '/completions', json=body, headers=headers_for(url), timeout=60)
           print(r.status_code, r.json()['choices'][0]['text'])
           assert r.status_code == 200
           e.stop()
