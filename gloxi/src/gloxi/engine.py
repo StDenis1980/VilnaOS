@@ -31,6 +31,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
+from gloxi import localkey
 from gloxi.i18n import N_
 
 CHUNK = 1 << 20
@@ -213,7 +214,7 @@ def _host_port(url: str) -> tuple[str, int]:
 
 
 def is_local_url(url: str) -> bool:
-    return _host_port(url)[0] in ("127.0.0.1", "localhost", "::1")
+    return localkey.is_local_url(url)
 
 
 def listening(url: str, client: httpx.Client | None = None, timeout: float = 2.0) -> bool:
@@ -249,13 +250,19 @@ class Engine:
         self._lock = threading.Lock()
 
     def start(self, timeout: float = 180.0) -> None:
+        # The key goes in a file, not on the command line, where other
+        # processes could read it; the file is gone once the server runs.
+        with localkey.key_file() as key_path:
+            self._start(key_path, timeout)
+
+    def _start(self, key_path: Path, timeout: float) -> None:
         with self._lock:
             if self._proc is not None and self._proc.poll() is None:
                 return
             # Run from the server's own folder: llama.cpp also loads backends
             # from the working directory, which must not be the person's.
             self._proc = subprocess.Popen(
-                self.argv,
+                [*self.argv, "--api-key-file", str(key_path)],
                 cwd=Path(self.argv[0]).resolve().parent,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL,

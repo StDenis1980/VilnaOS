@@ -3,6 +3,7 @@ import httpx
 import pytest
 from fake_server import FakeLlamaServer
 
+from gloxi import localkey
 from gloxi.config import ModelEndpoint
 from gloxi.llm import ChatClient, ModelError, ModelUnavailable
 
@@ -54,12 +55,13 @@ def test_api_key_is_sent_only_when_set():
         seen.append(request.headers.get("authorization"))
         return httpx.Response(200, json={"data": []})
 
-    with ChatClient(ENDPOINT, transport=httpx.MockTransport(handler)) as client:
-        client.is_available()
-    keyed = ModelEndpoint(url=ENDPOINT.url, model="m", api_key="sk-test")
-    with ChatClient(keyed, transport=httpx.MockTransport(handler)) as client:
-        client.is_available()
-    assert seen == [None, "Bearer sk-test"]
+    cloud = ModelEndpoint(url="https://cloud.example/v1", model="m")
+    keyed = ModelEndpoint(url="https://cloud.example/v1", model="m", api_key="sk-test")
+    for endpoint in (cloud, keyed, ENDPOINT):
+        with ChatClient(endpoint, transport=httpx.MockTransport(handler)) as client:
+            client.is_available()
+    # The local model gets the key Gloxi gave the server it started.
+    assert seen == [None, "Bearer sk-test", f"Bearer {localkey.KEY}"]
 
 
 def test_api_key_is_not_in_repr():

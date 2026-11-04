@@ -52,7 +52,7 @@ class ModelEndpoint:
     url: str
     model: str
     timeout: float = 120.0
-    # Only cloud endpoints need a key; a local llama-server needs none.
+    # The cloud key. A local server gets Gloxi's own key (gloxi.localkey).
     api_key: str | None = field(default=None, repr=False)
 
 

@@ -24,6 +24,7 @@ from pathlib import Path
 
 import httpx
 
+from gloxi import localkey
 from gloxi.engine import DEFAULT_MODEL, LARGE_MODEL, LARGE_MODEL_MIN_RAM, Plan, verified
 
 # ADR 0008: below this the larger model feels too slow in a chat.
@@ -69,7 +70,9 @@ def measure_speed(
     run fast for the first seconds and then lower their clock.
     """
     own = client is None
-    client = client or httpx.Client(timeout=httpx.Timeout(120.0, connect=5.0))
+    client = client or httpx.Client(
+        timeout=httpx.Timeout(120.0, connect=5.0), headers=localkey.headers_for(url)
+    )
     body = {
         "messages": [{"role": "user", "content": TEST_PROMPT}],
         "max_tokens": 64,
