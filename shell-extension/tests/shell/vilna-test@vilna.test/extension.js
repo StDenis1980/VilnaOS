@@ -164,7 +164,8 @@ async function windows() {
     // focused field, a password one in OTHER and a plain one in Gloxi.
     await useLayout('ua');
     findWindow(OTHER).activate(global.get_current_time());
-    await waitFor(() => current() === 'us', 2000);
+    await waitFor(() => current() === 'us', 5000);
+    check('GTK password field: focused window', global.display.focus_window?.get_wm_class() ?? null, OTHER);
     check('GTK password field: Latin layout', current(), 'us');
     check('GTK password field: indicator shown', indicator()?.visible ?? false, true);
     findWindow(GLOXI).activate(global.get_current_time());
@@ -242,6 +243,13 @@ async function run() {
     if (!ok)
         return;
     const mode = Main.sessionMode.currentMode;
+    // A session starts in the overview with its search entry focused; when
+    // the overview closes, focus goes back to the stage. Let that settle
+    // first, or it takes focus from the first test field.
+    if (Main.overview.visible)
+        Main.overview.hide();
+    await waitFor(() => !Main.overview.visible && !Main.overview.animationInProgress);
+    await sleep(500);
     if (mode !== 'gdm') {
         const inputSources = new Gio.Settings({schema_id: 'org.gnome.desktop.input-sources'});
         inputSources.set_value('sources', new GLib.Variant('a(ss)', [['xkb', 'ua'], ['xkb', 'us'], ['xkb', 'pl']]));
