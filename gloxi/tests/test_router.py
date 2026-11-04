@@ -151,3 +151,62 @@ def test_cloud_mode_needs_the_cloud_turned_on():
     with pytest.raises(CloudNotAllowed):
         router.set_mode("cloud")
     assert router.mode == "auto"
+
+
+PASSWORD = "Kvitka-7731"  # synthetic
+
+
+def test_passwords_never_reach_any_model_and_never_come_back():
+    """ADR 0008: models repeat passwords, so Gloxi hides them itself."""
+    local = FakeLlamaServer("Запам'ятав ваш пароль [SECRET_1].")
+    cloud = FakeLlamaServer("Готово: [SECRET_1]")
+    conv = make_conversation(local, cloud=cloud, policy=ON)
+    answer = ask(conv, f"Мій пароль від пошти {PASSWORD}. Запам'ятай.")
+    assert answer == "Запам'ятав ваш пароль ••••••."
+    assert PASSWORD not in str(local.requests)
+    # Later turns and the cloud get the placeholder too, never the value.
+    assert ask(conv, "x" * 60) == "Готово: ••••••"
+    assert PASSWORD not in str(cloud.requests) and "[SECRET_1]" in str(cloud.requests)
+    assert PASSWORD not in str(local.requests)
+
+
+def test_password_hiding_does_not_need_masking_turned_on():
+    local = FakeLlamaServer("ok")
+    conv = make_conversation(local, policy=RouterPolicy(mask_cloud=False))
+    ask(conv, "my password is Hunter2!")
+    assert "Hunter2!" not in str(local.requests)
+
+
+def test_password_hidden_in_a_tool_conversation():
+    from fake_server import ScriptedLlamaServer
+
+    local = ScriptedLlamaServer(
+        [("files_write", '{"text": "[SECRET_1]"}')], "Пароль [SECRET_1] записано"
+    )
+    router = make_router(local)
+    route = router.decide("x")
+    msgs = [{"role": "user", "content": f"запиши мій пароль {PASSWORD} у файл"}]
+    events = list(router.stream_events(msgs, route, tools=[{"type": "function"}]))
+    assert PASSWORD not in str(local.requests)
+    calls = [e for e in events if not isinstance(e, str)]
+    assert calls and PASSWORD not in calls[0].arguments
+    events = list(router.stream_events(msgs, route, tools=[{"type": "function"}]))
+    assert "".join(e for e in events if isinstance(e, str)) == "Пароль •••••• записано"
+
+
+def test_a_new_conversation_forgets_the_passwords():
+    router = make_router(FakeLlamaServer())
+    router.secrets.mask(f"пароль {PASSWORD}")
+    assert len(router.secrets) == 1
+    router.new_conversation()
+    assert len(router.secrets) == 0
+
+
+def test_a_placeholder_split_across_chunks_is_still_hidden(monkeypatch):
+    router = make_router(FakeLlamaServer())
+    router.secrets.mask(f"пароль {PASSWORD}")
+    pieces = ["Пароль [SEC", "RET_1] ", "і [x] далі"]
+    monkeypatch.setattr(router.local, "stream_events", lambda messages, tools: iter(pieces))
+    out = list(router.stream_events(MSG, router.decide("x"), tools=[]))
+    assert "".join(out) == "Пароль •••••• і [x] далі"
+    assert out[0] == "Пароль "  # text still streams

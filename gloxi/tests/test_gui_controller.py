@@ -215,6 +215,7 @@ def _setup(tmp_path, yes, fetched):
         planner=lambda url, **kw: p,
         fetch=fetch,
         engine_type=StubEngine,
+        ram=lambda: None,
     )
     return setup, view
 

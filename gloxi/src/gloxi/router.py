@@ -9,6 +9,9 @@ Rules, in order (roadmap 2.3):
 3. ``mode = "local"`` or ``"cloud"`` pins every message.
 4. ``mode = "auto"``: simple messages stay local; long ones go to the cloud.
 
+Passwords and keys the user types are hidden from every model, the local one
+too, and are never put back into an answer: models repeat them (ADR 0008).
+
 The router does not fall back to the cloud on its own when the local model
 fails: sending data somewhere the user did not choose is worse than an error.
 These heuristics are a starting point and will be tuned on the November
@@ -17,6 +20,7 @@ measurements (roadmap 2.4).
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, replace
 from typing import Literal, Protocol
@@ -69,6 +73,7 @@ class Router:
         self.policy = policy
         self._guard_factory = guard_factory
         self.guard: CloudGuard | None = guard_factory() if guard_factory else None
+        self.secrets = _secret_hider()
 
     @property
     def cloud_enabled(self) -> bool:
@@ -96,6 +101,7 @@ class Router:
 
     def new_conversation(self) -> None:
         """Forget the masked values of the previous conversation."""
+        self.secrets = _secret_hider()
         if self._guard_factory:
             self.guard = self._guard_factory()
 
@@ -118,6 +124,10 @@ class Router:
         return self._route("local", "simple message")
 
     def stream(self, messages: Sequence[Message], route: Route) -> Iterator[str]:
+        messages = self.secrets.mask_messages(messages)
+        yield from self.secrets.conceal_stream(self._stream(messages, route))
+
+    def _stream(self, messages: Sequence[Message], route: Route) -> Iterator[str]:
         if route.target == "local":
             yield from self.local.stream(messages)
             return
@@ -137,15 +147,40 @@ class Router:
         File contents and paths from tools stay on this computer: the cloud
         model gets no tools, and the conversation keeps no tool messages.
         """
-        if route.target == "local":
-            yield from self.local.stream_events(messages, tools)
+        if route.target != "local":
+            yield from self.stream(messages, route)
             return
-        yield from self.stream(messages, route)
+        held = ""
+        for event in self.local.stream_events(self.secrets.mask_messages(messages), tools):
+            if isinstance(event, str):
+                held += event
+                # Hold back a tail that may still become a placeholder: "[SEC".
+                tail = _PARTIAL_PLACEHOLDER.search(held)
+                cut = tail.start() if tail else len(held)
+                if cut:
+                    yield self.secrets.conceal(held[:cut])
+                    held = held[cut:]
+                continue
+            if held:
+                yield self.secrets.conceal(held)
+                held = ""
+            yield event
+        if held:
+            yield self.secrets.conceal(held)
 
     def _route(self, target: Target, reason: str) -> Route:
         client = self.local if target == "local" else self.cloud
         destination = "this computer" if target == "local" else _host(client.endpoint.url)
         return Route(target=target, reason=reason, destination=destination)
+
+
+_PARTIAL_PLACEHOLDER = re.compile(r"\[[A-Z_]{0,12}\d{0,4}$")
+
+
+def _secret_hider():
+    from privacy_gateway import Kind, Masker
+
+    return Masker(kinds=[Kind.SECRET])
 
 
 def _host(url: str) -> str:
