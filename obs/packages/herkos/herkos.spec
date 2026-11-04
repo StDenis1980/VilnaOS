@@ -61,13 +61,15 @@ person's session.
 
 %prep
 %autosetup -p1 -a1
-mkdir -p rs/.cargo
-cat > rs/.cargo/config.toml <<'CARGO'
+# Cargo looks for its config from the working directory up, not next to
+# --manifest-path, so the config goes here, at the top of the sources.
+mkdir -p .cargo
+cat > .cargo/config.toml <<'CARGO'
 [source.crates-io]
 replace-with = "vendored-sources"
 
 [source.vendored-sources]
-directory = "../vendor"
+directory = "vendor"
 CARGO
 
 %build

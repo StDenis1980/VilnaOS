@@ -52,7 +52,9 @@ jobs:
             if [ -n "$deps" ]; then
               echo "$deps" | xargs -d '\n' zypper -n install --no-recommends
             fi
-            rpmbuild -ba --define "_sourcedir $PWD/$dir" --define "_topdir $PWD/build/rpm" "$spec"
+            # A fresh CARGO_HOME, as on OBS: the crates cargo vendor fetched while
+            # assembling must not hide a spec that misses its vendored sources.
+            CARGO_HOME="$(mktemp -d)" rpmbuild -ba --define "_sourcedir $PWD/$dir" --define "_topdir $PWD/build/rpm" "$spec"
             echo "::endgroup::"
           done
       - name: Check image descriptions
