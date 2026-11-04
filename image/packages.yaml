@@ -50,7 +50,7 @@ vilna:
     - {name: vilna-mcp-settings,           license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}  # ADR 0012
-    - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: planned}  # «Рекомендовано Vilna», ADR 0012
+    - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: obs}      # «Рекомендовано Vilna», ADR 0012; список: obs/packages/vilna-software-picks/picks.toml
     - {name: vilna-mcp-mail,               license: Apache-2.0,       status: planned}
     # Локальна модель
     - {name: llama.cpp,                    license: MIT,              status: upstream}
@@ -66,7 +66,8 @@ vilna:
   enable_services: [herkos.service, gloxi.service]
 
 flatpak_defaults:
-  # Встановлюються з Flathub під час першого запуску
+  # Встановлюються з Flathub під час першого запуску.
+  # Кожна з них має бути в добірці з default = true (перевіряє CI, ADR 0012)
   - org.mozilla.firefox
   # Tinta Office (ADR 0011, рішення Denys 2026-11-02): замість LibreOffice, Thunderbird,
   # GNOME Calendar, GNOME Contacts і Papers; ті людина ставить сама з Flathub.

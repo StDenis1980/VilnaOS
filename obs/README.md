@@ -21,6 +21,7 @@
 | `vilna-presets` | `50-vilna.preset`: avahi, samba, openssh вимкнені за замовчуванням; `herkos` і `gloxi` увімкнені | Поки що **доповнює** пресети Aeon, а не замінює їх; згодом стане `systemd-presets-branding-Vilna` (див. нижче) |
 | `gloxi` | Gloxi 0.1 preview: команда `gloxi` (чат у терміналі з локальною моделлю). Тарбол робиться з папки [`../gloxi/`](../gloxi/), версія береться з `gloxi/pyproject.toml` | — |
 | `python-vilna-privacy-gateway` | Шлюз приватності (`python3-vilna-privacy-gateway`), потрібен Gloxi. Тарбол — з папки [`../privacy-gateway/`](../privacy-gateway/), версія — з її `pyproject.toml` | — |
+| `vilna-software-picks` | Добірка «Рекомендовано Vilna» для GNOME Software (ADR 0012): метадані AppStream і заголовок блоку 10 мовами, генеруються під час збірки з [`picks.toml`](packages/vilna-software-picks/picks.toml). Як додати програму — [`README`](packages/vilna-software-picks/README.md) пакета | — |
 
 Пакет `gloxi` збирається з поточного коду `gloxi/`. Коли в Gloxi з'являться нові залежності, системний сервіс чи користувач `gloxi`, треба оновити `packages/gloxi/gloxi.spec`; CI на PR покаже, якщо spec відстав від коду.
 
