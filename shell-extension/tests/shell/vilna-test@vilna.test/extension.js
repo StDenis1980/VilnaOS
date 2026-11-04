@@ -43,10 +43,14 @@ async function waitFor(predicate, ms = 5000) {
     return predicate();
 }
 
+// The schema sits in the extension's schemas/ folder (development copy) or
+// with the system schemas (the RPM), as Extension.getSettings() looks.
 function vilnaSettings() {
-    const dir = Main.extensionManager.lookup(UUID).dir.get_child('schemas').get_path();
-    const source = Gio.SettingsSchemaSource.new_from_directory(
-        dir, Gio.SettingsSchemaSource.get_default(), false);
+    const dir = Main.extensionManager.lookup(UUID).dir.get_child('schemas');
+    const source = dir.get_child('gschemas.compiled').query_exists(null)
+        ? Gio.SettingsSchemaSource.new_from_directory(
+            dir.get_path(), Gio.SettingsSchemaSource.get_default(), false)
+        : Gio.SettingsSchemaSource.get_default();
     return new Gio.Settings({settings_schema: source.lookup('org.gnome.shell.extensions.vilna', true)});
 }
 

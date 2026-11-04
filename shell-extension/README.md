@@ -103,11 +103,10 @@ gnome-extensions enable vilna@stdenis1980.github.io
 
 ## Пакування в образі
 
-Пакет `gnome-shell-extension-vilna` ще не створено (наступний крок разом з образом, `../obs/`). Що він має робити:
+Пакет OBS [`gnome-shell-extension-vilna`](../obs/packages/gnome-shell-extension-vilna/) кладе розширення в `/usr/share/gnome-shell/extensions/vilna@stdenis1980.github.io/`, а схему — до системних у `/usr/share/glib-2.0/schemas/` (їх збирає тригер glib2). Образ ([`../obs/images/Vilna/`](../obs/images/Vilna/)) уже ставить пакет. Що лишилося для образу:
 
-- класти розширення в `/usr/share/gnome-shell/extensions/vilna@stdenis1980.github.io/`, а схему — в `/usr/share/glib-2.0/schemas/` (тоді `glib-compile-schemas` у `%post` збирає її разом із системними);
-- вмикати розширення для всіх: ключ `enabled-extensions` в override-файлі GSettings брендування (`gnome-branding-Vilna`);
-- вмикати його й на екрані входу: dconf-база користувача `gdm` з `enabled-extensions=['vilna@stdenis1980.github.io']` (без цього (а) не працює в GDM). Шлях профілю dconf для `gdm` в openSUSE перевірити на образі;
+- увімкнути розширення для всіх: ключ `enabled-extensions` в override-файлі GSettings брендування (`gnome-branding-Vilna`);
+- увімкнути його й на екрані входу: dconf-база користувача `gdm` з `enabled-extensions=['vilna@stdenis1980.github.io']` (без цього (а) не працює в GDM). Шлях профілю dconf для `gdm` в openSUSE перевірити на образі;
 - консольна розкладка `us` для пароля диска (див. вище).
 
 ## Будова

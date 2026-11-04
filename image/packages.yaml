@@ -43,7 +43,7 @@ vilna:
     # Gloxi
     - {name: gloxi,                        license: GPL-3.0-or-later, status: obs}
     - {name: gloxi-session,                license: GPL-3.0-or-later, status: planned}
-    - {name: gnome-shell-extension-vilna,  license: GPL-3.0-or-later, status: planned}  # shell-extension/: паролі EN, Gloxi поверх усіх, смуга під панель
+    - {name: gnome-shell-extension-vilna,  license: GPL-3.0-or-later, status: obs}      # shell-extension/: паролі EN, Gloxi поверх усіх, смуга під панель
     # Спільні компоненти
     - {name: vilna-privacy-gateway,        license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-files,              license: Apache-2.0,       status: obs}
