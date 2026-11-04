@@ -112,6 +112,73 @@ ADDRESS_LABEL_RE = _labelled(
 PASSPORT_LABEL_RE = _labelled(r"паспорт|passport(?:[ \t]+(?:no\.?|number))?|ID[ \t]+card|ID-картка")
 SECRET_LABEL_RE = _labelled(r"пароль|password|passwd|pin|PIN-код|api[ _-]?key|token|secret")
 
+# --- passwords in a sentence: ``мій пароль від пошти Kvitka-7731`` ---------------
+#
+# A password word, then within a few words on the same line, a token that looks
+# like a password: letters with a digit or a symbol, or a PIN of digits. The
+# words cover the ten languages of ADR 0009. Ordinary words ("пароль від Wi-Fi
+# сусіда") are left alone, so the model can still talk about passwords.
+
+PASSWORD_WORD_RE = re.compile(
+    r"(?<!\w)(?:парол\w*|пін(?:-код\w*)?|pin(?:-код\w*|-code)?|password\w*|passwd|passphrase"
+    r"|passcode|pwd|contraseñ\w*|clave|hasł\w*|hasl\w*|passwort\w*|kennwort\w*|mot de passe"
+    r"|mots de passe|parol\w*|hesl\w*|slaptažod\w*)(?!\w)",
+    re.I,
+)
+PIN_WORD_RE = re.compile(r"(?i)pin|пін")
+_TOKEN_RE = re.compile(r"[^\s]+")
+_WRAPPERS = "\"'«»“”„‘’`()[]{}<>"
+# Symbols that ordinary words and site names do not have (unlike ``Wi-Fi``, ``gov.ua``).
+_PASSWORD_SYMBOLS = frozenset("!@#$%^&*_+=?~/\\|<>")
+_WORDS_AFTER = 10
+# A quoted password may hold spaces: «Sonyah@ 12».
+_QUOTED_RE = re.compile(r"[«\"“„'‘]([^«»\"“”„'‘’\n]{4,64})[»\"”“'’]")
+
+
+def _strip_token(raw: str, start: int) -> tuple[str, int]:
+    """Drop quotes and brackets around a token and a full stop or comma after it."""
+    left = len(raw) - len(raw.lstrip(_WRAPPERS))
+    token = raw[left:].rstrip(_WRAPPERS).rstrip(".,;:?").rstrip(_WRAPPERS)
+    return token, start + left
+
+
+def looks_like_password(token: str, *, pin: bool = False) -> bool:
+    """Letters with a digit or a symbol (``Kvitka-7731``, ``P@ss!word``), or a PIN."""
+    if "://" in token or token.startswith("[") or EMAIL_RE.fullmatch(token):
+        return False
+    if token.isdigit():
+        if not pin and re.fullmatch(r"(?:19|20)\d\d", token):
+            return False  # a year
+        return 4 <= len(token) <= 12
+    if not 6 <= len(token) <= 64 or not any(c.isalpha() for c in token):
+        return False
+    return any(c.isdigit() or c in _PASSWORD_SYMBOLS for c in token)
+
+
+def _passwords_in_text(text: str) -> Iterator[Span]:
+    for word in PASSWORD_WORD_RE.finditer(text):
+        line_end = text.find("\n", word.end())
+        line_end = len(text) if line_end == -1 else line_end
+        pin = bool(PIN_WORD_RE.match(word.group(0)))
+        for n, m in enumerate(_TOKEN_RE.finditer(text, word.end(), line_end)):
+            if n >= _WORDS_AFTER:
+                break
+            quoted = _QUOTED_RE.match(text, m.start(), line_end)
+            if (
+                quoted
+                and " " in quoted.group(1)
+                and looks_like_password(quoted.group(1).replace(" ", ""), pin=pin)
+            ):
+                yield quoted.span(1)
+                break
+            token, start = _strip_token(m.group(0), m.start())
+            is_word = PASSWORD_WORD_RE.fullmatch(token)
+            if token and not is_word and looks_like_password(token, pin=pin):
+                yield start, start + len(token)
+                break
+            if m.group(0).rstrip(_WRAPPERS)[-1:] in (".", "?", "!"):
+                break  # the sentence is over
+
 
 # --- checks ---------------------------------------------------------------------
 
@@ -222,6 +289,7 @@ class Rule:
 RULES: tuple[Rule, ...] = (
     Rule(Kind.SECRET, _secrets),
     Rule(Kind.SECRET, _value_spans(SECRET_LABEL_RE)),
+    Rule(Kind.SECRET, _passwords_in_text),
     Rule(Kind.NAME, _value_spans(NAME_LABEL_RE)),
     Rule(Kind.BIRTH_DATE, _value_spans(BIRTH_LABEL_RE)),
     Rule(Kind.ADDRESS, _value_spans(ADDRESS_LABEL_RE)),

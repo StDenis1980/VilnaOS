@@ -112,3 +112,44 @@ def test_checksums():
     assert not iban_ok("UA22" + IBAN[4:])
     assert tax_id_ok(TAX_ID)
     assert not tax_id_ok("3000000009")
+
+
+@pytest.mark.parametrize(
+    ("text", "secret"),
+    [
+        ("Мій пароль від пошти Kvitka-7731. Запам'ятай його.", "Kvitka-7731"),
+        ("my password is Hunter2!", "Hunter2!"),
+        ("The password for my bank account at the shop is Tr0ub4dor", "Tr0ub4dor"),
+        ("пароль від Wi-Fi вдома — «Sonyah@ 12»", "Sonyah@ 12"),  # quoted, with a space
+        ("пароль від Wi-Fi вдома — «Sonyashnyk_2024»", "Sonyashnyk_2024"),
+        ("PIN картки 4821, не кажи нікому", "4821"),
+        ("пін-код 2020", "2020"),  # a PIN may look like a year
+        ("Mi contraseña es Gato#Negro", "Gato#Negro"),
+        ("Moje hasło to Kot2024!", "Kot2024!"),
+        ("Mein Passwort lautet Sommer2026", "Sommer2026"),
+        ("mon mot de passe est Chat_Noir9", "Chat_Noir9"),
+        ("Moje heslo je Pes-7731", "Pes-7731"),
+        ("Mano slaptažodis yra Liepa77", "Liepa77"),
+        ("parola mea este Munte9!", "Munte9!"),
+    ],
+)
+def test_finds_passwords_in_a_sentence(text, secret):
+    expected = [] if secret is None else [(Kind.SECRET, secret)]
+    assert [k for k in kinds(text) if k[0] is Kind.SECRET] == expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Зламай, будь ласка, пароль від Wi-Fi сусіда.",
+        "Де краще зберігати паролі? Дві поради.",
+        "пароль має бути не коротший за 12 символів",
+        "я змінив пароль у 2025 році",
+        "пароль від сайту gov.ua забув, як відновити?",
+        "Забув пароль. Як скинути його за 3 кроки на https://example.com/reset?a=1",
+        "password managers like KeePassXC are safer",
+        "пароль від пошти olena.test@example.com не підходить",
+    ],
+)
+def test_talk_about_passwords_is_left_alone(text):
+    assert [k for k in kinds(text) if k[0] is Kind.SECRET] == []

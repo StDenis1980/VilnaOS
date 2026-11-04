@@ -79,6 +79,28 @@ class Masker:
         if held:
             yield self.unmask(held)
 
+    def conceal(self, text: str, shown: str = "••••••") -> str:
+        """Show this masker's placeholders as ``shown`` instead of the real values.
+
+        For values that must not reappear at all, such as a password the model
+        repeats in its answer. Unknown placeholders are left as they are.
+        """
+        return PLACEHOLDER_RE.sub(
+            lambda m: shown if m.group(0) in self._value_of else m.group(0), text
+        )
+
+    def conceal_stream(self, chunks: Iterable[str], shown: str = "••••••") -> Iterator[str]:
+        """:meth:`conceal` for a streamed answer."""
+        held = ""
+        for chunk in chunks:
+            held += chunk
+            cut = _safe_cut(held)
+            if cut:
+                yield self.conceal(held[:cut], shown)
+                held = held[cut:]
+        if held:
+            yield self.conceal(held, shown)
+
     def _placeholder(self, kind: Kind, value: str) -> str:
         key = (kind, _normalise(kind, value))
         placeholder = self._placeholder_of.get(key)

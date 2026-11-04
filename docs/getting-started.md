@@ -152,7 +152,7 @@ and put the key in an environment variable rather than in the file:
 export GLOXI_CLOUD_API_KEY=...
 ```
 
-With `mode = "auto"`, short messages stay local and messages longer than 1500 characters go to the cloud; `/cloud <text>` sends one message there on purpose. Before anything is sent, the [privacy gateway](../privacy-gateway/README.md) replaces email addresses, phone numbers, IBANs, card and document numbers, keys and passwords with placeholders like `[EMAIL_1]` and puts the real values back into the answer. Names in free text are not recognised yet. The cloud model never gets the files tool. All settings and environment variables are listed in [`gloxi/README.md`](../gloxi/README.md#налаштування).
+With `mode = "auto"`, short messages stay local and messages longer than 1500 characters go to the cloud; `/cloud <text>` sends one message there on purpose. Before anything is sent, the [privacy gateway](../privacy-gateway/README.md) replaces email addresses, phone numbers, IBANs, card and document numbers, keys and passwords with placeholders like `[EMAIL_1]` and puts the real values back into the answer. Names in free text are not recognised yet. Passwords and keys typed in the chat are hidden from every model, the local one too, and shown as `••••••` if a model repeats them. The cloud model never gets the files tool. All settings and environment variables are listed in [`gloxi/README.md`](../gloxi/README.md#налаштування).
 
 ## 8. Tests and checks
 
