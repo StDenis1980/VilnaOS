@@ -65,6 +65,7 @@ Es un monorrepositorio: cada componente vive en su propia carpeta de primer nive
 | [`mcp/`](mcp/) | Servidores MCP de herramientas, empezando por archivos (Apache-2.0) |
 | [`sdk/`](sdk/) | SDK para desarrolladores externos (Apache-2.0) |
 | [`image/`](image/) | La imagen del sistema Vilna sobre openSUSE Aeon / Kalpa |
+| [`shell-extension/`](shell-extension/) | Extensión de GNOME Shell: distribución latina en los campos de contraseña, Gloxi encima de las demás ventanas, una franja de pantalla para el panel de Gloxi |
 | [`backup/`](backup/) | Copias de seguridad cifradas de los datos de Vilna (restic, claves en Herkos) |
 | [`obs/`](obs/) | Proyecto y paquetes RPM de Vilna en Open Build Service |
 | [`docs/`](docs/) | Hoja de ruta, [decisiones de arquitectura](docs/adr/), [mediciones](docs/benchmarks.md), [brief de diseño](docs/design/brief.md) |

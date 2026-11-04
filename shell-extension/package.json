@@ -1,0 +1,7 @@
+{
+  "name": "vilna-shell-extension-tests",
+  "private": true,
+  "type": "module",
+  "description": "Runs the extension's pure logic under node: node --test tests/",
+  "license": "GPL-3.0-or-later"
+}

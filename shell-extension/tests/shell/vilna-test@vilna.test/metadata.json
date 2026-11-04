@@ -1,0 +1,7 @@
+{
+  "uuid": "vilna-test@vilna.test",
+  "name": "Vilna test helper",
+  "description": "Drives the Vilna extension in tests/shell/run.sh. Never installed outside the test.",
+  "shell-version": ["46", "47", "48", "49", "50", "51"],
+  "session-modes": ["user", "unlock-dialog", "gdm"]
+}

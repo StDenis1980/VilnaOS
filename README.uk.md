@@ -65,6 +65,7 @@ uv run gloxi
 | [`mcp/`](mcp/) | MCP-сервери інструментів, першим — «файли» (Apache-2.0) |
 | [`sdk/`](sdk/) | SDK для сторонніх розробників (Apache-2.0) |
 | [`image/`](image/) | Образ системи Vilna на openSUSE Aeon / Kalpa |
+| [`shell-extension/`](shell-extension/) | Розширення GNOME Shell: латинська розкладка в полях паролів, Gloxi поверх усіх вікон, смуга екрана під панель Gloxi |
 | [`backup/`](backup/) | Зашифровані резервні копії даних Vilna (restic, ключі в Herkos) |
 | [`obs/`](obs/) | Проєкт і RPM-пакети Vilna в Open Build Service |
 | [`docs/`](docs/) | Дорожня карта, [архітектурні рішення](docs/adr/), [заміри](docs/benchmarks.md), [бриф дизайну](docs/design/brief.md) |
