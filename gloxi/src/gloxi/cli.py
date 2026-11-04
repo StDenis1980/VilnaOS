@@ -18,7 +18,7 @@ from typing import TextIO
 
 import httpx
 
-from gloxi import __version__, upgrade
+from gloxi import __version__, check, upgrade
 from gloxi.backup_intro import BackupIntro, backup_intro
 from gloxi.chat import Conversation
 from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
@@ -215,6 +215,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("chat", help="interactive chat (default)")
     ask = sub.add_parser("ask", help="ask one question and exit")
     ask.add_argument("question", nargs="+")
+    sub.add_parser("check", help="will this computer run the local model well?")
     return parser
 
 
@@ -350,6 +351,9 @@ def _leave(signum: int, _frame: object) -> None:
 def main(argv: list[str] | None = None) -> int:
     setup()
     args = build_parser().parse_args(argv)
+    if args.command == "check":
+        print(check.collect().render())
+        return 0
     try:
         settings = _settings(args)
     except ConfigError as exc:

@@ -304,6 +304,47 @@ msgstr ""
 msgid "{size} does not fit. Choose a larger amount."
 msgstr ""
 
+#: src/gloxi/check.py
+msgid "Could not read the memory size; the local model may still work."
+msgstr ""
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "Free disk space: {free}. The model needs {size}."
+msgstr ""
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "Memory: {ram}. The local model needs at least 8 GB; Gloxi can still answer through the cloud with your own key."
+msgstr ""
+
+#: src/gloxi/check.py
+msgid "The processor has no AVX2 (it is older than Intel Core 8th generation or Ryzen 2000), so the local model will be slow."
+msgstr ""
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "This computer can run {name}."
+msgstr ""
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "This computer can run {name}. Gloxi will measure once whether the larger model would be fast enough."
+msgstr ""
+
+#: src/gloxi/check.py
+msgid "This computer is below the minimum for the local model."
+msgstr ""
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "This computer is fast enough for the larger model, {name}."
+msgstr ""
+
+#: src/gloxi/check.py
+msgid "To paste into the feedback form:"
+msgstr ""
+
 #: src/gloxi/cli.py
 msgid "(interrupted)"
 msgstr ""
