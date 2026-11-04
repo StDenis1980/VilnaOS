@@ -291,7 +291,7 @@ class ModelSetup:
         p = self._plan
         if upgrade.needs_test(p, self.ram()):
             self.view.show_model_progress(
-                _("Checking how fast this computer runs the model (about 30 seconds)…"), None
+                _("Checking how fast this computer runs the model (about a minute)…"), None
             )
             try:
                 upgrade.record_result(p.folder, self.measure(self.settings.local.url))

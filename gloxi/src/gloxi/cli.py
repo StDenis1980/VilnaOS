@@ -164,7 +164,7 @@ def prepare_engine(
 def _offer_large_model(p, settings, ram, read, out, fetch, measure) -> None:
     """The speed test of gloxi.upgrade and, if it says so, the question."""
     if upgrade.needs_test(p, ram):
-        print(_("Checking how fast this computer runs the model (about 30 seconds)…"), file=out)
+        print(_("Checking how fast this computer runs the model (about a minute)…"), file=out)
         try:
             upgrade.record_result(p.folder, measure(settings.local.url))
         except (httpx.HTTPError, ValueError, OSError):

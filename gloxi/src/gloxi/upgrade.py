@@ -7,7 +7,7 @@ processor and its power limit, not on the amount of RAM. On the test laptop
 at 4.6, so a RAM threshold alone would offer it where it is slow.
 
 So every computer starts with Qwen3 4B. On computers with 16 GB or more,
-Gloxi then measures once, for about 30 seconds, how fast Qwen3 4B answers,
+Gloxi then measures once, for about a minute, how fast Qwen3 4B answers,
 estimates the speed of Ministral 3 8B from it, and offers that model only
 if the estimate reaches ``LARGE_MIN_SPEED``. The person decides; the answer
 is remembered and the question is not repeated. Nothing about the person is
@@ -28,13 +28,15 @@ from gloxi.engine import DEFAULT_MODEL, LARGE_MODEL, LARGE_MODEL_MIN_RAM, Plan, 
 
 # ADR 0008: below this the larger model feels too slow in a chat.
 LARGE_MIN_SPEED = 6.0  # tokens per second
-# How much slower Ministral 3 8B is than Qwen3 4B on the same computer, from
-# the measurements of 2026-11-03 (3.8 / 5.8 tokens per second on the CPU).
-# The size ratio of the files (0.48) would be the pessimistic bound.
-LARGE_SPEED_FACTOR = 0.65
-# Long enough for a laptop to reach its sustained power limit.
-TEST_SECONDS = 30.0
-WARMUP_SECONDS = 10.0
+# How much slower Ministral 3 8B is than Qwen3 4B on the same computer:
+# 4.51 / 9.39 tokens per second, both measured with measure_speed in the
+# Flatpak on Vulkan on 2026-11-04 (i5-1340P, Iris Xe). It equals the ratio of
+# the file sizes (0.48): the speed follows the memory traffic.
+LARGE_SPEED_FACTOR = 0.48
+# Laptops run fast for the first ~25 seconds and then lower the clock to their
+# sustained power limit; only answers that start after the warm-up count.
+TEST_SECONDS = 60.0
+WARMUP_SECONDS = 30.0
 
 TEST_PROMPT = "Describe in five sentences how a computer stores files on a disk."
 STATE_FILE = "speed-test.json"

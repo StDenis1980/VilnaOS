@@ -313,7 +313,7 @@ msgid "Backups need Herkos, and it is not running."
 msgstr ""
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
-msgid "Checking how fast this computer runs the model (about 30 seconds)…"
+msgid "Checking how fast this computer runs the model (about a minute)…"
 msgstr ""
 
 #: src/gloxi/cli.py

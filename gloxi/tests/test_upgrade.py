@@ -30,7 +30,7 @@ def test_measure_counts_only_answers_after_the_warm_up():
     def handler(request):
         # Each answer: 64 tokens; fast at first, slower once the laptop throttles.
         seen.append(request.url.path)
-        clock.now += 8.0 if clock.now < 10 else 16.0
+        clock.now += 8.0 if clock.now < 30 else 16.0
         return httpx.Response(200, json={"usage": {"completion_tokens": 64}})
 
     client = httpx.Client(transport=httpx.MockTransport(handler))
@@ -63,7 +63,7 @@ def test_the_test_runs_once_and_only_on_16_gb(tmp_path):
     assert upgrade.needs_test(p, int(15.3 * GIB))
     upgrade.record_result(tmp_path, SpeedResult(4.6))
     assert not upgrade.needs_test(p, 16 * GIB)
-    assert not upgrade.should_offer(tmp_path)  # 4.6 * 0.65 < 6
+    assert not upgrade.should_offer(tmp_path)  # 4.6 * 0.48 < 6
 
 
 class FakeEngine:
@@ -101,24 +101,25 @@ def run_cli(tmp_path, answer, speed, fetched):
 
 def test_a_fast_computer_is_offered_the_large_model_once(tmp_path):
     fetched = []
-    text = run_cli(tmp_path, "n", 10.0, fetched)
-    assert "Checking how fast" in text and LARGE_MODEL.name in text and "6.5" in text
+    text = run_cli(tmp_path, "n", 14.0, fetched)
+    assert "Checking how fast" in text and LARGE_MODEL.name in text and "6.7" in text
     assert fetched == [] and "will not ask again" in text
-    assert "Checking how fast" not in run_cli(tmp_path, "y", 10.0, fetched)
+    assert "Checking how fast" not in run_cli(tmp_path, "y", 14.0, fetched)
     assert fetched == []  # declined once: never asked again
 
 
 def test_yes_downloads_the_large_model_for_the_next_start(tmp_path):
     fetched = []
-    text = run_cli(tmp_path, "y", 10.0, fetched)
+    text = run_cli(tmp_path, "y", 14.0, fetched)
     assert fetched == [LARGE_MODEL.filename] and "next start" in text
 
 
 def test_a_slow_computer_is_not_asked(tmp_path):
     fetched = []
-    text = run_cli(tmp_path, "y", 4.6, fetched)
+    # The test laptop: Qwen3 4B 9.4 tokens/s on Vulkan, Ministral would give ~4.5.
+    text = run_cli(tmp_path, "y", 9.4, fetched)
     assert "Checking how fast" in text and LARGE_MODEL.name not in text and fetched == []
-    assert upgrade.load_state(tmp_path)["tokens_per_second"] == 4.6
+    assert upgrade.load_state(tmp_path)["tokens_per_second"] == 9.4
 
 
 def test_a_failed_test_does_not_stop_the_chat_and_is_tried_again(tmp_path):
@@ -174,7 +175,7 @@ def test_the_window_asks_after_the_test(tmp_path):
         fetch=fetch,
         engine_type=FakeEngine,
         ram=lambda: 16 * GIB,
-        measure=lambda url: SpeedResult(12.0),
+        measure=lambda url: SpeedResult(14.0),
     )
     setup.begin()
     assert any(e[0] == "progress" and "Checking how fast" in e[1] for e in events)

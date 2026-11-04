@@ -318,8 +318,8 @@ msgid "Backups need Herkos, and it is not running."
 msgstr "Для резервних копій потрібен Herkos, а він не запущений."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
-msgid "Checking how fast this computer runs the model (about 30 seconds)…"
-msgstr "Перевіряю, як швидко цей комп'ютер працює з моделлю (близько 30 секунд)…"
+msgid "Checking how fast this computer runs the model (about a minute)…"
+msgstr "Перевіряю, як швидко цей комп'ютер працює з моделлю (близько хвилини)…"
 
 #: src/gloxi/cli.py
 msgid "Cloud: off. Everything stays on this computer."
