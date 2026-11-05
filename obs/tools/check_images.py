@@ -104,10 +104,13 @@ def resolve(image: str, capabilities: list[str]) -> list[str]:
             capture_output=True,
             text=True,
         )
-    if result.returncode == 0:
-        print(f"{image}: zypper resolves all packages")
-        return []
     detail = (result.stdout + result.stderr).strip()
+    # The summary line ("1234 new packages to install.") shows that zypper
+    # really solved the whole list into the empty root.
+    summary = [line for line in detail.splitlines() if "packages to install" in line]
+    if result.returncode == 0 and summary:
+        print(f"{image}: zypper resolves all packages: {summary[-1].strip()}")
+        return []
     return [f"{image}: zypper cannot resolve the packages:\n{detail}"]
 
 
