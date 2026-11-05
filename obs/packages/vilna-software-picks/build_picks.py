@@ -43,7 +43,8 @@ MIN_FEATURED = 12
 # ADR 0012: "орієнтовно 30–60 програм".
 MIN_TOTAL, MAX_TOTAL = 30, 60
 
-SOURCES = {"flathub-verified", "vilna"}
+# "flathub-community" only by a separate ADR (ADR 0019: Signal).
+SOURCES = {"flathub-verified", "flathub-community", "vilna"}
 
 # ADR 0011: Tinta Office replaces these; people install them themselves.
 REPLACED_BY_TINTA = {
@@ -120,6 +121,8 @@ def validate(data: dict, defaults: list[str] | None = None) -> list[str]:
             problems.append(f"{where}: license {lic!r} is not free (ADR 0012)")
         if app["source"] not in SOURCES:
             problems.append(f"{where}: source must be one of {sorted(SOURCES)}")
+        elif app["source"] == "flathub-community" and "неофіційн" not in str(app.get("why", "")):
+            problems.append(f"{where}: a flathub-community build must say «неофіційна» in why (ADR 0019)")
         if not isinstance(app["default"], bool):
             problems.append(f"{where}: default must be true or false")
         if not str(app["why"]).strip():

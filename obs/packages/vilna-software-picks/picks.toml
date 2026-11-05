@@ -9,8 +9,11 @@
 #   id        — ідентифікатор AppStream / Flatpak (той самий, що на Flathub)
 #   category  — розділ добірки, ключ із [categories]
 #   license   — ліцензія програми (SPDX), має бути вільною (OSI або FSF)
-#   source    — "flathub-verified" (розробник підтверджений на Flathub)
-#               або "vilna" (наша програма, власне Flatpak-сховище Vilna)
+#   source    — "flathub-verified" (розробник підтверджений на Flathub),
+#               "vilna" (наша програма, власне Flatpak-сховище Vilna)
+#               або "flathub-community" (збірка спільноти Flathub; лише окремим
+#               рішенням ADR, коли офіційного Flatpak немає, і `why` каже, що
+#               збірка неофіційна; зараз лише Signal, ADR 0019)
 #   default   — true, якщо програма стоїть у Vilna за замовчуванням
 #               (image/packages.yaml, flatpak_defaults). Такі програми входять
 #               у добірку, щоб Gloxi і діалог Herkos знали про них, але не
@@ -37,6 +40,7 @@ lt = "Rekomenduoja Vilna"
 
 [categories]
 work = "Робота"
+communication = "Спілкування"
 learning = "Навчання"
 graphics = "Графіка"
 media = "Звук і відео"
@@ -159,14 +163,6 @@ default = false
 why = "Справи і списки завдань, синхронізація лише якщо людина її ввімкне."
 
 [[app]]
-id = "org.gnome.Solanum"
-category = "work"
-license = "GPL-3.0-or-later"
-source = "flathub-verified"
-default = false
-why = "Таймер «помідора» для зосередженої роботи."
-
-[[app]]
 id = "app.drey.Warp"
 category = "work"
 license = "GPL-3.0-or-later"
@@ -181,14 +177,6 @@ license = "MIT"
 source = "flathub-verified"
 default = false
 why = "Обмін файлами з телефоном у тій самій мережі, без хмари."
-
-[[app]]
-id = "org.gnome.Fractal"
-category = "work"
-license = "GPL-3.0-or-later"
-source = "flathub-verified"
-default = false
-why = "Повідомлення в мережі Matrix з наскрізним шифруванням."
 
 [[app]]
 id = "io.appflowy.AppFlowy"
@@ -214,15 +202,43 @@ source = "flathub-verified"
 default = false
 why = "Нотатки в Markdown із шифрованою синхронізацією на вибір."
 
-# ---------------------------------------------------------------- Навчання
+
+# ---------------------------------------------------------------- Спілкування
+# ADR 0019: вільні месенджери з наскрізним шифруванням.
 
 [[app]]
-id = "com.github.hugolabe.Wike"
-category = "learning"
+id = "org.gnome.Fractal"
+category = "communication"
 license = "GPL-3.0-or-later"
 source = "flathub-verified"
 default = false
-why = "Читання Вікіпедії потрібною мовою."
+why = "Повідомлення в мережі Matrix з наскрізним шифруванням, сервер можна обрати в ЄС."
+
+[[app]]
+id = "chat.delta.desktop"
+category = "communication"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Чат із наскрізним шифруванням поверх пошти, без номера телефону."
+
+[[app]]
+id = "chat.simplex.simplex"
+category = "communication"
+license = "AGPL-3.0-only"
+source = "flathub-verified"
+default = false
+why = "Анонімний чат без жодного ідентифікатора користувача."
+
+[[app]]
+id = "org.signal.Signal"
+category = "communication"
+license = "AGPL-3.0-only"
+source = "flathub-community"
+default = false
+why = "Signal для комп'ютера, прив'язаний до телефона; неофіційна збірка спільноти Flathub."
+
+# ---------------------------------------------------------------- Навчання
 
 [[app]]
 id = "org.stellarium.Stellarium"
@@ -348,14 +364,6 @@ license = "GPL-2.0-or-later"
 source = "flathub-verified"
 default = false
 why = "Запис і трансляція екрана й камери."
-
-[[app]]
-id = "io.github.seadve.Kooha"
-category = "media"
-license = "GPL-3.0-or-later"
-source = "flathub-verified"
-default = false
-why = "Простий запис екрана."
 
 [[app]]
 id = "org.audacityteam.Audacity"

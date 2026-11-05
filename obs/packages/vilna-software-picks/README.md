@@ -21,7 +21,7 @@
 
 ## Як додати чи прибрати програму
 
-1. Перевірте програму за критеріями ADR 0012: вільна ліцензія (OSI або FSF); розробник підтверджений на Flathub (verified) або це наша програма; працює в GNOME на Wayland; не надсилає дані без згоди людини; є переклад хоча б кількома з 10 основних мов. Програм, які замінює Tinta Office (LibreOffice, Thunderbird, Papers, GNOME Calendar і Contacts, ADR 0011), у добірці немає.
+1. Перевірте програму за критеріями ADR 0012: вільна ліцензія (OSI або FSF); розробник підтверджений на Flathub (verified) або це наша програма (виняток — збірка спільноти Flathub, `source = "flathub-community"`, лише окремим рішенням ADR, і `why` каже, що збірка неофіційна; зараз лише Signal, [ADR 0019](../../../docs/adr/0019-messengers.md)); працює в GNOME на Wayland; не надсилає дані без згоди людини; є переклад хоча б кількома з 10 основних мов. Програм, які замінює Tinta Office (LibreOffice, Thunderbird, Papers, GNOME Calendar і Contacts, ADR 0011), у добірці немає.
 2. Додайте блок `[[app]]` у [`picks.toml`](picks.toml) у потрібний розділ.
 3. Перевірте:
 

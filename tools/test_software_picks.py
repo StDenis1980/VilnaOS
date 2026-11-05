@@ -107,6 +107,16 @@ class Rules(unittest.TestCase):
         self.assertIn("unknown category", out)
         self.assertIn("unknown field stars", out)
 
+    def test_community_build_must_say_so(self) -> None:
+        data = copy.deepcopy(self.data)
+        signal = next(a for a in data["app"] if a["id"] == "org.signal.Signal")
+        self.assertEqual(signal["source"], "flathub-community")
+        self.assertEqual(self.problems(data), "")
+        signal["why"] = "Signal для комп'ютера."
+        self.assertIn("must say «неофіційна»", self.problems(data))
+        signal["source"] = "flathub-maybe"
+        self.assertIn("source must be one of", self.problems(data))
+
     def test_missing_title_language(self) -> None:
         data = copy.deepcopy(self.data)
         del data["section"]["title"]["lt"]

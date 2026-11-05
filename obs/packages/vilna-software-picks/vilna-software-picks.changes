@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Nov  5 11:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.3: new «Спілкування» category (ADR 0019): Fractal moves
+  there, add Delta Chat, SimpleX Chat and Signal (community build,
+  source flathub-community); drop Solanum, Kooha and Wike to stay
+  at 60 apps
+
+-------------------------------------------------------------------
 Thu Nov  5 08:50:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.2: add AppFlowy, Logseq and Joplin (free alternatives
