@@ -175,6 +175,10 @@ class ManifestRegistry:
     def __contains__(self, tool: str) -> bool:
         return tool in self._by_tool
 
+    def __iter__(self):
+        """The manifests, sorted by tool name."""
+        return iter(sorted(self._by_tool.values(), key=lambda m: m.tool))
+
     @classmethod
     def builtin(cls) -> ManifestRegistry:
         """Manifests shipped with Herkos (``herkos/manifests/*.toml``)."""

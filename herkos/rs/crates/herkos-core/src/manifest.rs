@@ -223,6 +223,11 @@ impl Registry {
         self.by_tool.get(tool)
     }
 
+    /// The manifests, sorted by tool name.
+    pub fn iter(&self) -> impl Iterator<Item = &Manifest> {
+        self.by_tool.values()
+    }
+
     /// Manifests shipped with Herkos (`herkos/src/herkos/manifests/*.toml`).
     pub fn builtin() -> Result<Registry, ManifestError> {
         let mut r = Registry::default();

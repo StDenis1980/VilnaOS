@@ -87,13 +87,19 @@ OPERATIONS = {
             {"path": _PATH, "text": {"type": "string", "description": "Full new contents"}},
             False,
         ),
+        Operation("delete", "Delete a file (it can be restored)", {"path": _PATH}, False),
     )
 }
-# Deleting is R3, which Herkos-lite never runs, so it is not offered at all.
+# What Gloxi offers when Herkos is too old to answer herkos.tools: what
+# Herkos-lite runs. Deleting is R3, which Herkos-lite never runs.
+LITE_OPERATIONS = ("list", "search", "read", "create", "write")
+METHOD_NOT_FOUND = -32601
 
 
 class HerkosLike(Protocol):
     def request_action(self, **kwargs: Any) -> dict[str, Any]: ...
+
+    def tools(self) -> list[dict[str, Any]]: ...
 
     def close(self) -> None: ...
 
@@ -145,12 +151,57 @@ class FileTools:
         self._client: HerkosLike | None = None
         # Set once a connection that may carry taint is lost; cleared by reset().
         self._lost = False
+        # The operations Herkos lists for this connection (herkos.tools).
+        self._offer: tuple[str, ...] | None = None
 
     # -- offering -------------------------------------------------------------
 
     def available(self) -> bool:
-        """Offer tools only when Herkos seems to be running and a folder is allowed."""
-        return not self._lost and bool(self.roots) and self._available()
+        """Offer tools only when Herkos runs the files tool and a folder is allowed."""
+        if self._lost or not self.roots or not self._available():
+            return False
+        return bool(self.offered())
+
+    def offered(self) -> tuple[str, ...]:
+        """The files operations to offer: those Herkos lists (``herkos.tools``, ADR 0017).
+
+        Asked once per connection. Herkos lists only what it may run, so
+        ``delete`` appears with the system Herkos (R3) and not with
+        Herkos-lite. A Herkos without ``herkos.tools`` gets what Herkos-lite
+        runs.
+        """
+        if self._offer is not None:
+            return self._offer
+        try:
+            from herkos.client import HerkosError, HerkosUnavailable
+        except ImportError:  # a test or build without Herkos: no herkos exceptions to catch
+            HerkosError = HerkosUnavailable = _NeverRaised  # noqa: N806
+
+        if self._lost:
+            return ()
+        try:
+            if self._client is None:
+                self._client = self._connect()
+            listed: list[dict[str, Any]] | None = self._client.tools()
+        except HerkosUnavailable:
+            if self._client is not None:
+                self._lost = True
+                self._drop()
+            return ()  # not cached: the next turn tries again
+        except HerkosError as exc:
+            listed = None if exc.code == METHOD_NOT_FOUND else []
+        if listed is None:
+            names = set(LITE_OPERATIONS)
+        else:
+            names = {
+                op.get("name")
+                for t in listed
+                if isinstance(t, dict) and t.get("tool") == FILES_TOOL
+                for op in t.get("operations") or []
+                if isinstance(op, dict)
+            }
+        self._offer = tuple(n for n in OPERATIONS if n in names)
+        return self._offer
 
     def set_roots(self, roots: Sequence[Path]) -> None:
         """The allowed folders changed (Herkos restarted): start a new connection."""
@@ -159,7 +210,8 @@ class FileTools:
 
     def definitions(self) -> list[dict]:
         out = []
-        for op in OPERATIONS.values():
+        for name in self.offered():
+            op = OPERATIONS[name]
             params = {**op.params, "reason": _REASON}
             out.append(
                 {
@@ -192,7 +244,11 @@ class FileTools:
     def call(self, name: str, raw_arguments: str, *, user_turn: int) -> ToolOutcome:
         op_name = name.removeprefix("files_")
         op = OPERATIONS.get(op_name) if name.startswith("files_") else None
-        if op is None:
+        # Only what was offered; before Herkos answered herkos.tools, what
+        # Herkos-lite runs. Herkos decides anyway: this only keeps the model
+        # from calling a function it was never given.
+        offered = self._offer if self._offer is not None else LITE_OPERATIONS
+        if op is None or op.name not in offered:
             return _error(op_name, None, f"there is no function {name}")
         try:
             args = json.loads(raw_arguments or "{}")
@@ -258,6 +314,7 @@ class FileTools:
         """A new conversation gets a new, clean connection."""
         self._drop()
         self._lost = False
+        self._offer = None
 
     def close(self) -> None:
         self._drop()
@@ -289,6 +346,10 @@ def file_tools(enabled: bool) -> FileTools | None:
         # No XDG_RUNTIME_DIR (e.g. an ssh shell or a container): no Herkos, just chat.
         return None
     return FileTools(lambda: HerkosClient.connect(sock), roots, available=sock.exists)
+
+
+class _NeverRaised(Exception):
+    """Stands in for the herkos exceptions when Herkos is not installed."""
 
 
 # -- results ----------------------------------------------------------------------

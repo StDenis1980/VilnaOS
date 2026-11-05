@@ -292,6 +292,44 @@ impl Gate {
         }
     }
 
+    /// What Gloxi may offer the model: `herkos.tools` (protocol.md 2, ADR 0017).
+    ///
+    /// Mirrors `Gate.available_tools` in Herkos-lite. A tool is listed only
+    /// when Herkos has its manifest and the tool server is running; an
+    /// operation only when the manifest allows it (not forbidden, base level
+    /// at most `max_level`) and the server has it. Every text comes from the
+    /// manifest, never from the server.
+    pub fn available_tools(&self) -> Value {
+        let mut out = Vec::new();
+        for manifest in self.manifests.iter() {
+            if !self.tools.running(&manifest.tool) {
+                continue;
+            }
+            let ops: Vec<Value> = manifest
+                .operations
+                .values()
+                .filter_map(|op| {
+                    let level = op.level.filter(|l| *l <= self.config.max_level)?;
+                    self.tools.annotations(&manifest.tool, &op.name)?;
+                    Some(json!({
+                        "name": op.name,
+                        "summary": op.summary,
+                        "level": level.name(),
+                        "returns_external": op.returns_external,
+                    }))
+                })
+                .collect();
+            if !ops.is_empty() {
+                out.push(json!({
+                    "tool": manifest.tool,
+                    "description": manifest.description,
+                    "operations": ops,
+                }));
+            }
+        }
+        Value::Array(out)
+    }
+
     #[must_use]
     pub fn with_model_check(mut self, check: Option<ModelCheck>) -> Gate {
         self.model_check = check;
@@ -697,6 +735,49 @@ mod tests {
             Box::new(Says(answer)),
         );
         (g, docs)
+    }
+
+    /// Files is running with only some operations; backup is not running.
+    struct SomeOps;
+
+    impl Tools for SomeOps {
+        fn running(&self, tool: &str) -> bool {
+            tool == "org.vilna.mcp.files"
+        }
+        fn annotations(&self, _t: &str, o: &str) -> Option<Map<String, Value>> {
+            ["read", "write", "delete"].contains(&o).then(Map::new)
+        }
+        fn execute(&self, request: &ActionRequest) -> Result<Value, String> {
+            Err(format!("{} is not run here", request.tool))
+        }
+    }
+
+    #[test]
+    fn available_tools_lists_what_the_manifest_allows_and_the_server_has() {
+        let (g, _) = gate("tools", Answer::Deny);
+        let g = Gate {
+            tools: Box::new(SomeOps),
+            ..g
+        };
+        let names = |g: &Gate| -> Vec<String> {
+            g.available_tools()[0]["operations"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|o| o["name"].as_str().map(str::to_owned))
+                .collect()
+        };
+        let tools = g.available_tools();
+        assert_eq!(tools.as_array().map(Vec::len), Some(1));
+        assert_eq!(tools[0]["tool"], "org.vilna.mcp.files");
+        // delete is R3, above max_level R2; search is not on the server.
+        assert_eq!(names(&g), ["read", "write"]);
+        assert_eq!(tools[0]["operations"][0]["level"], "R1");
+        assert_eq!(tools[0]["operations"][0]["returns_external"], true);
+        let mut config = g.config.clone();
+        config.max_level = Level::R4;
+        let g = Gate { config, ..g };
+        assert_eq!(names(&g), ["delete", "read", "write"]);
     }
 
     fn files(op: &str, path: &Path) -> ActionRequest {
