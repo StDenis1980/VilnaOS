@@ -76,6 +76,9 @@ msgstr "програма змінила цю дію відтоді, як ви ї
 msgid "the program describes this action at too great a length"
 msgstr "програма описує цю дію задовго"
 
+msgid "Let Gloxi use this program: {program}"
+msgstr "Дозволити Gloxi користуватися програмою: {program}"
+
 msgid "the tool describes this operation as riskier"
 msgstr "сам інструмент позначає цю операцію як ризикованішу"
 

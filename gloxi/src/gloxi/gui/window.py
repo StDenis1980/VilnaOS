@@ -37,6 +37,7 @@ from gloxi.herkos_local import (  # noqa: E402
 from gloxi.i18n import setup  # noqa: E402
 from gloxi.llm import ChatClient  # noqa: E402
 from gloxi.privacy import guard_factory  # noqa: E402
+from gloxi.programs import Program, Programs, programs  # noqa: E402
 from gloxi.router import CloudNotAllowed, Router  # noqa: E402
 from gloxi.tools import file_tools  # noqa: E402
 
@@ -84,6 +85,13 @@ class ChatWindow(Adw.ApplicationWindow):
         )
         self.folders_button.connect("clicked", self._on_folders)
         header.pack_end(self.folders_button)
+        # Programs from the catalogue, once Herkos says there are any (ADR 0017, step 6).
+        self.programs: Programs | None = None
+        self.programs_button = Gtk.Button(
+            icon_name="view-app-grid-symbolic", tooltip_text=_("Programs for Gloxi"), visible=False
+        )
+        self.programs_button.connect("clicked", self._on_programs)
+        header.pack_end(self.programs_button)
         report_button = Gtk.Button(
             icon_name="mail-message-new-symbolic",
             tooltip_text=_("Report a problem or suggest something"),
@@ -256,6 +264,114 @@ class ChatWindow(Adw.ApplicationWindow):
 
         threading.Thread(target=job, daemon=True).start()
 
+    # -- programs for Gloxi (Herkos keeps the switches) --------------------------
+
+    def enable_programs(self, programs: Programs) -> None:
+        """Show the button if Herkos lists any catalogue program; asked off the UI thread."""
+        self.programs = programs
+
+        def job() -> None:
+            if programs.list():
+                GLib.idle_add(lambda: self.programs_button.set_visible(True) and False)
+
+        threading.Thread(target=job, daemon=True).start()
+
+    def _on_programs(self, *_args) -> None:
+        programs = self.programs
+        if programs is None:
+            return
+
+        # Asked off the UI thread; the dialog opens filled, so it gets its size right.
+        def job() -> None:
+            listed = programs.list()
+            GLib.idle_add(lambda: self._show_programs(listed) and False)
+
+        threading.Thread(target=job, daemon=True).start()
+
+    def _show_programs(self, listed: list[Program]) -> None:
+        dialog = Adw.PreferencesDialog(title=_("Programs for Gloxi"))
+        page = Adw.PreferencesPage()
+        self._programs_group = Adw.PreferencesGroup(
+            description=_(
+                "Gloxi can use only the programs you turn on here. Herkos asks you "
+                "before turning one on, and every action still goes through it."
+            )
+        )
+        self._hidden_group = Adw.PreferencesGroup(
+            title=_("Actions hidden from Gloxi"),
+            description=_("Herkos found something suspicious in how the program describes them."),
+            visible=False,
+        )
+        page.add(self._programs_group)
+        page.add(self._hidden_group)
+        dialog.add(page)
+        self._program_rows: list = []
+        self._fill_programs(listed)
+        dialog.present(self)
+
+    def _load_programs(self) -> None:
+        programs = self.programs
+        if programs is None:
+            return
+
+        def job() -> None:
+            listed = programs.list()
+            GLib.idle_add(lambda: self._fill_programs(listed) and False)
+
+        threading.Thread(target=job, daemon=True).start()
+
+    def _fill_programs(self, listed: list[Program]) -> None:
+        for group, row in self._program_rows:
+            group.remove(row)
+        self._program_rows = []
+        if not listed:
+            row = Adw.ActionRow(title=_("No programs for Gloxi are installed."))
+            self._programs_group.add(row)
+            self._program_rows.append((self._programs_group, row))
+        for program in listed:
+            row = Adw.SwitchRow(title=program.title, subtitle=program.status())
+            row.set_active(program.enabled)
+            row.connect("notify::active", self._on_program_switch, program)
+            self._programs_group.add(row)
+            self._program_rows.append((self._programs_group, row))
+            for hidden in program.hidden:
+                why = "; ".join(hidden.why)
+                h = Adw.ActionRow(title=f"{program.title}: {hidden.operation}", subtitle=why)
+                self._hidden_group.add(h)
+                self._program_rows.append((self._hidden_group, h))
+        self._hidden_group.set_visible(any(p.hidden for p in listed))
+
+    def _on_program_switch(self, row, _pspec, program: Program) -> None:
+        on = row.get_active()
+        if on == program.enabled or self.programs is None:
+            return
+        row.set_sensitive(False)
+        programs = self.programs
+
+        def job() -> None:
+            change = programs.set(program.tool, on)
+            if change.error:
+                self.show_error(_("Herkos could not change it: {why}").format(why=change.error))
+            elif change.refused:
+                self.show_note(_("Not turned on: you said no in the Herkos window."))
+            elif change.restart_needed and self.herkos is not None:
+                self._restart_herkos()
+            elif change.restart_needed:
+                self.show_note(_("It starts the next time Herkos starts."))
+            GLib.idle_add(lambda: self._load_programs() and False)
+
+        threading.Thread(target=job, daemon=True).start()
+
+    def _restart_herkos(self) -> None:
+        """The Herkos in the Flatpak starts the program it just turned on."""
+        try:
+            self.herkos.restart()
+        except Exception as exc:  # noqa: BLE001 - shown to the person
+            self.show_error(_("Herkos could not restart: {why}").format(why=exc))
+            return
+        if self.tools is not None:
+            self.tools.set_roots(allowed_folders())
+
     def _on_cancel_download(self, *_args) -> None:
         if self.model_setup is not None:
             self.model_setup.cancel()
@@ -382,6 +498,9 @@ class GloxiApp(Adw.Application):
         window = ChatWindow(self, conversation, self._intro)
         if self._herkos is not None:
             window.enable_folders(self._herkos, self._tools)
+        catalogue = programs(settings.tools_enabled)
+        if catalogue is not None:
+            window.enable_programs(catalogue)
         self._model_setup = window.model_setup = ModelSetup(settings, window)
         self._model_setup.begin()
         GLib.idle_add(lambda: window.controller.offer_intro() and False)

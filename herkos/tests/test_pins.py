@@ -52,7 +52,9 @@ def gate(env: Env, notes: Notes, answer: Answer, max_level: Level = Level.R2) ->
     tools = ToolRegistry()
     tools.register("org.example.notes", notes)
     config = replace(env.config, max_level=max_level)
-    return Gate(config, manifests, tools, env.grants, env.journal, Scripted(answer))
+    g = Gate(config, manifests, tools, env.grants, env.journal, Scripted(answer))
+    g.programs.set("org.example.notes", True)  # the person turned it on (step 6)
+    return g
 
 
 def ask(g: Gate, op: str):

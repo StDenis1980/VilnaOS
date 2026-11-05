@@ -34,6 +34,7 @@ from herkos.manifest import ManifestRegistry, Operation
 from herkos.mitos import Journal, JournalError, digest, read_records
 from herkos.pins import PinStore
 from herkos.policy import Assessment, SessionState, assess
+from herkos.programs import ProgramStore
 from herkos.request import ActionRequest, parse_request
 from herkos.risk import Level
 from herkos.tools import ToolError, ToolRegistry
@@ -140,6 +141,7 @@ class Gate:
         self.journal = journal
         self.confirmer = confirmer
         self.pins = PinStore(config.state_dir / "tool-pins.json")
+        self.programs = ProgramStore(config.state_dir / "programs.json")
         # One question on screen at a time.
         self._ask_lock = threading.Lock()
 
@@ -162,7 +164,7 @@ class Gate:
         hidden: list[dict] = []
         for manifest in self.manifests:
             executor = self.tools.get(manifest.tool)
-            if executor is None:
+            if executor is None or not self.is_on(manifest.tool):
                 continue
             ops = []
             for name in sorted(manifest.operations):
@@ -192,6 +194,77 @@ class Gate:
                     {"tool": manifest.tool, "description": manifest.description, "operations": ops}
                 )
         return {"tools": out, "hidden": hidden}
+
+    # -- programs from the catalogue (ADR 0017, step 6) --------------------------
+
+    def is_on(self, tool: str) -> bool:
+        """Built-in tools always; a catalogue program once the person turned it on."""
+        return self.manifests.is_builtin(tool) or self.programs.enabled(tool)
+
+    def program_list(self) -> list[dict[str, Any]]:
+        """``herkos.programs``: every catalogue program, on or off, for Gloxi's settings."""
+        hidden = self.listing()["hidden"]
+        out = []
+        for manifest in self.manifests:
+            if self.manifests.is_builtin(manifest.tool):
+                continue
+            out.append(
+                {
+                    "tool": manifest.tool,
+                    "description": manifest.description,
+                    "enabled": self.programs.enabled(manifest.tool),
+                    "running": self.tools.get(manifest.tool) is not None,
+                    "hidden": [
+                        {"operation": h["operation"], "why": h["why"]}
+                        for h in hidden
+                        if h["tool"] == manifest.tool
+                    ],
+                }
+            )
+        return out
+
+    def set_program(self, tool: str, on: bool, reason: str) -> dict[str, Any]:
+        """``herkos.set_program``: turning off is immediate; turning on asks the person.
+
+        Raises ValueError for a tool that is not a catalogue program. A program
+        turned on starts the next time Herkos starts its tools.
+        """
+        manifest = self.manifests.get(tool)
+        if manifest is None or self.manifests.is_builtin(tool):
+            raise ValueError(f"{tool} is not a program from the catalogue")
+        if on and not self.programs.enabled(tool):
+            question = Question(
+                summary=_("Let Gloxi use this program: {program}").format(
+                    program=manifest.description
+                ),
+                reason=reason,
+                tool=tool,
+                operation="enable",
+                resources=(),
+                level=Level.R2,
+                undoable=True,
+                raises=(),
+                taint_sources=(),
+                choices=(Answer.ONCE,),
+            )
+            with self._ask_lock:
+                try:
+                    answer = self.confirmer.ask(question, self.config.confirm_timeout)
+                except Exception:  # a broken dialog is a "no"
+                    answer = Answer.DENY
+            if answer is not Answer.ONCE:
+                return {"tool": tool, "enabled": False, "code": "denied_user"}
+        if on != self.programs.enabled(tool):
+            self.journal.append("program", {"tool": tool, "enabled": on})
+            self.programs.set(tool, on)
+        running = self.tools.get(tool) is not None
+        return {
+            "tool": tool,
+            "enabled": on,
+            "code": "done",
+            # Turning off works at once; a program turned on starts with Herkos.
+            "restart_needed": on and not running,
+        }
 
     def handle(self, request: ActionRequest, session: SessionState) -> Outcome:
         action_id = new_action_id()
@@ -242,6 +315,14 @@ class Gate:
         if manifest is None:
             return Outcome(
                 action_id, False, a.level, "denied_unknown", f"unknown tool {request.tool}"
+            )
+        if not self.is_on(request.tool):
+            return Outcome(
+                action_id,
+                False,
+                a.level,
+                "denied_no_tool",
+                f"{request.tool} is turned off in Gloxi's settings",
             )
         if a.operation is None:
             return Outcome(

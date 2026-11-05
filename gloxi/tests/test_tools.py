@@ -575,6 +575,7 @@ def test_end_to_end_a_program_function_through_the_real_herkos(tmp_path):
         Journal(config.journal_path),
         confirmer,
     )
+    gate.programs.set("org.example.notes", True)  # the person turned it on (step 6)
     path = tmp_path / "run" / "herkos.sock"
     server = Server(gate, path)
     loop = asyncio.new_event_loop()

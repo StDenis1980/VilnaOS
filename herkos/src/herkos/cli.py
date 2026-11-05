@@ -28,6 +28,7 @@ from herkos.keros_model import LlamaServerJudge, ModelCheck
 from herkos.manifest import Manifest, ManifestError, ManifestRegistry
 from herkos.mcp_client import McpError, McpStdioExecutor
 from herkos.mitos import Journal, JournalError, read_records, verify
+from herkos.programs import ProgramStore
 from herkos.server import Server, SocketError
 from herkos.tools import ToolRegistry
 
@@ -53,7 +54,11 @@ def _serve(args: argparse.Namespace) -> int:
     manifests = ManifestRegistry.installed()
     tools = ToolRegistry()
     started: list[McpStdioExecutor] = []
+    programs = ProgramStore(config.state_dir / "programs.json")
     for manifest in manifests:
+        if not manifests.is_builtin(manifest.tool) and not programs.enabled(manifest.tool):
+            print(f"herkos: {manifest.tool} is turned off in Gloxi; not started", file=sys.stderr)
+            continue
         executor = start_tool(manifest, config)
         if executor is not None:
             tools.register(manifest.tool, executor)
