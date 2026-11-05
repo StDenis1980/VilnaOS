@@ -449,6 +449,7 @@ fn parse_launch(value: &Value, source: &str) -> Result<Launch, ManifestError> {
 #[derive(Debug, Default, Clone)]
 pub struct Registry {
     by_tool: BTreeMap<String, Manifest>,
+    builtin: std::collections::BTreeSet<String>,
 }
 
 impl Registry {
@@ -475,7 +476,13 @@ impl Registry {
         for (name, text) in BUILTIN {
             r.add(parse_manifest_str(text, name)?)?;
         }
+        r.builtin = r.by_tool.keys().cloned().collect();
         Ok(r)
+    }
+
+    /// Shipped with Herkos itself, not from the catalogue (no pins, ADR 0017).
+    pub fn is_builtin(&self, tool: &str) -> bool {
+        self.builtin.contains(tool)
     }
 }
 

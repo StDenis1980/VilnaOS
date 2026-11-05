@@ -267,6 +267,7 @@ class ManifestRegistry:
 
     def __init__(self, manifests: Iterable[Manifest] = ()) -> None:
         self._by_tool: dict[str, Manifest] = {}
+        self._builtin: set[str] = set()
         for m in manifests:
             self.add(m)
 
@@ -293,7 +294,12 @@ class ManifestRegistry:
             if entry.name.endswith(".toml"):
                 data = tomllib.loads(entry.read_text(encoding="utf-8"))
                 registry.add(parse_manifest(data, entry.name))
+        registry._builtin = set(registry._by_tool)
         return registry
+
+    def is_builtin(self, tool: str) -> bool:
+        """Shipped with Herkos itself, not from the catalogue (no pins, ADR 0017)."""
+        return tool in self._builtin
 
     @classmethod
     def installed(cls, directory: Path | None = None) -> ManifestRegistry:

@@ -19,7 +19,7 @@ import posixpath
 import secrets
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +30,7 @@ from herkos.i18n import _
 from herkos.keros_model import ModelCheck
 from herkos.manifest import ManifestRegistry, Operation
 from herkos.mitos import Journal, JournalError, digest, read_records
+from herkos.pins import PinStore
 from herkos.policy import Assessment, SessionState, assess
 from herkos.request import ActionRequest, parse_request
 from herkos.risk import Level
@@ -113,6 +114,7 @@ class Gate:
         self.grants = grants
         self.journal = journal
         self.confirmer = confirmer
+        self.pins = PinStore(config.state_dir / "tool-pins.json")
         # One question on screen at a time.
         self._ask_lock = threading.Lock()
 
@@ -223,6 +225,16 @@ class Gate:
                 f"argument '{mismatch}' names something not declared in resources",
             )
         assert a.level is not None
+        fingerprint = self._changed(request, executor)
+        if fingerprint is not None:
+            # As without a manifest (permissions.md 4.1.3) until allowed once.
+            floor = Level.R3 if a.base is not None and a.base <= Level.R1 else Level.R4
+            a = replace(
+                a,
+                level=max(a.level, floor),
+                raises=(*a.raises, _("the program changed this action since it was allowed")),
+                taint_only=False,
+            )
         exact = self._exact_only(a)
         if a.level > self.config.max_level and not exact:
             why = "; ".join(a.raises) or "its base level"
@@ -240,6 +252,8 @@ class Gate:
         if a.level == Level.R0:
             return Outcome(action_id, True, a.level, "allowed", "R0: no permission needed")
 
+        # A changed operation: once, shown in full, no permission covers it.
+        exact = exact or fingerprint is not None
         grant = (
             None if exact else self.grants.find(request.tool, request.operation, a.roots, a.level)
         )
@@ -247,7 +261,21 @@ class Gate:
             return Outcome(
                 action_id, True, a.level, "allowed", f"permission {grant.id} ({grant.duration})"
             )
-        return self._ask(action_id, request, session, a, exact=exact)
+        outcome = self._ask(action_id, request, session, a, exact=exact)
+        if outcome.allowed and fingerprint is not None:
+            self.pins.pin(request.tool, request.operation, fingerprint)
+        return outcome
+
+    def _changed(self, request: ActionRequest, executor: object) -> str | None:
+        """The operation's new fingerprint if it changed since it was trusted."""
+        if executor is None or self.manifests.is_builtin(request.tool):
+            return None
+        current = getattr(executor, "fingerprints", dict)()
+        if request.operation not in current:
+            return None  # the server has no such operation: the call fails there
+        if not self.pins.changed(request.tool, request.operation, current):
+            return None
+        return current[request.operation]
 
     def _exact_only(self, a: Assessment) -> bool:
         """One level above the limit only because the conversation is tainted.
