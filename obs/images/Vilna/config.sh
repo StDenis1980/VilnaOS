@@ -25,6 +25,29 @@ if [ -e /etc/selinux/config ]; then
     touch /etc/selinux/.autorelabel
 fi
 
+# KIWI writes /etc/kernel/cmdline without a final newline, after this
+# script and disk.sh. sdbootutil reads it with "while read", which drops
+# a last line without a newline: every boot entry made by
+# transactional-update lost "security=selinux selinux=1 enforcing=1"
+# and SELinux was off (VM test of Build6.2). Add the newline on the
+# first boot, before any transactional-update.
+cat >/usr/lib/systemd/system/vilna-kernel-cmdline.service <<'UNIT'
+[Unit]
+Description=End /etc/kernel/cmdline with a newline for sdbootutil
+ConditionPathExists=/etc/kernel/cmdline
+DefaultDependencies=no
+After=local-fs.target
+Before=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '[ -z "$$(tail -c1 /etc/kernel/cmdline)" ] || echo >>/etc/kernel/cmdline'
+
+[Install]
+WantedBy=sysinit.target
+UNIT
+systemctl enable vilna-kernel-cmdline.service
+
 # zypper (inside transactional-update) installs only what is required,
 # as in Aeon: recommended packages do not slip into the system.
 if [ -e /etc/zypp/zypp.conf ]; then
