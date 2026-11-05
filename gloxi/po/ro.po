@@ -315,6 +315,11 @@ msgstr ""
 
 #: src/gloxi/check.py
 #, python-brace-format
+msgid "Gloxi starts {large} because its file is in the models folder, but the speed test has not shown that it is fast enough here. To go back to {small}, delete {file} from {folder}."
+msgstr ""
+
+#: src/gloxi/check.py
+#, python-brace-format
 msgid "Memory: {ram}. The local model needs at least 8 GB; Gloxi can still answer through the cloud with your own key."
 msgstr ""
 
@@ -408,7 +413,8 @@ msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud 
 msgstr ""
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
-msgid "Starting the model on this computer…"
+#, python-brace-format
+msgid "Starting {name} on this computer…"
 msgstr ""
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
@@ -466,6 +472,10 @@ msgstr ""
 
 #: src/gloxi/engine.py
 msgid "Qwen (Alibaba Cloud) on Hugging Face"
+msgstr ""
+
+#: src/gloxi/engine.py
+msgid "the model"
 msgstr ""
 
 #: src/gloxi/engine.py

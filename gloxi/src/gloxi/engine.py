@@ -113,6 +113,14 @@ class DownloadCancelled(EngineError):
     pass
 
 
+def model_name(path: Path | str | None) -> str:
+    """The name shown to the person for a model file, or its file name."""
+    if path is None:
+        return _("the model")
+    filename = Path(path).name
+    return next((m.name for m in MODELS if m.filename == filename), filename)
+
+
 def models_dir(env: dict[str, str] | None = None) -> Path:
     env = os.environ if env is None else env
     base = env.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
