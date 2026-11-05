@@ -23,7 +23,8 @@ HerkosError = herkos_client.HerkosError
 
 
 class FakeHerkos:
-    def __init__(self, answer=None, *, fail=None):
+    def __init__(self, answer=None, *, fail=None, listed=None):
+        self.listed = self.LISTED if listed is None else listed
         self.answer = answer or {
             "action_id": "a1",
             "decision": "allowed",
@@ -35,6 +36,23 @@ class FakeHerkos:
         self.fail = fail
         self.calls = []
         self.closed = False
+
+    # What Herkos-lite lists: no delete (R3).
+    LISTED = [
+        {
+            "tool": "org.vilna.mcp.files",
+            "description": "Files in the folders the user allowed",
+            "operations": [
+                {"name": n, "summary": n, "level": "R1", "returns_external": True}
+                for n in ("create", "list", "read", "restore", "search", "write")
+            ],
+        }
+    ]
+
+    def tools(self):
+        if isinstance(self.listed, Exception):
+            raise self.listed
+        return self.listed
 
     def request_action(self, **kwargs):
         if self.fail:
@@ -244,7 +262,10 @@ def test_herkos_not_running_is_a_denial_and_can_be_retried():
     t = tools(conn)
     out = t.call("files_list", args(path="/home/u/Documents", reason="r"), user_turn=1)
     assert out.status == "denied" and json.loads(out.for_model)["code"] == "herkos_unavailable"
+    # While Herkos cannot be reached, no tools are offered.
+    assert not t.available()
     # Nothing was ever connected, so nothing was tainted: trying again is fine.
+    conn.fail_connect = False
     assert t.available()
 
 
@@ -498,3 +519,59 @@ def test_no_runtime_dir_means_no_tools(monkeypatch, tmp_path):
     monkeypatch.delenv("XDG_RUNTIME_DIR", raising=False)
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
     assert file_tools(True) is None
+
+
+# -- what Herkos lists (herkos.tools, ADR 0017) -------------------------------------
+
+
+def test_delete_is_offered_only_when_herkos_lists_it():
+    listed = [dict(FakeHerkos.LISTED[0])]
+    listed[0]["operations"] = [*listed[0]["operations"], {"name": "delete", "level": "R3"}]
+    conn = Connector(FakeHerkos(listed=listed))
+    t = tools(conn)
+    names = [d["function"]["name"] for d in t.definitions()]
+    assert names[-1] == "files_delete"
+    out = t.call("files_delete", args(path="/home/u/Documents/a", reason="r"), user_turn=1)
+    assert out.status == "done"
+    assert conn.made[0].calls[0]["operation"] == "delete"
+
+
+def test_only_listed_operations_are_offered_and_callable():
+    listed = [dict(FakeHerkos.LISTED[0])]
+    listed[0]["operations"] = [{"name": "read"}, {"name": "list"}, {"name": "unknown-op"}]
+    conn = Connector(FakeHerkos(listed=listed))
+    t = tools(conn)
+    assert [d["function"]["name"] for d in t.definitions()] == ["files_list", "files_read"]
+    out = t.call("files_write", args(path="/home/u/Documents/a", text="x", reason="r"), user_turn=1)
+    assert out.status == "error" and "no function" in json.loads(out.for_model)["message"]
+    assert conn.made[0].calls == []
+
+
+def test_no_files_tool_in_herkos_means_no_tools():
+    other = [{"tool": "org.vilna.mcp.backup", "operations": [{"name": "status"}]}]
+    t = tools(Connector(FakeHerkos(listed=other)))
+    assert not t.available()
+    assert t.definitions() == []
+
+
+def test_a_herkos_without_herkos_tools_gets_what_herkos_lite_runs():
+    old = FakeHerkos(listed=HerkosError(-32601, "unknown method herkos.tools"))
+    names = [d["function"]["name"] for d in tools(Connector(old)).definitions()]
+    assert names == ["files_list", "files_search", "files_read", "files_create", "files_write"]
+
+
+def test_other_herkos_errors_offer_nothing():
+    broken = FakeHerkos(listed=HerkosError(-32603, "internal error"))
+    assert not tools(Connector(broken)).available()
+
+
+def test_herkos_is_asked_once_per_connection_and_again_after_reset():
+    conn = Connector()
+    t = tools(conn)
+    t.available()
+    t.definitions()
+    t.definitions()
+    assert len(conn.made) == 1
+    t.reset()
+    t.definitions()
+    assert len(conn.made) == 2

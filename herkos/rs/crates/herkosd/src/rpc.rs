@@ -117,6 +117,7 @@ impl Connection {
                     _ => error(id, INVALID_PARAMS, "'action_id' must be an action id"),
                 }
             }
+            "herkos.tools" => result(id, json!({"tools": self.gate.available_tools()})),
             "herkos.session" => result(
                 id,
                 json!({
