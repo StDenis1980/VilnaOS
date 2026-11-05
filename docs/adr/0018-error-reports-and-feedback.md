@@ -1,6 +1,6 @@
 # 0018. Звіти про збої та відгуки: лише за згодою, з показом вмісту, свій сервер у ЄС, Gloxi як один із каналів
 
-- Стан: Пропозиція
+- Стан: Прийнято (Denys, 2026-11-05)
 - Дата: 2026-11-05
 - Пов'язано: [roadmap](../roadmap.md), [ADR 0005](0005-gloxi-herkos-channel.md), [ADR 0006](0006-conversational-installer.md), [ADR 0011](0011-default-office-suite.md), [ADR 0013](0013-herkos-rust.md), [ADR 0017](0017-third-party-mcp-servers.md), [`permissions.md`](../../herkos/docs/permissions.md) розд. 4, 7, 8, [`privacy-gateway`](../../privacy-gateway/README.md), [`image/docs/composition.md`](../../image/docs/composition.md), [`SECURITY.md`](../../SECURITY.md)
 
