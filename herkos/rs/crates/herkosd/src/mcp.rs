@@ -65,6 +65,7 @@ pub struct McpStdio {
     state: Mutex<Option<Running>>,
     annotations: BTreeMap<String, Map<String, Value>>,
     fingerprints: BTreeMap<String, String>,
+    entries: BTreeMap<String, Value>,
 }
 
 /// Read lines on a thread of their own, so a silent server cannot hang Herkos.
@@ -196,6 +197,7 @@ impl McpStdio {
             let tools = rpc(&mut run, "tools/list", json!({}), timeout)?;
             let mut annotations = BTreeMap::new();
             let mut fingerprints = BTreeMap::new();
+            let mut entries = BTreeMap::new();
             for tool in tools
                 .get("tools")
                 .and_then(Value::as_array)
@@ -210,17 +212,19 @@ impl McpStdio {
                         .unwrap_or_default();
                     annotations.insert(op.to_owned(), ann);
                     fingerprints.insert(op.to_owned(), crate::pins::fingerprint(tool));
+                    entries.insert(op.to_owned(), tool.clone());
                 }
             }
-            Ok((annotations, fingerprints))
+            Ok((annotations, fingerprints, entries))
         })();
         match setup {
-            Ok((annotations, fingerprints)) => Ok(McpStdio {
+            Ok((annotations, fingerprints, entries)) => Ok(McpStdio {
                 name: name.to_owned(),
                 timeout,
                 state: Mutex::new(Some(run)),
                 annotations,
                 fingerprints,
+                entries,
             }),
             Err(e) => {
                 run.stop();
@@ -239,6 +243,10 @@ impl McpStdio {
 
     pub fn fingerprints(&self) -> BTreeMap<String, String> {
         self.fingerprints.clone()
+    }
+
+    pub fn entry(&self, operation: &str) -> Option<Value> {
+        self.entries.get(operation).cloned()
     }
 
     /// Whether the server still answers: false once a call broke it.
@@ -421,6 +429,10 @@ impl Tools for McpTools {
 
     fn fingerprints(&self, tool: &str) -> BTreeMap<String, String> {
         self.get(tool).map(|t| t.fingerprints()).unwrap_or_default()
+    }
+
+    fn entry(&self, tool: &str, operation: &str) -> Option<Value> {
+        self.get(tool)?.entry(operation)
     }
 
     fn execute(&self, request: &ActionRequest) -> Result<Value, String> {

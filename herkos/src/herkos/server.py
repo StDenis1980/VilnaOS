@@ -115,7 +115,7 @@ class Connection:
                 return _error(id_, INVALID_PARAMS, "'action_id' must be an action id")
             return _result(id_, self.gate.undo(action_id, self.session).to_json())
         if method == "herkos.tools":
-            return _result(id_, {"tools": self.gate.available_tools()})
+            return _result(id_, self.gate.listing())
         if method == "herkos.session":
             return _result(
                 id_,

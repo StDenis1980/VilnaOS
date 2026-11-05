@@ -15,6 +15,7 @@ Every failure along the way is a denial, never an allowance.
 
 from __future__ import annotations
 
+import json
 import posixpath
 import secrets
 import threading
@@ -27,6 +28,7 @@ from herkos.config import Config
 from herkos.confirm import Answer, Confirmer, Question, choices_for
 from herkos.grants import GrantStore
 from herkos.i18n import _
+from herkos.keros import scan
 from herkos.keros_model import ModelCheck
 from herkos.manifest import ManifestRegistry, Operation
 from herkos.mitos import Journal, JournalError, digest, read_records
@@ -91,6 +93,29 @@ def undeclared_resource(request: ActionRequest, op: Operation) -> str | None:
     return None
 
 
+# The server's description and schema of one operation, as JSON, at most.
+MAX_SAID_CHARS = 16_000
+
+
+def server_said(entry: Any) -> dict[str, Any]:
+    """The description and input schema a server gave for an operation."""
+    entry = entry if isinstance(entry, dict) else {}
+    description = entry.get("description")
+    schema = entry.get("inputSchema")
+    return {
+        "description": description if isinstance(description, str) else "",
+        "inputSchema": schema if isinstance(schema, dict) else {"type": "object"},
+    }
+
+
+def said_problems(said: dict[str, Any]) -> list[str]:
+    """Why Gloxi must not see what the server said: Keros findings or its length."""
+    text = json.dumps(said, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    if len(text) > MAX_SAID_CHARS:
+        return ["the program describes this action at too great a length"]
+    return [f.description for f in scan(said)]
+
+
 def new_action_id() -> str:
     # Time-ordered and unique enough for one journal: ms timestamp + random.
     return f"{int(time.time() * 1000):013x}{secrets.token_hex(6)}"
@@ -119,15 +144,22 @@ class Gate:
         self._ask_lock = threading.Lock()
 
     def available_tools(self) -> list[dict]:
+        return self.listing()["tools"]
+
+    def listing(self) -> dict[str, list[dict]]:
         """What Gloxi may offer the model: ``herkos.tools`` (protocol.md 2, ADR 0017).
 
         A tool is listed only when Herkos has its manifest and the tool server
         is running. An operation is listed only when the manifest allows it
         (not forbidden, base level at most ``max_level``) and the server has
-        it. Every text here comes from the manifest, never from the server:
-        descriptions written by a tool are external content (ADR 0017, 3).
+        it. ``summary`` and ``description`` come from the manifest. The
+        server's own description and parameter schema are external content:
+        they are passed on only when Keros finds nothing in them and they are
+        not too long; otherwise the operation goes to ``hidden`` with the
+        reasons, for the person to see (ADR 0017, step 4).
         """
         out = []
+        hidden: list[dict] = []
         for manifest in self.manifests:
             executor = self.tools.get(manifest.tool)
             if executor is None:
@@ -139,19 +171,26 @@ class Gate:
                     continue
                 if executor.annotations(name) is None:
                     continue
+                said = server_said(getattr(executor, "entry", lambda _n: None)(name))
+                why = said_problems(said)
+                if why:
+                    hidden.append({"tool": manifest.tool, "operation": name, "why": why})
+                    continue
                 ops.append(
                     {
                         "name": name,
                         "summary": op.summary,
                         "level": op.level.name,
                         "returns_external": op.returns_external,
+                        "server_description": said["description"],
+                        "input_schema": said["inputSchema"],
                     }
                 )
             if ops:
                 out.append(
                     {"tool": manifest.tool, "description": manifest.description, "operations": ops}
                 )
-        return out
+        return {"tools": out, "hidden": hidden}
 
     def handle(self, request: ActionRequest, session: SessionState) -> Outcome:
         action_id = new_action_id()
