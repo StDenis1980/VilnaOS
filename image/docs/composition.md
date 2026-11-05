@@ -112,21 +112,27 @@
 
 Замінюємо пакети Aeon з `branding` у назві на власні з тими самими `Provides`. Це стандартний механізм openSUSE, він не вимагає змін у решті пакетів.
 
-| Пакет Aeon | Пакет Vilna | Що містить |
+| Пакет Aeon / openSUSE | Замість нього | Що містить |
 | --- | --- | --- |
-| `Aeon-release` | `Vilna-release` | Назва й версія ОС |
-| `branding-openSUSE`, `distribution-logos-openSUSE-Aeon` | `branding-Vilna`, `distribution-logos-Vilna` | Логотип (коло-мазок з ластівкою), іконки, зокрема варіант для 16–32 px |
-| `gdm-branding-Aeon`, `gnome-branding-Aeon` | `gdm-branding-Vilna`, `gnome-branding-Vilna` | Екран входу, налаштування GNOME за замовчуванням, шпалери |
-| `systemd-presets-branding-Aeon` | `systemd-presets-branding-Vilna` | Які служби ввімкнені: додаємо `herkos`, `gloxi` |
-| `systemd-repart-branding-Aeon`, `x86_64_v3-branding-Aeon` | відповідні `*-Vilna` | Розмітка диска і оптимізовані збірки — копії Aeon зі зміненою назвою |
-| `gtk*-branding-openSUSE`, `hicolor-icon-theme-branding-openSUSE`, `systemd-icon-branding-openSUSE` | `*-branding-Vilna` | Теми й іконки |
-| — | `vilna-wallpapers` | Шпалери, зокрема петриківський розпис (після договорів з майстрами) |
+| `Aeon-release` | `Vilna-release` | Назва й версія ОС, репозиторії (`openSUSE-repos-Tumbleweed` і `vilna.repo`) |
+| `distribution-logos-openSUSE-Aeon`, `distribution-logos-openSUSE-icons` | `distribution-logos-Vilna` | Логотип (поки заглушка), іконки |
+| `hicolor-icon-theme-branding-openSUSE` | `hicolor-icon-theme-branding-Vilna` | Іконка `distributor` |
+| `gnome-branding-Aeon` | `gnome-branding-Vilna` | Налаштування GNOME (темна тема, логотип на екрані входу, Gloxi в доку), права адміністратора для wheel (sudo, polkit), logind, transactional-update, сторінки GNOME Initial Setup. Без `aeon-firstboot`: Flatpak ставить `vilna-flatpak-defaults` |
+| `systemd-presets-branding-Aeon` | `systemd-presets-branding-Vilna` | Служби за замовчуванням, як в Aeon; власні рішення Vilna — у `vilna-presets` |
+| `x86_64_v3-branding-Aeon` | `x86_64_v3-branding-Vilna` | Бібліотеки x86_64_v3 після оновлень |
+| `NetworkManager-branding-openSUSE` | `NetworkManager-branding-Vilna` | Перевірка з'єднання для captive portal (поки сервер openSUSE) |
+| `systemd-repart-branding-Aeon` | — (прибрано) | Розмітка для установника tik, ламала перший запуск образу |
+| `branding-openSUSE`, `gdm-branding-Aeon`, `gio-branding-openSUSE`, `gtk2/3/4-branding-openSUSE`, `gnome-menus-branding-openSUSE`, `systemd-default-settings-branding-openSUSE` | `*-branding-upstream` | Нейтральні налаштування самих програм |
+| `systemd-icon-branding-openSUSE` | — (прибрано) | Нікому в образі не потрібен |
+| — | `vilna-wallpapers` | Шпалери, зокрема петриківський розпис (після договорів з майстрами); поки шпалери GNOME |
+
+Ще лишаються пакети openSUSE без `branding` в назві брендування, але з налаштуваннями openSUSE: `distrobox-branding-openSUSE` (образ контейнера за замовчуванням), `chrony-pool-openSUSE`, `libcontainers-openSUSE-policy`, `openSUSE-build-key`, `aeon-check`. Їх замінимо, коли будуть свої налаштування або сервери.
 
 #### Правила торгових марок openSUSE
 
 Перевірено 2.11.2026 за [openSUSE:Trademark guidelines](https://en.opensuse.org/openSUSE:Trademark_guidelines). Що вони вимагають від похідного дистрибутива, який змінює openSUSE:
 
-- **Прибрати всі знаки openSUSE** з образу: назву, логотипи, брендування. Кожен пакет, назва якого закінчується на `branding-openSUSE`, треба видалити або замінити: власним пакетом (як у таблиці вище) або відповідним `branding-basedonopensuse`, який openSUSE готує саме для похідних. Для пакетів, які ми не хочемо брендувати самі, беремо `*-branding-basedonopensuse`.
+- **Прибрати всі знаки openSUSE** з образу: назву, логотипи, брендування. Кожен пакет, назва якого закінчується на `branding-openSUSE`, треба видалити або замінити: власним пакетом (як у таблиці вище) або нейтральним. Пакетів `*-branding-basedonopensuse` у Tumbleweed немає (перевірено 5.11.2026), тому там, де брендувати самим нічого, беремо `*-branding-upstream`.
 - Заголовки пакетів, README і журнали змін можна не чистити, якщо вони не створюють враження офіційного зв'язку з проєктом openSUSE.
 - **Можна писати «Based on openSUSE»** (а також «Powered by openSUSE», «Built on openSUSE») поруч із власною маркою: на сайті, в «Про систему», у документації. Дозволу на це не потрібно.
 - **Не можна** включати «openSUSE» у назву продукту, компанії чи домену без дозволу. «Vilna», vilnaos.com і gloxi.eu цим правилам не суперечать.

@@ -1,0 +1,13 @@
+# Vilna system presets, after Aeon's 87-default-Aeon.preset (MIT,
+# systemd-presets-branding-Aeon). vilna-presets (50-vilna.preset) comes
+# first and wins where both name a unit.
+enable transactional-update.timer
+enable create-dirs-from-rpmdb.service
+enable health-checker.service
+disable purge-kernels.service
+disable getty@.service
+enable lastlog2-import.service
+enable zramswap.service
+enable x86_64_v3-transactional-update.service
+enable aeon-check.service
+enable switcheroo-control.service

@@ -1,0 +1,6 @@
+-------------------------------------------------------------------
+Thu Nov  5 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: gnome-branding-Vilna, systemd-presets-branding-Vilna,
+  x86_64_v3-branding-Vilna and NetworkManager-branding-Vilna replace
+  the Aeon and openSUSE branding in the image.

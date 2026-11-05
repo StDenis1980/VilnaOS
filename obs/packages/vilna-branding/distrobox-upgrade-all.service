@@ -1,0 +1,10 @@
+[Unit]
+Description=Upgrade all distroboxes
+After=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=4
+
+[Service]
+ExecStart=/usr/bin/distrobox-upgrade --all
+Restart=on-failure
+RestartSec=1

@@ -1,0 +1,4 @@
+# Vilna user presets, after Aeon's 87-default-Aeon-user.preset.
+enable transactional-update-notifier.service
+enable distrobox-upgrade-all.timer
+enable obex.service

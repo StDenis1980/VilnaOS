@@ -6,7 +6,7 @@
 #
 
 Name:           distribution-logos-Vilna
-Version:        0.1
+Version:        0.2
 Release:        0
 Summary:        Vilna logos
 License:        GPL-3.0-or-later
@@ -29,6 +29,17 @@ the distribution logo there.
 
 The current artwork is a placeholder until the final logo is ready.
 
+%package -n hicolor-icon-theme-branding-Vilna
+Summary:        Vilna logo as the hicolor "distributor" icon
+Provides:       hicolor-icon-theme-branding
+Conflicts:      otherproviders(hicolor-icon-theme-branding)
+Requires:       hicolor-icon-theme
+
+%description -n hicolor-icon-theme-branding-Vilna
+The Vilna logo as the "distributor" icon of the hicolor theme, which
+programs use for the distribution logo (replaces
+hicolor-icon-theme-branding-openSUSE).
+
 %prep
 
 %build
@@ -39,6 +50,7 @@ install -D -m 0644 %{SOURCE1} %{buildroot}%{_datadir}/icons/hicolor/symbolic/app
 install -d %{buildroot}%{_datadir}/pixmaps/distribution-logos
 ln -s ../../icons/hicolor/scalable/apps/vilna-logo.svg %{buildroot}%{_datadir}/pixmaps/distribution-logos/square-hicolor.svg
 ln -s ../../icons/hicolor/symbolic/apps/vilna-logo-symbolic.svg %{buildroot}%{_datadir}/pixmaps/distribution-logos/square-symbolic.svg
+install -D -m 0644 %{SOURCE0} %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/distributor.svg
 
 %files
 %{_datadir}/icons/hicolor/scalable/apps/vilna-logo.svg
@@ -46,5 +58,8 @@ ln -s ../../icons/hicolor/symbolic/apps/vilna-logo-symbolic.svg %{buildroot}%{_d
 %dir %{_datadir}/pixmaps/distribution-logos
 %{_datadir}/pixmaps/distribution-logos/square-hicolor.svg
 %{_datadir}/pixmaps/distribution-logos/square-symbolic.svg
+
+%files -n hicolor-icon-theme-branding-Vilna
+%{_datadir}/icons/hicolor/scalable/apps/distributor.svg
 
 %changelog

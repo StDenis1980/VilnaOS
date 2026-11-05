@@ -6,13 +6,22 @@
 #
 
 Name:           Vilna-release
-Version:        0.1
+Version:        0.2
 Release:        0
 Summary:        Vilna operating system identification
 License:        GPL-3.0-or-later
 URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        os-release
+# Vilna's own packages: the OBS project home:StDenis1980:vilna and its
+# signing key (fingerprint 0DC0 DF20 38AD A1C1 ABFD 2A67 D5CA DF01 0638 6694).
+Source1:        vilna.repo
+Source2:        vilna-obs.asc
 BuildArch:      noarch
+# The openSUSE Tumbleweed repositories (oss, non-oss, update) as a zypp
+# service: without it the image has no repository and never updates
+# (VM test of Build7.2). Aeon gets it the same way.
+Requires:       openSUSE-repos-Tumbleweed
+Requires(post): rpm
 # One release package per system: replaces openSUSE-release / Aeon-release.
 Provides:       distribution-release
 Conflicts:      Aeon-release
@@ -24,6 +33,9 @@ Conflicts:      openSUSE-release
 Identifies the system as Vilna: /usr/lib/os-release and the
 /etc/os-release link. Vilna is based on openSUSE Aeon.
 
+Also adds Vilna's package repository and its signing key; the
+openSUSE Tumbleweed repositories come from openSUSE-repos-Tumbleweed.
+
 %prep
 
 %build
@@ -33,9 +45,18 @@ sed 's/@VERSION@/%{version}/g' %{SOURCE0} > os-release
 install -D -m 0644 os-release %{buildroot}%{_prefix}/lib/os-release
 install -d %{buildroot}%{_sysconfdir}
 ln -s ../usr/lib/os-release %{buildroot}%{_sysconfdir}/os-release
+install -D -m 0644 %{SOURCE1} %{buildroot}%{_sysconfdir}/zypp/repos.d/vilna.repo
+install -D -m 0644 %{SOURCE2} %{buildroot}%{_prefix}/lib/rpm/gnupg/keys/gpg-pubkey-06386694.asc
+
+%post
+# Trust Vilna's signing key, so zypper (also inside transactional-update,
+# which never asks) accepts the repository.
+rpm --import %{_prefix}/lib/rpm/gnupg/keys/gpg-pubkey-06386694.asc || :
 
 %files
 %{_prefix}/lib/os-release
 %{_sysconfdir}/os-release
+%config(noreplace) %{_sysconfdir}/zypp/repos.d/vilna.repo
+%{_prefix}/lib/rpm/gnupg/keys/gpg-pubkey-06386694.asc
 
 %changelog

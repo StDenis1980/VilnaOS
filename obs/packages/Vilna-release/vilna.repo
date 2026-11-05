@@ -1,0 +1,9 @@
+[vilna]
+name=Vilna
+type=rpm-md
+baseurl=https://download.opensuse.org/repositories/home:/StDenis1980:/vilna/openSUSE_Tumbleweed/
+gpgcheck=1
+gpgkey=file:///usr/lib/rpm/gnupg/keys/gpg-pubkey-06386694.asc
+enabled=1
+autorefresh=1
+priority=90

@@ -41,12 +41,58 @@ Before=sysinit.target
 
 [Service]
 Type=oneshot
+RemainAfterExit=yes
 ExecStart=/bin/sh -c '[ -z "$$(tail -c1 /etc/kernel/cmdline)" ] || echo >>/etc/kernel/cmdline'
 
 [Install]
 WantedBy=sysinit.target
 UNIT
 systemctl enable vilna-kernel-cmdline.service
+
+# KIWI boots the first time from its own entry ("Vilna [ OEM ]",
+# loader/entries/vilna-*-default.conf with the kernel in /boot/efi/os).
+# It is not a snapshot entry: it stays next to the sdbootutil entries
+# and boots whatever snapshot is the btrfs default. On the first boot
+# sdbootutil writes the snapshot entries and makes the current snapshot
+# the default; only then do KIWI's entry and files go (checked in the
+# VM: transactional-update afterwards adds its own entry and keeps this
+# one). Runs once: /boot/efi/os is gone afterwards.
+install -d /usr/libexec/vilna
+cat >/usr/libexec/vilna/boot-entries <<'SCRIPT'
+#!/bin/sh
+set -eu
+snap=$(findmnt -no OPTIONS / | sed -n 's|.*subvol=/@/.snapshots/\([0-9]*\)/snapshot.*|\1|p')
+if [ -z "$snap" ]; then
+    echo "root is not a snapshot, leaving the boot entries alone" >&2
+    exit 0
+fi
+sdbootutil add-all-kernels
+sdbootutil set-default-snapshot "$snap"
+# Drop KIWI's entry only when sdbootutil has written one of its own.
+if ! ls /boot/efi/loader/entries/*.conf 2>/dev/null | grep -qv '/vilna-[^/]*-default\.conf$'; then
+    echo "no sdbootutil entry found, keeping the KIWI entry" >&2
+    exit 1
+fi
+rm -f /boot/efi/loader/entries/vilna-*-default.conf
+rm -r -f /boot/efi/os
+SCRIPT
+chmod 0755 /usr/libexec/vilna/boot-entries
+cat >/usr/lib/systemd/system/vilna-boot-entries.service <<'UNIT'
+[Unit]
+Description=Replace the KIWI boot entry with sdbootutil snapshot entries
+ConditionPathExists=/boot/efi/os
+RequiresMountsFor=/boot/efi
+After=local-fs.target vilna-kernel-cmdline.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/vilna/boot-entries
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl enable vilna-boot-entries.service
 
 # zypper (inside transactional-update) installs only what is required,
 # as in Aeon: recommended packages do not slip into the system.

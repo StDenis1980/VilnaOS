@@ -1,0 +1,4 @@
+// Administrators for polkit are the members of wheel, as on Aeon.
+polkit.addAdminRule(function(action, subject) {
+	return ["unix-group:wheel"];
+});

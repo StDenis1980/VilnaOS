@@ -1,0 +1,8 @@
+# Configuration and preset packages: nothing to compile.
+addFilter("no-binary")
+# Branding packages provide a capability without a version, like Aeon's.
+addFilter("branding-provides-unversioned")
+addFilter("branding-requires-unversioned")
+addFilter("branding-requires-specific-flavor")
+# sudoers drop-in is 0440 on purpose.
+addFilter("non-standard-dir-perm")

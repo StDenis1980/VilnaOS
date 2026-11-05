@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.3
+Version:        0.4
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -39,6 +39,14 @@ Requires:       vilna-mcp-backup
 Requires:       vilna-flatpak-defaults
 Requires:       gnome-shell-extension-vilna
 Requires:       vilna-software-picks
+# Branding (composition.md, section 4.5): Vilna's own packages where
+# Aeon or openSUSE set something for the distribution, the neutral
+# *-branding-upstream ones elsewhere. The Aeon and openSUSE ones are
+# swapped in the list below; these pin the providers the solver would
+# otherwise pick from openSUSE.
+Requires:       gio-branding-upstream
+Requires:       NetworkManager-branding-Vilna
+Requires:       systemd-default-settings-branding-upstream
 # Not yet packaged, added here once they build on OBS:
 #   vilna-model-default   default model weights (ADR 0006, 0008)
 #
@@ -51,10 +59,10 @@ Requires:       vilna-software-picks
 # distribution-release (Vilna-release above), and
 # systemd-repart-branding-Aeon: its repart.d is made for Aeon's tik
 # installer and, on a ready KIWI disk, makes systemd-repart fail the
-# first boot (no free space for the partitions it wants). The Aeon branding that
-# does not conflict (gnome-branding-Aeon, systemd-presets-branding-Aeon
-# and the like) stays until the *-branding-Vilna packages exist; the
-# image's config.sh lists what is left. Compare with
+# first boot (no free space for the partitions it wants). The Aeon and
+# openSUSE branding packages are replaced by Vilna's or upstream ones
+# in place in the list below; systemd-icon-branding-openSUSE is dropped.
+# Compare with
 # `zypper info --requires patterns-aeon-base` when Aeon changes.
 Requires:       coreutils
 Requires:       aaa_base
@@ -91,7 +99,7 @@ Requires:       wget
 Requires:       gnome-initial-setup
 Requires:       gnome-color-manager
 Requires:       xdg-utils
-Requires:       branding-openSUSE
+Requires:       branding-upstream
 Requires:       system-config-printer-common
 Requires:       sudo
 Requires:       libgnomesu
@@ -194,7 +202,7 @@ Requires:       build-key
 Requires:       fprintd-pam
 Requires:       gcr-ssh-agent
 Requires:       gstreamer-plugin-pipewire
-Requires:       hicolor-icon-theme-branding-openSUSE
+Requires:       hicolor-icon-theme-branding-Vilna
 Requires:       iio-sensor-proxy
 Requires:       lastlog2
 Requires:       noto-coloremoji-fonts
@@ -214,7 +222,6 @@ Requires:       gnome-user-docs
 Requires:       google-carlito-fonts
 Requires:       kernel-firmware-all
 Requires:       systemd-coredump
-Requires:       systemd-icon-branding-openSUSE
 Requires:       transactional-update-zypp-config
 Requires:       udev-configure-printer
 Requires:       yast2-logs
@@ -246,8 +253,8 @@ Requires:       gnome-control-center-color
 Requires:       gnome-control-center-goa
 Requires:       gnome-control-center-user-faces
 Requires:       gnome-session-wayland
-Requires:       gtk2-branding-openSUSE
-Requires:       gtk3-branding-openSUSE
+Requires:       gtk2-branding-upstream
+Requires:       gtk3-branding-upstream
 Requires:       gvfs-fuse
 Requires:       libinput-udev
 Requires:       openssh-askpass-gnome
@@ -260,21 +267,21 @@ Requires:       ucode-intel
 Requires:       zypp-no-recommends
 Requires:       bluez-obexd
 Requires:       brltty-driver-speech-dispatcher
-Requires:       gdm-branding-Aeon
-Requires:       gnome-branding-Aeon
+Requires:       gdm-branding-upstream
+Requires:       gnome-branding-Vilna
 Requires:       gnome-control-center-users
-Requires:       gnome-menus-branding-openSUSE
+Requires:       gnome-menus-branding-upstream
 Requires:       gnome-session-default-session
 Requires:       gnome-shell-calendar
 Requires:       gsf-office-thumbnailer
-Requires:       gtk4-branding-openSUSE
+Requires:       gtk4-branding-upstream
 Requires:       gvfs-backend-afc
 Requires:       gvfs-backend-goa
 Requires:       noto-emoji-fonts
 Requires:       printer-driver-brlaser
 Requires:       rsvg-thumbnailer
 Requires:       speech-dispatcher-module-espeak
-Requires:       systemd-presets-branding-Aeon
+Requires:       systemd-presets-branding-Vilna
 Requires:       zypp-excludedocs
 Requires:       zypp-no-multiversion
 Requires:       aeon-check
@@ -284,7 +291,7 @@ Requires:       gvfs-backend-samba
 Requires:       ignition-dracut
 Requires:       jxl-thumbnailer
 Requires:       sdbootutil-rpm-scriptlets
-Requires:       x86_64_v3-branding-Aeon
+Requires:       x86_64_v3-branding-Vilna
 
 %description base
 The Vilna OS base system: openSUSE Aeon (GNOME, transactional-update,
