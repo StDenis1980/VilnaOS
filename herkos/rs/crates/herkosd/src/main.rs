@@ -7,6 +7,7 @@
 //! stays the reference;
 //! `herkos/conformance/` checks that both answer the same way.
 
+mod catalogue;
 mod config;
 mod confirm;
 mod gate;
@@ -138,7 +139,7 @@ fn build_gate_from(
     if let Some(e) = &grants.load_error {
         eprintln!("herkosd: permissions ignored: {e}");
     }
-    let manifests = herkos_core::manifest::Registry::builtin().map_err(|e| e.0)?;
+    let manifests = catalogue::installed().map_err(|e| e.0)?;
     let model_check = match &config.keros_model {
         None => None,
         Some(url) => match keros_model::Judge::new(url) {
@@ -185,7 +186,7 @@ fn start_tool(tools: &mut mcp::McpTools, name: &str, program: &str, args: Vec<St
 /// The tools whose manifests say how to start them (ADR 0017), if installed.
 fn start_tools(config: &config::Config) -> mcp::McpTools {
     let mut tools = mcp::McpTools::default();
-    let Ok(manifests) = herkos_core::manifest::Registry::builtin() else {
+    let Ok(manifests) = catalogue::installed() else {
         return tools;
     };
     let roots: Vec<PathBuf> = config

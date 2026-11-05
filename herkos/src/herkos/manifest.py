@@ -22,7 +22,10 @@ Anything the manifest does not name is denied (permissions.md, principle 8).
 
 from __future__ import annotations
 
+import os
 import re
+import stat
+import sys
 import tomllib
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
@@ -41,6 +44,11 @@ _MODULE = re.compile(r"^[a-z_][a-z0-9_]{0,63}(\.[a-z_][a-z0-9_]{0,63}){0,3}$")
 # backup_dir -> --backup-dir DIR, roots -> --root DIR for each allowed folder.
 LAUNCH_ARGS = ("backup_dir", "roots")
 _LAUNCH_KEYS = {"program", "module", "args"}
+# The catalogue of manifests installed with the system (ADR 0017, stage 2):
+# package herkos-manifests. HERKOS_MANIFEST_DIR replaces it (tests).
+SYSTEM_MANIFEST_DIR = Path("/usr/share/herkos/manifests")
+MAX_MANIFEST_FILES = 256
+MAX_MANIFEST_BYTES = 64 * 1024
 _OPERATION_KEYS = {
     "level",
     "summary",
@@ -231,3 +239,69 @@ class ManifestRegistry:
                 data = tomllib.loads(entry.read_text(encoding="utf-8"))
                 registry.add(parse_manifest(data, entry.name))
         return registry
+
+    @classmethod
+    def installed(cls, directory: Path | None = None) -> ManifestRegistry:
+        """The built-in manifests plus the system catalogue (ADR 0017, step 1).
+
+        A catalogue file is read only if nobody but root or this Herkos can
+        change it (``trusted``). A file that is not trusted, malformed, or
+        names a tool Herkos already knows is skipped and reported: the tool
+        stays unknown, and so denied. Built-in manifests always win.
+        """
+        registry = cls.builtin()
+        if directory is None:
+            env = os.environ.get("HERKOS_MANIFEST_DIR")
+            directory = Path(env) if env else SYSTEM_MANIFEST_DIR
+        for problem in registry.add_catalogue(directory):
+            print(f"herkos: manifest catalogue: {problem}", file=sys.stderr)
+        return registry
+
+    def add_catalogue(self, directory: Path) -> list[str]:
+        """Add the trusted ``*.toml`` files of ``directory``; return what was skipped."""
+        try:
+            st = os.lstat(directory)
+        except FileNotFoundError:
+            return []
+        except OSError as e:
+            return [f"{directory}: {e}"]
+        if not stat.S_ISDIR(st.st_mode) or not trusted(st):
+            return [f"{directory}: not a folder that only root or Herkos can change"]
+        try:
+            names = sorted(e.name for e in os.scandir(directory) if e.name.endswith(".toml"))
+        except OSError as e:
+            return [f"{directory}: {e}"]
+        problems = []
+        if len(names) > MAX_MANIFEST_FILES:
+            problems.append(f"{directory}: more than {MAX_MANIFEST_FILES} manifests, rest skipped")
+            names = names[:MAX_MANIFEST_FILES]
+        for name in names:
+            try:
+                self.add(_read_trusted(directory / name))
+            except ManifestError as e:
+                problems.append(str(e))
+        return problems
+
+
+def trusted(st: os.stat_result) -> bool:
+    """Owned by root or by this process, and nobody else may write to it."""
+    return st.st_uid in (0, os.geteuid()) and not st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)
+
+
+def _read_trusted(path: Path) -> Manifest:
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    except OSError as e:
+        raise ManifestError(f"{path}: {e}") from None
+    with os.fdopen(fd, "rb") as f:
+        st = os.fstat(f.fileno())
+        if not stat.S_ISREG(st.st_mode) or not trusted(st):
+            raise ManifestError(f"{path}: not a file that only root or Herkos can change")
+        data = f.read(MAX_MANIFEST_BYTES + 1)
+    if len(data) > MAX_MANIFEST_BYTES:
+        raise ManifestError(f"{path}: larger than {MAX_MANIFEST_BYTES} bytes")
+    try:
+        parsed = tomllib.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, tomllib.TOMLDecodeError) as e:
+        raise ManifestError(f"{path}: {e}") from None
+    return parse_manifest(parsed, str(path))

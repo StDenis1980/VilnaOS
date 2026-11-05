@@ -74,7 +74,7 @@ impl Units {
             .account
             .home
             .join(".local/state/herkos/backups/files");
-        let Ok(manifests) = herkos_core::manifest::Registry::builtin() else {
+        let Ok(manifests) = crate::catalogue::installed() else {
             return Box::new(tools);
         };
         // From the manifests (ADR 0017). polkit lets herkos start only the

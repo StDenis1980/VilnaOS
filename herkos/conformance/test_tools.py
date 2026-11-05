@@ -11,6 +11,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from conftest import Client, start_herkos
 
 pytestmark = pytest.mark.skipif(
     not (shutil.which("vilna-mcp-files") and shutil.which("vilna-mcp-backup")),
@@ -79,3 +80,46 @@ def test_tools_lists_the_running_tools_within_max_level(client):
     # delete is R3: listed only where Herkos may run R3.
     assert ("delete" in ops) == (max_level in {"R3", "R4"})
     assert all(op["level"] <= max_level for t in tools for op in t["operations"])
+
+
+CATALOGUE_FILES = """tool = "org.example.files"
+description = "Files, from the catalogue"
+[launch]
+program = "vilna-mcp-files"
+module = "vilna_mcp_files"
+args = ["backup_dir", "roots"]
+[operations.read]
+level = "R1"
+summary = "Read a file"
+returns_external = true
+resource_args = ["path"]
+"""
+
+
+def test_catalogue_manifests_are_started_and_listed(tmp_path):
+    """ADR 0017 step 1: trusted catalogue manifests are known; others stay unknown."""
+    catalogue = tmp_path / "manifests"
+    catalogue.mkdir(mode=0o755)
+    (catalogue / "example-files.toml").write_text(CATALOGUE_FILES, encoding="utf-8")
+    (catalogue / "example-files.toml").chmod(0o644)
+    loose = CATALOGUE_FILES.replace("org.example.files", "org.example.loose")
+    (catalogue / "loose.toml").write_text(loose, encoding="utf-8")
+    (catalogue / "loose.toml").chmod(0o666)
+    with start_herkos(tmp_path, extra_env={"HERKOS_MANIFEST_DIR": str(catalogue)}) as h:
+        client = Client(h.socket)
+        try:
+            client.hello()
+            tools = client.call("herkos.tools")["result"]["tools"]
+            assert [t["tool"] for t in tools] == [
+                "org.example.files",
+                "org.vilna.mcp.backup",
+                "org.vilna.mcp.files",
+            ]
+            assert tools[0]["description"] == "Files, from the catalogue"
+            assert tools[0]["operations"] == [
+                {"name": "read", "summary": "Read a file", "level": "R1", "returns_external": True}
+            ]
+            r = call(client, "org.example.loose", "read", [h.docs / "a.txt"], {"path": "a.txt"})
+            assert (r["decision"], r["code"]) == ("denied", "denied_unknown")
+        finally:
+            client.close()

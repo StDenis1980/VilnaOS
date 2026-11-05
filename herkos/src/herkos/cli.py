@@ -50,7 +50,7 @@ def _serve(args: argparse.Namespace) -> int:
     grants = GrantStore(config.grants_path)
     if grants.load_error:
         print(f"herkos: ignoring unreadable permissions: {grants.load_error}", file=sys.stderr)
-    manifests = ManifestRegistry.builtin()
+    manifests = ManifestRegistry.installed()
     tools = ToolRegistry()
     started: list[McpStdioExecutor] = []
     for manifest in manifests:
