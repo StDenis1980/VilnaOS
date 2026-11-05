@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-presets
-Version:        0.2
+Version:        0.3
 Release:        0
 Summary:        Vilna defaults for which systemd services are enabled
 License:        GPL-3.0-or-later
@@ -22,7 +22,8 @@ BuildArch:      noarch
 %description
 Service presets for Vilna: avahi, samba and openssh stay installed but
 are not enabled by default; the Herkos socket, the Herkos confirmation
-agent and the first-boot install of default Flatpak apps are enabled.
+agent and the first-boot install of default Flatpak apps are enabled, and so is
+NetworkManager.
 
 %prep
 

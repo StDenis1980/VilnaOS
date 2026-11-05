@@ -12,6 +12,12 @@ disable nmb.service
 disable sshd.service
 disable sshd.socket
 
+# Network: Aeon's presets do not enable NetworkManager, and a fresh
+# image runs preset-all on first boot, so without this line there is
+# no network (and the first-boot Flatpak install fails).
+enable NetworkManager.service
+enable NetworkManager-wait-online.service
+
 # Vilna components (no effect until the units are installed).
 # herkosd starts on demand through its socket; Gloxi has no system
 # service yet, it runs in the person's session.

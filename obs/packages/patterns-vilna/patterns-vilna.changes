@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov  5 14:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.2: drop systemd-repart-branding-Aeon; its repart.d
+  is for Aeon's tik installer and broke the first boot of the disk
+  image (systemd-repart: no free space)
+
+-------------------------------------------------------------------
 Thu Nov  5 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Require vilna-software-picks ("Recommended by Vilna", ADR 0012)
