@@ -1,0 +1,156 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Tinta Texto (StDenis1980/wordcraft): its MCP server `wordcraft-cli mcp`,
+# docs/mcp.md there. ADR 0017, stage 2, step 7. Levels: herkos/docs/permissions.md 4.
+#
+# The server runs headless in Texto's own Flatpak, sees only the allowed
+# folders (read and write roots), and has no network. A document it opens
+# lives in its memory until a save: editing it changes nothing on disk, so
+# editing is R1; saving writes a file Herkos cannot back up, so it is R2 and
+# asks every time (R3, "it cannot be undone").
+#
+# Checked against wordcraft main of 2026-11-05. Operations not named here
+# (screenshot, click, key, ui_inspect, parity, render_page) are denied.
+tool = "io.github.stdenis1980.tintatexto"
+description = "Tinta Texto: documents in the allowed folders"
+
+[launch]
+program = "vilna-mcp-ext-tintatexto"
+flatpak = "io.github.stdenis1980.tintatexto"
+command = "wordcraft-cli"
+fixed = ["mcp"]
+root_flags = ["--automation-read-root", "--automation-write-root"]
+args = ["roots"]
+
+# The commands `execute` and `batch` run, by id or group. A command not named
+# here is R4 (decision of 2026-11-05): asked every time, with its arguments.
+[commands]
+# Editing the open document, in memory.
+"text.*" = "R1"
+"caret.*" = "R1"
+"select.*" = "R1"
+"edit.*" = "R1"
+"para.*" = "R1"
+"format.*" = "R1"
+"styles.*" = "R1"
+"list.*" = "R1"
+"table.*" = "R1"
+"layout.*" = "R1"
+"design.*" = "R1"
+"insert.*" = "R1"
+"picture.*" = "R1"
+"shape.*" = "R1"
+"draw.*" = "R1"
+"arrange.*" = "R1"
+"canvas.*" = "R1"
+"chart.*" = "R1"
+"smartArt.*" = "R1"
+"wordArt.*" = "R1"
+"equation.*" = "R1"
+"outline.*" = "R1"
+"fields.*" = "R1"
+"hf.*" = "R1"
+"link.*" = "R1"
+"object.*" = "R1"
+"developer.*" = "R1"
+"references.*" = "R1"
+"review.*" = "R1"
+"mailings.*" = "R1"
+"document.*" = "R0"
+"view.*" = "R0"
+"font.list" = "R0"
+"file.listTemplates" = "R0"
+"file.new" = "R1"
+"file.newFromTemplate" = "R1"
+"file.open" = "R1"
+"file.info" = "R1"
+"file.inspect" = "R1"
+"file.properties" = "R1"
+"file.accessibility" = "R1"
+"file.compatibility" = "R1"
+"file.close" = "R1"
+"file.closeDocument" = "R1"
+"tools.attachTemplate" = "R1"
+"tools.detachTemplate" = "R1"
+"tools.updateStyles" = "R1"
+# Writing files (in the write root, which the app holds it to).
+"file.save" = "R2"
+"file.saveAs" = "R2"
+"file.saveTemplate" = "R2"
+"file.exportPdf" = "R2"
+"file.exportPng" = "R2"
+"mailings.finish" = "R2"
+"review.addToDictionary" = "R2"
+# A password the person does not know, or a file renamed on disk.
+"file.encrypt" = "R3"
+"file.protect" = "R3"
+"file.rename" = "R3"
+# Never through Gloxi: printing, sending words or reports off the device,
+# sharing, macros, the app's fonts.
+"file.print" = "forbidden"
+"file.printMarkup" = "forbidden"
+"file.printPdf" = "forbidden"
+"file.share" = "forbidden"
+"mailings.printDocuments" = "forbidden"
+"review.suggestWords" = "forbidden"
+"review.suggestWordsAuto" = "forbidden"
+"references.researcher" = "forbidden"
+"tools.errorReports" = "forbidden"
+"tools.macros" = "forbidden"
+"tools.recordMacro" = "forbidden"
+"font.add" = "forbidden"
+"font.remove" = "forbidden"
+"font.loadSystem" = "forbidden"
+
+[operations.list_commands]
+level = "R0"
+summary = "List Tinta Texto's commands"
+
+[operations.list_documents]
+level = "R0"
+summary = "List the open documents"
+
+[operations.new_document]
+level = "R1"
+summary = "Start a new document"
+
+[operations.open_document]
+level = "R1"
+summary = "Open a document"
+returns_external = true
+resource_args = ["path"]
+
+[operations.get_text]
+level = "R1"
+summary = "Read the document's text"
+returns_external = true
+
+[operations.inspect_document]
+level = "R1"
+summary = "Read the document's structure"
+returns_external = true
+
+[operations.type_text]
+level = "R1"
+summary = "Type text into the document"
+
+[operations.select_text]
+level = "R1"
+summary = "Select text in the document"
+
+[operations.execute]
+level = "R1"
+summary = "Run a command of Tinta Texto"
+returns_external = true
+command_arg = "command"
+
+[operations.batch]
+level = "R1"
+summary = "Run several commands of Tinta Texto"
+returns_external = true
+command_arg = "commands"
+command_key = "command"
+
+[operations.save_document]
+level = "R2"
+summary = "Save the document to a file"
+resource_args = ["path"]

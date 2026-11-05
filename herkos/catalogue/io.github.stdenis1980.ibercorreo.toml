@@ -1,0 +1,122 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Tinta Correo (StDenis1980/ibercorreo): its MCP server `ibercorreo-cli mcp`,
+# docs/mcp.md there. ADR 0017, stage 2, step 7. Levels: herkos/docs/permissions.md 4.
+#
+# The server works on the person's mailbox, not on files, so it gets no
+# folders, and no network: it reads and changes the mailbox Correo keeps on
+# disk (in Correo's own Flatpak data), and the window sends and fetches mail.
+# Mail, events and contacts are someone else's words: every read taints the
+# conversation (permissions.md 6). A change is saved at once and Herkos cannot
+# back it up, so a change that loses nothing is "reversible" (R2) and one that
+# loses something is R3.
+#
+# Sending (send_draft) is not here: it is off unless the server starts with
+# --allow-send, and a manifest for it comes with the "send" decision (R4, the
+# draft shown in full). Checked against ibercorreo main of 2026-11-05.
+tool = "io.github.stdenis1980.ibercorreo"
+description = "Tinta Correo: mail, calendar and contacts"
+
+[launch]
+program = "vilna-mcp-ext-ibercorreo"
+flatpak = "io.github.stdenis1980.ibercorreo"
+command = "ibercorreo-cli"
+fixed = ["mcp"]
+
+[operations.list_folders]
+level = "R0"
+summary = "List the mail folders"
+
+[operations.list_messages]
+level = "R1"
+summary = "List messages in a folder"
+returns_external = true
+
+[operations.search_messages]
+level = "R1"
+summary = "Search the mail"
+returns_external = true
+
+[operations.read_message]
+level = "R1"
+summary = "Read a message"
+returns_external = true
+
+[operations.list_calendars]
+level = "R0"
+summary = "List the calendars"
+
+[operations.list_events]
+level = "R1"
+summary = "Read the calendar"
+returns_external = true
+
+[operations.list_contacts]
+level = "R1"
+summary = "List contacts"
+returns_external = true
+
+[operations.get_contact]
+level = "R1"
+summary = "Read a contact"
+returns_external = true
+
+[operations.create_draft]
+level = "R2"
+summary = "Write a draft"
+reversible = true
+
+[operations.reply_to_message]
+level = "R2"
+summary = "Write a reply as a draft"
+reversible = true
+
+[operations.forward_message]
+level = "R2"
+summary = "Write a forward as a draft"
+reversible = true
+
+[operations.update_draft]
+level = "R2"
+summary = "Change a draft"
+
+[operations.mark_read]
+level = "R2"
+summary = "Mark a message read or unread"
+reversible = true
+
+[operations.set_flag]
+level = "R2"
+summary = "Flag a message"
+reversible = true
+
+[operations.archive_message]
+level = "R2"
+summary = "Archive a message"
+reversible = true
+
+[operations.move_message]
+level = "R2"
+summary = "Move a message to another folder"
+reversible = true
+
+[operations.delete_message]
+level = "R3"
+summary = "Delete a message"
+
+[operations.add_event]
+level = "R2"
+summary = "Add an event to the calendar"
+reversible = true
+
+[operations.delete_event]
+level = "R3"
+summary = "Delete an event"
+
+[operations.add_contact]
+level = "R2"
+summary = "Add a contact"
+reversible = true
+
+[operations.update_contact]
+level = "R2"
+summary = "Change a contact"

@@ -1,0 +1,167 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Tinta Calculo (StDenis1980/gridcraft): its MCP server `gridcraft-cli mcp`,
+# docs/mcp.md there. ADR 0017, stage 2, step 7. Levels: herkos/docs/permissions.md 4.
+#
+# Headless in Calculo's own Flatpak, held to the allowed folders, no network.
+# A workbook lives in the server's memory until a save, so editing is R1 and
+# saving is R2 (asked every time: Herkos cannot back the file up).
+#
+# Checked against gridcraft main of 2026-11-05. Operations not named here
+# (screenshot) are denied.
+tool = "io.github.stdenis1980.tintacalculo"
+description = "Tinta Calculo: spreadsheets in the allowed folders"
+
+[launch]
+program = "vilna-mcp-ext-tintacalculo"
+flatpak = "io.github.stdenis1980.tintacalculo"
+command = "gridcraft-cli"
+fixed = ["mcp"]
+root_flags = ["--automation-read-root", "--automation-write-root"]
+args = ["roots"]
+
+# The commands `execute_command` runs. A command not named here is R4.
+[commands]
+"cell.*" = "R1"
+"range.*" = "R1"
+"selection.*" = "R1"
+"sheet.*" = "R1"
+"home.*" = "R1"
+"edit.*" = "R1"
+"formulas.*" = "R1"
+"table.*" = "R1"
+"pivot.*" = "R1"
+"slicer.*" = "R1"
+"chart.*" = "R1"
+"draw.*" = "R1"
+"shape.*" = "R1"
+"arrange.*" = "R1"
+"object.*" = "R1"
+"insert.*" = "R1"
+"pageLayout.*" = "R1"
+"review.*" = "R1"
+"data.*" = "R1"
+"document.*" = "R0"
+"history.*" = "R0"
+"view.*" = "R0"
+"window.*" = "R0"
+"app.commands" = "R0"
+"file.new" = "R1"
+"file.open" = "R1"
+"file.close" = "R1"
+"file.properties" = "R1"
+"file.save" = "R2"
+"file.saveAs" = "R2"
+"file.exportCsv" = "R2"
+"file.exportHtml" = "R2"
+"file.exportPdf" = "R2"
+"review.addToDictionary" = "R2"
+# A password the person does not know.
+"file.encrypt" = "R3"
+"review.protectSheet" = "R3"
+"review.protectWorkbook" = "R3"
+# Data from outside the workbook (queries, connections): left to R4.
+"data.getData" = "R4"
+"data.refreshAll" = "R4"
+"data.queriesConnections" = "R4"
+# Never through Gloxi: printing, reports off the device, links opened in
+# other programs, macros and scripts.
+"file.print" = "forbidden"
+"file.printPreview" = "forbidden"
+"file.errorReports" = "forbidden"
+"file.options" = "forbidden"
+"link.open" = "forbidden"
+"macro.*" = "forbidden"
+"automate.*" = "forbidden"
+
+[operations.list_commands]
+level = "R0"
+summary = "List Tinta Calculo's commands"
+
+[operations.list_functions]
+level = "R0"
+summary = "List the worksheet functions"
+
+[operations.list_windows]
+level = "R0"
+summary = "List the open workbooks"
+
+[operations.new_workbook]
+level = "R1"
+summary = "Start a new workbook"
+
+[operations.open_workbook]
+level = "R1"
+summary = "Open a workbook"
+returns_external = true
+resource_args = ["path"]
+
+[operations.inspect_workbook]
+level = "R1"
+summary = "Read the workbook's structure"
+returns_external = true
+
+[operations.read_range]
+level = "R1"
+summary = "Read cells"
+returns_external = true
+
+[operations.get_cell]
+level = "R1"
+summary = "Read a cell"
+returns_external = true
+
+[operations.evaluate_formula]
+level = "R1"
+summary = "Work out a formula"
+returns_external = true
+
+[operations.write_range]
+level = "R1"
+summary = "Write cells"
+
+[operations.set_cell]
+level = "R1"
+summary = "Write a cell"
+
+[operations.select]
+level = "R1"
+summary = "Select cells"
+
+[operations.format_range]
+level = "R1"
+summary = "Format cells"
+
+[operations.insert_chart]
+level = "R1"
+summary = "Add a chart"
+
+[operations.create_table]
+level = "R1"
+summary = "Make a table"
+
+[operations.sort_range]
+level = "R1"
+summary = "Sort cells"
+
+[operations.filter]
+level = "R1"
+summary = "Filter a table"
+
+[operations.undo]
+level = "R1"
+summary = "Undo"
+
+[operations.redo]
+level = "R1"
+summary = "Redo"
+
+[operations.execute_command]
+level = "R1"
+summary = "Run a command of Tinta Calculo"
+returns_external = true
+command_arg = "command"
+
+[operations.save_workbook]
+level = "R2"
+summary = "Save the workbook to a file"
+resource_args = ["path"]

@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Thu Nov  5 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- New subpackage herkos-manifests: the catalogue of programs Gloxi may
+  use (herkos/catalogue, ADR 0017 stage 2 step 7), first the five Tinta
+  Office programs, with a vilna-mcp-ext-<name>@ unit for each
+- A generic operation ("execute") takes the level of the commands it
+  runs, from the manifest's [commands]; an unnamed command is R4
+- Programs from Flatpak never get the printing socket; a program that
+  takes no folders gets none
+
+-------------------------------------------------------------------
 Wed Nov  4 22:55:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Build on OBS: the cargo config for the vendored crates goes to the

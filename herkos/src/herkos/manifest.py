@@ -28,7 +28,7 @@ import stat
 import sys
 import tomllib
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from importlib import resources
 from pathlib import Path
 from typing import Any
@@ -64,7 +64,16 @@ _OPERATION_KEYS = {
     "returns_external",
     "egress",
     "resource_args",
+    "command_arg",
+    "command_key",
 }
+# The program's own commands, run through one generic operation such as
+# "execute" (ADR 0017, step 7): an id ("text.insert") or a group ("home.*").
+_COMMAND = re.compile(r"[A-Za-z0-9_-]{1,64}(\.[A-Za-z0-9_-]{1,64}){0,7}")
+_GROUP_SUFFIX = ".*"
+MAX_COMMANDS = 4096
+# At most this many commands in one call (a batch); more is not read.
+MAX_CALL_COMMANDS = 64
 
 
 class ManifestError(Exception):
@@ -91,6 +100,11 @@ class Operation:
     # Arguments that name files: each must be one of the request's declared
     # resources, so the model cannot declare one path and touch another.
     resource_args: tuple[str, ...] = ()
+    # The argument that names the program's command(s) this call runs: a
+    # string, or a list of strings or of tables whose ``command_key`` names it.
+    # Each command's level comes from the manifest's [commands].
+    command_arg: str | None = None
+    command_key: str | None = None
 
     @property
     def forbidden(self) -> bool:
@@ -127,16 +141,35 @@ class Manifest:
     description: str
     operations: Mapping[str, Operation]
     launch: Launch | None = None
+    # Level of each of the program's commands, by id or group ("home.*");
+    # None: forbidden. A command it does not name is R4 (decision of 2026-11-05).
+    commands: Mapping[str, Level | None] = field(default_factory=dict)
 
     def operation(self, name: str) -> Operation | None:
         return self.operations.get(name)
+
+    def command_level(self, command: str) -> tuple[bool, Level | None]:
+        """(known, level) of one command: the id itself, else its nearest group."""
+        if command in self.commands:
+            return True, self.commands[command]
+        parts = command.split(".")
+        for n in range(len(parts) - 1, 0, -1):
+            group = ".".join(parts[:n]) + _GROUP_SUFFIX
+            if group in self.commands:
+                return True, self.commands[group]
+        return False, None
+
+
+def is_command(value: object) -> bool:
+    """A command id a call may name (no groups: those are only for the manifest)."""
+    return isinstance(value, str) and _COMMAND.fullmatch(value) is not None
 
 
 def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manifest:
     tool = data.get("tool")
     if not isinstance(tool, str) or not _NAME.fullmatch(tool):
         raise ManifestError(f"{source}: 'tool' must be a reverse-DNS name")
-    unknown = set(data) - {"tool", "description", "operations", "launch"}
+    unknown = set(data) - {"tool", "description", "operations", "launch", "commands"}
     if unknown:
         raise ManifestError(f"{source}: unknown keys {sorted(unknown)}")
     description = data.get("description", "")
@@ -180,15 +213,56 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
         summary = op.get("summary", name)
         if not isinstance(summary, str):
             raise ManifestError(f"{where}: 'summary' must be a string")
+        command_arg = op.get("command_arg")
+        command_key = op.get("command_key")
+        for key, value in (("command_arg", command_arg), ("command_key", command_key)):
+            if value is not None and (not isinstance(value, str) or not _NAME.fullmatch(value)):
+                raise ManifestError(f"{where}: '{key}' must be an argument name")
+        if command_key is not None and command_arg is None:
+            raise ManifestError(f"{where}: 'command_key' goes only with 'command_arg'")
+        if command_arg is not None and "commands" not in data:
+            raise ManifestError(f"{where}: 'command_arg' needs a [commands] table")
         operations[name] = Operation(
             name=name,
             level=level,
             summary=summary,
             resource_args=tuple(resource_args),
+            command_arg=command_arg,
+            command_key=command_key,
             **flags,
         )
     launch = _parse_launch(data.get("launch"), source) if "launch" in data else None
-    return Manifest(tool=tool, description=description, operations=operations, launch=launch)
+    commands = _parse_commands(data["commands"], source) if "commands" in data else {}
+    return Manifest(
+        tool=tool,
+        description=description,
+        operations=operations,
+        launch=launch,
+        commands=commands,
+    )
+
+
+def _parse_commands(data: Any, source: str) -> dict[str, Level | None]:
+    where = f"{source}: commands"
+    if not isinstance(data, dict) or not data:
+        raise ManifestError(f"{where}: must be a table of command ids or groups")
+    if len(data) > MAX_COMMANDS:
+        raise ManifestError(f"{where}: more than {MAX_COMMANDS} entries")
+    commands: dict[str, Level | None] = {}
+    for key, raw in data.items():
+        name = key.removesuffix(_GROUP_SUFFIX)
+        if not _COMMAND.fullmatch(name):
+            raise ManifestError(f"{where}: bad command id or group {key!r}")
+        if not isinstance(raw, str):
+            raise ManifestError(f"{where}.{key}: level must be R0-R4 or 'forbidden'")
+        if raw == FORBIDDEN:
+            commands[key] = None
+            continue
+        try:
+            commands[key] = Level.parse(raw)
+        except ValueError as e:
+            raise ManifestError(f"{where}.{key}: {e}") from None
+    return commands
 
 
 def _parse_launch(data: Any, source: str) -> Launch:

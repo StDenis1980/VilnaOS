@@ -15,7 +15,7 @@ from pathlib import Path
 
 from herkos.i18n import _
 from herkos.keros import Keros
-from herkos.manifest import Manifest, Operation
+from herkos.manifest import MAX_CALL_COMMANDS, Manifest, Operation, is_command
 from herkos.request import ActionRequest, Resource
 from herkos.risk import Level
 
@@ -83,6 +83,26 @@ def level_from_annotations(annotations: Mapping[str, object]) -> Level:
     return Level.R2
 
 
+def called_commands(op: Operation, arguments: Mapping[str, object]) -> list[str] | None:
+    """The program's commands this call runs, or None if Herkos cannot read them.
+
+    ``arguments[op.command_arg]`` is one id, or a list (a batch) of ids or of
+    tables whose ``op.command_key`` holds the id.
+    """
+    value = arguments.get(op.command_arg) if op.command_arg else None
+    items = value if isinstance(value, list) else [value]
+    if not items or len(items) > MAX_CALL_COMMANDS:
+        return None
+    out = []
+    for item in items:
+        if isinstance(item, dict) and op.command_key is not None:
+            item = item.get(op.command_key)
+        if not is_command(item):
+            return None
+        out.append(item)
+    return out
+
+
 def assess(
     request: ActionRequest,
     manifest: Manifest | None,
@@ -116,8 +136,32 @@ def assess(
         return Assessment(level=None, base=None, operation=op, roots=roots)
 
     base = op.level
-    level = base
     raises: list[str] = []
+    if op.command_arg is not None:
+        # A generic operation ("execute"): as risky as the riskiest command it
+        # runs; a command the manifest does not name is R4 (decision of 2026-11-05).
+        commands = called_commands(op, request.arguments)
+        if commands is None:
+            base = Level.R4
+            raises.append(_("Herkos cannot tell which of the program's commands this runs"))
+        else:
+            unknown = []
+            for command in commands:
+                known, command_level = manifest.command_level(command)
+                if not known:
+                    unknown.append(command)
+                elif command_level is None:
+                    return Assessment(level=None, base=None, operation=op, roots=roots)
+                else:
+                    base = max(base, command_level)
+            if unknown:
+                base = Level.R4
+                raises.append(
+                    _("the manifest gives no level for the program's command {commands}").format(
+                        commands=", ".join(dict.fromkeys(unknown))
+                    )
+                )
+    level = base
 
     if annotations:
         hinted = level_from_annotations(annotations)
@@ -139,7 +183,7 @@ def assess(
     if len(request.resources) > bulk_threshold:
         level = level.raised()
         raises.append(_("it touches more than {n} items at once").format(n=bulk_threshold))
-    if op.changes_state and not (op.undoable or op.reversible) and level < Level.R3:
+    if base >= Level.R2 and not (op.undoable or op.reversible) and level < Level.R3:
         level = Level.R3
         raises.append(_("it cannot be undone"))
     if op.egress and level < Level.R3:

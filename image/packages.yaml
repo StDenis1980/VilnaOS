@@ -42,7 +42,7 @@ vilna:
     - {name: herkos-polkit,                license: GPL-3.0-or-later, status: planned}
     - {name: herkos-selinux,               license: GPL-3.0-or-later, status: planned}
     - {name: herkos-dialog,                license: GPL-3.0-or-later, status: planned}
-    - {name: herkos-manifests,             license: GPL-3.0-or-later, status: planned}
+    - {name: herkos-manifests,             license: GPL-3.0-or-later, status: obs}
     # Gloxi
     - {name: gloxi,                        license: GPL-3.0-or-later, status: obs}
     - {name: gloxi-session,                license: GPL-3.0-or-later, status: planned}

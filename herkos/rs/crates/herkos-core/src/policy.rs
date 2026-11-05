@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use serde_json::{Map, Value};
 
 use crate::keros::Keros;
-use crate::manifest::{Manifest, Operation};
+use crate::manifest::{MAX_CALL_COMMANDS, Manifest, Operation, is_command};
 use crate::request::{ActionRequest, Resource};
 use crate::risk::Level;
 
@@ -137,6 +137,31 @@ pub fn level_from_annotations(annotations: &Map<String, Value>) -> Level {
     }
 }
 
+/// The program's commands this call runs, or `None` if Herkos cannot read them.
+///
+/// `arguments[op.command_arg]` is one id, or a list (a batch) of ids or of
+/// tables whose `op.command_key` holds the id.
+pub fn called_commands(op: &Operation, arguments: &Map<String, Value>) -> Option<Vec<String>> {
+    let value = arguments.get(op.command_arg.as_deref()?)?;
+    let items: Vec<&Value> = match value {
+        Value::Array(items) => items.iter().collect(),
+        other => vec![other],
+    };
+    if items.is_empty() || items.len() > MAX_CALL_COMMANDS {
+        return None;
+    }
+    items
+        .into_iter()
+        .map(|item| {
+            let id = match (item, op.command_key.as_deref()) {
+                (Value::Object(o), Some(key)) => o.get(key)?,
+                (other, _) => other,
+            };
+            id.as_str().filter(|s| is_command(s)).map(str::to_owned)
+        })
+        .collect()
+}
+
 pub fn assess(
     request: &ActionRequest,
     manifest: Option<&Manifest>,
@@ -176,12 +201,46 @@ pub fn assess(
     let Some(op) = manifest.operation(&request.operation) else {
         return denied(None, roots);
     };
-    let Some(base) = op.level else {
+    let Some(mut base) = op.level else {
         return denied(Some(op.clone()), roots);
     };
+    let mut raises: Vec<Raise> = Vec::new();
+    if op.command_arg.is_some() {
+        // A generic operation ("execute"): as risky as the riskiest command it
+        // runs; a command the manifest does not name is R4 (decision of 2026-11-05).
+        match called_commands(op, &request.arguments) {
+            None => {
+                base = Level::R4;
+                raises.push(Raise::plain(
+                    "Herkos cannot tell which of the program's commands this runs",
+                ));
+            }
+            Some(commands) => {
+                let mut unknown: Vec<String> = Vec::new();
+                for command in commands {
+                    match manifest.command_level(&command) {
+                        (false, _) => {
+                            if !unknown.contains(&command) {
+                                unknown.push(command);
+                            }
+                        }
+                        (true, None) => return denied(Some(op.clone()), roots),
+                        (true, Some(l)) => base = base.max(l),
+                    }
+                }
+                if !unknown.is_empty() {
+                    base = Level::R4;
+                    raises.push(Raise::with(
+                        "the manifest gives no level for the program's command {commands}",
+                        "commands",
+                        Value::String(unknown.join(", ")),
+                    ));
+                }
+            }
+        }
+    }
 
     let mut level = base;
-    let mut raises: Vec<Raise> = Vec::new();
     let mut raise = |level: &mut Level, to: Level, why: Raise| {
         *level = to;
         raises.push(why);
@@ -238,7 +297,7 @@ pub fn assess(
         );
         raise(&mut level, to, why);
     }
-    if op.changes_state() && !(op.undoable || op.reversible) && level < Level::R3 {
+    if base >= Level::R2 && !(op.undoable || op.reversible) && level < Level::R3 {
         raise(&mut level, Level::R3, Raise::plain("it cannot be undone"));
     }
     if op.egress && level < Level::R3 {
@@ -436,5 +495,127 @@ mod tests {
         assert_eq!(level_from_annotations(&a), Level::R0);
         a.insert("destructiveHint".into(), Value::Bool(true));
         assert_eq!(level_from_annotations(&a), Level::R3);
+    }
+
+    const APP: &str = r#"
+tool = "org.example.writer"
+
+[commands]
+"text.insert" = "R1"
+"file.save" = "R2"
+"file.print" = "forbidden"
+"view.*" = "R0"
+"file.*" = "R3"
+
+[operations.execute]
+level = "R1"
+command_arg = "command"
+
+[operations.batch]
+level = "R1"
+command_arg = "commands"
+command_key = "command"
+"#;
+
+    fn run_app(operation: &str, arguments: Value, session: &SessionState) -> Assessment {
+        let manifest = parse_manifest_str(APP, "app.toml").expect("valid manifest");
+        let request = parse_request(&json!({
+            "tool": "org.example.writer",
+            "operation": operation,
+            "reason": "test",
+            "arguments": arguments,
+        }))
+        .expect("valid request");
+        let limits = Limits {
+            allowed_roots: &[],
+            bulk_threshold: 20,
+            resolve: &same,
+        };
+        assess(&request, Some(&manifest), session, &limits, None)
+    }
+
+    #[test]
+    fn an_id_wins_over_its_group_and_the_nearest_group_wins() {
+        let m = parse_manifest_str(APP, "app.toml").expect("valid manifest");
+        assert_eq!(m.command_level("file.save"), (true, Some(Level::R2)));
+        assert_eq!(m.command_level("file.export.pdf"), (true, Some(Level::R3)));
+        assert_eq!(m.command_level("view.zoom"), (true, Some(Level::R0)));
+        assert_eq!(m.command_level("file.print"), (true, None));
+        assert_eq!(m.command_level("table.insert"), (false, None));
+        assert_eq!(m.command_level("view"), (false, None));
+    }
+
+    #[test]
+    fn execute_is_as_risky_as_its_command() {
+        let s = SessionState::default();
+        let one = |c: &str| run_app("execute", json!({"command": c}), &s);
+        assert_eq!(one("text.insert").level, Some(Level::R1));
+        let save = one("file.save");
+        assert_eq!((save.base, save.level), (Some(Level::R2), Some(Level::R3)));
+        assert_eq!(one("view.zoom").level, Some(Level::R1));
+        let unknown = one("table.insert");
+        assert_eq!(unknown.level, Some(Level::R4));
+        assert!(
+            unknown
+                .raises
+                .iter()
+                .any(|r| r.text().contains("table.insert"))
+        );
+        assert!(one("file.print").forbidden());
+    }
+
+    #[test]
+    fn a_batch_is_as_risky_as_its_riskiest_command() {
+        let s = SessionState::default();
+        let batch = |ids: &[&str]| {
+            let steps: Vec<Value> = ids.iter().map(|c| json!({"command": c})).collect();
+            run_app("batch", json!({"commands": steps}), &s)
+        };
+        assert_eq!(batch(&["text.insert", "view.zoom"]).level, Some(Level::R1));
+        assert_eq!(batch(&["text.insert", "file.save"]).base, Some(Level::R2));
+        assert_eq!(batch(&["file.save", "table.insert"]).level, Some(Level::R4));
+        assert!(batch(&["text.insert", "file.print"]).forbidden());
+        // One id instead of a list is still one command.
+        let one = run_app("batch", json!({"commands": "text.insert"}), &s);
+        assert_eq!(one.level, Some(Level::R1));
+    }
+
+    #[test]
+    fn a_call_whose_commands_cannot_be_read_is_r4() {
+        let s = SessionState::default();
+        let many: Vec<Value> = (0..=MAX_CALL_COMMANDS)
+            .map(|_| json!({"command": "text.insert"}))
+            .collect();
+        for (op, args) in [
+            ("execute", json!({})),
+            ("execute", json!({"command": ""})),
+            ("execute", json!({"command": 7})),
+            ("execute", json!({"command": "view.*"})),
+            ("execute", json!({"command": "../x"})),
+            ("batch", json!({"commands": []})),
+            ("batch", json!({"commands": [{"cmd": "text.insert"}]})),
+            ("batch", json!({"commands": many})),
+        ] {
+            let a = run_app(op, args.clone(), &s);
+            assert_eq!(a.level, Some(Level::R4), "{op} {args}");
+            assert!(!a.raises.is_empty());
+        }
+    }
+
+    #[test]
+    fn bad_command_tables_are_refused() {
+        for text in [
+            "tool = \"a\"\n[operations.x]\nlevel = \"R1\"\ncommand_arg = \"command\"",
+            "tool = \"a\"\n[commands]\n\"a.*.*\" = \"R1\"\n[operations.x]\nlevel = \"R1\"",
+            "tool = \"a\"\n[commands]\n\"*\" = \"R1\"\n[operations.x]\nlevel = \"R1\"",
+            "tool = \"a\"\n[commands]\n\"a b\" = \"R1\"\n[operations.x]\nlevel = \"R1\"",
+            "tool = \"a\"\n[commands]\n\"a\" = \"R9\"\n[operations.x]\nlevel = \"R1\"",
+            "tool = \"a\"\n[commands]\n\"a\" = 1\n[operations.x]\nlevel = \"R1\"",
+            "tool = \"a\"\ncommands = {}\n[operations.x]\nlevel = \"R1\"",
+            "tool = \"a\"\n[commands]\n\"a\" = \"R1\"\n[operations.x]\nlevel = \"R1\"\ncommand_key = \"id\"",
+            "tool = \"a\"\n[commands]\n\"a\" = \"R1\"\n[operations.x]\nlevel = \"R1\"\ncommand_arg = \"A B\"",
+        ] {
+            assert!(parse_manifest_str(text, "t").is_err(), "{text}");
+        }
     }
 }

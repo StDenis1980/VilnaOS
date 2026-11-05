@@ -299,3 +299,75 @@ def test_catalogue_programs_are_off_until_turned_on(tmp_path):
                 assert client.call("herkos.set_program", bad)["error"]["code"] == -32602
         finally:
             client.close()
+
+
+WRITER_SERVER = """\
+import json, sys
+for line in sys.stdin:
+    msg = json.loads(line)
+    if "id" not in msg:
+        continue
+    if msg["method"] == "initialize":
+        result = {"protocolVersion": "2025-06-18", "capabilities": {}, "serverInfo": {"name": "w"}}
+    elif msg["method"] == "tools/list":
+        result = {"tools": [{"name": "execute", "description": "Run a command"}]}
+    else:
+        result = {"content": [{"type": "text", "text": "done"}]}
+    print(json.dumps({"jsonrpc": "2.0", "id": msg["id"], "result": result}), flush=True)
+"""
+
+WRITER_MANIFEST = """\
+tool = "org.example.writer"
+description = "A writer"
+[launch]
+program = "example-writer"
+module = "example_writer"
+[commands]
+"text.insert" = "R1"
+"file.print" = "forbidden"
+"view.*" = "R0"
+[operations.execute]
+level = "R0"
+summary = "Run a command of the writer"
+command_arg = "command"
+"""
+
+
+def test_a_generic_operation_takes_the_level_of_its_command(tmp_path):
+    """ADR 0017 step 7: [commands] sets the level; an unnamed command is R4."""
+    import sys
+
+    catalogue = tmp_path / "manifests"
+    catalogue.mkdir(mode=0o755)
+    (catalogue / "writer.toml").write_text(WRITER_MANIFEST, encoding="utf-8")
+    (catalogue / "writer.toml").chmod(0o644)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    (bin_dir / "example_writer.py").write_text(WRITER_SERVER, encoding="utf-8")
+    exe = bin_dir / "example-writer"
+    exe.write_text(f"#!{sys.executable}\n" + WRITER_SERVER, encoding="utf-8")
+    exe.chmod(0o755)
+    env = {
+        "HERKOS_MANIFEST_DIR": str(catalogue),
+        "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}",
+        "PYTHONPATH": f"{bin_dir}:{os.environ.get('PYTHONPATH', '')}",
+    }
+    turn_on(tmp_path, "org.example.writer")
+    with start_herkos(tmp_path, extra_env=env) as h:
+        client = Client(h.socket)
+        try:
+            max_level = client.hello()["result"]["max_level"]
+
+            def run(command):
+                r = call(client, "org.example.writer", "execute", (), {"command": command})
+                return r["decision"], r["code"], r.get("level")
+
+            assert run("view.zoom") == ("allowed", "allowed", "R0")
+            # R1 asks; the conformance Herkos answers no.
+            assert run("text.insert") == ("denied", "denied_user", "R1")
+            assert run("file.print")[:2] == ("denied", "denied_forbidden")
+            code = "denied_level" if max_level < "R4" else "denied_user"
+            assert run("table.insert") == ("denied", code, "R4")
+            assert run("view.*") == ("denied", code, "R4")
+        finally:
+            client.close()
