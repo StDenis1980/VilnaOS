@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov  5 08:05:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Own %{_datadir}/gnome-shell and its extensions directory: the OBS
+  file-list check failed the build ("directories not owned by a package")
+
+-------------------------------------------------------------------
 Wed Nov  4 22:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: Vilna GNOME Shell extension 0.1 (Latin layout in
