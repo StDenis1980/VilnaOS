@@ -8,8 +8,11 @@
 #   decide   — рішення ще не ухвалене (див. розд. 8 composition.md)
 
 base:
-  # Беремо патерн Aeon цілком; зміни лише через заміну брендування
+  # Беремо вимоги патерна Aeon майже цілком (у vilna_base, obs/packages/patterns-vilna);
+  # зміни лише через заміну брендування. Сам aeon_base не ставиться: він вимагає
+  # Aeon-release і логотипи Aeon. malcontent-control прибрано: його немає в Tumbleweed.
   pattern: aeon_base
+  dropped: [Aeon-release, distribution-logos-openSUSE-Aeon, malcontent-control]
   source: https://src.opensuse.org/rpm/patterns-aeon
   replace_branding:
     Aeon-release: Vilna-release
@@ -32,7 +35,7 @@ base:
 vilna:
   pattern: vilna_base
   packages:
-    - {name: patterns-vilna,               license: GPL-3.0-or-later, status: planned}
+    - {name: patterns-vilna,               license: GPL-3.0-or-later, status: obs}
     - {name: Vilna-release,                license: GPL-3.0-or-later, status: obs}
     # Herkos
     - {name: herkos,                       license: GPL-3.0-or-later, status: obs}
