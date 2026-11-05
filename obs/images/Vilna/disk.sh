@@ -30,6 +30,11 @@ if ! awk '$2 == "/etc" { found = 1 } END { exit !found }' /etc/fstab; then
     echo "$root /etc btrfs defaults,subvol=/@/.snapshots/1/snapshot/etc,x-initrd.mount 0 0" >>/etc/fstab
 fi
 
+# The EFI partition only for root (bootctl warns about a world-readable
+# random-seed). efimountoptions is gone from the KIWI schema on
+# Tumbleweed, so set it here.
+sed -i -E '/[[:space:]]\/boot\/efi[[:space:]]+vfat[[:space:]]/ { /umask=/! s/^([^[:space:]]+[[:space:]]+[^[:space:]]+[[:space:]]+[^[:space:]]+[[:space:]]+)([^[:space:]]+)/\1\2,umask=0077/ }' /etc/fstab
+
 # With a disk.sh, KIWI leaves the SELinux labels to it: label the disk
 # as KIWI would (the first boot relabels again, config.sh asks for it).
 contexts=/etc/selinux/targeted/contexts/files/file_contexts
