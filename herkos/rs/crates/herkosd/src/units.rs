@@ -86,7 +86,14 @@ impl Units {
             };
             let unit = launch.program.as_str();
             let short = unit.trim_start_matches("vilna-mcp-");
-            let started = match mcp::launch_args(launch, &backups, &config.allowed_roots) {
+            // A program from Flatpak gets only its folders, one per line (ext.rs).
+            let args = if launch.flatpak.is_some() {
+                let roots = &config.allowed_roots;
+                (!roots.is_empty()).then(|| roots.iter().map(|r| r.display().to_string()).collect())
+            } else {
+                mcp::launch_args(launch, &backups, &config.allowed_roots)
+            };
+            let started = match args {
                 None => Err("no allowed folders".to_owned()),
                 // The unit reads its arguments from <short>.args (vilna-mcp-files@.service).
                 Some(args) if !args.is_empty() => {

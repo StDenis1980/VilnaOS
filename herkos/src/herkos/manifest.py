@@ -43,7 +43,14 @@ _MODULE = re.compile(r"^[a-z_][a-z0-9_]{0,63}(\.[a-z_][a-z0-9_]{0,63}){0,3}$")
 # What Herkos may pass a tool when it starts it, in this order:
 # backup_dir -> --backup-dir DIR, roots -> --root DIR for each allowed folder.
 LAUNCH_ARGS = ("backup_dir", "roots")
-_LAUNCH_KEYS = {"program", "module", "args"}
+_LAUNCH_KEYS = {"program", "module", "args", "flatpak", "command", "fixed", "root_flags"}
+# A program from Flatpak runs in the unit vilna-mcp-ext-<name>@<uid> (ADR 0017, step 2).
+EXT_PREFIX = "vilna-mcp-ext-"
+_APP_ID = re.compile(r"[A-Za-z_][A-Za-z0-9_-]*(\.[A-Za-z0-9_][A-Za-z0-9_-]*){2,}")
+_FIXED = re.compile(r"(--?)?[a-z0-9][a-z0-9._-]{0,63}")
+_ROOT_FLAG = re.compile(r"--[a-z0-9][a-z0-9-]{0,63}")
+_MAX_FIXED = 16
+_MAX_ROOT_FLAGS = 4
 # The catalogue of manifests installed with the system (ADR 0017, stage 2):
 # package herkos-manifests. HERKOS_MANIFEST_DIR replaces it (tests).
 SYSTEM_MANIFEST_DIR = Path("/usr/share/herkos/manifests")
@@ -95,12 +102,23 @@ class Operation:
 
 
 @dataclass(frozen=True)
+class Flatpak:
+    """``flatpak run --command=<command> <app> <fixed...> <root_flags DIR...>``."""
+
+    app: str
+    command: str
+    fixed: tuple[str, ...] = ()  # arguments that never change, such as "mcp"
+    root_flags: tuple[str, ...] = ("--root",)  # each flag gets each allowed folder
+
+
+@dataclass(frozen=True)
 class Launch:
     """How Herkos starts the tool (ADR 0017, 0.2): from the manifest, not from code."""
 
     program: str  # on PATH; the system Herkos starts the unit <program>@<uid>
     module: str | None = None  # Herkos-lite runs it with its own Python
     args: tuple[str, ...] = ()  # names from LAUNCH_ARGS
+    flatpak: Flatpak | None = None  # a program from Flatpak (catalogue only)
 
 
 @dataclass(frozen=True)
@@ -116,7 +134,7 @@ class Manifest:
 
 def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manifest:
     tool = data.get("tool")
-    if not isinstance(tool, str) or not _NAME.match(tool):
+    if not isinstance(tool, str) or not _NAME.fullmatch(tool):
         raise ManifestError(f"{source}: 'tool' must be a reverse-DNS name")
     unknown = set(data) - {"tool", "description", "operations", "launch"}
     if unknown:
@@ -131,7 +149,7 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
     operations: dict[str, Operation] = {}
     for name, op in ops_data.items():
         where = f"{source}: operations.{name}"
-        if not _NAME.match(name):
+        if not _NAME.fullmatch(name):
             raise ManifestError(f"{where}: bad operation name")
         if not isinstance(op, dict):
             raise ManifestError(f"{where}: must be a table")
@@ -181,10 +199,10 @@ def _parse_launch(data: Any, source: str) -> Launch:
     if unknown:
         raise ManifestError(f"{where}: unknown keys {sorted(unknown)}")
     program = data.get("program")
-    if not isinstance(program, str) or not _PROGRAM.match(program):
+    if not isinstance(program, str) or not _PROGRAM.fullmatch(program):
         raise ManifestError(f"{where}: 'program' must be a program name, not a path")
     module = data.get("module")
-    if module is not None and (not isinstance(module, str) or not _MODULE.match(module)):
+    if module is not None and (not isinstance(module, str) or not _MODULE.fullmatch(module)):
         raise ManifestError(f"{where}: 'module' must be a Python module name")
     args = data.get("args", [])
     if (
@@ -195,7 +213,44 @@ def _parse_launch(data: Any, source: str) -> Launch:
         raise ManifestError(f"{where}: 'args' must be a list of {list(LAUNCH_ARGS)}")
     # Always in LAUNCH_ARGS order, so every Herkos builds the same command line.
     ordered = tuple(a for a in LAUNCH_ARGS if a in args)
-    return Launch(program=program, module=module, args=ordered)
+    flatpak = _parse_flatpak(data, program, where)
+    if flatpak is not None and "backup_dir" in ordered:
+        raise ManifestError(f"{where}: a Flatpak program gets no 'backup_dir'")
+    return Launch(program=program, module=module, args=ordered, flatpak=flatpak)
+
+
+def _words(value: Any, limit: int, pattern: re.Pattern[str]) -> tuple[str, ...] | None:
+    if not isinstance(value, list) or len(value) > limit:
+        return None
+    if not all(isinstance(w, str) and pattern.fullmatch(w) for w in value):
+        return None
+    return tuple(value)
+
+
+def _parse_flatpak(data: dict[str, Any], program: str, where: str) -> Flatpak | None:
+    if "flatpak" not in data:
+        if any(k in data for k in ("command", "fixed", "root_flags")):
+            raise ManifestError(
+                f"{where}: 'command', 'fixed' and 'root_flags' go only with 'flatpak'"
+            )
+        return None
+    app = data["flatpak"]
+    if not isinstance(app, str) or len(app) > 255 or not _APP_ID.fullmatch(app):
+        raise ManifestError(f"{where}: 'flatpak' must be a Flatpak application id")
+    if not program.startswith(EXT_PREFIX) or program == EXT_PREFIX:
+        raise ManifestError(f"{where}: a Flatpak program needs 'program' = \"{EXT_PREFIX}<name>\"")
+    if "module" in data:
+        raise ManifestError(f"{where}: a Flatpak program has no 'module'")
+    command = data.get("command")
+    if not isinstance(command, str) or not _PROGRAM.fullmatch(command):
+        raise ManifestError(f"{where}: 'command' must be a program name, not a path")
+    fixed = _words(data.get("fixed", []), _MAX_FIXED, _FIXED)
+    if fixed is None:
+        raise ManifestError(f"{where}: 'fixed' must be at most {_MAX_FIXED} plain words or options")
+    flags = _words(data.get("root_flags", ["--root"]), _MAX_ROOT_FLAGS, _ROOT_FLAG)
+    if not flags:
+        raise ManifestError(f"{where}: 'root_flags' must be 1 to {_MAX_ROOT_FLAGS} long options")
+    return Flatpak(app=app, command=command, fixed=fixed, root_flags=flags)
 
 
 def load_manifest(path: Path) -> Manifest:

@@ -24,27 +24,37 @@ pub fn installed() -> Result<Registry, ManifestError> {
         .filter(|d| !d.is_empty())
         .map_or_else(|| PathBuf::from(SYSTEM_MANIFEST_DIR), PathBuf::from);
     let mut registry = Registry::builtin()?;
-    for problem in add_catalogue(&mut registry, &dir) {
+    for problem in add_catalogue(&mut registry, &dir, false) {
         eprintln!("herkosd: manifest catalogue: {problem}");
     }
     Ok(registry)
 }
 
-/// Only root or this herkosd own it, and neither group nor others may write.
-fn trusted(meta: &Metadata) -> bool {
+/// The system catalogue as a tool started for a person sees it (`ext-exec`):
+/// only files of root count, since the person is the one running it.
+pub fn system_root_only() -> (Registry, Vec<String>) {
+    let mut registry = Registry::default();
+    let problems = add_catalogue(&mut registry, Path::new(SYSTEM_MANIFEST_DIR), true);
+    (registry, problems)
+}
+
+/// Only root (or, unless `root_only`, this herkosd) owns it, and neither
+/// group nor others may write.
+fn trusted(meta: &Metadata, root_only: bool) -> bool {
     let euid = rustix::process::geteuid().as_raw();
-    (meta.uid() == 0 || meta.uid() == euid) && meta.mode() & 0o022 == 0
+    let owner = meta.uid() == 0 || (!root_only && meta.uid() == euid);
+    owner && meta.mode() & 0o022 == 0
 }
 
 /// Add the trusted `*.toml` files of `dir`; return what was skipped.
-pub fn add_catalogue(registry: &mut Registry, dir: &Path) -> Vec<String> {
+pub fn add_catalogue(registry: &mut Registry, dir: &Path, root_only: bool) -> Vec<String> {
     let shown = dir.display();
     let meta = match fs::symlink_metadata(dir) {
         Ok(m) => m,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Vec::new(),
         Err(e) => return vec![format!("{shown}: {e}")],
     };
-    if !meta.is_dir() || !trusted(&meta) {
+    if !meta.is_dir() || !trusted(&meta, root_only) {
         return vec![format!(
             "{shown}: not a folder that only root or Herkos can change"
         )];
@@ -68,7 +78,7 @@ pub fn add_catalogue(registry: &mut Registry, dir: &Path) -> Vec<String> {
     }
     for name in names {
         let path = dir.join(&name);
-        let added = read_trusted(&path)
+        let added = read_trusted(&path, root_only)
             .and_then(|text| parse_manifest_str(&text, &name).map_err(|e| e.0))
             .and_then(|m| registry.add(m).map_err(|e| e.0));
         if let Err(e) = added {
@@ -79,7 +89,7 @@ pub fn add_catalogue(registry: &mut Registry, dir: &Path) -> Vec<String> {
 }
 
 /// The file's text, if it is a regular, trusted file of at most 64 KiB (no symlinks).
-fn read_trusted(path: &Path) -> Result<String, String> {
+fn read_trusted(path: &Path, root_only: bool) -> Result<String, String> {
     let flags = rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::NONBLOCK;
     let file = OpenOptions::new()
         .read(true)
@@ -87,7 +97,7 @@ fn read_trusted(path: &Path) -> Result<String, String> {
         .open(path)
         .map_err(|e| e.to_string())?;
     let meta = file.metadata().map_err(|e| e.to_string())?;
-    if !meta.is_file() || !trusted(&meta) {
+    if !meta.is_file() || !trusted(&meta, root_only) {
         return Err("not a file that only root or Herkos can change".to_owned());
     }
     let mut bytes = Vec::new();
@@ -128,7 +138,7 @@ mod tests {
         write(&dir, "notes.toml", GOOD, 0o644);
         write(&dir, "README", "not a manifest", 0o644);
         let mut r = Registry::builtin().expect("builtin");
-        let problems = add_catalogue(&mut r, &dir);
+        let problems = add_catalogue(&mut r, &dir, false);
         assert!(problems.is_empty(), "{problems:?}");
         assert!(r.get("org.example.notes").is_some());
         assert!(r.get("org.vilna.mcp.files").is_some());
@@ -137,7 +147,7 @@ mod tests {
     #[test]
     fn a_missing_folder_is_no_problem() {
         let mut r = Registry::builtin().expect("builtin");
-        assert!(add_catalogue(&mut r, Path::new("/nonexistent/herkos")).is_empty());
+        assert!(add_catalogue(&mut r, Path::new("/nonexistent/herkos"), false).is_empty());
     }
 
     #[test]
@@ -151,7 +161,7 @@ mod tests {
         );
         let mut r = Registry::builtin().expect("builtin");
         let before = format!("{:?}", r.get("org.vilna.mcp.files"));
-        assert_eq!(add_catalogue(&mut r, &dir).len(), 1);
+        assert_eq!(add_catalogue(&mut r, &dir, false).len(), 1);
         assert_eq!(format!("{:?}", r.get("org.vilna.mcp.files")), before);
     }
 
@@ -169,7 +179,7 @@ mod tests {
             let dir = temp(name.trim_end_matches(".toml"));
             write(&dir, name, &text, mode);
             let mut r = Registry::builtin().expect("builtin");
-            assert_eq!(add_catalogue(&mut r, &dir).len(), 1, "{name}");
+            assert_eq!(add_catalogue(&mut r, &dir, false).len(), 1, "{name}");
             assert!(r.get("org.example.notes").is_none(), "{name}");
         }
     }
@@ -181,7 +191,7 @@ mod tests {
         write(&elsewhere, "notes.toml", GOOD, 0o644);
         symlink(elsewhere.join("notes.toml"), dir.join("notes.toml")).expect("symlink");
         let mut r = Registry::builtin().expect("builtin");
-        assert_eq!(add_catalogue(&mut r, &dir).len(), 1);
+        assert_eq!(add_catalogue(&mut r, &dir, false).len(), 1);
         assert!(r.get("org.example.notes").is_none());
     }
 
@@ -191,7 +201,7 @@ mod tests {
         write(&dir, "notes.toml", GOOD, 0o644);
         fs::set_permissions(&dir, fs::Permissions::from_mode(0o777)).expect("chmod");
         let mut r = Registry::builtin().expect("builtin");
-        assert_eq!(add_catalogue(&mut r, &dir).len(), 1);
+        assert_eq!(add_catalogue(&mut r, &dir, false).len(), 1);
         assert!(r.get("org.example.notes").is_none());
     }
 }

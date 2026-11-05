@@ -189,6 +189,20 @@ args = ["backup_dir", "roots"] # що Herkos передає: --backup-dir ТЕК
 
 `program` — лише назва, без шляху й пробілів; `args` — лише з цього переліку, завжди в цьому порядку. Без `[launch]` Herkos інструмент не запускає. Системний herkosd може запускати лише юніти, дозволені правилом polkit, тож маніфест не змусить його запустити щось інше.
 
+**Програми з Flatpak** (ADR 0017, етап 2, крок 2; лише в каталозі й лише для системного herkosd):
+
+```toml
+[launch]
+program = "vilna-mcp-ext-pdf"            # юніт vilna-mcp-ext-pdf@<uid>, завжди з префіксом vilna-mcp-ext-
+flatpak = "io.github.stdenis1980.tintapdf"
+command = "pdfcraft-cli"                 # flatpak run --command=…
+fixed = ["mcp"]                          # сталі аргументи: слова й опції без «=» і пробілів
+root_flags = ["--automation-read-root", "--automation-write-root"]  # типово ["--root"]
+args = ["roots"]                         # backup_dir для таких програм заборонено
+```
+
+Пакет `herkos-manifests` ставить поруч із маніфестом юніт, який робить `herkosd ext-unit МАНІФЕСТ.toml`. Юніт запускає від імені людини `herkosd ext-exec <program> /run/herkos-tools/<uid>/<коротка назва>.args`. Ця команда ще раз читає маніфест із системного каталогу (лише файли root, а не те, що каже herkosd), бере дозволені теки з файлу (по одній абсолютній на рядок, без `.`/`..`, `:` і `,`), а тоді стає таким процесом: `flatpak run --command=<command> --die-with-parent --nofilesystem=host … --nofilesystem=home --nosocket=x11 … [--unshare=network] --filesystem=<тека>… <app> <fixed…> <прапорець> <тека>…`. Мережа є лише тоді, коли якась операція має `egress = true`, і тоді юніт не має `PrivateNetwork=yes`. Правило polkit дозволяє `herkos` запускати й зупиняти `vilna-mcp-ext-*@<uid>`. Ставити юніти може лише root, тож маніфест не змусить herkosd запустити довільну програму. Herkos-lite такі програми не запускає.
+
 Невідомі ключі, неправильний рівень чи тип значення — помилка, і інструмент лишається невідомим.
 
 **Де лежать маніфести.** Вбудовані — у пакеті Herkos (`herkos/src/herkos/manifests/`). Для інших програм — каталог `/usr/share/herkos/manifests/*.toml` ([ADR 0017](../../docs/adr/0017-third-party-mcp-servers.md), етап 2, крок 1), його ставить підписаний пакет `herkos-manifests`; для тестів і розробки теку можна замінити змінною `HERKOS_MANIFEST_DIR`. Обидві реалізації читають каталог однаково:

@@ -85,3 +85,53 @@ def test_not_started_without_module_or_folders(env: Env, tmp_path):
     env.docs.rmdir()
     files = ManifestRegistry.builtin().get("org.vilna.mcp.files")
     assert launch_command(files, env.config) is None
+
+
+PDF = {
+    "program": "vilna-mcp-ext-pdf",
+    "flatpak": "io.github.stdenis1980.tintapdf",
+    "command": "pdfcraft-cli",
+    "fixed": ["mcp"],
+    "args": ["roots"],
+}
+
+
+def test_a_flatpak_program_is_started_through_its_own_unit():
+    from herkos.manifest import Flatpak
+
+    assert manifest(PDF).launch.flatpak == Flatpak(
+        "io.github.stdenis1980.tintapdf", "pdfcraft-cli", ("mcp",), ("--root",)
+    )
+    two = {**PDF, "root_flags": ["--automation-read-root", "--automation-write-root"]}
+    assert len(manifest(two).launch.flatpak.root_flags) == 2
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"program": "vilna-mcp-files"},
+        {"program": "vilna-mcp-ext-"},
+        {"flatpak": "tintapdf"},
+        {"flatpak": "io.github.x/../y"},
+        {"flatpak": "io.github.x\n"},
+        {"command": "/usr/bin/pdfcraft-cli"},
+        {"command": "pdfcraft-cli\n"},
+        {"fixed": ["mcp --root /"]},
+        {"fixed": ["--filesystem=host"]},
+        {"args": ["backup_dir", "roots"]},
+        {"module": "x"},
+        {"root_flags": []},
+        {"root_flags": ["-r"]},
+        {"root_flags": ["--root=x"]},
+        {"flatpak": None},
+    ],
+)
+def test_flatpak_launches_take_only_safe_words(change):
+    launch = {k: v for k, v in {**PDF, **change}.items() if v is not None}
+    with pytest.raises(ManifestError):
+        manifest(launch)
+
+
+def test_a_program_name_with_a_line_break_is_refused():
+    with pytest.raises(ManifestError):
+        manifest({"program": "x\n"})
