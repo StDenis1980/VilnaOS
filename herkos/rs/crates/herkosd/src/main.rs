@@ -7,8 +7,10 @@
 //! stays the reference;
 //! `herkos/conformance/` checks that both answer the same way.
 
+mod catalogue;
 mod config;
 mod confirm;
+mod ext;
 mod gate;
 mod grants;
 mod keros_model;
@@ -33,7 +35,7 @@ use serde_json::Value;
 /// A longer message closes the connection (protocol.md).
 const MAX_LINE: usize = 1024 * 1024;
 
-const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd --version";
+const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd ext-unit MANIFEST.toml\n       herkosd ext-exec PROGRAM ARGS-FILE\n       herkosd --version";
 
 fn default_socket() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")
@@ -138,7 +140,7 @@ fn build_gate_from(
     if let Some(e) = &grants.load_error {
         eprintln!("herkosd: permissions ignored: {e}");
     }
-    let manifests = herkos_core::manifest::Registry::builtin().map_err(|e| e.0)?;
+    let manifests = catalogue::installed().map_err(|e| e.0)?;
     let model_check = match &config.keros_model {
         None => None,
         Some(url) => match keros_model::Judge::new(url) {
@@ -185,7 +187,7 @@ fn start_tool(tools: &mut mcp::McpTools, name: &str, program: &str, args: Vec<St
 /// The tools whose manifests say how to start them (ADR 0017), if installed.
 fn start_tools(config: &config::Config) -> mcp::McpTools {
     let mut tools = mcp::McpTools::default();
-    let Ok(manifests) = herkos_core::manifest::Registry::builtin() else {
+    let Ok(manifests) = catalogue::installed() else {
         return tools;
     };
     let roots: Vec<PathBuf> = config
@@ -200,6 +202,13 @@ fn start_tools(config: &config::Config) -> mcp::McpTools {
             eprintln!("herkosd: {} has no [launch]; not started", manifest.tool);
             continue;
         };
+        if launch.flatpak.is_some() {
+            eprintln!(
+                "herkosd: {} runs only under the system Herkos; not started",
+                manifest.tool
+            );
+            continue;
+        }
         match mcp::launch_args(launch, &backups, &roots) {
             Some(args) => start_tool(&mut tools, &manifest.tool, &launch.program, args),
             None => eprintln!(
@@ -368,6 +377,24 @@ fn run(args: &[String]) -> Result<(), String> {
             Ok(())
         }
         Some("system") => run_system(&args[1..]),
+        // In a vilna-mcp-ext-<name>@<uid> unit, as the person (ADR 0017).
+        Some("ext-exec") => match (args.get(1), args.get(2), args.len()) {
+            (Some(program), Some(file), 3) if Path::new(file).is_absolute() => {
+                ext::exec(program, Path::new(file))
+            }
+            _ => Err("usage: herkosd ext-exec PROGRAM /ABSOLUTE/ARGS-FILE".into()),
+        },
+        // For the herkos-manifests package: the unit of a manifest's program.
+        Some("ext-unit") => match (args.get(1), args.len()) {
+            (Some(file), 2) => {
+                let text = fs::read_to_string(file).map_err(|e| format!("{file}: {e}"))?;
+                let manifest =
+                    herkos_core::manifest::parse_manifest_str(&text, file).map_err(|e| e.0)?;
+                print!("{}", ext::unit(&manifest)?);
+                Ok(())
+            }
+            _ => Err("usage: herkosd ext-unit MANIFEST.toml".into()),
+        },
         Some("journal") if args.get(1).map(String::as_str) == Some("verify") => {
             let path = match args.get(2).map(String::as_str) {
                 Some("--file") => absolute("--file", args.get(3))?,
