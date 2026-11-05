@@ -372,6 +372,7 @@ impl Gate {
                         "summary": op.summary,
                         "level": level.name(),
                         "returns_external": op.returns_external,
+                        "resource_args": op.resource_args,
                         "server_description": said["description"],
                         "input_schema": said["inputSchema"],
                     }))
@@ -962,6 +963,7 @@ mod tests {
         assert_eq!(names(&g), ["read", "write"]);
         assert_eq!(tools[0]["operations"][0]["level"], "R1");
         assert_eq!(tools[0]["operations"][0]["returns_external"], true);
+        assert_eq!(tools[0]["operations"][0]["resource_args"], json!(["path"]));
         let mut config = g.config.clone();
         config.max_level = Level::R4;
         let g = Gate { config, ..g };
