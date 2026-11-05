@@ -80,6 +80,7 @@ def test_tools_lists_the_running_tools_within_max_level(client):
         "summary": "Read a file",
         "level": "R1",
         "returns_external": True,
+        "resource_args": ["path"],
     }
     # What the server says about itself, after Keros found nothing in it (step 4).
     assert isinstance(said, str) and said

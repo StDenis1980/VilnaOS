@@ -182,6 +182,7 @@ class Gate:
                         "summary": op.summary,
                         "level": op.level.name,
                         "returns_external": op.returns_external,
+                        "resource_args": list(op.resource_args),
                         "server_description": said["description"],
                         "input_schema": said["inputSchema"],
                     }
