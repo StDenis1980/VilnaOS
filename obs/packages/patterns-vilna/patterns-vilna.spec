@@ -36,9 +36,9 @@ Requires:       vilna-mcp-files
 Requires:       vilna-mcp-backup
 Requires:       vilna-flatpak-defaults
 Requires:       gnome-shell-extension-vilna
+Requires:       vilna-software-picks
 # Not yet packaged, added here once they build on OBS:
 #   vilna-model-default   default model weights (ADR 0006, 0008)
-#   vilna-software-picks  "Recommended by Vilna" (ADR 0012)
 #
 # The requirements of patterns-aeon-base 5.0 (aeon_base, Tumbleweed of
 # 2026-11-05), copied because that pattern cannot be installed with
