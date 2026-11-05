@@ -81,10 +81,10 @@
     <package name="vilna-mcp-files"/>
     <package name="vilna-mcp-backup"/>
     <package name="vilna-flatpak-defaults"/>
+    <package name="gnome-shell-extension-vilna"/>
     <!-- Not yet packaged, added here once they build on OBS:
          vilna-model-default   default model weights in the image (ADR 0006, 0008)
          vilna-software-picks  "Recommended by Vilna" in GNOME Software (ADR 0012)
-         gnome-shell-extension-vilna  password layout, always on top, Gloxi panel strip
          patterns-vilna        the vilna_base pattern that replaces this list -->
     <!-- Boot and first boot of a disk image -->
     <package name="kernel-default"/>

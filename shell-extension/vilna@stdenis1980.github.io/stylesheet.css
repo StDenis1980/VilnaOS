@@ -1,0 +1,29 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+
+/* The layout indicator next to a password field: small, readable on the
+   lock screen and over any window. Colours from docs/design/brief.md. */
+.vilna-layout-indicator {
+  font-size: 9pt;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: #ffffff;
+  background-color: rgba(31, 52, 92, 0.92); /* night #1F345C */
+  border: 1px solid #2d6bff; /* blue #2D6BFF */
+}
+
+.vilna-layout-indicator:hover {
+  background-color: #2d6bff;
+}
+
+/* No Latin layout is configured: the password may come out in Cyrillic. */
+.vilna-layout-indicator-warning {
+  border-color: #f5c24a; /* gold #F5C24A */
+  color: #f5c24a;
+}
+
+/* The strip reserved for the Gloxi panel (stage B scaffold). */
+.vilna-gloxi-dock {
+  background-color: #1f345c; /* night #1F345C */
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}

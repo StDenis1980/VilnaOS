@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import io
+import json
 import lzma
 import re
 import shutil
@@ -69,6 +70,16 @@ def pyproject_version(folder: str) -> Callable[[], str]:
     return read
 
 
+def extension_version(folder: str) -> Callable[[], str]:
+    """The "version-name" of a GNOME Shell extension's metadata.json."""
+
+    def read() -> str:
+        data = json.loads((ROOT / folder / "metadata.json").read_text(encoding="utf-8"))
+        return str(data["version-name"])
+
+    return read
+
+
 TARBALLS: dict[str, Tarball] = {
     "gloxi": Tarball("gloxi", pyproject_version("gloxi"), extra=(("LICENSE", "LICENSE"),)),
     "herkos": Tarball(
@@ -87,6 +98,11 @@ TARBALLS: dict[str, Tarball] = {
     ),
     "python-vilna-privacy-gateway": Tarball(
         "privacy-gateway", pyproject_version("privacy-gateway")
+    ),
+    "gnome-shell-extension-vilna": Tarball(
+        "shell-extension",
+        extension_version("shell-extension/vilna@stdenis1980.github.io"),
+        extra=(("LICENSE", "LICENSE"),),
     ),
 }
 

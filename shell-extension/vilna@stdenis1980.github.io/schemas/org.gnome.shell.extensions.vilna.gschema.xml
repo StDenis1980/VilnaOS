@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<schemalist>
+  <enum id="org.gnome.shell.extensions.vilna.DockSize">
+    <value nick="one-sixth" value="0"/>
+    <value nick="one-third" value="1"/>
+  </enum>
+
+  <schema id="org.gnome.shell.extensions.vilna" path="/org/gnome/shell/extensions/vilna/">
+    <key name="password-latin-layout" type="b">
+      <default>true</default>
+      <summary>Latin layout in password fields</summary>
+      <description>When a password field gets focus, switch to a Latin keyboard layout and show which layout is on; switch back when the field loses focus.</description>
+    </key>
+    <key name="password-preferred-layouts" type="as">
+      <default>['us']</default>
+      <summary>Preferred layouts for passwords</summary>
+      <description>XKB layout ids tried first, in order, when the current layout does not type Latin letters. If none is configured, the first Latin layout is used.</description>
+    </key>
+    <key name="gloxi-keep-above" type="b">
+      <default>true</default>
+      <summary>Keep Gloxi above other windows</summary>
+      <description>Keep the Gloxi window above all other windows. The Herkos confirmation dialog is always kept above.</description>
+    </key>
+    <key name="gloxi-dock" type="b">
+      <default>false</default>
+      <summary>Reserve a strip of the screen for Gloxi (experimental)</summary>
+      <description>Reserve a strip at the right edge of the primary monitor for the Gloxi panel, like a dock: maximised windows and notifications stay out of it.</description>
+    </key>
+    <key name="gloxi-dock-size" enum="org.gnome.shell.extensions.vilna.DockSize">
+      <default>'one-sixth'</default>
+      <summary>Width of the Gloxi strip</summary>
+    </key>
+  </schema>
+</schemalist>

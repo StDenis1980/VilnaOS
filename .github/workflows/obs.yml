@@ -6,9 +6,9 @@ name: OBS packages
 on:
   push:
     branches: [main]
-    paths: ["obs/**", "gloxi/**", "herkos/**", "privacy-gateway/**", "LICENSE", ".github/workflows/obs.yml"]
+    paths: ["obs/**", "gloxi/**", "herkos/**", "privacy-gateway/**", "shell-extension/**", "LICENSE", ".github/workflows/obs.yml"]
   pull_request:
-    paths: ["obs/**", "gloxi/**", "herkos/**", "privacy-gateway/**", "LICENSE", ".github/workflows/obs.yml"]
+    paths: ["obs/**", "gloxi/**", "herkos/**", "privacy-gateway/**", "shell-extension/**", "LICENSE", ".github/workflows/obs.yml"]
   workflow_dispatch:
 
 permissions:

@@ -65,6 +65,7 @@ This is a monorepo: each component lives in its own top-level folder with its ow
 | [`mcp/`](mcp/) | MCP tool servers, starting with files (Apache-2.0) |
 | [`sdk/`](sdk/) | SDK for third-party developers (Apache-2.0) |
 | [`image/`](image/) | The Vilna system image on openSUSE Aeon / Kalpa |
+| [`shell-extension/`](shell-extension/) | GNOME Shell extension: Latin keyboard layout in password fields, Gloxi above other windows, a screen strip for the Gloxi panel |
 | [`backup/`](backup/) | Encrypted backups of Vilna data (restic, keys in Herkos); prototype `vilna-backup` |
 | [`obs/`](obs/) | Vilna project and RPM packages in the Open Build Service |
 | [`docs/`](docs/) | Roadmap, [architecture decisions](docs/adr/), [benchmarks](docs/benchmarks.md), [design brief](docs/design/brief.md) |
