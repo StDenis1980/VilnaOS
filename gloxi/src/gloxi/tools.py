@@ -172,7 +172,10 @@ class FileTools:
         """
         if self._offer is not None:
             return self._offer
-        from herkos.client import HerkosError, HerkosUnavailable
+        try:
+            from herkos.client import HerkosError, HerkosUnavailable
+        except ImportError:  # a test or build without Herkos: no herkos exceptions to catch
+            HerkosError = HerkosUnavailable = _NeverRaised  # noqa: N806
 
         if self._lost:
             return ()
@@ -343,6 +346,10 @@ def file_tools(enabled: bool) -> FileTools | None:
         # No XDG_RUNTIME_DIR (e.g. an ssh shell or a container): no Herkos, just chat.
         return None
     return FileTools(lambda: HerkosClient.connect(sock), roots, available=sock.exists)
+
+
+class _NeverRaised(Exception):
+    """Stands in for the herkos exceptions when Herkos is not installed."""
 
 
 # -- results ----------------------------------------------------------------------
