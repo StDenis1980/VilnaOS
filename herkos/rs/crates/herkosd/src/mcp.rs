@@ -64,6 +64,7 @@ pub struct McpStdio {
     timeout: Duration,
     state: Mutex<Option<Running>>,
     annotations: BTreeMap<String, Map<String, Value>>,
+    fingerprints: BTreeMap<String, String>,
 }
 
 /// Read lines on a thread of their own, so a silent server cannot hang Herkos.
@@ -194,6 +195,7 @@ impl McpStdio {
             )?;
             let tools = rpc(&mut run, "tools/list", json!({}), timeout)?;
             let mut annotations = BTreeMap::new();
+            let mut fingerprints = BTreeMap::new();
             for tool in tools
                 .get("tools")
                 .and_then(Value::as_array)
@@ -207,16 +209,18 @@ impl McpStdio {
                         .cloned()
                         .unwrap_or_default();
                     annotations.insert(op.to_owned(), ann);
+                    fingerprints.insert(op.to_owned(), crate::pins::fingerprint(tool));
                 }
             }
-            Ok(annotations)
+            Ok((annotations, fingerprints))
         })();
         match setup {
-            Ok(annotations) => Ok(McpStdio {
+            Ok((annotations, fingerprints)) => Ok(McpStdio {
                 name: name.to_owned(),
                 timeout,
                 state: Mutex::new(Some(run)),
                 annotations,
+                fingerprints,
             }),
             Err(e) => {
                 run.stop();
@@ -231,6 +235,10 @@ impl McpStdio {
 
     pub fn annotations(&self, operation: &str) -> Option<Map<String, Value>> {
         self.annotations.get(operation).cloned()
+    }
+
+    pub fn fingerprints(&self) -> BTreeMap<String, String> {
+        self.fingerprints.clone()
     }
 
     /// Whether the server still answers: false once a call broke it.
@@ -409,6 +417,10 @@ impl Tools for McpTools {
 
     fn annotations(&self, tool: &str, operation: &str) -> Option<Map<String, Value>> {
         self.get(tool)?.annotations(operation)
+    }
+
+    fn fingerprints(&self, tool: &str) -> BTreeMap<String, String> {
+        self.get(tool).map(|t| t.fingerprints()).unwrap_or_default()
     }
 
     fn execute(&self, request: &ActionRequest) -> Result<Value, String> {
