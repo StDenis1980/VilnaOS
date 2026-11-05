@@ -6,7 +6,7 @@
 
 For each image: KIWI loads and validates the description (schema and
 rules, needs the ``kiwi`` Python package: ``zypper in python3-kiwi`` or
-``pip install kiwi``), and ``config.sh`` passes ``bash -n``. A pattern
+``pip install kiwi``), and ``config.sh`` and ``disk.sh`` pass ``bash -n``. A pattern
 the image names (``<namedCollection>``) that a spec in obs/packages
 provides counts with everything it requires. With ``--rpms``, every
 Vilna package the image asks for must be among the RPMs built in DIR,
@@ -123,13 +123,14 @@ def check(image: Path, built: set[str] | None, solve: bool = False) -> list[str]
     if not kiwi.is_file():
         return [f"{image.name}: no {kiwi.name}"]
     state = XMLState(XMLDescription(str(kiwi)).load())
-    config = image / "config.sh"
-    if config.is_file():
-        result = subprocess.run(
-            ["bash", "-n", str(config)], check=False, capture_output=True, text=True
-        )
-        if result.returncode != 0:
-            errors.append(f"{image.name}: config.sh: {result.stderr.strip()}")
+    for script in ("config.sh", "disk.sh"):
+        path = image / script
+        if path.is_file():
+            result = subprocess.run(
+                ["bash", "-n", str(path)], check=False, capture_output=True, text=True
+            )
+            if result.returncode != 0:
+                errors.append(f"{image.name}: {script}: {result.stderr.strip()}")
     wanted = set(state.get_system_packages()) | set(state.get_bootstrap_packages())
     capabilities = sorted(wanted)
     patterns = our_patterns()

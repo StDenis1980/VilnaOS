@@ -53,11 +53,9 @@
         <volume name="boot/writable"/>
         <volume name="usr/local"/>
         <volume name="var" copy_on_write="false"/>
-        <!-- /etc is a writable subvolume inside the root snapshot, as on
-             MicroOS and Aeon: the root itself is read-only, and without
-             this the SELinux autorelabel, systemd-tmpfiles and
-             gnome-initial-setup cannot write /etc on first boot. -->
-        <volume name="etc" parent="/@/.snapshots/1/snapshot"/>
+        <!-- /etc is not a volume here: KIWI mounts a volume with a parent
+             inside the root snapshot at the wrong path (subvol=@/etc) and
+             the build fails. disk.sh makes it a subvolume instead. -->
       </systemdisk>
       <size unit="G">24</size>
       <oemconfig>
