@@ -1,0 +1,154 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Tinta Presenta (StDenis1980/deckcraft): its MCP server `deckcraft-cli mcp`,
+# docs/mcp.md there. ADR 0017, stage 2, step 7. Levels: herkos/docs/permissions.md 4.
+#
+# Headless in Presenta's own Flatpak, held to the allowed folders, no network,
+# no sound. A presentation lives in the server's memory until a save or an
+# export, so editing is R1 and writing a file is R2 (asked every time).
+#
+# Checked against deckcraft main of 2026-11-05. Operations not named here
+# (render_slide, screenshot, call_app, pointer, key, select_tool) are denied.
+tool = "io.github.stdenis1980.tintapresenta"
+description = "Tinta Presenta: presentations in the allowed folders"
+
+[launch]
+program = "vilna-mcp-ext-tintapresenta"
+flatpak = "io.github.stdenis1980.tintapresenta"
+command = "deckcraft-cli"
+fixed = ["mcp"]
+root_flags = ["--automation-read-root", "--automation-write-root"]
+args = ["roots"]
+
+# The commands `run_command` and `batch` run. A command not named here is R4.
+[commands]
+"slide.*" = "R1"
+"section.*" = "R1"
+"text.*" = "R1"
+"format.*" = "R1"
+"shape.*" = "R1"
+"picture.*" = "R1"
+"table.*" = "R1"
+"chart.*" = "R1"
+"smartArt.*" = "R1"
+"arrange.*" = "R1"
+"draw.*" = "R1"
+"design.*" = "R1"
+"master.*" = "R1"
+"notes.*" = "R1"
+"handout.*" = "R1"
+"animation.*" = "R1"
+"transition.*" = "R1"
+"insert.*" = "R1"
+"edit.*" = "R1"
+"selection.*" = "R1"
+"comment.*" = "R1"
+"review.*" = "R1"
+"guide.*" = "R1"
+"document.*" = "R0"
+"view.*" = "R0"
+"window.*" = "R0"
+"commands.list" = "R0"
+"font.used" = "R0"
+"media.info" = "R0"
+"file.info" = "R1"
+"file.properties" = "R1"
+"file.templates" = "R0"
+"file.new" = "R1"
+"file.open" = "R1"
+"file.openBytes" = "R1"
+"file.revert" = "R1"
+"file.close" = "R1"
+"file.render" = "R1"
+"file.saveBytes" = "R1"
+"file.save" = "R2"
+"file.saveAs" = "R2"
+"file.saveTemplate" = "R2"
+"file.export" = "R2"
+"review.addToDictionary" = "R2"
+# Never through Gloxi: media in other programs, reports off the device, the
+# app's fonts.
+"media.openExternal" = "forbidden"
+"file.errorReports" = "forbidden"
+"font.add" = "forbidden"
+"font.replace" = "forbidden"
+"font.rescan" = "forbidden"
+
+[operations.list_commands]
+level = "R0"
+summary = "List Tinta Presenta's commands"
+
+[operations.new_presentation]
+level = "R1"
+summary = "Start a new presentation"
+
+[operations.open_presentation]
+level = "R1"
+summary = "Open a presentation"
+returns_external = true
+resource_args = ["path"]
+
+[operations.inspect_document]
+level = "R1"
+summary = "Read the presentation's structure"
+returns_external = true
+
+[operations.inspect_slide]
+level = "R1"
+summary = "Read a slide"
+returns_external = true
+
+[operations.add_slide]
+level = "R1"
+summary = "Add a slide"
+
+[operations.go_to_slide]
+level = "R1"
+summary = "Go to a slide"
+
+[operations.add_shape]
+level = "R1"
+summary = "Add a shape"
+
+[operations.add_text_box]
+level = "R1"
+summary = "Add a text box"
+
+[operations.set_text]
+level = "R1"
+summary = "Change a shape's text"
+
+[operations.insert_table]
+level = "R1"
+summary = "Add a table"
+
+[operations.insert_chart]
+level = "R1"
+summary = "Add a chart"
+
+[operations.insert_picture]
+level = "R1"
+summary = "Add a picture from a file"
+resource_args = ["path"]
+
+[operations.run_command]
+level = "R1"
+summary = "Run a command of Tinta Presenta"
+returns_external = true
+command_arg = "command"
+
+[operations.batch]
+level = "R1"
+summary = "Run several commands of Tinta Presenta"
+returns_external = true
+command_arg = "commands"
+command_key = "command"
+
+[operations.save_presentation]
+level = "R2"
+summary = "Save the presentation to a file"
+resource_args = ["path"]
+
+[operations.export]
+level = "R2"
+summary = "Export the presentation to a file"
+resource_args = ["path"]

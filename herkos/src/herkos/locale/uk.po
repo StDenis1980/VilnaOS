@@ -97,6 +97,12 @@ msgstr "дія зачіпає понад {n} об'єктів одразу"
 msgid "it cannot be undone"
 msgstr "її не можна скасувати"
 
+msgid "Herkos cannot tell which of the program's commands this runs"
+msgstr "Herkos не може визначити, які команди програми це виконає"
+
+msgid "the manifest gives no level for the program's command {commands}"
+msgstr "маніфест не задає рівня для команди програми {commands}"
+
 msgid "data leaves this device"
 msgstr "дані виходять за межі пристрою"
 

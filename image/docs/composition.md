@@ -81,7 +81,7 @@
 | `herkos-polkit` | Дії `org.vilna.herkos.*` і правила `/etc/polkit-1/rules.d/`, що забороняють користувачу `gloxi` прямі системні дії (розд. 9.2 permissions.md) |
 | `herkos-selinux` | Модуль SELinux: домени `herkos_t` і `gloxi_t`, що Gloxi може говорити лише з сокетом Herkos |
 | `herkos-dialog` | Діалог підтвердження в сеансі GNOME (окремий процес, приймає лише реальне введення) |
-| `herkos-manifests` | Маніфести для інструментів, D-Bus-інтерфейсів GNOME і MCP-серверів |
+| `herkos-manifests` | Маніфести програм із Flatpak, якими Gloxi користується через Herkos, і їхні юніти `vilna-mcp-ext-*@` ([`../../herkos/catalogue/`](../../herkos/catalogue/README.md): спершу п'ять програм Tinta Office). Пізніше — D-Bus-інтерфейси GNOME |
 
 ### 4.3. Gloxi
 

@@ -1,0 +1,139 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Tinta PDF (StDenis1980/pdfcraft): its MCP server `pdfcraft-cli mcp`,
+# docs/mcp.md and crates/automation/README.md there. ADR 0017, stage 2, step 7.
+# Levels: herkos/docs/permissions.md 4.
+#
+# Headless in Tinta PDF's own Flatpak, held to the allowed folders, no network.
+# A PDF lives in the server's memory until a save, so editing is R1 and
+# writing a file is R2 (asked every time: Herkos cannot back the file up).
+#
+# Only the task tools below: the generic command_run and command_batch, and
+# everything else (signing, scripts, printing, batch jobs over folders) are
+# denied until a manifest names them. Checked against pdfcraft main of 2026-11-05.
+tool = "io.github.stdenis1980.tintapdf"
+description = "Tinta PDF: PDF files in the allowed folders"
+
+[launch]
+program = "vilna-mcp-ext-tintapdf"
+flatpak = "io.github.stdenis1980.tintapdf"
+command = "pdfcraft-cli"
+fixed = ["mcp"]
+root_flags = ["--automation-read-root", "--automation-write-root"]
+args = ["roots"]
+
+[operations.doc_list]
+level = "R0"
+summary = "List the open PDFs"
+
+[operations.doc_open]
+level = "R1"
+summary = "Open a PDF"
+returns_external = true
+resource_args = ["path"]
+
+[operations.doc_info]
+level = "R1"
+summary = "Read a PDF's details"
+returns_external = true
+
+[operations.doc_inspect]
+level = "R1"
+summary = "Read a PDF's details"
+returns_external = true
+
+[operations.doc_close]
+level = "R1"
+summary = "Close a PDF"
+
+[operations.text_extract]
+level = "R1"
+summary = "Read a PDF's text"
+returns_external = true
+
+[operations.text_find]
+level = "R1"
+summary = "Find text in a PDF"
+returns_external = true
+
+[operations.text_word_count]
+level = "R1"
+summary = "Count a PDF's words"
+
+[operations.form_fields]
+level = "R1"
+summary = "Read a PDF's form fields"
+returns_external = true
+
+[operations.form_fill]
+level = "R1"
+summary = "Fill in a PDF's form"
+
+[operations.comment_list]
+level = "R1"
+summary = "Read a PDF's comments"
+returns_external = true
+
+[operations.ocr_recognize]
+level = "R1"
+summary = "Recognise the text of scanned pages"
+
+[operations.ocr_status]
+level = "R0"
+summary = "Which text recognition languages are installed"
+
+[operations.page_rotate]
+level = "R1"
+summary = "Rotate pages"
+
+[operations.page_delete]
+level = "R1"
+summary = "Delete pages"
+
+[operations.page_reverse]
+level = "R1"
+summary = "Reverse the page order"
+
+[operations.page_duplicate]
+level = "R1"
+summary = "Duplicate pages"
+
+[operations.page_insert_blank]
+level = "R1"
+summary = "Insert a blank page"
+
+[operations.page_insert_file]
+level = "R1"
+summary = "Insert pages from another file"
+resource_args = ["path"]
+
+[operations.page_add_text]
+level = "R1"
+summary = "Add text to a page"
+
+[operations.edit_undo]
+level = "R1"
+summary = "Undo"
+
+[operations.edit_redo]
+level = "R1"
+summary = "Redo"
+
+[operations.doc_save]
+level = "R2"
+summary = "Save the PDF to a file"
+resource_args = ["path"]
+
+[operations.page_extract]
+level = "R2"
+summary = "Save pages as a new PDF"
+resource_args = ["out"]
+
+[operations.doc_export_text]
+level = "R2"
+summary = "Save a PDF's text to a file"
+resource_args = ["path"]
+
+[operations.doc_export_office]
+level = "R2"
+summary = "Save a PDF as a Word, Excel or PowerPoint file"
+resource_args = ["path"]

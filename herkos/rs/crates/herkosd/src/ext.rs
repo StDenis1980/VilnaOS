@@ -52,7 +52,10 @@ pub fn command(flatpak: &Flatpak, roots: &[PathBuf], network: bool) -> Vec<Strin
         "--die-with-parent".to_owned(),
     ];
     cmd.extend(HIDDEN.iter().map(|f| format!("--nofilesystem={f}")));
-    cmd.extend(["x11", "fallback-x11", "wayland", "pulseaudio"].map(|s| format!("--nosocket={s}")));
+    // No printing either: Gloxi never prints (the Tinta manifests forbid it too).
+    cmd.extend(
+        ["x11", "fallback-x11", "wayland", "pulseaudio", "cups"].map(|s| format!("--nosocket={s}")),
+    );
     if !network {
         cmd.push("--unshare=network".to_owned());
     }
@@ -169,6 +172,25 @@ pub fn exec(program: &str, args_file: &Path) -> Result<(), String> {
     let Some(flatpak) = manifest.launch.as_ref().and_then(|l| l.flatpak.as_ref()) else {
         return Err(format!("{program}: no Flatpak program in [launch]"));
     };
+    // A program that takes no folders (Tinta Correo: a mailbox) gets none.
+    let wants_roots = manifest.launch.as_ref().is_some_and(|l| l.wants("roots"));
+    let roots = if wants_roots {
+        allowed_roots(args_file)?
+    } else {
+        Vec::new()
+    };
+    let cmd = command(flatpak, &roots, wants_network(manifest));
+    let (first, rest) = cmd.split_first().ok_or("empty command")?;
+    // Only returns if it could not start.
+    let err = Command::new(first)
+        .args(rest)
+        .env_remove("LD_PRELOAD")
+        .exec();
+    Err(format!("{first}: {err}"))
+}
+
+/// The allowed folders the system Herkos wrote for this program; at least one.
+fn allowed_roots(args_file: &Path) -> Result<Vec<PathBuf>, String> {
     let meta = fs::metadata(args_file).map_err(|e| format!("{}: {e}", args_file.display()))?;
     if meta.len() > 64 * 1024 {
         return Err(format!("{}: too big", args_file.display()));
@@ -182,14 +204,7 @@ pub fn exec(program: &str, args_file: &Path) -> Result<(), String> {
     if roots.is_empty() {
         return Err("none of the allowed folders exists".into());
     }
-    let cmd = command(flatpak, &roots, wants_network(manifest));
-    let (first, rest) = cmd.split_first().ok_or("empty command")?;
-    // Only returns if it could not start.
-    let err = Command::new(first)
-        .args(rest)
-        .env_remove("LD_PRELOAD")
-        .exec();
-    Err(format!("{first}: {err}"))
+    Ok(roots)
 }
 
 #[cfg(test)]
@@ -284,6 +299,69 @@ mod tests {
         let files = herkos_core::manifest::Registry::builtin().expect("builtin");
         let files = files.get("org.vilna.mcp.files").expect("files");
         assert!(unit(files).is_err());
+    }
+
+    #[test]
+    fn a_program_without_folders_gets_none_and_never_prints() {
+        let m = parse_manifest_str(
+            &PDF.replace("root_flags = [\"--automation-read-root\", \"--automation-write-root\"]\nargs = [\"roots\"]\n", ""),
+            "mail",
+        )
+        .expect("valid");
+        assert!(!m.launch.as_ref().is_some_and(|l| l.wants("roots")));
+        let flatpak = m
+            .launch
+            .as_ref()
+            .and_then(|l| l.flatpak.as_ref())
+            .expect("flatpak");
+        let cmd = command(flatpak, &[], wants_network(&m));
+        assert!(!cmd.iter().any(|a| a.starts_with("--filesystem=")));
+        assert!(cmd.ends_with(&[
+            "io.github.stdenis1980.tintapdf".to_owned(),
+            "mcp".to_owned()
+        ]));
+        assert!(cmd.contains(&"--nosocket=cups".to_owned()));
+        assert!(cmd.contains(&"--nofilesystem=home".to_owned()));
+    }
+
+    /// The catalogue of the herkos-manifests package (herkos/catalogue).
+    #[test]
+    fn the_catalogue_loads_and_each_program_gets_a_unit() {
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../catalogue");
+        let mut tools = Vec::new();
+        for entry in fs::read_dir(&dir).expect("catalogue") {
+            let path = entry.expect("entry").path();
+            if path.extension().and_then(|e| e.to_str()) != Some("toml") {
+                continue;
+            }
+            let text = fs::read_to_string(&path).expect("read");
+            assert!(text.len() <= 64 * 1024, "{}", path.display());
+            let m = parse_manifest_str(&text, &path.display().to_string()).expect("valid");
+            let launch = m.launch.as_ref().expect("launch");
+            let flatpak = launch.flatpak.as_ref().expect("flatpak");
+            assert_eq!(m.tool, flatpak.app);
+            assert_eq!(
+                Some(m.tool.as_str()),
+                path.file_stem().and_then(|s| s.to_str())
+            );
+            assert!(
+                unit(&m)
+                    .expect("unit")
+                    .contains(&format!("ext-exec {}", launch.program))
+            );
+            tools.push(m.tool);
+        }
+        tools.sort();
+        assert_eq!(
+            tools,
+            [
+                "io.github.stdenis1980.ibercorreo",
+                "io.github.stdenis1980.tintacalculo",
+                "io.github.stdenis1980.tintapdf",
+                "io.github.stdenis1980.tintapresenta",
+                "io.github.stdenis1980.tintatexto",
+            ]
+        );
     }
 
     #[test]

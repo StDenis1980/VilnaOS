@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.2
+Version:        0.3
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -31,6 +31,8 @@ Requires:       distribution-logos-Vilna
 Requires:       vilna-presets
 Requires:       herkos
 Requires:       herkos-agent
+# Programs Gloxi may use (Tinta Office); each stays off until turned on.
+Requires:       herkos-manifests
 Requires:       gloxi
 Requires:       vilna-mcp-files
 Requires:       vilna-mcp-backup

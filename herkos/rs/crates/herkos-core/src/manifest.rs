@@ -13,7 +13,7 @@ use crate::request::is_name;
 use crate::risk::Level;
 
 pub const FORBIDDEN: &str = "forbidden";
-const OPERATION_KEYS: [&str; 7] = [
+const OPERATION_KEYS: [&str; 9] = [
     "level",
     "summary",
     "undoable",
@@ -21,7 +21,14 @@ const OPERATION_KEYS: [&str; 7] = [
     "returns_external",
     "egress",
     "resource_args",
+    "command_arg",
+    "command_key",
 ];
+/// A group of the program's commands in `[commands]`: `home.*`.
+const GROUP_SUFFIX: &str = ".*";
+pub const MAX_COMMANDS: usize = 4096;
+/// At most this many commands in one call (a batch); more is not read.
+pub const MAX_CALL_COMMANDS: usize = 64;
 
 /// What Herkos may pass a tool when it starts it, in this order:
 /// `backup_dir` -> `--backup-dir DIR`, `roots` -> `--root DIR` per allowed folder.
@@ -80,6 +87,10 @@ pub struct Operation {
     pub egress: bool,
     /// Arguments that name files; each must be a declared resource.
     pub resource_args: Vec<String>,
+    /// The argument that names the program's command(s) this call runs: a
+    /// string, or a list of strings or of tables whose `command_key` names it.
+    pub command_arg: Option<String>,
+    pub command_key: Option<String>,
 }
 
 impl Operation {
@@ -128,12 +139,77 @@ pub struct Manifest {
     pub description: String,
     pub operations: BTreeMap<String, Operation>,
     pub launch: Option<Launch>,
+    /// Level of each of the program's commands, by id or group (`home.*`);
+    /// `None`: forbidden. A command it does not name is R4 (decision of 2026-11-05).
+    pub commands: BTreeMap<String, Option<Level>>,
 }
 
 impl Manifest {
     pub fn operation(&self, name: &str) -> Option<&Operation> {
         self.operations.get(name)
     }
+
+    /// `(known, level)` of one command: the id itself, else its nearest group.
+    pub fn command_level(&self, command: &str) -> (bool, Option<Level>) {
+        if let Some(level) = self.commands.get(command) {
+            return (true, *level);
+        }
+        let parts: Vec<&str> = command.split('.').collect();
+        for n in (1..parts.len()).rev() {
+            let group = format!(
+                "{}{GROUP_SUFFIX}",
+                parts.get(..n).unwrap_or_default().join(".")
+            );
+            if let Some(level) = self.commands.get(&group) {
+                return (true, *level);
+            }
+        }
+        (false, None)
+    }
+}
+
+/// A command id a call may name (no groups: those are only for the manifest):
+/// 1 to 8 parts of `[A-Za-z0-9_-]{1,64}` joined by dots.
+pub fn is_command(s: &str) -> bool {
+    let parts: Vec<&str> = s.split('.').collect();
+    parts.len() <= 8
+        && parts.iter().all(|p| {
+            !p.is_empty()
+                && p.len() <= 64
+                && p.bytes()
+                    .all(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'-')
+        })
+}
+
+fn parse_commands(
+    value: &Value,
+    source: &str,
+) -> Result<BTreeMap<String, Option<Level>>, ManifestError> {
+    let at = format!("{source}: commands");
+    let table = match value {
+        Value::Table(t) if !t.is_empty() => t,
+        _ => return bad(format!("{at}: must be a table of command ids or groups")),
+    };
+    if table.len() > MAX_COMMANDS {
+        return bad(format!("{at}: more than {MAX_COMMANDS} entries"));
+    }
+    let mut commands = BTreeMap::new();
+    for (key, raw) in table {
+        let name = key.strip_suffix(GROUP_SUFFIX).unwrap_or(key);
+        if !is_command(name) {
+            return bad(format!("{at}: bad command id or group {key:?}"));
+        }
+        let level = match raw.as_str() {
+            Some(FORBIDDEN) => None,
+            Some(l) => match Level::parse(l) {
+                Some(l) => Some(l),
+                None => return bad(format!("{at}.{key}: unknown risk level: {l:?}")),
+            },
+            None => return bad(format!("{at}.{key}: level must be R0-R4 or 'forbidden'")),
+        };
+        commands.insert(key.clone(), level);
+    }
+    Ok(commands)
 }
 
 fn bad<T>(msg: String) -> Result<T, ManifestError> {
@@ -160,7 +236,10 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
         Some(t) if is_name(t) => t.to_owned(),
         _ => return bad(format!("{source}: 'tool' must be a reverse-DNS name")),
     };
-    let unknown = unknown_keys(data, &["tool", "description", "operations", "launch"]);
+    let unknown = unknown_keys(
+        data,
+        &["tool", "description", "operations", "launch", "commands"],
+    );
     if !unknown.is_empty() {
         return bad(format!("{source}: unknown keys {unknown:?}"));
     }
@@ -231,6 +310,19 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
             Some(Value::String(s)) => s.clone(),
             Some(_) => return bad(format!("{at}: 'summary' must be a string")),
         };
+        let arg_name = |key: &str| match op.get(key) {
+            None => Ok(None),
+            Some(Value::String(s)) if is_name(s) => Ok(Some(s.clone())),
+            Some(_) => bad(format!("{at}: '{key}' must be an argument name")),
+        };
+        let command_arg = arg_name("command_arg")?;
+        let command_key = arg_name("command_key")?;
+        if command_key.is_some() && command_arg.is_none() {
+            return bad(format!("{at}: 'command_key' goes only with 'command_arg'"));
+        }
+        if command_arg.is_some() && !data.contains_key("commands") {
+            return bad(format!("{at}: 'command_arg' needs a [commands] table"));
+        }
         operations.insert(
             name.clone(),
             Operation {
@@ -242,6 +334,8 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
                 returns_external: flag("returns_external")?,
                 egress: flag("egress")?,
                 resource_args,
+                command_arg,
+                command_key,
             },
         );
     }
@@ -249,11 +343,16 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
         None => None,
         Some(l) => Some(parse_launch(l, source)?),
     };
+    let commands = match data.get("commands") {
+        None => BTreeMap::new(),
+        Some(c) => parse_commands(c, source)?,
+    };
     Ok(Manifest {
         tool,
         description,
         operations,
         launch,
+        commands,
     })
 }
 

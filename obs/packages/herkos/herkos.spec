@@ -59,6 +59,20 @@ the person's screen (herkos-agent, a user service) in Herkos's own
 window. It also contains Herkos-lite, the preview gate that runs in the
 person's session.
 
+%package -n herkos-manifests
+Summary:        Herkos manifests for programs Gloxi may use
+License:        GPL-3.0-or-later
+Requires:       %{name} = %{version}-%{release}
+Requires:       flatpak
+BuildArch:      noarch
+
+%description -n herkos-manifests
+The catalogue of programs from Flatpak that the Gloxi assistant may use
+through Herkos (ADR 0017): for each one, how herkosd starts it in its own
+sandbox and the risk level of each of its actions. First the five Tinta
+Office programs. Each program stays off until the person turns it on in
+Gloxi's settings.
+
 %prep
 %autosetup -p1 -a1
 # Cargo looks for its config from the working directory up, not next to
@@ -87,6 +101,14 @@ install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d
 install -Dm0644 systemd/herkos.sysusers %{buildroot}%{_sysusersdir}/herkos.conf
 install -Dm0644 systemd/system.toml %{buildroot}%{_sysconfdir}/herkos/system.toml
 install -Dm0644 systemd/herkos-agent.service %{buildroot}%{_userunitdir}/herkos-agent.service
+# The catalogue (herkos/catalogue) and, for each program in it, the unit
+# that runs it for a person, made from its manifest.
+install -d %{buildroot}%{_datadir}/herkos/manifests
+for manifest in catalogue/*.toml; do
+  install -m0644 "$manifest" %{buildroot}%{_datadir}/herkos/manifests/
+  program=$(sed -n 's/^program = "\(vilna-mcp-ext-[a-z0-9-]*\)"$/\1/p' "$manifest")
+  rs/target/release/herkosd ext-unit "$manifest" > %{buildroot}%{_unitdir}/"$program"@.service
+done
 %pyproject_install
 %python_expand %fdupes %{buildroot}%{$python_sitelib}
 
@@ -125,6 +147,12 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{_sysusersdir}/herkos.conf
 %dir %{_sysconfdir}/herkos
 %config(noreplace) %{_sysconfdir}/herkos/system.toml
+
+%files -n herkos-manifests
+%license LICENSE
+%dir %{_datadir}/herkos
+%{_datadir}/herkos/manifests
+%{_unitdir}/vilna-mcp-ext-*@.service
 
 %files agent
 %license LICENSE
