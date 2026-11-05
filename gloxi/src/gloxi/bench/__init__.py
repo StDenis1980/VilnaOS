@@ -106,7 +106,8 @@ def cyrillic_share(text: str) -> float:
 LANGUAGES = ("uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
 
 _WORDS = {
-    "en": "yes the and is are you your to of it that with this can for not all would will",
+    "en": "yes the and is are you your to of it that with this can for not all would will "
+    "i a an am hi hello here in on be have we do what how my me",
     "es": "sí el la los las que es y en un una para por con tu tus puedes no del "
     "se todos puedo pero como esto",
     "pl": "i w nie się jest to na z że do jak czy możesz jeśli lub dla wszystkie "
@@ -149,8 +150,16 @@ def guess_language(text: str) -> str | None:
         scores[lang] = sum(w in vocab for w in words)
         scores[lang] += 2 * sum(low.count(ch) for ch in _LETTERS.get(lang, ""))
     best = max(scores, key=scores.get)
-    if scores[best] == 0 or list(scores.values()).count(scores[best]) > 1:
-        return None  # nothing to go by, or a tie
+    if scores[best] == 0:
+        return None  # nothing to go by
+    tied = [lang for lang, score in scores.items() if score == scores[best]]
+    if len(tied) > 1:
+        # "to", "i" and "a" are Polish and Czech words too. A short answer
+        # written in plain Latin letters only, with English among the best
+        # guesses, is English: the other languages use letters of their own.
+        if "en" in tied and all(ch.isascii() for word in words for ch in word):
+            return "en"
+        return None
     return best
 
 

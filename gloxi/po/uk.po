@@ -843,6 +843,10 @@ msgstr "Увімкнено: запуститься, коли Herkos запуст
 msgid "You turned this program on in Gloxi's settings"
 msgstr "Ви ввімкнули цю програму в налаштуваннях Gloxi"
 
+#: src/gloxi/router.py
+msgid "Note: the cloud model changed some masked values, so they could not be put back. Check the answer before you use it."
+msgstr "Увага: хмарна модель змінила частину прихованих даних, тож їх не вдалося повернути. Перевірте відповідь, перш ніж нею користуватися."
+
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (denied: {message})"
