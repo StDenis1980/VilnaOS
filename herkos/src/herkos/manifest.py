@@ -34,6 +34,13 @@ from herkos.risk import Level
 
 FORBIDDEN = "forbidden"
 _NAME = re.compile(r"^[a-z0-9][a-z0-9_.-]{0,127}$")
+# A program on PATH (and, for the system Herkos, its systemd unit): no paths.
+_PROGRAM = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
+_MODULE = re.compile(r"^[a-z_][a-z0-9_]{0,63}(\.[a-z_][a-z0-9_]{0,63}){0,3}$")
+# What Herkos may pass a tool when it starts it, in this order:
+# backup_dir -> --backup-dir DIR, roots -> --root DIR for each allowed folder.
+LAUNCH_ARGS = ("backup_dir", "roots")
+_LAUNCH_KEYS = {"program", "module", "args"}
 _OPERATION_KEYS = {
     "level",
     "summary",
@@ -80,10 +87,20 @@ class Operation:
 
 
 @dataclass(frozen=True)
+class Launch:
+    """How Herkos starts the tool (ADR 0017, 0.2): from the manifest, not from code."""
+
+    program: str  # on PATH; the system Herkos starts the unit <program>@<uid>
+    module: str | None = None  # Herkos-lite runs it with its own Python
+    args: tuple[str, ...] = ()  # names from LAUNCH_ARGS
+
+
+@dataclass(frozen=True)
 class Manifest:
     tool: str
     description: str
     operations: Mapping[str, Operation]
+    launch: Launch | None = None
 
     def operation(self, name: str) -> Operation | None:
         return self.operations.get(name)
@@ -93,7 +110,7 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
     tool = data.get("tool")
     if not isinstance(tool, str) or not _NAME.match(tool):
         raise ManifestError(f"{source}: 'tool' must be a reverse-DNS name")
-    unknown = set(data) - {"tool", "description", "operations"}
+    unknown = set(data) - {"tool", "description", "operations", "launch"}
     if unknown:
         raise ManifestError(f"{source}: unknown keys {sorted(unknown)}")
     description = data.get("description", "")
@@ -144,7 +161,33 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
             resource_args=tuple(resource_args),
             **flags,
         )
-    return Manifest(tool=tool, description=description, operations=operations)
+    launch = _parse_launch(data.get("launch"), source) if "launch" in data else None
+    return Manifest(tool=tool, description=description, operations=operations, launch=launch)
+
+
+def _parse_launch(data: Any, source: str) -> Launch:
+    where = f"{source}: launch"
+    if not isinstance(data, dict):
+        raise ManifestError(f"{where}: must be a table")
+    unknown = set(data) - _LAUNCH_KEYS
+    if unknown:
+        raise ManifestError(f"{where}: unknown keys {sorted(unknown)}")
+    program = data.get("program")
+    if not isinstance(program, str) or not _PROGRAM.match(program):
+        raise ManifestError(f"{where}: 'program' must be a program name, not a path")
+    module = data.get("module")
+    if module is not None and (not isinstance(module, str) or not _MODULE.match(module)):
+        raise ManifestError(f"{where}: 'module' must be a Python module name")
+    args = data.get("args", [])
+    if (
+        not isinstance(args, list)
+        or not all(isinstance(a, str) and a in LAUNCH_ARGS for a in args)
+        or len(set(args)) != len(args)
+    ):
+        raise ManifestError(f"{where}: 'args' must be a list of {list(LAUNCH_ARGS)}")
+    # Always in LAUNCH_ARGS order, so every Herkos builds the same command line.
+    ordered = tuple(a for a in LAUNCH_ARGS if a in args)
+    return Launch(program=program, module=module, args=ordered)
 
 
 def load_manifest(path: Path) -> Manifest:

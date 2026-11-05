@@ -303,6 +303,29 @@ struct Slot {
     last_try: Mutex<Option<Instant>>,
 }
 
+/// The arguments a tool's `[launch]` asks for (ADR 0017), or `None` when
+/// it needs allowed folders and there are none. Mirrors `launch_command` in
+/// `herkos/src/herkos/cli.py`.
+pub fn launch_args(
+    launch: &herkos_core::manifest::Launch,
+    backups: &std::path::Path,
+    roots: &[std::path::PathBuf],
+) -> Option<Vec<String>> {
+    let mut args = Vec::new();
+    if launch.wants("backup_dir") {
+        args.extend(["--backup-dir".to_owned(), backups.display().to_string()]);
+    }
+    if launch.wants("roots") {
+        if roots.is_empty() {
+            return None;
+        }
+        for r in roots {
+            args.extend(["--root".to_owned(), r.display().to_string()]);
+        }
+    }
+    Some(args)
+}
+
 /// The tool servers this Herkos started, by tool name.
 pub struct McpTools {
     tools: Vec<(String, Slot)>,

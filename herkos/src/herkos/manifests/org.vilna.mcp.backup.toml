@@ -10,6 +10,14 @@
 tool = "org.vilna.mcp.backup"
 description = "Encrypted backups of the person's data"
 
+# How Herkos starts the server (ADR 0017): the program on PATH (the system
+# Herkos: its unit vilna-mcp-backup@<uid>), the Python module for Herkos-lite, and
+# what Herkos passes it.
+[launch]
+program = "vilna-mcp-backup"
+module = "vilna_mcp_backup"
+args = []
+
 [operations.status]
 level = "R0"
 summary = "See whether backups are on and how the last one went"
