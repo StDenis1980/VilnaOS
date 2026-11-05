@@ -3,6 +3,7 @@
 - Стан: Прийнято (Denys, 2026-11-02)
 - Дата: 2026-11-02
 - Пов'язано: [дорожня карта](../roadmap.md) розд. 3.1, [склад образу](../../image/docs/composition.md) розд. 4.4 і 6, [`packages.yaml`](../../image/packages.yaml), [модель дозволів Herkos](../../herkos/docs/permissions.md) розд. 4 і 9.3, [ADR 0011](0011-default-office-suite.md)
+- Доповнено: [ADR 0019](0019-messengers.md) — виняток із критерію verified для збірок спільноти Flathub (Signal) і розділ «Спілкування»
 
 ## Контекст
 
