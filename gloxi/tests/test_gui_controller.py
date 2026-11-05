@@ -31,6 +31,9 @@ class RecordingView:
     def show_note(self, text):
         self.events.append(("note", text))
 
+    def open_uri(self, url):
+        self.events.append(("open", url))
+
     def answer(self):
         return "".join(e[1] for e in self.events if e[0] == "piece")
 
@@ -258,3 +261,34 @@ def test_model_switcher_choices():
     assert current_choice(conv.router) == "auto"
     conv.router.set_mode("cloud")
     assert current_choice(conv.router) == "cloud"
+
+
+def test_feedback_talk_in_the_window():
+    from gloxi.feedback import FeedbackTalk
+
+    view = RecordingView()
+    talk = FeedbackTalk(system_lines=lambda: ["System: Test OS"], latest_crash=lambda: None)
+    server = FakeLlamaServer()
+    controller = ChatController(make_conversation(server), view, runner=sync, feedback=talk)
+    assert controller.report_problem()
+    for answer in ("1", "Gloxi froze", "-", "2", "1"):
+        assert controller.submit(answer)
+    assert server.requests == []  # the model never saw any of it
+    opened = [e[1] for e in view.events if e[0] == "open"]
+    assert len(opened) == 1 and "Gloxi+froze" in opened[0]
+    assert view.events[-1] == ("busy", False)
+
+
+def test_feedback_phrase_starts_the_talk_and_cancel_opens_nothing():
+    from gloxi.feedback import FeedbackTalk
+
+    view = RecordingView()
+    talk = FeedbackTalk(system_lines=lambda: [], latest_crash=lambda: None)
+    server = FakeLlamaServer()
+    controller = ChatController(make_conversation(server), view, runner=sync, feedback=talk)
+    assert controller.submit("Повідом про помилку")
+    assert talk.active
+    assert controller.submit("/cancel")
+    assert not talk.active
+    assert server.requests == []
+    assert not [e for e in view.events if e[0] == "open"]
