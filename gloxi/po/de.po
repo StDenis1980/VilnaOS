@@ -835,6 +835,10 @@ msgstr ""
 msgid "You turned this program on in Gloxi's settings"
 msgstr ""
 
+#: src/gloxi/router.py
+msgid "Note: the cloud model changed some masked values, so they could not be put back. Check the answer before you use it."
+msgstr ""
+
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (denied: {message})"

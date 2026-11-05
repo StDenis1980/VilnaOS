@@ -117,6 +117,34 @@ def test_real_gateway_masks_and_restores():
     assert conv.history[-1]["content"] == answer
 
 
+def test_changed_placeholder_still_comes_back_from_the_cloud():
+    pytest.importorskip("privacy_gateway")
+    from gloxi.privacy import guard_factory
+
+    cloud = FakeLlamaServer("Готово, лист для [Email_1].")
+    conv = make_conversation(
+        FakeLlamaServer(), cloud=cloud, policy=ON, guard_factory=guard_factory(ON)
+    )
+    assert (
+        ask(conv, "Напиши на olena@example.com", force="cloud")
+        == "Готово, лист для olena@example.com."
+    )
+
+
+def test_lost_value_is_reported_to_the_person():
+    pytest.importorskip("privacy_gateway")
+    from gloxi.privacy import guard_factory
+    from gloxi.router import MISSING_VALUES_NOTE
+
+    cloud = FakeLlamaServer("Готово, лист для {ЕМЕЙЛ_1}.")
+    conv = make_conversation(
+        FakeLlamaServer(), cloud=cloud, policy=ON, guard_factory=guard_factory(ON)
+    )
+    answer = ask(conv, "Напиши на olena@example.com", force="cloud")
+    assert answer.startswith("Готово, лист для {ЕМЕЙЛ_1}.")
+    assert answer.endswith(MISSING_VALUES_NOTE)
+
+
 def test_masking_off_sends_as_is():
     from gloxi.privacy import guard_factory
 

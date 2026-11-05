@@ -23,10 +23,12 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, replace
+from gettext import gettext as _
 from typing import Literal, Protocol
 from urllib.parse import urlsplit
 
 from gloxi.config import ROUTER_MODES, RouterPolicy
+from gloxi.i18n import N_
 from gloxi.llm import ChatClient, Message, ToolCall
 
 Target = Literal["local", "cloud"]
@@ -137,7 +139,15 @@ class Router:
             yield from self.cloud.stream(messages)
             return
         masked = self.guard.mask_messages(messages)
-        yield from self.guard.unmask_stream(self.cloud.stream(masked))
+        answer = []
+        for piece in self.guard.unmask_stream(self.cloud.stream(masked)):
+            answer.append(piece)
+            yield piece
+        # The model may have changed a placeholder beyond recognition, so a
+        # real value is missing from the answer: say so rather than hide it.
+        unresolved = getattr(self.guard, "unresolved", None)
+        if unresolved and unresolved("".join(answer)):
+            yield "\n\n" + _(MISSING_VALUES_NOTE)
 
     def stream_events(
         self, messages: Sequence[Message], route: Route, tools: Sequence[dict] | None = None
@@ -173,6 +183,11 @@ class Router:
         destination = "this computer" if target == "local" else _host(client.endpoint.url)
         return Route(target=target, reason=reason, destination=destination)
 
+
+MISSING_VALUES_NOTE = N_(
+    "Note: the cloud model changed some masked values, so they could not be "
+    "put back. Check the answer before you use it."
+)
 
 _PARTIAL_PLACEHOLDER = re.compile(r"\[[A-Z_]{0,12}\d{0,4}$")
 

@@ -234,6 +234,21 @@ def test_russian_is_not_ukrainian():
     assert run_checks("Привет, я Gloxi. Это не проблема.", {"lang": "uk"}) == ["lang"]
 
 
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Hi! I am Gloxi, a local assistant.",
+        "Hello, how can I help?",
+        "Here it is, to the point.",
+        "To do this, open the file.",
+    ],
+)
+def test_short_english_is_not_polish_or_czech(text):
+    # chat-en-hello and ukq-translate-en failed on 2026-11-05: "to", "i" and
+    # "a" are also Polish and Czech words, and the guess was a tie.
+    assert guess_language(text) == "en"
+
+
 def test_nothing_to_go_by():
     assert guess_language("Gloxi 2026") is None
     assert run_checks("42", {"lang": "pl"}) == ["lang"]
