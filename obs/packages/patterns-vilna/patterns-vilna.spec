@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.1
+Version:        0.2
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -46,7 +46,10 @@ Requires:       vilna-software-picks
 # distribution-logos-openSUSE-Aeon, which our Vilna-release and
 # distribution-logos-Vilna replace, and malcontent-control, which
 # Tumbleweed no longer has. Those three are left out, as is
-# distribution-release (Vilna-release above). The Aeon branding that
+# distribution-release (Vilna-release above), and
+# systemd-repart-branding-Aeon: its repart.d is made for Aeon's tik
+# installer and, on a ready KIWI disk, makes systemd-repart fail the
+# first boot (no free space for the partitions it wants). The Aeon branding that
 # does not conflict (gnome-branding-Aeon, systemd-presets-branding-Aeon
 # and the like) stays until the *-branding-Vilna packages exist; the
 # image's config.sh lists what is left. Compare with
@@ -279,7 +282,6 @@ Requires:       gvfs-backend-samba
 Requires:       ignition-dracut
 Requires:       jxl-thumbnailer
 Requires:       sdbootutil-rpm-scriptlets
-Requires:       systemd-repart-branding-Aeon
 Requires:       x86_64_v3-branding-Aeon
 
 %description base

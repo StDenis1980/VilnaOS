@@ -14,6 +14,12 @@ echo "Configure image: [${kiwi_iname:-Vilna}]"
 systemctl preset-all
 systemctl set-default graphical.target
 
+# The disk is ready-made by KIWI, not installed by Aeon's tik: if any
+# repart.d from Aeon's packages is still present, systemd-repart must
+# not try to repartition the disk we booted from (first-boot failure
+# seen in the VM test of 2026-11-05).
+systemctl mask systemd-repart.service
+
 # SELinux runs enforcing, as in Aeon: label the whole system on first boot.
 if [ -e /etc/selinux/config ]; then
     touch /etc/selinux/.autorelabel

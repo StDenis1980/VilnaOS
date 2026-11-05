@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov  5 14:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.3: enable NetworkManager.service (and wait-online);
+  no preset enabled it, so the image booted without network
+
+-------------------------------------------------------------------
 Wed Nov  4 22:15:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.2:
