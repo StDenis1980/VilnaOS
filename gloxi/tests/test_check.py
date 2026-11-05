@@ -134,3 +134,25 @@ def test_cli_check_prints_report(monkeypatch, capsys, tmp_path):
     out = capsys.readouterr().out
     assert "To paste into the feedback form:" in out
     assert "Speed test: not run" in out
+
+
+def test_larger_model_without_a_speed_test_is_explained():
+    r = report(models=[DEFAULT_MODEL.filename, LARGE_MODEL.filename])
+    assert r.in_use() == LARGE_MODEL.name
+    (note,) = r.notes()
+    assert LARGE_MODEL.filename in note and "~/.var/app/" in note
+    assert f"(starts {LARGE_MODEL.name})" in "\n".join(r.lines())
+    assert note in r.render()
+
+
+def test_larger_model_that_passed_the_test_needs_no_note():
+    r = report(models=[LARGE_MODEL.filename], speed=20.0)
+    assert r.notes() == []
+    assert report(models=[DEFAULT_MODEL.filename]).notes() == []
+
+
+def test_start_message_names_the_model():
+    from gloxi.engine import model_name
+
+    assert model_name(Path("/m") / LARGE_MODEL.filename) == LARGE_MODEL.name
+    assert model_name("other.gguf") == "other.gguf"

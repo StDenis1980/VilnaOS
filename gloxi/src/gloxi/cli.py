@@ -30,6 +30,7 @@ from gloxi.engine import (
     Plan,
     download,
     human_size,
+    model_name,
     plan,
     total_ram,
 )
@@ -149,7 +150,7 @@ def prepare_engine(
             print("\n" + _("The model was not downloaded: {why}").format(why=exc), file=out)
             raise NoModel from None
         print("\n" + _("The model is ready."), file=out)
-    print(_("Starting the model on this computer…"), file=out)
+    print(_("Starting {name} on this computer…").format(name=model_name(model_path)), file=out)
     engine = engine_type(p.binary, model_path, settings.local.url)
     try:
         engine.start()
