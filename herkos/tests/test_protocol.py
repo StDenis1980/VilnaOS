@@ -245,3 +245,28 @@ def test_python_client(served):
             h.request_action(tool="x", operation="y", reason="")
     with pytest.raises(HerkosUnavailable):
         HerkosClient.connect(path.parent / "nothing.sock")
+
+
+def test_python_client_programs(served):
+    from herkos.client import HerkosClient, HerkosError
+    from herkos.manifest import parse_manifest
+
+    env, path, _ = served
+    env.gate.manifests.add(
+        parse_manifest(
+            {
+                "tool": "org.example.notes",
+                "description": "Notes",
+                "operations": {"read": {"level": "R1", "summary": "Read"}},
+            },
+            "notes",
+        )
+    )
+    with HerkosClient.connect(path) as h:
+        (program,) = h.programs()
+        assert (program["tool"], program["enabled"]) == ("org.example.notes", False)
+        answer = h.set_program("org.example.notes", True, "r")
+        assert (answer["enabled"], answer["code"]) == (True, "done")
+        assert h.programs()[0]["enabled"] is True
+        with pytest.raises(HerkosError):
+            h.set_program("org.vilna.mcp.files", False)

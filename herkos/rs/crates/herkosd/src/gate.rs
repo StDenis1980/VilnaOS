@@ -29,6 +29,7 @@ use crate::grants::{Duration, GrantStore, grant_record};
 use crate::keros_model::ModelCheck;
 use crate::mitos::{Journal, JournalError, digest, read_records};
 use crate::pins::PinStore;
+use crate::programs::ProgramStore;
 use crate::rpc::new_action_id;
 
 const JOURNAL_MAX_RESOURCES: usize = 50;
@@ -302,6 +303,8 @@ pub struct Gate {
     model_check: Option<ModelCheck>,
     /// What catalogue tools said about their operations (ADR 0017, step 3).
     pins: PinStore,
+    /// Which catalogue programs the person turned on (ADR 0017, step 6).
+    pub programs: ProgramStore,
 }
 
 fn decision_record(o: &Outcome) -> Value {
@@ -326,8 +329,13 @@ impl Gate {
         if let Some(e) = &pins.load_error {
             eprintln!("herkosd: tool pins unreadable, every catalogue operation asks again: {e}");
         }
+        let programs = ProgramStore::new(&config.state_dir.join("programs.json"));
+        if let Some(e) = &programs.load_error {
+            eprintln!("herkosd: programs file unreadable, every catalogue program is off: {e}");
+        }
         Gate {
             pins,
+            programs,
             config,
             manifests,
             tools,
@@ -350,7 +358,7 @@ impl Gate {
         let mut out = Vec::new();
         let mut hidden = Vec::new();
         for manifest in self.manifests.iter() {
-            if !self.tools.running(&manifest.tool) {
+            if !self.tools.running(&manifest.tool) || !self.is_on(&manifest.tool) {
                 continue;
             }
             let ops: Vec<Value> = manifest
@@ -387,6 +395,85 @@ impl Gate {
             }
         }
         json!({"tools": out, "hidden": hidden})
+    }
+
+    /// Built-in tools always; a catalogue program once the person turned it on.
+    pub fn is_on(&self, tool: &str) -> bool {
+        self.manifests.is_builtin(tool) || self.programs.enabled(tool)
+    }
+
+    /// `herkos.programs`: every catalogue program, on or off, for Gloxi's settings.
+    pub fn program_list(&self) -> Value {
+        let listing = self.listing();
+        let hidden = listing["hidden"].as_array().cloned().unwrap_or_default();
+        let programs: Vec<Value> = self
+            .manifests
+            .iter()
+            .filter(|m| !self.manifests.is_builtin(&m.tool))
+            .map(|m| {
+                let why: Vec<Value> = hidden
+                    .iter()
+                    .filter(|h| h["tool"] == m.tool.as_str())
+                    .map(|h| json!({"operation": h["operation"], "why": h["why"]}))
+                    .collect();
+                json!({
+                    "tool": m.tool,
+                    "description": m.description,
+                    "enabled": self.programs.enabled(&m.tool),
+                    "running": self.tools.running(&m.tool),
+                    "hidden": why,
+                })
+            })
+            .collect();
+        json!({ "programs": programs })
+    }
+
+    /// `herkos.set_program`: turning off is immediate; turning on asks the
+    /// person. A program turned on starts the next time Herkos starts its tools.
+    pub fn set_program(&self, tool: &str, on: bool, reason: &str) -> Result<Value, String> {
+        let manifest = match self.manifests.get(tool) {
+            Some(m) if !self.manifests.is_builtin(tool) => m,
+            _ => return Err(format!("{tool} is not a program from the catalogue")),
+        };
+        if on && !self.programs.enabled(tool) {
+            let question = Question {
+                summary: format!("Let Gloxi use this program: {}", manifest.description),
+                reason: reason.to_owned(),
+                tool: tool.to_owned(),
+                operation: "enable".to_owned(),
+                resources: Vec::new(),
+                level: Level::R2,
+                undoable: true,
+                raises: Vec::new(),
+                taint_sources: Vec::new(),
+                choices: vec![Answer::Once],
+                content: None,
+            };
+            let answer = {
+                let _one = self
+                    .ask_lock
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
+                self.confirmer.ask(&question, self.config.confirm_timeout)
+            };
+            if answer != Answer::Once {
+                return Ok(json!({"tool": tool, "enabled": false, "code": "denied_user"}));
+            }
+        }
+        if on != self.programs.enabled(tool) {
+            self.journal
+                .append("program", json!({"tool": tool, "enabled": on}), None)
+                .map_err(|e| e.0)?;
+            self.programs.set(tool, on)?;
+        }
+        let running = self.tools.running(tool);
+        Ok(json!({
+            "tool": tool,
+            "enabled": on,
+            "code": "done",
+            // Turning off works at once; a program turned on starts with Herkos.
+            "restart_needed": on && !running,
+        }))
     }
 
     #[cfg(test)]
@@ -459,6 +546,10 @@ impl Gate {
                 "denied_unknown",
                 format!("unknown tool {}", request.tool),
             );
+        }
+        if !self.is_on(&request.tool) {
+            let why = format!("{} is turned off in Gloxi's settings", request.tool);
+            return deny(a.level, "denied_no_tool", why);
         }
         let Some(op) = a.operation.clone() else {
             let why = format!("{} has no operation {}", request.tool, request.operation);
@@ -897,14 +988,17 @@ mod tests {
         let said = std::sync::Arc::new(Mutex::new("Read a note".to_owned()));
         let asked = std::sync::Arc::new(Asked(Mutex::new(Vec::new()), Answer::Once));
         let make = |n: &str| {
-            Gate::new(
+            let g = Gate::new(
                 config.clone(),
                 manifests.clone(),
                 Box::new(Notes(std::sync::Arc::clone(&said))),
                 GrantStore::new(&config.state_dir.join(format!("{n}.json")), now),
                 Journal::open(&config.state_dir.join(format!("{n}.jsonl"))).expect("journal"),
                 Box::new(std::sync::Arc::clone(&asked)),
-            )
+            );
+            // The person turned the program on (step 6).
+            g.programs.set("org.example.notes", true).expect("on");
+            g
         };
         let read = parse_request(&json!({"tool": "org.example.notes", "operation": "read",
             "reason": "r", "arguments": {"id": 1}}))
@@ -924,6 +1018,92 @@ mod tests {
         }
         let o = make("c").handle(&read, &mut s);
         assert_eq!((o.code, o.level), ("allowed", Some(Level::R1)), "{o:?}");
+    }
+
+    fn notes_gate(name: &str, answer: Answer) -> (Gate, std::sync::Arc<Asked>) {
+        let (base, _) = gate(name, Answer::Deny);
+        let mut manifests = Registry::builtin().expect("manifests");
+        manifests
+            .add(
+                herkos_core::manifest::parse_manifest_str(
+                    "tool = \"org.example.notes\"\ndescription = \"Notes\"\n\
+                     [operations.read]\nlevel = \"R1\"\nsummary = \"Read\"",
+                    "notes",
+                )
+                .expect("valid"),
+            )
+            .expect("add");
+        let said = std::sync::Arc::new(Mutex::new("Read a note".to_owned()));
+        let asked = std::sync::Arc::new(Asked(Mutex::new(Vec::new()), answer));
+        let config = base.config.clone();
+        let g = Gate::new(
+            config.clone(),
+            manifests,
+            Box::new(Notes(said)),
+            GrantStore::new(&config.state_dir.join("g.json"), now),
+            Journal::open(&config.state_dir.join("j.jsonl")).expect("journal"),
+            Box::new(std::sync::Arc::clone(&asked)),
+        );
+        (g, asked)
+    }
+
+    fn notes_read() -> ActionRequest {
+        parse_request(&json!({"tool": "org.example.notes", "operation": "read", "reason": "r"}))
+            .expect("request")
+    }
+
+    #[test]
+    fn a_catalogue_program_is_off_until_the_person_turns_it_on() {
+        let (g, asked) = notes_gate("programs-on", Answer::Once);
+        let listed = |g: &Gate| {
+            g.listing()["tools"]
+                .to_string()
+                .contains("org.example.notes")
+        };
+        assert!(!listed(&g));
+        let o = g.handle(&notes_read(), &mut SessionState::default());
+        assert_eq!(o.code, "denied_no_tool", "{o:?}");
+        assert_eq!(
+            g.program_list(),
+            json!({"programs": [{"tool": "org.example.notes", "description": "Notes",
+                "enabled": false, "running": true, "hidden": []}]})
+        );
+        let answer = g
+            .set_program("org.example.notes", true, "Ви ввімкнули")
+            .expect("ok");
+        assert_eq!(
+            answer,
+            json!({"tool": "org.example.notes", "enabled": true, "code": "done",
+                "restart_needed": false})
+        );
+        {
+            let qs = asked.0.lock().expect("asked");
+            let q = qs.last().expect("asked");
+            assert_eq!((q.operation.as_str(), q.level), ("enable", Level::R2));
+            assert_eq!(q.choices, vec![Answer::Once]);
+            assert!(q.summary.contains("Notes") && q.reason == "Ви ввімкнули");
+        }
+        assert!(listed(&g));
+        // Off is immediate and asks nothing.
+        let n = asked.0.lock().map(|q| q.len()).unwrap_or(0);
+        let off = g.set_program("org.example.notes", false, "").expect("ok");
+        assert_eq!(off["code"], "done");
+        assert_eq!(asked.0.lock().map(|q| q.len()).unwrap_or(0), n);
+        let o = g.handle(&notes_read(), &mut SessionState::default());
+        assert_eq!(o.code, "denied_no_tool", "{o:?}");
+    }
+
+    #[test]
+    fn a_no_keeps_a_program_off_and_built_in_tools_cannot_be_switched() {
+        let (g, _) = notes_gate("programs-no", Answer::Deny);
+        let answer = g.set_program("org.example.notes", true, "").expect("ok");
+        assert_eq!(
+            (&answer["enabled"], &answer["code"]),
+            (&json!(false), &json!("denied_user"))
+        );
+        assert!(!g.programs.enabled("org.example.notes"));
+        assert!(g.set_program("org.vilna.mcp.files", false, "").is_err());
+        assert!(g.set_program("org.example.unknown", false, "").is_err());
     }
 
     /// Files is running with only some operations; backup is not running.

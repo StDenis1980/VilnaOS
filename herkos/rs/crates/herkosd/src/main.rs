@@ -18,6 +18,7 @@ mod mcp;
 mod mitos;
 mod passwd;
 mod pins;
+mod programs;
 mod rpc;
 mod system;
 mod units;
@@ -198,7 +199,15 @@ fn start_tools(config: &config::Config) -> mcp::McpTools {
         .cloned()
         .collect();
     let backups = config.state_dir.join("backups").join("files");
+    let programs = programs::ProgramStore::new(&config.state_dir.join("programs.json"));
     for manifest in manifests.iter() {
+        if !manifests.is_builtin(&manifest.tool) && !programs.enabled(&manifest.tool) {
+            eprintln!(
+                "herkosd: {} is turned off in Gloxi; not started",
+                manifest.tool
+            );
+            continue;
+        }
         let Some(launch) = &manifest.launch else {
             eprintln!("herkosd: {} has no [launch]; not started", manifest.tool);
             continue;

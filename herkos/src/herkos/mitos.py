@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any
 
 GENESIS = "0" * 64
-KINDS = {"start", "request", "decision", "result", "grant"}
+KINDS = {"start", "request", "decision", "result", "grant", "program"}
 
 
 class JournalError(Exception):

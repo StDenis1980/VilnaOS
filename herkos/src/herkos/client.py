@@ -97,6 +97,21 @@ class HerkosClient:
         tools = answer.get("tools") if isinstance(answer, dict) else None
         return [t for t in tools if isinstance(t, dict)] if isinstance(tools, list) else []
 
+    def programs(self) -> list[dict[str, Any]]:
+        """Catalogue programs, on or off (``herkos.programs``, ADR 0017 step 6)."""
+        answer = self._call("herkos.programs", {})
+        programs = answer.get("programs") if isinstance(answer, dict) else None
+        if not isinstance(programs, list):
+            return []
+        return [p for p in programs if isinstance(p, dict)]
+
+    def set_program(self, tool: str, enabled: bool, reason: str = "") -> dict[str, Any]:
+        """Turn a catalogue program on (Herkos asks the person first) or off."""
+        answer = self._call(
+            "herkos.set_program", {"tool": tool, "enabled": enabled, "reason": reason}
+        )
+        return answer if isinstance(answer, dict) else {}
+
     def session(self) -> dict[str, Any]:
         return self._call("herkos.session", {})
 

@@ -118,6 +118,29 @@ impl Connection {
                 }
             }
             "herkos.tools" => result(id, self.gate.listing()),
+            "herkos.programs" => result(id, self.gate.program_list()),
+            "herkos.set_program" => {
+                let tool = params.get("tool").and_then(Value::as_str);
+                let on = params.get("enabled").and_then(Value::as_bool);
+                let reason = match params.get("reason") {
+                    None => Some(""),
+                    Some(r) => r.as_str(),
+                };
+                match (tool, on, reason) {
+                    (Some(tool), Some(on), Some(reason)) => {
+                        let reason: String = reason.chars().take(500).collect();
+                        match self.gate.set_program(tool, on, &reason) {
+                            Ok(answer) => result(id, answer),
+                            Err(e) => error(id, INVALID_PARAMS, &e),
+                        }
+                    }
+                    _ => error(
+                        id,
+                        INVALID_PARAMS,
+                        "'tool' (text) and 'enabled' (true/false)",
+                    ),
+                }
+            }
             "herkos.session" => result(
                 id,
                 json!({

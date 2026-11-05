@@ -722,6 +722,10 @@ msgid "{model}, on this computer"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Actions hidden from Gloxi"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "Add folder…"
 msgstr ""
 
@@ -746,12 +750,29 @@ msgid "Folders Gloxi may use"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Gloxi can use only the programs you turn on here. Herkos asks you before turning one on, and every action still goes through it."
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
 msgstr ""
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
+msgid "Herkos could not change it: {why}"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
 msgid "Herkos could not restart: {why}"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Herkos found something suspicious in how the program describes them."
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "It starts the next time Herkos starts."
 msgstr ""
 
 #: src/gloxi/gui/window.py
@@ -767,11 +788,23 @@ msgid "No folders yet: Gloxi cannot see any of your files."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "No programs for Gloxi are installed."
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "Not now"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Not turned on: you said no in the Herkos window."
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Programs for Gloxi"
 msgstr ""
 
 #: src/gloxi/gui/window.py
@@ -784,6 +817,22 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
+msgstr ""
+
+#: src/gloxi/programs.py
+msgid "Off: Gloxi cannot use it"
+msgstr ""
+
+#: src/gloxi/programs.py
+msgid "On"
+msgstr ""
+
+#: src/gloxi/programs.py
+msgid "On: starts when Herkos starts again"
+msgstr ""
+
+#: src/gloxi/programs.py
+msgid "You turned this program on in Gloxi's settings"
 msgstr ""
 
 #: src/gloxi/tools.py
