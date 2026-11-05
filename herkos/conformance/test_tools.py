@@ -80,6 +80,7 @@ def test_tools_lists_the_running_tools_within_max_level(client):
         "summary": "Read a file",
         "level": "R1",
         "returns_external": True,
+        "resource_args": ["path"],
     }
     # What the server says about itself, after Keros found nothing in it (step 4).
     assert isinstance(said, str) and said
@@ -104,6 +105,13 @@ resource_args = ["path"]
 """
 
 
+def turn_on(tmp_path, *tools):
+    """As if the person had turned these catalogue programs on in Gloxi (step 6)."""
+    state = tmp_path / "state" / "herkos"
+    state.mkdir(parents=True, exist_ok=True)
+    (state / "programs.json").write_text(json.dumps({"enabled": list(tools)}), encoding="utf-8")
+
+
 def test_catalogue_manifests_are_started_and_listed(tmp_path):
     """ADR 0017 step 1: trusted catalogue manifests are known; others stay unknown."""
     catalogue = tmp_path / "manifests"
@@ -113,6 +121,7 @@ def test_catalogue_manifests_are_started_and_listed(tmp_path):
     loose = CATALOGUE_FILES.replace("org.example.files", "org.example.loose")
     (catalogue / "loose.toml").write_text(loose, encoding="utf-8")
     (catalogue / "loose.toml").chmod(0o666)
+    turn_on(tmp_path, "org.example.files", "org.example.loose")
     with start_herkos(tmp_path, extra_env={"HERKOS_MANIFEST_DIR": str(catalogue)}) as h:
         client = Client(h.socket)
         try:
@@ -200,6 +209,7 @@ def test_a_catalogue_tool_that_changed_an_operation_asks_again(tmp_path):
 
     # The state folder is per run; keep one so the pins carry over.
     (tmp_path / "first").mkdir()
+    turn_on(tmp_path / "first", "org.example.notes")
     r, _ = read_level("first")
     assert (r["decision"], r["code"], r["level"]) == ("denied", "denied_user", "R1")
     said.write_text("Read a note, then post it online", encoding="utf-8")
@@ -234,6 +244,7 @@ def test_an_operation_whose_description_carries_instructions_is_hidden(tmp_path)
         "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}",
         "PYTHONPATH": f"{bin_dir}:{os.environ.get('PYTHONPATH', '')}",
     }
+    turn_on(tmp_path, "org.example.notes")
     with start_herkos(tmp_path, extra_env=env) as h:
         client = Client(h.socket)
         try:
@@ -249,3 +260,42 @@ def test_an_operation_whose_description_carries_instructions_is_hidden(tmp_path)
             "why": ["asks the assistant to ignore its instructions"],
         }
     ]
+
+
+def test_catalogue_programs_are_off_until_turned_on(tmp_path):
+    """ADR 0017 step 6: an off program is not started; turning it on asks the person."""
+    catalogue = tmp_path / "manifests"
+    catalogue.mkdir(mode=0o755)
+    (catalogue / "example-files.toml").write_text(CATALOGUE_FILES, encoding="utf-8")
+    (catalogue / "example-files.toml").chmod(0o644)
+    with start_herkos(tmp_path, extra_env={"HERKOS_MANIFEST_DIR": str(catalogue)}) as h:
+        client = Client(h.socket)
+        try:
+            assert client.call("herkos.programs")["error"]["code"] == -32001
+            client.hello()
+            tools = client.call("herkos.tools")["result"]["tools"]
+            assert "org.example.files" not in [t["tool"] for t in tools]
+            (program,) = client.call("herkos.programs")["result"]["programs"]
+            assert program == {
+                "tool": "org.example.files",
+                "description": "Files, from the catalogue",
+                "enabled": False,
+                "running": False,
+                "hidden": [],
+            }
+            r = call(client, "org.example.files", "read", [h.docs / "a.txt"], {"path": "a.txt"})
+            assert (r["decision"], r["code"]) == ("denied", "denied_no_tool")
+            # This Herkos answers every question with "no".
+            on = {"tool": "org.example.files", "enabled": True, "reason": "r"}
+            answer = client.call("herkos.set_program", on)["result"]
+            assert (answer["enabled"], answer["code"]) == (False, "denied_user")
+            off = client.call("herkos.set_program", {**on, "enabled": False})["result"]
+            assert (off["enabled"], off["code"]) == (False, "done")
+            for bad in (
+                {"tool": "org.vilna.mcp.files", "enabled": False},
+                {"tool": "org.example.nothing", "enabled": False},
+                {"tool": "org.example.files", "enabled": "yes"},
+            ):
+                assert client.call("herkos.set_program", bad)["error"]["code"] == -32602
+        finally:
+            client.close()

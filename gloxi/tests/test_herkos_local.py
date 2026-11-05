@@ -63,6 +63,9 @@ def test_no_folders_no_tools():
         def tools(self):
             return [{"tool": "org.vilna.mcp.files", "operations": [{"name": "read"}]}]
 
+        def close(self):
+            pass
+
     tools = FileTools(Lists, (), available=lambda: True)
     assert not tools.available()
     tools.set_roots([Path("/tmp")])

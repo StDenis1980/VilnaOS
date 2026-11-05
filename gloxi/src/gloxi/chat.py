@@ -71,7 +71,7 @@ class Conversation:
         parts: list[str] = []
         for round_ in range(MAX_TOOL_ROUNDS + 1):
             # The last round offers no tools, so the model has to answer in words.
-            offered = tools.definitions() if tools and round_ < MAX_TOOL_ROUNDS else None
+            offered = tools.definitions(text) if tools and round_ < MAX_TOOL_ROUNDS else None
             calls: list[ToolCall] = []
             said: list[str] = []
             for event in self.router.stream_events(request, route, offered):

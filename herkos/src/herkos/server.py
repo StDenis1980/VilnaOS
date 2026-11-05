@@ -116,6 +116,19 @@ class Connection:
             return _result(id_, self.gate.undo(action_id, self.session).to_json())
         if method == "herkos.tools":
             return _result(id_, self.gate.listing())
+        if method == "herkos.programs":
+            return _result(id_, {"programs": self.gate.program_list()})
+        if method == "herkos.set_program":
+            p = params if isinstance(params, dict) else {}
+            tool, on = p.get("tool"), p.get("enabled")
+            reason = p.get("reason", "")
+            if not isinstance(tool, str) or not isinstance(on, bool) or not isinstance(reason, str):
+                return _error(id_, INVALID_PARAMS, "'tool' (text) and 'enabled' (true/false)")
+            try:
+                answer = self.gate.set_program(tool, on, reason[:500])
+            except ValueError as e:
+                return _error(id_, INVALID_PARAMS, str(e))
+            return _result(id_, answer)
         if method == "herkos.session":
             return _result(
                 id_,

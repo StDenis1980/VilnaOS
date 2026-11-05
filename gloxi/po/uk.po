@@ -730,6 +730,10 @@ msgid "{model}, on this computer"
 msgstr "{model}, на цьому комп'ютері"
 
 #: src/gloxi/gui/window.py
+msgid "Actions hidden from Gloxi"
+msgstr "Дії, приховані від Gloxi"
+
+#: src/gloxi/gui/window.py
 msgid "Add folder…"
 msgstr "Додати теку…"
 
@@ -754,13 +758,30 @@ msgid "Folders Gloxi may use"
 msgstr "Теки, з якими може працювати Gloxi"
 
 #: src/gloxi/gui/window.py
+msgid "Gloxi can use only the programs you turn on here. Herkos asks you before turning one on, and every action still goes through it."
+msgstr "Gloxi може користуватися лише програмами, які ви тут увімкнете. Herkos перепитає вас, перш ніж увімкнути програму, і кожна дія все одно йде через нього."
+
+#: src/gloxi/gui/window.py
 msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
 msgstr "Gloxi бачить лише теки, які ви тут оберете, і кожна дія в них іде через Herkos, який спершу питає вас."
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
+msgid "Herkos could not change it: {why}"
+msgstr "Herkos не зміг цього змінити: {why}"
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
 msgid "Herkos could not restart: {why}"
 msgstr "Не вдалося перезапустити Herkos: {why}"
+
+#: src/gloxi/gui/window.py
+msgid "Herkos found something suspicious in how the program describes them."
+msgstr "Herkos знайшов щось підозріле в тому, як програма їх описує."
+
+#: src/gloxi/gui/window.py
+msgid "It starts the next time Herkos starts."
+msgstr "Програма запуститься, коли Herkos запуститься наступного разу."
 
 #: src/gloxi/gui/window.py
 msgid "Model"
@@ -775,12 +796,24 @@ msgid "No folders yet: Gloxi cannot see any of your files."
 msgstr "Тек ще немає: Gloxi не бачить жодного вашого файлу."
 
 #: src/gloxi/gui/window.py
+msgid "No programs for Gloxi are installed."
+msgstr "Програм для Gloxi не встановлено."
+
+#: src/gloxi/gui/window.py
 msgid "Not now"
 msgstr "Не зараз"
 
 #: src/gloxi/gui/window.py
+msgid "Not turned on: you said no in the Herkos window."
+msgstr "Не ввімкнено: ви відмовили у вікні Herkos."
+
+#: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
 msgstr "Лише локальна модель: щоб обрати іншу, увімкніть хмару в налаштуваннях"
+
+#: src/gloxi/gui/window.py
+msgid "Programs for Gloxi"
+msgstr "Програми для Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Report a problem or suggest something"
@@ -793,6 +826,22 @@ msgstr "Надіслати"
 #: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
 msgstr "Більше не давати цю теку"
+
+#: src/gloxi/programs.py
+msgid "Off: Gloxi cannot use it"
+msgstr "Вимкнено: Gloxi не може нею користуватися"
+
+#: src/gloxi/programs.py
+msgid "On"
+msgstr "Увімкнено"
+
+#: src/gloxi/programs.py
+msgid "On: starts when Herkos starts again"
+msgstr "Увімкнено: запуститься, коли Herkos запуститься знову"
+
+#: src/gloxi/programs.py
+msgid "You turned this program on in Gloxi's settings"
+msgstr "Ви ввімкнули цю програму в налаштуваннях Gloxi"
 
 #: src/gloxi/tools.py
 #, python-brace-format

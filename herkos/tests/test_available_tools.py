@@ -44,6 +44,7 @@ def test_lists_what_the_manifest_allows_and_the_server_has(env: Env):
         "summary": "Read a file",
         "level": "R1",
         "returns_external": True,
+        "resource_args": ["path"],
         "server_description": "",
         "input_schema": {"type": "object"},
     }

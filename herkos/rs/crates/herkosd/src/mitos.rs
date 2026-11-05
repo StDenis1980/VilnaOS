@@ -25,7 +25,7 @@ use serde_json::{Map, Value, json};
 use sha2::{Digest, Sha256};
 
 pub const GENESIS: &str = "0000000000000000000000000000000000000000000000000000000000000000";
-const KINDS: [&str; 5] = ["start", "request", "decision", "result", "grant"];
+const KINDS: [&str; 6] = ["start", "request", "decision", "result", "grant", "program"];
 
 /// The journal cannot be written or is broken. Herkos then refuses all actions.
 #[derive(Debug, Clone, PartialEq, Eq)]

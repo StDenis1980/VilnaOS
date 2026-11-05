@@ -79,8 +79,13 @@ impl Units {
         };
         // From the manifests (ADR 0017). polkit lets herkos start only the
         // units it knows, so a manifest cannot make it start anything else.
+        let programs = crate::programs::ProgramStore::new(&config.state_dir.join("programs.json"));
         for manifest in manifests.iter() {
             let name = manifest.tool.as_str();
+            // Off until the person turns it on in Gloxi (ADR 0017, step 6).
+            if !manifests.is_builtin(name) && !programs.enabled(name) {
+                continue;
+            }
             let Some(launch) = &manifest.launch else {
                 continue;
             };
