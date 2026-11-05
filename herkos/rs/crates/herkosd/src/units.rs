@@ -74,17 +74,27 @@ impl Units {
             .account
             .home
             .join(".local/state/herkos/backups/files");
-        let mut args = vec!["--backup-dir".to_owned(), backups.display().to_string()];
-        for r in &config.allowed_roots {
-            args.extend(["--root".to_owned(), r.display().to_string()]);
-        }
-        let files = args_file(&dir.join("files.args"), &args)
-            .and_then(|()| self.launch("org.vilna.mcp.files", "vilna-mcp-files", uid, &dir));
-        let backup = self.launch("org.vilna.mcp.backup", "vilna-mcp-backup", uid, &dir);
-        for (name, unit, started) in [
-            ("org.vilna.mcp.files", "vilna-mcp-files", files),
-            ("org.vilna.mcp.backup", "vilna-mcp-backup", backup),
-        ] {
+        let Ok(manifests) = herkos_core::manifest::Registry::builtin() else {
+            return Box::new(tools);
+        };
+        // From the manifests (ADR 0017). polkit lets herkos start only the
+        // units it knows, so a manifest cannot make it start anything else.
+        for manifest in manifests.iter() {
+            let name = manifest.tool.as_str();
+            let Some(launch) = &manifest.launch else {
+                continue;
+            };
+            let unit = launch.program.as_str();
+            let short = unit.trim_start_matches("vilna-mcp-");
+            let started = match mcp::launch_args(launch, &backups, &config.allowed_roots) {
+                None => Err("no allowed folders".to_owned()),
+                // The unit reads its arguments from <short>.args (vilna-mcp-files@.service).
+                Some(args) if !args.is_empty() => {
+                    args_file(&dir.join(format!("{short}.args")), &args)
+                        .and_then(|()| self.launch(name, unit, uid, &dir))
+                }
+                Some(_) => self.launch(name, unit, uid, &dir),
+            };
             match started {
                 Ok(t) => tools.add_relaunching(t, self.relaunch(name, unit, uid, &dir)),
                 Err(e) => eprintln!("herkosd: {name} for {}: {e}", person.account.name),

@@ -182,26 +182,32 @@ fn start_tool(tools: &mut mcp::McpTools, name: &str, program: &str, args: Vec<St
     }
 }
 
-/// The files tool on the allowed folders and the backup tool (ADR 0007), if installed.
+/// The tools whose manifests say how to start them (ADR 0017), if installed.
 fn start_tools(config: &config::Config) -> mcp::McpTools {
     let mut tools = mcp::McpTools::default();
-    let roots: Vec<&PathBuf> = config.allowed_roots.iter().filter(|r| r.is_dir()).collect();
-    if roots.is_empty() {
-        eprintln!("herkosd: none of allowed_roots exists; no files tool");
-    } else {
-        let backups = config.state_dir.join("backups").join("files");
-        let mut args = vec!["--backup-dir".to_owned(), backups.display().to_string()];
-        for r in roots {
-            args.extend(["--root".to_owned(), r.display().to_string()]);
+    let Ok(manifests) = herkos_core::manifest::Registry::builtin() else {
+        return tools;
+    };
+    let roots: Vec<PathBuf> = config
+        .allowed_roots
+        .iter()
+        .filter(|r| r.is_dir())
+        .cloned()
+        .collect();
+    let backups = config.state_dir.join("backups").join("files");
+    for manifest in manifests.iter() {
+        let Some(launch) = &manifest.launch else {
+            eprintln!("herkosd: {} has no [launch]; not started", manifest.tool);
+            continue;
+        };
+        match mcp::launch_args(launch, &backups, &roots) {
+            Some(args) => start_tool(&mut tools, &manifest.tool, &launch.program, args),
+            None => eprintln!(
+                "herkosd: none of allowed_roots exists; no {}",
+                manifest.tool
+            ),
         }
-        start_tool(&mut tools, "org.vilna.mcp.files", "vilna-mcp-files", args);
     }
-    start_tool(
-        &mut tools,
-        "org.vilna.mcp.backup",
-        "vilna-mcp-backup",
-        Vec::new(),
-    );
     tools
 }
 
