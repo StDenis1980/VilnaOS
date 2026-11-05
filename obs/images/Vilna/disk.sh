@@ -18,16 +18,15 @@ if [ "$(stat -c %i /etc)" != 256 ]; then
 fi
 
 # The root is mounted read-only ("ro" in fstab), and a nested subvolume
-# is not a mount of its own, so /etc must be mounted separately to be
-# writable (Build5.1 still booted into emergency mode without it).
-# x-initrd.mount mounts it before switch-root, as systemd needs /etc
-# early. KIWI wrote fstab before calling this script.
+# is not a mount of its own, so /etc needs a mount to be writable. As in
+# openSUSE's read-only-root-fs (/usr/libexec/setup-etc-subvol), bind
+# /etc onto itself: it is always the etc of the snapshot that booted, so
+# a transactional-update brings its own /etc. A subvol= path would pin
+# /etc to snapshot 1, as the VM test of Build6.2 showed. writable-etc
+# (dracut) and systemd-remount-fs make the bind writable; x-initrd.mount
+# mounts it before switch-root. KIWI wrote fstab before this script.
 if ! awk '$2 == "/etc" { found = 1 } END { exit !found }' /etc/fstab; then
-    root=$(awk '$2 == "/" { print $1 }' /etc/fstab)
-    # KIWI's first root snapshot. Each new snapshot needs its own
-    # subvol= here; check after a transactional-update in the VM.
-    [ -n "$root" ]
-    echo "$root /etc btrfs defaults,subvol=/@/.snapshots/1/snapshot/etc,x-initrd.mount 0 0" >>/etc/fstab
+    echo "/etc /etc none bind,x-initrd.mount 0 0" >>/etc/fstab
 fi
 
 # The EFI partition only for root (bootctl warns about a world-readable
