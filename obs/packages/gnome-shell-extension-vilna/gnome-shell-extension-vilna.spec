@@ -48,6 +48,10 @@ glib-compile-schemas --strict --dry-run %{uuid}/schemas
 %files
 %license LICENSE
 %doc README.md
+# OBS fails a package whose directories no package owns; gnome-shell
+# owns them only at runtime, so own them here as other extensions do.
+%dir %{_datadir}/gnome-shell
+%dir %{_datadir}/gnome-shell/extensions
 %{_datadir}/gnome-shell/extensions/%{uuid}/
 %{_datadir}/glib-2.0/schemas/org.gnome.shell.extensions.vilna.gschema.xml
 
