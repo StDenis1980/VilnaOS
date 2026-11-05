@@ -190,6 +190,30 @@ source = "flathub-verified"
 default = false
 why = "Повідомлення в мережі Matrix з наскрізним шифруванням."
 
+[[app]]
+id = "io.appflowy.AppFlowy"
+category = "work"
+license = "AGPL-3.0-only"
+source = "flathub-verified"
+default = false
+why = "Нотатки, бази й дошки завдань, як Notion, але дані на пристрої."
+
+[[app]]
+id = "com.logseq.Logseq"
+category = "work"
+license = "AGPL-3.0-only"
+source = "flathub-verified"
+default = false
+why = "База знань зі зв'язаних нотаток у файлах Markdown, як Obsidian."
+
+[[app]]
+id = "net.cozic.joplin_desktop"
+category = "work"
+license = "AGPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Нотатки в Markdown із шифрованою синхронізацією на вибір."
+
 # ---------------------------------------------------------------- Навчання
 
 [[app]]
@@ -282,13 +306,6 @@ source = "flathub-verified"
 default = false
 why = "Креслення і 3D-моделі деталей для виготовлення."
 
-[[app]]
-id = "com.github.maoschanz.drawing"
-category = "graphics"
-license = "GPL-3.0-or-later"
-source = "flathub-verified"
-default = false
-why = "Простий малювальник для швидких правок."
 
 [[app]]
 id = "io.gitlab.adhami3310.Converter"
@@ -438,13 +455,6 @@ source = "flathub-verified"
 default = false
 why = "Кросворди."
 
-[[app]]
-id = "org.gnome.Sudoku"
-category = "games"
-license = "GPL-3.0-or-later"
-source = "flathub-verified"
-default = false
-why = "Судоку."
 
 # ---------------------------------------------------------------- Розробка
 
