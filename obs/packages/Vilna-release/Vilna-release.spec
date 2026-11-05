@@ -21,7 +21,6 @@ BuildArch:      noarch
 # service: without it the image has no repository and never updates
 # (VM test of Build7.2). Aeon gets it the same way.
 Requires:       openSUSE-repos-Tumbleweed
-Requires(post): rpm
 # One release package per system: replaces openSUSE-release / Aeon-release.
 Provides:       distribution-release
 Conflicts:      Aeon-release
@@ -35,6 +34,9 @@ Identifies the system as Vilna: /usr/lib/os-release and the
 
 Also adds Vilna's package repository and its signing key; the
 openSUSE Tumbleweed repositories come from openSUSE-repos-Tumbleweed.
+The image imports the key into the rpm database (config.sh): rpm
+cannot import it from %post, its database is locked during the
+transaction.
 
 %prep
 
@@ -48,15 +50,14 @@ ln -s ../usr/lib/os-release %{buildroot}%{_sysconfdir}/os-release
 install -D -m 0644 %{SOURCE1} %{buildroot}%{_sysconfdir}/zypp/repos.d/vilna.repo
 install -D -m 0644 %{SOURCE2} %{buildroot}%{_prefix}/lib/rpm/gnupg/keys/gpg-pubkey-06386694.asc
 
-%post
-# Trust Vilna's signing key, so zypper (also inside transactional-update,
-# which never asks) accepts the repository.
-rpm --import %{_prefix}/lib/rpm/gnupg/keys/gpg-pubkey-06386694.asc || :
-
 %files
 %{_prefix}/lib/os-release
 %{_sysconfdir}/os-release
+%dir %{_sysconfdir}/zypp
+%dir %{_sysconfdir}/zypp/repos.d
 %config(noreplace) %{_sysconfdir}/zypp/repos.d/vilna.repo
+%dir %{_prefix}/lib/rpm/gnupg
+%dir %{_prefix}/lib/rpm/gnupg/keys
 %{_prefix}/lib/rpm/gnupg/keys/gpg-pubkey-06386694.asc
 
 %changelog
