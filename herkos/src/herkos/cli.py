@@ -25,14 +25,11 @@ from herkos.confirm import DenyAll, Dialog, Terminal, default_confirmer
 from herkos.gate import Gate
 from herkos.grants import GrantStore
 from herkos.keros_model import LlamaServerJudge, ModelCheck
-from herkos.manifest import ManifestError, ManifestRegistry
+from herkos.manifest import Manifest, ManifestError, ManifestRegistry
 from herkos.mcp_client import McpError, McpStdioExecutor
 from herkos.mitos import Journal, JournalError, read_records, verify
 from herkos.server import Server, SocketError
 from herkos.tools import ToolRegistry
-
-FILES_TOOL = "org.vilna.mcp.files"
-BACKUP_TOOL = "org.vilna.mcp.backup"
 
 
 def _serve(args: argparse.Namespace) -> int:
@@ -53,17 +50,18 @@ def _serve(args: argparse.Namespace) -> int:
     grants = GrantStore(config.grants_path)
     if grants.load_error:
         print(f"herkos: ignoring unreadable permissions: {grants.load_error}", file=sys.stderr)
+    manifests = ManifestRegistry.builtin()
     tools = ToolRegistry()
-    files = start_files_tool(config)
-    if files is not None:
-        tools.register(FILES_TOOL, files)
-    backup = start_backup_tool()
-    if backup is not None:
-        tools.register(BACKUP_TOOL, backup)
+    started: list[McpStdioExecutor] = []
+    for manifest in manifests:
+        executor = start_tool(manifest, config)
+        if executor is not None:
+            tools.register(manifest.tool, executor)
+            started.append(executor)
     model_check = None
     if config.keros_model:
         model_check = ModelCheck(LlamaServerJudge(config.keros_model), config.keros_budget)
-    gate = Gate(config, ManifestRegistry.builtin(), tools, grants, journal, confirmer, model_check)
+    gate = Gate(config, manifests, tools, grants, journal, confirmer, model_check)
     path = socket_path()
     journal.append("start", {"server": f"herkos-lite/{__version__}", "socket": str(path)})
     server = Server(gate, path)
@@ -74,47 +72,58 @@ def _serve(args: argparse.Namespace) -> int:
         pass
     finally:
         path.unlink(missing_ok=True)
-        for tool in (files, backup):
-            if tool is not None:
-                tool.stop()
+        for executor in started:
+            executor.stop()
     return 0
 
 
-def start_files_tool(config) -> McpStdioExecutor | None:
-    """Start the files MCP server (mcp/files) on the allowed folders, if installed."""
-    if importlib.util.find_spec("vilna_mcp_files") is None:
-        print("herkos: vilna-mcp-files is not installed; no files tool", file=sys.stderr)
+def launch_command(manifest: Manifest, config) -> list[str] | None:
+    """The command line that starts a tool, from its manifest's [launch] (ADR 0017).
+
+    Herkos-lite runs only Python tools, with its own interpreter: a tool
+    with no ``module``, or whose module is not installed, is not started.
+    """
+    launch = manifest.launch
+    name = manifest.tool
+    if launch is None:
+        print(f"herkos: {name} has no [launch]; not started", file=sys.stderr)
         return None
-    roots = [r for r in config.allowed_roots if r.is_dir()]
-    if not roots:
-        print("herkos: none of allowed_roots exists; no files tool", file=sys.stderr)
+    if launch.module is None or not _installed(launch.module):
+        print(f"herkos: {launch.program} is not installed; no {name}", file=sys.stderr)
         return None
-    command = [sys.executable, "-m", "vilna_mcp_files", "--backup-dir", str(config.backup_dir)]
-    for r in roots:
-        command += ["--root", str(r)]
+    command = [sys.executable, "-m", launch.module]
+    if "backup_dir" in launch.args:
+        command += ["--backup-dir", str(config.backup_dir)]
+    if "roots" in launch.args:
+        roots = [r for r in config.allowed_roots if r.is_dir()]
+        if not roots:
+            print(f"herkos: none of allowed_roots exists; no {name}", file=sys.stderr)
+            return None
+        for r in roots:
+            command += ["--root", str(r)]
+    return command
+
+
+def start_tool(manifest: Manifest, config) -> McpStdioExecutor | None:
+    """Start one tool server, if its manifest says how and it is installed."""
+    command = launch_command(manifest, config)
+    if command is None:
+        return None
     executor = McpStdioExecutor(command)
     try:
         executor.start()
     except McpError as e:
-        print(f"herkos: files tool failed to start: {e}", file=sys.stderr)
+        print(f"herkos: {manifest.tool} failed to start: {e}", file=sys.stderr)
         executor.stop()
         return None
     return executor
 
 
-def start_backup_tool() -> McpStdioExecutor | None:
-    """Start the backup MCP server (mcp/backup), if installed (ADR 0007)."""
-    if importlib.util.find_spec("vilna_mcp_backup") is None:
-        print("herkos: vilna-mcp-backup is not installed; no backup tool", file=sys.stderr)
-        return None
-    executor = McpStdioExecutor([sys.executable, "-m", "vilna_mcp_backup"])
+def _installed(module: str) -> bool:
     try:
-        executor.start()
-    except McpError as e:
-        print(f"herkos: backup tool failed to start: {e}", file=sys.stderr)
-        executor.stop()
-        return None
-    return executor
+        return importlib.util.find_spec(module) is not None
+    except (ImportError, ValueError):
+        return False
 
 
 def _undo(args: argparse.Namespace) -> int:

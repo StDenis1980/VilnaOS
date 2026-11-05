@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov  4 22:55:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Build on OBS: the cargo config for the vendored crates goes to the
+  top of the sources, where cargo looks for it (it was in rs/, which
+  cargo never reads with --manifest-path, so the offline build failed)
+
+-------------------------------------------------------------------
 Tue Nov  3 07:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - First package: herkosd as a system service (socket activation, system

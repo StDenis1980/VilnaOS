@@ -116,6 +116,41 @@ class Gate:
         # One question on screen at a time.
         self._ask_lock = threading.Lock()
 
+    def available_tools(self) -> list[dict]:
+        """What Gloxi may offer the model: ``herkos.tools`` (protocol.md 2, ADR 0017).
+
+        A tool is listed only when Herkos has its manifest and the tool server
+        is running. An operation is listed only when the manifest allows it
+        (not forbidden, base level at most ``max_level``) and the server has
+        it. Every text here comes from the manifest, never from the server:
+        descriptions written by a tool are external content (ADR 0017, 3).
+        """
+        out = []
+        for manifest in self.manifests:
+            executor = self.tools.get(manifest.tool)
+            if executor is None:
+                continue
+            ops = []
+            for name in sorted(manifest.operations):
+                op = manifest.operations[name]
+                if op.forbidden or op.level > self.config.max_level:
+                    continue
+                if executor.annotations(name) is None:
+                    continue
+                ops.append(
+                    {
+                        "name": name,
+                        "summary": op.summary,
+                        "level": op.level.name,
+                        "returns_external": op.returns_external,
+                    }
+                )
+            if ops:
+                out.append(
+                    {"tool": manifest.tool, "description": manifest.description, "operations": ops}
+                )
+        return out
+
     def handle(self, request: ActionRequest, session: SessionState) -> Outcome:
         action_id = new_action_id()
         try:

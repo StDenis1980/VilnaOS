@@ -59,7 +59,11 @@ def test_not_in_flatpak_nothing_starts(monkeypatch):
 
 
 def test_no_folders_no_tools():
-    tools = FileTools(lambda: None, (), available=lambda: True)
+    class Lists:
+        def tools(self):
+            return [{"tool": "org.vilna.mcp.files", "operations": [{"name": "read"}]}]
+
+    tools = FileTools(Lists, (), available=lambda: True)
     assert not tools.available()
     tools.set_roots([Path("/tmp")])
     assert tools.available()

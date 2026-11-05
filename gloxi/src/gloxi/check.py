@@ -46,6 +46,9 @@ NEEDED_CPU_FLAG = "avx2"
 # What the system and llama.cpp need beside the model file while it downloads.
 DISK_MARGIN = 500 * 1024**2
 
+# Where the models are, without the home folder path (nothing personal).
+MODELS_FOLDER_HINT = "~/.var/app/io.github.stdenis1980.Gloxi/data/gloxi/models"
+
 DEVICE_RE = re.compile(r"^\s*(\w+):\s*(.+?)\s*\((\d+) MiB,\s*(\d+) MiB free\)\s*$")
 
 
@@ -103,14 +106,43 @@ class Report:
             )
         return found
 
+    @property
+    def large_fast_enough(self) -> bool | None:
+        """The speed test says the larger model is fast enough; None if not measured."""
+        if self.speed is None:
+            return None
+        return self.speed * upgrade.LARGE_SPEED_FACTOR >= upgrade.LARGE_MIN_SPEED
+
+    def in_use(self) -> str | None:
+        """The model Gloxi starts: the larger one if its file is there (engine.plan)."""
+        for model in (LARGE_MODEL, DEFAULT_MODEL):
+            if model.filename in self.models:
+                return model.name
+        return None
+
+    def notes(self) -> list[str]:
+        """What Gloxi does now that the person may not expect."""
+        if LARGE_MODEL.filename not in self.models or self.large_fast_enough:
+            return []
+        return [
+            _(
+                "Gloxi starts {large} because its file is in the models folder, "
+                "but the speed test has not shown that it is fast enough here. "
+                "To go back to {small}, delete {file} from {folder}."
+            ).format(
+                large=LARGE_MODEL.name,
+                small=DEFAULT_MODEL.name,
+                file=LARGE_MODEL.filename,
+                folder=MODELS_FOLDER_HINT,
+            )
+        ]
+
     def verdict(self) -> str:
         if self.problems():
             return _("This computer is below the minimum for the local model.")
         if self.ram is None:
             return _("Could not read the memory size; the local model may still work.")
-        if self.speed is not None and self.speed * upgrade.LARGE_SPEED_FACTOR >= (
-            upgrade.LARGE_MIN_SPEED
-        ):
+        if self.large_fast_enough:
             return _("This computer is fast enough for the larger model, {name}.").format(
                 name=LARGE_MODEL.name
             )
@@ -137,14 +169,15 @@ class Report:
             f"RAM: {gib(self.ram) if self.ram else 'unknown'}",
             f"GPU: {gpus or 'none for llama.cpp (processor only)'}",
             f"Free disk for models: {gib(self.free_disk) if self.free_disk else 'unknown'}",
-            f"Models: {', '.join(self.models) or 'none yet'}",
+            f"Models: {', '.join(self.models) or 'none yet'}"
+            + (f" (starts {self.in_use()})" if self.in_use() else ""),
             "Speed test: "
             + (f"{self.speed:.2f} tokens/s with {DEFAULT_MODEL.name}" if self.speed else "not run"),
         ]
 
     def render(self) -> str:
         parts = [self.verdict()]
-        parts += [f"- {p}" for p in self.problems()]
+        parts += [f"- {p}" for p in self.problems() + self.notes()]
         parts.append("")
         parts.append(_("To paste into the feedback form:"))
         parts.append("```")

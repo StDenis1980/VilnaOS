@@ -2,7 +2,7 @@
 """Minimal client for OpenAI-compatible chat APIs.
 
 Gloxi talks to every model, local or cloud, through this one interface
-(ADR 0004). A local llama-server is just an endpoint without an API key.
+(ADR 0004). A local llama-server is an endpoint with the key Gloxi gave it (gloxi.localkey).
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from typing import Any, Literal, NotRequired, TypedDict
 
 import httpx
 
+from gloxi import localkey
 from gloxi.config import ModelEndpoint
 
 Role = Literal["system", "user", "assistant", "tool"]
@@ -56,9 +57,7 @@ class ChatClient:
     def __init__(
         self, endpoint: ModelEndpoint, *, transport: httpx.BaseTransport | None = None
     ) -> None:
-        headers = {}
-        if endpoint.api_key:
-            headers["Authorization"] = f"Bearer {endpoint.api_key}"
+        headers = localkey.headers_for(endpoint.url, endpoint.api_key)
         self.endpoint = endpoint
         self._http = httpx.Client(
             base_url=endpoint.url,

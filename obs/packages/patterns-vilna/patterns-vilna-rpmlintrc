@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# A pattern is a package of requirements only, as openSUSE's patterns-*:
+# it has no binaries, requires library packages by name, and requires the
+# branding packages of one flavour (Aeon, openSUSE) until the
+# *-branding-Vilna packages exist.
+addFilter("no-binary")
+addFilter("explicit-lib-dependency")
+addFilter("branding-requires-unversioned")
+addFilter("branding-requires-specific-flavor")

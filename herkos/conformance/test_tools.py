@@ -57,3 +57,25 @@ def test_r1_asks_and_no_means_no(client, herkos):
     assert (r["decision"], r["code"], r["level"]) == ("denied", "denied_user", "R1")
     assert "result" not in r
     assert client.call("herkos.session")["result"]["tainted"] is False
+
+
+def test_tools_lists_the_running_tools_within_max_level(client):
+    """herkos.tools (protocol.md 2, ADR 0017): the same answer from every Herkos."""
+    assert client.call("herkos.tools")["error"]["code"] == -32001
+    max_level = client.hello()["result"]["max_level"]
+    tools = client.call("herkos.tools")["result"]["tools"]
+    assert [t["tool"] for t in tools] == ["org.vilna.mcp.backup", "org.vilna.mcp.files"]
+    files = next(t for t in tools if t["tool"] == "org.vilna.mcp.files")
+    assert files["description"] == "Files in the folders the user allowed"
+    ops = {op["name"]: op for op in files["operations"]}
+    assert list(ops) == sorted(ops)
+    assert ops["read"] == {
+        "name": "read",
+        "summary": "Read a file",
+        "level": "R1",
+        "returns_external": True,
+    }
+    assert ops["write"]["level"] == "R2" and ops["write"]["returns_external"] is False
+    # delete is R3: listed only where Herkos may run R3.
+    assert ("delete" in ops) == (max_level in {"R3", "R4"})
+    assert all(op["level"] <= max_level for t in tools for op in t["operations"])

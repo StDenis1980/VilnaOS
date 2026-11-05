@@ -16,4 +16,9 @@ Source: https://github.com/StDenis1980/VilnaOS (obs/)</description>
     <path project="openSUSE:Factory" repository="snapshot"/>
     <arch>x86_64</arch>
   </repository>
+  <!-- KIWI images (obs/images/) from the packages built above -->
+  <repository name="images">
+    <path project="@PROJECT@" repository="openSUSE_Tumbleweed"/>
+    <arch>x86_64</arch>
+  </repository>
 </project>

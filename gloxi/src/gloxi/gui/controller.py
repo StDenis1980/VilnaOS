@@ -23,7 +23,16 @@ from gloxi.backup_intro import BackupIntro, Turn
 from gloxi.chat import Conversation
 from gloxi.cli import model_consent_text, split_command, upgrade_consent_text
 from gloxi.config import Settings
-from gloxi.engine import LARGE_MODEL, Engine, EngineError, Plan, download, plan, total_ram
+from gloxi.engine import (
+    LARGE_MODEL,
+    Engine,
+    EngineError,
+    Plan,
+    download,
+    model_name,
+    plan,
+    total_ram,
+)
 from gloxi.llm import ModelError, ModelUnavailable
 from gloxi.router import CloudNotAllowed, Route, Router
 
@@ -273,7 +282,8 @@ class ModelSetup:
         self._start(path)
 
     def _start(self, model_path) -> None:
-        self.view.show_model_progress(_("Starting the model on this computer…"), None)
+        text = _("Starting {name} on this computer…").format(name=model_name(model_path))
+        self.view.show_model_progress(text, None)
         engine = self.engine_type(self._plan.binary, model_path, self.settings.local.url)
         try:
             engine.start()

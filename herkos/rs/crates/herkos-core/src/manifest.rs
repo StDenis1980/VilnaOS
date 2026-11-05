@@ -23,6 +23,11 @@ const OPERATION_KEYS: [&str; 7] = [
     "resource_args",
 ];
 
+/// What Herkos may pass a tool when it starts it, in this order:
+/// `backup_dir` -> `--backup-dir DIR`, `roots` -> `--root DIR` per allowed folder.
+pub const LAUNCH_ARGS: [&str; 2] = ["backup_dir", "roots"];
+const LAUNCH_KEYS: [&str; 3] = ["program", "module", "args"];
+
 /// The manifests shipped with Herkos: the same files Herkos-lite reads.
 const BUILTIN: [(&str, &str); 2] = [
     (
@@ -75,11 +80,29 @@ impl Operation {
     }
 }
 
+/// How Herkos starts the tool (ADR 0017): from the manifest, not from code.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Launch {
+    /// On PATH; the system Herkos starts the unit `<program>@<uid>`.
+    pub program: String,
+    /// The Python module Herkos-lite runs; herkosd does not use it.
+    pub module: Option<String>,
+    /// Names from `LAUNCH_ARGS`, in that order.
+    pub args: Vec<String>,
+}
+
+impl Launch {
+    pub fn wants(&self, arg: &str) -> bool {
+        self.args.iter().any(|a| a == arg)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Manifest {
     pub tool: String,
     pub description: String,
     pub operations: BTreeMap<String, Operation>,
+    pub launch: Option<Launch>,
 }
 
 impl Manifest {
@@ -112,7 +135,7 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
         Some(t) if is_name(t) => t.to_owned(),
         _ => return bad(format!("{source}: 'tool' must be a reverse-DNS name")),
     };
-    let unknown = unknown_keys(data, &["tool", "description", "operations"]);
+    let unknown = unknown_keys(data, &["tool", "description", "operations", "launch"]);
     if !unknown.is_empty() {
         return bad(format!("{source}: unknown keys {unknown:?}"));
     }
@@ -197,10 +220,91 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
             },
         );
     }
+    let launch = match data.get("launch") {
+        None => None,
+        Some(l) => Some(parse_launch(l, source)?),
+    };
     Ok(Manifest {
         tool,
         description,
         operations,
+        launch,
+    })
+}
+
+/// A program on PATH (and its systemd unit): no paths, no spaces.
+fn is_program(s: &str) -> bool {
+    let mut chars = s.chars();
+    s.len() <= 64
+        && chars
+            .next()
+            .is_some_and(|c| c.is_ascii_lowercase() || c.is_ascii_digit())
+        && chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
+}
+
+/// A dotted Python module name, as `_MODULE` in manifest.py.
+fn is_module(s: &str) -> bool {
+    let parts: Vec<&str> = s.split('.').collect();
+    parts.len() <= 4
+        && parts.iter().all(|p| {
+            let mut chars = p.chars();
+            p.len() <= 64
+                && chars
+                    .next()
+                    .is_some_and(|c| c.is_ascii_lowercase() || c == '_')
+                && chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
+        })
+}
+
+fn parse_launch(value: &Value, source: &str) -> Result<Launch, ManifestError> {
+    let at = format!("{source}: launch");
+    let Value::Table(t) = value else {
+        return bad(format!("{at}: must be a table"));
+    };
+    let unknown = unknown_keys(t, &LAUNCH_KEYS);
+    if !unknown.is_empty() {
+        return bad(format!("{at}: unknown keys {unknown:?}"));
+    }
+    let program = match t.get("program").and_then(Value::as_str) {
+        Some(p) if is_program(p) => p.to_owned(),
+        _ => {
+            return bad(format!(
+                "{at}: 'program' must be a program name, not a path"
+            ));
+        }
+    };
+    let module = match t.get("module") {
+        None => None,
+        Some(Value::String(m)) if is_module(m) => Some(m.clone()),
+        Some(_) => return bad(format!("{at}: 'module' must be a Python module name")),
+    };
+    let wrong = || bad(format!("{at}: 'args' must be a list of {LAUNCH_ARGS:?}"));
+    let given: Vec<&str> = match t.get("args") {
+        None => Vec::new(),
+        Some(Value::Array(items)) => {
+            let names: Option<Vec<&str>> = items
+                .iter()
+                .map(|a| a.as_str().filter(|s| LAUNCH_ARGS.contains(s)))
+                .collect();
+            match names {
+                Some(n) => n,
+                None => return wrong(),
+            }
+        }
+        Some(_) => return wrong(),
+    };
+    let args: Vec<String> = LAUNCH_ARGS
+        .iter()
+        .filter(|a| given.contains(a))
+        .map(|a| (*a).to_owned())
+        .collect();
+    if args.len() != given.len() {
+        return wrong(); // a name given twice
+    }
+    Ok(Launch {
+        program,
+        module,
+        args,
     })
 }
 
@@ -223,6 +327,11 @@ impl Registry {
         self.by_tool.get(tool)
     }
 
+    /// The manifests, sorted by tool name.
+    pub fn iter(&self) -> impl Iterator<Item = &Manifest> {
+        self.by_tool.values()
+    }
+
     /// Manifests shipped with Herkos (`herkos/src/herkos/manifests/*.toml`).
     pub fn builtin() -> Result<Registry, ManifestError> {
         let mut r = Registry::default();
@@ -236,6 +345,67 @@ impl Registry {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn with_launch(launch: &str) -> Result<Manifest, ManifestError> {
+        parse_manifest_str(
+            &format!(
+                "tool = \"org.example.t\"\n[launch]\n{launch}\n[operations.read]\nlevel = \"R1\"\n"
+            ),
+            "t",
+        )
+    }
+
+    #[test]
+    fn builtin_manifests_say_how_to_start_their_tools() {
+        let r = Registry::builtin().expect("manifests");
+        let files = r.get("org.vilna.mcp.files").and_then(|m| m.launch.clone());
+        assert_eq!(
+            files,
+            Some(Launch {
+                program: "vilna-mcp-files".into(),
+                module: Some("vilna_mcp_files".into()),
+                args: vec!["backup_dir".into(), "roots".into()],
+            })
+        );
+        let backup = r.get("org.vilna.mcp.backup").and_then(|m| m.launch.clone());
+        assert_eq!(
+            backup.map(|l| (l.program, l.args.len())),
+            Some(("vilna-mcp-backup".into(), 0))
+        );
+    }
+
+    #[test]
+    fn launch_args_come_out_in_one_order() {
+        let m = with_launch("program = \"x\"\nargs = [\"roots\", \"backup_dir\"]").expect("ok");
+        assert_eq!(
+            m.launch.map(|l| l.args),
+            Some(vec!["backup_dir".into(), "roots".into()])
+        );
+        let m = parse_manifest_str(
+            "tool = \"org.example.t\"\n[operations.read]\nlevel = \"R1\"\n",
+            "t",
+        );
+        assert_eq!(m.map(|m| m.launch), Ok(None));
+    }
+
+    #[test]
+    fn bad_launch_is_rejected() {
+        for bad in [
+            "",
+            "program = \"/usr/bin/sh\"",
+            "program = \"../sh\"",
+            "program = \"sh -c\"",
+            "program = \"X\"",
+            "program = \"x\"\nmodule = \"os; import evil\"",
+            "program = \"x\"\nmodule = 3",
+            "program = \"x\"\nargs = [\"--root\", \"/\"]",
+            "program = \"x\"\nargs = [\"roots\", \"roots\"]",
+            "program = \"x\"\nargs = \"roots\"",
+            "program = \"x\"\ncommand = [\"sh\"]",
+        ] {
+            assert!(with_launch(bad).is_err(), "{bad}");
+        }
+    }
 
     #[test]
     fn builtin_manifests_load() {

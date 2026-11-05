@@ -1,0 +1,11 @@
+-------------------------------------------------------------------
+Thu Nov  5 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Require vilna-software-picks ("Recommended by Vilna", ADR 0012)
+
+-------------------------------------------------------------------
+Thu Nov  5 09:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: the vilna_base pattern, the requirements of
+  aeon_base without Aeon-release, distribution-logos-openSUSE-Aeon
+  and malcontent-control, plus Vilna branding and components

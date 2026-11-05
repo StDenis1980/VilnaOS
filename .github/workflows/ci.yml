@@ -171,3 +171,22 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest
+
+  shell-extension:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: shell-extension
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Unit tests of the pure logic
+        run: node --test tests/*.test.js
+      - name: Install GNOME Shell (headless)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gnome-shell gjs gir1.2-gtk-4.0 dbus dbus-x11 libglib2.0-bin
+      - name: The extension in a headless GNOME Shell
+        run: timeout 300 tests/shell/run.sh

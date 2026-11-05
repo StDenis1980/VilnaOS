@@ -91,6 +91,12 @@ class HerkosClient:
     def undo(self, action_id: str) -> dict[str, Any]:
         return self._call("herkos.undo", {"action_id": action_id})
 
+    def tools(self) -> list[dict[str, Any]]:
+        """The tools and operations Herkos will consider (``herkos.tools``)."""
+        answer = self._call("herkos.tools", {})
+        tools = answer.get("tools") if isinstance(answer, dict) else None
+        return [t for t in tools if isinstance(t, dict)] if isinstance(tools, list) else []
+
     def session(self) -> dict[str, Any]:
         return self._call("herkos.session", {})
 

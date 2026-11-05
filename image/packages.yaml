@@ -8,8 +8,11 @@
 #   decide   — рішення ще не ухвалене (див. розд. 8 composition.md)
 
 base:
-  # Беремо патерн Aeon цілком; зміни лише через заміну брендування
+  # Беремо вимоги патерна Aeon майже цілком (у vilna_base, obs/packages/patterns-vilna);
+  # зміни лише через заміну брендування. Сам aeon_base не ставиться: він вимагає
+  # Aeon-release і логотипи Aeon. malcontent-control прибрано: його немає в Tumbleweed.
   pattern: aeon_base
+  dropped: [Aeon-release, distribution-logos-openSUSE-Aeon, malcontent-control]
   source: https://src.opensuse.org/rpm/patterns-aeon
   replace_branding:
     Aeon-release: Vilna-release
@@ -32,10 +35,10 @@ base:
 vilna:
   pattern: vilna_base
   packages:
-    - {name: patterns-vilna,               license: GPL-3.0-or-later, status: planned}
+    - {name: patterns-vilna,               license: GPL-3.0-or-later, status: obs}
     - {name: Vilna-release,                license: GPL-3.0-or-later, status: obs}
     # Herkos
-    - {name: herkos,                       license: GPL-3.0-or-later, status: planned}
+    - {name: herkos,                       license: GPL-3.0-or-later, status: obs}
     - {name: herkos-polkit,                license: GPL-3.0-or-later, status: planned}
     - {name: herkos-selinux,               license: GPL-3.0-or-later, status: planned}
     - {name: herkos-dialog,                license: GPL-3.0-or-later, status: planned}
@@ -43,13 +46,14 @@ vilna:
     # Gloxi
     - {name: gloxi,                        license: GPL-3.0-or-later, status: obs}
     - {name: gloxi-session,                license: GPL-3.0-or-later, status: planned}
-    - {name: gloxi-gnome-shell-extension,  license: GPL-3.0-or-later, status: decide}
+    - {name: gnome-shell-extension-vilna,  license: GPL-3.0-or-later, status: obs}      # shell-extension/: паролі EN, Gloxi поверх усіх, смуга під панель
     # Спільні компоненти
     - {name: vilna-privacy-gateway,        license: Apache-2.0,       status: planned}
-    - {name: vilna-mcp-files,              license: Apache-2.0,       status: planned}
+    - {name: vilna-mcp-files,              license: Apache-2.0,       status: obs}
     - {name: vilna-mcp-settings,           license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}  # ADR 0012
+    - {name: vilna-flatpak-defaults,       license: GPL-3.0-or-later, status: obs}      # програми з Flathub при першому запуску
     - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: obs}      # «Рекомендовано Vilna», ADR 0012; список: obs/packages/vilna-software-picks/picks.toml
     - {name: vilna-mcp-mail,               license: Apache-2.0,       status: planned}
     # Локальна модель
@@ -63,7 +67,7 @@ vilna:
     - {name: vilna-initial-setup,          license: GPL-3.0-or-later, status: planned}
     - {name: vilna-locale,                 license: GPL-3.0-or-later, status: planned}
     - {name: vilna-wallpapers,             license: decide,           status: planned}
-  enable_services: [herkos.service, gloxi.service]
+  enable_services: [herkosd.socket, vilna-flatpak-defaults.service]  # user: herkos-agent.service; Gloxi has no system service yet
 
 flatpak_defaults:
   # Встановлюються з Flathub під час першого запуску.
