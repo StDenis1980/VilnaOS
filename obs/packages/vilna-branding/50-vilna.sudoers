@@ -1,0 +1,4 @@
+# Members of wheel (the administrator made in GNOME Initial Setup) may
+# use sudo with their own password, as on Aeon.
+Defaults:%wheel !targetpw
+%wheel ALL = (root) ALL

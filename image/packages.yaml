@@ -16,20 +16,24 @@ base:
   source: https://src.opensuse.org/rpm/patterns-aeon
   replace_branding:
     Aeon-release: Vilna-release
-    branding-openSUSE: branding-Vilna
     distribution-logos-openSUSE-Aeon: distribution-logos-Vilna
-    gdm-branding-Aeon: gdm-branding-Vilna
+    hicolor-icon-theme-branding-openSUSE: hicolor-icon-theme-branding-Vilna
     gnome-branding-Aeon: gnome-branding-Vilna
     systemd-presets-branding-Aeon: systemd-presets-branding-Vilna
-    systemd-repart-branding-Aeon: systemd-repart-branding-Vilna
     x86_64_v3-branding-Aeon: x86_64_v3-branding-Vilna
-    gtk2-branding-openSUSE: gtk2-branding-Vilna
-    gtk3-branding-openSUSE: gtk3-branding-Vilna
-    gtk4-branding-openSUSE: gtk4-branding-Vilna
-    hicolor-icon-theme-branding-openSUSE: hicolor-icon-theme-branding-Vilna
-    systemd-icon-branding-openSUSE: systemd-icon-branding-Vilna
+    NetworkManager-branding-openSUSE: NetworkManager-branding-Vilna
+    branding-openSUSE: branding-upstream
+    gdm-branding-Aeon: gdm-branding-upstream
+    gio-branding-openSUSE: gio-branding-upstream
+    gtk2-branding-openSUSE: gtk2-branding-upstream
+    gtk3-branding-openSUSE: gtk3-branding-upstream
+    gtk4-branding-openSUSE: gtk4-branding-upstream
+    gnome-menus-branding-openSUSE: gnome-menus-branding-upstream
+    systemd-default-settings-branding-openSUSE: systemd-default-settings-branding-upstream
+    systemd-repart-branding-Aeon: null    # прибрано: розмітка для tik
+    systemd-icon-branding-openSUSE: null  # прибрано: нікому не потрібен
   # Пакети залишаються, служби не вмикаються (рішення 2026-11-02)
-  packaged_branding: [Vilna-release, distribution-logos-Vilna, vilna-presets]  # obs/packages/; vilna-presets later becomes systemd-presets-branding-Vilna
+  packaged_branding: [Vilna-release, distribution-logos-Vilna, vilna-branding, vilna-presets]  # obs/packages/
   disable_by_default: [avahi-daemon.service, smb.service, nmb.service, sshd.service]
 
 vilna:

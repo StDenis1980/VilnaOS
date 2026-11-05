@@ -1,0 +1,21 @@
+# Services openSUSE enables by default (openSUSE's 90-default preset,
+# shipped by systemd-presets-branding-Aeon), kept for Vilna.
+enable acpid.service
+enable chronyd.service
+enable cups.path
+enable cups.service
+enable cups.socket
+enable firewalld.service
+enable restorecond.service
+enable switcheroo-control.service
+# libvirt: hypervisor daemons start at boot for VM autostart and stop
+# after 2 minutes idle; the secondary daemons are socket activated.
+enable virtqemud.service
+enable virtxend.service
+enable virtlxcd.service
+enable virtnetworkd.socket
+enable virtnodedevd.socket
+enable virtnwfilterd.socket
+enable virtsecretd.socket
+# supergfxd for hybrid graphics
+enable supergfxd.service

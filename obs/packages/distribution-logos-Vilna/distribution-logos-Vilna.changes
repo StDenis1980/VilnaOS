@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov  5 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.2: subpackage hicolor-icon-theme-branding-Vilna (the Vilna logo
+  as the hicolor distributor icon), replacing the openSUSE one.
+
+-------------------------------------------------------------------
 Mon Nov  2 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package with a placeholder logo (to be replaced by the
