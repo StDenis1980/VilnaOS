@@ -162,6 +162,11 @@ async function windows() {
 
     // GTK password field (Wayland text-input): each window holds one
     // focused field, a password one in OTHER and a plain one in Gloxi.
+    // Start from the plain field: the windows come up in any order, and if
+    // OTHER is focused first, choosing 'ua' there is a switch by hand inside
+    // the password field, which the extension rightly keeps.
+    findWindow(GLOXI).activate(global.get_current_time());
+    await waitFor(() => !(indicator()?.visible ?? false), 5000);
     await useLayout('ua');
     findWindow(OTHER).activate(global.get_current_time());
     await waitFor(() => current() === 'us', 5000);

@@ -64,6 +64,8 @@ pub struct McpStdio {
     timeout: Duration,
     state: Mutex<Option<Running>>,
     annotations: BTreeMap<String, Map<String, Value>>,
+    fingerprints: BTreeMap<String, String>,
+    entries: BTreeMap<String, Value>,
 }
 
 /// Read lines on a thread of their own, so a silent server cannot hang Herkos.
@@ -194,6 +196,8 @@ impl McpStdio {
             )?;
             let tools = rpc(&mut run, "tools/list", json!({}), timeout)?;
             let mut annotations = BTreeMap::new();
+            let mut fingerprints = BTreeMap::new();
+            let mut entries = BTreeMap::new();
             for tool in tools
                 .get("tools")
                 .and_then(Value::as_array)
@@ -207,16 +211,20 @@ impl McpStdio {
                         .cloned()
                         .unwrap_or_default();
                     annotations.insert(op.to_owned(), ann);
+                    fingerprints.insert(op.to_owned(), crate::pins::fingerprint(tool));
+                    entries.insert(op.to_owned(), tool.clone());
                 }
             }
-            Ok(annotations)
+            Ok((annotations, fingerprints, entries))
         })();
         match setup {
-            Ok(annotations) => Ok(McpStdio {
+            Ok((annotations, fingerprints, entries)) => Ok(McpStdio {
                 name: name.to_owned(),
                 timeout,
                 state: Mutex::new(Some(run)),
                 annotations,
+                fingerprints,
+                entries,
             }),
             Err(e) => {
                 run.stop();
@@ -231,6 +239,14 @@ impl McpStdio {
 
     pub fn annotations(&self, operation: &str) -> Option<Map<String, Value>> {
         self.annotations.get(operation).cloned()
+    }
+
+    pub fn fingerprints(&self) -> BTreeMap<String, String> {
+        self.fingerprints.clone()
+    }
+
+    pub fn entry(&self, operation: &str) -> Option<Value> {
+        self.entries.get(operation).cloned()
     }
 
     /// Whether the server still answers: false once a call broke it.
@@ -301,6 +317,29 @@ struct Slot {
     relaunch: Option<Relaunch>,
     /// When we last tried to start it again; held while we try.
     last_try: Mutex<Option<Instant>>,
+}
+
+/// The arguments a tool's `[launch]` asks for (ADR 0017), or `None` when
+/// it needs allowed folders and there are none. Mirrors `launch_command` in
+/// `herkos/src/herkos/cli.py`.
+pub fn launch_args(
+    launch: &herkos_core::manifest::Launch,
+    backups: &std::path::Path,
+    roots: &[std::path::PathBuf],
+) -> Option<Vec<String>> {
+    let mut args = Vec::new();
+    if launch.wants("backup_dir") {
+        args.extend(["--backup-dir".to_owned(), backups.display().to_string()]);
+    }
+    if launch.wants("roots") {
+        if roots.is_empty() {
+            return None;
+        }
+        for r in roots {
+            args.extend(["--root".to_owned(), r.display().to_string()]);
+        }
+    }
+    Some(args)
 }
 
 /// The tool servers this Herkos started, by tool name.
@@ -386,6 +425,14 @@ impl Tools for McpTools {
 
     fn annotations(&self, tool: &str, operation: &str) -> Option<Map<String, Value>> {
         self.get(tool)?.annotations(operation)
+    }
+
+    fn fingerprints(&self, tool: &str) -> BTreeMap<String, String> {
+        self.get(tool).map(|t| t.fingerprints()).unwrap_or_default()
+    }
+
+    fn entry(&self, tool: &str, operation: &str) -> Option<Value> {
+        self.get(tool)?.entry(operation)
     }
 
     fn execute(&self, request: &ActionRequest) -> Result<Value, String> {

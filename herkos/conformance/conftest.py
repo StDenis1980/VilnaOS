@@ -128,6 +128,8 @@ def start_herkos(tmp_path: Path, extra_args=(), extra_env=None):
         LANGUAGE="",
         LC_ALL="",
         LC_MESSAGES="",
+        # No system catalogue (ADR 0017) unless a test gives one.
+        HERKOS_MANIFEST_DIR=str(tmp_path / "no-manifests"),
     )
     env.update(extra_env or {})
     env.pop("DISPLAY", None)

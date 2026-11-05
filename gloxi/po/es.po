@@ -150,7 +150,7 @@ msgstr ""
 msgid "My own storage (S3, SFTP)"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "No"
 msgstr ""
 
@@ -240,7 +240,7 @@ msgstr ""
 msgid "Where shall we keep them? Everything is encrypted on this computer first."
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "Yes"
 msgstr ""
 
@@ -315,6 +315,11 @@ msgstr ""
 
 #: src/gloxi/check.py
 #, python-brace-format
+msgid "Gloxi starts {large} because its file is in the models folder, but the speed test has not shown that it is fast enough here. To go back to {small}, delete {file} from {folder}."
+msgstr ""
+
+#: src/gloxi/check.py
+#, python-brace-format
 msgid "Memory: {ram}. The local model needs at least 8 GB; Gloxi can still answer through the cloud with your own key."
 msgstr ""
 
@@ -367,7 +372,7 @@ msgid "Cloud: on ({mode} mode)."
 msgstr ""
 
 #: src/gloxi/cli.py
-msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /exit quits."
+msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
 msgstr ""
 
 #: src/gloxi/cli.py
@@ -408,7 +413,8 @@ msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud 
 msgstr ""
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
-msgid "Starting the model on this computer…"
+#, python-brace-format
+msgid "Starting {name} on this computer…"
 msgstr ""
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
@@ -469,6 +475,10 @@ msgid "Qwen (Alibaba Cloud) on Hugging Face"
 msgstr ""
 
 #: src/gloxi/engine.py
+msgid "the model"
+msgstr ""
+
+#: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} GB"
 msgstr ""
@@ -476,6 +486,157 @@ msgstr ""
 #: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} MB"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "A suggestion"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "About this computer:"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "All right, nothing was sent."
+msgstr ""
+
+#: src/gloxi/feedback.py src/gloxi/gui/window.py
+msgid "Cancel"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Crash report:"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Expected:"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Gloxi stopped with an error recently. Add that crash report?"
+msgstr ""
+
+#: src/gloxi/feedback.py
+#, python-brace-format
+msgid "Hidden before showing it here: {what}."
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "May I add what this computer is (system, processor, memory, graphics, models), as gloxi check shows it? Nothing personal."
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Never mind"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Open the form"
+msgstr ""
+
+#: src/gloxi/feedback.py
+#, python-brace-format
+msgid "Opening the form in your browser. Thank you! If it does not open: {url}"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Please answer 1 or 2."
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Please answer 1, 2 or 3."
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Please write a few words, or /cancel to stop."
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Something went wrong"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Suggestion:"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "This is public: anyone can read it on GitHub, and you need a GitHub account to send it. The form opens in your browser, where you can still change everything; it is sent only when you press Create there."
+msgstr ""
+
+#: src/gloxi/feedback.py
+#, python-brace-format
+msgid "This sounds like a security problem. Please do not post it publicly: report it privately at {url}"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "Title:"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "What did you do or ask, and what happened?"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "What did you expect instead? (Enter to skip)"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "What happened:"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "What would you like to tell us?"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "What would you suggest? A sentence or two is enough."
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "a card number"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "a date of birth"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "a name"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "a passport number"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "a password or key"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "a phone number"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "a profile link"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "a tax number"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "an IP address"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "an account number"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "an address"
+msgstr ""
+
+#: src/gloxi/feedback.py
+msgid "an e-mail address"
 msgstr ""
 
 #: src/gloxi/gui/controller.py
@@ -514,6 +675,10 @@ msgstr ""
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, backups"
+msgstr ""
+
+#: src/gloxi/gui/controller.py
+msgid "Gloxi, feedback"
 msgstr ""
 
 #: src/gloxi/gui/controller.py
@@ -565,10 +730,6 @@ msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr ""
 
 #: src/gloxi/gui/window.py
-msgid "Cancel"
-msgstr ""
-
-#: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
 msgstr ""
 
@@ -611,6 +772,10 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Report a problem or suggest something"
 msgstr ""
 
 #: src/gloxi/gui/window.py

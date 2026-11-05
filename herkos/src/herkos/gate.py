@@ -15,11 +15,12 @@ Every failure along the way is a denial, never an allowance.
 
 from __future__ import annotations
 
+import json
 import posixpath
 import secrets
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -27,9 +28,11 @@ from herkos.config import Config
 from herkos.confirm import Answer, Confirmer, Question, choices_for
 from herkos.grants import GrantStore
 from herkos.i18n import _
+from herkos.keros import scan
 from herkos.keros_model import ModelCheck
 from herkos.manifest import ManifestRegistry, Operation
 from herkos.mitos import Journal, JournalError, digest, read_records
+from herkos.pins import PinStore
 from herkos.policy import Assessment, SessionState, assess
 from herkos.request import ActionRequest, parse_request
 from herkos.risk import Level
@@ -90,6 +93,29 @@ def undeclared_resource(request: ActionRequest, op: Operation) -> str | None:
     return None
 
 
+# The server's description and schema of one operation, as JSON, at most.
+MAX_SAID_CHARS = 16_000
+
+
+def server_said(entry: Any) -> dict[str, Any]:
+    """The description and input schema a server gave for an operation."""
+    entry = entry if isinstance(entry, dict) else {}
+    description = entry.get("description")
+    schema = entry.get("inputSchema")
+    return {
+        "description": description if isinstance(description, str) else "",
+        "inputSchema": schema if isinstance(schema, dict) else {"type": "object"},
+    }
+
+
+def said_problems(said: dict[str, Any]) -> list[str]:
+    """Why Gloxi must not see what the server said: Keros findings or its length."""
+    text = json.dumps(said, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    if len(text) > MAX_SAID_CHARS:
+        return ["the program describes this action at too great a length"]
+    return [f.description for f in scan(said)]
+
+
 def new_action_id() -> str:
     # Time-ordered and unique enough for one journal: ms timestamp + random.
     return f"{int(time.time() * 1000):013x}{secrets.token_hex(6)}"
@@ -113,19 +139,27 @@ class Gate:
         self.grants = grants
         self.journal = journal
         self.confirmer = confirmer
+        self.pins = PinStore(config.state_dir / "tool-pins.json")
         # One question on screen at a time.
         self._ask_lock = threading.Lock()
 
     def available_tools(self) -> list[dict]:
+        return self.listing()["tools"]
+
+    def listing(self) -> dict[str, list[dict]]:
         """What Gloxi may offer the model: ``herkos.tools`` (protocol.md 2, ADR 0017).
 
         A tool is listed only when Herkos has its manifest and the tool server
         is running. An operation is listed only when the manifest allows it
         (not forbidden, base level at most ``max_level``) and the server has
-        it. Every text here comes from the manifest, never from the server:
-        descriptions written by a tool are external content (ADR 0017, 3).
+        it. ``summary`` and ``description`` come from the manifest. The
+        server's own description and parameter schema are external content:
+        they are passed on only when Keros finds nothing in them and they are
+        not too long; otherwise the operation goes to ``hidden`` with the
+        reasons, for the person to see (ADR 0017, step 4).
         """
         out = []
+        hidden: list[dict] = []
         for manifest in self.manifests:
             executor = self.tools.get(manifest.tool)
             if executor is None:
@@ -137,19 +171,26 @@ class Gate:
                     continue
                 if executor.annotations(name) is None:
                     continue
+                said = server_said(getattr(executor, "entry", lambda _n: None)(name))
+                why = said_problems(said)
+                if why:
+                    hidden.append({"tool": manifest.tool, "operation": name, "why": why})
+                    continue
                 ops.append(
                     {
                         "name": name,
                         "summary": op.summary,
                         "level": op.level.name,
                         "returns_external": op.returns_external,
+                        "server_description": said["description"],
+                        "input_schema": said["inputSchema"],
                     }
                 )
             if ops:
                 out.append(
                     {"tool": manifest.tool, "description": manifest.description, "operations": ops}
                 )
-        return out
+        return {"tools": out, "hidden": hidden}
 
     def handle(self, request: ActionRequest, session: SessionState) -> Outcome:
         action_id = new_action_id()
@@ -223,6 +264,16 @@ class Gate:
                 f"argument '{mismatch}' names something not declared in resources",
             )
         assert a.level is not None
+        fingerprint = self._changed(request, executor)
+        if fingerprint is not None:
+            # As without a manifest (permissions.md 4.1.3) until allowed once.
+            floor = Level.R3 if a.base is not None and a.base <= Level.R1 else Level.R4
+            a = replace(
+                a,
+                level=max(a.level, floor),
+                raises=(*a.raises, _("the program changed this action since it was allowed")),
+                taint_only=False,
+            )
         exact = self._exact_only(a)
         if a.level > self.config.max_level and not exact:
             why = "; ".join(a.raises) or "its base level"
@@ -240,6 +291,8 @@ class Gate:
         if a.level == Level.R0:
             return Outcome(action_id, True, a.level, "allowed", "R0: no permission needed")
 
+        # A changed operation: once, shown in full, no permission covers it.
+        exact = exact or fingerprint is not None
         grant = (
             None if exact else self.grants.find(request.tool, request.operation, a.roots, a.level)
         )
@@ -247,7 +300,21 @@ class Gate:
             return Outcome(
                 action_id, True, a.level, "allowed", f"permission {grant.id} ({grant.duration})"
             )
-        return self._ask(action_id, request, session, a, exact=exact)
+        outcome = self._ask(action_id, request, session, a, exact=exact)
+        if outcome.allowed and fingerprint is not None:
+            self.pins.pin(request.tool, request.operation, fingerprint)
+        return outcome
+
+    def _changed(self, request: ActionRequest, executor: object) -> str | None:
+        """The operation's new fingerprint if it changed since it was trusted."""
+        if executor is None or self.manifests.is_builtin(request.tool):
+            return None
+        current = getattr(executor, "fingerprints", dict)()
+        if request.operation not in current:
+            return None  # the server has no such operation: the call fails there
+        if not self.pins.changed(request.tool, request.operation, current):
+            return None
+        return current[request.operation]
 
     def _exact_only(self, a: Assessment) -> bool:
         """One level above the limit only because the conversation is tainted.

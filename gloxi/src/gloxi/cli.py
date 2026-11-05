@@ -8,8 +8,10 @@ uses the same ``Conversation``.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import signal
 import sys
+import webbrowser
 from collections.abc import Callable
 from contextlib import ExitStack
 from dataclasses import replace
@@ -18,8 +20,8 @@ from typing import TextIO
 
 import httpx
 
-from gloxi import __version__, check, upgrade
-from gloxi.backup_intro import BackupIntro, backup_intro
+from gloxi import __version__, check, crash, upgrade
+from gloxi.backup_intro import BackupIntro, Turn, backup_intro
 from gloxi.chat import Conversation
 from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
 from gloxi.engine import (
@@ -30,9 +32,11 @@ from gloxi.engine import (
     Plan,
     download,
     human_size,
+    model_name,
     plan,
     total_ram,
 )
+from gloxi.feedback import FeedbackTalk, wants_feedback
 from gloxi.herkos_local import start_if_needed
 from gloxi.i18n import N_, setup
 from gloxi.llm import ChatClient, ModelError, ModelUnavailable
@@ -43,7 +47,8 @@ from gloxi.upgrade import SpeedResult, measure_speed
 
 HELP = N_(
     "Commands: /local <text> or /cloud <text> picks the model for one message, "
-    "/reset clears the conversation, /backup sets up backups, /exit quits."
+    "/reset clears the conversation, /backup sets up backups, /feedback reports a problem "
+    "or suggests something, /exit quits."
 )
 
 LLAMA_HINT = N_(
@@ -149,7 +154,7 @@ def prepare_engine(
             print("\n" + _("The model was not downloaded: {why}").format(why=exc), file=out)
             raise NoModel from None
         print("\n" + _("The model is ready."), file=out)
-    print(_("Starting the model on this computer…"), file=out)
+    print(_("Starting {name} on this computer…").format(name=model_name(model_path)), file=out)
     engine = engine_type(p.binary, model_path, settings.local.url)
     try:
         engine.start()
@@ -270,7 +275,10 @@ def repl(
     read: Callable[[str], str] = input,
     out: TextIO = sys.stdout,
     intro: BackupIntro | None = None,
+    feedback: FeedbackTalk | None = None,
+    open_url: Callable[[str], object] = webbrowser.open,
 ) -> int:
+    feedback = feedback or FeedbackTalk()
     print(f"Gloxi {__version__}. {_(HELP)}", file=out)
     router = conversation.router
     if router.cloud_enabled:
@@ -304,6 +312,10 @@ def repl(
         if text == "/help":
             print(_(HELP), file=out)
             continue
+        if text == "/feedback" or text.startswith("/feedback ") or wants_feedback(text):
+            first = text.removeprefix("/feedback") if text.startswith("/feedback") else ""
+            run_feedback(feedback, feedback.start(first), read, out, open_url)
+            continue
         force, text = split_command(text)
         if not text:
             print(_(HELP), file=out)
@@ -312,6 +324,30 @@ def repl(
             _answer(conversation, text, out, force=force)
         except KeyboardInterrupt:
             print("\n" + _("(interrupted)"), file=out)
+
+
+def run_feedback(
+    talk: FeedbackTalk,
+    turn: Turn,
+    read: Callable[[str], str],
+    out: TextIO,
+    open_url: Callable[[str], object],
+) -> None:
+    """``/feedback`` in the terminal (ADR 0018); Ctrl+D or /cancel leaves it."""
+    while True:
+        print(f"\nGloxi: {turn.render()}", file=out)
+        if turn.done:
+            break
+        try:
+            text = read("> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            text = "/cancel"
+        turn = talk.cancel() if text == "/cancel" else talk.answer(text)
+    if talk.url:
+        # No browser: the address is already on the screen.
+        with contextlib.suppress(Exception):
+            open_url(talk.url)
+    print(file=out)
 
 
 def run_intro(intro: BackupIntro, read: Callable[[str], str], out: TextIO) -> None:
@@ -350,6 +386,7 @@ def _leave(signum: int, _frame: object) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     setup()
+    crash.install()
     args = build_parser().parse_args(argv)
     if args.command == "check":
         print(check.collect().render())

@@ -47,7 +47,7 @@ jobs:
             spec="$dir$name.spec"
             [ -f "$spec" ] || continue  # a KIWI image (obs/images/), checked below
             echo "::group::$name"
-            zypper -n --gpg-auto-import-keys refresh local-build
+            zypper -n --gpg-auto-import-keys refresh --force local-build
             deps=$(rpmspec -q --buildrequires "$spec" | sort -u)
             if [ -n "$deps" ]; then
               echo "$deps" | xargs -d '\n' zypper -n install --no-recommends
@@ -60,8 +60,10 @@ jobs:
       - name: Check image descriptions
         # --resolve: zypper solves each image against Tumbleweed and the RPMs
         # above, so a conflict shows here and not only as "unresolvable" on OBS.
+        # --force: a plain-folder repository can look "up to date" by its
+        # timestamps and miss the RPM built last (vilna-presets).
         run: |
-          zypper -n --gpg-auto-import-keys refresh local-build
+          zypper -n --gpg-auto-import-keys refresh --force local-build
           python3 obs/tools/check_images.py --rpms build/rpm/RPMS --resolve
       - name: rpmlint
         run: |

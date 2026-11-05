@@ -4,6 +4,14 @@
 tool = "org.vilna.mcp.files"
 description = "Files in the folders the user allowed"
 
+# How Herkos starts the server (ADR 0017): the program on PATH (the system
+# Herkos: its unit vilna-mcp-files@<uid>), the Python module for Herkos-lite, and
+# what Herkos passes it.
+[launch]
+program = "vilna-mcp-files"
+module = "vilna_mcp_files"
+args = ["backup_dir", "roots"]
+
 [operations.list]
 level = "R1"
 summary = "List a folder"

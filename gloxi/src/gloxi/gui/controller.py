@@ -23,7 +23,17 @@ from gloxi.backup_intro import BackupIntro, Turn
 from gloxi.chat import Conversation
 from gloxi.cli import model_consent_text, split_command, upgrade_consent_text
 from gloxi.config import Settings
-from gloxi.engine import LARGE_MODEL, Engine, EngineError, Plan, download, plan, total_ram
+from gloxi.engine import (
+    LARGE_MODEL,
+    Engine,
+    EngineError,
+    Plan,
+    download,
+    model_name,
+    plan,
+    total_ram,
+)
+from gloxi.feedback import FeedbackTalk, wants_feedback
 from gloxi.llm import ModelError, ModelUnavailable
 from gloxi.router import CloudNotAllowed, Route, Router
 
@@ -46,6 +56,7 @@ class ChatView(Protocol):
     def show_error(self, text: str) -> None: ...
     def set_busy(self, busy: bool) -> None: ...
     def show_note(self, text: str) -> None: ...
+    def open_uri(self, url: str) -> None: ...
 
 
 def route_label(route: Route, masks_cloud: bool) -> str:
@@ -112,8 +123,10 @@ class ChatController:
         *,
         runner: Runner = thread_runner,
         intro: BackupIntro | None = None,
+        feedback: FeedbackTalk | None = None,
     ) -> None:
         self.conversation = conversation
+        self.feedback = feedback or FeedbackTalk()
         self.view = view
         self.runner = runner
         self.intro = intro
@@ -127,6 +140,16 @@ class ChatController:
             return False
         if text == "/backup":
             return self.offer_intro(always=True)
+        if self.feedback.active:
+            self.view.show_user_message(text)
+            if text == "/cancel":
+                return self._feedback_step(self.feedback.cancel)
+            return self._feedback_step(lambda: self.feedback.answer(text))
+        if text == "/feedback" or text.startswith("/feedback ") or wants_feedback(text):
+            first = text.removeprefix("/feedback") if text.startswith("/feedback") else ""
+            if not text.startswith("/"):
+                self.view.show_user_message(text)
+            return self._feedback_step(lambda: self.feedback.start(first))
         if self.intro and self.intro.active:
             self.view.show_user_message(text)
             return self._intro_step(lambda: self.intro.answer(text))
@@ -168,6 +191,30 @@ class ChatController:
                     self.view.start_answer(_("Gloxi, backups"))
                     self.view.append_answer(turn.render())
                     self.view.finish_answer()
+            finally:
+                self.busy = False
+                self.view.set_busy(False)
+
+        self.runner(job)
+        return True
+
+    def report_problem(self) -> bool:
+        """The window's "Report a problem" menu item: same as /feedback."""
+        return self.submit("/feedback")
+
+    def _feedback_step(self, step: Callable[[], Turn]) -> bool:
+        # gloxi check may ask llama-server about the graphics: off the UI thread.
+        self.busy = True
+        self.view.set_busy(True)
+
+        def job() -> None:
+            try:
+                turn = step()
+                self.view.start_answer(_("Gloxi, feedback"))
+                self.view.append_answer(turn.render())
+                self.view.finish_answer()
+                if turn.done and self.feedback.url:
+                    self.view.open_uri(self.feedback.url)
             finally:
                 self.busy = False
                 self.view.set_busy(False)
@@ -273,7 +320,8 @@ class ModelSetup:
         self._start(path)
 
     def _start(self, model_path) -> None:
-        self.view.show_model_progress(_("Starting the model on this computer…"), None)
+        text = _("Starting {name} on this computer…").format(name=model_name(model_path))
+        self.view.show_model_progress(text, None)
         engine = self.engine_type(self._plan.binary, model_path, self.settings.local.url)
         try:
             engine.start()
