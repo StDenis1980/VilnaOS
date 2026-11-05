@@ -1,0 +1,541 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# «Рекомендовано Vilna»: добірка програм Flathub для GNOME Software.
+# Рішення і критерії: docs/adr/0012-recommended-apps-and-install-via-gloxi.md.
+# З цього файлу build_picks.py робить метадані AppStream і deployment-featured.ini;
+# опис і як додати програму: obs/packages/vilna-software-picks/README.md.
+#
+# Поля програми:
+#   id        — ідентифікатор AppStream / Flatpak (той самий, що на Flathub)
+#   category  — розділ добірки, ключ із [categories]
+#   license   — ліцензія програми (SPDX), має бути вільною (OSI або FSF)
+#   source    — "flathub-verified" (розробник підтверджений на Flathub)
+#               або "vilna" (наша програма, власне Flatpak-сховище Vilna)
+#   default   — true, якщо програма стоїть у Vilna за замовчуванням
+#               (image/packages.yaml, flatpak_defaults). Такі програми входять
+#               у добірку, щоб Gloxi і діалог Herkos знали про них, але не
+#               займають плитки на головній сторінці GNOME Software.
+#   why       — навіщо вона людині, одним реченням
+
+[section]
+# Значення GnomeSoftware::DeploymentFeatured, за яким GNOME Software
+# збирає блок на головній сторінці
+selector = "vilna"
+
+[section.title]
+# Заголовок блоку на головній сторінці, 10 основних мов (ADR 0009)
+uk = "Рекомендовано Vilna"
+en = "Recommended by Vilna"
+es = "Recomendado por Vilna"
+pl = "Polecane przez Vilna"
+de = "Von Vilna empfohlen"
+fr = "Recommandé par Vilna"
+it = "Consigliato da Vilna"
+ro = "Recomandat de Vilna"
+cs = "Doporučeno Vilnou"
+lt = "Rekomenduoja Vilna"
+
+[categories]
+work = "Робота"
+learning = "Навчання"
+graphics = "Графіка"
+media = "Звук і відео"
+games = "Ігри"
+development = "Розробка"
+system = "Система і безпека"
+
+# ---------------------------------------------------------------- Робота
+
+[[app]]
+id = "org.mozilla.firefox"
+category = "work"
+license = "MPL-2.0"
+source = "flathub-verified"
+default = true
+why = "Браузер за замовчуванням."
+
+[[app]]
+id = "io.github.stdenis1980.tintatexto"
+category = "work"
+license = "MIT OR Apache-2.0"
+source = "vilna"
+default = true
+why = "Tinta Texto: текстові документи DOCX і ODT (ADR 0011)."
+
+[[app]]
+id = "io.github.stdenis1980.tintacalculo"
+category = "work"
+license = "MIT OR Apache-2.0"
+source = "vilna"
+default = true
+why = "Tinta Calculo: електронні таблиці XLSX і ODS (ADR 0011)."
+
+[[app]]
+id = "io.github.stdenis1980.tintapresenta"
+category = "work"
+license = "MIT OR Apache-2.0"
+source = "vilna"
+default = true
+why = "Tinta Presenta: презентації PPTX і ODP (ADR 0011)."
+
+[[app]]
+id = "io.github.stdenis1980.tintapdf"
+category = "work"
+license = "MIT OR Apache-2.0"
+source = "vilna"
+default = true
+why = "Tinta PDF: перегляд, підпис і редагування PDF (ADR 0011)."
+
+[[app]]
+id = "io.github.stdenis1980.ibercorreo"
+category = "work"
+license = "MIT OR Apache-2.0"
+source = "vilna"
+default = true
+why = "Tinta Correo: пошта, календар і контакти (ADR 0011)."
+
+[[app]]
+id = "org.gnome.TextEditor"
+category = "work"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = true
+why = "Простий текстовий редактор."
+
+[[app]]
+id = "org.gnome.Calculator"
+category = "work"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = true
+why = "Калькулятор."
+
+[[app]]
+id = "org.gnome.clocks"
+category = "work"
+license = "GPL-2.0-or-later"
+source = "flathub-verified"
+default = true
+why = "Годинники, будильник, таймер."
+
+[[app]]
+id = "org.gnome.Weather"
+category = "work"
+license = "GPL-2.0-or-later"
+source = "flathub-verified"
+default = true
+why = "Погода."
+
+[[app]]
+id = "org.gnome.Loupe"
+category = "work"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = true
+why = "Перегляд зображень."
+
+[[app]]
+id = "com.github.johnfactotum.Foliate"
+category = "work"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Читання електронних книжок EPUB, FB2, MOBI."
+
+[[app]]
+id = "com.github.flxzt.rnote"
+category = "work"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Рукописні нотатки й малюнки пером або мишею."
+
+[[app]]
+id = "io.github.alainm23.planify"
+category = "work"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Справи і списки завдань, синхронізація лише якщо людина її ввімкне."
+
+[[app]]
+id = "org.gnome.Solanum"
+category = "work"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Таймер «помідора» для зосередженої роботи."
+
+[[app]]
+id = "app.drey.Warp"
+category = "work"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Передати файл на інший комп'ютер за кодом, із шифруванням."
+
+[[app]]
+id = "org.localsend.localsend_app"
+category = "work"
+license = "MIT"
+source = "flathub-verified"
+default = false
+why = "Обмін файлами з телефоном у тій самій мережі, без хмари."
+
+[[app]]
+id = "org.gnome.Fractal"
+category = "work"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Повідомлення в мережі Matrix з наскрізним шифруванням."
+
+[[app]]
+id = "io.appflowy.AppFlowy"
+category = "work"
+license = "AGPL-3.0-only"
+source = "flathub-verified"
+default = false
+why = "Нотатки, бази й дошки завдань, як Notion, але дані на пристрої."
+
+[[app]]
+id = "com.logseq.Logseq"
+category = "work"
+license = "AGPL-3.0-only"
+source = "flathub-verified"
+default = false
+why = "База знань зі зв'язаних нотаток у файлах Markdown, як Obsidian."
+
+[[app]]
+id = "net.cozic.joplin_desktop"
+category = "work"
+license = "AGPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Нотатки в Markdown із шифрованою синхронізацією на вибір."
+
+# ---------------------------------------------------------------- Навчання
+
+[[app]]
+id = "com.github.hugolabe.Wike"
+category = "learning"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Читання Вікіпедії потрібною мовою."
+
+[[app]]
+id = "org.stellarium.Stellarium"
+category = "learning"
+license = "GPL-2.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Планетарій: зоряне небо над будь-яким місцем."
+
+[[app]]
+id = "org.kde.gcompris"
+category = "learning"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Понад сотня навчальних ігор для дітей від 2 до 10 років."
+
+[[app]]
+id = "org.tuxpaint.Tuxpaint"
+category = "learning"
+license = "GPL-2.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Малювання для дітей."
+
+[[app]]
+id = "com.github.tenderowl.frog"
+category = "learning"
+license = "MIT"
+source = "flathub-verified"
+default = false
+why = "Розпізнати текст на знімку екрана чи зображенні, на пристрої."
+
+# ---------------------------------------------------------------- Графіка
+
+[[app]]
+id = "org.gimp.GIMP"
+category = "graphics"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Редагування фотографій і растрової графіки."
+
+[[app]]
+id = "org.inkscape.Inkscape"
+category = "graphics"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Векторна графіка: логотипи, схеми, ілюстрації."
+
+[[app]]
+id = "org.kde.krita"
+category = "graphics"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Цифровий живопис і малювання на планшеті."
+
+[[app]]
+id = "org.darktable.Darktable"
+category = "graphics"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Обробка RAW-фотографій і каталог знімків."
+
+[[app]]
+id = "org.blender.Blender"
+category = "graphics"
+license = "GPL-2.0-or-later"
+source = "flathub-verified"
+default = false
+why = "3D-моделювання, анімація і рендер."
+
+[[app]]
+id = "org.freecad.FreeCAD"
+category = "graphics"
+license = "LGPL-2.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Креслення і 3D-моделі деталей для виготовлення."
+
+
+[[app]]
+id = "io.gitlab.adhami3310.Converter"
+category = "graphics"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Перетворити зображення в інший формат чи розмір."
+
+# ---------------------------------------------------------------- Звук і відео
+
+[[app]]
+id = "org.videolan.VLC"
+category = "media"
+license = "GPL-2.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Відтворює майже будь-яке відео й аудіо."
+
+[[app]]
+id = "org.kde.kdenlive"
+category = "media"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Монтаж відео."
+
+[[app]]
+id = "org.gnome.gitlab.YaLTeR.VideoTrimmer"
+category = "media"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Швидко обрізати відео без перекодування."
+
+[[app]]
+id = "com.obsproject.Studio"
+category = "media"
+license = "GPL-2.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Запис і трансляція екрана й камери."
+
+[[app]]
+id = "io.github.seadve.Kooha"
+category = "media"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Простий запис екрана."
+
+[[app]]
+id = "org.audacityteam.Audacity"
+category = "media"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Запис і редагування звуку."
+
+[[app]]
+id = "fr.handbrake.ghb"
+category = "media"
+license = "GPL-2.0-only"
+source = "flathub-verified"
+default = false
+why = "Перекодування й стиснення відео."
+
+[[app]]
+id = "io.bassi.Amberol"
+category = "media"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Програвач власної музики."
+
+[[app]]
+id = "org.gnome.Podcasts"
+category = "media"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Подкасти."
+
+[[app]]
+id = "de.haeckerfelix.Shortwave"
+category = "media"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Інтернет-радіо."
+
+[[app]]
+id = "org.musescore.MuseScore"
+category = "media"
+license = "GPL-3.0-only"
+source = "flathub-verified"
+default = false
+why = "Нотний редактор."
+
+# ---------------------------------------------------------------- Ігри
+
+[[app]]
+id = "net.supertuxkart.SuperTuxKart"
+category = "games"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Картингові перегони, з друзями на одному екрані."
+
+[[app]]
+id = "org.supertuxproject.SuperTux"
+category = "games"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Класичний платформер."
+
+[[app]]
+id = "net.wesnoth.Wesnoth"
+category = "games"
+license = "GPL-2.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Покрокова стратегія у фентезійному світі."
+
+[[app]]
+id = "com.play0ad.zeroad"
+category = "games"
+license = "GPL-2.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Історична стратегія в реальному часі."
+
+[[app]]
+id = "org.gnome.Chess"
+category = "games"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Шахи проти комп'ютера чи людини."
+
+[[app]]
+id = "org.gnome.Crosswords"
+category = "games"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Кросворди."
+
+
+# ---------------------------------------------------------------- Розробка
+
+[[app]]
+id = "re.sonny.Workbench"
+category = "development"
+license = "GPL-3.0-only"
+source = "flathub-verified"
+default = false
+why = "Вчитися робити програми для GNOME, з прикладами."
+
+[[app]]
+id = "org.gnome.Builder"
+category = "development"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Середовище розробки для програм GNOME і Flatpak."
+
+[[app]]
+id = "io.github.dvlv.boxbuddyrs"
+category = "development"
+license = "MIT"
+source = "flathub-verified"
+default = false
+why = "Контейнери Distrobox: інші Linux-дистрибутиви поруч із незмінною системою."
+
+[[app]]
+id = "com.github.marhkb.Pods"
+category = "development"
+license = "GPL-3.0-only"
+source = "flathub-verified"
+default = false
+why = "Контейнери Podman без командного рядка."
+
+[[app]]
+id = "me.iepure.devtoolbox"
+category = "development"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Дрібні інструменти розробника: JSON, Base64, хеші, регулярні вирази."
+
+# ---------------------------------------------------------------- Система і безпека
+
+[[app]]
+id = "org.keepassxc.KeePassXC"
+category = "system"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = true
+why = "Менеджер паролів, офлайн."
+
+[[app]]
+id = "com.github.tchx84.Flatseal"
+category = "system"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Переглянути й обмежити дозволи встановлених програм."
+
+[[app]]
+id = "com.belmoussaoui.Authenticator"
+category = "system"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Одноразові коди для двофакторного входу."
+
+[[app]]
+id = "io.missioncenter.MissionCenter"
+category = "system"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Що навантажує процесор, пам'ять, диск і відеокарту."
+
+[[app]]
+id = "io.github.flattool.Warehouse"
+category = "system"
+license = "GPL-3.0-or-later"
+source = "flathub-verified"
+default = false
+why = "Керувати Flatpak-програмами та їхніми даними."

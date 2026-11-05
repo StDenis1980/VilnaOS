@@ -58,7 +58,11 @@ jobs:
             echo "::endgroup::"
           done
       - name: Check image descriptions
-        run: python3 obs/tools/check_images.py --rpms build/rpm/RPMS
+        # --resolve: zypper solves each image against Tumbleweed and the RPMs
+        # above, so a conflict shows here and not only as "unresolvable" on OBS.
+        run: |
+          zypper -n --gpg-auto-import-keys refresh local-build
+          python3 obs/tools/check_images.py --rpms build/rpm/RPMS --resolve
       - name: rpmlint
         run: |
           rpmlint --ignore-unused-rpmlintrc -r obs/ci-rpmlintrc build/rpm/RPMS/*/*.rpm \
