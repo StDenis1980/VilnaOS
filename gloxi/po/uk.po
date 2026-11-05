@@ -153,7 +153,7 @@ msgstr "Музика"
 msgid "My own storage (S3, SFTP)"
 msgstr "Власне сховище (S3, SFTP)"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "No"
 msgstr "Ні"
 
@@ -243,7 +243,7 @@ msgstr "Що зберігати? Ось скільки місця це займ�
 msgid "Where shall we keep them? Everything is encrypted on this computer first."
 msgstr "Де їх зберігати? Усе спершу шифрується на цьому комп'ютері."
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "Yes"
 msgstr "Так"
 
@@ -377,8 +377,8 @@ msgid "Cloud: on ({mode} mode)."
 msgstr "Хмара: увімкнена (режим {mode})."
 
 #: src/gloxi/cli.py
-msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /exit quits."
-msgstr "Команди: /local <текст> або /cloud <текст> вибирає модель для одного повідомлення, /reset очищає розмову, /backup налаштовує резервні копії, /exit завершує роботу."
+msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
+msgstr "Команди: /local <текст> чи /cloud <текст> обирає модель для одного повідомлення, /reset очищає розмову, /backup налаштовує резервні копії, /feedback — повідомити про проблему чи запропонувати щось, /exit — вихід."
 
 #: src/gloxi/cli.py
 msgid "Conversation cleared."
@@ -496,6 +496,157 @@ msgstr "{value} ГБ"
 msgid "{value} MB"
 msgstr "{value} МБ"
 
+#: src/gloxi/feedback.py
+msgid "A suggestion"
+msgstr "Пропозиція"
+
+#: src/gloxi/feedback.py
+msgid "About this computer:"
+msgstr "Про цей комп'ютер:"
+
+#: src/gloxi/feedback.py
+msgid "All right, nothing was sent."
+msgstr "Добре, нічого не надіслано."
+
+#: src/gloxi/feedback.py src/gloxi/gui/window.py
+msgid "Cancel"
+msgstr "Скасувати"
+
+#: src/gloxi/feedback.py
+msgid "Crash report:"
+msgstr "Звіт про збій:"
+
+#: src/gloxi/feedback.py
+msgid "Expected:"
+msgstr "Очікувалося:"
+
+#: src/gloxi/feedback.py
+msgid "Gloxi stopped with an error recently. Add that crash report?"
+msgstr "Нещодавно Gloxi зупинився з помилкою. Додати звіт про цей збій?"
+
+#: src/gloxi/feedback.py
+#, python-brace-format
+msgid "Hidden before showing it here: {what}."
+msgstr "Перш ніж показати, приховано: {what}."
+
+#: src/gloxi/feedback.py
+msgid "May I add what this computer is (system, processor, memory, graphics, models), as gloxi check shows it? Nothing personal."
+msgstr "Додати, що це за комп'ютер (система, процесор, пам'ять, відеокарта, моделі), як показує gloxi check? Нічого особистого."
+
+#: src/gloxi/feedback.py
+msgid "Never mind"
+msgstr "Нічого, скасувати"
+
+#: src/gloxi/feedback.py
+msgid "Open the form"
+msgstr "Відкрити форму"
+
+#: src/gloxi/feedback.py
+#, python-brace-format
+msgid "Opening the form in your browser. Thank you! If it does not open: {url}"
+msgstr "Відкриваю форму в браузері. Дякуємо! Якщо вона не відкрилася: {url}"
+
+#: src/gloxi/feedback.py
+msgid "Please answer 1 or 2."
+msgstr "Відповідайте, будь ласка, 1 або 2."
+
+#: src/gloxi/feedback.py
+msgid "Please answer 1, 2 or 3."
+msgstr "Відповідайте, будь ласка, 1, 2 або 3."
+
+#: src/gloxi/feedback.py
+msgid "Please write a few words, or /cancel to stop."
+msgstr "Напишіть кілька слів або /cancel, щоб зупинитися."
+
+#: src/gloxi/feedback.py
+msgid "Something went wrong"
+msgstr "Щось пішло не так"
+
+#: src/gloxi/feedback.py
+msgid "Suggestion:"
+msgstr "Пропозиція:"
+
+#: src/gloxi/feedback.py
+msgid "This is public: anyone can read it on GitHub, and you need a GitHub account to send it. The form opens in your browser, where you can still change everything; it is sent only when you press Create there."
+msgstr "Це публічно: будь-хто зможе прочитати це на GitHub, а щоб надіслати, потрібен обліковий запис GitHub. Форма відкриється в браузері, там ще можна все змінити; надсилається вона лише після натискання Create."
+
+#: src/gloxi/feedback.py
+#, python-brace-format
+msgid "This sounds like a security problem. Please do not post it publicly: report it privately at {url}"
+msgstr "Схоже на проблему безпеки. Не публікуйте її, будь ласка: повідомте приватно тут: {url}"
+
+#: src/gloxi/feedback.py
+msgid "Title:"
+msgstr "Заголовок:"
+
+#: src/gloxi/feedback.py
+msgid "What did you do or ask, and what happened?"
+msgstr "Що ви робили чи просили і що сталося?"
+
+#: src/gloxi/feedback.py
+msgid "What did you expect instead? (Enter to skip)"
+msgstr "Що ви очікували натомість? (Enter — пропустити)"
+
+#: src/gloxi/feedback.py
+msgid "What happened:"
+msgstr "Що сталося:"
+
+#: src/gloxi/feedback.py
+msgid "What would you like to tell us?"
+msgstr "Що ви хочете нам повідомити?"
+
+#: src/gloxi/feedback.py
+msgid "What would you suggest? A sentence or two is enough."
+msgstr "Що ви пропонуєте? Досить одного-двох речень."
+
+#: src/gloxi/feedback.py
+msgid "a card number"
+msgstr "номер картки"
+
+#: src/gloxi/feedback.py
+msgid "a date of birth"
+msgstr "дату народження"
+
+#: src/gloxi/feedback.py
+msgid "a name"
+msgstr "ім'я"
+
+#: src/gloxi/feedback.py
+msgid "a passport number"
+msgstr "номер паспорта"
+
+#: src/gloxi/feedback.py
+msgid "a password or key"
+msgstr "пароль чи ключ"
+
+#: src/gloxi/feedback.py
+msgid "a phone number"
+msgstr "номер телефону"
+
+#: src/gloxi/feedback.py
+msgid "a profile link"
+msgstr "посилання на профіль"
+
+#: src/gloxi/feedback.py
+msgid "a tax number"
+msgstr "податковий номер"
+
+#: src/gloxi/feedback.py
+msgid "an IP address"
+msgstr "IP-адресу"
+
+#: src/gloxi/feedback.py
+msgid "an account number"
+msgstr "номер рахунку"
+
+#: src/gloxi/feedback.py
+msgid "an address"
+msgstr "адресу"
+
+#: src/gloxi/feedback.py
+msgid "an e-mail address"
+msgstr "адресу пошти"
+
 #: src/gloxi/gui/controller.py
 msgid "Auto"
 msgstr "Авто"
@@ -533,6 +684,10 @@ msgstr "Хмара: {host}, без маскування"
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, backups"
 msgstr "Gloxi, резервні копії"
+
+#: src/gloxi/gui/controller.py
+msgid "Gloxi, feedback"
+msgstr "Gloxi, відгук"
 
 #: src/gloxi/gui/controller.py
 msgid "Local"
@@ -583,10 +738,6 @@ msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr "Запитайте Gloxi… (/local або /cloud, щоб вибрати модель)"
 
 #: src/gloxi/gui/window.py
-msgid "Cancel"
-msgstr "Скасувати"
-
-#: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
 msgstr "Оберіть теку для Gloxi"
 
@@ -630,6 +781,10 @@ msgstr "Не зараз"
 #: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
 msgstr "Лише локальна модель: щоб обрати іншу, увімкніть хмару в налаштуваннях"
+
+#: src/gloxi/gui/window.py
+msgid "Report a problem or suggest something"
+msgstr "Повідомити про проблему чи запропонувати щось"
 
 #: src/gloxi/gui/window.py
 msgid "Send"

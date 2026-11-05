@@ -55,5 +55,8 @@ body:
     attributes:
       label: "Що не спрацювало або здивувало / What failed or surprised you"
       description: "Що ви просили, що очікували, що вийшло. What you asked, what you expected, what happened."
-    validations:
-      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: "Пропозиція / Suggestion"
+      description: "Що додати чи змінити в Gloxi або Vilna. What to add or change in Gloxi or Vilna."

@@ -17,6 +17,7 @@ mod keros_model;
 mod mcp;
 mod mitos;
 mod passwd;
+mod pins;
 mod rpc;
 mod system;
 mod units;

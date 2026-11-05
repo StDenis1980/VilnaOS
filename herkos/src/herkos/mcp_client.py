@@ -15,6 +15,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from herkos import __version__
+from herkos.pins import fingerprint
 from herkos.request import ActionRequest
 from herkos.tools import ToolError
 
@@ -35,6 +36,7 @@ class McpStdioExecutor:
         self._next_id = 0
         self._proc: subprocess.Popen[bytes] | None = None
         self._annotations: dict[str, Mapping[str, object]] = {}
+        self._fingerprints: dict[str, str] = {}
 
     # -- life cycle ----------------------------------------------------------
 
@@ -65,6 +67,7 @@ class McpStdioExecutor:
             if isinstance(tool, dict) and isinstance(tool.get("name"), str):
                 ann = tool.get("annotations")
                 self._annotations[tool["name"]] = ann if isinstance(ann, dict) else {}
+                self._fingerprints[tool["name"]] = fingerprint(tool)
 
     def stop(self) -> None:
         proc, self._proc = self._proc, None
@@ -83,6 +86,10 @@ class McpStdioExecutor:
 
     def annotations(self, operation: str) -> Mapping[str, object] | None:
         return self._annotations.get(operation)
+
+    def fingerprints(self) -> Mapping[str, str]:
+        """What the server said about each operation (pins.py)."""
+        return dict(self._fingerprints)
 
     def execute(self, request: ActionRequest) -> Any:
         if request.operation not in self._annotations:

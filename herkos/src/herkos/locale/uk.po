@@ -70,6 +70,9 @@ msgstr "Немає відповіді: відхилено."
 msgid "the tool has no Herkos manifest"
 msgstr "інструмент не має маніфесту Herkos"
 
+msgid "the program changed this action since it was allowed"
+msgstr "програма змінила цю дію відтоді, як ви її дозволили"
+
 msgid "the tool describes this operation as riskier"
 msgstr "сам інструмент позначає цю операцію як ризикованішу"
 

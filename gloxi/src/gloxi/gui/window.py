@@ -15,6 +15,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
+from gloxi import crash  # noqa: E402
 from gloxi.backup_intro import BackupIntro, backup_intro  # noqa: E402
 from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
@@ -83,6 +84,12 @@ class ChatWindow(Adw.ApplicationWindow):
         )
         self.folders_button.connect("clicked", self._on_folders)
         header.pack_end(self.folders_button)
+        report_button = Gtk.Button(
+            icon_name="mail-message-new-symbolic",
+            tooltip_text=_("Report a problem or suggest something"),
+        )
+        report_button.connect("clicked", lambda *_a: self.controller.report_problem())
+        header.pack_end(report_button)
 
         self.messages = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         for side in ("top", "bottom", "start", "end"):
@@ -329,6 +336,11 @@ class ChatWindow(Adw.ApplicationWindow):
         self.toasts.add_toast(Adw.Toast(title=text, timeout=4))
 
     @_idle
+    def open_uri(self, url: str) -> None:
+        # Through the OpenURI portal in Flatpak; the address is also in the chat.
+        Gtk.UriLauncher.new(url).launch(self, None, None, None)
+
+    @_idle
     def set_busy(self, busy: bool) -> None:
         self.send_button.set_sensitive(not busy)
         if not busy:
@@ -391,6 +403,7 @@ class GloxiApp(Adw.Application):
 
 def main(argv: list[str] | None = None) -> int:
     setup()
+    crash.install()
     GLib.set_application_name("Gloxi")
     app = GloxiApp()
     # Closing the terminal or `kill` must stop the model and Herkos too:

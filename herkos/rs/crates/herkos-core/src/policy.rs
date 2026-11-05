@@ -45,7 +45,7 @@ pub struct Raise {
 }
 
 impl Raise {
-    fn plain(msgid: &'static str) -> Raise {
+    pub fn plain(msgid: &'static str) -> Raise {
         Raise {
             msgid,
             args: Map::new(),
@@ -187,7 +187,8 @@ pub fn assess(
         raises.push(why);
     };
 
-    if let Some(a) = annotations {
+    // No hints at all is not a hint (as `if annotations:` in policy.py).
+    if let Some(a) = annotations.filter(|a| !a.is_empty()) {
         let hinted = level_from_annotations(a);
         if hinted > level {
             raise(
@@ -410,6 +411,22 @@ mod tests {
             assess(&r, Some(&m), &s, &limits, None).level,
             Some(Level::R4)
         );
+    }
+
+    #[test]
+    fn no_annotations_at_all_raise_nothing() {
+        let m = parse_manifest_str("tool = \"t\"\n[operations.read]\nlevel = \"R1\"", "t")
+            .expect("valid");
+        let limits = Limits {
+            allowed_roots: &[],
+            bulk_threshold: 20,
+            resolve: &same,
+        };
+        let r =
+            parse_request(&json!({"tool": "t", "operation": "read", "reason": "r"})).expect("ok");
+        let s = SessionState::default();
+        let a = assess(&r, Some(&m), &s, &limits, Some(&Map::new()));
+        assert_eq!((a.level, a.raises.len()), (Some(Level::R1), 0));
     }
 
     #[test]
