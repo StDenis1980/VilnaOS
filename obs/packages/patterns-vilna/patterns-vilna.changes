@@ -3,9 +3,10 @@ Thu Nov  5 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
 
 - 0.4: Vilna and upstream branding instead of Aeon and openSUSE:
   gnome-, systemd-presets-, x86_64_v3-, NetworkManager- and
-  hicolor-icon-theme-branding-Vilna; branding-, gdm-, gio-, gtk2/3/4-,
+  hicolor-icon-theme-branding-Vilna; branding-, gdm-, gtk2/3/4-,
   gnome-menus- and systemd-default-settings-branding-upstream. Drop
-  systemd-icon-branding-openSUSE.
+  systemd-icon-branding-openSUSE. gio-branding stays openSUSE's:
+  openSUSE:Factory bans gio-branding-upstream from KIWI images.
 
 -------------------------------------------------------------------
 Thu Nov  5 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

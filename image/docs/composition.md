@@ -122,9 +122,11 @@
 | `x86_64_v3-branding-Aeon` | `x86_64_v3-branding-Vilna` | Бібліотеки x86_64_v3 після оновлень |
 | `NetworkManager-branding-openSUSE` | `NetworkManager-branding-Vilna` | Перевірка з'єднання для captive portal (поки сервер openSUSE) |
 | `systemd-repart-branding-Aeon` | — (прибрано) | Розмітка для установника tik, ламала перший запуск образу |
-| `branding-openSUSE`, `gdm-branding-Aeon`, `gio-branding-openSUSE`, `gtk2/3/4-branding-openSUSE`, `gnome-menus-branding-openSUSE`, `systemd-default-settings-branding-openSUSE` | `*-branding-upstream` | Нейтральні налаштування самих програм |
+| `branding-openSUSE`, `gdm-branding-Aeon`, `gtk2/3/4-branding-openSUSE`, `gnome-menus-branding-openSUSE`, `systemd-default-settings-branding-openSUSE` | `*-branding-upstream` | Нейтральні налаштування самих програм |
 | `systemd-icon-branding-openSUSE` | — (прибрано) | Нікому в образі не потрібен |
 | — | `vilna-wallpapers` | Шпалери, зокрема петриківський розпис (після договорів з майстрами); поки шпалери GNOME |
+
+`gio-branding-openSUSE` поки лишається: конфігурація openSUSE:Factory (`image_package_conflicts`) забороняє `gio-branding-upstream` в усіх образах KIWI, тож образ із ним не розв'язується. Його `20_openSUSE-branding.gschema.override` перекриває `30_Vilna.gschema.override` (логотип на екрані входу, тема, док). Замінимо власним `gio-branding-Vilna`, коли буде що в ньому налаштувати (шпалери).
 
 Ще лишаються пакети openSUSE без `branding` в назві брендування, але з налаштуваннями openSUSE: `distrobox-branding-openSUSE` (образ контейнера за замовчуванням), `chrony-pool-openSUSE`, `libcontainers-openSUSE-policy`, `openSUSE-build-key`, `aeon-check`. Їх замінимо, коли будуть свої налаштування або сервери.
 

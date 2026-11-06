@@ -44,7 +44,11 @@ Requires:       vilna-software-picks
 # *-branding-upstream ones elsewhere. The Aeon and openSUSE ones are
 # swapped in the list below; these pin the providers the solver would
 # otherwise pick from openSUSE.
-Requires:       gio-branding-upstream
+# gio-branding stays openSUSE's for now: openSUSE:Factory's prjconf
+# (image_package_conflicts) bans gio-branding-upstream from every KIWI
+# image, so the image does not resolve with it. 30_Vilna.gschema.override
+# in gnome-branding-Vilna overrides its 20_openSUSE-branding settings.
+Requires:       gio-branding-openSUSE
 Requires:       NetworkManager-branding-Vilna
 Requires:       systemd-default-settings-branding-upstream
 # Not yet packaged, added here once they build on OBS:
