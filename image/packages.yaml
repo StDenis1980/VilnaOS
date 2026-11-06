@@ -24,7 +24,9 @@ base:
     NetworkManager-branding-openSUSE: NetworkManager-branding-Vilna
     branding-openSUSE: branding-upstream
     gdm-branding-Aeon: gdm-branding-upstream
-    gio-branding-openSUSE: gio-branding-upstream
+    # gio-branding-openSUSE лишається: Factory забороняє gio-branding-upstream
+    # в образах KIWI (image_package_conflicts); його налаштування перекриває
+    # 30_Vilna.gschema.override з gnome-branding-Vilna.
     gtk2-branding-openSUSE: gtk2-branding-upstream
     gtk3-branding-openSUSE: gtk3-branding-upstream
     gtk4-branding-openSUSE: gtk4-branding-upstream
