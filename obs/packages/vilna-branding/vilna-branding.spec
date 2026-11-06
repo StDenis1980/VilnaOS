@@ -101,6 +101,8 @@ install -D -m 0644 %{SOURCE11} %{buildroot}%{_unitdir}/x86_64_v3-transactional-u
 install -D -m 0644 %{SOURCE12} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/conncheck-vilna.conf
 
 %files -n gnome-branding-Vilna
+%dir %{_datadir}/glib-2.0
+%dir %{_datadir}/glib-2.0/schemas
 %{_datadir}/glib-2.0/schemas/30_Vilna.gschema.override
 %dir %{_prefix}/etc/sudoers.d
 %{_prefix}/etc/sudoers.d/50-vilna

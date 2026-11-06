@@ -94,6 +94,12 @@ WantedBy=multi-user.target
 UNIT
 systemctl enable vilna-boot-entries.service
 
+# Trust Vilna's package signing key (shipped by Vilna-release), so
+# zypper, also inside transactional-update which never asks, accepts
+# the vilna repository. rpm cannot do this from the package's %post:
+# its database is locked during the transaction.
+rpm --import /usr/lib/rpm/gnupg/keys/gpg-pubkey-06386694.asc
+
 # zypper (inside transactional-update) installs only what is required,
 # as in Aeon: recommended packages do not slip into the system.
 if [ -e /etc/zypp/zypp.conf ]; then
