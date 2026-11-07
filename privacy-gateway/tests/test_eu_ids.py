@@ -106,6 +106,13 @@ def test_checks_reject_non_ascii_digits():
         "12345678901/7",
         "π ≈ 3,14159265358",
         "1e11 = 100000000000",
+        "19 плюс 38290376543",
+        "скільки буде 38290376543 помножити на 3",
+        "38290376543 minus 7 equals what?",
+        "19 más 38290376543",
+        "3 razy 38290376543",
+        "38290376543 geteilt durch 2",
+        "19 fois 38290376543",
     ],
 )
 def test_leaves_numbers_in_formulas(text):
@@ -118,6 +125,8 @@ def test_leaves_numbers_in_formulas(text):
         ("PESEL = 90010112349", "90010112349"),
         ("тел. 0671234567, дзвоніть", "0671234567"),
         ("PESEL: 90010112349 + Steuer-ID", "90010112349"),
+        ("дзвоніть на 0671234567 завтра", "0671234567"),
+        ("PESEL plus adres: 90010112349", "90010112349"),
     ],
 )
 def test_still_hides_labelled_numbers(text, value):

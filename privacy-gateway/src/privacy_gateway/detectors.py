@@ -505,10 +505,26 @@ RULES: tuple[Rule, ...] = (
 # hiding it would leave the model nothing to compute. A label on the left
 # (``PESEL = 90010112349``) keeps the number hidden, because a word is not a number.
 _NUMBER_KINDS = frozenset({Kind.PHONE, Kind.CARD, Kind.TAX_ID, Kind.NATIONAL_ID})
-_OPERATOR_LEFT_RE = re.compile(r"[\d)\]!]\s*[=+\-*/×÷^<>≈≤≥]\s*$")
-_OPERATOR_RIGHT_RE = re.compile(r"\s*[=+\-*/×÷^<>≈≤≥]\s*[\d(\[]")
+# Signs, and the same operations in words in the languages of ADR 0009 (and Russian):
+# "19 плюс 38290376543". Short words that also mean "on" or "for" ("на", "por")
+# count only as part of a longer phrase ("помножити на").
+_OPERATOR = (
+    r"(?:[=+\-*/×÷^<>≈≤≥]|(?<!\w)(?:плюс|мінус|минус|помножити\s+на|помножене\s+на|поділити\s+на|поділене\s+на|разів|дорівнює"
+    r"|умножить\s+на|разделить\s+на|равно"
+    r"|plus|minus|times|multiplied\s+by|divided\s+by|equals|is\s+equal\s+to"
+    r"|más|menos|multiplicado\s+por|dividido\s+(?:por|entre)|igual\s+a"
+    r"|razy|podzielić\s+przez|podzielone\s+przez|równa\s+się|równe"
+    r"|mal|geteilt\s+durch|gleich|ist\s+gleich"
+    r"|moins|fois|divisé\s+par|multiplié\s+par|égal(?:e)?\s+à|égale?"
+    r"|più|meno|moltiplicato\s+per|diviso\s+per|uguale\s+a"
+    r"|ori|împărțit\s+la|egal\s+cu|egal"
+    r"|mínus|krát|děleno|rovná\s+se"
+    r"|plius|kart|padalinti\s+iš|lygu)(?!\w))"
+)
+_OPERATOR_LEFT_RE = re.compile(rf"(?i)[\d)\]!]\s*{_OPERATOR}\s*$")
+_OPERATOR_RIGHT_RE = re.compile(rf"(?i)\s*{_OPERATOR}\s*[\d(\[]")
 _DECIMAL_LEFT_RE = re.compile(r"\d[.,]$")
-_LOOK = 24
+_LOOK = 40
 
 
 def in_formula(text: str, start: int, end: int) -> bool:
