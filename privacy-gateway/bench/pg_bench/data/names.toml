@@ -1,0 +1,517 @@
+# SPDX-License-Identifier: Apache-2.0
+# Sentences for the name-model measurement, ten per language (ADR 0009). The
+# people are made up; common first names and surnames are used on purpose so
+# that a model has to read context, not memorise a list. "names" lists every
+# name exactly as it is written in the sentence, in the form it takes there.
+# Sentences with no names test false alarms: cities, rivers, companies and
+# ordinary words that are also first names (надія, віра, nadzieja, speranza).
+
+# --- uk ---
+[[sentence]]
+lang = "uk"
+text = "Вчора Олена Коваль надіслала звіт, а Тарас його ще не бачив."
+names = ["Олена Коваль", "Тарас"]
+
+[[sentence]]
+lang = "uk"
+text = "Передайте документи Ірині Бондар до понеділка."
+names = ["Ірині Бондар"]
+
+[[sentence]]
+lang = "uk"
+text = "Зустріч з паном Мельником перенесли на четвер."
+names = ["Мельником"]
+
+[[sentence]]
+lang = "uk"
+text = "Договір підписав Петро Іванович Савчук."
+names = ["Петро Іванович Савчук"]
+
+[[sentence]]
+lang = "uk"
+text = "Надія Литвиненко просить передзвонити після обіду."
+names = ["Надія Литвиненко"]
+
+[[sentence]]
+lang = "uk"
+text = "Привіт, Андрію! Як справи з проєктом?"
+names = ["Андрію"]
+
+[[sentence]]
+lang = "uk"
+text = "Лист від Богдана Ткаченка прийшов у спам."
+names = ["Богдана Ткаченка"]
+
+[[sentence]]
+lang = "uk"
+text = "У нас ще є надія, що Київ ухвалить рішення до весни."
+names = []
+
+[[sentence]]
+lang = "uk"
+text = "Віра в успіх допомогла команді з Харкова виграти кубок."
+names = []
+
+[[sentence]]
+lang = "uk"
+text = "Новий офіс Google відкрили у Львові біля ринку."
+names = []
+
+# --- en ---
+[[sentence]]
+lang = "en"
+text = "Sarah Thompson sent the draft, but Michael has not replied yet."
+names = ["Sarah Thompson", "Michael"]
+
+[[sentence]]
+lang = "en"
+text = "Please forward the contract to Mr. Patel before Monday."
+names = ["Patel"]
+
+[[sentence]]
+lang = "en"
+text = "The meeting with Dr. Emily Carter was moved to Thursday."
+names = ["Emily Carter"]
+
+[[sentence]]
+lang = "en"
+text = "Hi Josh, can you check the invoice?"
+names = ["Josh"]
+
+[[sentence]]
+lang = "en"
+text = "James O'Connor asked us to call him after lunch."
+names = ["James O'Connor"]
+
+[[sentence]]
+lang = "en"
+text = "According to Lisa, the server was restarted twice."
+names = ["Lisa"]
+
+[[sentence]]
+lang = "en"
+text = "Our client, Daniel Kim, wants a refund."
+names = ["Daniel Kim"]
+
+[[sentence]]
+lang = "en"
+text = "Apple opened a new store in Paris near the river."
+names = []
+
+[[sentence]]
+lang = "en"
+text = "We hope the April release will fix the bug."
+names = []
+
+[[sentence]]
+lang = "en"
+text = "Washington approved the budget for the Lincoln tunnel."
+names = []
+
+# --- es ---
+[[sentence]]
+lang = "es"
+text = "Lucía García envió el informe, pero Javier todavía no lo ha leído."
+names = ["Lucía García", "Javier"]
+
+[[sentence]]
+lang = "es"
+text = "Hay que mandar el contrato al señor Fernández antes del lunes."
+names = ["Fernández"]
+
+[[sentence]]
+lang = "es"
+text = "La reunión con María José Ruiz se aplazó al jueves."
+names = ["María José Ruiz"]
+
+[[sentence]]
+lang = "es"
+text = "Hola Pablo, ¿puedes revisar la factura?"
+names = ["Pablo"]
+
+[[sentence]]
+lang = "es"
+text = "Según Carmen López, el servidor se reinició dos veces."
+names = ["Carmen López"]
+
+[[sentence]]
+lang = "es"
+text = "El cliente Andrés Moreno pide un reembolso."
+names = ["Andrés Moreno"]
+
+[[sentence]]
+lang = "es"
+text = "Escribe a Elena y a su hermano Diego."
+names = ["Elena", "Diego"]
+
+[[sentence]]
+lang = "es"
+text = "Hay esperanza de que Madrid apruebe la ley en primavera."
+names = []
+
+[[sentence]]
+lang = "es"
+text = "Compré rosas y un ramo de lirios en el mercado de Valencia."
+names = []
+
+[[sentence]]
+lang = "es"
+text = "Santander y Zara presentaron resultados el martes."
+names = []
+
+# --- pl ---
+[[sentence]]
+lang = "pl"
+text = "Anna Nowak wysłała raport, ale Piotr jeszcze go nie przeczytał."
+names = ["Anna Nowak", "Piotr"]
+
+[[sentence]]
+lang = "pl"
+text = "Proszę przekazać umowę pani Kowalskiej do poniedziałku."
+names = ["Kowalskiej"]
+
+[[sentence]]
+lang = "pl"
+text = "Spotkanie z Tomaszem Wiśniewskim przeniesiono na czwartek."
+names = ["Tomaszem Wiśniewskim"]
+
+[[sentence]]
+lang = "pl"
+text = "Cześć Kasiu, możesz sprawdzić fakturę?"
+names = ["Kasiu"]
+
+[[sentence]]
+lang = "pl"
+text = "Według Marka Lewandowskiego serwer restartował się dwa razy."
+names = ["Marka Lewandowskiego"]
+
+[[sentence]]
+lang = "pl"
+text = "Klientka Agnieszka Zielińska prosi o zwrot pieniędzy."
+names = ["Agnieszka Zielińska"]
+
+[[sentence]]
+lang = "pl"
+text = "Napisz do Ewy i jej brata Jakuba."
+names = ["Ewy", "Jakuba"]
+
+[[sentence]]
+lang = "pl"
+text = "Mamy nadzieję, że Warszawa przyjmie budżet wiosną."
+names = []
+
+[[sentence]]
+lang = "pl"
+text = "Wisła wylała w Krakowie po ulewnych deszczach."
+names = []
+
+[[sentence]]
+lang = "pl"
+text = "Orlen i Allegro opublikowały wyniki we wtorek."
+names = []
+
+# --- de ---
+[[sentence]]
+lang = "de"
+text = "Julia Schneider hat den Bericht geschickt, aber Lukas hat ihn noch nicht gelesen."
+names = ["Julia Schneider", "Lukas"]
+
+[[sentence]]
+lang = "de"
+text = "Bitte senden Sie den Vertrag bis Montag an Herrn Becker."
+names = ["Becker"]
+
+[[sentence]]
+lang = "de"
+text = "Das Treffen mit Frau Dr. Anna Weber wurde auf Donnerstag verschoben."
+names = ["Anna Weber"]
+
+[[sentence]]
+lang = "de"
+text = "Hallo Max, kannst du die Rechnung prüfen?"
+names = ["Max"]
+
+[[sentence]]
+lang = "de"
+text = "Laut Thomas Krüger wurde der Server zweimal neu gestartet."
+names = ["Thomas Krüger"]
+
+[[sentence]]
+lang = "de"
+text = "Die Kundin Sabine Hoffmann möchte ihr Geld zurück."
+names = ["Sabine Hoffmann"]
+
+[[sentence]]
+lang = "de"
+text = "Schreib an Lena und ihren Bruder Felix."
+names = ["Lena", "Felix"]
+
+[[sentence]]
+lang = "de"
+text = "Wir hoffen, dass Berlin das Gesetz im Frühling beschließt."
+names = []
+
+[[sentence]]
+lang = "de"
+text = "Die Siemens AG hat in München einen neuen Standort eröffnet."
+names = []
+
+[[sentence]]
+lang = "de"
+text = "Der Rhein führt nach dem Regen Hochwasser in Köln."
+names = []
+
+# --- fr ---
+[[sentence]]
+lang = "fr"
+text = "Claire Martin a envoyé le rapport, mais Julien ne l'a pas encore lu."
+names = ["Claire Martin", "Julien"]
+
+[[sentence]]
+lang = "fr"
+text = "Merci d'envoyer le contrat à M. Dubois avant lundi."
+names = ["Dubois"]
+
+[[sentence]]
+lang = "fr"
+text = "La réunion avec Marie-Hélène Lefèvre est reportée à jeudi."
+names = ["Marie-Hélène Lefèvre"]
+
+[[sentence]]
+lang = "fr"
+text = "Salut Hugo, tu peux vérifier la facture ?"
+names = ["Hugo"]
+
+[[sentence]]
+lang = "fr"
+text = "Selon Sophie Bernard, le serveur a redémarré deux fois."
+names = ["Sophie Bernard"]
+
+[[sentence]]
+lang = "fr"
+text = "Le client Antoine Moreau demande un remboursement."
+names = ["Antoine Moreau"]
+
+[[sentence]]
+lang = "fr"
+text = "Écris à Camille et à son frère Louis."
+names = ["Camille", "Louis"]
+
+[[sentence]]
+lang = "fr"
+text = "On espère que Paris votera la loi au printemps."
+names = []
+
+[[sentence]]
+lang = "fr"
+text = "Renault ouvre une usine près de Lyon."
+names = []
+
+[[sentence]]
+lang = "fr"
+text = "La Seine déborde à Rouen après la pluie."
+names = []
+
+# --- it ---
+[[sentence]]
+lang = "it"
+text = "Giulia Bianchi ha inviato la relazione, ma Marco non l'ha ancora letta."
+names = ["Giulia Bianchi", "Marco"]
+
+[[sentence]]
+lang = "it"
+text = "Inviate il contratto al signor Rossi entro lunedì."
+names = ["Rossi"]
+
+[[sentence]]
+lang = "it"
+text = "La riunione con Francesca Romano è spostata a giovedì."
+names = ["Francesca Romano"]
+
+[[sentence]]
+lang = "it"
+text = "Ciao Luca, puoi controllare la fattura?"
+names = ["Luca"]
+
+[[sentence]]
+lang = "it"
+text = "Secondo Alessandro Ferrari, il server si è riavviato due volte."
+names = ["Alessandro Ferrari"]
+
+[[sentence]]
+lang = "it"
+text = "La cliente Chiara Esposito chiede un rimborso."
+names = ["Chiara Esposito"]
+
+[[sentence]]
+lang = "it"
+text = "Scrivi a Sara e a suo fratello Matteo."
+names = ["Sara", "Matteo"]
+
+[[sentence]]
+lang = "it"
+text = "C'è ancora speranza che Roma approvi la legge in primavera."
+names = []
+
+[[sentence]]
+lang = "it"
+text = "La Fiat ha aperto uno stabilimento vicino a Torino."
+names = []
+
+[[sentence]]
+lang = "it"
+text = "Il Po è in piena a Ferrara dopo la pioggia."
+names = []
+
+# --- ro ---
+[[sentence]]
+lang = "ro"
+text = "Maria Popescu a trimis raportul, dar Andrei nu l-a citit încă."
+names = ["Maria Popescu", "Andrei"]
+
+[[sentence]]
+lang = "ro"
+text = "Trimiteți contractul domnului Ionescu până luni."
+names = ["Ionescu"]
+
+[[sentence]]
+lang = "ro"
+text = "Întâlnirea cu Elena Dumitrescu a fost mutată joi."
+names = ["Elena Dumitrescu"]
+
+[[sentence]]
+lang = "ro"
+text = "Salut Mihai, poți verifica factura?"
+names = ["Mihai"]
+
+[[sentence]]
+lang = "ro"
+text = "Potrivit lui Alexandru Stan, serverul a repornit de două ori."
+names = ["Alexandru Stan"]
+
+[[sentence]]
+lang = "ro"
+text = "Clienta Ioana Georgescu cere o rambursare."
+names = ["Ioana Georgescu"]
+
+[[sentence]]
+lang = "ro"
+text = "Scrie-i Anei și fratelui ei, Radu."
+names = ["Anei", "Radu"]
+
+[[sentence]]
+lang = "ro"
+text = "Sperăm că Bucureștiul va aproba legea în primăvară."
+names = []
+
+[[sentence]]
+lang = "ro"
+text = "Dacia a deschis o fabrică lângă Pitești."
+names = []
+
+[[sentence]]
+lang = "ro"
+text = "Dunărea a crescut la Galați după ploi."
+names = []
+
+# --- cs ---
+[[sentence]]
+lang = "cs"
+text = "Jana Dvořáková poslala zprávu, ale Petr ji ještě nečetl."
+names = ["Jana Dvořáková", "Petr"]
+
+[[sentence]]
+lang = "cs"
+text = "Pošlete smlouvu panu Novákovi do pondělí."
+names = ["Novákovi"]
+
+[[sentence]]
+lang = "cs"
+text = "Schůzka s Martinou Svobodovou se přesouvá na čtvrtek."
+names = ["Martinou Svobodovou"]
+
+[[sentence]]
+lang = "cs"
+text = "Ahoj Tomáši, můžeš zkontrolovat fakturu?"
+names = ["Tomáši"]
+
+[[sentence]]
+lang = "cs"
+text = "Podle Lukáše Černého se server dvakrát restartoval."
+names = ["Lukáše Černého"]
+
+[[sentence]]
+lang = "cs"
+text = "Klientka Lucie Procházková žádá o vrácení peněz."
+names = ["Lucie Procházková"]
+
+[[sentence]]
+lang = "cs"
+text = "Napiš Evě a jejímu bratrovi Jakubovi."
+names = ["Evě", "Jakubovi"]
+
+[[sentence]]
+lang = "cs"
+text = "Doufáme, že Praha schválí zákon na jaře."
+names = []
+
+[[sentence]]
+lang = "cs"
+text = "Škoda otevřela nový závod u Mladé Boleslavi."
+names = []
+
+[[sentence]]
+lang = "cs"
+text = "Vltava se po deštích rozlila v Českých Budějovicích."
+names = []
+
+# --- lt ---
+[[sentence]]
+lang = "lt"
+text = "Ona Kazlauskienė išsiuntė ataskaitą, bet Tomas jos dar neskaitė."
+names = ["Ona Kazlauskienė", "Tomas"]
+
+[[sentence]]
+lang = "lt"
+text = "Prašome sutartį perduoti ponui Petraičiui iki pirmadienio."
+names = ["Petraičiui"]
+
+[[sentence]]
+lang = "lt"
+text = "Susitikimas su Rūta Jankauskaite perkeltas į ketvirtadienį."
+names = ["Rūta Jankauskaite"]
+
+[[sentence]]
+lang = "lt"
+text = "Labas, Mindaugai, gal gali patikrinti sąskaitą?"
+names = ["Mindaugai"]
+
+[[sentence]]
+lang = "lt"
+text = "Pasak Jono Kazlausko, serveris persikrovė du kartus."
+names = ["Jono Kazlausko"]
+
+[[sentence]]
+lang = "lt"
+text = "Klientė Eglė Stankevičienė prašo grąžinti pinigus."
+names = ["Eglė Stankevičienė"]
+
+[[sentence]]
+lang = "lt"
+text = "Parašyk Ievai ir jos broliui Lukui."
+names = ["Ievai", "Lukui"]
+
+[[sentence]]
+lang = "lt"
+text = "Tikimės, kad Vilnius patvirtins įstatymą pavasarį."
+names = []
+
+[[sentence]]
+lang = "lt"
+text = "Nemunas po liūčių išsiliejo prie Kauno."
+names = []
+
+[[sentence]]
+lang = "lt"
+text = "Telia ir Maxima paskelbė rezultatus antradienį."
+names = []
