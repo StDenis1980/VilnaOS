@@ -537,8 +537,94 @@ def in_formula(text: str, start: int, end: int) -> bool:
     return _OPERATOR_RIGHT_RE.match(text, end, min(len(text), end + _LOOK)) is not None
 
 
-def detect(text: str, kinds: Iterable[Kind] | None = None) -> list[Finding]:
-    """Find what to hide in ``text``, without overlaps, in text order."""
+# --- bare numbers need a tie to a person (decision of 2026-11-07) ----------------
+#
+# A run of digits with no shape of its own (a ten-to-thirteen-digit ID, a phone
+# typed without + or separators) says nothing about anyone on its own and is
+# often just a number: an order, a sum, a measurement. Outside strict mode it is
+# hidden only when something ties it to a person: a key word next to it, other
+# personal data in the same text, several such numbers (a list of clients), or
+# the same value hidden earlier in the conversation. Cards, IBANs, keys and
+# numbers with a shape (a letter, a slash, spaces, a +) are always hidden.
+
+_BARE_KINDS = frozenset({Kind.PHONE, Kind.TAX_ID, Kind.NATIONAL_ID})
+_TIE_KINDS = frozenset(
+    {
+        Kind.EMAIL,
+        Kind.NAME,
+        Kind.ADDRESS,
+        Kind.BIRTH_DATE,
+        Kind.PASSPORT,
+        Kind.PROFILE,
+        Kind.IBAN,
+        Kind.CARD,
+    }
+)
+_KEY_WORD_RE = re.compile(
+    r"(?i)(?<!\w)(?:"
+    # identity and tax numbers, by country
+    r"pesel|nip|dni|nie|nif|steuer[\w-]*|idnr|nir|insee|s[ée]cu\w*|codice\s+fiscale|c\.?f\.?"
+    r"|cnp|rodn[ée]\w*|r\.?č\.?|asmens\s+kod\w*|kod\w*|рнокпп|іпн|інн|ідентифікац\w*"
+    r"|податков\w*|tax\w*|ssn|id|ident\w*|personal\w*|persoonl\w*"
+    # "number"
+    r"|номер\w*|number|no\.|nr\.?|numer\w*|n[uú]mero|num[ée]ro|nummer|číslo|numărul|numeris"
+    # phones
+    r"|тел\.?|телефон\w*|моб\.?|мобільн\w*|phone|tel\.?|t[ée]l[ée]phone|telefon\w*|tel[ée]fono"
+    r"|handy|mobile?|mob\.?|cell\w*|whats\s?app|viber|signal|telegram|sms|dzwo\w*|llam\w*"
+    r"|(?:пере|за|по)?дзвон\w*|зателефон\w*|call|ruft?|appel\w*|chiam\w*|sun\w*|volej\w*|skambin\w*"
+    # people
+    r"|клієнт\w*|пацієнт\w*|особ\w*|громадян\w*|client\w*|cliente\w*|klient\w*|kunde\w*"
+    r"|patient\w*|pacient\w*|pacjent\w*|paziente\w*|employee|працівник\w*|pracownik\w*"
+    r")(?!\w)"
+)
+_KEY_BEFORE = 40
+_KEY_AFTER = 20
+
+
+def is_bare(kind: Kind, value: str) -> bool:
+    """A number of a kind that needs a tie, written as plain digits."""
+    return kind in _BARE_KINDS and value.isdigit()
+
+
+def _key_word_near(text: str, start: int, end: int) -> bool:
+    line_start = text.rfind("\n", 0, start) + 1
+    line_end = text.find("\n", end)
+    line_end = len(text) if line_end == -1 else line_end
+    before = text[max(line_start, start - _KEY_BEFORE) : start]
+    after = text[end : min(line_end, end + _KEY_AFTER)]
+    return bool(_KEY_WORD_RE.search(before) or _KEY_WORD_RE.search(after))
+
+
+def _tied(text: str, found: list[Finding], known: frozenset[str]) -> list[Finding]:
+    """Drop bare numbers that nothing ties to a person."""
+    bare = [f for f in found if is_bare(f.kind, f.value)]
+    if not bare:
+        return found
+    tie_in_text = any(
+        f.kind in _TIE_KINDS or (f.kind in _BARE_KINDS and f not in bare) for f in found
+    )
+    if tie_in_text or len(bare) >= 2:
+        return found
+    return [
+        f
+        for f in found
+        if f not in bare or f.value in known or _key_word_near(text, f.start, f.end)
+    ]
+
+
+def detect(
+    text: str,
+    kinds: Iterable[Kind] | None = None,
+    *,
+    strict: bool = False,
+    known: Iterable[str] = (),
+) -> list[Finding]:
+    """Find what to hide in ``text``, without overlaps, in text order.
+
+    ``strict`` hides every number that passes its check, tied to a person or not.
+    ``known`` holds values already hidden earlier in the conversation: a bare
+    number among them stays hidden.
+    """
     wanted = set(kinds) if kinds is not None else set(Kind)
     candidates: list[tuple[int, int, int, Kind]] = []
     for rank, rule in enumerate(RULES):
@@ -559,4 +645,4 @@ def detect(text: str, kinds: Iterable[Kind] | None = None) -> list[Finding]:
         taken.append((start, end))
         found.append(Finding(kind, start, end, text[start:end]))
     found.sort(key=lambda f: f.start)
-    return found
+    return found if strict else _tied(text, found, frozenset(known))

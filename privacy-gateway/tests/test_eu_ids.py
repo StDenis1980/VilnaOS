@@ -131,3 +131,56 @@ def test_leaves_numbers_in_formulas(text):
 )
 def test_still_hides_labelled_numbers(text, value):
     assert [f.value for f in detect(text)] == [value]
+
+
+# --- bare numbers need a tie to a person ----------------------------------------
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "замовлення 90010112349 відправлено",  # passes the PESEL check, but just an order
+        "в архіві 0671234567 записів",
+        "the result was 39001011237",
+    ],
+)
+def test_bare_numbers_without_a_tie_pass(text):
+    assert detect(text) == []
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "замовлення 90010112349 відправлено",
+        "в архіві 0671234567 записів",
+    ],
+)
+def test_strict_mode_hides_bare_numbers(text):
+    assert len(detect(text, strict=True)) == 1
+    assert "[" in Masker(strict=True).mask(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Олена, olena@example.com, 90010112349",  # other personal data in the text
+        "Ім'я: Тестенко Олена\nномер 90010112349",
+        "90010112349, 39001011237",  # a list of IDs
+        "клієнт 90010112349 просить довідку",  # a key word
+        "передзвоніть 0671234567",
+    ],
+)
+def test_bare_numbers_with_a_tie_are_hidden(text):
+    assert any(f.value in ("90010112349", "0671234567") for f in detect(text))
+
+
+def test_shaped_numbers_need_no_tie():
+    assert [f.value for f in detect("ref 4111 1111 1111 1111")] == ["4111 1111 1111 1111"]
+    assert [f.value for f in detect("ref 067-123-45-67")] == ["067-123-45-67"]
+    assert [f.value for f in detect("ref 12345678Z")] == ["12345678Z"]
+
+
+def test_a_number_hidden_earlier_stays_hidden():
+    masker = Masker()
+    assert masker.mask("PESEL 90010112349") == "PESEL [NATIONAL_ID_1]"
+    assert masker.mask("а тепер 90010112349 ще раз") == "а тепер [NATIONAL_ID_1] ще раз"

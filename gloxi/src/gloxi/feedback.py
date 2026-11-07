@@ -288,7 +288,9 @@ class FeedbackTalk:
         )
 
     def _hide_personal_data(self) -> None:
-        masker = Masker()  # one for the whole draft: the same value, the same mark
+        # One for the whole draft: the same value, the same mark. Strict: a report
+        # leaves the computer, so every number that passes its check is hidden.
+        masker = Masker(strict=True)
         hidden: list[str] = []
         for name in ("what", "expected"):
             value = getattr(self.draft, name)[:MAX_TEXT]

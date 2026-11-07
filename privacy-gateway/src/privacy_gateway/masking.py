@@ -41,8 +41,11 @@ def _normalise(kind: Kind, value: str) -> str:
 
 
 class Masker:
-    def __init__(self, kinds: Iterable[Kind] | None = None) -> None:
+    def __init__(self, kinds: Iterable[Kind] | None = None, *, strict: bool = False) -> None:
+        """``strict`` hides every number that passes its check, even with nothing
+        tying it to a person; see :func:`privacy_gateway.detect`."""
         self.kinds = frozenset(kinds) if kinds is not None else frozenset(Kind)
+        self.strict = strict
         self._placeholder_of: dict[tuple[Kind, str], str] = {}
         self._value_of: dict[str, str] = {}
         self._count: dict[Kind, int] = {}
@@ -58,7 +61,8 @@ class Masker:
         """Replace every finding in ``text`` with its placeholder."""
         parts: list[str] = []
         pos = 0
-        for f in detect(text, self.kinds):
+        known = (value for _, value in self._placeholder_of)
+        for f in detect(text, self.kinds, strict=self.strict, known=known):
             parts.append(text[pos : f.start])
             parts.append(self._placeholder(f.kind, f.value))
             pos = f.end
