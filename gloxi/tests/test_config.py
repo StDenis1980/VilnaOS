@@ -93,3 +93,11 @@ def test_start_server(tmp_path):
     path.write_text("[local]\nstart_server = false\n")
     assert load_settings(path, env={}).start_server is False
     assert load_settings(path, env={"GLOXI_START_SERVER": "yes"}).start_server is True
+
+
+def test_mask_strict_is_off_by_default(tmp_path):
+    assert not load_settings(tmp_path / "x.toml", env={}).router.mask_strict
+    path = tmp_path / "g.toml"
+    path.write_text("[router]\nmask_strict = true\n")
+    assert load_settings(path, env={}).router.mask_strict
+    assert load_settings(tmp_path / "x.toml", env={"GLOXI_MASK_STRICT": "1"}).router.mask_strict

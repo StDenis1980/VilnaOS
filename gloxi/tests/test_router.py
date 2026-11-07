@@ -238,3 +238,15 @@ def test_a_placeholder_split_across_chunks_is_still_hidden(monkeypatch):
     out = list(router.stream_events(MSG, router.decide("x"), tools=[]))
     assert "".join(out) == "Пароль •••••• і [x] далі"
     assert out[0] == "Пароль "  # text still streams
+
+
+def test_strict_masking_hides_bare_numbers():
+    from gloxi.privacy import guard_factory
+
+    text = "замовлення 90010112349 відправлено"
+    loose = guard_factory(RouterPolicy())
+    strict = guard_factory(RouterPolicy(mask_strict=True))
+    assert loose is not None and strict is not None
+    assert loose().mask_messages([{"role": "user", "content": text}])[0]["content"] == text
+    masked = strict().mask_messages([{"role": "user", "content": text}])[0]["content"]
+    assert "90010112349" not in masked
