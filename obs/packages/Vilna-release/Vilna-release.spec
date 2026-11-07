@@ -6,7 +6,7 @@
 #
 
 Name:           Vilna-release
-Version:        0.2
+Version:        0.3
 Release:        0
 Summary:        Vilna operating system identification
 License:        GPL-3.0-or-later
@@ -17,10 +17,11 @@ Source0:        os-release
 Source1:        vilna.repo
 Source2:        vilna-obs.asc
 BuildArch:      noarch
-# The openSUSE Tumbleweed repositories (oss, non-oss, update) as a zypp
-# service: without it the image has no repository and never updates
-# (VM test of Build7.2). Aeon gets it the same way.
-Requires:       openSUSE-repos-Tumbleweed
+# No Requires on openSUSE-repos-Tumbleweed (the Tumbleweed repositories
+# as a zypp service): KIWI installs this package in its bootstrap, and
+# a service in the image root makes every later zypper call of the
+# build refresh it, which fails on OBS (no network). patterns-vilna-base
+# pulls it in during the image phase instead.
 # One release package per system: replaces openSUSE-release / Aeon-release.
 Provides:       distribution-release
 Conflicts:      Aeon-release
@@ -33,7 +34,8 @@ Identifies the system as Vilna: /usr/lib/os-release and the
 /etc/os-release link. Vilna is based on openSUSE Aeon.
 
 Also adds Vilna's package repository and its signing key; the
-openSUSE Tumbleweed repositories come from openSUSE-repos-Tumbleweed.
+openSUSE Tumbleweed repositories come from openSUSE-repos-Tumbleweed
+(required by patterns-vilna-base).
 The image imports the key into the rpm database (config.sh): rpm
 cannot import it from %post, its database is locked during the
 transaction.

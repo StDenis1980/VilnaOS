@@ -114,7 +114,7 @@
 
 | Пакет Aeon / openSUSE | Замість нього | Що містить |
 | --- | --- | --- |
-| `Aeon-release` | `Vilna-release` | Назва й версія ОС, репозиторії (`openSUSE-repos-Tumbleweed` і `vilna.repo`) |
+| `Aeon-release` | `Vilna-release` | Назва й версія ОС, репозиторій `vilna.repo` з ключем; сервіс `openSUSE-repos-Tumbleweed` вимагає `patterns-vilna-base`, бо `Vilna-release` KIWI ставить ще в bootstrap |
 | `distribution-logos-openSUSE-Aeon`, `distribution-logos-openSUSE-icons` | `distribution-logos-Vilna` | Логотип (поки заглушка), іконки |
 | `hicolor-icon-theme-branding-openSUSE` | `hicolor-icon-theme-branding-Vilna` | Іконка `distributor` |
 | `gnome-branding-Aeon` | `gnome-branding-Vilna` | Налаштування GNOME (темна тема, логотип на екрані входу, Gloxi в доку), права адміністратора для wheel (sudo, polkit), logind, transactional-update, сторінки GNOME Initial Setup. Без `aeon-firstboot`: Flatpak ставить `vilna-flatpak-defaults` |
