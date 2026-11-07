@@ -6,9 +6,10 @@ around it: in ``Email: a@b.eu`` only ``a@b.eu`` is hidden, so the model still
 sees what kind of value was there.
 
 The rules are regular expressions plus checksums where a format has one
-(payment cards, IBAN, the Ukrainian taxpayer number), which keeps false alarms
-down. They do not find names or places in free text: that needs a language
-model on the device and comes later. Until then a name is hidden only when it
+(payment cards, IBAN, the Ukrainian taxpayer number, the personal and tax
+numbers of the EU countries in ADR 0009), which keeps false alarms down. They
+do not find names or places in free text: that needs a language model on the
+device and comes later. Until then a name is hidden only when it
 is labelled (``Ім'я: ...``, ``Name: ...``).
 """
 
@@ -28,6 +29,7 @@ class Kind(StrEnum):
     IBAN = "IBAN"
     CARD = "CARD"
     TAX_ID = "TAX_ID"
+    NATIONAL_ID = "NATIONAL_ID"
     PASSPORT = "PASSPORT"
     PHONE = "PHONE"
     IP = "IP"
@@ -219,6 +221,192 @@ def tax_id_ok(number: str) -> bool:
     return total % 11 % 10 == int(number[9])
 
 
+# --- national identity and tax numbers of the EU countries (ADR 0009) ----------
+#
+# Each format is found by its shape and kept only if its check digit (and, where
+# the number holds a birth date, the date) is right. Formats that are just a run
+# of digits with a weak check (Polish NIP, Czech rodné číslo without the slash)
+# are taken only when labelled or written in their usual form, so ordinary
+# numbers in the text are left alone.
+
+_DNI_LETTERS = "TRWAGMYFPDXBNJZSQVHLCKE"
+# Spain: DNI 12345678Z and NIE X1234567L.
+DNI_RE = re.compile(r"(?<![\w])(?P<num>[XYZ]?\d{7,8})[- ]?(?P<letter>[A-Z])(?![\w])")
+
+
+def dni_ok(num: str, letter: str) -> bool:
+    if not num.isascii() or not num[1:].isdigit() or not num[:1].isalnum():
+        return False
+    if num[0] in "XYZ":
+        if len(num) != 8:
+            return False
+        num = str("XYZ".index(num[0])) + num[1:]
+    elif len(num) != 8:
+        return False
+    return _DNI_LETTERS[int(num) % 23] == letter
+
+
+def _dnis(text: str) -> Iterator[Span]:
+    for m in DNI_RE.finditer(text):
+        if dni_ok(m.group("num"), m.group("letter")):
+            yield m.span()
+
+
+ELEVEN_DIGITS_RE = re.compile(r"(?<![\w+.,/-])\d{11}(?!\w)(?![.,/-]\d)")
+
+
+def _date_ok(yy: int, mm: int, dd: int) -> bool:
+    return 1 <= mm <= 12 and 1 <= dd <= 31 and 0 <= yy <= 99
+
+
+def pesel_ok(number: str) -> bool:
+    """Polish PESEL: weights 1 3 7 9, month carries the century."""
+    if len(number) != 11 or not number.isascii() or not number.isdigit():
+        return False
+    d = [int(c) for c in number]
+    weights = (1, 3, 7, 9, 1, 3, 7, 9, 1, 3)
+    if (10 - sum(a * w for a, w in zip(d, weights, strict=False)) % 10) % 10 != d[10]:
+        return False
+    month = (d[2] * 10 + d[3]) % 20
+    return _date_ok(d[0] * 10 + d[1], month, d[4] * 10 + d[5])
+
+
+def steuer_id_ok(number: str) -> bool:
+    """German tax identification number: ISO 7064 MOD 11,10 and the digit rule."""
+    if len(number) != 11 or not number.isascii() or not number.isdigit() or number[0] == "0":
+        return False
+    counts = sorted((number[:10].count(c) for c in set(number[:10])), reverse=True)
+    if counts[0] not in (2, 3) or any(c != 1 for c in counts[1:]):
+        return False
+    product = 10
+    for c in number[:10]:
+        total = (int(c) + product) % 10 or 10
+        product = total * 2 % 11
+    check = 11 - product
+    return (0 if check == 10 else check) == int(number[10])
+
+
+def lt_personal_code_ok(number: str) -> bool:
+    """Lithuanian asmens kodas (the same scheme as the Estonian isikukood)."""
+    if len(number) != 11 or not number.isascii() or not number.isdigit():
+        return False
+    if number[0] not in "123456":
+        return False
+    d = [int(c) for c in number]
+    if not _date_ok(d[1] * 10 + d[2], d[3] * 10 + d[4], d[5] * 10 + d[6]):
+        return False
+    for weights in ((1, 2, 3, 4, 5, 6, 7, 8, 9, 1), (3, 4, 5, 6, 7, 8, 9, 1, 2, 3)):
+        check = sum(a * w for a, w in zip(d, weights, strict=False)) % 11
+        if check != 10:
+            return check == d[10]
+    return d[10] == 0
+
+
+def _eleven_digit_ids(text: str) -> Iterator[Span]:
+    for m in ELEVEN_DIGITS_RE.finditer(text):
+        n = m.group(0)
+        if pesel_ok(n) or steuer_id_ok(n) or lt_personal_code_ok(n):
+            yield m.span()
+
+
+# Romania: CNP, 13 digits.
+CNP_RE = re.compile(r"(?<![\w+.,/-])[1-9]\d{12}(?!\w)(?![.,/-]\d)")
+
+
+def cnp_ok(number: str) -> bool:
+    if len(number) != 13 or not number.isascii() or not number.isdigit():
+        return False
+    d = [int(c) for c in number]
+    if not _date_ok(d[1] * 10 + d[2], d[3] * 10 + d[4], d[5] * 10 + d[6]):
+        return False
+    check = sum(a * int(w) for a, w in zip(d, "279146358279", strict=False)) % 11
+    return (1 if check == 10 else check) == d[12]
+
+
+# France: NIR (numéro de sécurité sociale), 13 characters and a two-digit key.
+NIR_RE = re.compile(
+    r"(?<![\w])[1-478] ?\d{2} ?(?:0[1-9]|1[0-2]|[2-9]\d) ?(?:\d{2}|2[AB])"
+    r" ?\d{3} ?\d{3} ?\d{2}(?![\w])"
+)
+
+
+def nir_ok(raw: str) -> bool:
+    nir = raw.replace(" ", "")
+    if len(nir) != 15:
+        return False
+    body = nir[:13].replace("2A", "19").replace("2B", "18")
+    if not body.isascii() or not body.isdigit() or not nir[13:].isdigit():
+        return False
+    return 97 - int(body) % 97 == int(nir[13:])
+
+
+# Italy: codice fiscale, 16 characters (digits may be replaced by letters, "omocodia").
+CODICE_FISCALE_RE = re.compile(
+    r"(?<![\w])[A-Z]{6}[\dLMNPQRSTUV]{2}[ABCDEHLMPRST][\dLMNPQRSTUV]{2}[A-Z][\dLMNPQRSTUV]{3}[A-Z](?![\w])",
+    re.I,
+)
+# Values of characters in odd positions: A-M, then N-Z; a digit counts as the letter at its index.
+_CF_ODD_A_M = (1, 0, 5, 7, 9, 13, 15, 17, 19, 21, 2, 4, 18)
+_CF_ODD_N_Z = (20, 11, 3, 6, 8, 12, 14, 16, 10, 22, 25, 24, 23)
+_CF_ODD = dict(zip("ABCDEFGHIJKLMNOPQRSTUVWXYZ", _CF_ODD_A_M + _CF_ODD_N_Z, strict=True))
+_CF_ODD.update(zip("0123456789", _CF_ODD_A_M, strict=False))
+
+
+def codice_fiscale_ok(raw: str) -> bool:
+    cf = raw.upper()
+    if len(cf) != 16 or not cf.isascii() or not cf.isalnum():
+        return False
+    total = 0
+    for i, c in enumerate(cf[:15]):
+        if i % 2 == 0:  # odd positions, counting from 1
+            total += _CF_ODD[c]
+        else:
+            total += int(c) if c.isdigit() else ord(c) - ord("A")
+    return chr(ord("A") + total % 26) == cf[15]
+
+
+# Czech Republic and Slovakia: rodné číslo, written as YYMMDD/XXXX.
+RODNE_CISLO_RE = re.compile(r"(?<![\w/])\d{6}/\d{3,4}(?![\w/])")
+
+
+def rodne_cislo_ok(raw: str) -> bool:
+    number = raw.replace("/", "")
+    if not number.isascii() or not number.isdigit() or len(number) not in (9, 10):
+        return False
+    month = int(number[2:4])
+    for offset in (0, 50, 20, 70):
+        if 1 <= month - offset <= 12:
+            break
+    else:
+        return False
+    if not 1 <= int(number[4:6]) <= 31:
+        return False
+    if len(number) == 9:
+        return int(number[:2]) < 54  # numbers before 1954 had no check digit
+    return int(number) % 11 == 0 or (int(number[:9]) % 11 == 10 and number[9] == "0")
+
+
+# Poland: NIP (tax number), only when labelled: a bare run of ten digits is too common.
+NIP_RE = re.compile(
+    r"(?i)(?<![\w])NIP[:\s]*"
+    r"(?P<value>\d{3}-?\d{3}-?\d{2}-?\d{2}|\d{3}-?\d{2}-?\d{2}-?\d{3})(?![\w-])"
+)
+
+
+def nip_ok(raw: str) -> bool:
+    d = [int(c) for c in _digits(raw)]
+    if len(d) != 10:
+        return False
+    check = sum(a * w for a, w in zip(d, (6, 5, 7, 2, 3, 4, 5, 6, 7), strict=False)) % 11
+    return check != 10 and check == d[9]
+
+
+def _nips(text: str) -> Iterator[Span]:
+    for m in NIP_RE.finditer(text):
+        if nip_ok(m.group("value")):
+            yield m.span("value")
+
+
 # 1 250 000 000 or 6,500,000: an amount, not a phone.
 AMOUNT_RE = re.compile(r"\d{1,3}(?:([ ,\u00a0])\d{3})(?:\1\d{3})+")
 
@@ -299,20 +487,152 @@ RULES: tuple[Rule, ...] = (
     Rule(Kind.IBAN, _spans(IBAN_RE, iban_ok)),
     Rule(Kind.CARD, _cards),
     Rule(Kind.TAX_ID, _tax_ids),
+    Rule(Kind.NATIONAL_ID, _dnis),
+    Rule(Kind.NATIONAL_ID, _eleven_digit_ids),
+    Rule(Kind.NATIONAL_ID, _spans(CNP_RE, cnp_ok)),
+    Rule(Kind.NATIONAL_ID, _spans(NIR_RE, nir_ok)),
+    Rule(Kind.NATIONAL_ID, _spans(CODICE_FISCALE_RE, codice_fiscale_ok)),
+    Rule(Kind.NATIONAL_ID, _spans(RODNE_CISLO_RE, rodne_cislo_ok)),
+    Rule(Kind.TAX_ID, _nips),
     Rule(Kind.PASSPORT, _spans(PASSPORT_RE)),
     Rule(Kind.IP, _spans(IPV4_RE, ipv4_ok)),
     Rule(Kind.PHONE, _spans(PHONE_CANDIDATE_RE, looks_like_phone)),
 )
 
 
-def detect(text: str, kinds: Iterable[Kind] | None = None) -> list[Finding]:
-    """Find what to hide in ``text``, without overlaps, in text order."""
+# A bare run of digits next to an arithmetic sign and another number is part of a
+# formula (``15! = 1307674368000``, ``90010112349 + 1``), not a phone or an ID:
+# hiding it would leave the model nothing to compute. A label on the left
+# (``PESEL = 90010112349``) keeps the number hidden, because a word is not a number.
+_NUMBER_KINDS = frozenset({Kind.PHONE, Kind.CARD, Kind.TAX_ID, Kind.NATIONAL_ID})
+# Signs, and the same operations in words in the languages of ADR 0009 (and Russian):
+# "19 плюс 38290376543". Short words that also mean "on" or "for" ("на", "por")
+# count only as part of a longer phrase ("помножити на").
+_OPERATOR = (
+    r"(?:[=+\-*/×÷^<>≈≤≥]|(?<!\w)(?:плюс|мінус|минус|помножити\s+на|помножене\s+на|поділити\s+на|поділене\s+на|разів|дорівнює"
+    r"|умножить\s+на|разделить\s+на|равно"
+    r"|plus|minus|times|multiplied\s+by|divided\s+by|equals|is\s+equal\s+to"
+    r"|más|menos|multiplicado\s+por|dividido\s+(?:por|entre)|igual\s+a"
+    r"|razy|podzielić\s+przez|podzielone\s+przez|równa\s+się|równe"
+    r"|mal|geteilt\s+durch|gleich|ist\s+gleich"
+    r"|moins|fois|divisé\s+par|multiplié\s+par|égal(?:e)?\s+à|égale?"
+    r"|più|meno|moltiplicato\s+per|diviso\s+per|uguale\s+a"
+    r"|ori|împărțit\s+la|egal\s+cu|egal"
+    r"|mínus|krát|děleno|rovná\s+se"
+    r"|plius|kart|padalinti\s+iš|lygu)(?!\w))"
+)
+_OPERATOR_LEFT_RE = re.compile(rf"(?i)[\d)\]!]\s*{_OPERATOR}\s*$")
+_OPERATOR_RIGHT_RE = re.compile(rf"(?i)\s*{_OPERATOR}\s*[\d(\[]")
+_DECIMAL_LEFT_RE = re.compile(r"\d[.,]$")
+_LOOK = 40
+
+
+def in_formula(text: str, start: int, end: int) -> bool:
+    """True if ``text[start:end]`` is a bare number that is an operand of a formula."""
+    if not text[start:end].isdigit():
+        return False
+    left = text[max(0, start - _LOOK) : start]
+    if _DECIMAL_LEFT_RE.search(left) or _OPERATOR_LEFT_RE.search(left):
+        return True
+    return _OPERATOR_RIGHT_RE.match(text, end, min(len(text), end + _LOOK)) is not None
+
+
+# --- bare numbers need a tie to a person (decision of 2026-11-07) ----------------
+#
+# A run of digits with no shape of its own (a ten-to-thirteen-digit ID, a phone
+# typed without + or separators) says nothing about anyone on its own and is
+# often just a number: an order, a sum, a measurement. Outside strict mode it is
+# hidden only when something ties it to a person: a key word next to it, other
+# personal data in the same text, several such numbers (a list of clients), or
+# the same value hidden earlier in the conversation. Cards, IBANs, keys and
+# numbers with a shape (a letter, a slash, spaces, a +) are always hidden.
+
+_BARE_KINDS = frozenset({Kind.PHONE, Kind.TAX_ID, Kind.NATIONAL_ID})
+_TIE_KINDS = frozenset(
+    {
+        Kind.EMAIL,
+        Kind.NAME,
+        Kind.ADDRESS,
+        Kind.BIRTH_DATE,
+        Kind.PASSPORT,
+        Kind.PROFILE,
+        Kind.IBAN,
+        Kind.CARD,
+    }
+)
+_KEY_WORD_RE = re.compile(
+    r"(?i)(?<!\w)(?:"
+    # identity and tax numbers, by country
+    r"pesel|nip|dni|nie|nif|steuer[\w-]*|idnr|nir|insee|s[ée]cu\w*|codice\s+fiscale|c\.?f\.?"
+    r"|cnp|rodn[ée]\w*|r\.?č\.?|asmens\s+kod\w*|kod\w*|рнокпп|іпн|інн|ідентифікац\w*"
+    r"|податков\w*|tax\w*|ssn|id|ident\w*|personal\w*|persoonl\w*"
+    # "number"
+    r"|номер\w*|number|no\.|nr\.?|numer\w*|n[uú]mero|num[ée]ro|nummer|číslo|numărul|numeris"
+    # phones
+    r"|тел\.?|телефон\w*|моб\.?|мобільн\w*|phone|tel\.?|t[ée]l[ée]phone|telefon\w*|tel[ée]fono"
+    r"|handy|mobile?|mob\.?|cell\w*|whats\s?app|viber|signal|telegram|sms|dzwo\w*|llam\w*"
+    r"|(?:пере|за|по)?дзвон\w*|зателефон\w*|call|ruft?|appel\w*|chiam\w*|sun\w*|volej\w*|skambin\w*"
+    # people
+    r"|клієнт\w*|пацієнт\w*|особ\w*|громадян\w*|client\w*|cliente\w*|klient\w*|kunde\w*"
+    r"|patient\w*|pacient\w*|pacjent\w*|paziente\w*|employee|працівник\w*|pracownik\w*"
+    r")(?!\w)"
+)
+_KEY_BEFORE = 40
+_KEY_AFTER = 20
+
+
+def is_bare(kind: Kind, value: str) -> bool:
+    """A number of a kind that needs a tie, written as plain digits."""
+    return kind in _BARE_KINDS and value.isdigit()
+
+
+def _key_word_near(text: str, start: int, end: int) -> bool:
+    line_start = text.rfind("\n", 0, start) + 1
+    line_end = text.find("\n", end)
+    line_end = len(text) if line_end == -1 else line_end
+    before = text[max(line_start, start - _KEY_BEFORE) : start]
+    after = text[end : min(line_end, end + _KEY_AFTER)]
+    return bool(_KEY_WORD_RE.search(before) or _KEY_WORD_RE.search(after))
+
+
+def _tied(text: str, found: list[Finding], known: frozenset[str]) -> list[Finding]:
+    """Drop bare numbers that nothing ties to a person."""
+    bare = [f for f in found if is_bare(f.kind, f.value)]
+    if not bare:
+        return found
+    tie_in_text = any(
+        f.kind in _TIE_KINDS or (f.kind in _BARE_KINDS and f not in bare) for f in found
+    )
+    if tie_in_text or len(bare) >= 2:
+        return found
+    return [
+        f
+        for f in found
+        if f not in bare or f.value in known or _key_word_near(text, f.start, f.end)
+    ]
+
+
+def detect(
+    text: str,
+    kinds: Iterable[Kind] | None = None,
+    *,
+    strict: bool = False,
+    known: Iterable[str] = (),
+) -> list[Finding]:
+    """Find what to hide in ``text``, without overlaps, in text order.
+
+    ``strict`` hides every number that passes its check, tied to a person or not.
+    ``known`` holds values already hidden earlier in the conversation: a bare
+    number among them stays hidden.
+    """
     wanted = set(kinds) if kinds is not None else set(Kind)
     candidates: list[tuple[int, int, int, Kind]] = []
     for rank, rule in enumerate(RULES):
         if rule.kind not in wanted:
             continue
         for start, end in rule.find(text):
+            if rule.kind in _NUMBER_KINDS and in_formula(text, start, end):
+                continue
             if end > start:
                 candidates.append((rank, start, end, rule.kind))
     candidates.sort(key=lambda c: (c[0], -(c[2] - c[1]), c[1]))
@@ -325,4 +645,4 @@ def detect(text: str, kinds: Iterable[Kind] | None = None) -> list[Finding]:
         taken.append((start, end))
         found.append(Finding(kind, start, end, text[start:end]))
     found.sort(key=lambda f: f.start)
-    return found
+    return found if strict else _tied(text, found, frozenset(known))

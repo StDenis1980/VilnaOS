@@ -620,6 +620,10 @@ msgid "a password or key"
 msgstr "пароль чи ключ"
 
 #: src/gloxi/feedback.py
+msgid "a personal ID number"
+msgstr "номер особи"
+
+#: src/gloxi/feedback.py
 msgid "a phone number"
 msgstr "номер телефону"
 
