@@ -77,6 +77,7 @@ def kind_name(kind: str) -> str:
         "IBAN": _("an account number"),
         "CARD": _("a card number"),
         "TAX_ID": _("a tax number"),
+        "NATIONAL_ID": _("a personal ID number"),
         "PASSPORT": _("a passport number"),
         "IP": _("an IP address"),
         "PROFILE": _("a profile link"),

@@ -6,9 +6,10 @@ around it: in ``Email: a@b.eu`` only ``a@b.eu`` is hidden, so the model still
 sees what kind of value was there.
 
 The rules are regular expressions plus checksums where a format has one
-(payment cards, IBAN, the Ukrainian taxpayer number), which keeps false alarms
-down. They do not find names or places in free text: that needs a language
-model on the device and comes later. Until then a name is hidden only when it
+(payment cards, IBAN, the Ukrainian taxpayer number, the personal and tax
+numbers of the EU countries in ADR 0009), which keeps false alarms down. They
+do not find names or places in free text: that needs a language model on the
+device and comes later. Until then a name is hidden only when it
 is labelled (``Ім'я: ...``, ``Name: ...``).
 """
 
@@ -28,6 +29,7 @@ class Kind(StrEnum):
     IBAN = "IBAN"
     CARD = "CARD"
     TAX_ID = "TAX_ID"
+    NATIONAL_ID = "NATIONAL_ID"
     PASSPORT = "PASSPORT"
     PHONE = "PHONE"
     IP = "IP"
@@ -219,6 +221,192 @@ def tax_id_ok(number: str) -> bool:
     return total % 11 % 10 == int(number[9])
 
 
+# --- national identity and tax numbers of the EU countries (ADR 0009) ----------
+#
+# Each format is found by its shape and kept only if its check digit (and, where
+# the number holds a birth date, the date) is right. Formats that are just a run
+# of digits with a weak check (Polish NIP, Czech rodné číslo without the slash)
+# are taken only when labelled or written in their usual form, so ordinary
+# numbers in the text are left alone.
+
+_DNI_LETTERS = "TRWAGMYFPDXBNJZSQVHLCKE"
+# Spain: DNI 12345678Z and NIE X1234567L.
+DNI_RE = re.compile(r"(?<![\w])(?P<num>[XYZ]?\d{7,8})[- ]?(?P<letter>[A-Z])(?![\w])")
+
+
+def dni_ok(num: str, letter: str) -> bool:
+    if not num.isascii() or not num[1:].isdigit() or not num[:1].isalnum():
+        return False
+    if num[0] in "XYZ":
+        if len(num) != 8:
+            return False
+        num = str("XYZ".index(num[0])) + num[1:]
+    elif len(num) != 8:
+        return False
+    return _DNI_LETTERS[int(num) % 23] == letter
+
+
+def _dnis(text: str) -> Iterator[Span]:
+    for m in DNI_RE.finditer(text):
+        if dni_ok(m.group("num"), m.group("letter")):
+            yield m.span()
+
+
+ELEVEN_DIGITS_RE = re.compile(r"(?<![\w+.,/-])\d{11}(?!\w)(?![.,/-]\d)")
+
+
+def _date_ok(yy: int, mm: int, dd: int) -> bool:
+    return 1 <= mm <= 12 and 1 <= dd <= 31 and 0 <= yy <= 99
+
+
+def pesel_ok(number: str) -> bool:
+    """Polish PESEL: weights 1 3 7 9, month carries the century."""
+    if len(number) != 11 or not number.isascii() or not number.isdigit():
+        return False
+    d = [int(c) for c in number]
+    weights = (1, 3, 7, 9, 1, 3, 7, 9, 1, 3)
+    if (10 - sum(a * w for a, w in zip(d, weights, strict=False)) % 10) % 10 != d[10]:
+        return False
+    month = (d[2] * 10 + d[3]) % 20
+    return _date_ok(d[0] * 10 + d[1], month, d[4] * 10 + d[5])
+
+
+def steuer_id_ok(number: str) -> bool:
+    """German tax identification number: ISO 7064 MOD 11,10 and the digit rule."""
+    if len(number) != 11 or not number.isascii() or not number.isdigit() or number[0] == "0":
+        return False
+    counts = sorted((number[:10].count(c) for c in set(number[:10])), reverse=True)
+    if counts[0] not in (2, 3) or any(c != 1 for c in counts[1:]):
+        return False
+    product = 10
+    for c in number[:10]:
+        total = (int(c) + product) % 10 or 10
+        product = total * 2 % 11
+    check = 11 - product
+    return (0 if check == 10 else check) == int(number[10])
+
+
+def lt_personal_code_ok(number: str) -> bool:
+    """Lithuanian asmens kodas (the same scheme as the Estonian isikukood)."""
+    if len(number) != 11 or not number.isascii() or not number.isdigit():
+        return False
+    if number[0] not in "123456":
+        return False
+    d = [int(c) for c in number]
+    if not _date_ok(d[1] * 10 + d[2], d[3] * 10 + d[4], d[5] * 10 + d[6]):
+        return False
+    for weights in ((1, 2, 3, 4, 5, 6, 7, 8, 9, 1), (3, 4, 5, 6, 7, 8, 9, 1, 2, 3)):
+        check = sum(a * w for a, w in zip(d, weights, strict=False)) % 11
+        if check != 10:
+            return check == d[10]
+    return d[10] == 0
+
+
+def _eleven_digit_ids(text: str) -> Iterator[Span]:
+    for m in ELEVEN_DIGITS_RE.finditer(text):
+        n = m.group(0)
+        if pesel_ok(n) or steuer_id_ok(n) or lt_personal_code_ok(n):
+            yield m.span()
+
+
+# Romania: CNP, 13 digits.
+CNP_RE = re.compile(r"(?<![\w+.,/-])[1-9]\d{12}(?!\w)(?![.,/-]\d)")
+
+
+def cnp_ok(number: str) -> bool:
+    if len(number) != 13 or not number.isascii() or not number.isdigit():
+        return False
+    d = [int(c) for c in number]
+    if not _date_ok(d[1] * 10 + d[2], d[3] * 10 + d[4], d[5] * 10 + d[6]):
+        return False
+    check = sum(a * int(w) for a, w in zip(d, "279146358279", strict=False)) % 11
+    return (1 if check == 10 else check) == d[12]
+
+
+# France: NIR (numéro de sécurité sociale), 13 characters and a two-digit key.
+NIR_RE = re.compile(
+    r"(?<![\w])[1-478] ?\d{2} ?(?:0[1-9]|1[0-2]|[2-9]\d) ?(?:\d{2}|2[AB])"
+    r" ?\d{3} ?\d{3} ?\d{2}(?![\w])"
+)
+
+
+def nir_ok(raw: str) -> bool:
+    nir = raw.replace(" ", "")
+    if len(nir) != 15:
+        return False
+    body = nir[:13].replace("2A", "19").replace("2B", "18")
+    if not body.isascii() or not body.isdigit() or not nir[13:].isdigit():
+        return False
+    return 97 - int(body) % 97 == int(nir[13:])
+
+
+# Italy: codice fiscale, 16 characters (digits may be replaced by letters, "omocodia").
+CODICE_FISCALE_RE = re.compile(
+    r"(?<![\w])[A-Z]{6}[\dLMNPQRSTUV]{2}[ABCDEHLMPRST][\dLMNPQRSTUV]{2}[A-Z][\dLMNPQRSTUV]{3}[A-Z](?![\w])",
+    re.I,
+)
+# Values of characters in odd positions: A-M, then N-Z; a digit counts as the letter at its index.
+_CF_ODD_A_M = (1, 0, 5, 7, 9, 13, 15, 17, 19, 21, 2, 4, 18)
+_CF_ODD_N_Z = (20, 11, 3, 6, 8, 12, 14, 16, 10, 22, 25, 24, 23)
+_CF_ODD = dict(zip("ABCDEFGHIJKLMNOPQRSTUVWXYZ", _CF_ODD_A_M + _CF_ODD_N_Z, strict=True))
+_CF_ODD.update(zip("0123456789", _CF_ODD_A_M, strict=False))
+
+
+def codice_fiscale_ok(raw: str) -> bool:
+    cf = raw.upper()
+    if len(cf) != 16 or not cf.isascii() or not cf.isalnum():
+        return False
+    total = 0
+    for i, c in enumerate(cf[:15]):
+        if i % 2 == 0:  # odd positions, counting from 1
+            total += _CF_ODD[c]
+        else:
+            total += int(c) if c.isdigit() else ord(c) - ord("A")
+    return chr(ord("A") + total % 26) == cf[15]
+
+
+# Czech Republic and Slovakia: rodné číslo, written as YYMMDD/XXXX.
+RODNE_CISLO_RE = re.compile(r"(?<![\w/])\d{6}/\d{3,4}(?![\w/])")
+
+
+def rodne_cislo_ok(raw: str) -> bool:
+    number = raw.replace("/", "")
+    if not number.isascii() or not number.isdigit() or len(number) not in (9, 10):
+        return False
+    month = int(number[2:4])
+    for offset in (0, 50, 20, 70):
+        if 1 <= month - offset <= 12:
+            break
+    else:
+        return False
+    if not 1 <= int(number[4:6]) <= 31:
+        return False
+    if len(number) == 9:
+        return int(number[:2]) < 54  # numbers before 1954 had no check digit
+    return int(number) % 11 == 0 or (int(number[:9]) % 11 == 10 and number[9] == "0")
+
+
+# Poland: NIP (tax number), only when labelled: a bare run of ten digits is too common.
+NIP_RE = re.compile(
+    r"(?i)(?<![\w])NIP[:\s]*"
+    r"(?P<value>\d{3}-?\d{3}-?\d{2}-?\d{2}|\d{3}-?\d{2}-?\d{2}-?\d{3})(?![\w-])"
+)
+
+
+def nip_ok(raw: str) -> bool:
+    d = [int(c) for c in _digits(raw)]
+    if len(d) != 10:
+        return False
+    check = sum(a * w for a, w in zip(d, (6, 5, 7, 2, 3, 4, 5, 6, 7), strict=False)) % 11
+    return check != 10 and check == d[9]
+
+
+def _nips(text: str) -> Iterator[Span]:
+    for m in NIP_RE.finditer(text):
+        if nip_ok(m.group("value")):
+            yield m.span("value")
+
+
 # 1 250 000 000 or 6,500,000: an amount, not a phone.
 AMOUNT_RE = re.compile(r"\d{1,3}(?:([ ,\u00a0])\d{3})(?:\1\d{3})+")
 
@@ -299,6 +487,13 @@ RULES: tuple[Rule, ...] = (
     Rule(Kind.IBAN, _spans(IBAN_RE, iban_ok)),
     Rule(Kind.CARD, _cards),
     Rule(Kind.TAX_ID, _tax_ids),
+    Rule(Kind.NATIONAL_ID, _dnis),
+    Rule(Kind.NATIONAL_ID, _eleven_digit_ids),
+    Rule(Kind.NATIONAL_ID, _spans(CNP_RE, cnp_ok)),
+    Rule(Kind.NATIONAL_ID, _spans(NIR_RE, nir_ok)),
+    Rule(Kind.NATIONAL_ID, _spans(CODICE_FISCALE_RE, codice_fiscale_ok)),
+    Rule(Kind.NATIONAL_ID, _spans(RODNE_CISLO_RE, rodne_cislo_ok)),
+    Rule(Kind.TAX_ID, _nips),
     Rule(Kind.PASSPORT, _spans(PASSPORT_RE)),
     Rule(Kind.IP, _spans(IPV4_RE, ipv4_ok)),
     Rule(Kind.PHONE, _spans(PHONE_CANDIDATE_RE, looks_like_phone)),
