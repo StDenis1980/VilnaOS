@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.4
+Version:        0.5
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -27,6 +27,11 @@ Provides:       pattern-visible()
 # Vilna branding and components (image/docs/composition.md, section 4).
 # Vilna-release provides distribution-release, which Aeon's packages need.
 Requires:       Vilna-release
+# The openSUSE Tumbleweed repositories (oss, non-oss, update) as a zypp
+# service; without it the system never updates (VM test of Build7.2).
+# Here and not in Vilna-release, which KIWI installs in its bootstrap:
+# see the comment there.
+Requires:       openSUSE-repos-Tumbleweed
 Requires:       distribution-logos-Vilna
 Requires:       vilna-presets
 Requires:       herkos

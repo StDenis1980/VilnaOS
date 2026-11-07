@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sat Nov  7 23:15:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.5: require openSUSE-repos-Tumbleweed (moved from Vilna-release,
+  which KIWI installs in its bootstrap).
+
+-------------------------------------------------------------------
 Thu Nov  5 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.4: Vilna and upstream branding instead of Aeon and openSUSE:
