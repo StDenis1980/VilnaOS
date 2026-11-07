@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Vilna
+Description=Vilna boot splash: the brush stroke closes into a circle and the swallow flies out
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/vilna
+ScriptFile=/usr/share/plymouth/themes/vilna/vilna.script
