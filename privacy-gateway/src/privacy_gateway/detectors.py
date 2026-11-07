@@ -500,6 +500,27 @@ RULES: tuple[Rule, ...] = (
 )
 
 
+# A bare run of digits next to an arithmetic sign and another number is part of a
+# formula (``15! = 1307674368000``, ``90010112349 + 1``), not a phone or an ID:
+# hiding it would leave the model nothing to compute. A label on the left
+# (``PESEL = 90010112349``) keeps the number hidden, because a word is not a number.
+_NUMBER_KINDS = frozenset({Kind.PHONE, Kind.CARD, Kind.TAX_ID, Kind.NATIONAL_ID})
+_OPERATOR_LEFT_RE = re.compile(r"[\d)\]!]\s*[=+\-*/×÷^<>≈≤≥]\s*$")
+_OPERATOR_RIGHT_RE = re.compile(r"\s*[=+\-*/×÷^<>≈≤≥]\s*[\d(\[]")
+_DECIMAL_LEFT_RE = re.compile(r"\d[.,]$")
+_LOOK = 24
+
+
+def in_formula(text: str, start: int, end: int) -> bool:
+    """True if ``text[start:end]`` is a bare number that is an operand of a formula."""
+    if not text[start:end].isdigit():
+        return False
+    left = text[max(0, start - _LOOK) : start]
+    if _DECIMAL_LEFT_RE.search(left) or _OPERATOR_LEFT_RE.search(left):
+        return True
+    return _OPERATOR_RIGHT_RE.match(text, end, min(len(text), end + _LOOK)) is not None
+
+
 def detect(text: str, kinds: Iterable[Kind] | None = None) -> list[Finding]:
     """Find what to hide in ``text``, without overlaps, in text order."""
     wanted = set(kinds) if kinds is not None else set(Kind)
@@ -508,6 +529,8 @@ def detect(text: str, kinds: Iterable[Kind] | None = None) -> list[Finding]:
         if rule.kind not in wanted:
             continue
         for start, end in rule.find(text):
+            if rule.kind in _NUMBER_KINDS and in_formula(text, start, end):
+                continue
             if end > start:
                 candidates.append((rank, start, end, rule.kind))
     candidates.sort(key=lambda c: (c[0], -(c[2] - c[1]), c[1]))

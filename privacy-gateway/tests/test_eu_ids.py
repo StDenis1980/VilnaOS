@@ -94,3 +94,31 @@ def test_checks_reject_non_ascii_digits():
     assert not pesel_ok(arabic)
     assert not dni_ok("١٢٣٤٥٦٧٨", "Z")
     assert not codice_fiscale_ok("RSSMRA85T10A562ß")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "15! = 1307674368000",
+        "2^40 = 1099511627776",
+        "Скільки буде 90010112349 + 1?",
+        "x = 98765432109 - 12345678901",
+        "12345678901/7",
+        "π ≈ 3,14159265358",
+        "1e11 = 100000000000",
+    ],
+)
+def test_leaves_numbers_in_formulas(text):
+    assert detect(text) == []
+
+
+@pytest.mark.parametrize(
+    ("text", "value"),
+    [
+        ("PESEL = 90010112349", "90010112349"),
+        ("тел. 0671234567, дзвоніть", "0671234567"),
+        ("PESEL: 90010112349 + Steuer-ID", "90010112349"),
+    ],
+)
+def test_still_hides_labelled_numbers(text, value):
+    assert [f.value for f in detect(text)] == [value]
