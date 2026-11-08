@@ -155,3 +155,39 @@ def test_the_name_model_must_be_local():
     assert names.require_local("http://127.0.0.1:8080/v1")
     with pytest.raises(ValueError):
         names.require_local("https://api.mistral.ai/v1")
+
+
+# --- keys file ---------------------------------------------------------------
+
+
+def test_keys_file_sets_only_known_names(tmp_path, monkeypatch):
+    from pg_bench.providers import load_keys
+
+    for var in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "MISTRAL_API_KEY", "PATH_EXTRA"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "from-shell")
+    keys = tmp_path / "keys.env"
+    keys.write_text(
+        "# comment\nANTHROPIC_API_KEY=sk-ant-fake\nexport MISTRAL_API_KEY='m-fake'\n"
+        "OPENAI_API_KEY=from-file\nGEMINI_API_KEY=\nPATH_EXTRA=/evil\n",
+        encoding="utf-8",
+    )
+    keys.chmod(0o600)
+    assert load_keys(keys) == ["ANTHROPIC_API_KEY", "MISTRAL_API_KEY"]
+    import os
+
+    assert os.environ["ANTHROPIC_API_KEY"] == "sk-ant-fake"
+    assert os.environ["MISTRAL_API_KEY"] == "m-fake"
+    assert os.environ["OPENAI_API_KEY"] == "from-shell"  # the shell wins
+    assert "PATH_EXTRA" not in os.environ
+
+
+def test_keys_file_others_can_read_is_refused(tmp_path):
+    from pg_bench.providers import load_keys
+
+    keys = tmp_path / "keys.env"
+    keys.write_text("ANTHROPIC_API_KEY=sk-ant-fake\n", encoding="utf-8")
+    keys.chmod(0o644)
+    with pytest.raises(ProviderError, match="chmod 600"):
+        load_keys(keys)
+    assert load_keys(tmp_path / "missing.env") == []

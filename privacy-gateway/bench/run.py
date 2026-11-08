@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from pg_bench import names, placeholders  # noqa: E402
-from pg_bench.providers import ProviderError, Target, client  # noqa: E402
+from pg_bench.providers import KEYS_FILE, ProviderError, Target, client, load_keys  # noqa: E402
 
 
 def _out(directory: str, stem: str) -> Path:
@@ -29,6 +29,9 @@ def _out(directory: str, stem: str) -> Path:
 def cmd_placeholders(args: argparse.Namespace) -> int:
     targets = [Target.parse(spec) for spec in args.model]
     try:
+        loaded = load_keys(Path(args.keys).expanduser())
+        if loaded:
+            print(f"keys from {args.keys}: {', '.join(loaded)}", file=sys.stderr)
         chats = [(str(t), client(t, args.local_url)) for t in targets]
     except ProviderError as e:
         print(e, file=sys.stderr)
@@ -108,6 +111,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--prompt", action="append", choices=list(placeholders.PROMPTS))
     p.add_argument("--only", help="only tasks whose id contains this")
     p.add_argument("--repeat", type=int, default=1)
+    p.add_argument("--keys", default=str(KEYS_FILE), help="file with NAME=value key lines")
     p.set_defaults(func=cmd_placeholders)
 
     n = sub.add_parser("names", help="how well a model finds names in free text")

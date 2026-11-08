@@ -27,17 +27,23 @@
 
 ### Як запустити
 
-Ключі лишаються на вашому комп'ютері, у змінних середовища. У звіт вони не потрапляють.
+Ключі лишаються на вашому комп'ютері, у файлі поза репозиторієм і поза OneDrive. У звіт вони не потрапляють.
 
 ```sh
 cd privacy-gateway
-export ANTHROPIC_API_KEY=… OPENAI_API_KEY=… GEMINI_API_KEY=… MISTRAL_API_KEY=…
+mkdir -p ~/.config/vilna-bench
+cp bench/keys.env.example ~/.config/vilna-bench/keys.env
+chmod 600 ~/.config/vilna-bench/keys.env
+nano ~/.config/vilna-bench/keys.env    # впишіть ключі після «=»
+
 uv run python bench/run.py placeholders \
   --model anthropic:claude-haiku-4-5 \
   --model openai:gpt-5-mini \
   --model google:gemini-2.5-flash \
   --model mistral:mistral-small-latest
 ```
+
+Замір читає лише чотири відомі назви ключів, а файл, який можуть читати інші користувачі, не бере. Змінна, вже задана в терміналі, важить більше за файл. Інший файл задає `--keys шлях`. Після заміру ключі краще відкликати або видалити файл.
 
 Назви моделей тут — приклади: перевірте актуальні на сторінках постачальників. Без ключа одного постачальника просто приберіть його `--model`. `--format square --prompt hint` звужує замір, `--only pl` бере лише завдання, в id яких є `pl`, `--repeat 3` повторює кожен запит (моделі відповідають щоразу трохи інакше). Повний замір — 140 запитів на модель, кожен на кілька сотень токенів, тож на дешевих моделях це центи.
 

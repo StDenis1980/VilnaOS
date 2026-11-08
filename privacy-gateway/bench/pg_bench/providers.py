@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import json
 import os
+import stat
 import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 
 Chat = Callable[[str, str], str]
 
@@ -28,6 +30,33 @@ KEY_VARS = {
 
 class ProviderError(RuntimeError):
     pass
+
+
+# Keys live outside the repository and outside synced folders (OneDrive and the
+# like): a file there leaves the computer. See bench/keys.env.example.
+KEYS_FILE = Path.home() / ".config" / "vilna-bench" / "keys.env"
+
+
+def load_keys(path: Path = KEYS_FILE) -> list[str]:
+    """Put ``NAME=value`` lines from ``path`` into the environment.
+
+    Only the known key names are read, a variable already set wins, and empty
+    values are skipped. Returns the names that were set, never the values.
+    A file others can read is refused: chmod 600 it first.
+    """
+    if not path.exists():
+        return []
+    if os.name == "posix" and path.stat().st_mode & (stat.S_IRWXG | stat.S_IRWXO):
+        raise ProviderError(f"{path} can be read by other users: run chmod 600 {path}")
+    known = {var for names in KEY_VARS.values() for var in names} | {"LOCAL_API_KEY"}
+    loaded = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        name, sep, value = line.strip().partition("=")
+        name, value = name.removeprefix("export ").strip(), value.strip().strip("\"'")
+        if sep and name in known and value and not os.environ.get(name):
+            os.environ[name] = value
+            loaded.append(name)
+    return loaded
 
 
 @dataclass(frozen=True)
