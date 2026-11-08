@@ -29,6 +29,7 @@
 | `vilna.plymouth` | Опис теми для Plymouth (модуль `script`) |
 | `vilna.script` | Сценарій: розташування, час, пароль, повідомлення, вихід |
 | `make_theme.py` | Малює всі PNG із логотипа `docs/design/logo/Vilna_logo_dark-bg.svg`: 30 кадрів кола, ластівку, 24 кадри мотиву, світіння, вузол, поле пароля. Лише стандартна бібліотека Python і `rsvg-convert` |
+| `plymouthd.defaults` | Типові налаштування plymouthd: тема `vilna`, `ShowDelay=0`, `DeviceTimeout=8`. Цей файл завжди несе пакет `plymouth-branding`, а наш його замінює. Без файла обидва значення порожні, і plymouthd падає (`Assertion 'seconds > 0.0' failed`): так було в Build11.2 |
 | `VERSION` | Версія пакета |
 
 PNG у репозиторії не лежать: пакет малює їх під час збірки RPM, тож нове лого чи зміна мотиву — це зміна тексту, а не бінарних файлів. Тема займає близько 1,2 МБ і потрапляє в initrd (там Plymouth стартує).

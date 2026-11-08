@@ -29,7 +29,8 @@ screen the brush stroke of the Vilna logo closes into a circle, the
 swallow flies out of it and Petrykivka-style stems grow in two corners;
 three gold nodes pulse while the system starts. It asks for the disk
 password in the same style and stays still when the login screen takes
-over. The image sets it as the default theme (KIWI bootsplash-theme).
+over. It also carries plymouthd.defaults (theme vilna, no show delay,
+8 s device timeout), as every plymouth-branding package does.
 
 %prep
 %autosetup -p1
@@ -41,6 +42,9 @@ python3 make_theme.py Vilna_logo_dark-bg.svg build
 dest=%{buildroot}%{_datadir}/plymouth/themes/vilna
 install -d "$dest"
 install -m 0644 vilna.plymouth vilna.script build/*.png "$dest/"
+# Distribution defaults of plymouthd, also copied into the initrd by
+# plymouth-populate-initrd. The plymouth-branding package owns them.
+install -D -m 0644 plymouthd.defaults %{buildroot}%{_datadir}/plymouth/plymouthd.defaults
 
 %files
 %license LICENSE
@@ -48,5 +52,6 @@ install -m 0644 vilna.plymouth vilna.script build/*.png "$dest/"
 %dir %{_datadir}/plymouth
 %dir %{_datadir}/plymouth/themes
 %{_datadir}/plymouth/themes/vilna/
+%{_datadir}/plymouth/plymouthd.defaults
 
 %changelog
