@@ -191,3 +191,11 @@ def test_keys_file_others_can_read_is_refused(tmp_path):
     with pytest.raises(ProviderError, match="chmod 600"):
         load_keys(keys)
     assert load_keys(tmp_path / "missing.env") == []
+
+
+def test_report_names_keep_dots_in_model_names(tmp_path):
+    import run
+
+    stem = run._out(str(tmp_path), "names-gliner-urchade_gliner_multi-v2.1")
+    assert stem.with_suffix(".md").name.startswith("names-gliner-urchade_gliner_multi-v2.1-")
+    assert stem.with_suffix(".md").name.endswith(".md")

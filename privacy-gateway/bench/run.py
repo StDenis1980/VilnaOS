@@ -20,10 +20,23 @@ from pg_bench import names, placeholders  # noqa: E402
 from pg_bench.providers import KEYS_FILE, ProviderError, Target, client, load_keys  # noqa: E402
 
 
-def _out(directory: str, stem: str) -> Path:
+class _Stem:
+    """A report name without an extension; a dot in a model name ("v2.1") stays."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+
+    def with_suffix(self, suffix: str) -> Path:
+        return self.path.with_name(self.path.name + suffix)
+
+    def __str__(self) -> str:
+        return str(self.path)
+
+
+def _out(directory: str, stem: str) -> _Stem:
     path = Path(directory)
     path.mkdir(parents=True, exist_ok=True)
-    return path / f"{stem}-{dt.datetime.now():%Y-%m-%d_%H%M}"
+    return _Stem(path / f"{stem}-{dt.datetime.now():%Y-%m-%d_%H%M}")
 
 
 def cmd_placeholders(args: argparse.Namespace) -> int:

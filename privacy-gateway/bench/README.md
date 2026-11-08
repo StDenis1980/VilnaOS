@@ -61,7 +61,8 @@ uv run python bench/run.py placeholders \
 cd privacy-gateway
 uv run python bench/run.py names --backend regex      # нинішній шлюз, для порівняння: 0 %
 uv run python bench/run.py names --backend llm:qwen3-4b   # модель Gloxi через llama-server
-uv run --with gliner python bench/run.py names --backend gliner:urchade/gliner_multi_pii-v1
+uv run --with gliner --with sentencepiece --with tiktoken --with protobuf \
+  python bench/run.py names --backend gliner:urchade/gliner_multi_pii-v1
 uv run --with spacy python bench/run.py names --backend spacy:xx_ent_wiki_sm
 ```
 
