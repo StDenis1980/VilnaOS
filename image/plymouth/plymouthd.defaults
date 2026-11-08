@@ -1,0 +1,9 @@
+# Vilna defaults for plymouthd (package plymouth-branding-Vilna).
+# The plymouth-branding package carries this file; without it ShowDelay
+# and DeviceTimeout are unset (nan) and plymouthd aborts in its event
+# loop, in the initrd and again after switching root (VM test of
+# Build11.2, 2026-11-08). Local changes go to /etc/plymouth/plymouthd.conf.
+[Daemon]
+Theme=vilna
+ShowDelay=0
+DeviceTimeout=8
