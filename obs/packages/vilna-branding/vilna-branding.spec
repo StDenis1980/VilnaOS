@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.1
+Version:        0.2
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -37,6 +37,7 @@ Summary:        GNOME defaults for Vilna
 Provides:       gnome-branding
 Conflicts:      gnome-branding-Aeon
 Conflicts:      gnome-branding-MicroOS
+Requires:       gnome-backgrounds
 Requires:       distribution-logos-Vilna
 Requires:       gnome-initial-setup
 Requires:       polkit

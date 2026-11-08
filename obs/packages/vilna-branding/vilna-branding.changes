@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Sun Nov  8 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.2: gnome-branding-Vilna sets GNOME's Adwaita wallpaper; the
+  openSUSE one gio-branding-openSUSE points at is not installed
+  (Build9.2 showed a flat colour). Require gnome-backgrounds.
+
+-------------------------------------------------------------------
 Thu Nov  5 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: gnome-branding-Vilna, systemd-presets-branding-Vilna,

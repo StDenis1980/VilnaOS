@@ -94,11 +94,21 @@ WantedBy=multi-user.target
 UNIT
 systemctl enable vilna-boot-entries.service
 
-# Trust Vilna's package signing key (shipped by Vilna-release), so
-# zypper, also inside transactional-update which never asks, accepts
-# the vilna repository. rpm cannot do this from the package's %post:
-# its database is locked during the transaction.
-rpm --import /usr/lib/rpm/gnupg/keys/gpg-pubkey-06386694.asc
+# Trust the package signing keys shipped in /usr/lib/rpm/gnupg/keys:
+# Vilna's (Vilna-release) and openSUSE's (openSUSE-build-key), so zypper,
+# also inside transactional-update which never asks, accepts the vilna
+# and openSUSE repositories (Build9.2: without the openSUSE key
+# transactional-update dup failed). rpm cannot do this from the
+# packages' %post (its database is locked during the transaction), and
+# on the running system the rpm database is read-only.
+for key in /usr/lib/rpm/gnupg/keys/gpg-pubkey-*.asc; do
+    rpm --import "$key"
+done
+rpm -q gpg-pubkey-06386694 gpg-pubkey-29b700a4
+
+# The wallpaper 30_Vilna.gschema.override (gnome-branding-Vilna) sets.
+test -e /usr/share/backgrounds/gnome/adwaita-l.jxl
+test -e /usr/share/backgrounds/gnome/adwaita-d.jxl
 
 # zypper (inside transactional-update) installs only what is required,
 # as in Aeon: recommended packages do not slip into the system.
