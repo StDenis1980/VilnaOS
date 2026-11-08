@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sat Nov  7 23:59:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.6: require plymouth-branding-Vilna (the Vilna boot splash).
+
+-------------------------------------------------------------------
 Sat Nov  7 23:15:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.5: require openSUSE-repos-Tumbleweed (moved from Vilna-release,

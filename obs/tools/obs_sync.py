@@ -80,6 +80,15 @@ def extension_version(folder: str) -> Callable[[], str]:
     return read
 
 
+def file_version(path: str) -> Callable[[], str]:
+    """The version written alone in a file (image/plymouth/VERSION)."""
+
+    def read() -> str:
+        return (ROOT / path).read_text(encoding="utf-8").strip()
+
+    return read
+
+
 TARBALLS: dict[str, Tarball] = {
     "gloxi": Tarball("gloxi", pyproject_version("gloxi"), extra=(("LICENSE", "LICENSE"),)),
     "herkos": Tarball(
@@ -103,6 +112,14 @@ TARBALLS: dict[str, Tarball] = {
         "shell-extension",
         extension_version("shell-extension/vilna@stdenis1980.github.io"),
         extra=(("LICENSE", "LICENSE"),),
+    ),
+    "plymouth-branding-Vilna": Tarball(
+        "image/plymouth",
+        file_version("image/plymouth/VERSION"),
+        extra=(
+            ("LICENSE", "LICENSE"),
+            ("docs/design/logo/Vilna_logo_dark-bg.svg", "Vilna_logo_dark-bg.svg"),
+        ),
     ),
 }
 

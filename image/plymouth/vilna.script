@@ -1,0 +1,251 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Vilna boot splash (Plymouth "script" plugin).
+#
+# Timeline at boot (docs/design/brief.md, section 6):
+#   0.0-0.4 s  the blue glow behind the logo comes up
+#   0.2-1.4 s  the brush stroke closes into a circle
+#   1.1-2.0 s  the swallow flies out of the circle
+#   1.5-3.0 s  Petrykivka-style stems grow in two corners
+#   from 2.4 s three gold nodes pulse under the logo while the system starts
+# On shutdown and reboot the finished picture shows at once. On quit the
+# picture is left finished and still, so GDM takes over from a calm
+# screen (plymouth quit --retain-splash).
+#
+# Images come from make_theme.py; this file only places and moves them.
+
+FPS = 50;              # Plymouth calls the refresh function 50 times a second
+CIRCLE_FRAMES = 30;    # make_theme.py CIRCLE_FRAMES
+BLOOM_FRAMES = 24;     # make_theme.py BLOOM_FRAMES
+
+# Night blue of the palette, a little darker at the bottom.
+Window.SetBackgroundTopColor(0.122, 0.204, 0.361);
+Window.SetBackgroundBottomColor(0.071, 0.125, 0.235);
+
+screen.x = Window.GetX();
+screen.y = Window.GetY();
+screen.w = Window.GetWidth();
+screen.h = Window.GetHeight();
+screen.base = Math.Min(screen.w, screen.h);
+
+mode = Plymouth.GetMode();
+animate = (mode == "boot" || mode == "resume");
+
+fun clamp01(v) {
+    if (v < 0) return 0;
+    if (v > 1) return 1;
+    return v;
+}
+
+fun ease_out(v) {
+    v = clamp01(v);
+    return 1 - (1 - v) * (1 - v) * (1 - v);
+}
+
+# Logo -----------------------------------------------------------------
+
+logo.h = Math.Int(screen.base * 0.34);
+first = Image("circle-0.png");
+logo.w = Math.Int(first.GetWidth() * logo.h / first.GetHeight());
+logo.x = screen.x + Math.Int((screen.w - logo.w) / 2);
+logo.y = screen.y + Math.Int(screen.h * 0.46 - logo.h / 2);
+
+for (i = 0; i < CIRCLE_FRAMES; i++)
+    circle.frames[i] = Image("circle-" + i + ".png").Scale(logo.w, logo.h);
+circle.sprite = Sprite();
+circle.sprite.SetPosition(logo.x, logo.y, 10);
+circle.shown = -1;
+
+bird.sprite = Sprite(Image("swallow.png").Scale(logo.w, logo.h));
+bird.sprite.SetPosition(logo.x, logo.y, 11);
+bird.sprite.SetOpacity(0);
+
+glow.size = Math.Int(logo.h * 2.4);
+glow.sprite = Sprite(Image("glow.png").Scale(glow.size, glow.size));
+glow.sprite.SetPosition(logo.x + Math.Int((logo.w - glow.size) / 2),
+                        logo.y + Math.Int((logo.h - glow.size) / 2), 1);
+glow.sprite.SetOpacity(0);
+
+# Corner motifs ----------------------------------------------------------
+
+bloom.size = Math.Int(Math.Min(screen.h * 0.42, screen.w * 0.28));
+for (i = 0; i < BLOOM_FRAMES; i++) {
+    bloom.left[i] = Image("bloom-" + i + ".png").Scale(bloom.size, bloom.size);
+    bloom.right[i] = bloom.left[i].Rotate(Math.Pi);
+}
+bloom.bl = Sprite();
+bloom.bl.SetPosition(screen.x, screen.y + screen.h - bloom.size, 2);
+bloom.tr = Sprite();
+bloom.tr.SetPosition(screen.x + screen.w - bloom.size, screen.y, 2);
+bloom.shown = -1;
+
+# Progress nodes ---------------------------------------------------------
+
+dots.size = Math.Int(Math.Max(18, screen.base * 0.024));
+dots.gap = Math.Int(dots.size * 1.7);
+dots.y = logo.y + logo.h + Math.Int(logo.h * 0.22);
+dot_image = Image("dot.png").Scale(dots.size, dots.size);
+for (i = 0; i < 3; i++) {
+    dots.sprite[i] = Sprite(dot_image);
+    dots.sprite[i].SetPosition(screen.x + Math.Int(screen.w / 2 - dots.size / 2 + (i - 1) * dots.gap),
+                               dots.y, 12);
+    dots.sprite[i].SetOpacity(0);
+}
+
+# State ------------------------------------------------------------------
+
+tick = 0;
+if (!animate) tick = 4 * FPS;   # shutdown, reboot, updates: no intro
+asking = 0;                     # a password or question is on screen
+quitting = 0;
+
+fun show_frame(t) {
+    # Glow
+    glow.sprite.SetOpacity(clamp01(t / 0.4));
+
+    # Brush circle
+    f = Math.Int(clamp01((t - 0.2) / 1.2) * (CIRCLE_FRAMES - 1));
+    if (f != circle.shown) {
+        circle.sprite.SetImage(circle.frames[f]);
+        global.circle.shown = f;
+    }
+
+    # Swallow: from inside the circle, up and to the right, into place
+    b = ease_out((t - 1.1) / 0.9);
+    bird.sprite.SetX(logo.x - Math.Int((1 - b) * logo.w * 0.28));
+    bird.sprite.SetY(logo.y + Math.Int((1 - b) * logo.h * 0.16));
+    bird.sprite.SetOpacity(clamp01((t - 1.1) / 0.35));
+
+    # Corner motifs
+    g = Math.Int(clamp01((t - 1.5) / 1.5) * (BLOOM_FRAMES - 1));
+    if (g != bloom.shown) {
+        bloom.bl.SetImage(bloom.left[g]);
+        bloom.tr.SetImage(bloom.right[g]);
+        global.bloom.shown = g;
+    }
+    fade = clamp01((t - 1.5) / 0.5) * 0.9;
+    bloom.bl.SetOpacity(fade);
+    bloom.tr.SetOpacity(fade);
+
+    # Nodes pulse one after another, unless a prompt is shown
+    on = clamp01((t - 2.4) / 0.4);
+    for (i = 0; i < 3; i++) {
+        if (asking || quitting) {
+            dots.sprite[i].SetOpacity(0);
+        } else {
+            pulse = (Math.Sin(2 * Math.Pi * (t * 0.8 - i * 0.2)) + 1) / 2;
+            dots.sprite[i].SetOpacity(on * (0.3 + 0.7 * pulse));
+        }
+    }
+}
+
+fun refresh() {
+    if (quitting) return;
+    global.tick = tick + 1;
+    show_frame(tick / FPS);
+}
+Plymouth.SetRefreshFunction(refresh);
+
+# Password and questions (encrypted disk) --------------------------------
+
+prompt.sprite = Sprite();
+prompt.sprite.SetZ(20);
+entry.image = Image("entry.png");
+entry.w = Math.Int(Math.Min(screen.w * 0.8, logo.h * 1.6));
+entry.h = Math.Int(entry.w * entry.image.GetHeight() / entry.image.GetWidth());
+entry.sprite = Sprite(entry.image.Scale(entry.w, entry.h));
+entry.x = screen.x + Math.Int((screen.w - entry.w) / 2);
+entry.y = logo.y + logo.h + Math.Int(logo.h * 0.24);
+entry.sprite.SetPosition(entry.x, entry.y, 20);
+entry.sprite.SetOpacity(0);
+bullet.size = Math.Int(entry.h * 0.3);
+bullet.image = Image("bullet.png").Scale(bullet.size, bullet.size);
+answer.sprite = Sprite();
+bullets.count = 0;
+answer.sprite.SetZ(21);
+font = "Sans " + Math.Int(Math.Max(12, screen.base * 0.018));
+
+fun text_image(text, alpha) {
+    return Image.Text(text, 0.949, 0.910, 0.835, alpha, font);
+}
+
+fun hide_bullets() {
+    for (i = 0; bullets.sprite[i]; i++)
+        bullets.sprite[i].SetOpacity(0);
+}
+
+fun show_prompt(text) {
+    global.asking = 1;
+    img = text_image(text, 1);
+    prompt.sprite.SetImage(img);
+    prompt.sprite.SetPosition(screen.x + Math.Int((screen.w - img.GetWidth()) / 2),
+                              entry.y - Math.Int(img.GetHeight() * 1.6), 20);
+    prompt.sprite.SetOpacity(1);
+    entry.sprite.SetOpacity(1);
+}
+
+fun display_password(text, count) {
+    show_prompt(text);
+    answer.sprite.SetOpacity(0);
+    hide_bullets();
+    # As many bullets as fit in the field; more typing keeps the row full.
+    max = Math.Int((entry.w - entry.h) / (bullet.size * 1.6));
+    n = Math.Min(count, max);
+    for (i = 0; i < n; i++) {
+        if (!bullets.sprite[i]) global.bullets.sprite[i] = Sprite(bullet.image);
+        bullets.sprite[i].SetPosition(entry.x + Math.Int(entry.h / 2 + i * bullet.size * 1.6),
+                                      entry.y + Math.Int((entry.h - bullet.size) / 2), 21);
+        bullets.sprite[i].SetOpacity(1);
+    }
+}
+Plymouth.SetDisplayPasswordFunction(display_password);
+
+fun display_question(text, value) {
+    show_prompt(text);
+    hide_bullets();
+    img = text_image(value, 1);
+    answer.sprite.SetImage(img);
+    answer.sprite.SetPosition(entry.x + Math.Int(entry.h / 2),
+                              entry.y + Math.Int((entry.h - img.GetHeight()) / 2), 21);
+    answer.sprite.SetOpacity(1);
+}
+Plymouth.SetDisplayQuestionFunction(display_question);
+
+fun display_normal() {
+    global.asking = 0;
+    prompt.sprite.SetOpacity(0);
+    entry.sprite.SetOpacity(0);
+    answer.sprite.SetOpacity(0);
+    hide_bullets();
+}
+Plymouth.SetDisplayNormalFunction(display_normal);
+
+# Messages (for example from systemd) -------------------------------------
+
+message.sprite = Sprite();
+message.sprite.SetZ(20);
+
+fun show_message(text) {
+    img = text_image(text, 0.75);
+    message.sprite.SetImage(img);
+    message.sprite.SetPosition(screen.x + Math.Int((screen.w - img.GetWidth()) / 2),
+                               screen.y + screen.h - Math.Int(screen.h * 0.08), 20);
+    message.sprite.SetOpacity(1);
+}
+Plymouth.SetMessageFunction(show_message);
+
+fun hide_message(text) {
+    message.sprite.SetOpacity(0);
+}
+Plymouth.SetHideMessageFunction(hide_message);
+
+# Quit: leave the finished picture, still, for GDM to take over from -----
+
+fun quit() {
+    global.quitting = 1;
+    show_frame(4);
+    for (i = 0; i < 3; i++)
+        dots.sprite[i].SetOpacity(0);
+    message.sprite.SetOpacity(0);
+}
+Plymouth.SetQuitFunction(quit);
