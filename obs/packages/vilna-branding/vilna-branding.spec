@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.6
+Version:        0.7
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -46,6 +46,7 @@ Conflicts:      gnome-branding-MicroOS
 Requires:       gnome-backgrounds
 Requires:       vilna-backgrounds
 Requires:       distribution-logos-Vilna
+Requires:       gnome-shell-extension-vilna
 Requires:       gnome-initial-setup
 Requires:       polkit
 Requires:       sound-theme-freedesktop
@@ -54,8 +55,9 @@ Requires:       system-group-wheel
 Requires:       transactional-update
 
 %description -n gnome-branding-Vilna
-GNOME defaults for Vilna: light style, the Сонце wallpaper, the Vilna logo on the login
-screen, Gloxi in the dash, administrator rights for wheel (sudo and
+GNOME defaults for Vilna: light style, the Сонце wallpaper, the Vilna
+GNOME Shell extension (also on the login screen), the Vilna logo on the
+login screen, Gloxi in the dash, administrator rights for wheel (sudo and
 polkit), reboot notifications from transactional-update, logind
 settings, GNOME Initial Setup pages (and a quick stop of its session
 on poweroff) and a daily distrobox upgrade.

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Nov  9 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.2: the Vilna login screen: blurred Сонце wallpaper
+  (vilna-backgrounds) behind the login dialog, night colour beneath it,
+  frosted-glass password field.
+
+-------------------------------------------------------------------
 Thu Nov  5 08:05:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Own %{_datadir}/gnome-shell and its extensions directory: the OBS

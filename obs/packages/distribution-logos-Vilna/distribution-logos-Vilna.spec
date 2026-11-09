@@ -6,13 +6,16 @@
 #
 
 Name:           distribution-logos-Vilna
-Version:        0.2
+Version:        0.3
 Release:        0
 Summary:        Vilna logos
 License:        GPL-3.0-or-later
 URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        vilna-logo.svg
 Source1:        vilna-logo-symbolic.svg
+# The final logo for dark backgrounds (docs/design/logo/Vilna_logo_dark-bg.svg):
+# the logo of the login screen (org.gnome.login-screen logo).
+Source2:        vilna-logo-dark-bg.svg
 BuildRequires:  hicolor-icon-theme
 BuildArch:      noarch
 # Replaces distribution-logos-openSUSE-Aeon (openSUSE trademark guidelines).
@@ -25,9 +28,10 @@ Conflicts:      distribution-logos-openSUSE-Tumbleweed
 %description
 The Vilna logo as the "vilna-logo" icon (named by LOGO= in os-release)
 and in /usr/share/pixmaps/distribution-logos for programs that look for
-the distribution logo there.
+the distribution logo there. The final logo for dark backgrounds is
+the logo of the login screen.
 
-The current artwork is a placeholder until the final logo is ready.
+The vilna-logo icon is still a placeholder.
 
 %package -n hicolor-icon-theme-branding-Vilna
 Summary:        Vilna logo as the hicolor "distributor" icon
@@ -50,7 +54,9 @@ install -D -m 0644 %{SOURCE1} %{buildroot}%{_datadir}/icons/hicolor/symbolic/app
 install -d %{buildroot}%{_datadir}/pixmaps/distribution-logos
 ln -s ../../icons/hicolor/scalable/apps/vilna-logo.svg %{buildroot}%{_datadir}/pixmaps/distribution-logos/square-hicolor.svg
 ln -s ../../icons/hicolor/symbolic/apps/vilna-logo-symbolic.svg %{buildroot}%{_datadir}/pixmaps/distribution-logos/square-symbolic.svg
+%{_datadir}/pixmaps/distribution-logos/vilna-logo-dark-bg.svg
 install -D -m 0644 %{SOURCE0} %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/distributor.svg
+install -m 0644 %{SOURCE2} %{buildroot}%{_datadir}/pixmaps/distribution-logos/vilna-logo-dark-bg.svg
 
 %files
 %{_datadir}/icons/hicolor/scalable/apps/vilna-logo.svg

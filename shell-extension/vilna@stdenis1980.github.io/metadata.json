@@ -1,10 +1,10 @@
 {
   "uuid": "vilna@stdenis1980.github.io",
   "name": "Vilna",
-  "description": "Vilna desktop integration: a Latin keyboard layout in password fields, Gloxi above other windows, and a strip of the screen for the Gloxi panel.",
+  "description": "Vilna desktop integration: a Latin keyboard layout in password fields, Gloxi above other windows, a strip of the screen for the Gloxi panel, and the Vilna login screen.",
   "shell-version": ["46", "47", "48", "49", "50", "51"],
   "session-modes": ["user", "unlock-dialog", "gdm"],
   "settings-schema": "org.gnome.shell.extensions.vilna",
   "url": "https://github.com/StDenis1980/VilnaOS",
-  "version-name": "0.1"
+  "version-name": "0.2"
 }

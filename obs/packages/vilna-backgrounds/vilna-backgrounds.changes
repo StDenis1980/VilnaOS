@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Nov  9 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.2: vilna-login.jpg, the login screen background: Сонце dark
+  scaled to 1920x1080, Gaussian blur 56 px and brightness 0.55 (Pillow:
+  resize LANCZOS, ImageFilter.GaussianBlur(56),
+  ImageEnhance.Brightness(0.55), JPEG quality 88). White text in the
+  middle of the screen keeps a contrast of at least 6.9:1.
+
+-------------------------------------------------------------------
 Mon Nov  9 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.1: first package: seven light/dark wallpaper pairs (3840x2160) and

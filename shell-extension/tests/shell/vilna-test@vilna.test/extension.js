@@ -241,6 +241,21 @@ async function locked() {
     entry.destroy();
 }
 
+// The login screen draws its background on the actor named lockDialogGroup
+// (screenShield.js). The container has no logind, so the Shell makes no
+// screen shield here: style a stand-in with the same name.
+async function loginBackground() {
+    const group = new St.Widget({name: 'lockDialogGroup'});
+    Main.layoutManager.uiGroup.add_child(group);
+    await sleep(100);
+    const node = group.get_theme_node();
+    check('login screen: Vilna background',
+        node.get_background_image()?.get_path() ?? null,
+        '/usr/share/backgrounds/vilna/vilna-login.jpg');
+    check('login screen: night colour beneath it', node.get_background_color().to_string(), '#0e1a2eff');
+    group.destroy();
+}
+
 async function run() {
     const ok = await waitFor(() => Main.extensionManager.lookup(UUID)?.state === ENABLED, 10000);
     check('extension enabled', ok, true);
@@ -265,6 +280,7 @@ async function run() {
     await passwordFields();
     if (mode === 'gdm') {
         check('login screen: no D-Bus service', await nameOwned('io.github.stdenis1980.VilnaShell'), false);
+        await loginBackground();
         return;
     }
     await locked();
