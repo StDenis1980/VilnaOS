@@ -733,6 +733,10 @@ msgstr "{model} на {host}, особисті дані маскуються"
 msgid "{model}, on this computer"
 msgstr "{model}, на цьому комп'ютері"
 
+#: src/gloxi/gui/shortcuts.py
+msgid "Show or hide Gloxi"
+msgstr "Показати або сховати Gloxi"
+
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
 msgstr "Дії, приховані від Gloxi"
@@ -826,6 +830,10 @@ msgstr "Повідомити про проблему чи запропонува
 #: src/gloxi/gui/window.py
 msgid "Send"
 msgstr "Надіслати"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi, or hide it if it is in front"
+msgstr "Показати Gloxi або сховати, якщо він на передньому плані"
 
 #: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
