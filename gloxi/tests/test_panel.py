@@ -21,6 +21,8 @@ GEOMETRY = (
 )
 
 
+# The RPM builds gloxi/ alone; the check runs in the repository (CI job gloxi).
+@pytest.mark.skipif(not GEOMETRY.is_file(), reason="needs the repository's shell-extension/")
 def test_numbers_agree_with_the_shell_extension():
     js = GEOMETRY.read_text(encoding="utf-8")
 
