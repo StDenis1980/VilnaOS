@@ -95,10 +95,54 @@ desktop=/usr/share/applications/io.github.stdenis1980.VilnaInstaller.desktop
 test -e "$desktop"
 cp "$desktop" "$home/.config/autostart/"
 chown -R live:live "$home/.config"
+# GNOME opens the Activities overview at login, and the installer sat
+# under it as a thumbnail until Esc (VM test of 2026-11-09). A small
+# extension, only in this image, starts the session on the desktop.
+ext=/usr/share/gnome-shell/extensions/vilna-live@stdenis1980.github.io
+install -d "$ext"
+cat >"$ext/metadata.json" <<'META'
+{
+  "uuid": "vilna-live@stdenis1980.github.io",
+  "name": "Vilna Live",
+  "description": "Vilna live image: start the session on the desktop, with the installer in front, not in the overview.",
+  "shell-version": ["46", "47", "48", "49", "50", "51"],
+  "url": "https://github.com/StDenis1980/VilnaOS"
+}
+META
+cat >"$ext/extension.js" <<'JS'
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Vilna live image only (obs/images/Vilna-Live/config.sh).
+import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+export default class VilnaLiveExtension extends Extension {
+    enable() {
+        this._startInOverview = Main.layoutManager.startInOverview;
+        Main.layoutManager.startInOverview = false;
+        if (Main.layoutManager._startingUp) {
+            this._startup = Main.layoutManager.connect('startup-complete', () => {
+                Main.overview.hide();
+                Main.layoutManager.disconnect(this._startup);
+                this._startup = null;
+            });
+        }
+    }
+
+    disable() {
+        if (this._startup) {
+            Main.layoutManager.disconnect(this._startup);
+            this._startup = null;
+        }
+        Main.layoutManager.startInOverview = this._startInOverview;
+    }
+}
+JS
+
 cat >/usr/share/glib-2.0/schemas/40_Vilna-Live.gschema.override <<'GSCHEMA'
 # Vilna live image only (obs/images/Vilna-Live/config.sh); wins over
 # 30_Vilna.gschema.override.
 [org.gnome.shell]
+enabled-extensions=['vilna@stdenis1980.github.io', 'vilna-live@stdenis1980.github.io']
 favorite-apps=['io.github.stdenis1980.VilnaInstaller.desktop', 'io.github.stdenis1980.Gloxi.desktop', 'org.gnome.Nautilus.desktop']
 
 [org.gnome.desktop.screensaver]

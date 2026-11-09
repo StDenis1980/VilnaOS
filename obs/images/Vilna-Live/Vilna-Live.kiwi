@@ -49,8 +49,12 @@
       kernelcmdline="quiet splash loglevel=3 rd.udev.log_level=3 security=selinux selinux=1 enforcing=0"
     >
       <!-- The menu stays hidden for 3 seconds: Esc (or any arrow key)
-           shows it, with KIWI's failsafe entry. -->
-      <bootloader name="grub2" console="gfxterm" timeout="3" timeout_style="hidden"/>
+           shows it, with KIWI's failsafe entry. No console attribute:
+           console="gfxterm" made KIWI write "terminal_input gfxterm"
+           too, and grub printed "terminal `gfxterm' isn't found" on
+           every boot (VM test of 2026-11-09); KIWI's default is gfxterm
+           out, console in. -->
+      <bootloader name="grub2" timeout="3" timeout_style="hidden"/>
     </type>
   </preferences>
   <!-- OBS gives the image the repositories of the build repository:
