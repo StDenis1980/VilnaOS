@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov  9 13:50:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.5: gnome-branding-Vilna makes the light style the default
+  (color-scheme 'default' instead of 'prefer-dark').
+
+-------------------------------------------------------------------
 Mon Nov  9 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.4: gnome-branding-Vilna no longer owns /usr/etc/sudoers.d and

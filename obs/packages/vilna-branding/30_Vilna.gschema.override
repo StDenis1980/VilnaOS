@@ -1,9 +1,9 @@
 # Vilna defaults for GNOME (replace Aeon's 30_Aeon, override openSUSE's
-# 20_openSUSE-branding overrides). Design: dark by default, the system
+# 20_openSUSE-branding overrides). Design: light by default (decision 2026-11-09), the system
 # accent colour (image/docs/composition.md, Vilna design brief).
 
 [org.gnome.desktop.interface]
-color-scheme='prefer-dark'
+color-scheme='default'
 clock-show-weekday=true
 show-battery-percentage=true
 font-antialiasing='rgba'
