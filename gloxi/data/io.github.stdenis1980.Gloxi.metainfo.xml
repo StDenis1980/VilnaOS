@@ -80,6 +80,17 @@
   </supports>
 
   <releases>
+    <release version="0.2.0~a1" type="development" date="2026-11-10">
+      <description>
+        <p>Second trial release for testers.</p>
+        <ul>
+          <li>Reads your calendars (in Vilna OS; not yet in this package)</li>
+          <li>Changes light or dark style, accent colour, text size, night light, do not disturb and sound when you ask, each with undo in the Permissions window</li>
+          <li>A key to show or hide Gloxi from anywhere: Super+G or the assistant key, which you confirm in GNOME</li>
+          <li>A side panel at the right edge of the screen</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.0~a1" type="development" date="2026-11-04">
       <description>
         <p>First trial release for testers: it checks the release path from the tag to the download.</p>

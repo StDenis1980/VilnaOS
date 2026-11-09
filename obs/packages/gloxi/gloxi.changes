@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 10 00:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.2.0~a1 (ADR 0023): calendar (read only) and GNOME
+  settings through Herkos, with undo; a global key through the
+  GlobalShortcuts portal (gloxi-gtk --toggle); the side panel
+
+-------------------------------------------------------------------
 Mon Nov  2 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Files tool through Herkos-lite: the local model can list, search,

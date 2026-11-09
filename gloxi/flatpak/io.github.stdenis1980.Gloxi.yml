@@ -33,6 +33,10 @@ finish-args:
   - --talk-name=ca.desrt.dconf
   - --env=DCONF_USER_CONFIG_DIR=.config/dconf
   - --env=GSETTINGS_BACKEND=dconf
+  # The runtime has no dconf module for GIO; without it GSettings silently
+  # writes a keyfile inside the sandbox (seen on a laptop, 2026-11-09). The
+  # module below is built into /app/lib/gio/modules.
+  - --env=GIO_EXTRA_MODULES=/app/lib/gio/modules
   # Volume, mute and sound output through PipeWire; voice needs it too (ADR 0015).
   - --socket=pulseaudio
   # The Vilna GNOME Shell extension (shell-extension/README.md): keeps the
@@ -112,6 +116,27 @@ modules:
       - type: file
         url: https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl
         sha256: 481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8
+
+  # GIO's dconf backend, so the settings tool writes to the person's dconf
+  # through the dconf service of the host (ca.desrt.dconf). Only the GIO
+  # module is kept.
+  - name: dconf
+    buildsystem: meson
+    config-opts:
+      - -Dbash_completion=false
+      - -Dman=false
+      - -Dvapi=false
+    cleanup:
+      - /bin
+      - /include
+      - /lib/pkgconfig
+      - /libexec
+      - /share
+      - /lib/libdconf*
+    sources:
+      - type: git
+        url: https://gitlab.gnome.org/GNOME/dconf.git
+        tag: "0.40.0"
 
   # The settings tool's one dependency, the version pinned in mcp/settings/uv.lock.
   # Pure Python; it loads libpulse from the runtime.
