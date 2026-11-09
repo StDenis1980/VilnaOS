@@ -8,9 +8,9 @@ on:
   push:
     branches: [main]
     tags: ["gloxi-v*"]
-    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", ".github/workflows/flatpak.yml"]
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", "mcp/settings/**", "mcp/calendar/**", ".github/workflows/flatpak.yml"]
   pull_request:
-    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", ".github/workflows/flatpak.yml"]
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", "mcp/settings/**", "mcp/calendar/**", ".github/workflows/flatpak.yml"]
   workflow_dispatch:
 
 permissions:
@@ -58,6 +58,33 @@ jobs:
           h.stop()
           print('herkos ok', h.socket)
           "
+      - name: The settings tool answers inside the sandbox
+        run: |
+          flatpak run --command=python3 io.github.stdenis1980.Gloxi -c "
+          import json, subprocess, sys
+          import pulsectl
+          from gi.repository import Gio
+          # The night light schema the package carries (no gnome-settings-daemon in the runtime).
+          assert Gio.SettingsSchemaSource.get_default().lookup(
+              'org.gnome.settings-daemon.plugins.color', True)
+          req = {'jsonrpc': '2.0', 'id': 1, 'method': 'tools/list'}
+          out = subprocess.run([sys.executable, '-m', 'vilna_mcp_settings', '--memory'],
+              input=json.dumps(req) + '\\n', capture_output=True, text=True, timeout=30)
+          tools = {t['name'] for t in json.loads(out.stdout)['result']['tools']}
+          assert 'set_night_light' in tools, out
+          print('settings ok', sorted(tools))
+          "
+      - name: Is Evolution Data Server in the runtime? (for the calendar tool, not required yet)
+        run: |
+          flatpak run --command=python3 io.github.stdenis1980.Gloxi -c "
+          import gi
+          for name, version in (('EDataServer', '1.2'), ('ECal', '2.0'), ('ICalGLib', '3.0')):
+              try:
+                  gi.require_version(name, version)
+                  print(name, version, 'present')
+              except ValueError as e:
+                  print(name, version, 'missing:', e)
+          " || true
       - name: The bundled llama-server runs a model through Gloxi's engine
         run: |
           # A tiny test model (not the real one): this checks the build, not the answers.

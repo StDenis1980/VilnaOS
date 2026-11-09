@@ -74,9 +74,9 @@ Mitos-lite і `herkosd` вчаться скасовувати зміни буд�
 
 | Дозвіл | Навіщо | Ризик |
 | --- | --- | --- |
-| `--filesystem=xdg-run/dconf`, `--filesystem=xdg-config/dconf:ro`, `--talk-name=ca.desrt.dconf`, `--env=DCONF_USER_CONFIG_DIR=.config/dconf` | Читати й писати налаштування GNOME | Застосунок може змінити будь-який ключ dconf, не лише наші. Межу тримає лише список ключів у `vilna-mcp-settings` |
+| `--filesystem=xdg-run/dconf`, `--filesystem=xdg-config/dconf:ro`, `--talk-name=ca.desrt.dconf`, `--env=DCONF_USER_CONFIG_DIR=.config/dconf`, `--env=GSETTINGS_BACKEND=dconf` | Читати й писати налаштування GNOME (рішення Denys 2026-11-09: лише файли dconf, жодних інших шляхів). Схеми нічного світла в runtime GNOME немає, тож пакет несе власний опис цих п'яти ключів (`mcp/settings/data/`) | Застосунок може змінити будь-який ключ dconf, не лише наші. Межу тримає лише список ключів у `vilna-mcp-settings` |
 | `--socket=pulseaudio` | Гучність і вихід; той самий дозвіл потрібен голосу (ADR 0015) | Доступ до звуку й мікрофона, як у будь-якого плеєра чи месенджера |
-| `--talk-name=org.gnome.evolution.dataserver.*` | Читати календарі EDS | Доступ до всіх календарів і контактів EDS. Межу тримає лише інструмент |
+| `--talk-name=org.gnome.evolution.dataserver.*` | Читати календарі EDS | Доступ до всіх календарів і контактів EDS. Межу тримає лише інструмент. Поки не відкривається: календар у Flatpak з'явиться, коли в пакеті будуть клієнтські бібліотеки EDS (CI перевіряє, чи є вони в runtime); у Vilna календар працює через `vilna-mcp-calendar@` |
 | Портал GlobalShortcuts | Гаряча клавіша | Немає: клавішу підтверджує людина |
 
 Ми пишемо це чесно в описі застосунку і в `herkos/README.md`: у Flatpak межі тримає код Herkos-lite, а не пісочниця. У Vilna інструменти працюють поза Flatpak Gloxi, у шаблонних юнітах `vilna-mcp-settings@`, `vilna-mcp-calendar@` від імені людини (як `vilna-mcp-files@`), і Gloxi цих дозволів не має.

@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 import io
 import json
+import shutil
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import pytest
 
@@ -192,3 +195,44 @@ def test_no_sound_server():
     with pytest.raises(SettingsError, match="not available"):
         s.set_volume(30)
     assert "volume" not in s.get()["values"]
+
+
+# -- the night light schema the Flatpak carries ----------------------------------------
+
+SCHEMA_XML = (
+    Path(__file__).resolve().parents[1]
+    / "data"
+    / "org.gnome.settings-daemon.plugins.color.gschema.xml"
+)
+
+
+def test_flatpak_schema_declares_every_night_light_key():
+    from vilna_mcp_settings.settings import COLOR, KEYS
+
+    schema = ET.parse(SCHEMA_XML).getroot().find("schema")
+    assert schema.get("id") == COLOR
+    assert schema.get("path") == "/org/gnome/settings-daemon/plugins/color/"
+    declared = {k.get("name"): k.get("type") for k in schema.findall("key")}
+    wanted = {k.key for k in KEYS.values() if k.schema == COLOR}
+    assert set(declared) == wanted
+    assert declared["night-light-temperature"] == "u"  # as GNOME has it
+
+
+def test_flatpak_schema_works_with_gsettings(tmp_path, monkeypatch):
+    pytest.importorskip("gi")
+    compiler = shutil.which("glib-compile-schemas")
+    if compiler is None:
+        pytest.skip("no glib-compile-schemas")
+    shutil.copy(SCHEMA_XML, tmp_path)
+    subprocess.run([compiler, "--strict", str(tmp_path)], check=True)
+    monkeypatch.setenv("GSETTINGS_BACKEND", "memory")
+    monkeypatch.setenv("GSETTINGS_SCHEMA_DIR", str(tmp_path))
+    from vilna_mcp_settings.gsettings import GSettingsBackend
+    from vilna_mcp_settings.settings import COLOR
+
+    backend = GSettingsBackend()
+    assert backend.get(COLOR, "night-light-temperature") == 2700
+    s = Settings(backend)
+    out = s.set_night_light(enabled=True, from_hour=21, temperature=3000)
+    assert out["before"]["night_light_temperature"] == 2700
+    assert backend.get(COLOR, "night-light-schedule-from") == 21.0

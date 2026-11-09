@@ -14,15 +14,19 @@ MANIFEST = ROOT / "flatpak" / f"{APP_ID}.yml"
 WHEEL = re.compile(r"url: (https://files\.pythonhosted\.org/\S+/([^/\s]+\.whl))\n\s+sha256: (\w+)")
 
 
-def _locked() -> dict[str, dict]:
-    lock = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
+# The packages the Flatpak carries, each with the uv.lock that pins its wheels.
+LOCKS = {"gloxi": ROOT / "uv.lock", "vilna-mcp-settings": ROOT.parent / "mcp/settings/uv.lock"}
+
+
+def _locked(package: str = "gloxi") -> dict[str, dict]:
+    lock = tomllib.loads(LOCKS[package].read_text(encoding="utf-8"))
     return {p["name"]: p for p in lock["package"]}
 
 
-def _runtime_dependencies() -> set[str]:
-    """Everything gloxi needs at run time, from uv.lock (local packages excluded)."""
-    locked = _locked()
-    todo, seen = ["gloxi"], set()
+def _runtime_dependencies(package: str = "gloxi") -> set[str]:
+    """Everything a package needs at run time, from its uv.lock (local packages excluded)."""
+    locked = _locked(package)
+    todo, seen = [package], set()
     while todo:
         name = todo.pop()
         for dep in locked[name].get("dependencies", []):
@@ -33,7 +37,11 @@ def _runtime_dependencies() -> set[str]:
 
 
 def test_wheels_match_uv_lock():
-    locked = _locked()
+    locked: dict[str, dict] = {}
+    needed: set[str] = set()
+    for package in LOCKS:
+        locked.update(_locked(package))
+        needed |= _runtime_dependencies(package)
     wheels = WHEEL.findall(MANIFEST.read_text(encoding="utf-8"))
     assert wheels
     names = set()
@@ -45,7 +53,7 @@ def test_wheels_match_uv_lock():
         assert {"url": url, "hash": f"sha256:{sha}"} in [
             {"url": w["url"], "hash": w["hash"]} for w in locked[name]["wheels"]
         ], filename
-    assert names == _runtime_dependencies()
+    assert names == needed
 
 
 def test_local_packages_are_copied():
@@ -55,6 +63,7 @@ def test_local_packages_are_copied():
         "privacy-gateway/src/privacy_gateway",
         "herkos/src/herkos",
         "mcp-files/src/vilna_mcp_files",
+        "mcp-settings/src/vilna_mcp_settings",
     ):
         assert pkg in text
     assert (ROOT / "flatpak" / "gloxi-gtk").is_file()
@@ -74,7 +83,13 @@ def test_desktop_metainfo_and_icon_agree():
     assert meta.findtext("project_license") == "GPL-3.0-or-later"
 
 
+# The only paths the sandbox may open (ADR 0023, section 6): GNOME's settings
+# in dconf, for the settings tool. They are not the person's files.
+DCONF_PATHS = {"--filesystem=xdg-run/dconf", "--filesystem=xdg-config/dconf:ro"}
+
+
 def test_no_file_access_in_the_sandbox():
     """Files come only through the document portal (folders the person chooses)."""
     text = MANIFEST.read_text(encoding="utf-8")
-    assert "--filesystem" not in text
+    opened = set(re.findall(r"--filesystem=\S+", text))
+    assert opened == DCONF_PATHS
