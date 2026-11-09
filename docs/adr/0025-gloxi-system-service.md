@@ -1,6 +1,6 @@
 # 0025. Gloxi як системний сервіс у Vilna
 
-- Стан: Запропоновано
+- Стан: Прийнято (Denys, 2026-11-09)
 - Дата: 2026-11-09
 - Пов'язано: [ADR 0005](0005-gloxi-herkos-channel.md) (канал Gloxi ↔ Herkos), [ADR 0006](0006-conversational-installer.md) (ваги моделі в образі), [ADR 0008](0008-default-local-model.md) (модель за замовчуванням), [ADR 0013](0013-herkos-rust.md) (системний `herkosd`), [ADR 0016](0016-gloxi-for-code-editors.md) (ключ локальної моделі), [`herkos/docs/permissions.md`](../../herkos/docs/permissions.md) розд. 9.1, [`image/docs/composition.md`](../../image/docs/composition.md) розд. 4.3, [roadmap](../roadmap.md) розд. 3, пункт 13 переліку робіт до альфи
 
