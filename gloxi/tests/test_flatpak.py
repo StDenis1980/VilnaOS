@@ -25,13 +25,21 @@ def _locked(package: str = "gloxi") -> dict[str, dict]:
     return {p["name"]: p for p in lock["package"]}
 
 
+# Extras the Flatpak always carries (gloxi[voice]: ADR 0015).
+EXTRAS = {"gloxi": ("voice",)}
+
+
 def _runtime_dependencies(package: str = "gloxi") -> set[str]:
     """Everything a package needs at run time, from its uv.lock (local packages excluded)."""
     locked = _locked(package)
     todo, seen = [package], set()
     while todo:
         name = todo.pop()
-        for dep in locked[name].get("dependencies", []):
+        deps = list(locked[name].get("dependencies", []))
+        if name == package:
+            for extra in EXTRAS.get(package, ()):
+                deps += locked[name].get("optional-dependencies", {}).get(extra, [])
+        for dep in deps:
             if dep["name"] not in seen:
                 seen.add(dep["name"])
                 todo.append(dep["name"])
