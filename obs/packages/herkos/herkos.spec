@@ -33,6 +33,8 @@ Requires:       polkit
 # The tools run as the person (vilna-mcp-*@.service); packaged separately.
 Recommends:     vilna-mcp-files
 Recommends:     vilna-mcp-backup
+Recommends:     vilna-mcp-settings
+Recommends:     vilna-mcp-calendar
 %{?systemd_ordering}
 
 %description
