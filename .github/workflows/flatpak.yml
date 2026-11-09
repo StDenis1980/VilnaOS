@@ -171,3 +171,25 @@ jobs:
           if [ "$PRERELEASE" = true ]; then flag="--prerelease"; fi
           gh release create "$GITHUB_REF_NAME" gloxi.flatpak gloxi.flatpak.sha256 \
             --verify-tag --title "Gloxi $VERSION" --notes-file notes.md $flag
+
+  publish:
+    # The signed Vilna repository goes to bunny.net (ADR 0024) only when Denys
+    # turned it on (variable VILNA_FLATPAK_PUBLISH = true) and, if the
+    # flatpak-publish environment asks for a reviewer, approved this run.
+    if: startsWith(github.ref, 'refs/tags/gloxi-v') && vars.VILNA_FLATPAK_PUBLISH == 'true'
+    needs: [gloxi, release]
+    runs-on: ubuntu-latest
+    environment: flatpak-publish
+    concurrency: vilna-flatpak-publish
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: vilna-flatpak-repo
+          path: vilna-flatpak
+      - name: Upload, summary last
+        env:
+          BUNNY_STORAGE_PASSWORD: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+          ZONE: ${{ vars.BUNNY_STORAGE_ZONE }}
+          ENDPOINT: ${{ vars.BUNNY_STORAGE_ENDPOINT || 'storage.bunnycdn.com' }}
+        run: python3 gloxi/tools/upload_bunny.py vilna-flatpak --zone "$ZONE" --endpoint "$ENDPOINT"
