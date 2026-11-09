@@ -22,6 +22,7 @@ dev = [
     { name = "ruff" },
     { name = "vilna-backup" },
     { name = "vilna-mcp-backup" },
+    { name = "vilna-mcp-calendar" },
     { name = "vilna-mcp-files" },
     { name = "vilna-mcp-settings" },
 ]
@@ -34,6 +35,7 @@ dev = [
     { name = "ruff", specifier = ">=0.6" },
     { name = "vilna-backup", editable = "../backup" },
     { name = "vilna-mcp-backup", editable = "../mcp/backup" },
+    { name = "vilna-mcp-calendar", editable = "../mcp/calendar" },
     { name = "vilna-mcp-files", editable = "../mcp/files" },
     { name = "vilna-mcp-settings", editable = "../mcp/settings" },
 ]
@@ -141,6 +143,19 @@ dev = [
 name = "vilna-mcp-backup"
 version = "0.1.0.dev0"
 source = { editable = "../mcp/backup" }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=8" },
+    { name = "ruff", specifier = ">=0.6" },
+]
+
+[[package]]
+name = "vilna-mcp-calendar"
+version = "0.1.0.dev0"
+source = { editable = "../mcp/calendar" }
 
 [package.metadata]
 
