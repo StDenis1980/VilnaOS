@@ -68,3 +68,39 @@ def test_conceal_never_puts_a_password_back():
     shown = "".join(m.conceal_stream(answer, shown="***"))
     assert shown == "Запам'ятав: ***. А [EMAIL_9] не знаю."
     assert m.conceal("[SECRET_1]") == "••••••"
+
+
+# --- the hint about placeholders -----------------------------------------------
+
+
+def test_masked_messages_tell_the_model_to_keep_placeholders():
+    from privacy_gateway import PLACEHOLDER_HINT
+
+    m = Masker()
+    sent = [
+        {"role": "system", "content": "You are Gloxi.\n"},
+        {"role": "user", "content": "Write to olena@example.com"},
+    ]
+    out = m.mask_messages(sent)
+    assert out[1]["content"] == "Write to [EMAIL_1]"
+    assert out[0]["content"] == (
+        "You are Gloxi.\n\n" + PLACEHOLDER_HINT.format(example="[EMAIL_1]")
+    )
+    assert sent[0]["content"] == "You are Gloxi.\n"  # the caller's list is untouched
+
+
+def test_hint_comes_as_its_own_system_message_when_there_is_none():
+    out = Masker().mask_messages([{"role": "user", "content": "PESEL 90010112349"}])
+    assert [m["role"] for m in out] == ["system", "user"]
+    assert "[NATIONAL_ID_1]" in out[0]["content"]
+
+
+def test_no_hint_without_placeholders_or_when_turned_off():
+    m = Masker()
+    plain = [{"role": "system", "content": "S"}, {"role": "user", "content": "hello"}]
+    assert m.mask_messages(plain) == plain
+    # Something that only looks like a placeholder is not ours.
+    lookalike = [{"role": "user", "content": "see [FIGURE_1]"}]
+    assert m.mask_messages(lookalike) == lookalike
+    masked = m.mask_messages([{"role": "user", "content": "mail a@example.com"}], hint=False)
+    assert masked == [{"role": "user", "content": "mail [EMAIL_1]"}]

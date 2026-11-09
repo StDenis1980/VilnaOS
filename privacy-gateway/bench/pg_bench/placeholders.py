@@ -19,7 +19,7 @@ from dataclasses import asdict, dataclass, field
 from importlib import resources
 
 from pg_bench.providers import Chat, ProviderError
-from privacy_gateway import Masker
+from privacy_gateway import PLACEHOLDER_HINT, Masker
 from privacy_gateway.masking import PLACEHOLDER_RE
 
 
@@ -54,13 +54,7 @@ FORMATS = {
 
 PROMPTS = {
     "none": "You are a helpful assistant.",
-    "hint": (
-        "You are a helpful assistant. Some values in the user's message were replaced "
-        "on the user's device with placeholders such as {example}. Wherever a value "
-        "belongs in your answer, copy its placeholder exactly as written, character for "
-        "character: do not translate, rename, renumber, re-case or re-bracket it, even "
-        "when you translate or rewrite the rest of the text."
-    ),
+    "hint": "You are a helpful assistant. " + PLACEHOLDER_HINT,
 }
 
 

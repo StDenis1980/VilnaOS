@@ -28,6 +28,16 @@ LOOSE_RE = re.compile(
 BARE_RE = re.compile(
     r"(?<![\w\[{(])(?P<kind>[A-Za-z]{2,}(?:_[A-Za-z]+)*)(?P<sep>_)(?P<n>\d{1,4})(?![\w\]})])"
 )
+# Told to the cloud model whenever a request carries placeholders. Measured on
+# 2026-11-09 (bench/README.md): with it, 280 of 280 tasks on four providers kept
+# every value; without it, 277, and changed placeholders went from 60 to 9.
+PLACEHOLDER_HINT = (
+    "Some values in the user's message were replaced on the user's device with "
+    "placeholders such as {example}. Wherever a value belongs in your answer, copy its "
+    "placeholder exactly as written, character for character: do not translate, rename, "
+    "renumber, re-case or re-bracket it, even when you translate or rewrite the rest of "
+    "the text."
+)
 # The longest placeholder a model may return, to know how much of a stream to hold back.
 _MAX_PLACEHOLDER = max(len(k.value) for k in Kind) + 16
 
@@ -69,15 +79,38 @@ class Masker:
         parts.append(text[pos:])
         return "".join(parts)
 
-    def mask_messages(self, messages: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
-        """Mask the ``content`` of chat messages (OpenAI-style dicts); copies, never edits."""
+    def mask_messages(
+        self, messages: Iterable[Mapping[str, Any]], *, hint: bool = True
+    ) -> list[dict[str, Any]]:
+        """Mask the ``content`` of chat messages (OpenAI-style dicts); copies, never edits.
+
+        When the result carries placeholders and ``hint`` is on, the model is
+        told to copy them unchanged (:data:`PLACEHOLDER_HINT`): appended to the
+        leading system message, or as a new one in front.
+        """
         out = []
         for message in messages:
             copy = dict(message)
             if isinstance(copy.get("content"), str):
                 copy["content"] = self.mask(copy["content"])
             out.append(copy)
+        if hint and self._carries_placeholders(out):
+            text = PLACEHOLDER_HINT.format(example=next(iter(self._value_of)))
+            first = out[0]
+            if first.get("role") == "system" and isinstance(first.get("content"), str):
+                out[0] = {**first, "content": f"{first['content'].rstrip()}\n\n{text}"}
+            else:
+                out.insert(0, {"role": "system", "content": text})
         return out
+
+    def _carries_placeholders(self, messages: list[dict[str, Any]]) -> bool:
+        """Does any message hold one of this masker's own placeholders?"""
+        return any(
+            m.group(0) in self._value_of
+            for message in messages
+            if isinstance(message.get("content"), str)
+            for m in PLACEHOLDER_RE.finditer(message["content"])
+        )
 
     def unmask(self, text: str) -> str:
         """Put real values back, also where the model changed a placeholder a little.
