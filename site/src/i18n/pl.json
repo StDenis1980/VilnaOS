@@ -62,5 +62,23 @@
 
   "nf_title": "Nie znaleziono strony",
   "nf_lead": "Ta strona nie istnieje albo została przeniesiona.",
-  "nf_home": "Strona główna"
+  "nf_home": "Strona główna",
+
+  "blavet_desc": "Blavet to nazwa pierwszego wydania Vilna: chaber i zimorodek.",
+  "blavet_badge": "Pierwsze wydanie · w przygotowaniu",
+  "blavet_lead": "Pierwsze wydanie Vilna nazywa się Blavet. W języku walenckim to słowo oznacza zarówno chaber, jak i zimorodka, małego niebieskiego ptaka z pomarańczową piersią.",
+  "blavet_mark_alt": "Znak Blavet: zimorodek wyglądający z dziupli",
+  "blavet_name_h": "Dlaczego Blavet",
+  "blavet_name_p": "Wydania Vilna nazywamy od kwiatów. Chaber i zimorodek mają kolory Vilna: niebieski, pomarańczowy i złoty. Każde wydanie ma własny znak, a logo Vilna i sowa Gloxi pozostają bez zmian.",
+  "blavet_look_h": "Jak wygląda",
+  "blavet_look_p": "Domyślnie styl jasny i tapeta Słońce; ciemny włącza się jednym przełącznikiem. Tapeta Blavet zamienia skrzydło zimorodka w ornament w stylu Petrykiwki.",
+  "blavet_wall_light": "Tapeta Blavet, jasna",
+  "blavet_wall_dark": "Tapeta Blavet, ciemna",
+  "blavet_inside_h": "Co jest w środku",
+  "blavet_in_gloxi": "Asystent, który uruchamia model językowy na Twoim komputerze i działa tylko za Twoją zgodą.",
+  "blavet_in_herkos": "Strażnik między Gloxi a systemem: pokazuje, co się zmieni, pyta o zgodę i prowadzi dziennik.",
+  "blavet_in_updates_h": "Aktualizacje",
+  "blavet_in_updates": "Oparty na openSUSE Aeon: system aktualizuje się sam w tle, a każdą aktualizację można cofnąć.",
+  "blavet_when_h": "Kiedy",
+  "blavet_when_p": "Blavet jest w przygotowaniu. Wersja alfa planowana jest do marca 2028 roku. Prace można śledzić w otwartym kodzie."
 }

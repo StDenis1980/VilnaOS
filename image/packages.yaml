@@ -73,7 +73,7 @@ vilna:
     # Перший запуск, мови, вигляд
     - {name: vilna-initial-setup,          license: GPL-3.0-or-later, status: planned}
     - {name: vilna-locale,                 license: GPL-3.0-or-later, status: planned}
-    - {name: vilna-wallpapers,             license: decide,           status: planned}
+    - {name: vilna-backgrounds,            license: GPL-3.0-or-later, status: obs}      # шпалери: 7 пар, «Сонце» за замовчуванням
   enable_services: [herkosd.socket, vilna-flatpak-defaults.service]  # user: herkos-agent.service; Gloxi has no system service yet
 
 flatpak_defaults:

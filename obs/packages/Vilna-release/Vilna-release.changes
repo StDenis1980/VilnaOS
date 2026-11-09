@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov  9 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.4: the first Vilna release is called Blavet: VERSION_CODENAME and
+  the name in PRETTY_NAME and VERSION (shown in GNOME Settings, About).
+
+-------------------------------------------------------------------
 Sat Nov  7 23:15:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.3: no longer require openSUSE-repos-Tumbleweed (patterns-vilna-base

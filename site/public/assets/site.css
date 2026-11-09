@@ -114,3 +114,6 @@ footer.site a { color: var(--muted); }
 .langs li a { display: block; padding: 6px 16px; color: var(--text); text-decoration: none; }
 .langs li a:hover { background: var(--line); }
 .langs li a[aria-current] { color: var(--gold); }
+
+.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 16px 0; }
+.shots img { width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); display: block; }

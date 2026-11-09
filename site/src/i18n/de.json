@@ -62,5 +62,23 @@
 
   "nf_title": "Seite nicht gefunden",
   "nf_lead": "Diese Seite gibt es nicht oder sie wurde verschoben.",
-  "nf_home": "Zur Startseite"
+  "nf_home": "Zur Startseite",
+
+  "blavet_desc": "Blavet ist der Name der ersten Vilna-Version: Kornblume und Eisvogel.",
+  "blavet_badge": "Erste Version · in Entwicklung",
+  "blavet_lead": "Die erste Version von Vilna heißt Blavet. Auf Valencianisch bedeutet das Wort sowohl Kornblume als auch Eisvogel, einen kleinen blauen Vogel mit orangefarbener Brust.",
+  "blavet_mark_alt": "Das Blavet-Zeichen: ein Eisvogel schaut aus einer Baumhöhle",
+  "blavet_name_h": "Warum Blavet",
+  "blavet_name_p": "Vilna-Versionen tragen Namen von Blumen. Kornblume und Eisvogel haben die Farben von Vilna: Blau, Orange und Gold. Jede Version hat ihr eigenes Zeichen, das Vilna-Logo und die Eule Gloxi bleiben gleich.",
+  "blavet_look_h": "Wie es aussieht",
+  "blavet_look_p": "Standard ist der helle Stil mit dem Hintergrund Sonne; der dunkle ist einen Schalter entfernt. Der Hintergrund Blavet macht aus dem Flügel des Eisvogels ein Petrykiwka-Ornament.",
+  "blavet_wall_light": "Hintergrund Blavet, hell",
+  "blavet_wall_dark": "Hintergrund Blavet, dunkel",
+  "blavet_inside_h": "Was drin ist",
+  "blavet_in_gloxi": "Der Assistent, der ein Sprachmodell auf Ihrem eigenen Computer ausführt und nur mit Ihrer Erlaubnis handelt.",
+  "blavet_in_herkos": "Der Wächter zwischen Gloxi und Ihrem System: zeigt, was sich ändert, fragt nach und führt ein Protokoll.",
+  "blavet_in_updates_h": "Aktualisierungen",
+  "blavet_in_updates": "Basiert auf openSUSE Aeon: Das System aktualisiert sich selbst im Hintergrund, und jede Aktualisierung lässt sich zurücknehmen.",
+  "blavet_when_h": "Wann",
+  "blavet_when_p": "Blavet ist in Entwicklung. Die Alpha ist bis März 2028 geplant. Die Arbeit lässt sich im offenen Code verfolgen."
 }

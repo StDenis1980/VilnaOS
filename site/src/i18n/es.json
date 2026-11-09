@@ -62,5 +62,23 @@
 
   "nf_title": "Página no encontrada",
   "nf_lead": "Esta página no existe o se ha movido.",
-  "nf_home": "Ir al inicio"
+  "nf_home": "Ir al inicio",
+
+  "blavet_desc": "Blavet es el nombre de la primera versión de Vilna: un aciano y un martín pescador.",
+  "blavet_badge": "Primera versión · en desarrollo",
+  "blavet_lead": "La primera versión de Vilna se llama Blavet. En valenciano la palabra significa tanto el aciano como el martín pescador, un pequeño pájaro azul de pecho naranja.",
+  "blavet_mark_alt": "El emblema de Blavet: un martín pescador asomándose desde un hueco",
+  "blavet_name_h": "Por qué Blavet",
+  "blavet_name_p": "Las versiones de Vilna llevan nombres de flores. El aciano y el martín pescador comparten los colores de Vilna: azul, naranja y dorado. Cada versión tiene su propio emblema; el logotipo de Vilna y el búho Gloxi no cambian.",
+  "blavet_look_h": "Cómo se ve",
+  "blavet_look_p": "El estilo claro es el predeterminado, con el fondo Sol; el oscuro está a un interruptor. El fondo Blavet convierte el ala del martín pescador en un ornamento de Petrykivka.",
+  "blavet_wall_light": "Fondo Blavet, claro",
+  "blavet_wall_dark": "Fondo Blavet, oscuro",
+  "blavet_inside_h": "Qué incluye",
+  "blavet_in_gloxi": "El asistente que ejecuta un modelo de lenguaje en tu propio ordenador y solo actúa con tu permiso.",
+  "blavet_in_herkos": "El guardián entre Gloxi y tu sistema: muestra qué cambiará, te pregunta y lleva un registro.",
+  "blavet_in_updates_h": "Actualizaciones",
+  "blavet_in_updates": "Basado en openSUSE Aeon: el sistema se actualiza solo en segundo plano y cada actualización se puede deshacer.",
+  "blavet_when_h": "Cuándo",
+  "blavet_when_p": "Blavet está en desarrollo. La versión alfa está prevista para marzo de 2028. Puedes seguir el trabajo en el código abierto."
 }

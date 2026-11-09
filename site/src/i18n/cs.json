@@ -62,5 +62,23 @@
 
   "nf_title": "Stránka nenalezena",
   "nf_lead": "Tato stránka neexistuje nebo byla přesunuta.",
-  "nf_home": "Na úvodní stránku"
+  "nf_home": "Na úvodní stránku",
+
+  "blavet_desc": "Blavet je název prvního vydání Vilna: chrpa a ledňáček.",
+  "blavet_badge": "První vydání · ve vývoji",
+  "blavet_lead": "První vydání Vilna se jmenuje Blavet. Ve valencijštině to slovo znamená chrpu i ledňáčka, malého modrého ptáka s oranžovou hrudí.",
+  "blavet_mark_alt": "Znak Blavet: ledňáček vykukuje z dutiny",
+  "blavet_name_h": "Proč Blavet",
+  "blavet_name_p": "Vydání Vilna nesou jména květin. Chrpa a ledňáček mají barvy Vilna: modrou, oranžovou a zlatou. Každé vydání má vlastní znak, logo Vilna a sova Gloxi zůstávají stejné.",
+  "blavet_look_h": "Jak vypadá",
+  "blavet_look_p": "Výchozí je světlý styl s tapetou Slunce, tmavý zapnete jedním přepínačem. Tapeta Blavet mění křídlo ledňáčka v ornament ve stylu Petrykivky.",
+  "blavet_wall_light": "Tapeta Blavet, světlá",
+  "blavet_wall_dark": "Tapeta Blavet, tmavá",
+  "blavet_inside_h": "Co je uvnitř",
+  "blavet_in_gloxi": "Asistent, který spouští jazykový model na vašem počítači a jedná jen s vaším svolením.",
+  "blavet_in_herkos": "Strážce mezi Gloxi a systémem: ukáže, co se změní, zeptá se vás a vede záznam.",
+  "blavet_in_updates_h": "Aktualizace",
+  "blavet_in_updates": "Založeno na openSUSE Aeon: systém se aktualizuje sám na pozadí a každou aktualizaci lze vrátit.",
+  "blavet_when_h": "Kdy",
+  "blavet_when_p": "Blavet je ve vývoji. Alfa je plánována do března 2028. Práci můžete sledovat v otevřeném kódu."
 }

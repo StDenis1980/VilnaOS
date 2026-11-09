@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Nov  9 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.6: gnome-branding-Vilna sets the Vilna wallpaper Сонце (light and
+  dark, from vilna-backgrounds) instead of GNOME's Adwaita one, also
+  for the lock screen.
+
+-------------------------------------------------------------------
 Mon Nov  9 13:50:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.5: gnome-branding-Vilna makes the light style the default
