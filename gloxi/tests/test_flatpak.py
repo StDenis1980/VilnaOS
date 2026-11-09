@@ -67,6 +67,7 @@ def test_desktop_metainfo_and_icon_agree():
     assert f"Icon={APP_ID}\n" in desktop
     assert "Exec=gloxi-gtk\n" in desktop
     assert (data / "icons" / f"{APP_ID}.svg").is_file()
+    assert (data / "icons" / f"{APP_ID}-symbolic.svg").is_file()
     meta = ET.parse(data / f"{APP_ID}.metainfo.xml").getroot()
     assert meta.findtext("id") == APP_ID
     assert meta.find("launchable").text == f"{APP_ID}.desktop"

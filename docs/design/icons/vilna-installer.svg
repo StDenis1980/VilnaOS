@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><title>Встановлення</title><defs><linearGradient id="i1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1F345C"/><stop offset="1" stop-color="#13213A"/></linearGradient><linearGradient id="i2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#24407A"/><stop offset="1" stop-color="#1F345C"/></linearGradient><linearGradient id="ia" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5C24A"/><stop offset="1" stop-color="#F0963A"/></linearGradient></defs><rect x="18" y="26" width="92" height="64" rx="10" fill="#13213A" transform="translate(0 4)"/>
+<rect x="18" y="26" width="92" height="64" rx="10" fill="url(#i1)"/>
+<rect x="25" y="33" width="78" height="50" rx="5" fill="url(#i2)"/>
+<path d="M8 94 L120 94 L114 104 Q113 106 110 106 L18 106 Q15 106 14 104Z" fill="#D8CBB2"/>
+<path d="M8 94 L120 94 L118 98 L10 98Z" fill="#F2E8D5"/>
+<path d="M54 94 L74 94 L72 97 L56 97Z" fill="#D8CBB2"/>
+<path d="M64 40 L64 62" stroke="url(#ia)" stroke-width="9" stroke-linecap="round"/>
+<path d="M51 52 L64 66 L77 52" fill="none" stroke="url(#ia)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="38" y="72" width="52" height="5" rx="2.5" fill="#13213A"/><rect x="38" y="72" width="32" height="5" rx="2.5" fill="#5B8CFF"/></svg>
