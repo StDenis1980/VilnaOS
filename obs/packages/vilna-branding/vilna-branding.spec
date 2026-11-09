@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.4
+Version:        0.5
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -26,6 +26,11 @@ Source11:       x86_64_v3-transactional-update.service
 Source12:       conncheck-vilna.conf
 Source13:       50-vilna-initial-setup-stop.conf
 BuildRequires:  systemd-rpm-macros
+# They own /usr/etc/sudoers.d (0750) and /usr/share/polkit-1/rules.d (0555).
+# The files below go there, but the directories stay theirs: a %%dir of our
+# own with another mode makes rpm refuse the update (file conflict).
+BuildRequires:  polkit
+BuildRequires:  sudo
 BuildArch:      noarch
 
 %description
@@ -108,10 +113,7 @@ install -D -m 0644 %{SOURCE12} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/
 %dir %{_datadir}/glib-2.0
 %dir %{_datadir}/glib-2.0/schemas
 %{_datadir}/glib-2.0/schemas/30_Vilna.gschema.override
-%dir %{_prefix}/etc/sudoers.d
 %{_prefix}/etc/sudoers.d/50-vilna
-%dir %{_datadir}/polkit-1
-%dir %{_datadir}/polkit-1/rules.d
 %{_datadir}/polkit-1/rules.d/49-vilna.rules
 %dir %{_prefix}/etc/transactional-update.conf.d
 %{_prefix}/etc/transactional-update.conf.d/50-vilna-desktop.conf

@@ -20,6 +20,8 @@ Restart=always
 RestartSec=3
 # herkosd does not serve this account (herkos/agent.py, NOT_SERVED).
 RestartPreventExitStatus=77
+# ...and that is not a failure of the session.
+SuccessExitStatus=77
 
 [Install]
 WantedBy=graphical-session.target
