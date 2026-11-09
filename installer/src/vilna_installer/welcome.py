@@ -217,6 +217,14 @@ class Welcome(Adw.ApplicationWindow):
         self.set_default_widget(self.with_gloxi)
         self._relabel()
         self.buttons[language].grab_focus()
+        # Read every language of the system once the screen is up, so that
+        # «Other languages…» opens at once (it took 1-2 s in the VM).
+        GLib.timeout_add(500, self._load_others)
+
+    def _load_others(self) -> bool:
+        if self.others is None:
+            self.others = start.other_languages(start.system_locales(), self.own_name)
+        return GLib.SOURCE_REMOVE
 
     @property
     def language(self) -> str:
@@ -262,15 +270,19 @@ class Welcome(Adw.ApplicationWindow):
         search.connect("search-changed", lambda _s: rows.invalidate_filter())
         # The dialog opens where the person just clicked «Other languages…»:
         # a double click, or a second click a moment later, landed on a row
-        # and chose a language by accident (VM test of 2026-11-09). Rows
-        # answer only after start.PICK_GUARD_MS.
-        opened = GLib.get_monotonic_time()
+        # and chose a language by accident (VM tests of 2026-11-09). Rows
+        # answer only start.PICK_GUARD_MS after the dialog is on screen
+        # ("map"), not after it was built: building can take a second or two.
+        shown: list[int] = []
+        dialog.connect("map", lambda _d: shown.append(GLib.get_monotonic_time()))
 
         def on_row(_list: Gtk.ListBox, row: Gtk.ListBoxRow) -> None:
-            if start.pick_allowed(opened, GLib.get_monotonic_time()):
+            if shown and start.pick_allowed(shown[0], GLib.get_monotonic_time()):
                 self._pick_other(dialog, row.locale)
 
         rows.connect("row-activated", on_row)
+        # Esc in the search field closes the dialog, as anywhere else.
+        search.connect("stop-search", lambda _s: dialog.close())
         scroll = Gtk.ScrolledWindow(vexpand=True, hscrollbar_policy=Gtk.PolicyType.NEVER)
         scroll.set_child(rows)
         box.append(scroll)
