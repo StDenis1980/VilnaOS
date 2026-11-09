@@ -21,4 +21,6 @@ vilna-installer --window --language pl --plan /tmp/plan.json
 
 Тексти екрана лежать у `src/vilna_installer/locale/*.po`, усі десять мов разом, бо екран перемикає мову одразу. Переклади, крім української, варто перевірити носіям мови (Weblate). Логіка без GTK — `start.py`, тести — `tests/`.
 
+Пакет OBS — `vilna-installer` ([`../obs/packages/vilna-installer/`](../obs/packages/vilna-installer/)): команда, пункт меню «Встановити Vilna» десятьма мовами (`data/`), значки `vilna-installer`. Він вимагає `typelib(GnomeDesktop) = 4.0`, `iso-codes` і `vilna-backgrounds`. Ставиться лише в живий образ `Vilna-Live`, де установник запускається сам після автовходу ([`../obs/README.md`](../obs/README.md#живий-образ-з-установником)); у встановленій системі його немає.
+
 Далі: розмова з Gloxi (кроки 1–13), MCP-сервер `vilna-mcp-installer`, валідатор плану й екран підтвердження Herkos.

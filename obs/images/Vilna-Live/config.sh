@@ -1,0 +1,117 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# KIWI runs this inside the live image root after all packages are installed.
+set -euxo pipefail
+
+test -f /.kconfig && . /.kconfig
+test -f /.profile && . /.profile
+
+echo "Configure image: [${kiwi_iname:-Vilna-Live}]"
+
+# Services: the Vilna presets, as in the disk image (obs/images/Vilna).
+systemctl preset-all
+systemctl set-default graphical.target
+
+# What makes no sense on a live system, whose root is a squashfs with a
+# RAM overlay, not a btrfs snapshot: repartitioning the disk it booted
+# from (Aeon's repart.d), updates and snapshots, btrfs maintenance, the
+# boot health check, kdump; and the first-boot Flatpak install, which
+# would download the default apps into RAM on every start.
+for unit in \
+    systemd-repart.service \
+    vilna-flatpak-defaults.service \
+    transactional-update.timer transactional-update-cleanup.timer \
+    snapper-timeline.timer snapper-cleanup.timer snapper-boot.timer \
+    btrfs-balance.timer btrfs-scrub.timer btrfs-trim.timer btrfs-defrag.timer \
+    health-checker.service kdump.service kdump-early.service \
+    rebootmgr.service; do
+    systemctl mask "$unit"
+done
+
+# Trust the package signing keys shipped in /usr/lib/rpm/gnupg/keys
+# (Vilna's and openSUSE's), as the disk image does: the install engine
+# will install from this system's repositories.
+for key in /usr/lib/rpm/gnupg/keys/gpg-pubkey-*.asc; do
+    rpm --import "$key"
+done
+rpm -q gpg-pubkey-06386694 gpg-pubkey-29b700a4
+
+# The first installer screen stands on the Blavet wallpaper.
+test -e /usr/share/backgrounds/vilna/vilna-blavet-light.jpg
+test -e /usr/share/backgrounds/vilna/vilna-blavet-dark.jpg
+test -x /usr/bin/vilna-installer
+
+echo vilna-live >/etc/hostname
+
+# The live user: no password, logged in by GDM at once. A live system
+# has no data of its own to protect, and the installer will need to act
+# as root (partitioning, writing the system), so "live" may do so
+# without a password, through sudo and polkit, as on other live images.
+# None of this is in the installed system: the installer creates the
+# person's own account there.
+useradd --create-home --comment "Vilna Live" --user-group live
+passwd --delete live
+install -d -m 0750 /etc/sudoers.d
+cat >/etc/sudoers.d/50-vilna-live <<'SUDO'
+# Vilna live image only (obs/images/Vilna-Live/config.sh)
+live ALL=(ALL:ALL) NOPASSWD: ALL
+SUDO
+chmod 0440 /etc/sudoers.d/50-vilna-live
+cat >/etc/polkit-1/rules.d/49-vilna-live.rules <<'RULES'
+// Vilna live image only (obs/images/Vilna-Live/config.sh): the live
+// user may do what an administrator may, without a password.
+polkit.addRule(function (action, subject) {
+    if (subject.user == "live" && subject.local && subject.active) {
+        return polkit.Result.YES;
+    }
+});
+RULES
+chmod 0644 /etc/polkit-1/rules.d/49-vilna-live.rules
+
+# GDM logs "live" in at once, without GNOME Initial Setup (the installer
+# asks the language itself). openSUSE's GDM reads the autologin user
+# from /etc/sysconfig/displaymanager; custom.conf says the same for
+# upstream GDM.
+if [ -e /etc/sysconfig/displaymanager ]; then
+    sed -i 's/^DISPLAYMANAGER_AUTOLOGIN=.*/DISPLAYMANAGER_AUTOLOGIN="live"/' /etc/sysconfig/displaymanager
+    sed -i 's/^DISPLAYMANAGER_PASSWORD_LESS_LOGIN=.*/DISPLAYMANAGER_PASSWORD_LESS_LOGIN="yes"/' /etc/sysconfig/displaymanager
+fi
+install -d /etc/gdm
+cat >/etc/gdm/custom.conf <<'GDM'
+# Vilna live image (obs/images/Vilna-Live/config.sh)
+[daemon]
+AutomaticLoginEnable=True
+AutomaticLogin=live
+InitialSetupEnable=False
+GDM
+
+# In the live session: the installer starts on the whole screen, and
+# stays first in the dash to open it again; the screen never locks (the
+# live user has no password to unlock it with).
+home=/home/live
+install -d -o live -g live "$home/.config" "$home/.config/autostart"
+echo yes >"$home/.config/gnome-initial-setup-done"
+desktop=/usr/share/applications/io.github.stdenis1980.VilnaInstaller.desktop
+test -e "$desktop"
+cp "$desktop" "$home/.config/autostart/"
+chown -R live:live "$home/.config"
+cat >/usr/share/glib-2.0/schemas/40_Vilna-Live.gschema.override <<'GSCHEMA'
+# Vilna live image only (obs/images/Vilna-Live/config.sh); wins over
+# 30_Vilna.gschema.override.
+[org.gnome.shell]
+favorite-apps=['io.github.stdenis1980.VilnaInstaller.desktop', 'io.github.stdenis1980.Gloxi.desktop', 'org.gnome.Nautilus.desktop']
+
+[org.gnome.desktop.screensaver]
+lock-enabled=false
+
+[org.gnome.desktop.session]
+idle-delay=uint32 0
+GSCHEMA
+glib-compile-schemas /usr/share/glib-2.0/schemas
+
+# zypper installs only what is required, as in the disk image.
+if [ -e /etc/zypp/zypp.conf ]; then
+    sed -i 's/^#\? *solver.onlyRequires.*/solver.onlyRequires = true/' /etc/zypp/zypp.conf
+fi
+
+exit 0

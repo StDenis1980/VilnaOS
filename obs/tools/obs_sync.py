@@ -113,6 +113,18 @@ TARBALLS: dict[str, Tarball] = {
             ("docs/design/icons/vilna-backup-symbolic.svg", "data/vilna-backup-symbolic.svg"),
         ),
     ),
+    "vilna-installer": Tarball(
+        "installer",
+        pyproject_version("installer"),
+        extra=(
+            ("LICENSE", "LICENSE"),
+            ("docs/design/icons/vilna-installer.svg", "data/vilna-installer.svg"),
+            (
+                "docs/design/icons/vilna-installer-symbolic.svg",
+                "data/vilna-installer-symbolic.svg",
+            ),
+        ),
+    ),
     "vilna-mcp-backup": Tarball(
         "mcp/backup",
         pyproject_version("mcp/backup"),

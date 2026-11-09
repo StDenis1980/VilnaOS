@@ -147,3 +147,21 @@ def test_plan_for_another_language_says_it_is_not_translated():
         start.start_plan("pt", False, True, locale="de_AT.UTF-8")
     with pytest.raises(ValueError, match="not a UTF-8 locale"):
         start.start_plan("pt", False, True, locale="pt_BR.ISO-8859-1")
+
+
+def test_the_menu_entry_is_named_in_the_ten_languages():
+    desktop = (
+        SRC.parent.parent / "data" / "io.github.stdenis1980.VilnaInstaller.desktop"
+    ).read_text(encoding="utf-8")
+    entry = dict(
+        line.split("=", 1)
+        for line in desktop.splitlines()
+        if "=" in line and not line.startswith("#")
+    )
+    assert entry["Exec"] == "vilna-installer"
+    assert entry["Icon"] == "vilna-installer"
+    for key in ("Name", "Comment"):
+        assert entry[key]
+        for code in start.CODES:
+            if code != "en":
+                assert entry.get(f"{key}[{code}]"), f"{key}[{code}]"
