@@ -23,3 +23,9 @@ msgstr "Tęsti su Gloxi"
 
 msgid "Install Vilna"
 msgstr "Vilna diegimas"
+
+msgid "Other languages"
+msgstr "Kitos kalbos"
+
+msgid "Search for a language"
+msgstr "Ieškoti kalbos"

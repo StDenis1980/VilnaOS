@@ -39,6 +39,8 @@ def test_the_texts_used_by_the_window_are_the_known_ones():
         "WITHOUT",
         "WITH_GLOXI",
         "TITLE",
+        "OTHER",
+        "SEARCH",
     }
     assert len(used) == len(start.TEXTS)
 
@@ -61,7 +63,12 @@ def test_plan_starts_unconfirmed_and_rejects_unknown_languages(tmp_path):
     plan = start.start_plan("lt", True, False)
     assert plan == {
         "version": 1,
-        "ui": {"language": "lt", "screen_reader": True},
+        "ui": {
+            "language": "lt",
+            "locale": "lt_LT.UTF-8",
+            "translated": True,
+            "screen_reader": True,
+        },
         "assistant": False,
         "confirmed_by_user": False,
     }
@@ -78,3 +85,65 @@ def test_the_blavet_marks_ship_with_the_package():
     for variant in ("light", "dark"):
         svg = (SRC / "data" / f"blavet-mark-{variant}.svg").read_text()
         assert svg.startswith("<svg") and "c2pa" not in svg
+
+
+SUPPORTED_SAMPLE = """\
+de_AT.UTF-8 UTF-8
+de_AT ISO-8859-1
+pt_BR.UTF-8 UTF-8
+pt_BR ISO-8859-1
+sr_RS@latin UTF-8
+uk_UA.UTF-8 UTF-8
+crh_UA UTF-8
+ja_JP.EUC-JP EUC-JP
+not a line
+"""
+
+
+def test_supported_utf8_locales_are_normalized():
+    assert start.parse_supported(SUPPORTED_SAMPLE) == [
+        "de_AT.UTF-8",
+        "pt_BR.UTF-8",
+        "sr_RS.UTF-8@latin",
+        "uk_UA.UTF-8",
+        "crh_UA.UTF-8",
+    ]
+    assert start.normalize_locale("pt_PT.utf8") == "pt_PT.UTF-8"
+    assert start.normalize_locale("C.utf8") is None
+    assert start.normalize_locale("ja_JP.eucjp") is None
+
+
+def test_system_locales_falls_back_to_locale_a(tmp_path):
+    supported = tmp_path / "SUPPORTED"
+    supported.write_text(SUPPORTED_SAMPLE)
+    assert "pt_BR.UTF-8" in start.system_locales(supported)
+    # Without the file, `locale -a`: at least it does not fail.
+    assert isinstance(start.system_locales(tmp_path / "missing"), list)
+
+
+def test_other_languages_leave_out_the_ten_and_sort_by_own_name():
+    names = {"pt_BR.UTF-8": "Português (Brasil)", "de_AT.UTF-8": "Deutsch (Österreich)"}
+    rows = start.other_languages(
+        ["uk_UA.UTF-8", "pt_BR.UTF-8", "de_AT.UTF-8", "crh_UA.UTF-8", "bad"], names.get
+    )
+    assert rows == [
+        ("crh_UA.UTF-8", "crh_UA.UTF-8"),  # no name known: the locale itself
+        ("de_AT.UTF-8", "Deutsch (Österreich)"),
+        ("pt_BR.UTF-8", "Português (Brasil)"),
+    ]
+
+
+def test_plan_for_another_language_says_it_is_not_translated():
+    plan = start.start_plan("pt", False, True, locale="pt_BR.UTF-8")
+    assert plan["ui"] == {
+        "language": "pt",
+        "locale": "pt_BR.UTF-8",
+        "translated": False,
+        "screen_reader": False,
+    }
+    # A region of one of the ten languages keeps its translation.
+    assert start.start_plan("de", False, True, locale="de_AT.UTF-8")["ui"]["translated"]
+    with pytest.raises(ValueError, match="not in language"):
+        start.start_plan("pt", False, True, locale="de_AT.UTF-8")
+    with pytest.raises(ValueError, match="not a UTF-8 locale"):
+        start.start_plan("pt", False, True, locale="pt_BR.ISO-8859-1")

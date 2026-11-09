@@ -23,3 +23,9 @@ msgstr "Continuați cu Gloxi"
 
 msgid "Install Vilna"
 msgstr "Instalare Vilna"
+
+msgid "Other languages"
+msgstr "Alte limbi"
+
+msgid "Search for a language"
+msgstr "Caută o limbă"

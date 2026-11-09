@@ -50,7 +50,36 @@ CSS = """
     border-color: transparent; }
 .vilna-go { background-color: #F5C24A; color: #13213A; font-weight: 800; padding: 10px 22px; }
 .vilna-go:hover { background-color: #F7CD66; }
+.vilna-other { font-weight: 700; border-radius: 12px; padding: 6px 16px;
+    background-color: alpha(@window_bg_color, 0.62); }
+.vilna-other.chosen { background-color: @accent_bg_color; color: @accent_fg_color; }
+.vilna-note { font-size: 10.5pt; }
 """
+
+
+def language_names() -> tuple[object, object]:
+    """(own name, name in the screen's language) of a locale, as GNOME Settings
+    and gnome-initial-setup show them (iso-codes); without GnomeDesktop, None."""
+    try:
+        gi.require_version("GnomeDesktop", "4.0")
+        from gi.repository import GnomeDesktop
+    except (ImportError, ValueError):
+        return (lambda _loc: None), (lambda _loc, _ui: None)
+
+    def lookup(loc: str, ui: str) -> str | None:
+        # LANGUAGE outranks the locale GnomeDesktop switches to for the
+        # translation (glibc gettext), so every name would come out in it.
+        saved = os.environ.pop("LANGUAGE", None)
+        try:
+            return GnomeDesktop.get_language_from_locale(loc, ui)
+        finally:
+            if saved is not None:
+                os.environ["LANGUAGE"] = saved
+
+    def own(loc: str) -> str | None:
+        return lookup(loc, loc)
+
+    return own, lookup
 
 
 def _data(name: str) -> str:
@@ -62,6 +91,9 @@ class Welcome(Adw.ApplicationWindow):
         super().__init__(application=app)
         self.plan_path = plan_path
         self.texts = start.Texts(language)
+        self.locale: str | None = None  # set only by «Other languages»
+        self.own_name, self.translated_name = language_names()
+        self.others: list[tuple[str, str]] | None = None
         self.set_default_size(1280, 800)
         dark = Adw.StyleManager.get_default().get_dark()
         variant = "dark" if dark else "light"
@@ -120,6 +152,22 @@ class Welcome(Adw.ApplicationWindow):
             grid.attach(b, i % 5, i // 5, 1, 1)
             self.buttons[lang.code] = b
         center.append(grid)
+
+        self.other = Gtk.Button(halign=Gtk.Align.CENTER)
+        self.other.add_css_class("flat")
+        self.other.add_css_class("vilna-other")
+        self.other.connect("clicked", self._on_other)
+        center.append(self.other)
+        self.note = Gtk.Label(
+            label=start.NOT_TRANSLATED,
+            wrap=True,
+            max_width_chars=60,
+            visible=False,
+            justify=Gtk.Justification.CENTER,
+        )
+        self.note.add_css_class("vilna-note")
+        self.note.add_css_class("dim-label")
+        center.append(self.note)
         overlay.add_overlay(center)
 
         self.reader = Gtk.ToggleButton(halign=Gtk.Align.START, valign=Gtk.Align.END)
@@ -161,8 +209,59 @@ class Welcome(Adw.ApplicationWindow):
 
     def _on_language(self, button: Gtk.ToggleButton, code: str) -> None:
         if button.get_active():
+            self.locale = None
             self.texts = start.Texts(code)
             self._relabel()
+
+    def _ui_locale(self) -> str:
+        if self.locale is not None:
+            return self.locale
+        return next(lang.locale for lang in start.LANGUAGES if lang.code == self.language)
+
+    def _on_other(self, _button: Gtk.Button) -> None:
+        if self.others is None:
+            self.others = start.other_languages(start.system_locales(), self.own_name)
+        _ = self.texts
+        dialog = Adw.Dialog(title=_(start.OTHER), content_width=460, content_height=560)
+        view = Adw.ToolbarView()
+        view.add_top_bar(Adw.HeaderBar())
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        for side in ("top", "bottom", "start", "end"):
+            getattr(box, f"set_margin_{side}")(12)
+        search = Gtk.SearchEntry(placeholder_text=_(start.SEARCH))
+        search.update_property([Gtk.AccessibleProperty.LABEL], [_(start.SEARCH)])
+        box.append(search)
+        rows = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        rows.add_css_class("boxed-list")
+        ui = self._ui_locale()
+        for loc, name in self.others:
+            row = Adw.ActionRow(title=name, activatable=True)
+            local = self.translated_name(loc, ui) or ""
+            if local and local != name:
+                row.set_subtitle(local)
+            row.locale, row.search = loc, f"{name} {local} {loc}".casefold()
+            if loc == self.locale:
+                row.add_suffix(Gtk.Image(icon_name="object-select-symbolic"))
+            rows.append(row)
+        rows.set_filter_func(lambda row: search.get_text().casefold() in row.search)
+        search.connect("search-changed", lambda _s: rows.invalidate_filter())
+        rows.connect("row-activated", lambda _l, row: self._pick_other(dialog, row.locale))
+        scroll = Gtk.ScrolledWindow(vexpand=True, hscrollbar_policy=Gtk.PolicyType.NEVER)
+        scroll.set_child(rows)
+        box.append(scroll)
+        view.set_content(box)
+        dialog.set_child(view)
+        dialog.set_focus(search)
+        dialog.present(self)
+
+    def _pick_other(self, dialog: Adw.Dialog, loc: str) -> None:
+        dialog.close()
+        code = start.language_of(loc)
+        for button in self.buttons.values():
+            button.set_active(False)
+        self.locale = loc
+        self.texts = start.Texts(code)
+        self._relabel()
 
     def _relabel(self) -> None:
         _ = self.texts
@@ -173,6 +272,15 @@ class Welcome(Adw.ApplicationWindow):
         self.reader_label.set_label(_(start.SCREEN_READER))
         self.without.set_label(_(start.WITHOUT))
         self.with_gloxi.set_label(_(start.WITH_GLOXI))
+        if self.locale is None:
+            self.other.set_label(_(start.OTHER) + "\u2026")
+            self.other.remove_css_class("chosen")
+        else:
+            name = self.own_name(self.locale) or self.locale
+            self.other.set_label(name)
+            self.other.update_property([Gtk.AccessibleProperty.LABEL], [name])
+            self.other.add_css_class("chosen")
+        self.note.set_visible(self.locale is not None and self.language not in start.CODES)
 
     def _on_reader(self, button: Gtk.ToggleButton) -> None:
         # Orca, as GNOME's own setting does it; without the schema only the plan knows.
@@ -181,7 +289,9 @@ class Welcome(Adw.ApplicationWindow):
             Gio.Settings.new(A11Y_SCHEMA).set_boolean("screen-reader-enabled", button.get_active())
 
     def _finish(self, assistant: bool) -> None:
-        plan = start.start_plan(self.language, self.reader.get_active(), assistant)
+        plan = start.start_plan(
+            self.language, self.reader.get_active(), assistant, locale=self.locale
+        )
         start.write_plan(plan, self.plan_path)
         print(json.dumps(plan, ensure_ascii=False))
         app = self.get_application()
