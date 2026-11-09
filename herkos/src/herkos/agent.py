@@ -29,6 +29,15 @@ SYSTEM_SOCKET = "/run/herkos/herkos.sock"
 # herkosd gives up long before this (confirm_timeout is at most an hour).
 MAX_WAIT = 3600.0
 MAX_LINE = 1024 * 1024
+# herkosd closed the connection without a word: this account is not a person
+# in /etc/herkos/system.toml (the login screen, GNOME Initial Setup, an
+# account made after installation). herkos-agent.service does not restart on
+# this status, so the agent does not knock every few seconds all session.
+NOT_SERVED = 77
+
+
+class NotServed(ConnectionError):
+    """herkosd answers nobody on this account."""
 
 
 def default_window() -> list[str]:
@@ -61,9 +70,12 @@ class Agent:
         """A request of ours, before any question can arrive."""
         self.next_id += 1
         self.send({"jsonrpc": "2.0", "id": self.next_id, "method": method, "params": params})
-        reply = self.read()
+        try:
+            reply = self.read()
+        except ConnectionResetError as e:
+            raise NotServed("Herkos closed the connection without an answer") from e
         if reply is None:
-            raise ConnectionError("Herkos closed the connection")
+            raise NotServed("Herkos closed the connection without an answer")
         if "error" in reply:
             raise ConnectionError(f"{method}: {reply['error'].get('message')}")
         return reply.get("result") or {}
@@ -133,6 +145,9 @@ def main(argv: list[str] | None = None) -> int:
         sock.connect(args.socket)
         agent = Agent(sock, window)
         agent.register()
+    except NotServed as e:
+        print(f"herkos-agent: {args.socket}: {e}: this account is not served", file=sys.stderr)
+        return NOT_SERVED
     except (OSError, ConnectionError, ValueError) as e:
         print(f"herkos-agent: {args.socket}: {e}", file=sys.stderr)
         return 1

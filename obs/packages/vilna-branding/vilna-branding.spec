@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.2
+Version:        0.3
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -24,6 +24,7 @@ Source9:        90-default-Vilna.preset
 Source10:       87-default-Vilna-user.preset
 Source11:       x86_64_v3-transactional-update.service
 Source12:       conncheck-vilna.conf
+Source13:       50-vilna-initial-setup-stop.conf
 BuildRequires:  systemd-rpm-macros
 BuildArch:      noarch
 
@@ -50,7 +51,8 @@ Requires:       transactional-update
 GNOME defaults for Vilna: dark style, the Vilna logo on the login
 screen, Gloxi in the dash, administrator rights for wheel (sudo and
 polkit), reboot notifications from transactional-update, logind
-settings, GNOME Initial Setup pages and a daily distrobox upgrade.
+settings, GNOME Initial Setup pages (and a quick stop of its session
+on poweroff) and a daily distrobox upgrade.
 The first-boot Flatpak install is vilna-flatpak-defaults.
 
 %package -n systemd-presets-branding-Vilna
@@ -99,6 +101,7 @@ install -D -m 0644 %{SOURCE8} %{buildroot}%{_presetdir}/87-default-Vilna.preset
 install -D -m 0644 %{SOURCE9} %{buildroot}%{_presetdir}/90-default-Vilna.preset
 install -D -m 0644 %{SOURCE10} %{buildroot}%{_userpresetdir}/87-default-Vilna-user.preset
 install -D -m 0644 %{SOURCE11} %{buildroot}%{_unitdir}/x86_64_v3-transactional-update.service
+install -D -m 0644 %{SOURCE13} %{buildroot}%{_userunitdir}/gnome-session-manager@gnome-initial-setup.service.d/50-vilna-stop.conf
 install -D -m 0644 %{SOURCE12} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/conncheck-vilna.conf
 
 %files -n gnome-branding-Vilna
@@ -118,6 +121,8 @@ install -D -m 0644 %{SOURCE12} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/
 %{_datadir}/gnome-initial-setup/vendor.conf
 %{_userunitdir}/distrobox-upgrade-all.service
 %{_userunitdir}/distrobox-upgrade-all.timer
+%dir %{_userunitdir}/gnome-session-manager@gnome-initial-setup.service.d
+%{_userunitdir}/gnome-session-manager@gnome-initial-setup.service.d/50-vilna-stop.conf
 
 %files -n systemd-presets-branding-Vilna
 %{_presetdir}/87-default-Vilna.preset
