@@ -105,8 +105,9 @@ async function passwordFields() {
 
     await useLayout('pl');
     await focus(entry);
-    check('a Latin layout (Polish) is kept', current(), 'pl');
+    check('another Latin layout (Polish) switches to English', current(), 'us');
     await focus(null);
+    check('Polish back after the field', current(), 'pl');
 
     await useLayout('ua');
     await focus(entry);

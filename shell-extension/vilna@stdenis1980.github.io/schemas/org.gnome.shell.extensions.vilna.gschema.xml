@@ -15,7 +15,7 @@
     <key name="password-preferred-layouts" type="as">
       <default>['us']</default>
       <summary>Preferred layouts for passwords</summary>
-      <description>XKB layout ids tried first, in order, when the current layout does not type Latin letters. If none is configured, the first Latin layout is used.</description>
+      <description>XKB layout ids, in order: a password field always switches to the first one that is configured, even from another Latin layout. If none is configured, a Latin layout is kept and a non-Latin one switches to the first Latin layout.</description>
     </key>
     <key name="gloxi-keep-above" type="b">
       <default>true</default>
