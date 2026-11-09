@@ -107,7 +107,11 @@ jobs:
           flatpak build-update-repo --gpg-sign="$fpr" --gpg-homedir="$GNUPGHOME" \
             --title=Vilna --generate-static-deltas --prune vilna-flatpak/repo
           # The tool runs on the Python inside the installed Gloxi: this image
-          # need not have python3 of its own.
+          # need not have python3 of its own. Inside the sandbox it cannot
+          # create folders in the checkout (owned by the runner's user), so
+          # the folders it writes to are made here first.
+          mkdir -p check-ref
+          chmod 0777 check-ref vilna-flatpak
           tool() {
             flatpak run --filesystem="$PWD" --command=python3 io.github.stdenis1980.Gloxi \
               "$PWD/gloxi/tools/flatpak_repo.py" --key "$PWD/vilna-key.gpg" "$@"
