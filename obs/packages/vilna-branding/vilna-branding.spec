@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.1
+Version:        0.5
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -24,7 +24,13 @@ Source9:        90-default-Vilna.preset
 Source10:       87-default-Vilna-user.preset
 Source11:       x86_64_v3-transactional-update.service
 Source12:       conncheck-vilna.conf
+Source13:       50-vilna-initial-setup-stop.conf
 BuildRequires:  systemd-rpm-macros
+# They own /usr/etc/sudoers.d (0750) and /usr/share/polkit-1/rules.d (0555).
+# The files below go there, but the directories stay theirs: a %%dir of our
+# own with another mode makes rpm refuse the update (file conflict).
+BuildRequires:  polkit
+BuildRequires:  sudo
 BuildArch:      noarch
 
 %description
@@ -37,6 +43,7 @@ Summary:        GNOME defaults for Vilna
 Provides:       gnome-branding
 Conflicts:      gnome-branding-Aeon
 Conflicts:      gnome-branding-MicroOS
+Requires:       gnome-backgrounds
 Requires:       distribution-logos-Vilna
 Requires:       gnome-initial-setup
 Requires:       polkit
@@ -49,7 +56,8 @@ Requires:       transactional-update
 GNOME defaults for Vilna: dark style, the Vilna logo on the login
 screen, Gloxi in the dash, administrator rights for wheel (sudo and
 polkit), reboot notifications from transactional-update, logind
-settings, GNOME Initial Setup pages and a daily distrobox upgrade.
+settings, GNOME Initial Setup pages (and a quick stop of its session
+on poweroff) and a daily distrobox upgrade.
 The first-boot Flatpak install is vilna-flatpak-defaults.
 
 %package -n systemd-presets-branding-Vilna
@@ -98,16 +106,14 @@ install -D -m 0644 %{SOURCE8} %{buildroot}%{_presetdir}/87-default-Vilna.preset
 install -D -m 0644 %{SOURCE9} %{buildroot}%{_presetdir}/90-default-Vilna.preset
 install -D -m 0644 %{SOURCE10} %{buildroot}%{_userpresetdir}/87-default-Vilna-user.preset
 install -D -m 0644 %{SOURCE11} %{buildroot}%{_unitdir}/x86_64_v3-transactional-update.service
+install -D -m 0644 %{SOURCE13} %{buildroot}%{_userunitdir}/gnome-session-manager@gnome-initial-setup.service.d/50-vilna-stop.conf
 install -D -m 0644 %{SOURCE12} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/conncheck-vilna.conf
 
 %files -n gnome-branding-Vilna
 %dir %{_datadir}/glib-2.0
 %dir %{_datadir}/glib-2.0/schemas
 %{_datadir}/glib-2.0/schemas/30_Vilna.gschema.override
-%dir %{_prefix}/etc/sudoers.d
 %{_prefix}/etc/sudoers.d/50-vilna
-%dir %{_datadir}/polkit-1
-%dir %{_datadir}/polkit-1/rules.d
 %{_datadir}/polkit-1/rules.d/49-vilna.rules
 %dir %{_prefix}/etc/transactional-update.conf.d
 %{_prefix}/etc/transactional-update.conf.d/50-vilna-desktop.conf
@@ -117,6 +123,8 @@ install -D -m 0644 %{SOURCE12} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/
 %{_datadir}/gnome-initial-setup/vendor.conf
 %{_userunitdir}/distrobox-upgrade-all.service
 %{_userunitdir}/distrobox-upgrade-all.timer
+%dir %{_userunitdir}/gnome-session-manager@gnome-initial-setup.service.d
+%{_userunitdir}/gnome-session-manager@gnome-initial-setup.service.d/50-vilna-stop.conf
 
 %files -n systemd-presets-branding-Vilna
 %{_presetdir}/87-default-Vilna.preset

@@ -1,4 +1,33 @@
 -------------------------------------------------------------------
+Mon Nov  9 13:50:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.5: gnome-branding-Vilna makes the light style the default
+  (color-scheme 'default' instead of 'prefer-dark').
+
+-------------------------------------------------------------------
+Mon Nov  9 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.4: gnome-branding-Vilna no longer owns /usr/etc/sudoers.d and
+  /usr/share/polkit-1/rules.d. It declared them 0755, but sudo has
+  sudoers.d 0750 and filesystem and polkit have rules.d 0555, so an
+  installed system could not update the package (file conflicts in
+  transactional-update, VM test of 0.3), and the image got sudoers.d 0755.
+
+-------------------------------------------------------------------
+Mon Nov  9 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: gnome-branding-Vilna stops GNOME Initial Setup's session within
+  5 s on poweroff. It locks logout down, so gnome-session-service waited
+  for the 90 s default timeout and shutdown took about 90 s (Build11.3).
+
+-------------------------------------------------------------------
+Sun Nov  8 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.2: gnome-branding-Vilna sets GNOME's Adwaita wallpaper; the
+  openSUSE one gio-branding-openSUSE points at is not installed
+  (Build9.2 showed a flat colour). Require gnome-backgrounds.
+
+-------------------------------------------------------------------
 Thu Nov  5 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: gnome-branding-Vilna, systemd-presets-branding-Vilna,

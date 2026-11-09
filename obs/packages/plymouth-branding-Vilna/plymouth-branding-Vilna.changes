@@ -1,0 +1,13 @@
+-------------------------------------------------------------------
+Sun Nov  8 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.2: ship /usr/share/plymouth/plymouthd.defaults (Theme=vilna,
+  ShowDelay=0, DeviceTimeout=8). Without it plymouthd aborted with
+  "Assertion 'seconds > 0.0' failed" in the initrd and after switching
+  root, so no splash showed and boot waited ~60 s (VM test, Build11.2).
+
+-------------------------------------------------------------------
+Sat Nov  7 23:59:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: Plymouth theme "vilna" (brush circle, swallow,
+  Petrykivka-style corner motifs, password prompt)

@@ -121,6 +121,7 @@
 | `systemd-presets-branding-Aeon` | `systemd-presets-branding-Vilna` | Служби за замовчуванням, як в Aeon; власні рішення Vilna — у `vilna-presets` |
 | `x86_64_v3-branding-Aeon` | `x86_64_v3-branding-Vilna` | Бібліотеки x86_64_v3 після оновлень |
 | `NetworkManager-branding-openSUSE` | `NetworkManager-branding-Vilna` | Перевірка з'єднання для captive portal (поки сервер openSUSE) |
+| тема Plymouth `bgrt` | `plymouth-branding-Vilna` | Екран завантаження Vilna: коло-мазок, ластівка, мотиви в манері петриківки, поле пароля диска ([`../plymouth/`](../plymouth/)) |
 | `systemd-repart-branding-Aeon` | — (прибрано) | Розмітка для установника tik, ламала перший запуск образу |
 | `branding-openSUSE`, `gdm-branding-Aeon`, `gtk2/3/4-branding-openSUSE`, `gnome-menus-branding-openSUSE`, `systemd-default-settings-branding-openSUSE` | `*-branding-upstream` | Нейтральні налаштування самих програм |
 | `systemd-icon-branding-openSUSE` | — (прибрано) | Нікому в образі не потрібен |

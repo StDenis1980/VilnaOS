@@ -6,6 +6,11 @@ Description=Herkos confirmation windows for this session
 PartOf=graphical-session.target
 After=graphical-session.target
 ConditionPathExists=/run/herkos/herkos.sock
+# Not in the login screen's or GNOME Initial Setup's session: herkosd serves
+# only people from /etc/herkos/system.toml.
+ConditionUser=!@system
+ConditionUser=!gdm-greeter
+ConditionUser=!gnome-initial-setup
 
 [Service]
 Type=simple
@@ -13,6 +18,10 @@ ExecStart=/usr/bin/herkos-agent
 # herkosd restarted (an update): connect again.
 Restart=always
 RestartSec=3
+# herkosd does not serve this account (herkos/agent.py, NOT_SERVED).
+RestartPreventExitStatus=77
+# ...and that is not a failure of the session.
+SuccessExitStatus=77
 
 [Install]
 WantedBy=graphical-session.target

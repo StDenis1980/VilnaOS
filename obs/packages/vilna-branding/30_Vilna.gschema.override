@@ -1,12 +1,23 @@
 # Vilna defaults for GNOME (replace Aeon's 30_Aeon, override openSUSE's
-# 20_openSUSE-branding overrides). Design: dark by default, the system
+# 20_openSUSE-branding overrides). Design: light by default (decision 2026-11-09), the system
 # accent colour (image/docs/composition.md, Vilna design brief).
 
 [org.gnome.desktop.interface]
-color-scheme='prefer-dark'
+color-scheme='default'
 clock-show-weekday=true
 show-battery-percentage=true
 font-antialiasing='rgba'
+
+# Until vilna-wallpapers exists: GNOME's own Adwaita wallpaper
+# (gnome-backgrounds). gio-branding-openSUSE points at an openSUSE
+# wallpaper that is not installed, which leaves a flat colour (Build9.2).
+# config.sh fails the image build if these files are missing.
+[org.gnome.desktop.background]
+picture-uri='file:///usr/share/backgrounds/gnome/adwaita-l.jxl'
+picture-uri-dark='file:///usr/share/backgrounds/gnome/adwaita-d.jxl'
+
+[org.gnome.desktop.screensaver]
+picture-uri='file:///usr/share/backgrounds/gnome/adwaita-d.jxl'
 
 [org.gnome.login-screen]
 logo='/usr/share/icons/hicolor/scalable/apps/vilna-logo.svg'

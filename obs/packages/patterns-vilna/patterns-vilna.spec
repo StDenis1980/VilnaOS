@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.5
+Version:        0.6
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -55,6 +55,8 @@ Requires:       vilna-software-picks
 # in gnome-branding-Vilna overrides its 20_openSUSE-branding settings.
 Requires:       gio-branding-openSUSE
 Requires:       NetworkManager-branding-Vilna
+# Boot splash "vilna" (image/plymouth); KIWI makes it the default theme.
+Requires:       plymouth-branding-Vilna
 Requires:       systemd-default-settings-branding-upstream
 # Not yet packaged, added here once they build on OBS:
 #   vilna-model-default   default model weights (ADR 0006, 0008)
