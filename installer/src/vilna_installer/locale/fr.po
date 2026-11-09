@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The first installer screen (fr). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Welcome to Vilna"
+msgstr "Bienvenue dans Vilna"
+
+msgid "Blavet release"
+msgstr "Version Blavet"
+
+msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
+msgstr "Choisissez une langue. Ensuite, moi, Gloxi, je vous aiderai à installer le système, ou vous pouvez suivre les étapes vous-même."
+
+msgid "Screen reader"
+msgstr "Lecteur d’écran"
+
+msgid "Without the assistant"
+msgstr "Sans assistant"
+
+msgid "Continue with Gloxi"
+msgstr "Continuer avec Gloxi"
+
+msgid "Install Vilna"
+msgstr "Installer Vilna"
