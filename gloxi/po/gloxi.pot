@@ -685,11 +685,11 @@ msgstr ""
 msgid "Gloxi, feedback"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "Local"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "On this computer"
 msgstr ""
 
@@ -743,6 +743,18 @@ msgstr ""
 
 #: src/gloxi/gui/panel.py
 msgid "Gloxi is waiting for you"
+msgstr ""
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr ""
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr ""
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
 msgstr ""
 
 #: src/gloxi/gui/shortcuts.py

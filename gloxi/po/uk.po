@@ -693,11 +693,11 @@ msgstr "Gloxi, резервні копії"
 msgid "Gloxi, feedback"
 msgstr "Gloxi, відгук"
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "Local"
 msgstr "Локальна"
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "On this computer"
 msgstr "На цьому комп'ютері"
 
@@ -752,6 +752,18 @@ msgstr "Gloxi міркує"
 #: src/gloxi/gui/panel.py
 msgid "Gloxi is waiting for you"
 msgstr "Gloxi чекає на вас"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr "Gloxi недоступний: його служба не працює. Спробуйте за хвилинку."
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr "Gloxi відкрито в іншому вікні."
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
+msgstr "Зв'язок зі службою Gloxi втрачено. Спробуйте ще раз."
 
 #: src/gloxi/gui/shortcuts.py
 msgid "Show or hide Gloxi"

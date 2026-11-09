@@ -226,6 +226,25 @@ class ChatController:
         if not self.busy:
             self.conversation.reset()
 
+    # -- the model switcher and the header (the same calls as RemoteController) ---
+
+    def choices(self) -> list[ModelChoice]:
+        return model_choices(self.conversation.router)
+
+    def current_choice(self) -> str:
+        return current_choice(self.conversation.router)
+
+    def set_mode(self, mode: str) -> bool:
+        """Pick auto, local or cloud; False if the cloud is off or the mode unknown."""
+        try:
+            self.conversation.router.set_mode(mode)
+        except (CloudNotAllowed, ValueError):
+            return False
+        return True
+
+    def cloud_status(self) -> str:
+        return cloud_status(self.conversation)
+
     def _stream(self, text: str, route: Route) -> None:
         try:
             for piece in self.conversation.ask(text, route):

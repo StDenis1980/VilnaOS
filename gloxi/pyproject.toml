@@ -18,6 +18,7 @@ tools = ["herkos"]
 [project.scripts]
 gloxi = "gloxi.cli:main"
 gloxi-gtk = "gloxi.gui.window:main"
+gloxid = "gloxi.service:main"
 gloxi-bench = "gloxi.bench.__main__:main"
 
 [dependency-groups]

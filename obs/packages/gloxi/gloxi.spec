@@ -63,6 +63,7 @@ install -Dm0644 data/io.github.stdenis1980.Gloxi.desktop \
 %doc README.md
 %{_bindir}/gloxi
 %{_bindir}/gloxi-gtk
+%{_bindir}/gloxid
 %{_bindir}/gloxi-bench
 %{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
 %{python_sitelib}/gloxi
