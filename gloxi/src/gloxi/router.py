@@ -126,7 +126,9 @@ class Router:
         return self._route("local", "simple message")
 
     def stream(self, messages: Sequence[Message], route: Route) -> Iterator[str]:
-        messages = self.secrets.mask_messages(messages)
+        # Passwords are only shown as dots in the answer, so the model needs no
+        # hint about their placeholders (and the local model no extra prompt).
+        messages = self.secrets.mask_messages(messages, hint=False)
         yield from self.secrets.conceal_stream(self._stream(messages, route))
 
     def _stream(self, messages: Sequence[Message], route: Route) -> Iterator[str]:
@@ -161,7 +163,9 @@ class Router:
             yield from self.stream(messages, route)
             return
         held = ""
-        for event in self.local.stream_events(self.secrets.mask_messages(messages), tools):
+        for event in self.local.stream_events(
+            self.secrets.mask_messages(messages, hint=False), tools
+        ):
             if isinstance(event, str):
                 held += event
                 # Hold back a tail that may still become a placeholder: "[SEC".

@@ -117,6 +117,24 @@ def test_real_gateway_masks_and_restores():
     assert conv.history[-1]["content"] == answer
 
 
+def test_cloud_model_is_told_to_keep_placeholders():
+    pytest.importorskip("privacy_gateway")
+    from privacy_gateway import PLACEHOLDER_HINT
+
+    from gloxi.privacy import guard_factory
+
+    local, cloud = FakeLlamaServer("ok"), FakeLlamaServer("Готово.")
+    conv = make_conversation(local, cloud=cloud, policy=ON, guard_factory=guard_factory(ON))
+    ask(conv, "Напиши на olena@example.com", force="cloud")
+    ask(conv, "Напиши на olena@example.com", force="local")
+    hint = PLACEHOLDER_HINT.format(example="[EMAIL_1]")
+    cloud_system = cloud.requests[0]["messages"][0]
+    assert cloud_system["role"] == "system"
+    assert cloud_system["content"].endswith(hint)
+    # The local model sees the real text and no hint; nothing to keep there.
+    assert all(hint not in m["content"] for m in local.requests[0]["messages"])
+
+
 def test_changed_placeholder_still_comes_back_from_the_cloud():
     pytest.importorskip("privacy_gateway")
     from gloxi.privacy import guard_factory
@@ -250,3 +268,28 @@ def test_strict_masking_hides_bare_numbers():
     assert loose().mask_messages([{"role": "user", "content": text}])[0]["content"] == text
     masked = strict().mask_messages([{"role": "user", "content": text}])[0]["content"]
     assert "90010112349" not in masked
+
+
+def test_hidden_passwords_add_no_hint_for_the_local_model():
+    pytest.importorskip("privacy_gateway")
+    from privacy_gateway import PLACEHOLDER_HINT
+
+    local = FakeLlamaServer("ok")
+    conv = make_conversation(local, policy=ON)
+    ask(conv, "мій пароль від пошти Kvitka-7731", force="local")
+    marker = PLACEHOLDER_HINT.split("{example}")[1][:40]
+    assert all(marker not in m["content"] for m in local.requests[0]["messages"])
+
+
+def test_plain_stream_adds_no_hint_for_hidden_passwords():
+    pytest.importorskip("privacy_gateway")
+    from privacy_gateway import PLACEHOLDER_HINT
+
+    local = FakeLlamaServer("ok")
+    router = make_router(local, policy=ON)
+    msgs = [{"role": "user", "content": "мій пароль від пошти Kvitka-7731"}]
+    "".join(router.stream(msgs, router.decide("x", force="local")))
+    sent = local.requests[0]["messages"]
+    assert "Kvitka-7731" not in str(sent)
+    marker = PLACEHOLDER_HINT.split("{example}")[1][:40]
+    assert all(marker not in m["content"] for m in sent)
