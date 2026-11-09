@@ -30,7 +30,7 @@
 
 За розд. 9.1: `ProtectSystem=strict`, `ProtectHome=yes`, `PrivateTmp`, `PrivateDevices`, `NoNewPrivileges`, без capabilities, `SystemCallFilter=@system-service`, `RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6`, `IPAddressDeny=any` + `IPAddressAllow=localhost`. Файлів людини Gloxi не бачить зовсім: їх читає й змінює інструмент «файли», якого запускає `herkosd` від імені людини. Сесійної шини людини в Gloxi теж немає.
 
-### 3. Хмара — лише після дозволу Herkos
+### 3. Хмара — лише після дозволу Herkos (рішення Denys 2026-11-09)
 
 Без хмари Gloxi потрібна лише локальна мережа (модель і нічого більше). Коли людина вмикає хмару, Gloxi просить Herkos про дію R2 «дозволити Gloxi з'єднання з інтернетом». `herkosd` після підтвердження запускає `vilna-gloxi-network@<uid>.service` (root, oneshot; правило polkit дозволяє `herkosd` лише цей юніт), який пише drop-in `gloxi@<uid>.service.d/50-network.conf` із `IPAddressAllow=any` і перезапускає сервіс. Вимкнення хмари прибирає drop-in тим самим шляхом; Mitos пише обидві дії в журнал. Так увімкнути собі інтернет сам Gloxi не може.
 
