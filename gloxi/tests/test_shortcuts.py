@@ -51,7 +51,8 @@ FAKE_PORTAL = textwrap.dedent(
             print("BIND", [(i, o["preferred_trigger"]) for i, o in args[1]], flush=True)
             p = request(sender, args[3]["handle_token"])
             inv.return_value(GLib.Variant("(o)", (p,)))
-            bound = [(i, {"trigger_description": GLib.Variant("s", "Super+G")}) for i, _o in args[1]]
+            described = {"trigger_description": GLib.Variant("s", "Super+G")}
+            bound = [(i, described) for i, _o in args[1]]
             respond(conn, p, sender, {"shortcuts": GLib.Variant("a(sa{sv})", bound)})
             def press():
                 conn.emit_signal(None, "/org/freedesktop/portal/desktop",
