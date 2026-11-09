@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "settings" MCP server (mcp/settings, Gloxi 0.2, ADR 0023).
+# Levels follow herkos/docs/permissions.md, section 4: changing the theme or
+# the sound is R2, a reversible change. Each change returns the values from
+# before (undo_arguments), so Mitos can undo it through `restore`.
+tool = "org.vilna.mcp.settings"
+description = "Appearance, night light and notifications of the desktop"
+
+# How Herkos starts the server (ADR 0017): the program on PATH (the system
+# Herkos: its unit vilna-mcp-settings@<uid>), the Python module for Herkos-lite.
+[launch]
+program = "vilna-mcp-settings"
+module = "vilna_mcp_settings"
+args = []
+
+[operations.get]
+level = "R0"
+summary = "See the desktop settings"
+
+[operations.set_color_scheme]
+level = "R2"
+summary = "Switch between the light and the dark style"
+undoable = true
+
+[operations.set_accent_color]
+level = "R2"
+summary = "Change the accent colour"
+undoable = true
+
+[operations.set_text_scale]
+level = "R2"
+summary = "Change the text size"
+undoable = true
+
+[operations.set_night_light]
+level = "R2"
+summary = "Change night light"
+undoable = true
+
+[operations.set_do_not_disturb]
+level = "R2"
+summary = "Turn Do Not Disturb on or off"
+undoable = true
+
+[operations.restore]
+level = "R2"
+summary = "Undo an earlier change to the settings"
+undoable = true

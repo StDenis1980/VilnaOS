@@ -23,6 +23,7 @@ dev = [
     { name = "vilna-backup" },
     { name = "vilna-mcp-backup" },
     { name = "vilna-mcp-files" },
+    { name = "vilna-mcp-settings" },
 ]
 
 [package.metadata]
@@ -34,6 +35,7 @@ dev = [
     { name = "vilna-backup", editable = "../backup" },
     { name = "vilna-mcp-backup", editable = "../mcp/backup" },
     { name = "vilna-mcp-files", editable = "../mcp/files" },
+    { name = "vilna-mcp-settings", editable = "../mcp/settings" },
 ]
 
 [[package]]
@@ -143,6 +145,19 @@ dev = [
 name = "vilna-mcp-files"
 version = "0.1.0.dev0"
 source = { editable = "../mcp/files" }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=8" },
+    { name = "ruff", specifier = ">=0.6" },
+]
+
+[[package]]
+name = "vilna-mcp-settings"
+version = "0.1.0.dev0"
+source = { editable = "../mcp/settings" }
 
 [package.metadata]
 

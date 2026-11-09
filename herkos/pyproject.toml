@@ -23,12 +23,14 @@ dev = [
     # The tool servers, for the end-to-end tests.
     "vilna-mcp-files",
     "vilna-mcp-backup",
+    "vilna-mcp-settings",
     "vilna-backup",
 ]
 
 [tool.uv.sources]
 vilna-mcp-files = { path = "../mcp/files", editable = true }
 vilna-mcp-backup = { path = "../mcp/backup", editable = true }
+vilna-mcp-settings = { path = "../mcp/settings", editable = true }
 vilna-backup = { path = "../backup", editable = true }
 
 [build-system]
