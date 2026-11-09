@@ -75,6 +75,12 @@ def test_local_packages_are_copied():
     assert (ROOT / "flatpak" / "gloxi").is_file()
 
 
+def test_talks_only_to_the_vilna_shell_for_the_panel():
+    text = MANIFEST.read_text(encoding="utf-8")
+    assert "--talk-name=io.github.stdenis1980.VilnaShell\n" in text
+    assert "--own-name" not in text
+
+
 def test_desktop_metainfo_and_icon_agree():
     data = ROOT / "data"
     desktop = (data / f"{APP_ID}.desktop").read_text(encoding="utf-8")
