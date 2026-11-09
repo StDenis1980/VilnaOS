@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# A Gloxi for every person (ADR 0025): the system user gloxi-<uid>,
+# /etc/herkos/system.toml and gloxi@<uid>.socket. On every boot (a live
+# image already has its person in /etc/passwd) and after every change of
+# /etc/passwd (vilna-people-sync.path).
+[Unit]
+Description=Give every person on this computer their own Gloxi
+After=systemd-sysusers.service local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/vilna-people-sync
+
+[Install]
+WantedBy=multi-user.target

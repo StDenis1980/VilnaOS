@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov  9 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.7: require gloxi-session (the Gloxi window, split from gloxi,
+  which is now the Gloxi service, ADR 0025).
+
+-------------------------------------------------------------------
 Sat Nov  7 23:59:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.6: require plymouth-branding-Vilna (the Vilna boot splash).

@@ -106,6 +106,7 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         url=_get(env, "GLOXI_LOCAL_URL", local, "url", DEFAULT_LOCAL_URL).rstrip("/"),
         model=_get(env, "GLOXI_LOCAL_MODEL", local, "model", "local"),
         timeout=_number(_get(env, "GLOXI_LOCAL_TIMEOUT", local, "timeout", 120), "timeout"),
+        api_key=_key_file(env.get("GLOXI_LOCAL_KEY_FILE", "")),
     )
 
     cloud_endpoint = None
@@ -144,6 +145,23 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         tools_enabled=_flag(_get(env, "GLOXI_TOOLS", tools, "enabled", True)),
         start_server=_flag(_get(env, "GLOXI_START_SERVER", local, "start_server", True)),
     )
+
+
+def _key_file(name: str) -> str | None:
+    """The key of a model server Gloxi did not start (vilna-llm.service, ADR 0025)."""
+    if not name:
+        return None
+    try:
+        key = Path(name).read_text(encoding="ascii").strip()
+    except FileNotFoundError:
+        # The shared model has not started yet (no weights): Gloxi still
+        # starts and says the model is not running when asked.
+        return None
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ConfigError(f"cannot read the local model key {name}: {exc}") from exc
+    if not key or len(key) > 512 or any(c.isspace() for c in key):
+        raise ConfigError(f"{name} does not hold a key")
+    return key
 
 
 def _table(data: dict, name: str, path: Path) -> dict:

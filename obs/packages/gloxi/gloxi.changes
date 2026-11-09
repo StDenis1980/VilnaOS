@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Nov  9 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Gloxi as a system service (ADR 0025): gloxid runs as gloxi-<uid>
+  for each person (gloxi@.socket, gloxi@.service), the window moves
+  to the new subpackage gloxi-session, one llama-server for the
+  whole computer (vilna-llm.service), vilna-people-sync creates the
+  Gloxi users and /etc/herkos/system.toml
+
+-------------------------------------------------------------------
 Mon Nov  2 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Files tool through Herkos-lite: the local model can list, search,
