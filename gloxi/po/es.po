@@ -9,81 +9,81 @@ msgstr ""
 
 #: src/gloxi/backup_intro.py
 msgid "All right. I will ask once more in a week. You can also type /backup any time."
-msgstr ""
+msgstr "De acuerdo. Te lo preguntaré otra vez dentro de una semana. También puedes escribir /backup cuando quieras."
 
 #: src/gloxi/backup_intro.py
 msgid "An external disk"
-msgstr ""
+msgstr "Un disco externo"
 
 #: src/gloxi/backup_intro.py
 msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
-msgstr ""
+msgstr "¿Y las contraseñas de wifi, las cuentas en línea y las claves SSH y GPG?"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Choose a number from 1 to {n}."
-msgstr ""
+msgstr "Elige un número del 1 al {n}."
 
 #: src/gloxi/backup_intro.py
 msgid "Choose a number from the list, or type an amount in GB, e.g. 120"
-msgstr ""
+msgstr "Elige un número de la lista o escribe una cantidad en GB, p. ej. 120"
 
 #: src/gloxi/backup_intro.py
 msgid "Choose myself"
-msgstr ""
+msgstr "Elegir yo"
 
 #: src/gloxi/backup_intro.py
 msgid "Choose what goes into backups"
-msgstr ""
+msgstr "Elegir qué entra en las copias"
 
 #: src/gloxi/backup_intro.py
 msgid "Desktop"
-msgstr ""
+msgstr "Escritorio"
 
 #: src/gloxi/backup_intro.py
 msgid "Documents"
-msgstr ""
+msgstr "Documentos"
 
 #: src/gloxi/backup_intro.py
 msgid "Downloads"
-msgstr ""
+msgstr "Descargas"
 
 #: src/gloxi/backup_intro.py
 msgid "Dropbox, OneDrive, Google Drive"
-msgstr ""
+msgstr "Dropbox, OneDrive, Google Drive"
 
 #: src/gloxi/backup_intro.py
 msgid "Every day, recommended"
-msgstr ""
+msgstr "Cada día, recomendado"
 
 #: src/gloxi/backup_intro.py
 msgid "Every hour"
-msgstr ""
+msgstr "Cada hora"
 
 #: src/gloxi/backup_intro.py
 msgid "Every week"
-msgstr ""
+msgstr "Cada semana"
 
 #: src/gloxi/backup_intro.py
 msgid "Everything in the home folder"
-msgstr ""
+msgstr "Todo lo de la carpeta personal"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Everything in the home folder, without caches and Downloads ({size})"
-msgstr ""
+msgstr "Todo lo de la carpeta personal, sin cachés ni Descargas ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi checks that the backup fits"
-msgstr ""
+msgstr "Gloxi comprueba que la copia cabe"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi checks whether backups are set up"
-msgstr ""
+msgstr "Gloxi comprueba si las copias están configuradas"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi measures how much space your folders take"
-msgstr ""
+msgstr "Gloxi mide cuánto espacio ocupan tus carpetas"
 
 #: src/gloxi/backup_intro.py
 msgid ""
@@ -91,206 +91,209 @@ msgid ""
 "  vilna-backup recover <where the backups are>\n"
 "Then: vilna-backup restore --in-place"
 msgstr ""
+"Ten a mano tu hoja de recuperación y ejecuta esto en una terminal:\n"
+"  vilna-backup recover <dónde están las copias>\n"
+"Después: vilna-backup restore --in-place"
 
 #: src/gloxi/backup_intro.py
 msgid "Herkos sent an answer Gloxi does not understand"
-msgstr ""
+msgstr "Herkos envió una respuesta que Gloxi no entiende"
 
 #: src/gloxi/backup_intro.py
 msgid "Herkos, the permission service, is not available"
-msgstr ""
+msgstr "Herkos, el servicio de permisos, no está disponible"
 
 #: src/gloxi/backup_intro.py
 msgid "How much space are you ready to give to backups?"
-msgstr ""
+msgstr "¿Cuánto espacio quieres dedicar a las copias?"
 
 #: src/gloxi/backup_intro.py
 msgid "How often?"
-msgstr ""
+msgstr "¿Con qué frecuencia?"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "I could not continue: {why}. We can go on later: type /backup."
-msgstr ""
+msgstr "No he podido continuar: {why}. Podemos seguir más tarde: escribe /backup."
 
 #: src/gloxi/backup_intro.py
 msgid "I had Vilna before: restore from a backup"
-msgstr ""
+msgstr "Ya tenía Vilna: restaurar desde una copia"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "I will back up {what} (about {size}) {how} {where}."
-msgstr ""
+msgstr "Haré copia de {what} (unos {size}) {how} {where}."
 
 #: src/gloxi/backup_intro.py
 msgid "Keep Gloxi conversations in backups"
-msgstr ""
+msgstr "Incluir las conversaciones con Gloxi en las copias"
 
 #: src/gloxi/backup_intro.py
 msgid "Keep your conversations with Gloxi in backups too?"
-msgstr ""
+msgstr "¿Incluir también tus conversaciones con Gloxi en las copias?"
 
 #: src/gloxi/backup_intro.py
 msgid "Later"
-msgstr ""
+msgstr "Más tarde"
 
 #: src/gloxi/backup_intro.py
 msgid "Leave large folders out of backups"
-msgstr ""
+msgstr "Dejar las carpetas grandes fuera de las copias"
 
 #: src/gloxi/backup_intro.py
 msgid "Leave out Gloxi history"
-msgstr ""
+msgstr "Dejar fuera el historial de Gloxi"
 
 #: src/gloxi/backup_intro.py
 msgid "Music"
-msgstr ""
+msgstr "Música"
 
 #: src/gloxi/backup_intro.py
 msgid "My own storage (S3, SFTP)"
-msgstr ""
+msgstr "Mi propio almacenamiento (S3, SFTP)"
 
 #: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "No"
-msgstr ""
+msgstr "No"
 
 #: src/gloxi/backup_intro.py
 msgid "No limit"
-msgstr ""
+msgstr "Sin límite"
 
 #: src/gloxi/backup_intro.py
 msgid "No, I will give more space"
-msgstr ""
+msgstr "No, daré más espacio"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Only settings ({size})"
-msgstr ""
+msgstr "Solo la configuración ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Passwords and accounts are switched on by you only:"
-msgstr ""
+msgstr "Las contraseñas y las cuentas solo las activas tú:"
 
 #: src/gloxi/backup_intro.py
 msgid "Pictures"
-msgstr ""
+msgstr "Imágenes"
 
 #: src/gloxi/backup_intro.py
 msgid "Set how much space backups may take"
-msgstr ""
+msgstr "Fijar cuánto espacio pueden ocupar las copias"
 
 #: src/gloxi/backup_intro.py
 msgid "Set how often backups are made"
-msgstr ""
+msgstr "Fijar cada cuánto se hacen las copias"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Settings and documents, recommended ({size})"
-msgstr ""
+msgstr "Configuración y documentos, recomendado ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Settings are always kept. Which folders to add? Type their numbers, for example: 1 3"
-msgstr ""
+msgstr "La configuración siempre se guarda. ¿Qué carpetas añado? Escribe sus números, por ejemplo: 1 3"
 
 #: src/gloxi/backup_intro.py
 msgid "Settings, passwords, Gloxi and Herkos"
-msgstr ""
+msgstr "Configuración, contraseñas, Gloxi y Herkos"
 
 #: src/gloxi/backup_intro.py
 msgid "Shall I keep backups of your data, so you do not lose it along with the computer?"
-msgstr ""
+msgstr "¿Hago copias de tus datos para que no los pierdas junto con el ordenador?"
 
 #: src/gloxi/backup_intro.py
 msgid "The Vilna cloud is not open yet in this preview. Choose another place."
-msgstr ""
+msgstr "La nube Vilna aún no está disponible en esta versión preliminar. Elige otro lugar."
 
 #: src/gloxi/backup_intro.py
 msgid "The last step is yours, because it is about keys: run this in a terminal. It shows the recovery key once; write it on paper and keep it away from the computer. Without it, backups cannot be restored if this computer is lost. The first backup starts right after."
-msgstr ""
+msgstr "El último paso es tuyo, porque tiene que ver con claves: ejecuta esto en una terminal. Muestra la clave de recuperación una sola vez; apúntala en papel y guárdala lejos del ordenador. Sin ella, las copias no se pueden restaurar si pierdes este ordenador. La primera copia empieza justo después."
 
 #: src/gloxi/backup_intro.py
 msgid "These are US companies: they see your account, the size and time of backups (not the contents), and a broken device could delete the backups. They are not in this preview yet. Choose another place."
-msgstr ""
+msgstr "Son empresas estadounidenses: ven tu cuenta, el tamaño y la hora de las copias (no el contenido), y un dispositivo comprometido podría borrar las copias. Aún no están en esta versión preliminar. Elige otro lugar."
 
 #: src/gloxi/backup_intro.py
 msgid "Type an amount in GB, e.g. 120"
-msgstr ""
+msgstr "Escribe una cantidad en GB, p. ej. 120"
 
 #: src/gloxi/backup_intro.py
 msgid "Type the numbers of the folders, for example: 1 3"
-msgstr ""
+msgstr "Escribe los números de las carpetas, por ejemplo: 1 3"
 
 #: src/gloxi/backup_intro.py
 msgid "Videos"
-msgstr ""
+msgstr "Vídeos"
 
 #: src/gloxi/backup_intro.py
 msgid "Vilna cloud (EU)"
-msgstr ""
+msgstr "Nube Vilna (UE)"
 
 #: src/gloxi/backup_intro.py
 msgid "We are not talking about backups now."
-msgstr ""
+msgstr "Ahora no estamos hablando de copias."
 
 #: src/gloxi/backup_intro.py
 msgid "What shall we keep? This is how much space it takes now:"
-msgstr ""
+msgstr "¿Qué guardamos? Esto es lo que ocupa ahora:"
 
 #: src/gloxi/backup_intro.py
 msgid "Where shall we keep them? Everything is encrypted on this computer first."
-msgstr ""
+msgstr "¿Dónde las guardamos? Todo se cifra primero en este ordenador."
 
 #: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "Yes"
-msgstr ""
+msgstr "Sí"
 
 #: src/gloxi/backup_intro.py
 msgid "Yes, leave them out"
-msgstr ""
+msgstr "Sí, dejarlas fuera"
 
 #: src/gloxi/backup_intro.py
 msgid "every day"
-msgstr ""
+msgstr "cada día"
 
 #: src/gloxi/backup_intro.py
 msgid "every hour"
-msgstr ""
+msgstr "cada hora"
 
 #: src/gloxi/backup_intro.py
 msgid "every week"
-msgstr ""
+msgstr "cada semana"
 
 #: src/gloxi/backup_intro.py
 msgid "everything in the home folder"
-msgstr ""
+msgstr "todo lo de la carpeta personal"
 
 #: src/gloxi/backup_intro.py
 msgid "in your own storage"
-msgstr ""
+msgstr "en tu propio almacenamiento"
 
 #: src/gloxi/backup_intro.py
 msgid "no"
-msgstr ""
+msgstr "no"
 
 #: src/gloxi/backup_intro.py
 msgid "on the external disk"
-msgstr ""
+msgstr "en el disco externo"
 
 #: src/gloxi/backup_intro.py
 msgid "settings"
-msgstr ""
+msgstr "la configuración"
 
 #: src/gloxi/backup_intro.py
 msgid "settings and documents"
-msgstr ""
+msgstr "la configuración y los documentos"
 
 #: src/gloxi/backup_intro.py
 msgid "settings and the folders you chose"
-msgstr ""
+msgstr "la configuración y las carpetas que elegiste"
 
 #: src/gloxi/backup_intro.py src/gloxi/cli.py
 msgid "yes"
-msgstr ""
+msgstr "sí"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
@@ -298,104 +301,106 @@ msgid ""
 "{size} does not fit into {limit}. Leave out these large folders (about {after} remains)?\n"
 "{folders}"
 msgstr ""
+"{size} no cabe en {limit}. ¿Dejo fuera estas carpetas grandes (quedarían unos {after})?\n"
+"{folders}"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "{size} does not fit. Choose a larger amount."
-msgstr ""
+msgstr "{size} no cabe. Elige una cantidad mayor."
 
 #: src/gloxi/check.py
 msgid "Could not read the memory size; the local model may still work."
-msgstr ""
+msgstr "No se pudo leer el tamaño de la memoria; puede que el modelo local funcione igualmente."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Free disk space: {free}. The model needs {size}."
-msgstr ""
+msgstr "Espacio libre en disco: {free}. El modelo necesita {size}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Gloxi starts {large} because its file is in the models folder, but the speed test has not shown that it is fast enough here. To go back to {small}, delete {file} from {folder}."
-msgstr ""
+msgstr "Gloxi inicia {large} porque su archivo está en la carpeta de modelos, pero la prueba de velocidad no ha demostrado que sea lo bastante rápido aquí. Para volver a {small}, borra {file} de {folder}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Memory: {ram}. The local model needs at least 8 GB; Gloxi can still answer through the cloud with your own key."
-msgstr ""
+msgstr "Memoria: {ram}. El modelo local necesita al menos 8 GB; Gloxi aún puede responder a través de la nube con tu propia clave."
 
 #: src/gloxi/check.py
 msgid "The processor has no AVX2 (it is older than Intel Core 8th generation or Ryzen 2000), so the local model will be slow."
-msgstr ""
+msgstr "El procesador no tiene AVX2 (es anterior a Intel Core de 8.ª generación o Ryzen 2000), así que el modelo local irá lento."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer can run {name}."
-msgstr ""
+msgstr "Este ordenador puede ejecutar {name}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer can run {name}. Gloxi will measure once whether the larger model would be fast enough."
-msgstr ""
+msgstr "Este ordenador puede ejecutar {name}. Gloxi medirá una vez si el modelo más grande sería lo bastante rápido."
 
 #: src/gloxi/check.py
 msgid "This computer is below the minimum for the local model."
-msgstr ""
+msgstr "Este ordenador está por debajo del mínimo para el modelo local."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer is fast enough for the larger model, {name}."
-msgstr ""
+msgstr "Este ordenador es lo bastante rápido para el modelo más grande, {name}."
 
 #: src/gloxi/check.py
 msgid "To paste into the feedback form:"
-msgstr ""
+msgstr "Para pegar en el formulario de opinión:"
 
 #: src/gloxi/cli.py
 msgid "(interrupted)"
-msgstr ""
+msgstr "(interrumpido)"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Backups need Herkos, and it is not running."
-msgstr ""
+msgstr "Las copias necesitan Herkos, y no está en marcha."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Checking how fast this computer runs the model (about a minute)…"
-msgstr ""
+msgstr "Comprobando lo rápido que este ordenador ejecuta el modelo (cerca de un minuto)…"
 
 #: src/gloxi/cli.py
 msgid "Cloud: off. Everything stays on this computer."
-msgstr ""
+msgstr "Nube: desactivada. Todo se queda en este ordenador."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "Cloud: on ({mode} mode)."
-msgstr ""
+msgstr "Nube: activada (modo {mode})."
 
 #: src/gloxi/cli.py
 msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
-msgstr ""
+msgstr "Órdenes: /local <texto> o /cloud <texto> elige el modelo para un mensaje, /reset borra la conversación, /backup configura las copias, /feedback informa de un problema o sugiere algo, /exit sale."
 
 #: src/gloxi/cli.py
 msgid "Conversation cleared."
-msgstr ""
+msgstr "Conversación borrada."
 
 #: src/gloxi/cli.py
 msgid "Download it now? [y/N] "
-msgstr ""
+msgstr "¿Descargarlo ahora? [s/N] "
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Downloading the model: {percent}%"
-msgstr ""
+msgstr "Descargando el modelo: {percent} %"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Gloxi keeps the current model and will not ask again."
-msgstr ""
+msgstr "Gloxi mantiene el modelo actual y no volverá a preguntar."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "Gloxi needs a language model on this computer to answer. It is {name}, {size}, licence {licence}, from {source}. It will be kept in {folder}. Only the file is downloaded: nothing about you is sent."
-msgstr ""
+msgstr "Gloxi necesita un modelo de lenguaje en este ordenador para responder. Es {name}, {size}, licencia {licence}, de {source}. Se guardará en {folder}. Solo se descarga el archivo: no se envía nada sobre ti."
 
 #: src/gloxi/cli.py
 msgid ""
@@ -403,462 +408,465 @@ msgid ""
 "  llama-server -m model.gguf --port 8080\n"
 "or point Gloxi elsewhere with GLOXI_LOCAL_URL."
 msgstr ""
+"¿Está en marcha llama-server? Por ejemplo:\n"
+"  llama-server -m model.gguf --port 8080\n"
+"o indica a Gloxi otra dirección con GLOXI_LOCAL_URL."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Not downloaded. Gloxi will ask again next time."
-msgstr ""
+msgstr "No se ha descargado. Gloxi volverá a preguntar la próxima vez."
 
 #: src/gloxi/cli.py
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
-msgstr ""
+msgstr "Atención: el enmascaramiento está desactivado (mask_cloud = false), así que los mensajes enviados a la nube NO se enmascaran."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Starting {name} on this computer…"
-msgstr ""
+msgstr "Iniciando {name} en este ordenador…"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model could not be started: {why}"
-msgstr ""
+msgstr "No se pudo iniciar el modelo: {why}"
 
 #: src/gloxi/cli.py
 msgid "The model is ready."
-msgstr ""
+msgstr "El modelo está listo."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "The model is ready. Gloxi will use it from the next start."
-msgstr ""
+msgstr "El modelo está listo. Gloxi lo usará a partir del próximo inicio."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model was not downloaded: {why}"
-msgstr ""
+msgstr "No se descargó el modelo: {why}"
 
 #: src/gloxi/cli.py
 msgid "There is no language model yet. Run gloxi in a terminal once to download it."
-msgstr ""
+msgstr "Aún no hay ningún modelo de lenguaje. Ejecuta gloxi una vez en una terminal para descargarlo."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "This computer is fast enough for a better model: {name}, {size}, licence {licence}, from {source}. It answers better, in Ukrainian too; Gloxi expects about {speed} tokens per second here. It will be kept in {folder}, next to the current model, and Gloxi will use it from the next start. Only the file is downloaded: nothing about you is sent."
-msgstr ""
+msgstr "Este ordenador es lo bastante rápido para un modelo mejor: {name}, {size}, licencia {licence}, de {source}. Responde mejor, también en ucraniano; Gloxi espera unos {speed} tokens por segundo aquí. Se guardará en {folder}, junto al modelo actual, y Gloxi lo usará a partir del próximo inicio. Solo se descarga el archivo: no se envía nada sobre ti."
 
 #: src/gloxi/cli.py
 msgid "Without a language model Gloxi cannot answer. Run gloxi again when you want to download it."
-msgstr ""
+msgstr "Sin un modelo de lenguaje Gloxi no puede responder. Vuelve a ejecutar gloxi cuando quieras descargarlo."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, masked]"
-msgstr ""
+msgstr "[nube: {host}, enmascarado]"
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, not masked]"
-msgstr ""
+msgstr "[nube: {host}, sin enmascarar]"
 
 #: src/gloxi/cli.py
 msgid "[local]"
-msgstr ""
+msgstr "[local]"
 
 #: src/gloxi/engine.py
 msgid "."
-msgstr ""
+msgstr ","
 
 #: src/gloxi/engine.py
 msgid "Mistral AI on Hugging Face"
-msgstr ""
+msgstr "Mistral AI en Hugging Face"
 
 #: src/gloxi/engine.py
 msgid "Qwen (Alibaba Cloud) on Hugging Face"
-msgstr ""
+msgstr "Qwen (Alibaba Cloud) en Hugging Face"
 
 #: src/gloxi/engine.py
 msgid "the model"
-msgstr ""
+msgstr "el modelo"
 
 #: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} GB"
-msgstr ""
+msgstr "{value} GB"
 
 #: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} MB"
-msgstr ""
+msgstr "{value} MB"
 
 #: src/gloxi/feedback.py
 msgid "A suggestion"
-msgstr ""
+msgstr "Una sugerencia"
 
 #: src/gloxi/feedback.py
 msgid "About this computer:"
-msgstr ""
+msgstr "Sobre este ordenador:"
 
 #: src/gloxi/feedback.py
 msgid "All right, nothing was sent."
-msgstr ""
+msgstr "De acuerdo, no se ha enviado nada."
 
 #: src/gloxi/feedback.py src/gloxi/gui/window.py
 msgid "Cancel"
-msgstr ""
+msgstr "Cancelar"
 
 #: src/gloxi/feedback.py
 msgid "Crash report:"
-msgstr ""
+msgstr "Informe de fallo:"
 
 #: src/gloxi/feedback.py
 msgid "Expected:"
-msgstr ""
+msgstr "Esperado:"
 
 #: src/gloxi/feedback.py
 msgid "Gloxi stopped with an error recently. Add that crash report?"
-msgstr ""
+msgstr "Gloxi se detuvo hace poco con un error. ¿Añado ese informe de fallo?"
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "Hidden before showing it here: {what}."
-msgstr ""
+msgstr "Ocultado antes de mostrarlo aquí: {what}."
 
 #: src/gloxi/feedback.py
 msgid "May I add what this computer is (system, processor, memory, graphics, models), as gloxi check shows it? Nothing personal."
-msgstr ""
+msgstr "¿Puedo añadir qué ordenador es este (sistema, procesador, memoria, gráficos, modelos), tal como lo muestra gloxi check? Nada personal."
 
 #: src/gloxi/feedback.py
 msgid "Never mind"
-msgstr ""
+msgstr "Déjalo"
 
 #: src/gloxi/feedback.py
 msgid "Open the form"
-msgstr ""
+msgstr "Abrir el formulario"
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "Opening the form in your browser. Thank you! If it does not open: {url}"
-msgstr ""
+msgstr "Abriendo el formulario en tu navegador. ¡Gracias! Si no se abre: {url}"
 
 #: src/gloxi/feedback.py
 msgid "Please answer 1 or 2."
-msgstr ""
+msgstr "Responde 1 o 2."
 
 #: src/gloxi/feedback.py
 msgid "Please answer 1, 2 or 3."
-msgstr ""
+msgstr "Responde 1, 2 o 3."
 
 #: src/gloxi/feedback.py
 msgid "Please write a few words, or /cancel to stop."
-msgstr ""
+msgstr "Escribe unas palabras, o /cancel para parar."
 
 #: src/gloxi/feedback.py
 msgid "Something went wrong"
-msgstr ""
+msgstr "Algo ha ido mal"
 
 #: src/gloxi/feedback.py
 msgid "Suggestion:"
-msgstr ""
+msgstr "Sugerencia:"
 
 #: src/gloxi/feedback.py
 msgid "This is public: anyone can read it on GitHub, and you need a GitHub account to send it. The form opens in your browser, where you can still change everything; it is sent only when you press Create there."
-msgstr ""
+msgstr "Esto es público: cualquiera puede leerlo en GitHub, y necesitas una cuenta de GitHub para enviarlo. El formulario se abre en tu navegador, donde aún puedes cambiarlo todo; solo se envía cuando pulsas Create allí."
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "This sounds like a security problem. Please do not post it publicly: report it privately at {url}"
-msgstr ""
+msgstr "Parece un problema de seguridad. No lo publiques: infórmalo en privado en {url}"
 
 #: src/gloxi/feedback.py
 msgid "Title:"
-msgstr ""
+msgstr "Título:"
 
 #: src/gloxi/feedback.py
 msgid "What did you do or ask, and what happened?"
-msgstr ""
+msgstr "¿Qué hiciste o pediste, y qué pasó?"
 
 #: src/gloxi/feedback.py
 msgid "What did you expect instead? (Enter to skip)"
-msgstr ""
+msgstr "¿Qué esperabas en su lugar? (Intro para omitir)"
 
 #: src/gloxi/feedback.py
 msgid "What happened:"
-msgstr ""
+msgstr "Qué pasó:"
 
 #: src/gloxi/feedback.py
 msgid "What would you like to tell us?"
-msgstr ""
+msgstr "¿Qué quieres contarnos?"
 
 #: src/gloxi/feedback.py
 msgid "What would you suggest? A sentence or two is enough."
-msgstr ""
+msgstr "¿Qué sugieres? Basta con una o dos frases."
 
 #: src/gloxi/feedback.py
 msgid "a card number"
-msgstr ""
+msgstr "un número de tarjeta"
 
 #: src/gloxi/feedback.py
 msgid "a date of birth"
-msgstr ""
+msgstr "una fecha de nacimiento"
 
 #: src/gloxi/feedback.py
 msgid "a name"
-msgstr ""
+msgstr "un nombre"
 
 #: src/gloxi/feedback.py
 msgid "a passport number"
-msgstr ""
+msgstr "un número de pasaporte"
 
 #: src/gloxi/feedback.py
 msgid "a password or key"
-msgstr ""
+msgstr "una contraseña o clave"
 
 #: src/gloxi/feedback.py
 msgid "a personal ID number"
-msgstr ""
+msgstr "un número de identificación personal"
 
 #: src/gloxi/feedback.py
 msgid "a phone number"
-msgstr ""
+msgstr "un número de teléfono"
 
 #: src/gloxi/feedback.py
 msgid "a profile link"
-msgstr ""
+msgstr "un enlace a un perfil"
 
 #: src/gloxi/feedback.py
 msgid "a tax number"
-msgstr ""
+msgstr "un número fiscal"
 
 #: src/gloxi/feedback.py
 msgid "an IP address"
-msgstr ""
+msgstr "una dirección IP"
 
 #: src/gloxi/feedback.py
 msgid "an account number"
-msgstr ""
+msgstr "un número de cuenta"
 
 #: src/gloxi/feedback.py
 msgid "an address"
-msgstr ""
+msgstr "una dirección postal"
 
 #: src/gloxi/feedback.py
 msgid "an e-mail address"
-msgstr ""
+msgstr "una dirección de correo electrónico"
 
 #: src/gloxi/gui/controller.py
 msgid "Auto"
-msgstr ""
+msgstr "Automático"
 
 #: src/gloxi/gui/controller.py
 msgid "Cannot reach the cloud model."
-msgstr ""
+msgstr "No se puede conectar con el modelo en la nube."
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud"
-msgstr ""
+msgstr "Nube"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud off: everything stays on this computer"
-msgstr ""
+msgstr "Nube desactivada: todo se queda en este ordenador"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud on, masking is off: messages are NOT masked"
-msgstr ""
+msgstr "Nube activada, enmascaramiento desactivado: los mensajes NO se enmascaran"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud on, private data is masked"
-msgstr ""
+msgstr "Nube activada, los datos privados se enmascaran"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Cloud: {host}, masked"
-msgstr ""
+msgstr "Nube: {host}, enmascarado"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Cloud: {host}, not masked"
-msgstr ""
+msgstr "Nube: {host}, sin enmascarar"
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, backups"
-msgstr ""
+msgstr "Gloxi, copias de seguridad"
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, feedback"
-msgstr ""
+msgstr "Gloxi, opinión"
 
 #: src/gloxi/gui/controller.py
 msgid "Local"
-msgstr ""
+msgstr "Local"
 
 #: src/gloxi/gui/controller.py
 msgid "On this computer"
-msgstr ""
+msgstr "En este ordenador"
 
 #: src/gloxi/gui/controller.py
 msgid "Short messages stay on this computer, long ones go to the cloud"
-msgstr ""
+msgstr "Los mensajes cortos se quedan en este ordenador, los largos van a la nube"
 
 #: src/gloxi/gui/controller.py src/gloxi/gui/window.py
 msgid "The cloud is turned off in the settings."
-msgstr ""
+msgstr "La nube está desactivada en la configuración."
 
 #: src/gloxi/gui/controller.py
 msgid "The local model is not running. Start llama-server and try again."
-msgstr ""
+msgstr "El modelo local no está en marcha. Inicia llama-server y vuelve a intentarlo."
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model returned an error: {error}"
-msgstr ""
+msgstr "El modelo devolvió un error: {error}"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model} at {host}, NOT masked"
-msgstr ""
+msgstr "{model} en {host}, SIN enmascarar"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model} at {host}, private data masked"
-msgstr ""
+msgstr "{model} en {host}, datos privados enmascarados"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model}, on this computer"
-msgstr ""
+msgstr "{model}, en este ordenador"
 
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
-msgstr ""
+msgstr "Acciones ocultas para Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Add folder…"
-msgstr ""
+msgstr "Añadir carpeta…"
 
 #: src/gloxi/gui/window.py
 msgid "Ask Gloxi… (/local or /cloud to pick the model)"
-msgstr ""
+msgstr "Pregunta a Gloxi… (/local o /cloud para elegir el modelo)"
 
 #: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
-msgstr ""
+msgstr "Elige una carpeta para Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Download"
-msgstr ""
+msgstr "Descargar"
 
 #: src/gloxi/gui/window.py
 msgid "Download the language model?"
-msgstr ""
+msgstr "¿Descargar el modelo de lenguaje?"
 
 #: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
-msgstr ""
+msgstr "Carpetas que Gloxi puede usar"
 
 #: src/gloxi/gui/window.py
 msgid "Gloxi can use only the programs you turn on here. Herkos asks you before turning one on, and every action still goes through it."
-msgstr ""
+msgstr "Gloxi solo puede usar los programas que actives aquí. Herkos te pregunta antes de activar uno, y cada acción sigue pasando por Herkos."
 
 #: src/gloxi/gui/window.py
 msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
-msgstr ""
+msgstr "Gloxi solo ve las carpetas que elijas aquí, y cada acción en ellas pasa por Herkos, que te pregunta primero."
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not change it: {why}"
-msgstr ""
+msgstr "Herkos no pudo cambiarlo: {why}"
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not restart: {why}"
-msgstr ""
+msgstr "Herkos no pudo reiniciarse: {why}"
 
 #: src/gloxi/gui/window.py
 msgid "Herkos found something suspicious in how the program describes them."
-msgstr ""
+msgstr "Herkos encontró algo sospechoso en cómo los describe el programa."
 
 #: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
-msgstr ""
+msgstr "Se inicia la próxima vez que se inicie Herkos."
 
 #: src/gloxi/gui/window.py
 msgid "Model"
-msgstr ""
+msgstr "Modelo"
 
 #: src/gloxi/gui/window.py
 msgid "New conversation"
-msgstr ""
+msgstr "Nueva conversación"
 
 #: src/gloxi/gui/window.py
 msgid "No folders yet: Gloxi cannot see any of your files."
-msgstr ""
+msgstr "Aún no hay carpetas: Gloxi no puede ver ninguno de tus archivos."
 
 #: src/gloxi/gui/window.py
 msgid "No programs for Gloxi are installed."
-msgstr ""
+msgstr "No hay programas para Gloxi instalados."
 
 #: src/gloxi/gui/window.py
 msgid "Not now"
-msgstr ""
+msgstr "Ahora no"
 
 #: src/gloxi/gui/window.py
 msgid "Not turned on: you said no in the Herkos window."
-msgstr ""
+msgstr "No activado: dijiste que no en la ventana de Herkos."
 
 #: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
-msgstr ""
+msgstr "Solo el modelo local: activa la nube en la configuración para elegir otro"
 
 #: src/gloxi/gui/window.py
 msgid "Programs for Gloxi"
-msgstr ""
+msgstr "Programas para Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Report a problem or suggest something"
-msgstr ""
+msgstr "Informar de un problema o sugerir algo"
 
 #: src/gloxi/gui/window.py
 msgid "Send"
-msgstr ""
+msgstr "Enviar"
 
 #: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
-msgstr ""
+msgstr "Dejar de compartir esta carpeta"
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"
-msgstr ""
+msgstr "Desactivado: Gloxi no puede usarlo"
 
 #: src/gloxi/programs.py
 msgid "On"
-msgstr ""
+msgstr "Activado"
 
 #: src/gloxi/programs.py
 msgid "On: starts when Herkos starts again"
-msgstr ""
+msgstr "Activado: se inicia cuando Herkos se reinicie"
 
 #: src/gloxi/programs.py
 msgid "You turned this program on in Gloxi's settings"
-msgstr ""
+msgstr "Activaste este programa en la configuración de Gloxi"
 
 #: src/gloxi/router.py
 msgid "Note: the cloud model changed some masked values, so they could not be put back. Check the answer before you use it."
-msgstr ""
+msgstr "Atención: el modelo en la nube cambió algunos valores enmascarados, así que no se pudieron restaurar. Revisa la respuesta antes de usarla."
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (denied: {message})"
-msgstr ""
+msgstr "{what} (denegado: {message})"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (done)"
-msgstr ""
+msgstr "{what} (hecho)"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (done; warning: the content {warnings})"
-msgstr ""
+msgstr "{what} (hecho; atención: el contenido {warnings})"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (error: {message})"
-msgstr ""
+msgstr "{what} (error: {message})"

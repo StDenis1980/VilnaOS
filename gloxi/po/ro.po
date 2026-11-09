@@ -9,81 +9,81 @@ msgstr ""
 
 #: src/gloxi/backup_intro.py
 msgid "All right. I will ask once more in a week. You can also type /backup any time."
-msgstr ""
+msgstr "Bine. Vă voi întreba din nou peste o săptămână. Puteți scrie /backup oricând."
 
 #: src/gloxi/backup_intro.py
 msgid "An external disk"
-msgstr ""
+msgstr "Un disc extern"
 
 #: src/gloxi/backup_intro.py
 msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
-msgstr ""
+msgstr "Și parolele Wi-Fi, conturile online, cheile SSH și GPG?"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Choose a number from 1 to {n}."
-msgstr ""
+msgstr "Alegeți un număr de la 1 la {n}."
 
 #: src/gloxi/backup_intro.py
 msgid "Choose a number from the list, or type an amount in GB, e.g. 120"
-msgstr ""
+msgstr "Alegeți un număr din listă sau scrieți o cantitate în GB, de ex. 120"
 
 #: src/gloxi/backup_intro.py
 msgid "Choose myself"
-msgstr ""
+msgstr "Aleg eu"
 
 #: src/gloxi/backup_intro.py
 msgid "Choose what goes into backups"
-msgstr ""
+msgstr "Alegeți ce intră în copiile de siguranță"
 
 #: src/gloxi/backup_intro.py
 msgid "Desktop"
-msgstr ""
+msgstr "Birou"
 
 #: src/gloxi/backup_intro.py
 msgid "Documents"
-msgstr ""
+msgstr "Documente"
 
 #: src/gloxi/backup_intro.py
 msgid "Downloads"
-msgstr ""
+msgstr "Descărcări"
 
 #: src/gloxi/backup_intro.py
 msgid "Dropbox, OneDrive, Google Drive"
-msgstr ""
+msgstr "Dropbox, OneDrive, Google Drive"
 
 #: src/gloxi/backup_intro.py
 msgid "Every day, recommended"
-msgstr ""
+msgstr "În fiecare zi, recomandat"
 
 #: src/gloxi/backup_intro.py
 msgid "Every hour"
-msgstr ""
+msgstr "În fiecare oră"
 
 #: src/gloxi/backup_intro.py
 msgid "Every week"
-msgstr ""
+msgstr "În fiecare săptămână"
 
 #: src/gloxi/backup_intro.py
 msgid "Everything in the home folder"
-msgstr ""
+msgstr "Tot din dosarul personal"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Everything in the home folder, without caches and Downloads ({size})"
-msgstr ""
+msgstr "Tot din dosarul personal, fără cache și Descărcări ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi checks that the backup fits"
-msgstr ""
+msgstr "Gloxi verifică dacă copia încape"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi checks whether backups are set up"
-msgstr ""
+msgstr "Gloxi verifică dacă copiile de siguranță sunt configurate"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi measures how much space your folders take"
-msgstr ""
+msgstr "Gloxi măsoară cât spațiu ocupă dosarele dumneavoastră"
 
 #: src/gloxi/backup_intro.py
 msgid ""
@@ -91,206 +91,209 @@ msgid ""
 "  vilna-backup recover <where the backups are>\n"
 "Then: vilna-backup restore --in-place"
 msgstr ""
+"Pregătiți foaia de recuperare și rulați acest lucru într-un terminal:\n"
+"  vilna-backup recover <unde sunt copiile>\n"
+"Apoi: vilna-backup restore --in-place"
 
 #: src/gloxi/backup_intro.py
 msgid "Herkos sent an answer Gloxi does not understand"
-msgstr ""
+msgstr "Herkos a trimis un răspuns pe care Gloxi nu îl înțelege"
 
 #: src/gloxi/backup_intro.py
 msgid "Herkos, the permission service, is not available"
-msgstr ""
+msgstr "Herkos, serviciul de permisiuni, nu este disponibil"
 
 #: src/gloxi/backup_intro.py
 msgid "How much space are you ready to give to backups?"
-msgstr ""
+msgstr "Cât spațiu doriți să dați copiilor de siguranță?"
 
 #: src/gloxi/backup_intro.py
 msgid "How often?"
-msgstr ""
+msgstr "Cât de des?"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "I could not continue: {why}. We can go on later: type /backup."
-msgstr ""
+msgstr "Nu am putut continua: {why}. Putem relua mai târziu: scrieți /backup."
 
 #: src/gloxi/backup_intro.py
 msgid "I had Vilna before: restore from a backup"
-msgstr ""
+msgstr "Am mai avut Vilna: restaurare dintr-o copie"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "I will back up {what} (about {size}) {how} {where}."
-msgstr ""
+msgstr "Voi copia {what} (circa {size}) {how} {where}."
 
 #: src/gloxi/backup_intro.py
 msgid "Keep Gloxi conversations in backups"
-msgstr ""
+msgstr "Păstrați conversațiile cu Gloxi în copii"
 
 #: src/gloxi/backup_intro.py
 msgid "Keep your conversations with Gloxi in backups too?"
-msgstr ""
+msgstr "Păstrăm și conversațiile cu Gloxi în copiile de siguranță?"
 
 #: src/gloxi/backup_intro.py
 msgid "Later"
-msgstr ""
+msgstr "Mai târziu"
 
 #: src/gloxi/backup_intro.py
 msgid "Leave large folders out of backups"
-msgstr ""
+msgstr "Excludeți dosarele mari din copii"
 
 #: src/gloxi/backup_intro.py
 msgid "Leave out Gloxi history"
-msgstr ""
+msgstr "Excludeți istoricul Gloxi"
 
 #: src/gloxi/backup_intro.py
 msgid "Music"
-msgstr ""
+msgstr "Muzică"
 
 #: src/gloxi/backup_intro.py
 msgid "My own storage (S3, SFTP)"
-msgstr ""
+msgstr "Spațiul meu de stocare (S3, SFTP)"
 
 #: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "No"
-msgstr ""
+msgstr "Nu"
 
 #: src/gloxi/backup_intro.py
 msgid "No limit"
-msgstr ""
+msgstr "Fără limită"
 
 #: src/gloxi/backup_intro.py
 msgid "No, I will give more space"
-msgstr ""
+msgstr "Nu, voi da mai mult spațiu"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Only settings ({size})"
-msgstr ""
+msgstr "Doar setările ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Passwords and accounts are switched on by you only:"
-msgstr ""
+msgstr "Parolele și conturile le activați doar dumneavoastră:"
 
 #: src/gloxi/backup_intro.py
 msgid "Pictures"
-msgstr ""
+msgstr "Imagini"
 
 #: src/gloxi/backup_intro.py
 msgid "Set how much space backups may take"
-msgstr ""
+msgstr "Stabiliți cât spațiu pot ocupa copiile"
 
 #: src/gloxi/backup_intro.py
 msgid "Set how often backups are made"
-msgstr ""
+msgstr "Stabiliți cât de des se fac copiile"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Settings and documents, recommended ({size})"
-msgstr ""
+msgstr "Setări și documente, recomandat ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Settings are always kept. Which folders to add? Type their numbers, for example: 1 3"
-msgstr ""
+msgstr "Setările sunt păstrate mereu. Ce dosare adăugăm? Scrieți numerele lor, de exemplu: 1 3"
 
 #: src/gloxi/backup_intro.py
 msgid "Settings, passwords, Gloxi and Herkos"
-msgstr ""
+msgstr "Setări, parole, Gloxi și Herkos"
 
 #: src/gloxi/backup_intro.py
 msgid "Shall I keep backups of your data, so you do not lose it along with the computer?"
-msgstr ""
+msgstr "Să fac copii de siguranță ale datelor dumneavoastră, ca să nu le pierdeți odată cu calculatorul?"
 
 #: src/gloxi/backup_intro.py
 msgid "The Vilna cloud is not open yet in this preview. Choose another place."
-msgstr ""
+msgstr "Cloudul Vilna nu este încă deschis în această versiune de previzualizare. Alegeți alt loc."
 
 #: src/gloxi/backup_intro.py
 msgid "The last step is yours, because it is about keys: run this in a terminal. It shows the recovery key once; write it on paper and keep it away from the computer. Without it, backups cannot be restored if this computer is lost. The first backup starts right after."
-msgstr ""
+msgstr "Ultimul pas vă aparține, pentru că privește cheile: rulați acest lucru într-un terminal. Cheia de recuperare este afișată o singură dată; scrieți-o pe hârtie și păstrați-o departe de calculator. Fără ea, copiile nu pot fi restaurate dacă pierdeți acest calculator. Prima copie începe imediat după."
 
 #: src/gloxi/backup_intro.py
 msgid "These are US companies: they see your account, the size and time of backups (not the contents), and a broken device could delete the backups. They are not in this preview yet. Choose another place."
-msgstr ""
+msgstr "Acestea sunt companii din SUA: văd contul dumneavoastră, mărimea și ora copiilor (nu și conținutul), iar un dispozitiv compromis ar putea șterge copiile. Nu sunt încă în această previzualizare. Alegeți alt loc."
 
 #: src/gloxi/backup_intro.py
 msgid "Type an amount in GB, e.g. 120"
-msgstr ""
+msgstr "Scrieți o cantitate în GB, de ex. 120"
 
 #: src/gloxi/backup_intro.py
 msgid "Type the numbers of the folders, for example: 1 3"
-msgstr ""
+msgstr "Scrieți numerele dosarelor, de exemplu: 1 3"
 
 #: src/gloxi/backup_intro.py
 msgid "Videos"
-msgstr ""
+msgstr "Videoclipuri"
 
 #: src/gloxi/backup_intro.py
 msgid "Vilna cloud (EU)"
-msgstr ""
+msgstr "Cloud Vilna (UE)"
 
 #: src/gloxi/backup_intro.py
 msgid "We are not talking about backups now."
-msgstr ""
+msgstr "Acum nu vorbim despre copii de siguranță."
 
 #: src/gloxi/backup_intro.py
 msgid "What shall we keep? This is how much space it takes now:"
-msgstr ""
+msgstr "Ce păstrăm? Atât spațiu ocupă acum:"
 
 #: src/gloxi/backup_intro.py
 msgid "Where shall we keep them? Everything is encrypted on this computer first."
-msgstr ""
+msgstr "Unde le păstrăm? Totul este mai întâi criptat pe acest calculator."
 
 #: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "Yes"
-msgstr ""
+msgstr "Da"
 
 #: src/gloxi/backup_intro.py
 msgid "Yes, leave them out"
-msgstr ""
+msgstr "Da, excludeți-le"
 
 #: src/gloxi/backup_intro.py
 msgid "every day"
-msgstr ""
+msgstr "în fiecare zi"
 
 #: src/gloxi/backup_intro.py
 msgid "every hour"
-msgstr ""
+msgstr "în fiecare oră"
 
 #: src/gloxi/backup_intro.py
 msgid "every week"
-msgstr ""
+msgstr "în fiecare săptămână"
 
 #: src/gloxi/backup_intro.py
 msgid "everything in the home folder"
-msgstr ""
+msgstr "tot din dosarul personal"
 
 #: src/gloxi/backup_intro.py
 msgid "in your own storage"
-msgstr ""
+msgstr "în spațiul dumneavoastră de stocare"
 
 #: src/gloxi/backup_intro.py
 msgid "no"
-msgstr ""
+msgstr "nu"
 
 #: src/gloxi/backup_intro.py
 msgid "on the external disk"
-msgstr ""
+msgstr "pe discul extern"
 
 #: src/gloxi/backup_intro.py
 msgid "settings"
-msgstr ""
+msgstr "setările"
 
 #: src/gloxi/backup_intro.py
 msgid "settings and documents"
-msgstr ""
+msgstr "setările și documentele"
 
 #: src/gloxi/backup_intro.py
 msgid "settings and the folders you chose"
-msgstr ""
+msgstr "setările și dosarele alese de dumneavoastră"
 
 #: src/gloxi/backup_intro.py src/gloxi/cli.py
 msgid "yes"
-msgstr ""
+msgstr "da"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
@@ -298,104 +301,106 @@ msgid ""
 "{size} does not fit into {limit}. Leave out these large folders (about {after} remains)?\n"
 "{folders}"
 msgstr ""
+"{size} nu încape în {limit}. Excludem aceste dosare mari (rămân circa {after})?\n"
+"{folders}"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "{size} does not fit. Choose a larger amount."
-msgstr ""
+msgstr "{size} nu încape. Alegeți o cantitate mai mare."
 
 #: src/gloxi/check.py
 msgid "Could not read the memory size; the local model may still work."
-msgstr ""
+msgstr "Nu s-a putut citi mărimea memoriei; modelul local poate funcționa totuși."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Free disk space: {free}. The model needs {size}."
-msgstr ""
+msgstr "Spațiu liber pe disc: {free}. Modelul are nevoie de {size}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Gloxi starts {large} because its file is in the models folder, but the speed test has not shown that it is fast enough here. To go back to {small}, delete {file} from {folder}."
-msgstr ""
+msgstr "Gloxi pornește {large} pentru că fișierul lui este în dosarul modelelor, dar testul de viteză nu a arătat că aici este destul de rapid. Pentru a reveni la {small}, ștergeți {file} din {folder}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Memory: {ram}. The local model needs at least 8 GB; Gloxi can still answer through the cloud with your own key."
-msgstr ""
+msgstr "Memorie: {ram}. Modelul local are nevoie de cel puțin 8 GB; Gloxi poate răspunde totuși prin cloud, cu propria dumneavoastră cheie."
 
 #: src/gloxi/check.py
 msgid "The processor has no AVX2 (it is older than Intel Core 8th generation or Ryzen 2000), so the local model will be slow."
-msgstr ""
+msgstr "Procesorul nu are AVX2 (este mai vechi decât Intel Core generația a 8-a sau Ryzen 2000), așa că modelul local va fi lent."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer can run {name}."
-msgstr ""
+msgstr "Acest calculator poate rula {name}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer can run {name}. Gloxi will measure once whether the larger model would be fast enough."
-msgstr ""
+msgstr "Acest calculator poate rula {name}. Gloxi va măsura o dată dacă modelul mai mare ar fi destul de rapid."
 
 #: src/gloxi/check.py
 msgid "This computer is below the minimum for the local model."
-msgstr ""
+msgstr "Acest calculator este sub minimul necesar pentru modelul local."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer is fast enough for the larger model, {name}."
-msgstr ""
+msgstr "Acest calculator este destul de rapid pentru modelul mai mare, {name}."
 
 #: src/gloxi/check.py
 msgid "To paste into the feedback form:"
-msgstr ""
+msgstr "De lipit în formularul de feedback:"
 
 #: src/gloxi/cli.py
 msgid "(interrupted)"
-msgstr ""
+msgstr "(întrerupt)"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Backups need Herkos, and it is not running."
-msgstr ""
+msgstr "Copiile de siguranță au nevoie de Herkos, iar acesta nu rulează."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Checking how fast this computer runs the model (about a minute)…"
-msgstr ""
+msgstr "Verific cât de repede rulează acest calculator modelul (circa un minut)…"
 
 #: src/gloxi/cli.py
 msgid "Cloud: off. Everything stays on this computer."
-msgstr ""
+msgstr "Cloud: dezactivat. Totul rămâne pe acest calculator."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "Cloud: on ({mode} mode)."
-msgstr ""
+msgstr "Cloud: activat (modul {mode})."
 
 #: src/gloxi/cli.py
 msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
-msgstr ""
+msgstr "Comenzi: /local <text> sau /cloud <text> alege modelul pentru un mesaj, /reset șterge conversația, /backup configurează copiile de siguranță, /feedback raportează o problemă sau propune ceva, /exit iese."
 
 #: src/gloxi/cli.py
 msgid "Conversation cleared."
-msgstr ""
+msgstr "Conversație ștearsă."
 
 #: src/gloxi/cli.py
 msgid "Download it now? [y/N] "
-msgstr ""
+msgstr "Îl descărcăm acum? [d/N] "
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Downloading the model: {percent}%"
-msgstr ""
+msgstr "Se descarcă modelul: {percent}%"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Gloxi keeps the current model and will not ask again."
-msgstr ""
+msgstr "Gloxi păstrează modelul actual și nu va mai întreba."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "Gloxi needs a language model on this computer to answer. It is {name}, {size}, licence {licence}, from {source}. It will be kept in {folder}. Only the file is downloaded: nothing about you is sent."
-msgstr ""
+msgstr "Ca să răspundă, Gloxi are nevoie de un model de limbaj pe acest calculator. Este {name}, {size}, licență {licence}, de la {source}. Va fi păstrat în {folder}. Se descarcă doar fișierul: nu se trimite nimic despre dumneavoastră."
 
 #: src/gloxi/cli.py
 msgid ""
@@ -403,462 +408,465 @@ msgid ""
 "  llama-server -m model.gguf --port 8080\n"
 "or point Gloxi elsewhere with GLOXI_LOCAL_URL."
 msgstr ""
+"Rulează llama-server? De exemplu:\n"
+"  llama-server -m model.gguf --port 8080\n"
+"sau indicați lui Gloxi altă adresă cu GLOXI_LOCAL_URL."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Not downloaded. Gloxi will ask again next time."
-msgstr ""
+msgstr "Nu s-a descărcat. Gloxi va întreba din nou data viitoare."
 
 #: src/gloxi/cli.py
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
-msgstr ""
+msgstr "Notă: mascarea este dezactivată (mask_cloud = false), deci mesajele trimise în cloud NU sunt mascate."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Starting {name} on this computer…"
-msgstr ""
+msgstr "Se pornește {name} pe acest calculator…"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model could not be started: {why}"
-msgstr ""
+msgstr "Modelul nu a putut porni: {why}"
 
 #: src/gloxi/cli.py
 msgid "The model is ready."
-msgstr ""
+msgstr "Modelul este gata."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "The model is ready. Gloxi will use it from the next start."
-msgstr ""
+msgstr "Modelul este gata. Gloxi îl va folosi de la următoarea pornire."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model was not downloaded: {why}"
-msgstr ""
+msgstr "Modelul nu a fost descărcat: {why}"
 
 #: src/gloxi/cli.py
 msgid "There is no language model yet. Run gloxi in a terminal once to download it."
-msgstr ""
+msgstr "Încă nu există un model de limbaj. Rulați o dată gloxi într-un terminal ca să-l descărcați."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "This computer is fast enough for a better model: {name}, {size}, licence {licence}, from {source}. It answers better, in Ukrainian too; Gloxi expects about {speed} tokens per second here. It will be kept in {folder}, next to the current model, and Gloxi will use it from the next start. Only the file is downloaded: nothing about you is sent."
-msgstr ""
+msgstr "Acest calculator este destul de rapid pentru un model mai bun: {name}, {size}, licență {licence}, de la {source}. Răspunde mai bine, inclusiv în ucraineană; aici Gloxi se așteaptă la circa {speed} tokeni pe secundă. Va fi păstrat în {folder}, lângă modelul actual, iar Gloxi îl va folosi de la următoarea pornire. Se descarcă doar fișierul: nu se trimite nimic despre dumneavoastră."
 
 #: src/gloxi/cli.py
 msgid "Without a language model Gloxi cannot answer. Run gloxi again when you want to download it."
-msgstr ""
+msgstr "Fără un model de limbaj, Gloxi nu poate răspunde. Rulați din nou gloxi când vreți să-l descărcați."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, masked]"
-msgstr ""
+msgstr "[cloud: {host}, mascat]"
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, not masked]"
-msgstr ""
+msgstr "[cloud: {host}, nemascat]"
 
 #: src/gloxi/cli.py
 msgid "[local]"
-msgstr ""
+msgstr "[local]"
 
 #: src/gloxi/engine.py
 msgid "."
-msgstr ""
+msgstr ","
 
 #: src/gloxi/engine.py
 msgid "Mistral AI on Hugging Face"
-msgstr ""
+msgstr "Mistral AI pe Hugging Face"
 
 #: src/gloxi/engine.py
 msgid "Qwen (Alibaba Cloud) on Hugging Face"
-msgstr ""
+msgstr "Qwen (Alibaba Cloud) pe Hugging Face"
 
 #: src/gloxi/engine.py
 msgid "the model"
-msgstr ""
+msgstr "modelul"
 
 #: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} GB"
-msgstr ""
+msgstr "{value} GB"
 
 #: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} MB"
-msgstr ""
+msgstr "{value} MB"
 
 #: src/gloxi/feedback.py
 msgid "A suggestion"
-msgstr ""
+msgstr "O sugestie"
 
 #: src/gloxi/feedback.py
 msgid "About this computer:"
-msgstr ""
+msgstr "Despre acest calculator:"
 
 #: src/gloxi/feedback.py
 msgid "All right, nothing was sent."
-msgstr ""
+msgstr "Bine, nu s-a trimis nimic."
 
 #: src/gloxi/feedback.py src/gloxi/gui/window.py
 msgid "Cancel"
-msgstr ""
+msgstr "Anulare"
 
 #: src/gloxi/feedback.py
 msgid "Crash report:"
-msgstr ""
+msgstr "Raport de eroare gravă:"
 
 #: src/gloxi/feedback.py
 msgid "Expected:"
-msgstr ""
+msgstr "Așteptat:"
 
 #: src/gloxi/feedback.py
 msgid "Gloxi stopped with an error recently. Add that crash report?"
-msgstr ""
+msgstr "Gloxi s-a oprit recent cu o eroare. Adăugăm acel raport?"
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "Hidden before showing it here: {what}."
-msgstr ""
+msgstr "Ascuns înainte de afișare aici: {what}."
 
 #: src/gloxi/feedback.py
 msgid "May I add what this computer is (system, processor, memory, graphics, models), as gloxi check shows it? Nothing personal."
-msgstr ""
+msgstr "Pot adăuga ce calculator este acesta (sistem, procesor, memorie, grafică, modele), așa cum îl arată gloxi check? Nimic personal."
 
 #: src/gloxi/feedback.py
 msgid "Never mind"
-msgstr ""
+msgstr "Nu contează"
 
 #: src/gloxi/feedback.py
 msgid "Open the form"
-msgstr ""
+msgstr "Deschide formularul"
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "Opening the form in your browser. Thank you! If it does not open: {url}"
-msgstr ""
+msgstr "Deschid formularul în browser. Mulțumim! Dacă nu se deschide: {url}"
 
 #: src/gloxi/feedback.py
 msgid "Please answer 1 or 2."
-msgstr ""
+msgstr "Răspundeți cu 1 sau 2."
 
 #: src/gloxi/feedback.py
 msgid "Please answer 1, 2 or 3."
-msgstr ""
+msgstr "Răspundeți cu 1, 2 sau 3."
 
 #: src/gloxi/feedback.py
 msgid "Please write a few words, or /cancel to stop."
-msgstr ""
+msgstr "Scrieți câteva cuvinte sau /cancel pentru a vă opri."
 
 #: src/gloxi/feedback.py
 msgid "Something went wrong"
-msgstr ""
+msgstr "Ceva nu a mers bine"
 
 #: src/gloxi/feedback.py
 msgid "Suggestion:"
-msgstr ""
+msgstr "Sugestie:"
 
 #: src/gloxi/feedback.py
 msgid "This is public: anyone can read it on GitHub, and you need a GitHub account to send it. The form opens in your browser, where you can still change everything; it is sent only when you press Create there."
-msgstr ""
+msgstr "Acesta este public: oricine îl poate citi pe GitHub, iar pentru a-l trimite aveți nevoie de un cont GitHub. Formularul se deschide în browser, unde puteți încă schimba totul; este trimis doar când apăsați acolo pe Create."
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "This sounds like a security problem. Please do not post it publicly: report it privately at {url}"
-msgstr ""
+msgstr "Pare o problemă de securitate. Vă rugăm să nu o publicați: raportați-o în privat la {url}"
 
 #: src/gloxi/feedback.py
 msgid "Title:"
-msgstr ""
+msgstr "Titlu:"
 
 #: src/gloxi/feedback.py
 msgid "What did you do or ask, and what happened?"
-msgstr ""
+msgstr "Ce ați făcut sau cerut și ce s-a întâmplat?"
 
 #: src/gloxi/feedback.py
 msgid "What did you expect instead? (Enter to skip)"
-msgstr ""
+msgstr "Ce vă așteptați să se întâmple? (Enter pentru a sări)"
 
 #: src/gloxi/feedback.py
 msgid "What happened:"
-msgstr ""
+msgstr "Ce s-a întâmplat:"
 
 #: src/gloxi/feedback.py
 msgid "What would you like to tell us?"
-msgstr ""
+msgstr "Ce doriți să ne spuneți?"
 
 #: src/gloxi/feedback.py
 msgid "What would you suggest? A sentence or two is enough."
-msgstr ""
+msgstr "Ce propuneți? Una sau două propoziții sunt de ajuns."
 
 #: src/gloxi/feedback.py
 msgid "a card number"
-msgstr ""
+msgstr "un număr de card"
 
 #: src/gloxi/feedback.py
 msgid "a date of birth"
-msgstr ""
+msgstr "o dată de naștere"
 
 #: src/gloxi/feedback.py
 msgid "a name"
-msgstr ""
+msgstr "un nume"
 
 #: src/gloxi/feedback.py
 msgid "a passport number"
-msgstr ""
+msgstr "un număr de pașaport"
 
 #: src/gloxi/feedback.py
 msgid "a password or key"
-msgstr ""
+msgstr "o parolă sau o cheie"
 
 #: src/gloxi/feedback.py
 msgid "a personal ID number"
-msgstr ""
+msgstr "un cod numeric personal"
 
 #: src/gloxi/feedback.py
 msgid "a phone number"
-msgstr ""
+msgstr "un număr de telefon"
 
 #: src/gloxi/feedback.py
 msgid "a profile link"
-msgstr ""
+msgstr "un link de profil"
 
 #: src/gloxi/feedback.py
 msgid "a tax number"
-msgstr ""
+msgstr "un cod fiscal"
 
 #: src/gloxi/feedback.py
 msgid "an IP address"
-msgstr ""
+msgstr "o adresă IP"
 
 #: src/gloxi/feedback.py
 msgid "an account number"
-msgstr ""
+msgstr "un număr de cont"
 
 #: src/gloxi/feedback.py
 msgid "an address"
-msgstr ""
+msgstr "o adresă"
 
 #: src/gloxi/feedback.py
 msgid "an e-mail address"
-msgstr ""
+msgstr "o adresă de e-mail"
 
 #: src/gloxi/gui/controller.py
 msgid "Auto"
-msgstr ""
+msgstr "Automat"
 
 #: src/gloxi/gui/controller.py
 msgid "Cannot reach the cloud model."
-msgstr ""
+msgstr "Modelul din cloud nu poate fi contactat."
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud"
-msgstr ""
+msgstr "Cloud"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud off: everything stays on this computer"
-msgstr ""
+msgstr "Cloud dezactivat: totul rămâne pe acest calculator"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud on, masking is off: messages are NOT masked"
-msgstr ""
+msgstr "Cloud activat, mascare dezactivată: mesajele NU sunt mascate"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud on, private data is masked"
-msgstr ""
+msgstr "Cloud activat, datele private sunt mascate"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Cloud: {host}, masked"
-msgstr ""
+msgstr "Cloud: {host}, mascat"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Cloud: {host}, not masked"
-msgstr ""
+msgstr "Cloud: {host}, nemascat"
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, backups"
-msgstr ""
+msgstr "Gloxi, copii de siguranță"
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, feedback"
-msgstr ""
+msgstr "Gloxi, feedback"
 
 #: src/gloxi/gui/controller.py
 msgid "Local"
-msgstr ""
+msgstr "Local"
 
 #: src/gloxi/gui/controller.py
 msgid "On this computer"
-msgstr ""
+msgstr "Pe acest calculator"
 
 #: src/gloxi/gui/controller.py
 msgid "Short messages stay on this computer, long ones go to the cloud"
-msgstr ""
+msgstr "Mesajele scurte rămân pe acest calculator, cele lungi merg în cloud"
 
 #: src/gloxi/gui/controller.py src/gloxi/gui/window.py
 msgid "The cloud is turned off in the settings."
-msgstr ""
+msgstr "Cloudul este dezactivat în setări."
 
 #: src/gloxi/gui/controller.py
 msgid "The local model is not running. Start llama-server and try again."
-msgstr ""
+msgstr "Modelul local nu rulează. Porniți llama-server și încercați din nou."
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model returned an error: {error}"
-msgstr ""
+msgstr "Modelul a returnat o eroare: {error}"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model} at {host}, NOT masked"
-msgstr ""
+msgstr "{model} la {host}, NEMASCAT"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model} at {host}, private data masked"
-msgstr ""
+msgstr "{model} la {host}, date private mascate"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model}, on this computer"
-msgstr ""
+msgstr "{model}, pe acest calculator"
 
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
-msgstr ""
+msgstr "Acțiuni ascunse de Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Add folder…"
-msgstr ""
+msgstr "Adăugați un dosar…"
 
 #: src/gloxi/gui/window.py
 msgid "Ask Gloxi… (/local or /cloud to pick the model)"
-msgstr ""
+msgstr "Întrebați-l pe Gloxi… (/local sau /cloud pentru a alege modelul)"
 
 #: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
-msgstr ""
+msgstr "Alegeți un dosar pentru Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Download"
-msgstr ""
+msgstr "Descărcare"
 
 #: src/gloxi/gui/window.py
 msgid "Download the language model?"
-msgstr ""
+msgstr "Descărcați modelul de limbaj?"
 
 #: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
-msgstr ""
+msgstr "Dosare pe care Gloxi le poate folosi"
 
 #: src/gloxi/gui/window.py
 msgid "Gloxi can use only the programs you turn on here. Herkos asks you before turning one on, and every action still goes through it."
-msgstr ""
+msgstr "Gloxi poate folosi doar programele pe care le activați aici. Herkos vă întreabă înainte de a activa unul, iar fiecare acțiune trece în continuare prin Herkos."
 
 #: src/gloxi/gui/window.py
 msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
-msgstr ""
+msgstr "Gloxi vede doar dosarele pe care le alegeți aici, iar fiecare acțiune din ele trece prin Herkos, care vă întreabă mai întâi."
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not change it: {why}"
-msgstr ""
+msgstr "Herkos nu a putut face schimbarea: {why}"
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not restart: {why}"
-msgstr ""
+msgstr "Herkos nu a putut reporni: {why}"
 
 #: src/gloxi/gui/window.py
 msgid "Herkos found something suspicious in how the program describes them."
-msgstr ""
+msgstr "Herkos a găsit ceva suspect în felul în care programul le descrie."
 
 #: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
-msgstr ""
+msgstr "Pornește la următoarea pornire a lui Herkos."
 
 #: src/gloxi/gui/window.py
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/gloxi/gui/window.py
 msgid "New conversation"
-msgstr ""
+msgstr "Conversație nouă"
 
 #: src/gloxi/gui/window.py
 msgid "No folders yet: Gloxi cannot see any of your files."
-msgstr ""
+msgstr "Încă nu există dosare: Gloxi nu vede niciunul dintre fișierele dumneavoastră."
 
 #: src/gloxi/gui/window.py
 msgid "No programs for Gloxi are installed."
-msgstr ""
+msgstr "Nu este instalat niciun program pentru Gloxi."
 
 #: src/gloxi/gui/window.py
 msgid "Not now"
-msgstr ""
+msgstr "Nu acum"
 
 #: src/gloxi/gui/window.py
 msgid "Not turned on: you said no in the Herkos window."
-msgstr ""
+msgstr "Neactivat: ați refuzat în fereastra Herkos."
 
 #: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
-msgstr ""
+msgstr "Doar modelul local: activați cloudul în setări pentru a alege altul"
 
 #: src/gloxi/gui/window.py
 msgid "Programs for Gloxi"
-msgstr ""
+msgstr "Programe pentru Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Report a problem or suggest something"
-msgstr ""
+msgstr "Raportați o problemă sau propuneți ceva"
 
 #: src/gloxi/gui/window.py
 msgid "Send"
-msgstr ""
+msgstr "Trimite"
 
 #: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
-msgstr ""
+msgstr "Nu mai partaja acest dosar"
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"
-msgstr ""
+msgstr "Dezactivat: Gloxi nu îl poate folosi"
 
 #: src/gloxi/programs.py
 msgid "On"
-msgstr ""
+msgstr "Activat"
 
 #: src/gloxi/programs.py
 msgid "On: starts when Herkos starts again"
-msgstr ""
+msgstr "Activat: pornește când Herkos repornește"
 
 #: src/gloxi/programs.py
 msgid "You turned this program on in Gloxi's settings"
-msgstr ""
+msgstr "Ați activat acest program în setările Gloxi"
 
 #: src/gloxi/router.py
 msgid "Note: the cloud model changed some masked values, so they could not be put back. Check the answer before you use it."
-msgstr ""
+msgstr "Notă: modelul din cloud a schimbat unele valori mascate, așa că nu au putut fi restabilite. Verificați răspunsul înainte de a-l folosi."
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (denied: {message})"
-msgstr ""
+msgstr "{what} (refuzat: {message})"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (done)"
-msgstr ""
+msgstr "{what} (gata)"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (done; warning: the content {warnings})"
-msgstr ""
+msgstr "{what} (gata; atenție: conținutul {warnings})"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (error: {message})"
-msgstr ""
+msgstr "{what} (eroare: {message})"

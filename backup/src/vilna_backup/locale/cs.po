@@ -1,0 +1,306 @@
+# Czech translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: cs\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "TB"
+msgstr "TB"
+
+msgid "Backups are on"
+msgstr "Zálohy jsou zapnuté"
+
+msgid "Choose where to keep the backups."
+msgstr "Vyberte, kam zálohy ukládat."
+
+msgid "recommended"
+msgstr "doporučeno"
+
+msgid "{day} {month} at {time}"
+msgstr "{day}. {month} v {time}"
+
+msgid "Backing up…"
+msgstr "Zálohuje se…"
+
+msgid "Backups are off"
+msgstr "Zálohy jsou vypnuté"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Zapněte je, aby byly vaše soubory v bezpečí."
+
+msgid "The last backup failed"
+msgstr "Poslední záloha selhala"
+
+msgid "Settings only"
+msgstr "Jen nastavení"
+
+msgid "Settings and documents"
+msgstr "Nastavení a dokumenty"
+
+msgid "The whole home folder"
+msgstr "Celá domovská složka"
+
+msgid "Chosen by you"
+msgstr "Vybráno vámi"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Nastavení, Gloxi, Herkos, hesla"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "Navíc Dokumenty, Plocha a Obrázky"
+
+msgid "Everything except caches and Downloads"
+msgstr "Vše kromě mezipaměti a Stažených"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Složky vybrané s Gloxi nebo v terminálu"
+
+msgid "Every hour"
+msgstr "Každou hodinu"
+
+msgid "Every day"
+msgstr "Každý den"
+
+msgid "Every week"
+msgstr "Každý týden"
+
+msgid "Off"
+msgstr "Vypnuto"
+
+msgid "today at {time}"
+msgstr "dnes v {time}"
+
+msgid "yesterday at {time}"
+msgstr "včera v {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Poslední záloha {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Vyberte složku na externím disku."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Zadejte adresu serveru: sftp:user@host:/folder, s3:https://… nebo rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Pro složku na tomto počítači vyberte externí disk."
+
+msgid "This server needs a login and a password."
+msgstr "Tento server vyžaduje přihlašovací jméno a heslo."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "Hotovo {percent} %"
+
+msgid "No backup yet · {schedule}"
+msgstr "Zatím žádná záloha · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "Souborů: {n}"
+
+msgid "The server address is not right: {why}"
+msgstr "Adresa serveru není správná: {why}"
+
+msgid "Vilna cloud"
+msgstr "Vilna cloud"
+
+msgid "In the EU · coming later"
+msgstr "V EU · připravujeme"
+
+msgid "External disk"
+msgstr "Externí disk"
+
+msgid "No folder chosen yet"
+msgstr "Zatím není vybraná složka"
+
+msgid "Your own server"
+msgstr "Vlastní server"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 nebo REST"
+
+msgid "Turn on backups"
+msgstr "Zapnout zálohy"
+
+msgid "Recovery sheet"
+msgstr "List pro obnovení"
+
+msgid "Backups"
+msgstr "Zálohy"
+
+msgid "What to keep in backups?"
+msgstr "Co zálohovat?"
+
+msgid "Where"
+msgstr "Kam"
+
+msgid "Choose…"
+msgstr "Vybrat…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Adresa, např. sftp:ja@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Přihlašovací jméno (S3 a REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Heslo (S3 a REST)"
+
+msgid "How often"
+msgstr "Jak často"
+
+msgid "Back up"
+msgstr "Zálohovat"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Zálohy se šifrují na tomto počítači. Bez klíče je nikdo nepřečte, ani my."
+
+msgid "Later"
+msgstr "Později"
+
+msgid "Next"
+msgstr "Další"
+
+msgid "Folder for backups on the external disk"
+msgstr "Složka pro zálohy na externím disku"
+
+msgid "Type the key from your sheet"
+msgstr "Zadejte klíč ze svého listu"
+
+msgid "Start again with another place"
+msgstr "Začít znovu s jiným místem"
+
+msgid "Confirm and turn on"
+msgstr "Potvrdit a zapnout"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Zapište si tento klíč na papír a uchovávejte ho mimo počítač. Pokud tento počítač ztratíte, otevře vaše zálohy jen tento klíč. My ho neznáme a nemůžeme ho poslat znovu."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "Klíč se zobrazuje jen teď. Písmena I, L, O a U se nikdy nepoužívají."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Zálohy zůstanou vypnuté, dokud znovu nezadáte klíč pro obnovení ze svého listu. Zobrazil se jednou, při nastavení místa."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "Nemáte list? Začněte znovu s jiným místem: vytvoří se nový klíč."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Zálohy jsou zapnuté. První záloha začala."
+
+msgid "Back up now"
+msgstr "Zálohovat hned"
+
+msgid "Settings"
+msgstr "Nastavení"
+
+msgid "What to keep"
+msgstr "Co zálohovat"
+
+msgid "Restore puts the files into a new folder; nothing is replaced."
+msgstr "Obnovení uloží soubory do nové složky; nic se nenahradí."
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Šifrováno na tomto počítači. Bez klíče je nikdo nepřečte, ani my."
+
+msgid "Cannot read the state of backups"
+msgstr "Stav záloh nelze načíst"
+
+msgid "Where to put the restored files"
+msgstr "Kam uložit obnovené soubory"
+
+msgid "Cannot list the backups"
+msgstr "Zálohy nelze vypsat"
+
+msgid "Restore…"
+msgstr "Obnovit…"
+
+msgid "No backups yet"
+msgstr "Zatím žádné zálohy"
+
+msgid "A backup is already running."
+msgstr "Záloha už probíhá."
+
+msgid "Restored from backup {stamp}"
+msgstr "Obnoveno ze zálohy {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "Obnovuje se {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "Zálohy se nepodařilo nastavit: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "To není ten klíč: {why}"
+
+msgid "Could not start: {why}"
+msgstr "Nepodařilo se spustit: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "Obnoveno souborů: {n} do {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "Obnovení se nepodařilo: {why}"
+
+msgid "January"
+msgstr "ledna"
+
+msgid "February"
+msgstr "února"
+
+msgid "March"
+msgstr "března"
+
+msgid "April"
+msgstr "dubna"
+
+msgid "May"
+msgstr "května"
+
+msgid "June"
+msgstr "června"
+
+msgid "July"
+msgstr "července"
+
+msgid "August"
+msgstr "srpna"
+
+msgid "September"
+msgstr "září"
+
+msgid "October"
+msgstr "října"
+
+msgid "November"
+msgstr "listopadu"
+
+msgid "December"
+msgstr "prosince"
+
+msgid "Disk"
+msgstr "Disk"
+
+msgid "Vilna server"
+msgstr "Server Vilna"

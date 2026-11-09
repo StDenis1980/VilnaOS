@@ -32,8 +32,8 @@ DOMAIN = "gloxi"
 
 # ADR 0009: the main languages. English is the source language.
 MAIN_LANGUAGES = ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
-# Must be complete now. From the alpha every main language must be.
-COMPLETE_NOW = ("uk",)
+# Every main language must be complete (decision of 2026-11-09: the alpha ships all ten).
+COMPLETE_NOW = MAIN_LANGUAGES
 
 MARKERS = {"_", "N_"}
 

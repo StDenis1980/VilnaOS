@@ -9,81 +9,81 @@ msgstr ""
 
 #: src/gloxi/backup_intro.py
 msgid "All right. I will ask once more in a week. You can also type /backup any time."
-msgstr ""
+msgstr "Dobře. Za týden se zeptám znovu. Kdykoli můžete také napsat /backup."
 
 #: src/gloxi/backup_intro.py
 msgid "An external disk"
-msgstr ""
+msgstr "Externí disk"
 
 #: src/gloxi/backup_intro.py
 msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
-msgstr ""
+msgstr "A hesla k Wi-Fi, online účty, klíče SSH a GPG?"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Choose a number from 1 to {n}."
-msgstr ""
+msgstr "Vyberte číslo od 1 do {n}."
 
 #: src/gloxi/backup_intro.py
 msgid "Choose a number from the list, or type an amount in GB, e.g. 120"
-msgstr ""
+msgstr "Vyberte číslo ze seznamu nebo zadejte velikost v GB, např. 120"
 
 #: src/gloxi/backup_intro.py
 msgid "Choose myself"
-msgstr ""
+msgstr "Vlastní výběr"
 
 #: src/gloxi/backup_intro.py
 msgid "Choose what goes into backups"
-msgstr ""
+msgstr "Vybrat, co se zálohuje"
 
 #: src/gloxi/backup_intro.py
 msgid "Desktop"
-msgstr ""
+msgstr "Plocha"
 
 #: src/gloxi/backup_intro.py
 msgid "Documents"
-msgstr ""
+msgstr "Dokumenty"
 
 #: src/gloxi/backup_intro.py
 msgid "Downloads"
-msgstr ""
+msgstr "Stažené"
 
 #: src/gloxi/backup_intro.py
 msgid "Dropbox, OneDrive, Google Drive"
-msgstr ""
+msgstr "Dropbox, OneDrive, Google Drive"
 
 #: src/gloxi/backup_intro.py
 msgid "Every day, recommended"
-msgstr ""
+msgstr "Každý den, doporučeno"
 
 #: src/gloxi/backup_intro.py
 msgid "Every hour"
-msgstr ""
+msgstr "Každou hodinu"
 
 #: src/gloxi/backup_intro.py
 msgid "Every week"
-msgstr ""
+msgstr "Každý týden"
 
 #: src/gloxi/backup_intro.py
 msgid "Everything in the home folder"
-msgstr ""
+msgstr "Vše v domovské složce"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Everything in the home folder, without caches and Downloads ({size})"
-msgstr ""
+msgstr "Vše v domovské složce bez mezipaměti a Stažených ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi checks that the backup fits"
-msgstr ""
+msgstr "Gloxi ověřuje, že se záloha vejde"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi checks whether backups are set up"
-msgstr ""
+msgstr "Gloxi zjišťuje, zda jsou zálohy nastavené"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi measures how much space your folders take"
-msgstr ""
+msgstr "Gloxi měří, kolik místa zabírají vaše složky"
 
 #: src/gloxi/backup_intro.py
 msgid ""
@@ -91,206 +91,209 @@ msgid ""
 "  vilna-backup recover <where the backups are>\n"
 "Then: vilna-backup restore --in-place"
 msgstr ""
+"Připravte si list pro obnovení a spusťte v terminálu:\n"
+"  vilna-backup recover <kde jsou zálohy>\n"
+"Potom: vilna-backup restore --in-place"
 
 #: src/gloxi/backup_intro.py
 msgid "Herkos sent an answer Gloxi does not understand"
-msgstr ""
+msgstr "Herkos poslal odpověď, které Gloxi nerozumí"
 
 #: src/gloxi/backup_intro.py
 msgid "Herkos, the permission service, is not available"
-msgstr ""
+msgstr "Herkos, služba oprávnění, není dostupná"
 
 #: src/gloxi/backup_intro.py
 msgid "How much space are you ready to give to backups?"
-msgstr ""
+msgstr "Kolik místa chcete zálohám vyhradit?"
 
 #: src/gloxi/backup_intro.py
 msgid "How often?"
-msgstr ""
+msgstr "Jak často?"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "I could not continue: {why}. We can go on later: type /backup."
-msgstr ""
+msgstr "Nemohl jsem pokračovat: {why}. Můžeme navázat později: napište /backup."
 
 #: src/gloxi/backup_intro.py
 msgid "I had Vilna before: restore from a backup"
-msgstr ""
+msgstr "Mám zálohu ze starší Vilny: obnovit ji"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "I will back up {what} (about {size}) {how} {where}."
-msgstr ""
+msgstr "Budu zálohovat {what} (asi {size}) {how} {where}."
 
 #: src/gloxi/backup_intro.py
 msgid "Keep Gloxi conversations in backups"
-msgstr ""
+msgstr "Zálohovat konverzace s Gloxi"
 
 #: src/gloxi/backup_intro.py
 msgid "Keep your conversations with Gloxi in backups too?"
-msgstr ""
+msgstr "Zálohovat i vaše konverzace s Gloxi?"
 
 #: src/gloxi/backup_intro.py
 msgid "Later"
-msgstr ""
+msgstr "Později"
 
 #: src/gloxi/backup_intro.py
 msgid "Leave large folders out of backups"
-msgstr ""
+msgstr "Vynechat velké složky ze záloh"
 
 #: src/gloxi/backup_intro.py
 msgid "Leave out Gloxi history"
-msgstr ""
+msgstr "Vynechat historii Gloxi"
 
 #: src/gloxi/backup_intro.py
 msgid "Music"
-msgstr ""
+msgstr "Hudba"
 
 #: src/gloxi/backup_intro.py
 msgid "My own storage (S3, SFTP)"
-msgstr ""
+msgstr "Vlastní úložiště (S3, SFTP)"
 
 #: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "No"
-msgstr ""
+msgstr "Ne"
 
 #: src/gloxi/backup_intro.py
 msgid "No limit"
-msgstr ""
+msgstr "Bez omezení"
 
 #: src/gloxi/backup_intro.py
 msgid "No, I will give more space"
-msgstr ""
+msgstr "Ne, dám víc místa"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Only settings ({size})"
-msgstr ""
+msgstr "Jen nastavení ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Passwords and accounts are switched on by you only:"
-msgstr ""
+msgstr "Hesla a účty zapínáte jen vy sami:"
 
 #: src/gloxi/backup_intro.py
 msgid "Pictures"
-msgstr ""
+msgstr "Obrázky"
 
 #: src/gloxi/backup_intro.py
 msgid "Set how much space backups may take"
-msgstr ""
+msgstr "Nastavit, kolik místa mohou zálohy zabírat"
 
 #: src/gloxi/backup_intro.py
 msgid "Set how often backups are made"
-msgstr ""
+msgstr "Nastavit, jak často se zálohuje"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Settings and documents, recommended ({size})"
-msgstr ""
+msgstr "Nastavení a dokumenty, doporučeno ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Settings are always kept. Which folders to add? Type their numbers, for example: 1 3"
-msgstr ""
+msgstr "Nastavení se zálohuje vždy. Které složky přidat? Napište jejich čísla, například: 1 3"
 
 #: src/gloxi/backup_intro.py
 msgid "Settings, passwords, Gloxi and Herkos"
-msgstr ""
+msgstr "Nastavení, hesla, Gloxi a Herkos"
 
 #: src/gloxi/backup_intro.py
 msgid "Shall I keep backups of your data, so you do not lose it along with the computer?"
-msgstr ""
+msgstr "Mám zálohovat vaše data, abyste o ně nepřišli spolu s počítačem?"
 
 #: src/gloxi/backup_intro.py
 msgid "The Vilna cloud is not open yet in this preview. Choose another place."
-msgstr ""
+msgstr "Vilna cloud v této testovací verzi ještě není otevřený. Vyberte jiné místo."
 
 #: src/gloxi/backup_intro.py
 msgid "The last step is yours, because it is about keys: run this in a terminal. It shows the recovery key once; write it on paper and keep it away from the computer. Without it, backups cannot be restored if this computer is lost. The first backup starts right after."
-msgstr ""
+msgstr "Poslední krok je na vás, protože se týká klíčů: spusťte toto v terminálu. Klíč pro obnovení se zobrazí jen jednou; zapište si ho na papír a uchovávejte ho mimo počítač. Bez něj zálohy obnovit nelze, pokud tento počítač ztratíte. První záloha začne hned potom."
 
 #: src/gloxi/backup_intro.py
 msgid "These are US companies: they see your account, the size and time of backups (not the contents), and a broken device could delete the backups. They are not in this preview yet. Choose another place."
-msgstr ""
+msgstr "To jsou americké firmy: vidí váš účet, velikost a čas záloh (ne jejich obsah) a napadené zařízení by mohlo zálohy smazat. V této testovací verzi zatím nejsou. Vyberte jiné místo."
 
 #: src/gloxi/backup_intro.py
 msgid "Type an amount in GB, e.g. 120"
-msgstr ""
+msgstr "Zadejte velikost v GB, např. 120"
 
 #: src/gloxi/backup_intro.py
 msgid "Type the numbers of the folders, for example: 1 3"
-msgstr ""
+msgstr "Napište čísla složek, například: 1 3"
 
 #: src/gloxi/backup_intro.py
 msgid "Videos"
-msgstr ""
+msgstr "Videa"
 
 #: src/gloxi/backup_intro.py
 msgid "Vilna cloud (EU)"
-msgstr ""
+msgstr "Vilna cloud (EU)"
 
 #: src/gloxi/backup_intro.py
 msgid "We are not talking about backups now."
-msgstr ""
+msgstr "Teď nemluvíme o zálohách."
 
 #: src/gloxi/backup_intro.py
 msgid "What shall we keep? This is how much space it takes now:"
-msgstr ""
+msgstr "Co budeme zálohovat? Tolik místa to teď zabírá:"
 
 #: src/gloxi/backup_intro.py
 msgid "Where shall we keep them? Everything is encrypted on this computer first."
-msgstr ""
+msgstr "Kam je budeme ukládat? Vše se nejprve zašifruje na tomto počítači."
 
 #: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "Yes"
-msgstr ""
+msgstr "Ano"
 
 #: src/gloxi/backup_intro.py
 msgid "Yes, leave them out"
-msgstr ""
+msgstr "Ano, vynechat"
 
 #: src/gloxi/backup_intro.py
 msgid "every day"
-msgstr ""
+msgstr "každý den"
 
 #: src/gloxi/backup_intro.py
 msgid "every hour"
-msgstr ""
+msgstr "každou hodinu"
 
 #: src/gloxi/backup_intro.py
 msgid "every week"
-msgstr ""
+msgstr "každý týden"
 
 #: src/gloxi/backup_intro.py
 msgid "everything in the home folder"
-msgstr ""
+msgstr "vše v domovské složce"
 
 #: src/gloxi/backup_intro.py
 msgid "in your own storage"
-msgstr ""
+msgstr "do vašeho vlastního úložiště"
 
 #: src/gloxi/backup_intro.py
 msgid "no"
-msgstr ""
+msgstr "ne"
 
 #: src/gloxi/backup_intro.py
 msgid "on the external disk"
-msgstr ""
+msgstr "na externí disk"
 
 #: src/gloxi/backup_intro.py
 msgid "settings"
-msgstr ""
+msgstr "nastavení"
 
 #: src/gloxi/backup_intro.py
 msgid "settings and documents"
-msgstr ""
+msgstr "nastavení a dokumenty"
 
 #: src/gloxi/backup_intro.py
 msgid "settings and the folders you chose"
-msgstr ""
+msgstr "nastavení a vámi vybrané složky"
 
 #: src/gloxi/backup_intro.py src/gloxi/cli.py
 msgid "yes"
-msgstr ""
+msgstr "ano"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
@@ -298,104 +301,106 @@ msgid ""
 "{size} does not fit into {limit}. Leave out these large folders (about {after} remains)?\n"
 "{folders}"
 msgstr ""
+"{size} se nevejde do {limit}. Vynechat tyto velké složky (zbude asi {after})?\n"
+"{folders}"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "{size} does not fit. Choose a larger amount."
-msgstr ""
+msgstr "{size} se nevejde. Vyberte větší velikost."
 
 #: src/gloxi/check.py
 msgid "Could not read the memory size; the local model may still work."
-msgstr ""
+msgstr "Velikost paměti se nepodařilo zjistit; místní model možná přesto poběží."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Free disk space: {free}. The model needs {size}."
-msgstr ""
+msgstr "Volné místo na disku: {free}. Model potřebuje {size}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Gloxi starts {large} because its file is in the models folder, but the speed test has not shown that it is fast enough here. To go back to {small}, delete {file} from {folder}."
-msgstr ""
+msgstr "Gloxi spouští {large}, protože jeho soubor je ve složce modelů, ale test rychlosti neukázal, že je tu dost rychlý. Pro návrat k {small} smažte {file} ze složky {folder}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Memory: {ram}. The local model needs at least 8 GB; Gloxi can still answer through the cloud with your own key."
-msgstr ""
+msgstr "Paměť: {ram}. Místní model potřebuje alespoň 8 GB; Gloxi může přesto odpovídat přes cloud s vaším vlastním klíčem."
 
 #: src/gloxi/check.py
 msgid "The processor has no AVX2 (it is older than Intel Core 8th generation or Ryzen 2000), so the local model will be slow."
-msgstr ""
+msgstr "Procesor nemá AVX2 (je starší než Intel Core 8. generace nebo Ryzen 2000), takže místní model bude pomalý."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer can run {name}."
-msgstr ""
+msgstr "Tento počítač zvládne {name}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer can run {name}. Gloxi will measure once whether the larger model would be fast enough."
-msgstr ""
+msgstr "Tento počítač zvládne {name}. Gloxi jednou změří, zda by byl větší model dost rychlý."
 
 #: src/gloxi/check.py
 msgid "This computer is below the minimum for the local model."
-msgstr ""
+msgstr "Tento počítač nesplňuje minimum pro místní model."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer is fast enough for the larger model, {name}."
-msgstr ""
+msgstr "Tento počítač je dost rychlý pro větší model, {name}."
 
 #: src/gloxi/check.py
 msgid "To paste into the feedback form:"
-msgstr ""
+msgstr "K vložení do formuláře zpětné vazby:"
 
 #: src/gloxi/cli.py
 msgid "(interrupted)"
-msgstr ""
+msgstr "(přerušeno)"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Backups need Herkos, and it is not running."
-msgstr ""
+msgstr "Zálohy potřebují Herkos a ten neběží."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Checking how fast this computer runs the model (about a minute)…"
-msgstr ""
+msgstr "Zjišťuji, jak rychle tento počítač model spouští (asi minutu)…"
 
 #: src/gloxi/cli.py
 msgid "Cloud: off. Everything stays on this computer."
-msgstr ""
+msgstr "Cloud: vypnutý. Vše zůstává na tomto počítači."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "Cloud: on ({mode} mode)."
-msgstr ""
+msgstr "Cloud: zapnutý (režim {mode})."
 
 #: src/gloxi/cli.py
 msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
-msgstr ""
+msgstr "Příkazy: /local <text> nebo /cloud <text> vybere model pro jednu zprávu, /reset vymaže konverzaci, /backup nastaví zálohy, /feedback nahlásí problém nebo něco navrhne, /exit ukončí."
 
 #: src/gloxi/cli.py
 msgid "Conversation cleared."
-msgstr ""
+msgstr "Konverzace vymazána."
 
 #: src/gloxi/cli.py
 msgid "Download it now? [y/N] "
-msgstr ""
+msgstr "Stáhnout teď? [a/N] "
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Downloading the model: {percent}%"
-msgstr ""
+msgstr "Stahuje se model: {percent} %"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Gloxi keeps the current model and will not ask again."
-msgstr ""
+msgstr "Gloxi si ponechá současný model a už se nezeptá."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "Gloxi needs a language model on this computer to answer. It is {name}, {size}, licence {licence}, from {source}. It will be kept in {folder}. Only the file is downloaded: nothing about you is sent."
-msgstr ""
+msgstr "Aby mohl Gloxi odpovídat, potřebuje na tomto počítači jazykový model. Je to {name}, {size}, licence {licence}, z {source}. Uloží se do {folder}. Stáhne se jen soubor: nic o vás se neodesílá."
 
 #: src/gloxi/cli.py
 msgid ""
@@ -403,462 +408,465 @@ msgid ""
 "  llama-server -m model.gguf --port 8080\n"
 "or point Gloxi elsewhere with GLOXI_LOCAL_URL."
 msgstr ""
+"Běží llama-server? Například:\n"
+"  llama-server -m model.gguf --port 8080\n"
+"nebo dejte Gloxi jinou adresu přes GLOXI_LOCAL_URL."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Not downloaded. Gloxi will ask again next time."
-msgstr ""
+msgstr "Nestaženo. Gloxi se příště zeptá znovu."
 
 #: src/gloxi/cli.py
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
-msgstr ""
+msgstr "Pozor: maskování je vypnuté (mask_cloud = false), takže zprávy odeslané do cloudu NEJSOU maskované."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Starting {name} on this computer…"
-msgstr ""
+msgstr "Spouští se {name} na tomto počítači…"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model could not be started: {why}"
-msgstr ""
+msgstr "Model se nepodařilo spustit: {why}"
 
 #: src/gloxi/cli.py
 msgid "The model is ready."
-msgstr ""
+msgstr "Model je připravený."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "The model is ready. Gloxi will use it from the next start."
-msgstr ""
+msgstr "Model je připravený. Gloxi ho použije od příštího spuštění."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model was not downloaded: {why}"
-msgstr ""
+msgstr "Model se nestáhl: {why}"
 
 #: src/gloxi/cli.py
 msgid "There is no language model yet. Run gloxi in a terminal once to download it."
-msgstr ""
+msgstr "Zatím tu není žádný jazykový model. Spusťte jednou gloxi v terminálu, aby se stáhl."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "This computer is fast enough for a better model: {name}, {size}, licence {licence}, from {source}. It answers better, in Ukrainian too; Gloxi expects about {speed} tokens per second here. It will be kept in {folder}, next to the current model, and Gloxi will use it from the next start. Only the file is downloaded: nothing about you is sent."
-msgstr ""
+msgstr "Tento počítač je dost rychlý pro lepší model: {name}, {size}, licence {licence}, z {source}. Odpovídá lépe, i ukrajinsky; Gloxi tu čeká asi {speed} tokenů za sekundu. Uloží se do {folder} vedle současného modelu a Gloxi ho použije od příštího spuštění. Stáhne se jen soubor: nic o vás se neodesílá."
 
 #: src/gloxi/cli.py
 msgid "Without a language model Gloxi cannot answer. Run gloxi again when you want to download it."
-msgstr ""
+msgstr "Bez jazykového modelu Gloxi nemůže odpovídat. Až ho budete chtít stáhnout, spusťte gloxi znovu."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, masked]"
-msgstr ""
+msgstr "[cloud: {host}, maskováno]"
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, not masked]"
-msgstr ""
+msgstr "[cloud: {host}, nemaskováno]"
 
 #: src/gloxi/cli.py
 msgid "[local]"
-msgstr ""
+msgstr "[místně]"
 
 #: src/gloxi/engine.py
 msgid "."
-msgstr ""
+msgstr ","
 
 #: src/gloxi/engine.py
 msgid "Mistral AI on Hugging Face"
-msgstr ""
+msgstr "Mistral AI na Hugging Face"
 
 #: src/gloxi/engine.py
 msgid "Qwen (Alibaba Cloud) on Hugging Face"
-msgstr ""
+msgstr "Qwen (Alibaba Cloud) na Hugging Face"
 
 #: src/gloxi/engine.py
 msgid "the model"
-msgstr ""
+msgstr "model"
 
 #: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} GB"
-msgstr ""
+msgstr "{value} GB"
 
 #: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} MB"
-msgstr ""
+msgstr "{value} MB"
 
 #: src/gloxi/feedback.py
 msgid "A suggestion"
-msgstr ""
+msgstr "Návrh"
 
 #: src/gloxi/feedback.py
 msgid "About this computer:"
-msgstr ""
+msgstr "O tomto počítači:"
 
 #: src/gloxi/feedback.py
 msgid "All right, nothing was sent."
-msgstr ""
+msgstr "Dobře, nic se neodeslalo."
 
 #: src/gloxi/feedback.py src/gloxi/gui/window.py
 msgid "Cancel"
-msgstr ""
+msgstr "Zrušit"
 
 #: src/gloxi/feedback.py
 msgid "Crash report:"
-msgstr ""
+msgstr "Hlášení o pádu:"
 
 #: src/gloxi/feedback.py
 msgid "Expected:"
-msgstr ""
+msgstr "Očekáváno:"
 
 #: src/gloxi/feedback.py
 msgid "Gloxi stopped with an error recently. Add that crash report?"
-msgstr ""
+msgstr "Gloxi se nedávno zastavil s chybou. Přidat to hlášení o pádu?"
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "Hidden before showing it here: {what}."
-msgstr ""
+msgstr "Před zobrazením zde skryto: {what}."
 
 #: src/gloxi/feedback.py
 msgid "May I add what this computer is (system, processor, memory, graphics, models), as gloxi check shows it? Nothing personal."
-msgstr ""
+msgstr "Mohu přidat, o jaký počítač jde (systém, procesor, paměť, grafika, modely), tak jak to ukazuje gloxi check? Nic osobního."
 
 #: src/gloxi/feedback.py
 msgid "Never mind"
-msgstr ""
+msgstr "Nevadí"
 
 #: src/gloxi/feedback.py
 msgid "Open the form"
-msgstr ""
+msgstr "Otevřít formulář"
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "Opening the form in your browser. Thank you! If it does not open: {url}"
-msgstr ""
+msgstr "Otevírám formulář v prohlížeči. Děkujeme! Pokud se neotevře: {url}"
 
 #: src/gloxi/feedback.py
 msgid "Please answer 1 or 2."
-msgstr ""
+msgstr "Odpovězte prosím 1 nebo 2."
 
 #: src/gloxi/feedback.py
 msgid "Please answer 1, 2 or 3."
-msgstr ""
+msgstr "Odpovězte prosím 1, 2 nebo 3."
 
 #: src/gloxi/feedback.py
 msgid "Please write a few words, or /cancel to stop."
-msgstr ""
+msgstr "Napište prosím pár slov, nebo /cancel pro ukončení."
 
 #: src/gloxi/feedback.py
 msgid "Something went wrong"
-msgstr ""
+msgstr "Něco se pokazilo"
 
 #: src/gloxi/feedback.py
 msgid "Suggestion:"
-msgstr ""
+msgstr "Návrh:"
 
 #: src/gloxi/feedback.py
 msgid "This is public: anyone can read it on GitHub, and you need a GitHub account to send it. The form opens in your browser, where you can still change everything; it is sent only when you press Create there."
-msgstr ""
+msgstr "Je to veřejné: kdokoli si to může přečíst na GitHubu a k odeslání potřebujete účet GitHub. Formulář se otevře v prohlížeči, kde můžete ještě vše změnit; odešle se, až tam stisknete Create."
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "This sounds like a security problem. Please do not post it publicly: report it privately at {url}"
-msgstr ""
+msgstr "To vypadá jako bezpečnostní problém. Nezveřejňujte ho prosím: nahlaste ho soukromě na {url}"
 
 #: src/gloxi/feedback.py
 msgid "Title:"
-msgstr ""
+msgstr "Název:"
 
 #: src/gloxi/feedback.py
 msgid "What did you do or ask, and what happened?"
-msgstr ""
+msgstr "Co jste dělali nebo žádali a co se stalo?"
 
 #: src/gloxi/feedback.py
 msgid "What did you expect instead? (Enter to skip)"
-msgstr ""
+msgstr "Co jste čekali místo toho? (Enter pro přeskočení)"
 
 #: src/gloxi/feedback.py
 msgid "What happened:"
-msgstr ""
+msgstr "Co se stalo:"
 
 #: src/gloxi/feedback.py
 msgid "What would you like to tell us?"
-msgstr ""
+msgstr "Co nám chcete sdělit?"
 
 #: src/gloxi/feedback.py
 msgid "What would you suggest? A sentence or two is enough."
-msgstr ""
+msgstr "Co navrhujete? Stačí jedna nebo dvě věty."
 
 #: src/gloxi/feedback.py
 msgid "a card number"
-msgstr ""
+msgstr "číslo karty"
 
 #: src/gloxi/feedback.py
 msgid "a date of birth"
-msgstr ""
+msgstr "datum narození"
 
 #: src/gloxi/feedback.py
 msgid "a name"
-msgstr ""
+msgstr "jméno"
 
 #: src/gloxi/feedback.py
 msgid "a passport number"
-msgstr ""
+msgstr "číslo pasu"
 
 #: src/gloxi/feedback.py
 msgid "a password or key"
-msgstr ""
+msgstr "heslo nebo klíč"
 
 #: src/gloxi/feedback.py
 msgid "a personal ID number"
-msgstr ""
+msgstr "rodné nebo osobní číslo"
 
 #: src/gloxi/feedback.py
 msgid "a phone number"
-msgstr ""
+msgstr "telefonní číslo"
 
 #: src/gloxi/feedback.py
 msgid "a profile link"
-msgstr ""
+msgstr "odkaz na profil"
 
 #: src/gloxi/feedback.py
 msgid "a tax number"
-msgstr ""
+msgstr "daňové číslo"
 
 #: src/gloxi/feedback.py
 msgid "an IP address"
-msgstr ""
+msgstr "IP adresa"
 
 #: src/gloxi/feedback.py
 msgid "an account number"
-msgstr ""
+msgstr "číslo účtu"
 
 #: src/gloxi/feedback.py
 msgid "an address"
-msgstr ""
+msgstr "adresa"
 
 #: src/gloxi/feedback.py
 msgid "an e-mail address"
-msgstr ""
+msgstr "e-mailová adresa"
 
 #: src/gloxi/gui/controller.py
 msgid "Auto"
-msgstr ""
+msgstr "Automaticky"
 
 #: src/gloxi/gui/controller.py
 msgid "Cannot reach the cloud model."
-msgstr ""
+msgstr "Cloudový model je nedostupný."
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud"
-msgstr ""
+msgstr "Cloud"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud off: everything stays on this computer"
-msgstr ""
+msgstr "Cloud vypnutý: vše zůstává na tomto počítači"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud on, masking is off: messages are NOT masked"
-msgstr ""
+msgstr "Cloud zapnutý, maskování vypnuté: zprávy NEJSOU maskované"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud on, private data is masked"
-msgstr ""
+msgstr "Cloud zapnutý, soukromé údaje se maskují"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Cloud: {host}, masked"
-msgstr ""
+msgstr "Cloud: {host}, maskováno"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Cloud: {host}, not masked"
-msgstr ""
+msgstr "Cloud: {host}, nemaskováno"
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, backups"
-msgstr ""
+msgstr "Gloxi, zálohy"
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, feedback"
-msgstr ""
+msgstr "Gloxi, zpětná vazba"
 
 #: src/gloxi/gui/controller.py
 msgid "Local"
-msgstr ""
+msgstr "Místní"
 
 #: src/gloxi/gui/controller.py
 msgid "On this computer"
-msgstr ""
+msgstr "Na tomto počítači"
 
 #: src/gloxi/gui/controller.py
 msgid "Short messages stay on this computer, long ones go to the cloud"
-msgstr ""
+msgstr "Krátké zprávy zůstávají na tomto počítači, dlouhé jdou do cloudu"
 
 #: src/gloxi/gui/controller.py src/gloxi/gui/window.py
 msgid "The cloud is turned off in the settings."
-msgstr ""
+msgstr "Cloud je v nastavení vypnutý."
 
 #: src/gloxi/gui/controller.py
 msgid "The local model is not running. Start llama-server and try again."
-msgstr ""
+msgstr "Místní model neběží. Spusťte llama-server a zkuste to znovu."
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model returned an error: {error}"
-msgstr ""
+msgstr "Model vrátil chybu: {error}"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model} at {host}, NOT masked"
-msgstr ""
+msgstr "{model} na {host}, NEMASKOVÁNO"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model} at {host}, private data masked"
-msgstr ""
+msgstr "{model} na {host}, soukromé údaje maskované"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model}, on this computer"
-msgstr ""
+msgstr "{model}, na tomto počítači"
 
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
-msgstr ""
+msgstr "Akce skryté před Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Add folder…"
-msgstr ""
+msgstr "Přidat složku…"
 
 #: src/gloxi/gui/window.py
 msgid "Ask Gloxi… (/local or /cloud to pick the model)"
-msgstr ""
+msgstr "Zeptejte se Gloxi… (/local nebo /cloud vybere model)"
 
 #: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
-msgstr ""
+msgstr "Vyberte složku pro Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Download"
-msgstr ""
+msgstr "Stáhnout"
 
 #: src/gloxi/gui/window.py
 msgid "Download the language model?"
-msgstr ""
+msgstr "Stáhnout jazykový model?"
 
 #: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
-msgstr ""
+msgstr "Složky, které Gloxi smí používat"
 
 #: src/gloxi/gui/window.py
 msgid "Gloxi can use only the programs you turn on here. Herkos asks you before turning one on, and every action still goes through it."
-msgstr ""
+msgstr "Gloxi může používat jen programy, které tu zapnete. Herkos se vás zeptá, než nějaký zapne, a každá akce přes něj i nadále prochází."
 
 #: src/gloxi/gui/window.py
 msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
-msgstr ""
+msgstr "Gloxi vidí jen složky, které tu vyberete, a každá akce v nich prochází přes Herkos, který se vás nejprve zeptá."
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not change it: {why}"
-msgstr ""
+msgstr "Herkos to nemohl změnit: {why}"
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not restart: {why}"
-msgstr ""
+msgstr "Herkos se nemohl restartovat: {why}"
 
 #: src/gloxi/gui/window.py
 msgid "Herkos found something suspicious in how the program describes them."
-msgstr ""
+msgstr "Herkos našel něco podezřelého v tom, jak je program popisuje."
 
 #: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
-msgstr ""
+msgstr "Spustí se při příštím spuštění Herkosu."
 
 #: src/gloxi/gui/window.py
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/gloxi/gui/window.py
 msgid "New conversation"
-msgstr ""
+msgstr "Nová konverzace"
 
 #: src/gloxi/gui/window.py
 msgid "No folders yet: Gloxi cannot see any of your files."
-msgstr ""
+msgstr "Zatím žádné složky: Gloxi nevidí žádný váš soubor."
 
 #: src/gloxi/gui/window.py
 msgid "No programs for Gloxi are installed."
-msgstr ""
+msgstr "Nejsou nainstalované žádné programy pro Gloxi."
 
 #: src/gloxi/gui/window.py
 msgid "Not now"
-msgstr ""
+msgstr "Teď ne"
 
 #: src/gloxi/gui/window.py
 msgid "Not turned on: you said no in the Herkos window."
-msgstr ""
+msgstr "Nezapnuto: v okně Herkosu jste odmítli."
 
 #: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
-msgstr ""
+msgstr "Jen místní model: chcete-li vybrat jiný, zapněte v nastavení cloud"
 
 #: src/gloxi/gui/window.py
 msgid "Programs for Gloxi"
-msgstr ""
+msgstr "Programy pro Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Report a problem or suggest something"
-msgstr ""
+msgstr "Nahlásit problém nebo něco navrhnout"
 
 #: src/gloxi/gui/window.py
 msgid "Send"
-msgstr ""
+msgstr "Odeslat"
 
 #: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
-msgstr ""
+msgstr "Přestat sdílet tuto složku"
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"
-msgstr ""
+msgstr "Vypnuto: Gloxi ho nemůže používat"
 
 #: src/gloxi/programs.py
 msgid "On"
-msgstr ""
+msgstr "Zapnuto"
 
 #: src/gloxi/programs.py
 msgid "On: starts when Herkos starts again"
-msgstr ""
+msgstr "Zapnuto: spustí se při příštím spuštění Herkosu"
 
 #: src/gloxi/programs.py
 msgid "You turned this program on in Gloxi's settings"
-msgstr ""
+msgstr "Tento program jste zapnuli v nastavení Gloxi"
 
 #: src/gloxi/router.py
 msgid "Note: the cloud model changed some masked values, so they could not be put back. Check the answer before you use it."
-msgstr ""
+msgstr "Pozor: cloudový model změnil některé maskované hodnoty, takže je nešlo vrátit. Než odpověď použijete, zkontrolujte ji."
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (denied: {message})"
-msgstr ""
+msgstr "{what} (zamítnuto: {message})"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (done)"
-msgstr ""
+msgstr "{what} (hotovo)"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (done; warning: the content {warnings})"
-msgstr ""
+msgstr "{what} (hotovo; pozor: obsah {warnings})"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (error: {message})"
-msgstr ""
+msgstr "{what} (chyba: {message})"

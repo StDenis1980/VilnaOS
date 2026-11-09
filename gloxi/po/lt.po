@@ -9,81 +9,81 @@ msgstr ""
 
 #: src/gloxi/backup_intro.py
 msgid "All right. I will ask once more in a week. You can also type /backup any time."
-msgstr ""
+msgstr "Gerai. Paklausiu dar kartą po savaitės. Bet kada taip pat galite įvesti /backup."
 
 #: src/gloxi/backup_intro.py
 msgid "An external disk"
-msgstr ""
+msgstr "Išorinis diskas"
 
 #: src/gloxi/backup_intro.py
 msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
-msgstr ""
+msgstr "O „Wi-Fi“ slaptažodžiai, internetinės paskyros, SSH ir GPG raktai?"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Choose a number from 1 to {n}."
-msgstr ""
+msgstr "Pasirinkite skaičių nuo 1 iki {n}."
 
 #: src/gloxi/backup_intro.py
 msgid "Choose a number from the list, or type an amount in GB, e.g. 120"
-msgstr ""
+msgstr "Pasirinkite skaičių iš sąrašo arba įveskite dydį GB, pvz., 120"
 
 #: src/gloxi/backup_intro.py
 msgid "Choose myself"
-msgstr ""
+msgstr "Pasirinksiu savo nuožiūra"
 
 #: src/gloxi/backup_intro.py
 msgid "Choose what goes into backups"
-msgstr ""
+msgstr "Pasirinkti, kas įtraukiama į atsargines kopijas"
 
 #: src/gloxi/backup_intro.py
 msgid "Desktop"
-msgstr ""
+msgstr "Darbalaukis"
 
 #: src/gloxi/backup_intro.py
 msgid "Documents"
-msgstr ""
+msgstr "Dokumentai"
 
 #: src/gloxi/backup_intro.py
 msgid "Downloads"
-msgstr ""
+msgstr "Atsisiuntimai"
 
 #: src/gloxi/backup_intro.py
 msgid "Dropbox, OneDrive, Google Drive"
-msgstr ""
+msgstr "Dropbox, OneDrive, Google Drive"
 
 #: src/gloxi/backup_intro.py
 msgid "Every day, recommended"
-msgstr ""
+msgstr "Kasdien, rekomenduojama"
 
 #: src/gloxi/backup_intro.py
 msgid "Every hour"
-msgstr ""
+msgstr "Kas valandą"
 
 #: src/gloxi/backup_intro.py
 msgid "Every week"
-msgstr ""
+msgstr "Kas savaitę"
 
 #: src/gloxi/backup_intro.py
 msgid "Everything in the home folder"
-msgstr ""
+msgstr "Viskas namų aplanke"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Everything in the home folder, without caches and Downloads ({size})"
-msgstr ""
+msgstr "Viskas namų aplanke, be podėlio ir Atsisiuntimų ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi checks that the backup fits"
-msgstr ""
+msgstr "Gloxi tikrina, ar kopija tilps"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi checks whether backups are set up"
-msgstr ""
+msgstr "Gloxi tikrina, ar atsarginės kopijos nustatytos"
 
 #: src/gloxi/backup_intro.py
 msgid "Gloxi measures how much space your folders take"
-msgstr ""
+msgstr "Gloxi matuoja, kiek vietos užima jūsų aplankai"
 
 #: src/gloxi/backup_intro.py
 msgid ""
@@ -91,206 +91,209 @@ msgid ""
 "  vilna-backup recover <where the backups are>\n"
 "Then: vilna-backup restore --in-place"
 msgstr ""
+"Pasiruoškite atkūrimo lapą ir terminale paleiskite:\n"
+"  vilna-backup recover <kur yra kopijos>\n"
+"Tada: vilna-backup restore --in-place"
 
 #: src/gloxi/backup_intro.py
 msgid "Herkos sent an answer Gloxi does not understand"
-msgstr ""
+msgstr "Herkos atsiuntė atsakymą, kurio Gloxi nesupranta"
 
 #: src/gloxi/backup_intro.py
 msgid "Herkos, the permission service, is not available"
-msgstr ""
+msgstr "Herkos, leidimų tarnyba, nepasiekiama"
 
 #: src/gloxi/backup_intro.py
 msgid "How much space are you ready to give to backups?"
-msgstr ""
+msgstr "Kiek vietos norite skirti atsarginėms kopijoms?"
 
 #: src/gloxi/backup_intro.py
 msgid "How often?"
-msgstr ""
+msgstr "Kaip dažnai?"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "I could not continue: {why}. We can go on later: type /backup."
-msgstr ""
+msgstr "Negalėjau tęsti: {why}. Galime grįžti vėliau: įveskite /backup."
 
 #: src/gloxi/backup_intro.py
 msgid "I had Vilna before: restore from a backup"
-msgstr ""
+msgstr "Turiu kopiją iš ankstesnės Vilna: atkurti iš jos"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "I will back up {what} (about {size}) {how} {where}."
-msgstr ""
+msgstr "Kopijuosiu {what} (apie {size}) {how} {where}."
 
 #: src/gloxi/backup_intro.py
 msgid "Keep Gloxi conversations in backups"
-msgstr ""
+msgstr "Įtraukti pokalbius su Gloxi į kopijas"
 
 #: src/gloxi/backup_intro.py
 msgid "Keep your conversations with Gloxi in backups too?"
-msgstr ""
+msgstr "Ar įtraukti į kopijas ir jūsų pokalbius su Gloxi?"
 
 #: src/gloxi/backup_intro.py
 msgid "Later"
-msgstr ""
+msgstr "Vėliau"
 
 #: src/gloxi/backup_intro.py
 msgid "Leave large folders out of backups"
-msgstr ""
+msgstr "Neįtraukti didelių aplankų į kopijas"
 
 #: src/gloxi/backup_intro.py
 msgid "Leave out Gloxi history"
-msgstr ""
+msgstr "Neįtraukti Gloxi istorijos"
 
 #: src/gloxi/backup_intro.py
 msgid "Music"
-msgstr ""
+msgstr "Muzika"
 
 #: src/gloxi/backup_intro.py
 msgid "My own storage (S3, SFTP)"
-msgstr ""
+msgstr "Mano saugykla (S3, SFTP)"
 
 #: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "No"
-msgstr ""
+msgstr "Ne"
 
 #: src/gloxi/backup_intro.py
 msgid "No limit"
-msgstr ""
+msgstr "Be ribos"
 
 #: src/gloxi/backup_intro.py
 msgid "No, I will give more space"
-msgstr ""
+msgstr "Ne, skirsiu daugiau vietos"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Only settings ({size})"
-msgstr ""
+msgstr "Tik nustatymai ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Passwords and accounts are switched on by you only:"
-msgstr ""
+msgstr "Slaptažodžius ir paskyras įjungiate tik jūs patys:"
 
 #: src/gloxi/backup_intro.py
 msgid "Pictures"
-msgstr ""
+msgstr "Paveikslėliai"
 
 #: src/gloxi/backup_intro.py
 msgid "Set how much space backups may take"
-msgstr ""
+msgstr "Nustatyti, kiek vietos gali užimti kopijos"
 
 #: src/gloxi/backup_intro.py
 msgid "Set how often backups are made"
-msgstr ""
+msgstr "Nustatyti, kaip dažnai daromos kopijos"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "Settings and documents, recommended ({size})"
-msgstr ""
+msgstr "Nustatymai ir dokumentai, rekomenduojama ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Settings are always kept. Which folders to add? Type their numbers, for example: 1 3"
-msgstr ""
+msgstr "Nustatymai įtraukiami visada. Kuriuos aplankus pridėti? Įveskite jų numerius, pavyzdžiui: 1 3"
 
 #: src/gloxi/backup_intro.py
 msgid "Settings, passwords, Gloxi and Herkos"
-msgstr ""
+msgstr "Nustatymai, slaptažodžiai, Gloxi ir Herkos"
 
 #: src/gloxi/backup_intro.py
 msgid "Shall I keep backups of your data, so you do not lose it along with the computer?"
-msgstr ""
+msgstr "Ar daryti jūsų duomenų atsargines kopijas, kad jų neprarastumėte kartu su kompiuteriu?"
 
 #: src/gloxi/backup_intro.py
 msgid "The Vilna cloud is not open yet in this preview. Choose another place."
-msgstr ""
+msgstr "Vilna debesis šioje bandomojoje versijoje dar neveikia. Pasirinkite kitą vietą."
 
 #: src/gloxi/backup_intro.py
 msgid "The last step is yours, because it is about keys: run this in a terminal. It shows the recovery key once; write it on paper and keep it away from the computer. Without it, backups cannot be restored if this computer is lost. The first backup starts right after."
-msgstr ""
+msgstr "Paskutinis žingsnis – jūsų, nes jis susijęs su raktais: paleiskite tai terminale. Atkūrimo raktas bus parodytas vieną kartą; užsirašykite jį ant popieriaus ir laikykite atskirai nuo kompiuterio. Be jo kopijų atkurti nepavyks, jei šis kompiuteris bus prarastas. Pirmoji kopija prasidės iškart po to."
 
 #: src/gloxi/backup_intro.py
 msgid "These are US companies: they see your account, the size and time of backups (not the contents), and a broken device could delete the backups. They are not in this preview yet. Choose another place."
-msgstr ""
+msgstr "Tai JAV įmonės: jos mato jūsų paskyrą, kopijų dydį ir laiką (ne turinį), o įsilaužtas įrenginys galėtų ištrinti kopijas. Šioje bandomojoje versijoje jų dar nėra. Pasirinkite kitą vietą."
 
 #: src/gloxi/backup_intro.py
 msgid "Type an amount in GB, e.g. 120"
-msgstr ""
+msgstr "Įveskite dydį GB, pvz., 120"
 
 #: src/gloxi/backup_intro.py
 msgid "Type the numbers of the folders, for example: 1 3"
-msgstr ""
+msgstr "Įveskite aplankų numerius, pavyzdžiui: 1 3"
 
 #: src/gloxi/backup_intro.py
 msgid "Videos"
-msgstr ""
+msgstr "Vaizdo įrašai"
 
 #: src/gloxi/backup_intro.py
 msgid "Vilna cloud (EU)"
-msgstr ""
+msgstr "Vilna debesis (ES)"
 
 #: src/gloxi/backup_intro.py
 msgid "We are not talking about backups now."
-msgstr ""
+msgstr "Dabar nekalbame apie atsargines kopijas."
 
 #: src/gloxi/backup_intro.py
 msgid "What shall we keep? This is how much space it takes now:"
-msgstr ""
+msgstr "Ką saugosime? Tiek vietos tai užima dabar:"
 
 #: src/gloxi/backup_intro.py
 msgid "Where shall we keep them? Everything is encrypted on this computer first."
-msgstr ""
+msgstr "Kur jas laikysime? Viskas pirmiausia užšifruojama šiame kompiuteryje."
 
 #: src/gloxi/backup_intro.py src/gloxi/feedback.py
 msgid "Yes"
-msgstr ""
+msgstr "Taip"
 
 #: src/gloxi/backup_intro.py
 msgid "Yes, leave them out"
-msgstr ""
+msgstr "Taip, neįtraukti"
 
 #: src/gloxi/backup_intro.py
 msgid "every day"
-msgstr ""
+msgstr "kasdien"
 
 #: src/gloxi/backup_intro.py
 msgid "every hour"
-msgstr ""
+msgstr "kas valandą"
 
 #: src/gloxi/backup_intro.py
 msgid "every week"
-msgstr ""
+msgstr "kas savaitę"
 
 #: src/gloxi/backup_intro.py
 msgid "everything in the home folder"
-msgstr ""
+msgstr "viską namų aplanke"
 
 #: src/gloxi/backup_intro.py
 msgid "in your own storage"
-msgstr ""
+msgstr "jūsų saugykloje"
 
 #: src/gloxi/backup_intro.py
 msgid "no"
-msgstr ""
+msgstr "ne"
 
 #: src/gloxi/backup_intro.py
 msgid "on the external disk"
-msgstr ""
+msgstr "išoriniame diske"
 
 #: src/gloxi/backup_intro.py
 msgid "settings"
-msgstr ""
+msgstr "nustatymus"
 
 #: src/gloxi/backup_intro.py
 msgid "settings and documents"
-msgstr ""
+msgstr "nustatymus ir dokumentus"
 
 #: src/gloxi/backup_intro.py
 msgid "settings and the folders you chose"
-msgstr ""
+msgstr "nustatymus ir jūsų pasirinktus aplankus"
 
 #: src/gloxi/backup_intro.py src/gloxi/cli.py
 msgid "yes"
-msgstr ""
+msgstr "taip"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
@@ -298,104 +301,106 @@ msgid ""
 "{size} does not fit into {limit}. Leave out these large folders (about {after} remains)?\n"
 "{folders}"
 msgstr ""
+"{size} netelpa į {limit}. Neįtraukti šių didelių aplankų (liks apie {after})?\n"
+"{folders}"
 
 #: src/gloxi/backup_intro.py
 #, python-brace-format
 msgid "{size} does not fit. Choose a larger amount."
-msgstr ""
+msgstr "{size} netelpa. Pasirinkite didesnį dydį."
 
 #: src/gloxi/check.py
 msgid "Could not read the memory size; the local model may still work."
-msgstr ""
+msgstr "Nepavyko nuskaityti atminties dydžio; vietinis modelis vis tiek gali veikti."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Free disk space: {free}. The model needs {size}."
-msgstr ""
+msgstr "Laisva vieta diske: {free}. Modeliui reikia {size}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Gloxi starts {large} because its file is in the models folder, but the speed test has not shown that it is fast enough here. To go back to {small}, delete {file} from {folder}."
-msgstr ""
+msgstr "Gloxi paleidžia {large}, nes jo failas yra modelių aplanke, bet greičio testas neparodė, kad čia jis pakankamai greitas. Norėdami grįžti prie {small}, ištrinkite {file} iš {folder}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "Memory: {ram}. The local model needs at least 8 GB; Gloxi can still answer through the cloud with your own key."
-msgstr ""
+msgstr "Atmintis: {ram}. Vietiniam modeliui reikia bent 8 GB; Gloxi vis tiek gali atsakyti per debesį su jūsų raktu."
 
 #: src/gloxi/check.py
 msgid "The processor has no AVX2 (it is older than Intel Core 8th generation or Ryzen 2000), so the local model will be slow."
-msgstr ""
+msgstr "Procesorius neturi AVX2 (jis senesnis nei 8-osios kartos Intel Core ar Ryzen 2000), todėl vietinis modelis veiks lėtai."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer can run {name}."
-msgstr ""
+msgstr "Šiame kompiuteryje galima paleisti {name}."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer can run {name}. Gloxi will measure once whether the larger model would be fast enough."
-msgstr ""
+msgstr "Šiame kompiuteryje galima paleisti {name}. Gloxi vieną kartą pamatuos, ar didesnis modelis būtų pakankamai greitas."
 
 #: src/gloxi/check.py
 msgid "This computer is below the minimum for the local model."
-msgstr ""
+msgstr "Šis kompiuteris neatitinka vietinio modelio minimalių reikalavimų."
 
 #: src/gloxi/check.py
 #, python-brace-format
 msgid "This computer is fast enough for the larger model, {name}."
-msgstr ""
+msgstr "Šis kompiuteris pakankamai greitas didesniam modeliui, {name}."
 
 #: src/gloxi/check.py
 msgid "To paste into the feedback form:"
-msgstr ""
+msgstr "Įklijuoti į atsiliepimo formą:"
 
 #: src/gloxi/cli.py
 msgid "(interrupted)"
-msgstr ""
+msgstr "(nutraukta)"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Backups need Herkos, and it is not running."
-msgstr ""
+msgstr "Atsarginėms kopijoms reikia Herkos, o jis neveikia."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Checking how fast this computer runs the model (about a minute)…"
-msgstr ""
+msgstr "Tikrinama, kaip greitai šis kompiuteris vykdo modelį (apie minutę)…"
 
 #: src/gloxi/cli.py
 msgid "Cloud: off. Everything stays on this computer."
-msgstr ""
+msgstr "Debesis: išjungtas. Viskas lieka šiame kompiuteryje."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "Cloud: on ({mode} mode)."
-msgstr ""
+msgstr "Debesis: įjungtas (režimas {mode})."
 
 #: src/gloxi/cli.py
 msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
-msgstr ""
+msgstr "Komandos: /local <tekstas> arba /cloud <tekstas> parenka modelį vienai žinutei, /reset išvalo pokalbį, /backup nustato atsargines kopijas, /feedback praneša apie problemą ar ką nors pasiūlo, /exit išeina."
 
 #: src/gloxi/cli.py
 msgid "Conversation cleared."
-msgstr ""
+msgstr "Pokalbis išvalytas."
 
 #: src/gloxi/cli.py
 msgid "Download it now? [y/N] "
-msgstr ""
+msgstr "Atsisiųsti dabar? [t/N] "
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Downloading the model: {percent}%"
-msgstr ""
+msgstr "Atsisiunčiamas modelis: {percent} %"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Gloxi keeps the current model and will not ask again."
-msgstr ""
+msgstr "Gloxi pasilieka dabartinį modelį ir daugiau nebeklaus."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "Gloxi needs a language model on this computer to answer. It is {name}, {size}, licence {licence}, from {source}. It will be kept in {folder}. Only the file is downloaded: nothing about you is sent."
-msgstr ""
+msgstr "Kad galėtų atsakyti, Gloxi reikia kalbos modelio šiame kompiuteryje. Tai {name}, {size}, licencija {licence}, iš {source}. Jis bus laikomas {folder}. Atsisiunčiamas tik failas: nieko apie jus nesiunčiama."
 
 #: src/gloxi/cli.py
 msgid ""
@@ -403,462 +408,465 @@ msgid ""
 "  llama-server -m model.gguf --port 8080\n"
 "or point Gloxi elsewhere with GLOXI_LOCAL_URL."
 msgstr ""
+"Ar veikia llama-server? Pavyzdžiui:\n"
+"  llama-server -m model.gguf --port 8080\n"
+"arba nurodykite Gloxi kitą adresą per GLOXI_LOCAL_URL."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "Not downloaded. Gloxi will ask again next time."
-msgstr ""
+msgstr "Neatsisiųsta. Gloxi paklaus kitą kartą."
 
 #: src/gloxi/cli.py
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
-msgstr ""
+msgstr "Pastaba: maskavimas išjungtas (mask_cloud = false), todėl į debesį siunčiamos žinutės NĖRA maskuojamos."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Starting {name} on this computer…"
-msgstr ""
+msgstr "Šiame kompiuteryje paleidžiamas {name}…"
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model could not be started: {why}"
-msgstr ""
+msgstr "Modelio paleisti nepavyko: {why}"
 
 #: src/gloxi/cli.py
 msgid "The model is ready."
-msgstr ""
+msgstr "Modelis paruoštas."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 msgid "The model is ready. Gloxi will use it from the next start."
-msgstr ""
+msgstr "Modelis paruoštas. Gloxi jį naudos nuo kito paleidimo."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model was not downloaded: {why}"
-msgstr ""
+msgstr "Modelis neatsisiųstas: {why}"
 
 #: src/gloxi/cli.py
 msgid "There is no language model yet. Run gloxi in a terminal once to download it."
-msgstr ""
+msgstr "Kalbos modelio dar nėra. Kartą paleiskite gloxi terminale, kad jį atsisiųstumėte."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "This computer is fast enough for a better model: {name}, {size}, licence {licence}, from {source}. It answers better, in Ukrainian too; Gloxi expects about {speed} tokens per second here. It will be kept in {folder}, next to the current model, and Gloxi will use it from the next start. Only the file is downloaded: nothing about you is sent."
-msgstr ""
+msgstr "Šis kompiuteris pakankamai greitas geresniam modeliui: {name}, {size}, licencija {licence}, iš {source}. Jis atsako geriau, taip pat ir ukrainiečių kalba; Gloxi čia tikisi apie {speed} žetonų per sekundę. Jis bus laikomas {folder}, šalia dabartinio modelio, o Gloxi jį naudos nuo kito paleidimo. Atsisiunčiamas tik failas: nieko apie jus nesiunčiama."
 
 #: src/gloxi/cli.py
 msgid "Without a language model Gloxi cannot answer. Run gloxi again when you want to download it."
-msgstr ""
+msgstr "Be kalbos modelio Gloxi negali atsakyti. Kai norėsite jį atsisiųsti, vėl paleiskite gloxi."
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, masked]"
-msgstr ""
+msgstr "[debesis: {host}, maskuota]"
 
 #: src/gloxi/cli.py
 #, python-brace-format
 msgid "[cloud: {host}, not masked]"
-msgstr ""
+msgstr "[debesis: {host}, nemaskuota]"
 
 #: src/gloxi/cli.py
 msgid "[local]"
-msgstr ""
+msgstr "[vietinis]"
 
 #: src/gloxi/engine.py
 msgid "."
-msgstr ""
+msgstr ","
 
 #: src/gloxi/engine.py
 msgid "Mistral AI on Hugging Face"
-msgstr ""
+msgstr "Mistral AI per Hugging Face"
 
 #: src/gloxi/engine.py
 msgid "Qwen (Alibaba Cloud) on Hugging Face"
-msgstr ""
+msgstr "Qwen (Alibaba Cloud) per Hugging Face"
 
 #: src/gloxi/engine.py
 msgid "the model"
-msgstr ""
+msgstr "modelis"
 
 #: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} GB"
-msgstr ""
+msgstr "{value} GB"
 
 #: src/gloxi/engine.py
 #, python-brace-format
 msgid "{value} MB"
-msgstr ""
+msgstr "{value} MB"
 
 #: src/gloxi/feedback.py
 msgid "A suggestion"
-msgstr ""
+msgstr "Pasiūlymas"
 
 #: src/gloxi/feedback.py
 msgid "About this computer:"
-msgstr ""
+msgstr "Apie šį kompiuterį:"
 
 #: src/gloxi/feedback.py
 msgid "All right, nothing was sent."
-msgstr ""
+msgstr "Gerai, nieko neišsiųsta."
 
 #: src/gloxi/feedback.py src/gloxi/gui/window.py
 msgid "Cancel"
-msgstr ""
+msgstr "Atšaukti"
 
 #: src/gloxi/feedback.py
 msgid "Crash report:"
-msgstr ""
+msgstr "Strigties ataskaita:"
 
 #: src/gloxi/feedback.py
 msgid "Expected:"
-msgstr ""
+msgstr "Tikėtasi:"
 
 #: src/gloxi/feedback.py
 msgid "Gloxi stopped with an error recently. Add that crash report?"
-msgstr ""
+msgstr "Gloxi neseniai sustojo dėl klaidos. Pridėti tą strigties ataskaitą?"
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "Hidden before showing it here: {what}."
-msgstr ""
+msgstr "Paslėpta prieš rodant čia: {what}."
 
 #: src/gloxi/feedback.py
 msgid "May I add what this computer is (system, processor, memory, graphics, models), as gloxi check shows it? Nothing personal."
-msgstr ""
+msgstr "Ar galiu pridėti, koks tai kompiuteris (sistema, procesorius, atmintis, grafika, modeliai), kaip rodo gloxi check? Nieko asmeniško."
 
 #: src/gloxi/feedback.py
 msgid "Never mind"
-msgstr ""
+msgstr "Nesvarbu"
 
 #: src/gloxi/feedback.py
 msgid "Open the form"
-msgstr ""
+msgstr "Atverti formą"
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "Opening the form in your browser. Thank you! If it does not open: {url}"
-msgstr ""
+msgstr "Forma atveriama naršyklėje. Ačiū! Jei ji neatsidaro: {url}"
 
 #: src/gloxi/feedback.py
 msgid "Please answer 1 or 2."
-msgstr ""
+msgstr "Atsakykite 1 arba 2."
 
 #: src/gloxi/feedback.py
 msgid "Please answer 1, 2 or 3."
-msgstr ""
+msgstr "Atsakykite 1, 2 arba 3."
 
 #: src/gloxi/feedback.py
 msgid "Please write a few words, or /cancel to stop."
-msgstr ""
+msgstr "Parašykite kelis žodžius arba /cancel, kad sustabdytumėte."
 
 #: src/gloxi/feedback.py
 msgid "Something went wrong"
-msgstr ""
+msgstr "Kažkas nepavyko"
 
 #: src/gloxi/feedback.py
 msgid "Suggestion:"
-msgstr ""
+msgstr "Pasiūlymas:"
 
 #: src/gloxi/feedback.py
 msgid "This is public: anyone can read it on GitHub, and you need a GitHub account to send it. The form opens in your browser, where you can still change everything; it is sent only when you press Create there."
-msgstr ""
+msgstr "Tai vieša: bet kas gali tai perskaityti „GitHub“, o išsiųsti reikia „GitHub“ paskyros. Forma atsidaro naršyklėje, kur dar galite viską pakeisti; ji išsiunčiama tik tada, kai ten paspaudžiate Create."
 
 #: src/gloxi/feedback.py
 #, python-brace-format
 msgid "This sounds like a security problem. Please do not post it publicly: report it privately at {url}"
-msgstr ""
+msgstr "Panašu į saugumo problemą. Neskelbkite jos viešai: praneškite apie ją privačiai adresu {url}"
 
 #: src/gloxi/feedback.py
 msgid "Title:"
-msgstr ""
+msgstr "Pavadinimas:"
 
 #: src/gloxi/feedback.py
 msgid "What did you do or ask, and what happened?"
-msgstr ""
+msgstr "Ką darėte ar prašėte ir kas nutiko?"
 
 #: src/gloxi/feedback.py
 msgid "What did you expect instead? (Enter to skip)"
-msgstr ""
+msgstr "Ko tikėjotės vietoj to? (Enter – praleisti)"
 
 #: src/gloxi/feedback.py
 msgid "What happened:"
-msgstr ""
+msgstr "Kas nutiko:"
 
 #: src/gloxi/feedback.py
 msgid "What would you like to tell us?"
-msgstr ""
+msgstr "Ką norėtumėte mums pasakyti?"
 
 #: src/gloxi/feedback.py
 msgid "What would you suggest? A sentence or two is enough."
-msgstr ""
+msgstr "Ką siūlote? Užtenka vieno ar dviejų sakinių."
 
 #: src/gloxi/feedback.py
 msgid "a card number"
-msgstr ""
+msgstr "kortelės numeris"
 
 #: src/gloxi/feedback.py
 msgid "a date of birth"
-msgstr ""
+msgstr "gimimo data"
 
 #: src/gloxi/feedback.py
 msgid "a name"
-msgstr ""
+msgstr "vardas"
 
 #: src/gloxi/feedback.py
 msgid "a passport number"
-msgstr ""
+msgstr "paso numeris"
 
 #: src/gloxi/feedback.py
 msgid "a password or key"
-msgstr ""
+msgstr "slaptažodis ar raktas"
 
 #: src/gloxi/feedback.py
 msgid "a personal ID number"
-msgstr ""
+msgstr "asmens kodas"
 
 #: src/gloxi/feedback.py
 msgid "a phone number"
-msgstr ""
+msgstr "telefono numeris"
 
 #: src/gloxi/feedback.py
 msgid "a profile link"
-msgstr ""
+msgstr "profilio nuoroda"
 
 #: src/gloxi/feedback.py
 msgid "a tax number"
-msgstr ""
+msgstr "mokesčių mokėtojo numeris"
 
 #: src/gloxi/feedback.py
 msgid "an IP address"
-msgstr ""
+msgstr "IP adresas"
 
 #: src/gloxi/feedback.py
 msgid "an account number"
-msgstr ""
+msgstr "sąskaitos numeris"
 
 #: src/gloxi/feedback.py
 msgid "an address"
-msgstr ""
+msgstr "adresas"
 
 #: src/gloxi/feedback.py
 msgid "an e-mail address"
-msgstr ""
+msgstr "el. pašto adresas"
 
 #: src/gloxi/gui/controller.py
 msgid "Auto"
-msgstr ""
+msgstr "Automatiškai"
 
 #: src/gloxi/gui/controller.py
 msgid "Cannot reach the cloud model."
-msgstr ""
+msgstr "Nepavyksta pasiekti debesies modelio."
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud"
-msgstr ""
+msgstr "Debesis"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud off: everything stays on this computer"
-msgstr ""
+msgstr "Debesis išjungtas: viskas lieka šiame kompiuteryje"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud on, masking is off: messages are NOT masked"
-msgstr ""
+msgstr "Debesis įjungtas, maskavimas išjungtas: žinutės NĖRA maskuojamos"
 
 #: src/gloxi/gui/controller.py
 msgid "Cloud on, private data is masked"
-msgstr ""
+msgstr "Debesis įjungtas, privatūs duomenys maskuojami"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Cloud: {host}, masked"
-msgstr ""
+msgstr "Debesis: {host}, maskuota"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Cloud: {host}, not masked"
-msgstr ""
+msgstr "Debesis: {host}, nemaskuota"
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, backups"
-msgstr ""
+msgstr "Gloxi, atsarginės kopijos"
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, feedback"
-msgstr ""
+msgstr "Gloxi, atsiliepimas"
 
 #: src/gloxi/gui/controller.py
 msgid "Local"
-msgstr ""
+msgstr "Vietinis"
 
 #: src/gloxi/gui/controller.py
 msgid "On this computer"
-msgstr ""
+msgstr "Šiame kompiuteryje"
 
 #: src/gloxi/gui/controller.py
 msgid "Short messages stay on this computer, long ones go to the cloud"
-msgstr ""
+msgstr "Trumpos žinutės lieka šiame kompiuteryje, ilgos keliauja į debesį"
 
 #: src/gloxi/gui/controller.py src/gloxi/gui/window.py
 msgid "The cloud is turned off in the settings."
-msgstr ""
+msgstr "Debesis išjungtas nustatymuose."
 
 #: src/gloxi/gui/controller.py
 msgid "The local model is not running. Start llama-server and try again."
-msgstr ""
+msgstr "Vietinis modelis neveikia. Paleiskite llama-server ir bandykite dar kartą."
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "The model returned an error: {error}"
-msgstr ""
+msgstr "Modelis grąžino klaidą: {error}"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model} at {host}, NOT masked"
-msgstr ""
+msgstr "{model} serveryje {host}, NEMASKUOTA"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model} at {host}, private data masked"
-msgstr ""
+msgstr "{model} serveryje {host}, privatūs duomenys maskuoti"
 
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "{model}, on this computer"
-msgstr ""
+msgstr "{model}, šiame kompiuteryje"
 
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
-msgstr ""
+msgstr "Nuo Gloxi paslėpti veiksmai"
 
 #: src/gloxi/gui/window.py
 msgid "Add folder…"
-msgstr ""
+msgstr "Pridėti aplanką…"
 
 #: src/gloxi/gui/window.py
 msgid "Ask Gloxi… (/local or /cloud to pick the model)"
-msgstr ""
+msgstr "Klauskite Gloxi… (/local arba /cloud parenka modelį)"
 
 #: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
-msgstr ""
+msgstr "Pasirinkite aplanką Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Download"
-msgstr ""
+msgstr "Atsisiųsti"
 
 #: src/gloxi/gui/window.py
 msgid "Download the language model?"
-msgstr ""
+msgstr "Atsisiųsti kalbos modelį?"
 
 #: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
-msgstr ""
+msgstr "Aplankai, kuriuos Gloxi gali naudoti"
 
 #: src/gloxi/gui/window.py
 msgid "Gloxi can use only the programs you turn on here. Herkos asks you before turning one on, and every action still goes through it."
-msgstr ""
+msgstr "Gloxi gali naudoti tik tas programas, kurias čia įjungiate. Herkos jūsų paklausia prieš įjungdamas bet kurią, o kiekvienas veiksmas vis tiek eina per jį."
 
 #: src/gloxi/gui/window.py
 msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
-msgstr ""
+msgstr "Gloxi mato tik čia pasirinktus aplankus, o kiekvienas veiksmas juose eina per Herkos, kuris pirmiausia jūsų paklausia."
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not change it: {why}"
-msgstr ""
+msgstr "Herkos nepavyko to pakeisti: {why}"
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not restart: {why}"
-msgstr ""
+msgstr "Herkos nepavyko paleisti iš naujo: {why}"
 
 #: src/gloxi/gui/window.py
 msgid "Herkos found something suspicious in how the program describes them."
-msgstr ""
+msgstr "Herkos rado kažką įtartino tame, kaip programa juos aprašo."
 
 #: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
-msgstr ""
+msgstr "Ji pasileis, kai kitą kartą pasileis Herkos."
 
 #: src/gloxi/gui/window.py
 msgid "Model"
-msgstr ""
+msgstr "Modelis"
 
 #: src/gloxi/gui/window.py
 msgid "New conversation"
-msgstr ""
+msgstr "Naujas pokalbis"
 
 #: src/gloxi/gui/window.py
 msgid "No folders yet: Gloxi cannot see any of your files."
-msgstr ""
+msgstr "Aplankų dar nėra: Gloxi nemato nė vieno jūsų failo."
 
 #: src/gloxi/gui/window.py
 msgid "No programs for Gloxi are installed."
-msgstr ""
+msgstr "Programų Gloxi neįdiegta."
 
 #: src/gloxi/gui/window.py
 msgid "Not now"
-msgstr ""
+msgstr "Ne dabar"
 
 #: src/gloxi/gui/window.py
 msgid "Not turned on: you said no in the Herkos window."
-msgstr ""
+msgstr "Neįjungta: Herkos lange atsisakėte."
 
 #: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
-msgstr ""
+msgstr "Tik vietinis modelis: norėdami pasirinkti kitą, įjunkite debesį nustatymuose"
 
 #: src/gloxi/gui/window.py
 msgid "Programs for Gloxi"
-msgstr ""
+msgstr "Programos Gloxi"
 
 #: src/gloxi/gui/window.py
 msgid "Report a problem or suggest something"
-msgstr ""
+msgstr "Pranešti apie problemą ar ką nors pasiūlyti"
 
 #: src/gloxi/gui/window.py
 msgid "Send"
-msgstr ""
+msgstr "Siųsti"
 
 #: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
-msgstr ""
+msgstr "Nebebendrinti šio aplanko"
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"
-msgstr ""
+msgstr "Išjungta: Gloxi negali jos naudoti"
 
 #: src/gloxi/programs.py
 msgid "On"
-msgstr ""
+msgstr "Įjungta"
 
 #: src/gloxi/programs.py
 msgid "On: starts when Herkos starts again"
-msgstr ""
+msgstr "Įjungta: pasileis, kai Herkos pasileis iš naujo"
 
 #: src/gloxi/programs.py
 msgid "You turned this program on in Gloxi's settings"
-msgstr ""
+msgstr "Šią programą įjungėte Gloxi nustatymuose"
 
 #: src/gloxi/router.py
 msgid "Note: the cloud model changed some masked values, so they could not be put back. Check the answer before you use it."
-msgstr ""
+msgstr "Pastaba: debesies modelis pakeitė kai kurias maskuotas reikšmes, todėl jų nepavyko grąžinti. Prieš naudodami atsakymą, jį patikrinkite."
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (denied: {message})"
-msgstr ""
+msgstr "{what} (atmesta: {message})"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (done)"
-msgstr ""
+msgstr "{what} (atlikta)"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (done; warning: the content {warnings})"
-msgstr ""
+msgstr "{what} (atlikta; dėmesio: turinys {warnings})"
 
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (error: {message})"
-msgstr ""
+msgstr "{what} (klaida: {message})"

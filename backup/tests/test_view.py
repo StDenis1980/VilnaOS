@@ -148,11 +148,18 @@ def _msgids() -> set[str]:
     return ids
 
 
-def test_every_window_text_has_a_ukrainian_translation():
-    po = resources.files("vilna_backup.locale") / "uk.po"
+@pytest.mark.parametrize("lang", ["uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"])
+def test_every_window_text_is_translated(lang):
+    po = resources.files("vilna_backup.locale") / f"{lang}.po"
     catalog = i18n.parse_po(po.read_text(encoding="utf-8"))
     missing = sorted(_msgids() - catalog.keys())
     assert not missing, missing
+
+
+def test_german_dates_and_sizes():
+    i18n.use(["de"])
+    assert view.human_size(3_200_000_000) == "3,2 GB"
+    assert view.when(time.mktime((2026, 11, 3, 9, 5, 0, 0, 0, -1)), NOW) == "3. November um 09:05"
 
 
 def test_ukrainian():

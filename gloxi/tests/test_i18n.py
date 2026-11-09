@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Translations (ADR 0009): catalogues up to date, Ukrainian complete and used."""
+"""Translations (ADR 0009): catalogues up to date, every main language complete and used."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from gloxi.cli import HELP
+from gloxi.cli import HELP, yes_words
 from gloxi.i18n import DOMAIN, LOCALE_DIR
 from gloxi.tools import ToolOutcome
 
@@ -40,9 +40,36 @@ def test_ukrainian_is_used():
     assert uk.gettext("[local]") == "[локально]"
 
 
-def test_untranslated_language_falls_back_to_english():
-    es = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=["es"])
-    assert es.gettext(HELP) == HELP
+@pytest.mark.parametrize(
+    "lang, start",
+    [
+        ("es", "Órdenes:"),
+        ("pl", "Polecenia:"),
+        ("de", "Befehle:"),
+        ("fr", "Commandes :"),
+        ("it", "Comandi:"),
+        ("ro", "Comenzi:"),
+        ("cs", "Příkazy:"),
+        ("lt", "Komandos:"),
+    ],
+)
+def test_every_main_language_is_used(lang, start):
+    t = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=[lang])
+    assert t.gettext(HELP).startswith(start)
+
+
+def test_language_without_a_catalogue_falls_back_to_english():
+    t = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=["pt"], fallback=True)
+    assert t.gettext(HELP) == HELP
+
+
+@pytest.mark.parametrize("lang, letter", [("de", "j"), ("fr", "o"), ("ro", "d"), ("uk", "т")])
+def test_the_yes_letter_of_the_prompt_is_accepted(monkeypatch, lang, letter):
+    t = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=[lang])
+    monkeypatch.setattr("gloxi.cli._", t.gettext)
+    assert f"[{letter}/" in t.gettext("Download it now? [y/N] ").casefold()
+    assert letter in yes_words()
+    assert "n" not in yes_words()
 
 
 def test_mo_round_trip(tmp_path):

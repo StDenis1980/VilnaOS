@@ -1,0 +1,406 @@
+# Romanian translation of Herkos.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: ro\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# Window and terminal
+msgid "Herkos: permission"
+msgstr "Herkos: permisiune"
+
+msgid "Herkos: Gloxi asks for permission"
+msgstr "Herkos: Gloxi cere permisiunea"
+
+msgid "Gloxi's reason: "
+msgstr "Motivul lui Gloxi: "
+
+msgid "… and {n} more"
+msgstr "… și încă {n}"
+
+msgid "Can be undone."
+msgstr "Poate fi anulat."
+
+msgid "Cannot be undone."
+msgstr "Nu poate fi anulat."
+
+msgid "Riskier than usual: {why}."
+msgstr "Mai riscant decât de obicei: {why}."
+
+msgid "Untrusted content came from: {src}"
+msgstr "Conținut nesigur provenit de la: {src}"
+
+msgid "Exactly this will be done:"
+msgstr "Se va face exact acest lucru:"
+
+msgid "Deny"
+msgstr "Refuzați"
+
+msgid "Allow once"
+msgstr "Permiteți o dată"
+
+msgid "Allow for this session"
+msgstr "Permiteți pentru această sesiune"
+
+msgid "Always allow"
+msgstr "Permiteți mereu"
+
+msgid "[o] allow once"
+msgstr "[o] permiteți o dată"
+
+msgid "[s] allow for this session"
+msgstr "[s] permiteți pentru această sesiune"
+
+msgid "[a] always allow"
+msgstr "[a] permiteți mereu"
+
+msgid "[n] deny"
+msgstr "[n] refuzați"
+
+msgid "Allowed."
+msgstr "Permis."
+
+msgid "Denied."
+msgstr "Refuzat."
+
+msgid "No answer: denied."
+msgstr "Niciun răspuns: refuzat."
+
+# Why an action is riskier (policy)
+msgid "the tool has no Herkos manifest"
+msgstr "instrumentul nu are manifest Herkos"
+
+msgid "the program changed this action since it was allowed"
+msgstr "programul a schimbat această acțiune de când a fost permisă"
+
+msgid "the program describes this action at too great a length"
+msgstr "programul descrie această acțiune prea pe larg"
+
+msgid "Let Gloxi use this program: {program}"
+msgstr "Permiteți lui Gloxi să folosească acest program: {program}"
+
+msgid "the tool describes this operation as riskier"
+msgstr "instrumentul descrie această operație ca fiind mai riscantă"
+
+msgid "untrusted content is in the conversation"
+msgstr "în conversație există conținut nesigur"
+
+msgid "content read earlier {kinds}"
+msgstr "conținutul citit anterior {kinds}"
+
+msgid "it touches something outside the allowed folders"
+msgstr "atinge ceva din afara dosarelor permise"
+
+msgid "it touches more than {n} items at once"
+msgstr "atinge mai mult de {n} elemente deodată"
+
+msgid "it cannot be undone"
+msgstr "nu poate fi anulat"
+
+msgid "Herkos cannot tell which of the program's commands this runs"
+msgstr "Herkos nu își poate da seama ce comandă a programului rulează aceasta"
+
+msgid "the manifest gives no level for the program's command {commands}"
+msgstr "manifestul nu dă un nivel pentru comanda {commands} a programului"
+
+msgid "data leaves this device"
+msgstr "datele părăsesc acest dispozitiv"
+
+msgid "it sends data to an address that came from untrusted content"
+msgstr "trimite date la o adresă care a venit din conținut nesigur"
+
+# Keros findings
+msgid "asks the assistant to ignore its instructions"
+msgstr "cere asistentului să-și ignore instrucțiunile"
+
+msgid "tries to give the assistant a new role or new instructions"
+msgstr "încearcă să dea asistentului un rol nou sau instrucțiuni noi"
+
+msgid "contains chat-template or system markers"
+msgstr "conține marcaje de șablon de chat sau de sistem"
+
+msgid "contains text hidden from people (HTML/CSS)"
+msgstr "conține text ascuns de oameni (HTML/CSS)"
+
+msgid "contains a link that could carry data away"
+msgstr "conține un link care ar putea scoate date"
+
+msgid "contains invisible or direction-changing characters"
+msgstr "conține caractere invizibile sau care schimbă direcția textului"
+
+msgid "the local check found text addressed to the assistant"
+msgstr "verificarea locală a găsit text adresat asistentului"
+
+# Tool operations (manifest summaries)
+msgid "List a folder"
+msgstr "Listarea unui dosar"
+
+msgid "Search files by name and text"
+msgstr "Căutarea fișierelor după nume și text"
+
+msgid "Read a file"
+msgstr "Citirea unui fișier"
+
+msgid "Create a file"
+msgstr "Crearea unui fișier"
+
+msgid "Change a file"
+msgstr "Modificarea unui fișier"
+
+msgid "Delete a file"
+msgstr "Ștergerea unui fișier"
+
+msgid "Undo an earlier change to a file"
+msgstr "Anularea unei modificări anterioare a unui fișier"
+
+# Backups (org.vilna.mcp.backup)
+msgid "See whether backups are on and how the last one went"
+msgstr "Verificarea dacă copiile sunt activate și cum a decurs ultima"
+
+msgid "List the backups"
+msgstr "Listarea copiilor de siguranță"
+
+msgid "See how much space the folders take"
+msgstr "Verificarea spațiului ocupat de dosare"
+
+msgid "Make a backup now"
+msgstr "Facerea unei copii acum"
+
+msgid "Change how often backups are made"
+msgstr "Schimbarea frecvenței copiilor"
+
+msgid "Change what goes into backups"
+msgstr "Schimbarea a ceea ce intră în copii"
+
+msgid "Bring a backup back into a new folder"
+msgstr "Readucerea unei copii într-un dosar nou"
+
+msgid "Choose where backups are kept"
+msgstr "Alegerea locului unde sunt păstrate copiile"
+
+msgid "Bring files back over the current ones"
+msgstr "Readucerea fișierelor peste cele actuale"
+
+msgid "Delete backups"
+msgstr "Ștergerea copiilor"
+
+msgid "Move backups to another place"
+msgstr "Mutarea copiilor în alt loc"
+
+msgid "Replace the backup keys"
+msgstr "Înlocuirea cheilor copiilor"
+
+msgid "Protect backups after a device was stolen"
+msgstr "Protejarea copiilor după furtul unui dispozitiv"
+
+# The «Дозволи» window (permissions_window.py, permissions_view.py)
+
+msgid "All"
+msgstr "Toate"
+
+msgid "Allowed, but the tool failed"
+msgstr "Permis, dar instrumentul a eșuat"
+
+msgid "Always"
+msgstr "Mereu"
+
+msgid "January"
+msgstr "ianuarie"
+
+msgid "February"
+msgstr "februarie"
+
+msgid "March"
+msgstr "martie"
+
+msgid "April"
+msgstr "aprilie"
+
+msgid "May"
+msgstr "mai"
+
+msgid "June"
+msgstr "iunie"
+
+msgid "July"
+msgstr "iulie"
+
+msgid "August"
+msgstr "august"
+
+msgid "September"
+msgstr "septembrie"
+
+msgid "October"
+msgstr "octombrie"
+
+msgid "November"
+msgstr "noiembrie"
+
+msgid "December"
+msgstr "decembrie"
+
+msgid "Backups"
+msgstr "Copii de siguranță"
+
+msgid "Cancel"
+msgstr "Anulare"
+
+msgid "Changes can be undone for 30 days. The journal cannot be altered."
+msgstr "Modificările pot fi anulate timp de 30 de zile. Jurnalul nu poate fi modificat."
+
+msgid "Done"
+msgstr "Gata"
+
+msgid "Done, then undone"
+msgstr "Făcut, apoi anulat"
+
+msgid "Files"
+msgstr "Fișiere"
+
+msgid "Gloxi asked to {what}"
+msgstr "Gloxi a cerut: {what}"
+
+msgid "Gloxi asks before it changes anything. Here is what you allowed without asking again; take back anything you no longer want."
+msgstr "Gloxi întreabă înainte de a schimba ceva. Iată ce ați permis fără a mai fi întrebat; retrageți tot ce nu mai doriți."
+
+msgid "Gloxi brought a backup back into a new folder"
+msgstr "Gloxi a readus o copie într-un dosar nou"
+
+msgid "Gloxi brought back an earlier version of a file"
+msgstr "Gloxi a readus o versiune anterioară a unui fișier"
+
+msgid "Gloxi changed a file"
+msgstr "Gloxi a modificat un fișier"
+
+msgid "Gloxi changed how often backups are made"
+msgstr "Gloxi a schimbat frecvența copiilor"
+
+msgid "Gloxi changed what goes into backups"
+msgstr "Gloxi a schimbat ce intră în copii"
+
+msgid "Gloxi checked the backups"
+msgstr "Gloxi a verificat copiile"
+
+msgid "Gloxi created a file"
+msgstr "Gloxi a creat un fișier"
+
+msgid "Gloxi deleted a file"
+msgstr "Gloxi a șters un fișier"
+
+msgid "Gloxi listed the backups"
+msgstr "Gloxi a listat copiile"
+
+msgid "Gloxi looked at how much space the folders take"
+msgstr "Gloxi a verificat cât spațiu ocupă dosarele"
+
+msgid "Gloxi looked into a folder"
+msgstr "Gloxi s-a uitat într-un dosar"
+
+msgid "Gloxi read a file"
+msgstr "Gloxi a citit un fișier"
+
+msgid "Gloxi searched files"
+msgstr "Gloxi a căutat fișiere"
+
+msgid "Gloxi started a backup"
+msgstr "Gloxi a pornit o copie"
+
+msgid "Gloxi will ask you again before it does this: {what}."
+msgstr "Gloxi vă va întreba din nou înainte de a face asta: {what}."
+
+msgid "Gloxi will ask you each time."
+msgstr "Gloxi vă va întreba de fiecare dată."
+
+msgid "Gloxi's reason"
+msgstr "Motivul lui Gloxi"
+
+msgid "Herkos did not allow it"
+msgstr "Herkos nu a permis"
+
+msgid "Herkos is not answering: {why}"
+msgstr "Herkos nu răspunde: {why}"
+
+msgid "Journal"
+msgstr "Jurnal"
+
+msgid "No answer recorded"
+msgstr "Niciun răspuns înregistrat"
+
+msgid "No permissions"
+msgstr "Nicio permisiune"
+
+msgid "Nobody answered in time"
+msgstr "Nimeni nu a răspuns la timp"
+
+msgid "Not allowed at all"
+msgstr "Nepermis deloc"
+
+msgid "Not assessed"
+msgstr "Neevaluat"
+
+msgid "Not undone: you said no."
+msgstr "Neanulat: ați refuzat."
+
+msgid "Not undone: {why}"
+msgstr "Neanulat: {why}"
+
+msgid "Nothing here yet"
+msgstr "Încă nimic aici"
+
+msgid "Permission revoked."
+msgstr "Permisiune retrasă."
+
+msgid "Permissions"
+msgstr "Permisiuni"
+
+msgid "Programs"
+msgstr "Programe"
+
+msgid "Refresh"
+msgstr "Reîmprospătare"
+
+msgid "Revoke"
+msgstr "Retrageți"
+
+msgid "Revoke this permission?"
+msgstr "Retrageți această permisiune?"
+
+msgid "Risk level {level}"
+msgstr "Nivel de risc {level}"
+
+msgid "There is nothing left to undo for this action."
+msgstr "Pentru această acțiune nu mai e nimic de anulat."
+
+msgid "Today"
+msgstr "Azi"
+
+msgid "Undo"
+msgstr "Anulați"
+
+msgid "Undone. The earlier version is back."
+msgstr "Anulat. Versiunea anterioară a revenit."
+
+msgid "Until the session ends"
+msgstr "Până la sfârșitul sesiunii"
+
+msgid "What"
+msgstr "Ce"
+
+msgid "When Gloxi does something for you, it shows up here."
+msgstr "Când Gloxi face ceva pentru dumneavoastră, apare aici."
+
+msgid "Yesterday"
+msgstr "Ieri"
+
+msgid "You said no"
+msgstr "Ați refuzat"
+
+msgid "{day} {month}"
+msgstr "{day} {month}"
+
+msgid "{how} · in {where}"
+msgstr "{how} · în {where}"
+
+msgid "{name} and {n} more"
+msgstr "{name} și încă {n}"
