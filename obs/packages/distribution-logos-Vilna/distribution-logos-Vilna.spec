@@ -54,7 +54,6 @@ install -D -m 0644 %{SOURCE1} %{buildroot}%{_datadir}/icons/hicolor/symbolic/app
 install -d %{buildroot}%{_datadir}/pixmaps/distribution-logos
 ln -s ../../icons/hicolor/scalable/apps/vilna-logo.svg %{buildroot}%{_datadir}/pixmaps/distribution-logos/square-hicolor.svg
 ln -s ../../icons/hicolor/symbolic/apps/vilna-logo-symbolic.svg %{buildroot}%{_datadir}/pixmaps/distribution-logos/square-symbolic.svg
-%{_datadir}/pixmaps/distribution-logos/vilna-logo-dark-bg.svg
 install -D -m 0644 %{SOURCE0} %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/distributor.svg
 install -m 0644 %{SOURCE2} %{buildroot}%{_datadir}/pixmaps/distribution-logos/vilna-logo-dark-bg.svg
 
@@ -64,6 +63,7 @@ install -m 0644 %{SOURCE2} %{buildroot}%{_datadir}/pixmaps/distribution-logos/vi
 %dir %{_datadir}/pixmaps/distribution-logos
 %{_datadir}/pixmaps/distribution-logos/square-hicolor.svg
 %{_datadir}/pixmaps/distribution-logos/square-symbolic.svg
+%{_datadir}/pixmaps/distribution-logos/vilna-logo-dark-bg.svg
 
 %files -n hicolor-icon-theme-branding-Vilna
 %{_datadir}/icons/hicolor/scalable/apps/distributor.svg
