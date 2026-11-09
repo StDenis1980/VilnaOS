@@ -37,7 +37,7 @@ Requires:       herkos-agent
 # useradd/userdel for vilna-people-sync.
 Requires:       shadow
 # The shared local model (vilna-llm.service).
-Requires:       llama.cpp
+Requires:       llamacpp
 %{?systemd_ordering}
 BuildArch:      noarch
 
