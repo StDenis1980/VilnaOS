@@ -123,7 +123,7 @@ msgid "The server address is not right: {why}"
 msgstr "Адреса сервера неправильна: {why}"
 
 msgid "Vilna cloud"
-msgstr "Хмара Vilna"
+msgstr "Vilna хмара"
 
 msgid "In the EU · coming later"
 msgstr "У ЄС · з'явиться пізніше"
