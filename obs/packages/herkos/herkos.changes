@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Nov  9 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkos-agent no longer restarts every 3 s all session where herkosd
+  serves nobody (the login screen, GNOME Initial Setup, an account that
+  is not a person in system.toml): it exits with status 77, which the
+  unit does not restart, and does not start for gdm-greeter,
+  gnome-initial-setup and system accounts at all (Build11.3 VM test)
+
+-------------------------------------------------------------------
 Thu Nov  5 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - New subpackage herkos-manifests: the catalogue of programs Gloxi may

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Nov  9 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: gnome-branding-Vilna stops GNOME Initial Setup's session within
+  5 s on poweroff. It locks logout down, so gnome-session-service waited
+  for the 90 s default timeout and shutdown took about 90 s (Build11.3).
+
+-------------------------------------------------------------------
 Sun Nov  8 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.2: gnome-branding-Vilna sets GNOME's Adwaita wallpaper; the
