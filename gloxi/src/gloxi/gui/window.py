@@ -27,6 +27,7 @@ from gloxi.gui.controller import (  # noqa: E402
     current_choice,
     model_choices,
 )
+from gloxi.gui.shortcuts import FALLBACK_COMMAND, GlobalShortcut  # noqa: E402
 from gloxi.herkos_local import (  # noqa: E402
     LocalHerkos,
     add_folder,
@@ -465,8 +466,26 @@ class ChatWindow(Adw.ApplicationWindow):
 
 class GloxiApp(Adw.Application):
     def __init__(self) -> None:
-        super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.DEFAULT_FLAGS)
+        super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
         self._clients: list[ChatClient] = []
+        self._shortcut: GlobalShortcut | None = None
+        # `gloxi-gtk --toggle`: what a key of one's own runs where the
+        # GlobalShortcuts portal is missing (ADR 0023, section 5).
+        self.add_main_option(
+            "toggle",
+            0,
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            _("Show Gloxi, or hide it if it is in front"),
+            None,
+        )
+
+    def do_command_line(self, command_line: Gio.ApplicationCommandLine) -> int:
+        if command_line.get_options_dict().contains("toggle"):
+            self.toggle()
+        else:
+            self.activate()
+        return 0
 
     def do_activate(self) -> None:
         window = self.get_active_window()
@@ -474,6 +493,29 @@ class GloxiApp(Adw.Application):
             window = self._build_window()
         if window is not None:
             window.present()
+            self._bind_shortcut()
+
+    def toggle(self) -> None:
+        """Hide Gloxi when it is in front; otherwise bring it up, ready to type."""
+        window = self.get_active_window()
+        if window is not None and window.get_visible() and window.is_active():
+            window.set_visible(False)  # the conversation stays as it is
+            return
+        self.activate()
+        window = self.get_active_window()
+        if isinstance(window, ChatWindow):
+            window.entry.grab_focus()
+
+    def _bind_shortcut(self) -> None:
+        if self._shortcut is not None:
+            return
+        self._shortcut = GlobalShortcut(
+            on_activated=self.toggle,
+            on_unavailable=lambda: print(
+                f"gloxi: no global shortcut; bind a key to: {FALLBACK_COMMAND}", file=sys.stderr
+            ),
+        )
+        self._shortcut.start()
 
     def _build_window(self) -> ChatWindow | None:
         try:
@@ -507,6 +549,8 @@ class GloxiApp(Adw.Application):
         return window
 
     def do_shutdown(self) -> None:
+        if self._shortcut is not None:
+            self._shortcut.stop()
         for client in self._clients:
             client.close()
         if getattr(self, "_tools", None):
@@ -529,7 +573,7 @@ def main(argv: list[str] | None = None) -> int:
     # quitting runs do_shutdown, which stops them.
     for signum in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signum, _quit, app)
-    return app.run(sys.argv[:1] if argv is None else argv)
+    return app.run(sys.argv if argv is None else argv)
 
 
 def _quit(app: Adw.Application) -> bool:

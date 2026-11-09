@@ -151,6 +151,48 @@ system = """You turn a user's request into a JSON command. Tools: files.search {
 prompt = "Розкажи анекдот про котів"
 checks = { json_keys = ["tool", "args"], not_contains = ["files.search", "files.read"] }
 
+[[task]]
+id = "json-calendar-tomorrow"
+category = "структура"
+system = """You turn a user's request into a JSON command. Tools: calendar.list_events {"period": "today"|"tomorrow"|"this_week"|"next_week"|"this_month"|"next_month"}, calendar.search_events {"query": str}. Reply with ONLY a JSON object {"tool": ..., "args": {...}}, no other text."""
+prompt = "Що в мене завтра?"
+checks = { json_keys = ["tool", "args"], contains_all = ["calendar.list_events", "tomorrow"] }
+
+[[task]]
+id = "json-calendar-search"
+category = "структура"
+system = """You turn a user's request into a JSON command. Tools: calendar.list_events {"period": "today"|"tomorrow"|"this_week"|"next_week"|"this_month"|"next_month"}, calendar.search_events {"query": str}. Reply with ONLY a JSON object {"tool": ..., "args": {...}}, no other text."""
+prompt = "Коли в мене зустріч з Оксаною Вигаданою?"
+checks = { json_keys = ["tool", "args"], contains_all = ["calendar.search_events", "Оксан"] }
+
+[[task]]
+id = "json-settings-dark"
+category = "структура"
+system = """You turn a user's request into a JSON command. Tools: settings.set_color_scheme {"scheme": "light"|"dark"}, settings.set_night_light {"enabled": bool, "from_hour": number, "to_hour": number}, settings.set_volume {"percent": int}, settings.set_do_not_disturb {"enabled": bool}. Reply with ONLY a JSON object {"tool": ..., "args": {...}}, no other text."""
+prompt = "Зроби темну тему, очі втомилися"
+checks = { json_keys = ["tool", "args"], contains_all = ["settings.set_color_scheme", "dark"] }
+
+[[task]]
+id = "json-settings-night-light"
+category = "структура"
+system = """You turn a user's request into a JSON command. Tools: settings.set_color_scheme {"scheme": "light"|"dark"}, settings.set_night_light {"enabled": bool, "from_hour": number, "to_hour": number}, settings.set_volume {"percent": int}, settings.set_do_not_disturb {"enabled": bool}. Reply with ONLY a JSON object {"tool": ..., "args": {...}}, no other text."""
+prompt = "Увімкни нічне світло з десятої вечора до сьомої ранку"
+checks = { json_keys = ["tool", "args"], contains_all = ["settings.set_night_light", "22", "7"] }
+
+[[task]]
+id = "json-settings-volume"
+category = "структура"
+system = """You turn a user's request into a JSON command. Tools: settings.set_color_scheme {"scheme": "light"|"dark"}, settings.set_night_light {"enabled": bool, "from_hour": number, "to_hour": number}, settings.set_volume {"percent": int}, settings.set_do_not_disturb {"enabled": bool}. Reply with ONLY a JSON object {"tool": ..., "args": {...}}, no other text."""
+prompt = "Зменш гучність до 30 відсотків"
+checks = { json_keys = ["tool", "args"], contains_all = ["settings.set_volume"], regex = "\\b30\\b" }
+
+[[task]]
+id = "json-settings-dnd"
+category = "структура"
+system = """You turn a user's request into a JSON command. Tools: settings.set_color_scheme {"scheme": "light"|"dark"}, settings.set_night_light {"enabled": bool, "from_hour": number, "to_hour": number}, settings.set_volume {"percent": int}, settings.set_do_not_disturb {"enabled": bool}. Reply with ONLY a JSON object {"tool": ..., "args": {...}}, no other text."""
+prompt = "Не турбуй мене годину, вимкни сповіщення"
+checks = { json_keys = ["tool", "args"], contains_all = ["settings.set_do_not_disturb", "true"] }
+
 # --- Routing: can the small model tell simple from hard? -------------------------
 
 [[task]]

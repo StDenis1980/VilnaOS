@@ -725,6 +725,10 @@ msgstr ""
 msgid "{model}, on this computer"
 msgstr ""
 
+#: src/gloxi/gui/shortcuts.py
+msgid "Show or hide Gloxi"
+msgstr ""
+
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
 msgstr ""
@@ -817,6 +821,10 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Send"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi, or hide it if it is in front"
 msgstr ""
 
 #: src/gloxi/gui/window.py

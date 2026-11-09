@@ -22,7 +22,7 @@ def used_messages() -> set[str]:
     found.add("contains invisible or direction-changing characters")
     found.add(MODEL_FINDING.description)
     found |= set(_LABELS.values()) | set(LABELS.values())
-    for tool in ("org.vilna.mcp.files",):
+    for tool in ("org.vilna.mcp.files", "org.vilna.mcp.settings", "org.vilna.mcp.calendar"):
         found |= {op.summary for op in ManifestRegistry.builtin().get(tool).operations.values()}
     return found
 
