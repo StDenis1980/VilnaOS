@@ -404,3 +404,44 @@ msgstr "{how} · în {where}"
 
 msgid "{name} and {n} more"
 msgstr "{name} și încă {n}"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Vizualizarea setărilor desktopului"
+
+msgid "Switch between the light and the dark style"
+msgstr "Comutarea între stilul luminos și cel întunecat"
+
+msgid "Change the accent colour"
+msgstr "Schimbarea culorii de accent"
+
+msgid "Change the text size"
+msgstr "Schimbarea mărimii textului"
+
+msgid "Change night light"
+msgstr "Schimbarea luminii de noapte"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Activarea sau dezactivarea modului Nu deranjați"
+
+msgid "Change the volume"
+msgstr "Schimbarea volumului"
+
+msgid "Mute or unmute the sound"
+msgstr "Oprirea sau pornirea sunetului"
+
+msgid "Play sound through another output"
+msgstr "Redarea sunetului pe altă ieșire"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Anularea unei modificări anterioare a setărilor"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Listarea calendarelor"
+
+msgid "Read the calendar"
+msgstr "Citirea calendarului"
+
+msgid "Search the calendar"
+msgstr "Căutarea în calendar"

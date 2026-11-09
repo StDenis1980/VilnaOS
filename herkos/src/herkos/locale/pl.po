@@ -404,3 +404,44 @@ msgstr "{how} · w {where}"
 
 msgid "{name} and {n} more"
 msgstr "{name} i jeszcze {n}"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Sprawdzić ustawienia pulpitu"
+
+msgid "Switch between the light and the dark style"
+msgstr "Przełączyć między jasnym a ciemnym stylem"
+
+msgid "Change the accent colour"
+msgstr "Zmienić kolor akcentu"
+
+msgid "Change the text size"
+msgstr "Zmienić rozmiar tekstu"
+
+msgid "Change night light"
+msgstr "Zmienić ustawienia światła nocnego"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Włączyć lub wyłączyć tryb Nie przeszkadzać"
+
+msgid "Change the volume"
+msgstr "Zmienić głośność"
+
+msgid "Mute or unmute the sound"
+msgstr "Wyciszyć lub włączyć dźwięk"
+
+msgid "Play sound through another output"
+msgstr "Odtwarzać dźwięk przez inne wyjście"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Cofnąć wcześniejszą zmianę ustawień"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Wyświetlić listę kalendarzy"
+
+msgid "Read the calendar"
+msgstr "Przeczytać kalendarz"
+
+msgid "Search the calendar"
+msgstr "Szukać w kalendarzu"

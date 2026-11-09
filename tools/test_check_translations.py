@@ -59,6 +59,10 @@ class Catalogues(unittest.TestCase):
         self.assertIn("pl.po: placeholders differ in '{n} files'", text)
         self.assertIn("cs.po: missing", text)
 
+    def test_extra_entries_are_allowed(self):
+        self.write("es", po("es", {**self.full, "Read the calendar": "Leer el calendario"}))
+        self.assertEqual(ct.check_catalogues(self.dir), [])
+
     def test_multiline_msgstr_counts_as_translated(self):
         self.write(
             "it",

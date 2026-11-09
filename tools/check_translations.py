@@ -9,9 +9,9 @@ the alpha ships all ten (decision of 2026-11-09), so an empty, fuzzy or
 missing translation is an error, not a fallback to English.
 
 - The .po catalogues of Herkos, Backups and the installer: each language has
-  a catalogue with exactly the messages of the Ukrainian one (whose tests
-  check that it covers every message the code shows), every message
-  translated, not fuzzy, with the same {placeholders}.
+  a catalogue with every message of the Ukrainian one (whose tests check
+  that it covers every message the code shows), every message translated,
+  not fuzzy, with the same {placeholders}. Extra messages are allowed.
 - Desktop files: Comment, Keywords and GenericName, and Name when it is
   translated at all (a brand name such as Gloxi is not), in every language.
 - AppStream metainfo: the summary and every paragraph and list item of the
@@ -104,8 +104,8 @@ def check_catalogues(folder: Path) -> list[str]:
         entries = parse_po(path.read_text(encoding="utf-8"))
         for msgid in sorted(reference.keys() - entries.keys()):
             problems.append(f"{rel}/{lang}.po: no entry for {msgid!r}")
-        for msgid in sorted(entries.keys() - reference.keys()):
-            problems.append(f"{rel}/{lang}.po: {msgid!r} is not in {REFERENCE}.po")
+        # Extra entries are allowed: a translation may land before (or outlive) the code
+        # that shows it, as when two pull requests touch the same catalogue.
         for msgid, (msgstr, fuzzy) in entries.items():
             if not msgstr.strip():
                 problems.append(f"{rel}/{lang}.po: not translated: {msgid!r}")

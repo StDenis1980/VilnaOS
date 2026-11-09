@@ -404,3 +404,44 @@ msgstr "{how} · {where}"
 
 msgid "{name} and {n} more"
 msgstr "{name} ir dar {n}"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Pažiūrėti darbalaukio nustatymus"
+
+msgid "Switch between the light and the dark style"
+msgstr "Perjungti šviesų ir tamsų stilių"
+
+msgid "Change the accent colour"
+msgstr "Pakeisti akcento spalvą"
+
+msgid "Change the text size"
+msgstr "Pakeisti teksto dydį"
+
+msgid "Change night light"
+msgstr "Pakeisti naktinę šviesą"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Įjungti arba išjungti „Netrukdyti“"
+
+msgid "Change the volume"
+msgstr "Pakeisti garsumą"
+
+msgid "Mute or unmute the sound"
+msgstr "Išjungti arba įjungti garsą"
+
+msgid "Play sound through another output"
+msgstr "Leisti garsą per kitą išvestį"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Atšaukti ankstesnį nustatymų pakeitimą"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Parodyti kalendorių sąrašą"
+
+msgid "Read the calendar"
+msgstr "Perskaityti kalendorių"
+
+msgid "Search the calendar"
+msgstr "Ieškoti kalendoriuje"
