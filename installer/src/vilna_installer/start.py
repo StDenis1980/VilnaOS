@@ -142,6 +142,10 @@ def default_language(environ: dict[str, str] | None = None) -> str:
 def normalize_locale(name: str) -> str | None:
     """``pt_BR.UTF-8``, ``pt_BR.utf8``, ``sr_RS@latin`` (UTF-8) → ``xx_YY.UTF-8[@mod]``."""
     base, _, modifier = name.strip().partition("@")
+    # "@euro" only chose the euro sign in old 8-bit charsets; in UTF-8 it is
+    # the same locale (pt_PT.UTF-8@euro showed as a second, raw entry).
+    if modifier == "euro":
+        modifier = ""
     lang, _, charset = base.partition(".")
     if charset and charset.lower().replace("-", "") != "utf8":
         return None

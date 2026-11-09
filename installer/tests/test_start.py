@@ -165,3 +165,11 @@ def test_the_menu_entry_is_named_in_the_ten_languages():
         for code in start.CODES:
             if code != "en":
                 assert entry.get(f"{key}[{code}]"), f"{key}[{code}]"
+
+
+def test_euro_is_the_same_utf8_locale():
+    assert start.normalize_locale("pt_PT.UTF-8@euro") == "pt_PT.UTF-8"
+    assert start.parse_supported("pt_PT.UTF-8@euro UTF-8\npt_PT.UTF-8 UTF-8\n") == [
+        "pt_PT.UTF-8",
+        "pt_PT.UTF-8",
+    ]

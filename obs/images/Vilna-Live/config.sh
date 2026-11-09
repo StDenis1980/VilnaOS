@@ -112,28 +112,69 @@ META
 cat >"$ext/extension.js" <<'JS'
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Vilna live image only (obs/images/Vilna-Live/config.sh).
+//
+// GNOME Shell 51 runs the startup animation into the overview whenever
+// the session mode has an overview (layout.js: "if
+// (Main.sessionMode.hasOverview) await
+// Main.overview.runStartupAnimation()"), and has no startInOverview to
+// turn it off (VM test 2 of 2026-11-09). So: no overview while the
+// shell starts up, the overview back once it has, and, if the overview
+// is shown all the same in the first seconds, hide it.
+import GLib from 'gi://GLib';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
+const GRACE_SECONDS = 15;
+
 export default class VilnaLiveExtension extends Extension {
     enable() {
-        this._startInOverview = Main.layoutManager.startInOverview;
-        Main.layoutManager.startInOverview = false;
         if (Main.layoutManager._startingUp) {
+            Main.sessionMode.hasOverview = false;
             this._startup = Main.layoutManager.connect('startup-complete', () => {
-                Main.overview.hide();
-                Main.layoutManager.disconnect(this._startup);
-                this._startup = null;
+                Main.sessionMode.hasOverview = true;
+                this._disconnectStartup();
             });
         }
+        this._hide();
+        this._shown = Main.overview.connect('shown', () => this._hide());
+        this._grace = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, GRACE_SECONDS, () => {
+            this._grace = 0;
+            this._disconnectShown();
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     disable() {
+        if (this._startup)
+            Main.sessionMode.hasOverview = true;
+        this._disconnectStartup();
+        this._disconnectShown();
+        if (this._grace) {
+            GLib.source_remove(this._grace);
+            this._grace = 0;
+        }
+    }
+
+    _hide() {
+        if (Main.overview.visible)
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                Main.overview.hide();
+                return GLib.SOURCE_REMOVE;
+            });
+    }
+
+    _disconnectStartup() {
         if (this._startup) {
             Main.layoutManager.disconnect(this._startup);
             this._startup = null;
         }
-        Main.layoutManager.startInOverview = this._startInOverview;
+    }
+
+    _disconnectShown() {
+        if (this._shown) {
+            Main.overview.disconnect(this._shown);
+            this._shown = null;
+        }
     }
 }
 JS
