@@ -25,8 +25,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from gloxi.voice import speech
-from gloxi.voice.stt import Recognizer
-from gloxi.voice.tts import Synthesizer
+from gloxi.voice.stt import RecognitionError, Recognizer
+from gloxi.voice.tts import SpeechError, Synthesizer
 
 # Everyday requests to an assistant, one per language, with a time and a number.
 PHRASES = {
@@ -139,7 +139,18 @@ def peak_memory_mb() -> float:
 
 
 def main(base: Path, langs: list[str] | None, as_json: bool) -> int:
-    results = run(base, langs)
+    unknown = sorted(set(langs or ()) - set(PHRASES))
+    if unknown:
+        print(f"gloxi-bench: no voice phrase for {', '.join(unknown)}", file=sys.stderr)
+        return 2
+    if not Recognizer(base).ready():
+        print("gloxi-bench: no voice models; run: gloxi voice download", file=sys.stderr)
+        return 1
+    try:
+        results = run(base, langs)
+    except (RecognitionError, SpeechError, ImportError) as exc:
+        print(f"gloxi-bench: {exc}", file=sys.stderr)
+        return 1
     if as_json:
         print(json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2))
     else:

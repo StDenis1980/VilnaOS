@@ -291,7 +291,7 @@ msgstr "налаштування і документи"
 msgid "settings and the folders you chose"
 msgstr "налаштування і вибрані вами теки"
 
-#: src/gloxi/backup_intro.py src/gloxi/cli.py
+#: src/gloxi/backup_intro.py src/gloxi/cli.py src/gloxi/voice/cli.py
 msgid "yes"
 msgstr "так"
 
@@ -384,7 +384,7 @@ msgstr "Команди: /local <текст> чи /cloud <текст> обира�
 msgid "Conversation cleared."
 msgstr "Розмову очищено."
 
-#: src/gloxi/cli.py
+#: src/gloxi/cli.py src/gloxi/voice/cli.py
 msgid "Download it now? [y/N] "
 msgstr "Завантажити зараз? [т/Н] "
 
@@ -806,6 +806,10 @@ msgid "Download"
 msgstr "Завантажити"
 
 #: src/gloxi/gui/window.py
+msgid "Download Gloxi's voice?"
+msgstr "Завантажити голос Gloxi?"
+
+#: src/gloxi/gui/window.py
 msgid "Download the language model?"
 msgstr "Завантажити мовну модель?"
 
@@ -840,6 +844,10 @@ msgid "It starts the next time Herkos starts."
 msgstr "Програма запуститься, коли Herkos запуститься наступного разу."
 
 #: src/gloxi/gui/window.py
+msgid "Listening… press again to finish (Esc to cancel)"
+msgstr "Слухаю… натисніть ще раз, щоб завершити (Esc — скасувати)"
+
+#: src/gloxi/gui/window.py
 msgid "Model"
 msgstr "Модель"
 
@@ -872,6 +880,10 @@ msgid "Only the local model: turn the cloud on in the settings to choose another
 msgstr "Лише локальна модель: щоб обрати іншу, увімкніть хмару в налаштуваннях"
 
 #: src/gloxi/gui/window.py
+msgid "Otherwise it waits in the field for you to check and send"
+msgstr "Інакше текст чекає в полі, щоб ви перевірили й надіслали"
+
+#: src/gloxi/gui/window.py
 msgid "Panel size and look"
 msgstr "Розмір і вигляд панелі"
 
@@ -880,12 +892,20 @@ msgid "Programs for Gloxi"
 msgstr "Програми для Gloxi"
 
 #: src/gloxi/gui/window.py
+msgid "Read answers aloud"
+msgstr "Читати відповіді вголос"
+
+#: src/gloxi/gui/window.py
 msgid "Report a problem or suggest something"
 msgstr "Повідомити про проблему чи запропонувати щось"
 
 #: src/gloxi/gui/window.py
 msgid "Send"
 msgstr "Надіслати"
+
+#: src/gloxi/gui/window.py
+msgid "Send dictated text at once"
+msgstr "Надсилати продиктований текст одразу"
 
 #: src/gloxi/gui/window.py
 msgid "Show Gloxi, or hide it if it is in front"
@@ -898,6 +918,14 @@ msgstr "Розмір"
 #: src/gloxi/gui/window.py
 msgid "Small"
 msgstr "Мала"
+
+#: src/gloxi/gui/window.py
+msgid "Speak instead of typing (Ctrl+M)"
+msgstr "Говорити замість набору (Ctrl+M)"
+
+#: src/gloxi/gui/window.py
+msgid "Stop reading aloud (Esc)"
+msgstr "Зупинити читання (Esc)"
 
 #: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
@@ -954,3 +982,134 @@ msgstr "{what} (виконано; увага: вміст {warnings})"
 #, python-brace-format
 msgid "{what} (error: {message})"
 msgstr "{what} (помилка: {message})"
+
+#: src/gloxi/voice/cli.py
+msgid "Listening… speak now."
+msgstr "Слухаю… говоріть."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Not downloaded. Gloxi will ask when you use voice again."
+msgstr "Не завантажено. Gloxi запитає, коли ви знову скористаєтеся голосом."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "The download was cancelled."
+msgstr "Завантаження скасовано."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The voice models were not downloaded: {why}"
+msgstr "Голосові моделі не завантажено: {why}"
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Voice is ready."
+msgstr "Голос готовий."
+
+#: src/gloxi/voice/models.py
+msgid "NVIDIA via sherpa-onnx on GitHub"
+msgstr "NVIDIA через sherpa-onnx на GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "Piper via sherpa-onnx on GitHub"
+msgstr "Piper через sherpa-onnx на GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "Silero via sherpa-onnx on GitHub"
+msgstr "Silero через sherpa-onnx на GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "hexgrad via sherpa-onnx on GitHub"
+msgstr "hexgrad через sherpa-onnx на GitHub"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Downloading the voice models: {percent}%"
+msgstr "Завантаження голосових моделей: {percent}%"
+
+#: src/gloxi/voice/session.py
+msgid "End of speech"
+msgstr "Кінець мовлення"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid ""
+"Gloxi can listen to you and read its answers aloud on this computer, without the internet. For that it needs:\n"
+"\n"
+"{models}\n"
+"\n"
+"In total {size}, kept in {folder}. The sound of your voice never leaves this computer and is not saved."
+msgstr ""
+"Gloxi може слухати вас і читати свої відповіді вголос на цьому комп'ютері, без інтернету. Для цього потрібно:\n"
+"\n"
+"{models}\n"
+"\n"
+"Усього {size}, зберігається в {folder}. Звук вашого голосу ніколи не залишає цей комп'ютер і не зберігається."
+
+#: src/gloxi/voice/session.py
+msgid "Nothing was heard. Press the microphone and speak."
+msgstr "Нічого не чути. Натисніть мікрофон і говоріть."
+
+#: src/gloxi/voice/session.py
+msgid "Recognising…"
+msgstr "Розпізнаю…"
+
+#: src/gloxi/voice/session.py
+msgid "Speech recognition"
+msgstr "Розпізнавання мовлення"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The answer could not be read aloud: {why}"
+msgstr "Відповідь не вдалося прочитати вголос: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone could not be opened: {why}"
+msgstr "Не вдалося відкрити мікрофон: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone stopped: {why}"
+msgstr "Мікрофон зупинився: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The speech was not recognised: {why}"
+msgstr "Мовлення не розпізнано: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "The voice models are still downloading."
+msgstr "Голосові моделі ще завантажуються."
+
+#: src/gloxi/voice/session.py
+msgid "Unpacking the voice models…"
+msgstr "Розпаковую голосові моделі…"
+
+#: src/gloxi/voice/session.py
+msgid "Voice"
+msgstr "Голос"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Voice could not be started: {why}"
+msgstr "Не вдалося ввімкнути голос: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "Voices"
+msgstr "Голоси"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "• {what}: {name}, {size}, {licence}, {source}"
+msgstr "• {what}: {name}, {size}, {licence}, {source}"
+
+#: src/gloxi/voice/speech.py
+msgid "The code is on the screen."
+msgstr "Код показано на екрані."
+
+#: src/gloxi/voice/speech.py
+msgid "link"
+msgstr "посилання"
+
+#: src/gloxi/voice/speech.py
+msgid "password hidden"
+msgstr "пароль приховано"

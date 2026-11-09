@@ -288,7 +288,7 @@ msgstr ""
 msgid "settings and the folders you chose"
 msgstr ""
 
-#: src/gloxi/backup_intro.py src/gloxi/cli.py
+#: src/gloxi/backup_intro.py src/gloxi/cli.py src/gloxi/voice/cli.py
 msgid "yes"
 msgstr ""
 
@@ -379,7 +379,7 @@ msgstr ""
 msgid "Conversation cleared."
 msgstr ""
 
-#: src/gloxi/cli.py
+#: src/gloxi/cli.py src/gloxi/voice/cli.py
 msgid "Download it now? [y/N] "
 msgstr ""
 
@@ -798,6 +798,10 @@ msgid "Download"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Download Gloxi's voice?"
+msgstr "Stáhnout hlas Gloxi?"
+
+#: src/gloxi/gui/window.py
 msgid "Download the language model?"
 msgstr ""
 
@@ -832,6 +836,10 @@ msgid "It starts the next time Herkos starts."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Listening… press again to finish (Esc to cancel)"
+msgstr "Poslouchám… stiskněte znovu pro dokončení (Esc pro zrušení)"
+
+#: src/gloxi/gui/window.py
 msgid "Model"
 msgstr ""
 
@@ -864,6 +872,10 @@ msgid "Only the local model: turn the cloud on in the settings to choose another
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Otherwise it waits in the field for you to check and send"
+msgstr "Jinak text počká v poli, až ho zkontrolujete a odešlete"
+
+#: src/gloxi/gui/window.py
 msgid "Panel size and look"
 msgstr "Velikost a vzhled panelu"
 
@@ -872,12 +884,20 @@ msgid "Programs for Gloxi"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Read answers aloud"
+msgstr "Číst odpovědi nahlas"
+
+#: src/gloxi/gui/window.py
 msgid "Report a problem or suggest something"
 msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Send"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Send dictated text at once"
+msgstr "Odeslat nadiktovaný text hned"
 
 #: src/gloxi/gui/window.py
 msgid "Show Gloxi, or hide it if it is in front"
@@ -890,6 +910,14 @@ msgstr "Velikost"
 #: src/gloxi/gui/window.py
 msgid "Small"
 msgstr "Malý"
+
+#: src/gloxi/gui/window.py
+msgid "Speak instead of typing (Ctrl+M)"
+msgstr "Mluvte místo psaní (Ctrl+M)"
+
+#: src/gloxi/gui/window.py
+msgid "Stop reading aloud (Esc)"
+msgstr "Zastavit čtení (Esc)"
 
 #: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
@@ -946,3 +974,134 @@ msgstr ""
 #, python-brace-format
 msgid "{what} (error: {message})"
 msgstr ""
+
+#: src/gloxi/voice/cli.py
+msgid "Listening… speak now."
+msgstr "Poslouchám… mluvte teď."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Not downloaded. Gloxi will ask when you use voice again."
+msgstr "Nestaženo. Gloxi se zeptá, až znovu použijete hlas."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "The download was cancelled."
+msgstr "Stahování bylo zrušeno."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The voice models were not downloaded: {why}"
+msgstr "Hlasové modely se nepodařilo stáhnout: {why}"
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Voice is ready."
+msgstr "Hlas je připraven."
+
+#: src/gloxi/voice/models.py
+msgid "NVIDIA via sherpa-onnx on GitHub"
+msgstr "NVIDIA přes sherpa-onnx na GitHubu"
+
+#: src/gloxi/voice/models.py
+msgid "Piper via sherpa-onnx on GitHub"
+msgstr "Piper přes sherpa-onnx na GitHubu"
+
+#: src/gloxi/voice/models.py
+msgid "Silero via sherpa-onnx on GitHub"
+msgstr "Silero přes sherpa-onnx na GitHubu"
+
+#: src/gloxi/voice/models.py
+msgid "hexgrad via sherpa-onnx on GitHub"
+msgstr "hexgrad přes sherpa-onnx na GitHubu"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Downloading the voice models: {percent}%"
+msgstr "Stahování hlasových modelů: {percent} %"
+
+#: src/gloxi/voice/session.py
+msgid "End of speech"
+msgstr "Konec řeči"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid ""
+"Gloxi can listen to you and read its answers aloud on this computer, without the internet. For that it needs:\n"
+"\n"
+"{models}\n"
+"\n"
+"In total {size}, kept in {folder}. The sound of your voice never leaves this computer and is not saved."
+msgstr ""
+"Gloxi vás může poslouchat a číst své odpovědi nahlas na tomto počítači, bez internetu. Potřebuje k tomu:\n"
+"\n"
+"{models}\n"
+"\n"
+"Celkem {size}, uloženo v {folder}. Zvuk vašeho hlasu nikdy neopustí tento počítač a neukládá se."
+
+#: src/gloxi/voice/session.py
+msgid "Nothing was heard. Press the microphone and speak."
+msgstr "Nic není slyšet. Stiskněte mikrofon a mluvte."
+
+#: src/gloxi/voice/session.py
+msgid "Recognising…"
+msgstr "Rozpoznávání…"
+
+#: src/gloxi/voice/session.py
+msgid "Speech recognition"
+msgstr "Rozpoznávání řeči"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The answer could not be read aloud: {why}"
+msgstr "Odpověď se nepodařilo přečíst nahlas: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone could not be opened: {why}"
+msgstr "Mikrofon se nepodařilo otevřít: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone stopped: {why}"
+msgstr "Mikrofon se zastavil: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The speech was not recognised: {why}"
+msgstr "Řeč se nepodařilo rozpoznat: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "The voice models are still downloading."
+msgstr "Hlasové modely se ještě stahují."
+
+#: src/gloxi/voice/session.py
+msgid "Unpacking the voice models…"
+msgstr "Rozbalování hlasových modelů…"
+
+#: src/gloxi/voice/session.py
+msgid "Voice"
+msgstr "Hlas"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Voice could not be started: {why}"
+msgstr "Hlas se nepodařilo spustit: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "Voices"
+msgstr "Hlasy"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "• {what}: {name}, {size}, {licence}, {source}"
+msgstr "• {what}: {name}, {size}, {licence}, {source}"
+
+#: src/gloxi/voice/speech.py
+msgid "The code is on the screen."
+msgstr "Kód je na obrazovce."
+
+#: src/gloxi/voice/speech.py
+msgid "link"
+msgstr "odkaz"
+
+#: src/gloxi/voice/speech.py
+msgid "password hidden"
+msgstr "heslo skryto"

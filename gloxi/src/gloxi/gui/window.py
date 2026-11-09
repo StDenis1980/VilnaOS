@@ -43,6 +43,7 @@ from gloxi.privacy import guard_factory  # noqa: E402
 from gloxi.programs import Program, Programs, programs  # noqa: E402
 from gloxi.router import CloudNotAllowed, Router  # noqa: E402
 from gloxi.tools import file_tools  # noqa: E402
+from gloxi.voice import session as voice_session  # noqa: E402
 
 CSS = """
 .bubble { padding: 8px 12px; border-radius: 12px; }
@@ -173,6 +174,22 @@ class ChatWindow(Adw.ApplicationWindow):
         self.send_button.add_css_class("suggested-action")
         self.send_button.add_css_class("circular")
         self.send_button.connect("clicked", self._on_send)
+        # Voice (ADR 0015): press and speak; Stop while an answer is read aloud.
+        self.voice: voice_session.VoiceController | None = None
+        self.mic_button = Gtk.Button(
+            icon_name="audio-input-microphone-symbolic",
+            tooltip_text=_("Speak instead of typing (Ctrl+M)"),
+            visible=False,
+        )
+        self.mic_button.add_css_class("circular")
+        self.mic_button.connect("clicked", lambda *_a: self.voice and self.voice.press_microphone())
+        self.stop_button = Gtk.Button(
+            icon_name="media-playback-stop-symbolic",
+            tooltip_text=_("Stop reading aloud (Esc)"),
+            visible=False,
+        )
+        self.stop_button.add_css_class("circular")
+        self.stop_button.connect("clicked", lambda *_a: self.voice and self.voice.stop_speaking())
         bottom = Gtk.Box(spacing=8)
         for side in ("top", "bottom", "start", "end"):
             getattr(bottom, f"set_margin_{side}")(12)
@@ -195,7 +212,21 @@ class ChatWindow(Adw.ApplicationWindow):
                     ),
                 )
             )
+        shortcuts.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.ShortcutTrigger.parse_string("<Control>m"),
+                action=Gtk.CallbackAction.new(lambda *_a: self._on_mic_key()),
+            )
+        )
+        shortcuts.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.ShortcutTrigger.parse_string("Escape"),
+                action=Gtk.CallbackAction.new(lambda *_a: self._on_escape()),
+            )
+        )
         self.add_controller(shortcuts)
+        bottom.append(self.stop_button)
+        bottom.append(self.mic_button)
         bottom.append(self.send_button)
         focus = Gtk.EventControllerFocus()
         focus.connect("enter", lambda *_a: self._owl(lambda s: s.focus(True)))
@@ -207,9 +238,14 @@ class ChatWindow(Adw.ApplicationWindow):
         self.model_banner = Adw.Banner(revealed=False)
         self.model_banner.connect("button-clicked", self._on_cancel_download)
         self.model_setup: ModelSetup | None = None
+        self.voice_banner = Adw.Banner(revealed=False)
+        self.voice_banner.connect(
+            "button-clicked", lambda *_a: self.voice and self.voice.cancel_download()
+        )
         view = Adw.ToolbarView(content=self.toasts)
         view.add_top_bar(header)
         view.add_top_bar(self.model_banner)
+        view.add_top_bar(self.voice_banner)
         view.add_bottom_bar(bottom)
         self.set_content(view)
         self.entry.grab_focus()
@@ -317,6 +353,20 @@ class ChatWindow(Adw.ApplicationWindow):
         self.above_row.connect("notify::active", self._on_keep_above)
         rows.append(self.above_row)
         box.append(rows)
+
+        # Voice: off until the person turns it on (ADR 0015, section 2).
+        self.voice_rows = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE, visible=False)
+        self.voice_rows.add_css_class("boxed-list")
+        self.read_aloud_row = Adw.SwitchRow(title=_("Read answers aloud"))
+        self.read_aloud_row.connect("notify::active", self._on_read_aloud)
+        self.voice_rows.append(self.read_aloud_row)
+        self.auto_send_row = Adw.SwitchRow(
+            title=_("Send dictated text at once"),
+            subtitle=_("Otherwise it waits in the field for you to check and send"),
+        )
+        self.auto_send_row.connect("notify::active", self._on_auto_send)
+        self.voice_rows.append(self.auto_send_row)
+        box.append(self.voice_rows)
         self._sync_size_buttons()
         box.set_size_request(320, -1)
         return Gtk.Popover(child=box)
@@ -388,6 +438,100 @@ class ChatWindow(Adw.ApplicationWindow):
     def _on_keep_above(self, row, _pspec) -> None:
         if self.shell is not None:
             self.shell.set_keep_above(row.get_active())
+
+    # -- voice (ADR 0015) ------------------------------------------------------
+
+    def enable_voice(self, voice: voice_session.VoiceController) -> None:
+        self.voice = voice
+        self.mic_button.set_visible(True)
+        self.voice_rows.set_visible(True)
+        self._syncing_voice = True
+        self.read_aloud_row.set_active(voice.prefs.read_aloud)
+        self.auto_send_row.set_active(voice.prefs.auto_send)
+        self._syncing_voice = False
+        # The speech model leaves memory after five idle minutes.
+        GLib.timeout_add_seconds(60, lambda: bool(voice.unload_if_idle() or True))
+
+    def _on_mic_key(self) -> bool:
+        if self.voice is None:
+            return False
+        self.voice.press_microphone()
+        return True
+
+    def _on_escape(self) -> bool:
+        """Esc drops the phrase being heard, or silences Gloxi; else it does what it did."""
+        if self.voice is not None and self.voice.listening:
+            self.voice.cancel_listening()
+            return True
+        if self.voice is not None and self.voice.speaking:
+            self.voice.stop_speaking()
+            return True
+        return False
+
+    def _on_read_aloud(self, row, _pspec) -> None:
+        if self.voice is not None and not getattr(self, "_syncing_voice", False):
+            self.voice.set_read_aloud(row.get_active())
+
+    def _on_auto_send(self, row, _pspec) -> None:
+        if self.voice is not None and not getattr(self, "_syncing_voice", False):
+            self.voice.set_auto_send(row.get_active())
+
+    @_idle
+    def ask_voice_download(self, text: str, answer) -> None:
+        self._owl(OwlStates.ask)
+
+        def respond(_d, response) -> None:
+            self._owl(OwlStates.answered)
+            answer(response == "download")
+
+        dialog = Adw.AlertDialog(heading=_("Download Gloxi's voice?"), body=text)
+        dialog.add_response("later", _("Not now"))
+        dialog.add_response("download", _("Download"))
+        dialog.set_response_appearance("download", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_default_response("download")
+        dialog.set_close_response("later")
+        dialog.connect("response", respond)
+        dialog.present(self)
+
+    @_idle
+    def show_voice_progress(self, text: str, fraction: float | None) -> None:
+        self.voice_banner.set_title(text)
+        self.voice_banner.set_button_label(_("Cancel") if fraction is not None else None)
+        self.voice_banner.set_revealed(True)
+
+    @_idle
+    def hide_voice_progress(self) -> None:
+        self.voice_banner.set_revealed(False)
+
+    @_idle
+    def set_listening(self, listening: bool) -> None:
+        self._owl(lambda s: s.set_mic(listening))
+        self.mic_button.set_icon_name(
+            "media-record-symbolic" if listening else "audio-input-microphone-symbolic"
+        )
+        self.mic_button.set_tooltip_text(
+            _("Listening… press again to finish (Esc to cancel)")
+            if listening
+            else _("Speak instead of typing (Ctrl+M)")
+        )
+        if listening:
+            self.mic_button.add_css_class("destructive-action")
+        else:
+            self.mic_button.remove_css_class("destructive-action")
+
+    @_idle
+    def set_speaking(self, speaking: bool) -> None:
+        self._owl(lambda s: s.set_speaking(speaking))
+        self.stop_button.set_visible(speaking)
+
+    @_idle
+    def put_dictation(self, text: str, send: bool) -> None:
+        current = self.entry.get_text().rstrip()
+        self.entry.set_text(f"{current} {text}" if current else text)
+        self.entry.grab_focus_without_selecting()
+        self.entry.set_position(-1)
+        if send:
+            self._on_send()
 
     def _on_close_request(self, *_args) -> bool:
         # A size dragged by hand is remembered as the person's own size.
@@ -707,6 +851,8 @@ class ChatWindow(Adw.ApplicationWindow):
     def finish_answer(self) -> None:
         if self._answer_label is not None and not self._answer_text:
             self._answer_label.get_parent().set_visible(False)
+        if self._answer_label is not None and self._answer_text and self.voice is not None:
+            self.voice.speak(self._answer_text)
         self._answer_label = None
 
     @_idle
@@ -820,6 +966,9 @@ class GloxiApp(Adw.Application):
         catalogue = programs(settings.tools_enabled)
         if catalogue is not None:
             window.enable_programs(catalogue)
+        if voice_available():
+            self._voice = voice_session.VoiceController(window, prefs=voice_session.load_prefs())
+            window.enable_voice(self._voice)
         self._model_setup = window.model_setup = ModelSetup(settings, window)
         self._model_setup.begin()
         GLib.idle_add(lambda: window.controller.offer_intro() and False)
@@ -836,9 +985,24 @@ class GloxiApp(Adw.Application):
             self._intro.close()
         if getattr(self, "_model_setup", None):
             self._model_setup.stop()
+        if getattr(self, "_voice", None):
+            self._voice.stop()
         if getattr(self, "_herkos", None):
             self._herkos.stop()
         Adw.Application.do_shutdown(self)
+
+
+def voice_available() -> bool:
+    """The voice engine and GStreamer are installed (always in the Flatpak)."""
+    import importlib.util
+
+    if importlib.util.find_spec("sherpa_onnx") is None:
+        return False
+    try:
+        gi.require_version("Gst", "1.0")
+    except ValueError:
+        return False
+    return True
 
 
 def main(argv: list[str] | None = None) -> int:

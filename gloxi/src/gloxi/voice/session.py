@@ -48,12 +48,12 @@ VOICE_CONSENT = N_(
     "internet. For that it needs:\n\n{models}\n\nIn total {size}, kept in {folder}. "
     "The sound of your voice never leaves this computer and is not saved."
 )
-MODEL_LINE = N_("• {name}: {what}, {size}, licence {licence}, from {source}")
+MODEL_LINE = N_("• {what}: {name}, {size}, {licence}, {source}")
 WHAT = {
-    "stt": N_("speech recognition"),
-    "vad": N_("knows when you stop speaking"),
-    "piper": N_("voice"),
-    "kokoro": N_("voices"),
+    "stt": N_("Speech recognition"),
+    "vad": N_("End of speech"),
+    "piper": N_("Voice"),
+    "kokoro": N_("Voices"),
 }
 
 
