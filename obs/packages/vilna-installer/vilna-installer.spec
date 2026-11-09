@@ -29,6 +29,8 @@ Requires:       python3 >= 3.11
 Requires:       python3-gobject
 Requires:       typelib(Adw) = 1
 Requires:       typelib(Gtk) = 4.0
+# The wallpaper is loaded and cropped with GdkPixbuf.
+Requires:       typelib(GdkPixbuf) = 2.0
 # «Other languages»: every language's own name, as GNOME Settings shows
 # it, comes from iso-codes through GnomeDesktop.
 Requires:       iso-codes

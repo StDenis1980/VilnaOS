@@ -173,3 +173,17 @@ def test_euro_is_the_same_utf8_locale():
         "pt_PT.UTF-8",
         "pt_PT.UTF-8",
     ]
+
+
+def test_the_wallpaper_loses_the_corner_with_the_vilna_mark():
+    # The mark in the 3840x2160 wallpapers: x 130-250, y 1940-2070.
+    x, y, width, height = start.wallpaper_crop(3840, 2160)
+    assert (x, y) == (461, 0)
+    assert x > 250 and y + height < 1940
+    assert abs(width / height - 16 / 9) < 0.01
+    assert start.wallpaper_crop(1, 1) == (0, 0, 1, 1)
+
+
+def test_a_row_chosen_right_after_the_dialog_opens_does_not_count():
+    assert not start.pick_allowed(1_000_000, 1_000_000 + 200_000)
+    assert start.pick_allowed(1_000_000, 1_000_000 + start.PICK_GUARD_MS * 1000)
