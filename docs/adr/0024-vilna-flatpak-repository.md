@@ -37,7 +37,7 @@
 ### Ключ підпису (робить Denys)
 
 ```sh
-gpg --quick-gen-key 'Vilna Flatpak <hello@vilnaos.com>' ed25519 sign never
+gpg --quick-gen-key 'Vilna Flatpak' ed25519 sign never   # без пароля: CI підписує сам
 gpg --export-secret-keys --armor <відбиток> > vilna-flatpak-secret.asc   # копія поза GitHub
 ```
 
