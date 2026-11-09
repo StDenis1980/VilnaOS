@@ -72,7 +72,12 @@ class Masker:
         parts: list[str] = []
         pos = 0
         known = (value for _, value in self._placeholder_of)
+        # A placeholder already in the text (put there by another masker, such as
+        # Gloxi's password hider) is not a value: masking it again gave [[SECRET_1]].
+        placed = [m.span() for m in PLACEHOLDER_RE.finditer(text)]
         for f in detect(text, self.kinds, strict=self.strict, known=known):
+            if any(f.start < end and start < f.end for start, end in placed):
+                continue
             parts.append(text[pos : f.start])
             parts.append(self._placeholder(f.kind, f.value))
             pos = f.end

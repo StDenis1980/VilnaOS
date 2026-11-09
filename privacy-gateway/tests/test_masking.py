@@ -104,3 +104,13 @@ def test_no_hint_without_placeholders_or_when_turned_off():
     assert m.mask_messages(lookalike) == lookalike
     masked = m.mask_messages([{"role": "user", "content": "mail a@example.com"}], hint=False)
     assert masked == [{"role": "user", "content": "mail [EMAIL_1]"}]
+
+
+def test_a_placeholder_from_another_masker_is_not_masked_again():
+    from privacy_gateway import Kind
+
+    passwords, gateway = Masker(kinds=[Kind.SECRET]), Masker()
+    first = passwords.mask("мій пароль від пошти Kvitka-7731, пишіть на a@example.com")
+    assert first == "мій пароль від пошти [SECRET_1], пишіть на a@example.com"
+    assert gateway.mask(first) == "мій пароль від пошти [SECRET_1], пишіть на [EMAIL_1]"
+    assert gateway.unmask("[SECRET_1] і [EMAIL_1]") == "[SECRET_1] і a@example.com"
