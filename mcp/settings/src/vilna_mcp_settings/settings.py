@@ -61,6 +61,8 @@ def _whole(lo: int, hi: int) -> Callable[[Any], bool]:
 INTERFACE = "org.gnome.desktop.interface"
 COLOR = "org.gnome.settings-daemon.plugins.color"
 NOTIFICATIONS = "org.gnome.desktop.notifications"
+# Not GSettings: volume and output live in PipeWire (sound.py).
+SOUND = "sound"
 
 COLOR_SCHEMES = ("default", "prefer-dark", "prefer-light")
 # GNOME 47+ (org.gnome.desktop.interface accent-color).
@@ -85,6 +87,11 @@ KEYS: dict[str, Key] = {
         f"{TEMPERATURE[0]} to {TEMPERATURE[1]}",
     ),
     "show_banners": Key(NOTIFICATIONS, "show-banners", _boolean, "true or false"),
+    "volume": Key(SOUND, "volume", _whole(0, 100), "0 to 100 (per cent)"),
+    "muted": Key(SOUND, "muted", _boolean, "true or false"),
+    "output": Key(
+        SOUND, "output", lambda v: isinstance(v, str) and 0 < len(v) <= 256, "an output name"
+    ),
 }
 
 
@@ -113,9 +120,31 @@ class MemoryBackend:
         self.values[(schema, key)] = value
 
 
+class MemorySound(MemoryBackend):
+    """Sound kept in memory, with a fixed list of outputs."""
+
+    def __init__(self, volume: int, muted: bool, output: str, outputs: list[dict]) -> None:
+        super().__init__(
+            {(SOUND, "volume"): volume, (SOUND, "muted"): muted, (SOUND, "output"): output}
+        )
+        self._outputs = outputs
+
+    def outputs(self) -> list[dict]:
+        return list(self._outputs)
+
+    def set(self, schema: str, key: str, value: Value) -> None:
+        if key == "output" and value not in {o["name"] for o in self._outputs}:
+            raise SettingsError(f"no output {value!r}; see 'outputs' in get")
+        super().set(schema, key, value)
+
+
 class Settings:
-    def __init__(self, backend: Backend) -> None:
+    def __init__(self, backend: Backend, sound: Backend | None = None) -> None:
         self.backend = backend
+        self.sound = sound
+
+    def _for(self, k: Key) -> Backend | None:
+        return self.sound if k.schema == SOUND else self.backend
 
     # -- reading ----------------------------------------------------------
 
@@ -123,10 +152,15 @@ class Settings:
         """Current values of every known key this system has."""
         values = {}
         for name, k in KEYS.items():
-            v = self.backend.get(k.schema, k.key)
+            backend = self._for(k)
+            v = backend.get(k.schema, k.key) if backend is not None else None
             if v is not None:
                 values[name] = v
-        return {"values": values}
+        out: dict[str, Any] = {"values": values}
+        outputs = getattr(self.sound, "outputs", None)
+        if callable(outputs):
+            out["outputs"] = outputs()
+        return out
 
     # -- changing ---------------------------------------------------------
 
@@ -170,6 +204,15 @@ class Settings:
             raise SettingsError("'enabled' must be true or false")
         return self._apply({"show_banners": not enabled})
 
+    def set_volume(self, percent: int) -> dict:
+        return self._apply({"volume": percent})
+
+    def set_mute(self, muted: bool) -> dict:
+        return self._apply({"muted": muted})
+
+    def set_output(self, output: str) -> dict:
+        return self._apply({"output": output})
+
     def restore(self, values: Any) -> dict:
         """Put keys back as they were (the undo of an earlier change)."""
         if not isinstance(values, dict) or not values:
@@ -186,7 +229,8 @@ class Settings:
         before: dict[str, Value] = {}
         for name in changes:
             k = KEYS[name]
-            old = self.backend.get(k.schema, k.key)
+            backend = self._for(k)
+            old = backend.get(k.schema, k.key) if backend is not None else None
             if old is None:
                 raise SettingsError(f"{name} is not available on this system")
             before[name] = old
@@ -194,7 +238,7 @@ class Settings:
         try:
             for name, value in changes.items():
                 k = KEYS[name]
-                self.backend.set(k.schema, k.key, _as_type(before[name], value))
+                self._for(k).set(k.schema, k.key, _as_type(before[name], value))
                 done.append(name)
         except Exception:
             # All or nothing: put back what was already written.
@@ -202,7 +246,7 @@ class Settings:
                 k = KEYS[name]
                 # Best effort: the first error is the one to report.
                 with contextlib.suppress(Exception):
-                    self.backend.set(k.schema, k.key, before[name])
+                    self._for(k).set(k.schema, k.key, before[name])
             raise
         return {
             "changed": dict(changes),

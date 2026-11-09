@@ -25,6 +25,7 @@ from vilna_mcp_settings.settings import (
     NOTIFICATIONS,
     TEMPERATURE,
     MemoryBackend,
+    MemorySound,
     Settings,
     SettingsError,
 )
@@ -106,6 +107,21 @@ TOOLS = [
         **_CHANGE,
     ),
     _tool(
+        "set_volume",
+        "Set the volume of the current sound output, in per cent",
+        {"percent": {"type": "integer", "minimum": 0, "maximum": 100}},
+        ["percent"],
+        **_CHANGE,
+    ),
+    _tool("set_mute", "Mute or unmute the sound", {"muted": _BOOL}, ["muted"], **_CHANGE),
+    _tool(
+        "set_output",
+        "Play sound through another output (a name from 'outputs' in get)",
+        {"output": {"type": "string"}},
+        ["output"],
+        **_CHANGE,
+    ),
+    _tool(
         "restore",
         "Undo a change: put settings back as they were before",
         {"values": {"type": "object"}},
@@ -152,6 +168,9 @@ class Server:
             "set_text_scale": settings.set_text_scale,
             "set_night_light": settings.set_night_light,
             "set_do_not_disturb": settings.set_do_not_disturb,
+            "set_volume": settings.set_volume,
+            "set_mute": settings.set_mute,
+            "set_output": settings.set_output,
             "restore": settings.restore,
         }
 
@@ -242,12 +261,21 @@ def demo_backend() -> MemoryBackend:
     )
 
 
+def demo_sound() -> MemorySound:
+    outputs = [
+        {"name": "speakers", "description": "Speakers"},
+        {"name": "headphones", "description": "Headphones"},
+    ]
+    return MemorySound(volume=50, muted=False, output="speakers", outputs=outputs)
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="vilna-mcp-settings")
     p.add_argument("--memory", action="store_true", help="keep settings in memory (tests, demos)")
     args = p.parse_args(argv)
+    sound = None
     if args.memory:
-        backend = demo_backend()
+        backend, sound = demo_backend(), demo_sound()
     else:
         try:
             from vilna_mcp_settings.gsettings import GSettingsBackend
@@ -255,5 +283,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"vilna-mcp-settings: GSettings is not available ({e})", file=sys.stderr)
             return 2
         backend = GSettingsBackend()
-    Server(Settings(backend)).serve(sys.stdin, sys.stdout)
+        try:
+            from vilna_mcp_settings.sound import PulseSound
+
+            sound = PulseSound()
+        except (ImportError, OSError, SettingsError) as e:
+            # Appearance still works; sound operations say it is not available.
+            print(f"vilna-mcp-settings: no sound control ({e})", file=sys.stderr)
+    Server(Settings(backend, sound)).serve(sys.stdin, sys.stdout)
     return 0

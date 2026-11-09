@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # The settings tool (ADR 0023) for the person with uid %i, started by the
 # system Herkos (50-herkos.rules). It runs as the person and changes their
-# GNOME settings through their session bus (dconf), nothing else.
+# GNOME settings through their session bus (dconf) and their sound server
+# (PipeWire's PulseAudio socket), nothing else.
 [Unit]
 Description=Settings tool of Herkos for uid %i
 ConditionPathExists=/run/herkos-tools/%i/settings.sock
@@ -10,6 +11,8 @@ ConditionPathExists=/run/herkos-tools/%i/settings.sock
 Type=simple
 User=%i
 Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%i/bus
+Environment=XDG_RUNTIME_DIR=/run/user/%i
+Environment=PULSE_SERVER=unix:/run/user/%i/pulse/native
 ExecStart=/usr/bin/vilna-mcp-settings
 StandardInput=file:/run/herkos-tools/%i/settings.sock
 StandardOutput=file:/run/herkos-tools/%i/settings.sock
@@ -17,7 +20,7 @@ StandardError=journal
 # The tool stops when herkosd closes the connection; no restarts behind its back.
 Restart=no
 
-# Sandbox: no files to write, no network; only the session bus.
+# Sandbox: no files to write, no network; only the session bus and sound.
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=read-only

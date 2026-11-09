@@ -4,7 +4,7 @@
 # the sound is R2, a reversible change. Each change returns the values from
 # before (undo_arguments), so Mitos can undo it through `restore`.
 tool = "org.vilna.mcp.settings"
-description = "Appearance, night light and notifications of the desktop"
+description = "Appearance, night light, notifications and sound of the desktop"
 
 # How Herkos starts the server (ADR 0017): the program on PATH (the system
 # Herkos: its unit vilna-mcp-settings@<uid>), the Python module for Herkos-lite.
@@ -40,6 +40,21 @@ undoable = true
 [operations.set_do_not_disturb]
 level = "R2"
 summary = "Turn Do Not Disturb on or off"
+undoable = true
+
+[operations.set_volume]
+level = "R2"
+summary = "Change the volume"
+undoable = true
+
+[operations.set_mute]
+level = "R2"
+summary = "Mute or unmute the sound"
+undoable = true
+
+[operations.set_output]
+level = "R2"
+summary = "Play sound through another output"
 undoable = true
 
 [operations.restore]

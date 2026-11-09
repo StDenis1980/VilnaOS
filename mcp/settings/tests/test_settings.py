@@ -6,13 +6,13 @@ import sys
 
 import pytest
 
-from vilna_mcp_settings.server import Server, demo_backend
+from vilna_mcp_settings.server import Server, demo_backend, demo_sound
 from vilna_mcp_settings.settings import INTERFACE, MemoryBackend, Settings, SettingsError
 
 
 @pytest.fixture
 def settings():
-    return Settings(demo_backend())
+    return Settings(demo_backend(), demo_sound())
 
 
 def test_dark_and_back(settings):
@@ -155,3 +155,40 @@ def test_runs_as_module_in_memory():
     )
     reply = json.loads(done.stdout)
     assert reply["result"]["structuredContent"]["values"]["night_light"] is False
+
+
+def test_volume_mute_output_and_undo(settings):
+    out = settings.set_volume(20)
+    assert settings.get()["values"]["volume"] == 20
+    settings.restore(**out["undo_arguments"])
+    assert settings.get()["values"]["volume"] == 50
+    settings.set_mute(True)
+    out = settings.set_output("headphones")
+    assert settings.get()["values"]["output"] == "headphones"
+    assert out["undo_arguments"] == {"values": {"output": "speakers"}}
+    assert [o["name"] for o in settings.get()["outputs"]] == ["speakers", "headphones"]
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda s: s.set_volume(101),
+        lambda s: s.set_volume(-1),
+        lambda s: s.set_volume(True),
+        lambda s: s.set_output("hdmi-9"),
+        lambda s: s.set_output(""),
+        lambda s: s.restore({"volume": 50, "output": "nowhere"}),
+    ],
+)
+def test_bad_sound_changes_nothing(settings, call):
+    before = dict(settings.sound.values)
+    with pytest.raises(SettingsError):
+        call(settings)
+    assert settings.sound.values == before
+
+
+def test_no_sound_server():
+    s = Settings(demo_backend())
+    with pytest.raises(SettingsError, match="not available"):
+        s.set_volume(30)
+    assert "volume" not in s.get()["values"]
