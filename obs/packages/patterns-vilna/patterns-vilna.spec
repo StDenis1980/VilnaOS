@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.6
+Version:        0.7
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -40,6 +40,7 @@ Requires:       herkos-agent
 Requires:       herkos-manifests
 Requires:       gloxi
 Requires:       vilna-mcp-files
+Requires:       vilna-backup
 Requires:       vilna-mcp-backup
 Requires:       vilna-flatpak-defaults
 Requires:       gnome-shell-extension-vilna

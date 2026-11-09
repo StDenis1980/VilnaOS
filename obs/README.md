@@ -27,6 +27,7 @@
 | `python-vilna-privacy-gateway` | Шлюз приватності (`python3-vilna-privacy-gateway`), потрібен Gloxi. Тарбол — з папки [`../privacy-gateway/`](../privacy-gateway/), версія — з її `pyproject.toml` | — |
 | `vilna-software-picks` | Добірка «Рекомендовано Vilna» для GNOME Software (ADR 0012): метадані AppStream і заголовок блоку 10 мовами, генеруються під час збірки з [`picks.toml`](packages/vilna-software-picks/picks.toml). Як додати програму — [`README`](packages/vilna-software-picks/README.md) пакета | — |
 | `plymouth-branding-Vilna` | Екран завантаження Vilna (тема Plymouth `vilna`): мазок замикається в коло, ластівка вилітає, у кутах виростають мотиви в манері петриківки; поле пароля диска в тому самому стилі. Картинки малюються під час збірки з логотипа ([`../image/plymouth/`](../image/plymouth/)), версія — з `image/plymouth/VERSION` | Тему `bgrt` (логотип виробника) |
+| `vilna-backup` | Зашифровані копії ([`../backup/`](../backup/)): команда `vilna-backup`, таймери й вікно «Копії» (`vilna-backup-gui`, значок `vilna-backup`). Тарбол — з папки `backup/`, версія — з її `pyproject.toml` | — |
 
 Пакет `gloxi` збирається з поточного коду `gloxi/`. Коли в Gloxi з'являться нові залежності, системний сервіс чи користувач `gloxi`, треба оновити `packages/gloxi/gloxi.spec`; CI на PR покаже, якщо spec відстав від коду.
 

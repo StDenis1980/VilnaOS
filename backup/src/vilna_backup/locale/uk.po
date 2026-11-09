@@ -1,0 +1,306 @@
+# Ukrainian translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: uk\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "B"
+msgstr "Б"
+
+msgid "kB"
+msgstr "кБ"
+
+msgid "MB"
+msgstr "МБ"
+
+msgid "GB"
+msgstr "ГБ"
+
+msgid "TB"
+msgstr "ТБ"
+
+msgid "Backups are on"
+msgstr "Копії увімкнено"
+
+msgid "Choose where to keep the backups."
+msgstr "Виберіть, де зберігати копії."
+
+msgid "recommended"
+msgstr "рекомендовано"
+
+msgid "{day} {month} at {time}"
+msgstr "{day} {month} о {time}"
+
+msgid "Backing up…"
+msgstr "Іде копіювання…"
+
+msgid "Backups are off"
+msgstr "Копії вимкнено"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Увімкніть їх, щоб не втратити файли."
+
+msgid "The last backup failed"
+msgstr "Остання копія не вдалася"
+
+msgid "Settings only"
+msgstr "Лише налаштування"
+
+msgid "Settings and documents"
+msgstr "Налаштування і документи"
+
+msgid "The whole home folder"
+msgstr "Уся домашня папка"
+
+msgid "Chosen by you"
+msgstr "Вибрано самостійно"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Налаштування, Gloxi, Herkos, паролі"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "Ще Документи, Стільниця і Зображення"
+
+msgid "Everything except caches and Downloads"
+msgstr "Усе, крім кешів і Завантажень"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Папки, вибрані з Gloxi або в терміналі"
+
+msgid "Every hour"
+msgstr "Щогодини"
+
+msgid "Every day"
+msgstr "Щодня"
+
+msgid "Every week"
+msgstr "Щотижня"
+
+msgid "Off"
+msgstr "Вимкнено"
+
+msgid "today at {time}"
+msgstr "сьогодні о {time}"
+
+msgid "yesterday at {time}"
+msgstr "учора о {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Остання копія {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Виберіть папку на зовнішньому диску."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Введіть адресу сервера: sftp:user@host:/папка, s3:https://… або rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Для папки на цьому комп'ютері виберіть «Зовнішній диск»."
+
+msgid "This server needs a login and a password."
+msgstr "Для цього сервера потрібні логін і пароль."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "Готово {percent} %"
+
+msgid "No backup yet · {schedule}"
+msgstr "Копій ще не було · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "файлів: {n}"
+
+msgid "The server address is not right: {why}"
+msgstr "Адреса сервера неправильна: {why}"
+
+msgid "Vilna cloud"
+msgstr "Хмара Vilna"
+
+msgid "In the EU · coming later"
+msgstr "У ЄС · з'явиться пізніше"
+
+msgid "External disk"
+msgstr "Зовнішній диск"
+
+msgid "No folder chosen yet"
+msgstr "Папку ще не вибрано"
+
+msgid "Your own server"
+msgstr "Свій сервер"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 або REST"
+
+msgid "Turn on backups"
+msgstr "Увімкнути копії"
+
+msgid "Recovery sheet"
+msgstr "Аркуш відновлення"
+
+msgid "Backups"
+msgstr "Копії"
+
+msgid "What to keep in backups?"
+msgstr "Що зберігати в копіях?"
+
+msgid "Where"
+msgstr "Куди"
+
+msgid "Choose…"
+msgstr "Вибрати…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Адреса, напр. sftp:me@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Логін (S3 і REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Пароль (S3 і REST)"
+
+msgid "How often"
+msgstr "Як часто"
+
+msgid "Back up"
+msgstr "Робити копію"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Копії шифруються на цьому комп'ютері. Без ключа їх ніхто не прочитає, навіть ми."
+
+msgid "Later"
+msgstr "Пізніше"
+
+msgid "Next"
+msgstr "Далі"
+
+msgid "Folder for backups on the external disk"
+msgstr "Папка для копій на зовнішньому диску"
+
+msgid "Type the key from your sheet"
+msgstr "Введіть ключ з аркуша"
+
+msgid "Start again with another place"
+msgstr "Почати знову з іншим місцем"
+
+msgid "Confirm and turn on"
+msgstr "Підтвердити й увімкнути"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Запишіть цей ключ на папері й зберігайте окремо від комп'ютера. Якщо комп'ютер загубиться, копії відкриє лише цей ключ. Ми його не знаємо і не зможемо надіслати знову."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "Ключ показано лише зараз. Літер I, L, O і U у ньому не буває."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Копії не почнуться, доки ви не введете ключ відновлення з аркуша. Його показали один раз, коли налаштовували місце."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "Аркуша немає? Почніть знову з іншим місцем: буде новий ключ."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Копії увімкнено. Перша копія вже почалася."
+
+msgid "Back up now"
+msgstr "Зробити копію зараз"
+
+msgid "Settings"
+msgstr "Налаштування"
+
+msgid "What to keep"
+msgstr "Що зберігати"
+
+msgid "Restore puts the files into a new folder; nothing is replaced."
+msgstr "Відновлення кладе файли в нову папку, нічого не замінюючи."
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Шифруються на цьому комп'ютері. Без ключа їх ніхто не прочитає, навіть ми."
+
+msgid "Cannot read the state of backups"
+msgstr "Не вдалося прочитати стан копій"
+
+msgid "Where to put the restored files"
+msgstr "Куди покласти відновлені файли"
+
+msgid "Cannot list the backups"
+msgstr "Не вдалося отримати список копій"
+
+msgid "Restore…"
+msgstr "Відновити…"
+
+msgid "No backups yet"
+msgstr "Копій ще немає"
+
+msgid "A backup is already running."
+msgstr "Копія вже йде."
+
+msgid "Restored from backup {stamp}"
+msgstr "Відновлено з копії {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "Відновлюю копію: {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "Не вдалося налаштувати копії: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "Це не той ключ: {why}"
+
+msgid "Could not start: {why}"
+msgstr "Не вдалося почати: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "Відновлено файлів: {n}, у папку {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "Не вдалося відновити: {why}"
+
+msgid "January"
+msgstr "січня"
+
+msgid "February"
+msgstr "лютого"
+
+msgid "March"
+msgstr "березня"
+
+msgid "April"
+msgstr "квітня"
+
+msgid "May"
+msgstr "травня"
+
+msgid "June"
+msgstr "червня"
+
+msgid "July"
+msgstr "липня"
+
+msgid "August"
+msgstr "серпня"
+
+msgid "September"
+msgstr "вересня"
+
+msgid "October"
+msgstr "жовтня"
+
+msgid "November"
+msgstr "листопада"
+
+msgid "December"
+msgstr "грудня"
+
+msgid "Disk"
+msgstr "Диск"
+
+msgid "Vilna server"
+msgstr "Сервер Vilna"
