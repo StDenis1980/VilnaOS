@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov  9 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.4: gnome-branding-Vilna makes the light style the default
+  (color-scheme 'default' instead of 'prefer-dark').
+
+-------------------------------------------------------------------
 Mon Nov  9 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.3: gnome-branding-Vilna stops GNOME Initial Setup's session within
