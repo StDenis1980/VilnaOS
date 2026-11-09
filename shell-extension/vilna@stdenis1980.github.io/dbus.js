@@ -9,9 +9,12 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
+import {PANEL_SIZES} from './lib/geometry.js';
+
 export const BUS_NAME = 'io.github.stdenis1980.VilnaShell';
 export const OBJECT_PATH = '/io/github/stdenis1980/VilnaShell';
-export const INTERFACE_VERSION = 1;
+// 2: GloxiPanelEdge and GloxiPanelSize (stage A of the Gloxi window).
+export const INTERFACE_VERSION = 2;
 
 const INTERFACE_XML = `
 <node>
@@ -20,16 +23,34 @@ const INTERFACE_XML = `
     <property name="PasswordLatinLayout" type="b" access="read"/>
     <property name="GloxiKeepAbove" type="b" access="readwrite"/>
     <property name="GloxiDock" type="b" access="readwrite"/>
+    <property name="GloxiPanelEdge" type="b" access="readwrite"/>
+    <property name="GloxiPanelSize" type="s" access="readwrite"/>
   </interface>
 </node>`;
 
-// D-Bus property → [GSettings key, writable]. Only the person turns the
+// D-Bus property → [GSettings key, writable, type]. Only the person turns the
 // password layout off (in the settings), never another program.
 const PROPERTIES = {
-    PasswordLatinLayout: ['password-latin-layout', false],
-    GloxiKeepAbove: ['gloxi-keep-above', true],
-    GloxiDock: ['gloxi-dock', true],
+    PasswordLatinLayout: ['password-latin-layout', false, 'b'],
+    GloxiKeepAbove: ['gloxi-keep-above', true, 'b'],
+    GloxiDock: ['gloxi-dock', true, 'b'],
+    GloxiPanelEdge: ['gloxi-panel-edge', true, 'b'],
+    // The one string: anything but the schema's sizes is ignored.
+    GloxiPanelSize: ['gloxi-panel-size', true, 's'],
 };
+
+function read(settings, key, type) {
+    return type === 's' ? settings.get_string(key) : settings.get_boolean(key);
+}
+
+function write(settings, key, type, value) {
+    if (type === 'b') {
+        settings.set_boolean(key, Boolean(value));
+        return;
+    }
+    if (typeof value === 'string' && PANEL_SIZES.includes(value))
+        settings.set_string(key, value);
+}
 
 export class VilnaShellService {
     constructor(settings) {
@@ -45,18 +66,18 @@ export class VilnaShellService {
                 return INTERFACE_VERSION;
             },
         };
-        for (const [property, [key, writable]] of Object.entries(PROPERTIES)) {
+        for (const [property, [key, writable, type]] of Object.entries(PROPERTIES)) {
             Object.defineProperty(object, property, {
-                get: () => this._settings.get_boolean(key),
+                get: () => read(this._settings, key, type),
                 set: value => {
                     if (writable)
-                        this._settings.set_boolean(key, Boolean(value));
+                        write(this._settings, key, type, value);
                 },
                 enumerable: true,
             });
             this._signals.push(this._settings.connect(`changed::${key}`, () =>
                 this._exported?.emit_property_changed(
-                    property, GLib.Variant.new_boolean(this._settings.get_boolean(key)))));
+                    property, new GLib.Variant(type, read(this._settings, key, type)))));
         }
         this._exported = Gio.DBusExportedObject.wrapJSObject(INTERFACE_XML, object);
         this._exported.export(Gio.DBus.session, OBJECT_PATH);
