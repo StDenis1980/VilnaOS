@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "calendar" MCP server (mcp/calendar, Gloxi 0.2, ADR 0023).
+# Read only: viewing the calendar is R1 (permissions.md, section 4), and an
+# event is someone else's words, so every read taints the conversation
+# (permissions.md 6). Writing to the calendar comes with the calendar server
+# that writes (roadmap, section 4).
+tool = "org.vilna.mcp.calendar"
+description = "The person's calendars (read only)"
+
+# How Herkos starts the server (ADR 0017): the program on PATH (the system
+# Herkos: its unit vilna-mcp-calendar@<uid>), the Python module for Herkos-lite.
+[launch]
+program = "vilna-mcp-calendar"
+module = "vilna_mcp_calendar"
+args = []
+
+[operations.list_calendars]
+level = "R0"
+summary = "List the calendars"
+
+[operations.list_events]
+level = "R1"
+summary = "Read the calendar"
+returns_external = true
+
+[operations.search_events]
+level = "R1"
+summary = "Search the calendar"
+returns_external = true

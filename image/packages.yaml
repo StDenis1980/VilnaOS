@@ -56,8 +56,8 @@ vilna:
     # Спільні компоненти
     - {name: vilna-privacy-gateway,        license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-files,              license: Apache-2.0,       status: obs}
-    - {name: vilna-mcp-settings,           license: Apache-2.0,       status: planned}
-    - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: planned}
+    - {name: vilna-mcp-settings,           license: Apache-2.0,       status: obs}      # ADR 0023
+    - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: obs}      # ADR 0023
     - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}  # ADR 0012
     - {name: vilna-flatpak-defaults,       license: GPL-3.0-or-later, status: obs}      # програми з Flathub при першому запуску
     - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: obs}      # «Рекомендовано Vilna», ADR 0012; список: obs/packages/vilna-software-picks/picks.toml

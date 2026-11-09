@@ -254,17 +254,34 @@ pub fn undeclared_resource<'a>(request: &ActionRequest, op: &'a Operation) -> Op
     })
 }
 
-/// What Mitos needs to undo a change later: the tool's backup id and the file.
+/// Largest `undo_arguments` a tool may return, in bytes of JSON (ADR 0023, section 3).
+pub const UNDO_ARGUMENTS_MAX: usize = 4096;
+
+/// What Mitos needs to undo a change later: the files tool's backup id and
+/// the file, or the arguments the tool gave for its own `restore` (ADR 0023,
+/// section 3), such as a setting and the value it had before.
 pub fn undo_info(request: &ActionRequest, op: &Operation, result: &Value) -> Option<Value> {
     if !op.undoable {
         return None;
     }
-    let backup_id = result.get("backup_id")?.as_str()?;
-    let path = request.arguments.get(op.resource_args.first()?)?.as_str()?;
-    if backup_id.is_empty() || !backup_id.chars().all(char::is_alphanumeric) {
+    let backup = result.get("backup_id").and_then(Value::as_str);
+    let path = op
+        .resource_args
+        .first()
+        .and_then(|a| request.arguments.get(a))
+        .and_then(Value::as_str);
+    if let (Some(backup_id), Some(path)) = (backup, path) {
+        if !backup_id.is_empty() && backup_id.chars().all(char::is_alphanumeric) {
+            return Some(json!({"backup_id": backup_id, "path": normpath(path)}));
+        }
         return None;
     }
-    Some(json!({"backup_id": backup_id, "path": normpath(path)}))
+    let arguments = result.get("undo_arguments")?.as_object()?;
+    if arguments.is_empty() {
+        return None;
+    }
+    let size = serde_json::to_vec(arguments).ok()?.len();
+    (size <= UNDO_ARGUMENTS_MAX).then(|| json!({"arguments": arguments}))
 }
 
 /// Symlinks of the longest existing prefix are resolved; the rest may not
@@ -833,18 +850,30 @@ impl Gate {
         let (Some(tool), Some(undo)) = (tool, undo) else {
             return nothing();
         };
-        let (Some(path), Some(backup_id)) = (
-            undo.get("path").and_then(Value::as_str),
-            undo.get("backup_id").and_then(Value::as_str),
-        ) else {
-            return nothing();
+        let (resources, arguments) = if let Some(arguments) = undo.get("arguments") {
+            // A change the tool can put back itself (ADR 0023, section 3).
+            if !arguments.is_object() {
+                return nothing();
+            }
+            (json!([]), arguments.clone())
+        } else {
+            let (Some(path), Some(backup_id)) = (
+                undo.get("path").and_then(Value::as_str),
+                undo.get("backup_id").and_then(Value::as_str),
+            ) else {
+                return nothing();
+            };
+            (
+                json!([file_uri(path)]),
+                json!({"path": path, "backup_id": backup_id}),
+            )
         };
         let params = json!({
             "tool": tool,
             "operation": "restore",
-            "resources": [file_uri(path)],
+            "resources": resources,
             "reason": format!("Undo action {action_id}"),
-            "arguments": {"path": path, "backup_id": backup_id},
+            "arguments": arguments,
         });
         match parse_request(&params) {
             Ok(request) => self.handle(&request, session),
@@ -893,12 +922,21 @@ mod tests {
 
     impl Tools for FakeTools {
         fn running(&self, tool: &str) -> bool {
-            tool == "org.vilna.mcp.files"
+            tool == "org.vilna.mcp.files" || tool == SETTINGS
         }
         fn annotations(&self, _t: &str, _o: &str) -> Option<Map<String, Value>> {
             None
         }
         fn execute(&self, request: &ActionRequest) -> Result<Value, String> {
+            if request.tool == SETTINGS {
+                // Puts back what it was given and says what was there before.
+                let before = match request.operation.as_str() {
+                    "set_color_scheme" => json!({"color_scheme": "default"}),
+                    "restore" => json!({"color_scheme": "prefer-dark"}),
+                    _ => return Err("boom".into()),
+                };
+                return Ok(json!({"undo_arguments": {"values": before}}));
+            }
             match request.operation.as_str() {
                 "write" | "restore" | "delete" => Ok(json!({"backup_id": "b1"})),
                 "read" => Ok(json!({"text": "hello"})),
@@ -1269,6 +1307,55 @@ mod tests {
         assert_eq!(u.code, "allowed", "{u:?}");
         assert_eq!(g.undo("0123", &mut s).code, "denied_unknown");
         assert!(verify(g.journal().path()).is_ok());
+    }
+
+    const SETTINGS: &str = "org.vilna.mcp.settings";
+
+    #[test]
+    fn undo_with_arguments_from_the_tool() {
+        let (g, _docs) = gate("settings", Answer::Once);
+        let mut s = SessionState::default();
+        let dark = parse_request(&json!({
+            "tool": SETTINGS, "operation": "set_color_scheme", "reason": "r",
+            "arguments": {"scheme": "dark"}
+        }))
+        .expect("valid");
+        let o = g.handle(&dark, &mut s);
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R2)), "{o:?}");
+        let u = g.undo(&o.action_id, &mut s);
+        assert_eq!(u.code, "allowed", "{u:?}");
+        // The undo is undoable too: restore said what it replaced.
+        let r = g.undo(&u.action_id, &mut s);
+        assert_eq!(r.code, "allowed", "{r:?}");
+        assert!(verify(g.journal().path()).is_ok());
+    }
+
+    #[test]
+    fn undo_arguments_have_limits() {
+        let registry = Registry::builtin().expect("builtin");
+        let op = registry
+            .get(SETTINGS)
+            .and_then(|m| m.operations.get("set_color_scheme"))
+            .expect("op")
+            .clone();
+        let request = parse_request(
+            &json!({"tool": SETTINGS, "operation": "set_color_scheme", "reason": "r"}),
+        )
+        .expect("valid");
+        let ok = json!({"undo_arguments": {"values": {"color_scheme": "default"}}});
+        assert_eq!(
+            undo_info(&request, &op, &ok),
+            Some(json!({"arguments": {"values": {"color_scheme": "default"}}}))
+        );
+        let huge = json!({"undo_arguments": {"x": "a".repeat(UNDO_ARGUMENTS_MAX)}});
+        assert_eq!(undo_info(&request, &op, &huge), None);
+        for bad in [
+            json!({"undo_arguments": []}),
+            json!({"undo_arguments": {}}),
+            json!({}),
+        ] {
+            assert_eq!(undo_info(&request, &op, &bad), None);
+        }
     }
 
     /// Answers from a list, one per question, and keeps the questions.

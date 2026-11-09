@@ -3,7 +3,8 @@
 // Vilna's GNOME Shell extension. See ../README.md.
 //
 // It runs in three session modes:
-//  - user: everything (password layout, Gloxi above, Gloxi strip, D-Bus);
+//  - user: everything (password layout, Gloxi above, Gloxi at the right
+//    edge, Gloxi strip, D-Bus);
 //  - unlock-dialog: kept enabled while the screen is locked, so the
 //    password field of the lock screen gets the Latin layout too;
 //  - gdm: the login screen, where only the password layout runs.
@@ -13,6 +14,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import {Dock} from './dock.js';
 import {KeepAbove} from './keepAbove.js';
+import {PanelPlacement} from './panel.js';
 import {PasswordLayout} from './passwordLayout.js';
 import {VilnaShellService} from './dbus.js';
 
@@ -51,6 +53,7 @@ export default class VilnaExtension extends Extension {
     _startUserParts() {
         this._userParts = [
             new KeepAbove(this._settings),
+            new PanelPlacement(this._settings),
             new Dock(this._settings),
             new VilnaShellService(this._settings),
         ];

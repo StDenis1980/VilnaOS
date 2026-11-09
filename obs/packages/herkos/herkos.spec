@@ -33,6 +33,8 @@ Requires:       polkit
 # The tools run as the person (vilna-mcp-*@.service); packaged separately.
 Recommends:     vilna-mcp-files
 Recommends:     vilna-mcp-backup
+Recommends:     vilna-mcp-settings
+Recommends:     vilna-mcp-calendar
 %{?systemd_ordering}
 
 %description
@@ -97,6 +99,8 @@ install -Dm0644 systemd/herkosd.socket %{buildroot}%{_unitdir}/herkosd.socket
 install -Dm0644 systemd/herkosd.service %{buildroot}%{_unitdir}/herkosd.service
 install -Dm0644 systemd/vilna-mcp-files@.service %{buildroot}%{_unitdir}/vilna-mcp-files@.service
 install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-mcp-backup@.service
+install -Dm0644 systemd/vilna-mcp-settings@.service %{buildroot}%{_unitdir}/vilna-mcp-settings@.service
+install -Dm0644 systemd/vilna-mcp-calendar@.service %{buildroot}%{_unitdir}/vilna-mcp-calendar@.service
 install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos.rules
 install -Dm0644 systemd/herkos.sysusers %{buildroot}%{_sysusersdir}/herkos.conf
 install -Dm0644 systemd/system.toml %{buildroot}%{_sysconfdir}/herkos/system.toml
@@ -143,6 +147,8 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{_unitdir}/herkosd.service
 %{_unitdir}/vilna-mcp-files@.service
 %{_unitdir}/vilna-mcp-backup@.service
+%{_unitdir}/vilna-mcp-settings@.service
+%{_unitdir}/vilna-mcp-calendar@.service
 %{_datadir}/polkit-1/rules.d/50-herkos.rules
 %{_sysusersdir}/herkos.conf
 %dir %{_sysconfdir}/herkos

@@ -19,7 +19,8 @@ from gloxi import crash  # noqa: E402
 from gloxi.backup_intro import BackupIntro, backup_intro  # noqa: E402
 from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
-from gloxi.gui import APP_ID  # noqa: E402
+from gloxi.gui import APP_ID, panel  # noqa: E402
+from gloxi.gui import shell as vilna_shell  # noqa: E402
 from gloxi.gui.controller import (  # noqa: E402
     ChatController,
     ModelSetup,
@@ -27,6 +28,8 @@ from gloxi.gui.controller import (  # noqa: E402
     current_choice,
     model_choices,
 )
+from gloxi.gui.panel import OwlState, OwlStates, PanelPrefs  # noqa: E402
+from gloxi.gui.shortcuts import FALLBACK_COMMAND, GlobalShortcut  # noqa: E402
 from gloxi.herkos_local import (  # noqa: E402
     LocalHerkos,
     add_folder,
@@ -45,7 +48,38 @@ CSS = """
 .bubble { padding: 8px 12px; border-radius: 12px; }
 .bubble.user { background: alpha(@accent_bg_color, 0.15); }
 .bubble.assistant { background: alpha(@card_bg_color, 1.0); }
+
+/* The owl and its states (gloxi.gui.panel.OwlState). The motion is only on
+   .animated, which is off with the system's "Reduce animation". */
+.owl-badge { min-width: 8px; min-height: 8px; border-radius: 999px; }
+.owl.waiting .owl-badge { background: #F5C24A; }
+.owl.error .owl-badge { background: @error_color; }
+.owl.listening image { -gtk-icon-shadow: 0 0 3px @accent_color; }
+@keyframes gloxi-breathe { from { opacity: 1; } to { opacity: 0.8; } }
+@keyframes gloxi-think { from { opacity: 1; } to { opacity: 0.45; } }
+@keyframes gloxi-hop {
+  from { -gtk-icon-transform: translateY(0); }
+  to { -gtk-icon-transform: translateY(-2px); }
+}
+.owl.animated.idle image { animation: gloxi-breathe 3s ease-in-out infinite alternate; }
+.owl.animated.thinking image { animation: gloxi-think 0.8s ease-in-out infinite alternate; }
+.owl.animated.answering image { animation: gloxi-think 0.35s ease-in-out infinite alternate; }
+.owl.animated.waiting image { animation: gloxi-hop 0.6s ease-in-out 4 alternate; }
+
+window.gloxi-panel.compact .messages { margin: 6px 10px; }
 """
+
+# The translucent panel: only the background; the bars sit on it without a
+# background of their own, so the alpha is not laid on twice.
+TRANSLUCENT_CSS = """
+window.gloxi-panel {{ background-color: alpha(@window_bg_color, {alpha}); }}
+window.gloxi-panel toolbarview > .top-bar,
+window.gloxi-panel toolbarview > .bottom-bar,
+window.gloxi-panel headerbar {{ background: none; box-shadow: none; }}
+"""
+
+# Size keys in the panel, as in the Size buttons.
+SIZE_KEYS = {"compact": "<Control>1", "one-sixth": "<Control>2", "one-third": "<Control>3"}
 
 
 def _idle(func):
@@ -59,18 +93,37 @@ def _idle(func):
 
 class ChatWindow(Adw.ApplicationWindow):
     def __init__(
-        self, app: Adw.Application, conversation: Conversation, intro: BackupIntro | None = None
+        self,
+        app: Adw.Application,
+        conversation: Conversation,
+        intro: BackupIntro | None = None,
+        *,
+        shell: vilna_shell.VilnaShell | None = None,
+        prefs: PanelPrefs | None = None,
     ) -> None:
-        super().__init__(application=app, title="Gloxi", default_width=520, default_height=680)
+        super().__init__(application=app, title="Gloxi")
         self.controller = ChatController(conversation, self, intro=intro)
         self._answer_label: Gtk.Label | None = None
+        # The side panel (stage A): its size and look, and the Shell that
+        # keeps it at the right edge, when the Vilna extension runs.
+        self.shell = shell
+        self.prefs = prefs or PanelPrefs()
+        self.owl_states = OwlStates()
+        self.add_css_class("gloxi-panel")
 
         header = Adw.HeaderBar()
         self.title = Adw.WindowTitle(title="Gloxi", subtitle=cloud_status(conversation))
         header.set_title_widget(self.title)
+        header.pack_start(self._make_owl())
         new_button = Gtk.Button(icon_name="list-add-symbolic", tooltip_text=_("New conversation"))
         new_button.connect("clicked", self._on_new)
         header.pack_start(new_button)
+        self.panel_button = Gtk.MenuButton(
+            icon_name="sidebar-show-right-symbolic",
+            tooltip_text=_("Panel size and look"),
+            popover=self._make_panel_popover(),
+        )
+        header.pack_end(self.panel_button)
         # The model switcher (brief 10.3: in the input bar, Ctrl+/), also in the
         # middle of a conversation; it holds from the next message.
         self.model_switch = Gtk.DropDown(valign=Gtk.Align.CENTER)
@@ -100,9 +153,16 @@ class ChatWindow(Adw.ApplicationWindow):
         header.pack_end(report_button)
 
         self.messages = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        self.messages.add_css_class("messages")
         for side in ("top", "bottom", "start", "end"):
             getattr(self.messages, f"set_margin_{side}")(12)
         self.scroller = Gtk.ScrolledWindow(vexpand=True, child=self.messages)
+        # Small: always the last lines, also right after the panel shrinks.
+        # (Scrolled on idle: the adjustment changes in the middle of layout.)
+        self.scroller.get_vadjustment().connect(
+            "changed",
+            lambda *_a: self.prefs.size == "compact" and GLib.idle_add(self._scroll_to_end),
+        )
 
         self.entry = Gtk.Entry(
             hexpand=True,
@@ -126,8 +186,21 @@ class ChatWindow(Adw.ApplicationWindow):
                 action=Gtk.CallbackAction.new(lambda *_a: self.model_switch.activate()),
             )
         )
+        for size, key in SIZE_KEYS.items():
+            shortcuts.add_shortcut(
+                Gtk.Shortcut(
+                    trigger=Gtk.ShortcutTrigger.parse_string(key),
+                    action=Gtk.CallbackAction.new(
+                        lambda *_a, s=size: self.set_panel_size(s) or True
+                    ),
+                )
+            )
         self.add_controller(shortcuts)
         bottom.append(self.send_button)
+        focus = Gtk.EventControllerFocus()
+        focus.connect("enter", lambda *_a: self._owl(lambda s: s.focus(True)))
+        focus.connect("leave", lambda *_a: self._owl(lambda s: s.focus(False)))
+        self.entry.add_controller(focus)
 
         self.toasts = Adw.ToastOverlay(child=self.scroller)
         # The bundled model: download progress and start-up (ModelSetup).
@@ -140,6 +213,191 @@ class ChatWindow(Adw.ApplicationWindow):
         view.add_bottom_bar(bottom)
         self.set_content(view)
         self.entry.grab_focus()
+
+        self._translucency = Gtk.CssProvider()
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(), self._translucency, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+        style = Adw.StyleManager.get_default()
+        style.connect("notify::high-contrast", lambda *_a: self._apply_look())
+        Gtk.Settings.get_default().connect(
+            "notify::gtk-enable-animations", lambda *_a: self._show_owl()
+        )
+        self.connect("close-request", self._on_close_request)
+        self._apply_look()
+        self._apply_size()
+        self._show_owl()
+
+    # -- the side panel: size, look, the owl ------------------------------------
+
+    def _make_owl(self) -> Gtk.Widget:
+        self.owl_image = Gtk.Image(icon_name=APP_ID, pixel_size=24)
+        badge = Gtk.Box(halign=Gtk.Align.END, valign=Gtk.Align.END)
+        badge.add_css_class("owl-badge")
+        self.owl = Gtk.Overlay(child=self.owl_image, valign=Gtk.Align.CENTER)
+        self.owl.add_overlay(badge)
+        self.owl.add_css_class("owl")
+        return self.owl
+
+    def _owl(self, change) -> None:
+        change(self.owl_states)
+        self._show_owl()
+
+    def _show_owl(self) -> None:
+        state = self.owl_states.state
+        for other in OwlState:
+            self.owl.remove_css_class(other.value)
+        self.owl.add_css_class(state.value)
+        if Gtk.Settings.get_default().get_property("gtk-enable-animations"):
+            self.owl.add_css_class("animated")
+        else:
+            self.owl.remove_css_class("animated")
+        text = panel.state_text(state)
+        self.owl.set_tooltip_text(text)
+        self.owl.update_property([Gtk.AccessibleProperty.LABEL], [text])
+
+    def _make_panel_popover(self) -> Gtk.Popover:
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        for side in ("top", "bottom", "start", "end"):
+            getattr(box, f"set_margin_{side}")(6)
+        heading = Gtk.Label(label=_("Size"), xalign=0)
+        heading.add_css_class("heading")
+        box.append(heading)
+        sizes = Gtk.Box(homogeneous=True)
+        sizes.add_css_class("linked")
+        self.size_buttons: dict[str, Gtk.ToggleButton] = {}
+        labels = {
+            "compact": (_("Small"), _("The last lines of the chat and the input")),
+            "one-sixth": (_("1/6"), _("A sixth of the screen")),
+            "one-third": (_("1/3"), _("A third of the screen")),
+        }
+        group = None
+        for size, (label, tip) in labels.items():
+            button = Gtk.ToggleButton(label=label, tooltip_text=f"{tip} ({SIZE_KEYS[size]})")
+            if group is None:
+                group = button
+            else:
+                button.set_group(group)
+            button.connect("toggled", self._on_size_toggled, size)
+            sizes.append(button)
+            self.size_buttons[size] = button
+        box.append(sizes)
+        self.custom_note = Gtk.Label(
+            label=_("Your own size. Drag an edge of the panel to change it."),
+            wrap=True,
+            xalign=0,
+            max_width_chars=30,
+        )
+        self.custom_note.add_css_class("dim-label")
+        self.custom_note.add_css_class("caption")
+        box.append(self.custom_note)
+
+        rows = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        rows.add_css_class("boxed-list")
+        self.translucent_row = Adw.SwitchRow(title=_("Translucent"))
+        self.translucent_row.set_active(self.prefs.translucent)
+        self.translucent_row.connect("notify::active", self._on_translucent)
+        rows.append(self.translucent_row)
+        self.opacity = Gtk.Scale.new_with_range(
+            Gtk.Orientation.HORIZONTAL, panel.MIN_OPACITY, 1.0, 0.05
+        )
+        self.opacity.set_value(self.prefs.opacity)
+        self.opacity.set_size_request(120, -1)
+        self.opacity.connect("value-changed", self._on_opacity)
+        self.opacity_row = Adw.ActionRow(title=_("Background"))
+        self.opacity_row.add_suffix(self.opacity)
+        self.opacity.update_property([Gtk.AccessibleProperty.LABEL], [_("Background opacity")])
+        rows.append(self.opacity_row)
+        # Only the Shell can keep a window above others on Wayland.
+        self.above_row = Adw.SwitchRow(
+            title=_("Above other windows"), visible=self.shell is not None
+        )
+        if self.shell is not None:
+            self.above_row.set_active(self.shell.keep_above)
+        self.above_row.connect("notify::active", self._on_keep_above)
+        rows.append(self.above_row)
+        box.append(rows)
+        self._sync_size_buttons()
+        box.set_size_request(320, -1)
+        return Gtk.Popover(child=box)
+
+    def _sync_size_buttons(self) -> None:
+        self._syncing = True
+        for size, button in self.size_buttons.items():
+            button.set_active(size == self.prefs.size)
+        self._syncing = False
+        self.custom_note.set_visible(self.prefs.size == "custom")
+
+    def _on_size_toggled(self, button: Gtk.ToggleButton, size: str) -> None:
+        if button.get_active() and not getattr(self, "_syncing", False):
+            self.set_panel_size(size)
+
+    def set_panel_size(self, size: str) -> None:
+        if size not in panel.SIZES or size == self.prefs.size:
+            return
+        self._set_prefs(size=size)
+        self._sync_size_buttons()
+        self._apply_size()
+
+    def _screen(self) -> tuple[int, int]:
+        display = Gdk.Display.get_default()
+        surface = self.get_surface()
+        monitor = display.get_monitor_at_surface(surface) if surface else None
+        if monitor is None:
+            monitors = display.get_monitors()
+            monitor = monitors.get_item(0) if monitors.get_n_items() else None
+        if monitor is None:
+            return 1920, 1080
+        geometry = monitor.get_geometry()
+        return geometry.width, geometry.height
+
+    def _apply_size(self) -> None:
+        width, height = panel.panel_size(self.prefs, *self._screen())
+        self.set_default_size(width, height)
+        if self.prefs.size == "compact":
+            self.add_css_class("compact")
+        else:
+            self.remove_css_class("compact")
+        if self.shell is not None:
+            # The Shell keeps the window at the right edge, at the work
+            # area's height; without it GNOME chooses the place.
+            self.shell.set_panel_size(self.prefs.size)
+
+    def _apply_look(self) -> None:
+        high_contrast = Adw.StyleManager.get_default().get_high_contrast()
+        alpha = panel.background_opacity(self.prefs, high_contrast)
+        self._translucency.load_from_string(
+            TRANSLUCENT_CSS.format(alpha=f"{alpha:.2f}") if alpha < 1.0 else ""
+        )
+        self.translucent_row.set_sensitive(not high_contrast)
+        self.translucent_row.set_subtitle(_("Off in high contrast") if high_contrast else "")
+        self.opacity_row.set_sensitive(self.prefs.translucent and not high_contrast)
+
+    def _set_prefs(self, **changes) -> None:
+        self.prefs = panel.clean(self.prefs, changes)
+        panel.save_prefs(self.prefs)
+
+    def _on_translucent(self, row, _pspec) -> None:
+        self._set_prefs(translucent=row.get_active())
+        self._apply_look()
+
+    def _on_opacity(self, scale) -> None:
+        self._set_prefs(opacity=scale.get_value())
+        self._apply_look()
+
+    def _on_keep_above(self, row, _pspec) -> None:
+        if self.shell is not None:
+            self.shell.set_keep_above(row.get_active())
+
+    def _on_close_request(self, *_args) -> bool:
+        # A size dragged by hand is remembered as the person's own size.
+        prefs = panel.after_resize(self.prefs, self.get_width(), self.get_height(), *self._screen())
+        if prefs != self.prefs:
+            self.prefs = prefs
+            panel.save_prefs(prefs)
+            if self.shell is not None:
+                self.shell.set_panel_size(prefs.size)
+        return False
 
     # -- user actions -------------------------------------------------------
 
@@ -380,13 +638,19 @@ class ChatWindow(Adw.ApplicationWindow):
 
     @_idle
     def ask_model_download(self, text: str, answer) -> None:
+        self._owl(OwlStates.ask)
+
+        def respond(_d, response) -> None:
+            self._owl(OwlStates.answered)
+            answer(response == "download")
+
         dialog = Adw.AlertDialog(heading=_("Download the language model?"), body=text)
         dialog.add_response("later", _("Not now"))
         dialog.add_response("download", _("Download"))
         dialog.set_response_appearance("download", Adw.ResponseAppearance.SUGGESTED)
         dialog.set_default_response("download")
         dialog.set_close_response("later")
-        dialog.connect("response", lambda _d, response: answer(response == "download"))
+        dialog.connect("response", respond)
         dialog.present(self)
 
     @_idle
@@ -433,6 +697,8 @@ class ChatWindow(Adw.ApplicationWindow):
     @_idle
     def append_answer(self, piece: str) -> None:
         self._answer_text += piece
+        if piece and self.owl_states.busy and not self.owl_states.answering:
+            self._owl(OwlStates.got_piece)
         if self._answer_label is not None:
             self._answer_label.set_text(self._answer_text)
         self._scroll_to_end()
@@ -445,6 +711,7 @@ class ChatWindow(Adw.ApplicationWindow):
 
     @_idle
     def show_error(self, text: str) -> None:
+        self._owl(OwlStates.failed)
         self.toasts.add_toast(Adw.Toast(title=text, timeout=6))
 
     @_idle
@@ -458,6 +725,7 @@ class ChatWindow(Adw.ApplicationWindow):
 
     @_idle
     def set_busy(self, busy: bool) -> None:
+        self._owl(lambda s: s.set_busy(busy))
         self.send_button.set_sensitive(not busy)
         if not busy:
             self.entry.grab_focus()
@@ -465,8 +733,26 @@ class ChatWindow(Adw.ApplicationWindow):
 
 class GloxiApp(Adw.Application):
     def __init__(self) -> None:
-        super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.DEFAULT_FLAGS)
+        super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
         self._clients: list[ChatClient] = []
+        self._shortcut: GlobalShortcut | None = None
+        # `gloxi-gtk --toggle`: what a key of one's own runs where the
+        # GlobalShortcuts portal is missing (ADR 0023, section 5).
+        self.add_main_option(
+            "toggle",
+            0,
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            _("Show Gloxi, or hide it if it is in front"),
+            None,
+        )
+
+    def do_command_line(self, command_line: Gio.ApplicationCommandLine) -> int:
+        if command_line.get_options_dict().contains("toggle"):
+            self.toggle()
+        else:
+            self.activate()
+        return 0
 
     def do_activate(self) -> None:
         window = self.get_active_window()
@@ -474,6 +760,29 @@ class GloxiApp(Adw.Application):
             window = self._build_window()
         if window is not None:
             window.present()
+            self._bind_shortcut()
+
+    def toggle(self) -> None:
+        """Hide Gloxi when it is in front; otherwise bring it up, ready to type."""
+        window = self.get_active_window()
+        if window is not None and window.get_visible() and window.is_active():
+            window.set_visible(False)  # the conversation stays as it is
+            return
+        self.activate()
+        window = self.get_active_window()
+        if isinstance(window, ChatWindow):
+            window.entry.grab_focus()
+
+    def _bind_shortcut(self) -> None:
+        if self._shortcut is not None:
+            return
+        self._shortcut = GlobalShortcut(
+            on_activated=self.toggle,
+            on_unavailable=lambda: print(
+                f"gloxi: no global shortcut; bind a key to: {FALLBACK_COMMAND}", file=sys.stderr
+            ),
+        )
+        self._shortcut.start()
 
     def _build_window(self) -> ChatWindow | None:
         try:
@@ -482,6 +791,10 @@ class GloxiApp(Adw.Application):
             print(f"gloxi: {exc}", file=sys.stderr)
             self.quit()
             return None
+        # Running from a source checkout: the owl from data/icons.
+        icons = Path(__file__).resolve().parents[3] / "data" / "icons"
+        if icons.is_dir():
+            Gtk.IconTheme.get_for_display(Gdk.Display.get_default()).add_search_path(str(icons))
         provider = Gtk.CssProvider()
         provider.load_from_string(CSS)
         Gtk.StyleContext.add_provider_for_display(
@@ -495,7 +808,13 @@ class GloxiApp(Adw.Application):
         self._tools = file_tools(settings.tools_enabled)
         conversation = Conversation(router, settings.system_prompt, tools=self._tools)
         self._intro = backup_intro(settings.tools_enabled)
-        window = ChatWindow(self, conversation, self._intro)
+        window = ChatWindow(
+            self,
+            conversation,
+            self._intro,
+            shell=vilna_shell.connect(),
+            prefs=panel.load_prefs(),
+        )
         if self._herkos is not None:
             window.enable_folders(self._herkos, self._tools)
         catalogue = programs(settings.tools_enabled)
@@ -507,6 +826,8 @@ class GloxiApp(Adw.Application):
         return window
 
     def do_shutdown(self) -> None:
+        if self._shortcut is not None:
+            self._shortcut.stop()
         for client in self._clients:
             client.close()
         if getattr(self, "_tools", None):
@@ -529,7 +850,7 @@ def main(argv: list[str] | None = None) -> int:
     # quitting runs do_shutdown, which stops them.
     for signum in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signum, _quit, app)
-    return app.run(sys.argv[:1] if argv is None else argv)
+    return app.run(sys.argv if argv is None else argv)
 
 
 def _quit(app: Adw.Application) -> bool:

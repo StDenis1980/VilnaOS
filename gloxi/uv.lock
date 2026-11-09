@@ -97,7 +97,9 @@ dev = [
     { name = "ruff", specifier = ">=0.6" },
     { name = "vilna-backup", editable = "../backup" },
     { name = "vilna-mcp-backup", editable = "../mcp/backup" },
+    { name = "vilna-mcp-calendar", editable = "../mcp/calendar" },
     { name = "vilna-mcp-files", editable = "../mcp/files" },
+    { name = "vilna-mcp-settings", editable = "../mcp/settings" },
 ]
 
 [[package]]

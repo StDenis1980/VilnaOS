@@ -41,6 +41,8 @@ Requires:       herkos-manifests
 Requires:       gloxi
 Requires:       vilna-mcp-files
 Requires:       vilna-mcp-backup
+Requires:       vilna-mcp-settings
+Requires:       vilna-mcp-calendar
 Requires:       vilna-flatpak-defaults
 Requires:       gnome-shell-extension-vilna
 Requires:       vilna-software-picks
