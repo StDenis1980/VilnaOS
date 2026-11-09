@@ -8,6 +8,8 @@ import tomllib
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 APP_ID = "io.github.stdenis1980.Gloxi"
 MANIFEST = ROOT / "flatpak" / f"{APP_ID}.yml"
@@ -37,6 +39,9 @@ def _runtime_dependencies(package: str = "gloxi") -> set[str]:
 
 
 def test_wheels_match_uv_lock():
+    if not LOCKS["vilna-mcp-settings"].is_file():
+        # The gloxi source package (OBS) has only gloxi/; CI checks it in the repository.
+        pytest.skip("not in the VilnaOS repository")
     locked: dict[str, dict] = {}
     needed: set[str] = set()
     for package in LOCKS:
