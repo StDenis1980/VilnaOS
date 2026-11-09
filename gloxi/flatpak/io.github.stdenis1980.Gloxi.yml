@@ -35,6 +35,11 @@ finish-args:
   - --env=GSETTINGS_BACKEND=dconf
   # Volume, mute and sound output through PipeWire; voice needs it too (ADR 0015).
   - --socket=pulseaudio
+  # The Vilna GNOME Shell extension (shell-extension/README.md): keeps the
+  # Gloxi panel at the right edge and above other windows. Gloxi only reads
+  # and sets its own properties there; without the extension the name is
+  # missing and Gloxi hides those switches.
+  - --talk-name=io.github.stdenis1980.VilnaShell
 
 cleanup:
   - "*.pyc~"

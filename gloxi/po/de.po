@@ -550,7 +550,7 @@ msgstr ""
 msgid "Please write a few words, or /cancel to stop."
 msgstr ""
 
-#: src/gloxi/feedback.py
+#: src/gloxi/feedback.py src/gloxi/gui/panel.py
 msgid "Something went wrong"
 msgstr ""
 
@@ -725,9 +725,49 @@ msgstr ""
 msgid "{model}, on this computer"
 msgstr ""
 
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is answering"
+msgstr "Gloxi antwortet"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is listening"
+msgstr "Gloxi hört zu"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is ready"
+msgstr "Gloxi ist bereit"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is thinking"
+msgstr "Gloxi denkt nach"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is waiting for you"
+msgstr "Gloxi wartet auf Sie"
+
 #: src/gloxi/gui/shortcuts.py
 msgid "Show or hide Gloxi"
 msgstr "Gloxi ein- oder ausblenden"
+
+#: src/gloxi/gui/window.py
+msgid "1/3"
+msgstr "1/3"
+
+#: src/gloxi/gui/window.py
+msgid "1/6"
+msgstr "1/6"
+
+#: src/gloxi/gui/window.py
+msgid "A sixth of the screen"
+msgstr "Ein Sechstel des Bildschirms"
+
+#: src/gloxi/gui/window.py
+msgid "A third of the screen"
+msgstr "Ein Drittel des Bildschirms"
+
+#: src/gloxi/gui/window.py
+msgid "Above other windows"
+msgstr "Über anderen Fenstern"
 
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
@@ -740,6 +780,14 @@ msgstr ""
 #: src/gloxi/gui/window.py
 msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Background"
+msgstr "Hintergrund"
+
+#: src/gloxi/gui/window.py
+msgid "Background opacity"
+msgstr "Deckkraft des Hintergrunds"
 
 #: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
@@ -808,8 +856,16 @@ msgid "Not turned on: you said no in the Herkos window."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Off in high contrast"
+msgstr "Bei hohem Kontrast aus"
+
+#: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Panel size and look"
+msgstr "Größe und Aussehen der Leiste"
 
 #: src/gloxi/gui/window.py
 msgid "Programs for Gloxi"
@@ -828,8 +884,28 @@ msgid "Show Gloxi, or hide it if it is in front"
 msgstr "Gloxi anzeigen oder ausblenden, wenn es im Vordergrund ist"
 
 #: src/gloxi/gui/window.py
+msgid "Size"
+msgstr "Größe"
+
+#: src/gloxi/gui/window.py
+msgid "Small"
+msgstr "Klein"
+
+#: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "The last lines of the chat and the input"
+msgstr "Die letzten Zeilen des Chats und das Eingabefeld"
+
+#: src/gloxi/gui/window.py
+msgid "Translucent"
+msgstr "Durchscheinend"
+
+#: src/gloxi/gui/window.py
+msgid "Your own size. Drag an edge of the panel to change it."
+msgstr "Ihre eigene Größe. Ziehen Sie an einem Rand der Leiste, um sie zu ändern."
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"

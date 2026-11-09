@@ -15,7 +15,7 @@ import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 
 import {panelRect} from './lib/geometry.js';
-import {findGloxiWindow} from './keepAbove.js';
+import {findGloxiWindow, roleOf} from './keepAbove.js';
 
 function isMaximized(window) {
     // GNOME 49+ has is_maximized(); before that, the maximized-* flags.
@@ -29,7 +29,7 @@ export class PanelPlacement {
         this._settings = settings;
         this._signals = [];
         this._idleId = 0;
-        // Windows waiting for their first frame: window → {actor, frameId, goneId}.
+        // New windows not placed yet: window → [[object, signal id]].
         this._pending = new Map();
     }
 
@@ -58,26 +58,40 @@ export class PanelPlacement {
         this._signals.push([object, object.connect(signal, handler)]);
     }
 
-    // A new window reports its app id a moment after it appears, and its
-    // size only with its first frame: place it then.
+    // A new Wayland window is announced with its first buffer, before it
+    // reports its app id and before Mutter places it: wait for both the id
+    // and the window being shown, then place it once (placing it earlier
+    // is undone by Mutter's own placement). Other windows are let go as
+    // soon as their id shows they are not Gloxi.
     _waitForFrame(window) {
-        const actor = window?.get_compositor_private();
-        if (!actor || this._pending.has(window))
+        if (!window || this._pending.has(window))
             return;
-        const frameId = actor.connect('first-frame', () => {
-            this._forget(window);
-            this._queuePlace();
-        });
-        const goneId = window.connect('unmanaged', () => this._forget(window));
-        this._pending.set(window, {actor, frameId, goneId});
+        let shown = false;
+        const check = () => {
+            const role = roleOf(window);
+            if (role === 'gloxi' && shown)
+                this._queuePlace();
+            else if (role && role !== 'gloxi')
+                this._forget(window);
+            else if (!role && window.get_wm_class())
+                this._forget(window);
+        };
+        const ids = [
+            [window, window.connect('notify::wm-class', check)],
+            [window, window.connect('notify::gtk-application-id', check)],
+            [window, window.connect('shown', () => {
+                shown = true;
+                check();
+            })],
+            [window, window.connect('unmanaged', () => this._forget(window))],
+        ];
+        this._pending.set(window, ids);
+        check();
     }
 
     _forget(window) {
-        const entry = this._pending.get(window);
-        if (!entry)
-            return;
-        entry.actor.disconnect(entry.frameId);
-        window.disconnect(entry.goneId);
+        for (const [object, id] of this._pending.get(window) ?? [])
+            object.disconnect(id);
         this._pending.delete(window);
     }
 
@@ -99,6 +113,8 @@ export class PanelPlacement {
             return;
         if (window.get_window_type() !== Meta.WindowType.NORMAL)
             return;
+        // Placed: a new window is placed once, later only on changes.
+        this._forget(window);
         const rect = panelRect(window.get_work_area_current_monitor(),
             this._settings.get_string('gloxi-panel-size'), window.get_frame_rect());
         window.move_resize_frame(false, rect.x, rect.y, rect.width, rect.height);
