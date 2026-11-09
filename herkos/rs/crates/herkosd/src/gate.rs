@@ -25,7 +25,7 @@ use herkos_core::risk::Level;
 use serde_json::{Map, Value, json};
 
 use crate::config::Config;
-use crate::grants::{Duration, GrantStore, grant_record};
+use crate::grants::{Duration, GrantStore, grant_listing, grant_record};
 use crate::keros_model::ModelCheck;
 use crate::mitos::{Journal, JournalError, digest, read_records};
 use crate::pins::PinStore;
@@ -801,6 +801,41 @@ impl Gate {
         }
     }
 
+    /// The person's permissions, session and permanent (their window only:
+    /// Gloxi has no method to see or change them, protocol.md 2).
+    pub fn permissions(&self) -> Value {
+        let list = match self.grants.lock() {
+            Ok(mut g) => g.all().iter().map(grant_listing).collect(),
+            Err(_) => Vec::new(),
+        };
+        json!({ "permissions": list })
+    }
+
+    /// The person takes a permission back. Journalled as a `grant` record.
+    pub fn revoke(&self, grant_id: &str) -> Result<bool, String> {
+        let revoked = self
+            .grants
+            .lock()
+            .map_err(|_| "permissions poisoned".to_owned())?
+            .revoke(grant_id);
+        if revoked {
+            self.journal
+                .append("grant", json!({"revoked": grant_id}), None)
+                .map_err(|e| e.0)?;
+        }
+        Ok(revoked)
+    }
+
+    /// The last `limit` journal records, oldest first, for the person's window.
+    pub fn recent(&self, limit: usize) -> Value {
+        let records: Vec<Value> = match read_records(self.journal.path()) {
+            Ok(r) => r.into_iter().flatten().collect(),
+            Err(_) => Vec::new(),
+        };
+        let skip = records.len().saturating_sub(limit);
+        json!({ "records": records.into_iter().skip(skip).collect::<Vec<_>>() })
+    }
+
     /// Undo an earlier action by its journal id: a new `restore` request that
     /// goes through the gate like any other action.
     pub fn undo(&self, action_id: &str, session: &mut SessionState) -> Outcome {
@@ -883,7 +918,7 @@ fn describe(request: &ActionRequest, session: &SessionState) -> Value {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::config::parse_config;
     use crate::grants::now;
@@ -915,7 +950,7 @@ mod tests {
         }
     }
 
-    fn gate(name: &str, answer: Answer) -> (Gate, PathBuf) {
+    pub(crate) fn gate(name: &str, answer: Answer) -> (Gate, PathBuf) {
         let dir = std::env::temp_dir().join(format!("herkosd-gate-{}-{name}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let docs = dir.join("Documents");
@@ -1214,7 +1249,7 @@ mod tests {
         assert!(hidden.iter().all(|h| h["tool"] == "org.vilna.mcp.files"));
     }
 
-    fn files(op: &str, path: &Path) -> ActionRequest {
+    pub(crate) fn files(op: &str, path: &Path) -> ActionRequest {
         let p = path.display().to_string();
         parse_request(
             &json!({"tool": "org.vilna.mcp.files", "operation": op, "reason": "r",
@@ -1268,6 +1303,35 @@ mod tests {
         let u = g.undo(&o.action_id, &mut s);
         assert_eq!(u.code, "allowed", "{u:?}");
         assert_eq!(g.undo("0123", &mut s).code, "denied_unknown");
+        assert!(verify(g.journal().path()).is_ok());
+    }
+
+    #[test]
+    fn the_person_lists_and_revokes_permissions_and_reads_the_journal() {
+        let (g, docs) = gate("person", Answer::Session);
+        let mut s = SessionState::default();
+        let o = g.handle(&files("write", &docs.join("a.txt")), &mut s);
+        assert!(o.allowed);
+        let list = g.permissions();
+        let p = &list["permissions"][0];
+        assert_eq!(p["tool"], "org.vilna.mcp.files");
+        assert_eq!(p["duration"], "session");
+        assert!(p["created"].as_f64().is_some_and(|t| t > 0.0));
+        let id = p["grant_id"].as_str().expect("id").to_owned();
+        assert_eq!(g.revoke(&id), Ok(true));
+        assert_eq!(g.revoke(&id), Ok(false));
+        assert_eq!(g.permissions()["permissions"], json!([]));
+
+        let all = g.recent(1000)["records"]
+            .as_array()
+            .map(Vec::len)
+            .unwrap_or(0);
+        let last = g.recent(1);
+        let last = last["records"].as_array().expect("records");
+        assert_eq!(last.len(), 1);
+        assert_eq!(last[0]["kind"], "grant");
+        assert_eq!(last[0]["data"]["revoked"], id.as_str());
+        assert!(all >= 4, "{all}");
         assert!(verify(g.journal().path()).is_ok());
     }
 

@@ -9,6 +9,7 @@ from herkos.confirm import _LABELS, Question, choices_for, render
 from herkos.dialog import LABELS
 from herkos.keros import MODEL_FINDING, RULES
 from herkos.manifest import ManifestRegistry
+from herkos.permissions_view import ASKED, DONE, MONTHS
 from herkos.risk import Level
 
 SRC = Path(__file__).parent.parent / "src" / "herkos"
@@ -22,7 +23,8 @@ def used_messages() -> set[str]:
     found.add("contains invisible or direction-changing characters")
     found.add(MODEL_FINDING.description)
     found |= set(_LABELS.values()) | set(LABELS.values())
-    for tool in ("org.vilna.mcp.files",):
+    found |= set(DONE.values()) | {ASKED} | set(MONTHS)
+    for tool in ("org.vilna.mcp.files", "org.vilna.mcp.backup"):
         found |= {op.summary for op in ManifestRegistry.builtin().get(tool).operations.values()}
     return found
 

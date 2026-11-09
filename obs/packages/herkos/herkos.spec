@@ -56,7 +56,8 @@ BuildArch:      noarch
 %description agent
 The session agent of Herkos: shows the questions of the system herkosd on
 the person's screen (herkos-agent, a user service) in Herkos's own
-window. It also contains Herkos-lite, the preview gate that runs in the
+window. The "Permissions" window (herkos-permissions) shows what Gloxi
+did, undoes a change, and takes back a permission. It also contains Herkos-lite, the preview gate that runs in the
 person's session.
 
 %package -n herkos-manifests
@@ -101,6 +102,10 @@ install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d
 install -Dm0644 systemd/herkos.sysusers %{buildroot}%{_sysusersdir}/herkos.conf
 install -Dm0644 systemd/system.toml %{buildroot}%{_sysconfdir}/herkos/system.toml
 install -Dm0644 systemd/herkos-agent.service %{buildroot}%{_userunitdir}/herkos-agent.service
+# The «Дозволи» window (herkos-permissions) in the app grid.
+install -Dm0644 data/io.github.stdenis1980.VilnaPermissions.desktop %{buildroot}%{_datadir}/applications/io.github.stdenis1980.VilnaPermissions.desktop
+install -Dm0644 data/vilna-permissions.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/vilna-permissions.svg
+install -Dm0644 data/vilna-permissions-symbolic.svg %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps/vilna-permissions-symbolic.svg
 # The catalogue (herkos/catalogue) and, for each program in it, the unit
 # that runs it for a person, made from its manifest.
 install -d %{buildroot}%{_datadir}/herkos/manifests
@@ -159,7 +164,11 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{_bindir}/herkos
 %{_bindir}/herkos-agent
 %{_bindir}/herkos-dialog
+%{_bindir}/herkos-permissions
 %{_userunitdir}/herkos-agent.service
+%{_datadir}/applications/io.github.stdenis1980.VilnaPermissions.desktop
+%{_datadir}/icons/hicolor/scalable/apps/vilna-permissions.svg
+%{_datadir}/icons/hicolor/symbolic/apps/vilna-permissions-symbolic.svg
 %{python_sitelib}/herkos
 %{python_sitelib}/herkos-*.dist-info
 

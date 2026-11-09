@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[Desktop Entry]
+Type=Application
+Name=Permissions
+Name[uk]=Дозволи
+Name[es]=Permisos
+Name[pl]=Uprawnienia
+Name[de]=Berechtigungen
+Name[fr]=Autorisations
+Name[it]=Autorizzazioni
+Name[ro]=Permisiuni
+Name[cs]=Oprávnění
+Name[lt]=Leidimai
+Comment=What Gloxi did, and what it may do without asking
+Comment[uk]=Що зробив Gloxi і що йому дозволено без питання
+Icon=vilna-permissions
+Exec=herkos-permissions
+Terminal=false
+Categories=GNOME;GTK;Settings;Security;
+Keywords=Herkos;Gloxi;journal;undo;permissions;журнал;скасувати;дозволи;
+StartupNotify=true
