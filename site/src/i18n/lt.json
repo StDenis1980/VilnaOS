@@ -62,5 +62,23 @@
 
   "nf_title": "Puslapis nerastas",
   "nf_lead": "Tokio puslapio nėra arba jis perkeltas.",
-  "nf_home": "Į pradžią"
+  "nf_home": "Į pradžią",
+
+  "blavet_desc": "Blavet – pirmosios Vilna laidos pavadinimas: rugiagėlė ir tulžys.",
+  "blavet_badge": "Pirmoji laida · kuriama",
+  "blavet_lead": "Pirmoji Vilna laida vadinasi Blavet. Valensiečių kalba šis žodis reiškia ir rugiagėlę, ir tulžį – mažą mėlyną paukštį oranžine krūtine.",
+  "blavet_mark_alt": "Blavet ženklas: tulžys žvelgia iš drevės",
+  "blavet_name_h": "Kodėl Blavet",
+  "blavet_name_p": "Vilna laidas vadiname gėlių vardais. Rugiagėlė ir tulžys turi Vilna spalvas: mėlyną, oranžinę ir auksinę. Kiekviena laida turi savo ženklą, o Vilna logotipas ir pelėda Gloxi lieka tie patys.",
+  "blavet_look_h": "Kaip atrodo",
+  "blavet_look_p": "Numatytasis – šviesus stilius su fonu „Saulė“, tamsų įjungsite vienu jungikliu. Fonas „Blavet“ tulžio sparną paverčia Petrykivkos ornamentu.",
+  "blavet_wall_light": "Fonas „Blavet“, šviesus",
+  "blavet_wall_dark": "Fonas „Blavet“, tamsus",
+  "blavet_inside_h": "Kas viduje",
+  "blavet_in_gloxi": "Asistentas, kuris kalbos modelį paleidžia jūsų kompiuteryje ir veikia tik jums leidus.",
+  "blavet_in_herkos": "Sargas tarp Gloxi ir sistemos: parodo, kas pasikeis, paklausia ir veda žurnalą.",
+  "blavet_in_updates_h": "Atnaujinimai",
+  "blavet_in_updates": "Pagrįsta openSUSE Aeon: sistema atsinaujina pati fone, o kiekvieną atnaujinimą galima atšaukti.",
+  "blavet_when_h": "Kada",
+  "blavet_when_p": "Blavet kuriama. Alfa laida planuojama iki 2028 m. kovo. Darbą galite stebėti atvirame kode."
 }

@@ -8,16 +8,17 @@ clock-show-weekday=true
 show-battery-percentage=true
 font-antialiasing='rgba'
 
-# Until vilna-wallpapers exists: GNOME's own Adwaita wallpaper
-# (gnome-backgrounds). gio-branding-openSUSE points at an openSUSE
-# wallpaper that is not installed, which leaves a flat colour (Build9.2).
-# config.sh fails the image build if these files are missing.
+# Vilna wallpapers (vilna-backgrounds): Сонце by default, the light and
+# dark pictures switch with the style. config.sh fails the image build if
+# these files are missing.
 [org.gnome.desktop.background]
-picture-uri='file:///usr/share/backgrounds/gnome/adwaita-l.jxl'
-picture-uri-dark='file:///usr/share/backgrounds/gnome/adwaita-d.jxl'
+picture-uri='file:///usr/share/backgrounds/vilna/vilna-sonce-light.jpg'
+picture-uri-dark='file:///usr/share/backgrounds/vilna/vilna-sonce-dark.jpg'
+primary-color='#F7F0E3'
+secondary-color='#0D1830'
 
 [org.gnome.desktop.screensaver]
-picture-uri='file:///usr/share/backgrounds/gnome/adwaita-d.jxl'
+picture-uri='file:///usr/share/backgrounds/vilna/vilna-sonce-dark.jpg'
 
 [org.gnome.login-screen]
 logo='/usr/share/icons/hicolor/scalable/apps/vilna-logo.svg'

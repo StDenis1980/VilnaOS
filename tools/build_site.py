@@ -56,6 +56,7 @@ PAGES = {
     "home": ("home.html", "index.html", ""),
     "gloxi": ("gloxi.html", "gloxi/index.html", NOINDEX),
     "privacy": ("privacy.html", "privacy/index.html", NOINDEX),
+    "blavet": ("blavet.html", "blavet/index.html", NOINDEX),
     "404": ("404.html", "404.html", NOINDEX),
 }
 

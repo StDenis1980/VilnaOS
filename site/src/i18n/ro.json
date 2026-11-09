@@ -62,5 +62,23 @@
 
   "nf_title": "Pagina nu a fost găsită",
   "nf_lead": "Această pagină nu există sau a fost mutată.",
-  "nf_home": "Înapoi acasă"
+  "nf_home": "Înapoi acasă",
+
+  "blavet_desc": "Blavet este numele primei versiuni Vilna: o albăstrea și un pescăruș albastru.",
+  "blavet_badge": "Prima versiune · în dezvoltare",
+  "blavet_lead": "Prima versiune Vilna se numește Blavet. În valenciană, cuvântul înseamnă atât albăstreaua, cât și pescărușul albastru, o pasăre mică albastră cu pieptul portocaliu.",
+  "blavet_mark_alt": "Simbolul Blavet: un pescăruș albastru care privește dintr-o scorbură",
+  "blavet_name_h": "De ce Blavet",
+  "blavet_name_p": "Versiunile Vilna poartă nume de flori. Albăstreaua și pescărușul albastru au culorile Vilna: albastru, portocaliu și auriu. Fiecare versiune are propriul simbol, iar logoul Vilna și bufnița Gloxi rămân aceleași.",
+  "blavet_look_h": "Cum arată",
+  "blavet_look_p": "Stilul luminos este implicit, cu imaginea de fundal Soare; cel întunecat este la un comutator distanță. Fundalul Blavet transformă aripa pescărușului într-un ornament Petrîkivka.",
+  "blavet_wall_light": "Fundalul Blavet, luminos",
+  "blavet_wall_dark": "Fundalul Blavet, întunecat",
+  "blavet_inside_h": "Ce conține",
+  "blavet_in_gloxi": "Asistentul care rulează un model de limbaj pe propriul calculator și acționează doar cu permisiunea ta.",
+  "blavet_in_herkos": "Paznicul dintre Gloxi și sistem: arată ce se va schimba, îți cere permisiunea și ține un jurnal.",
+  "blavet_in_updates_h": "Actualizări",
+  "blavet_in_updates": "Bazat pe openSUSE Aeon: sistemul se actualizează singur în fundal, iar fiecare actualizare poate fi anulată.",
+  "blavet_when_h": "Când",
+  "blavet_when_p": "Blavet este în dezvoltare. Versiunea alfa este planificată până în martie 2028. Poți urmări munca în codul deschis."
 }

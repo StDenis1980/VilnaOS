@@ -107,8 +107,8 @@ done
 rpm -q gpg-pubkey-06386694 gpg-pubkey-29b700a4
 
 # The wallpaper 30_Vilna.gschema.override (gnome-branding-Vilna) sets.
-test -e /usr/share/backgrounds/gnome/adwaita-l.jxl
-test -e /usr/share/backgrounds/gnome/adwaita-d.jxl
+test -e /usr/share/backgrounds/vilna/vilna-sonce-light.jpg
+test -e /usr/share/backgrounds/vilna/vilna-sonce-dark.jpg
 
 # zypper (inside transactional-update) installs only what is required,
 # as in Aeon: recommended packages do not slip into the system.

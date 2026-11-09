@@ -6,7 +6,7 @@
 #
 
 Name:           Vilna-release
-Version:        0.3
+Version:        0.4
 Release:        0
 Summary:        Vilna operating system identification
 License:        GPL-3.0-or-later

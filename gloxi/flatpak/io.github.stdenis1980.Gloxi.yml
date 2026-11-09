@@ -118,6 +118,9 @@ modules:
       - >
         install -Dm644 gloxi/data/icons/io.github.stdenis1980.Gloxi.svg
         -t "${FLATPAK_DEST}/share/icons/hicolor/scalable/apps"
+      - >
+        install -Dm644 gloxi/data/icons/io.github.stdenis1980.Gloxi-symbolic.svg
+        -t "${FLATPAK_DEST}/share/icons/hicolor/symbolic/apps"
     sources:
       - type: dir
         path: ..

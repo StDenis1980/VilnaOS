@@ -62,5 +62,23 @@
 
   "nf_title": "Page not found",
   "nf_lead": "This page does not exist or has moved.",
-  "nf_home": "Home"
+  "nf_home": "Home",
+
+  "blavet_desc": "Blavet is the name of the first Vilna release: a cornflower and a kingfisher.",
+  "blavet_badge": "First release · in development",
+  "blavet_lead": "The first release of Vilna is called Blavet. In Valencian the word means both the cornflower and the kingfisher, a small blue bird with an orange breast.",
+  "blavet_mark_alt": "The Blavet mark: a kingfisher looking out of a hollow",
+  "blavet_name_h": "Why Blavet",
+  "blavet_name_p": "Vilna releases are named after flowers. The cornflower and the kingfisher share the colours of Vilna: blue, orange and gold. Every release has its own mark, while the Vilna logo and the Gloxi owl stay the same.",
+  "blavet_look_h": "How it looks",
+  "blavet_look_p": "The light style is the default, with the Sun wallpaper; the dark style is one switch away. The Blavet wallpaper turns the wing of the kingfisher into a Petrykivka ornament.",
+  "blavet_wall_light": "The Blavet wallpaper, light",
+  "blavet_wall_dark": "The Blavet wallpaper, dark",
+  "blavet_inside_h": "What is inside",
+  "blavet_in_gloxi": "The assistant that runs a language model on your own computer and acts only with your permission.",
+  "blavet_in_herkos": "The guard between Gloxi and your system: it shows what will change, asks you and keeps a log.",
+  "blavet_in_updates_h": "Updates",
+  "blavet_in_updates": "Based on openSUSE Aeon: the system updates itself in the background, and every update can be rolled back.",
+  "blavet_when_h": "When",
+  "blavet_when_p": "Blavet is in development. The alpha is planned by March 2028. You can follow the work in the open code."
 }

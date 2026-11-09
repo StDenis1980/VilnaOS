@@ -117,7 +117,7 @@
 | `Aeon-release` | `Vilna-release` | Назва й версія ОС, репозиторій `vilna.repo` з ключем; сервіс `openSUSE-repos-Tumbleweed` вимагає `patterns-vilna-base`, бо `Vilna-release` KIWI ставить ще в bootstrap |
 | `distribution-logos-openSUSE-Aeon`, `distribution-logos-openSUSE-icons` | `distribution-logos-Vilna` | Логотип (поки заглушка), іконки |
 | `hicolor-icon-theme-branding-openSUSE` | `hicolor-icon-theme-branding-Vilna` | Іконка `distributor` |
-| `gnome-branding-Aeon` | `gnome-branding-Vilna` | Налаштування GNOME (темна тема, логотип на екрані входу, Gloxi в доку), права адміністратора для wheel (sudo, polkit), logind, transactional-update, сторінки GNOME Initial Setup. Без `aeon-firstboot`: Flatpak ставить `vilna-flatpak-defaults` |
+| `gnome-branding-Aeon` | `gnome-branding-Vilna` | Налаштування GNOME (світла тема, шпалери «Сонце», логотип на екрані входу, Gloxi в доку), права адміністратора для wheel (sudo, polkit), logind, transactional-update, сторінки GNOME Initial Setup. Без `aeon-firstboot`: Flatpak ставить `vilna-flatpak-defaults` |
 | `systemd-presets-branding-Aeon` | `systemd-presets-branding-Vilna` | Служби за замовчуванням, як в Aeon; власні рішення Vilna — у `vilna-presets` |
 | `x86_64_v3-branding-Aeon` | `x86_64_v3-branding-Vilna` | Бібліотеки x86_64_v3 після оновлень |
 | `NetworkManager-branding-openSUSE` | `NetworkManager-branding-Vilna` | Перевірка з'єднання для captive portal (поки сервер openSUSE) |
@@ -125,7 +125,7 @@
 | `systemd-repart-branding-Aeon` | — (прибрано) | Розмітка для установника tik, ламала перший запуск образу |
 | `branding-openSUSE`, `gdm-branding-Aeon`, `gtk2/3/4-branding-openSUSE`, `gnome-menus-branding-openSUSE`, `systemd-default-settings-branding-openSUSE` | `*-branding-upstream` | Нейтральні налаштування самих програм |
 | `systemd-icon-branding-openSUSE` | — (прибрано) | Нікому в образі не потрібен |
-| — | `vilna-wallpapers` | Шпалери, зокрема петриківський розпис (після договорів з майстрами); поки шпалери GNOME |
+| `gnome-backgrounds` (лишається) | `vilna-backgrounds` | Сім пар шпалер (світла й темна): «Сонце» (за замовчуванням), «Схід», «Тюльпан», «Соняшник», «Волошка», «Мальва», «Blavet»; петриківський розпис майстрів — пізніше, після договорів |
 
 `gio-branding-openSUSE` поки лишається: конфігурація openSUSE:Factory (`image_package_conflicts`) забороняє `gio-branding-upstream` в усіх образах KIWI, тож образ із ним не розв'язується. Його `20_openSUSE-branding.gschema.override` перекриває `30_Vilna.gschema.override` (логотип на екрані входу, тема, док). Замінимо власним `gio-branding-Vilna`, коли буде що в ньому налаштувати (шпалери).
 

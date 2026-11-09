@@ -62,5 +62,23 @@
 
   "nf_title": "Page introuvable",
   "nf_lead": "Cette page n'existe pas ou a été déplacée.",
-  "nf_home": "Retour à l'accueil"
+  "nf_home": "Retour à l'accueil",
+
+  "blavet_desc": "Blavet est le nom de la première version de Vilna : un bleuet et un martin-pêcheur.",
+  "blavet_badge": "Première version · en développement",
+  "blavet_lead": "La première version de Vilna s'appelle Blavet. En valencien, le mot désigne à la fois le bleuet et le martin-pêcheur, un petit oiseau bleu à la poitrine orange.",
+  "blavet_mark_alt": "L'emblème de Blavet : un martin-pêcheur qui regarde depuis un creux d'arbre",
+  "blavet_name_h": "Pourquoi Blavet",
+  "blavet_name_p": "Les versions de Vilna portent des noms de fleurs. Le bleuet et le martin-pêcheur ont les couleurs de Vilna : bleu, orange et or. Chaque version a son propre emblème ; le logo de Vilna et la chouette Gloxi restent les mêmes.",
+  "blavet_look_h": "À quoi ça ressemble",
+  "blavet_look_p": "Le style clair est utilisé par défaut, avec le fond d'écran Soleil ; le sombre est à un interrupteur. Le fond Blavet transforme l'aile du martin-pêcheur en ornement de Petrykivka.",
+  "blavet_wall_light": "Fond d'écran Blavet, clair",
+  "blavet_wall_dark": "Fond d'écran Blavet, sombre",
+  "blavet_inside_h": "Ce qu'il y a dedans",
+  "blavet_in_gloxi": "L'assistant qui fait tourner un modèle de langue sur votre propre ordinateur et n'agit qu'avec votre accord.",
+  "blavet_in_herkos": "Le gardien entre Gloxi et votre système : il montre ce qui va changer, vous demande et tient un journal.",
+  "blavet_in_updates_h": "Mises à jour",
+  "blavet_in_updates": "Basé sur openSUSE Aeon : le système se met à jour seul en arrière-plan, et chaque mise à jour peut être annulée.",
+  "blavet_when_h": "Quand",
+  "blavet_when_p": "Blavet est en développement. L'alpha est prévue d'ici mars 2028. Vous pouvez suivre le travail dans le code ouvert."
 }

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><title>Gloxi</title><defs><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5A24E"/><stop offset="1" stop-color="#E8842C"/></linearGradient></defs><g transform="translate(0 2) scale(2)">
+<path d="M8.5 12.5 Q15 12 22 18.2 Q32 13.8 42 18.2 Q49 12 55.5 12.5 Q53.6 17 53.2 22 Q56 32 51.5 43 Q46 58.5 32 58.5 Q18 58.5 12.5 43 Q8 32 10.8 22 Q10.4 17 8.5 12.5Z" transform="translate(0 2.2)" fill="#C2581E"/>
+<path d="M8.5 12.5 Q15 12 22 18.2 Q32 13.8 42 18.2 Q49 12 55.5 12.5 Q53.6 17 53.2 22 Q56 32 51.5 43 Q46 58.5 32 58.5 Q18 58.5 12.5 43 Q8 32 10.8 22 Q10.4 17 8.5 12.5Z" fill="url(#gb)"/>
+<path d="M25.6 45.2 C21 47.6 20.4 52.6 22.4 55.4 C24.6 52.8 26.6 49.4 25.6 45.2Z" fill="#1F345C"/>
+<path d="M38.4 45.2 C43 47.6 43.6 52.6 41.6 55.4 C39.4 52.8 37.4 49.4 38.4 45.2Z" fill="#1F345C"/>
+<path d="M32 44 C28.2 48 28.6 53.6 32 57 C35.4 53.6 35.8 48 32 44Z" fill="#7A2E12"/>
+<circle cx="23.6" cy="30.5" r="9.6" fill="#F2E8D5"/><circle cx="40.4" cy="30.5" r="9.6" fill="#F2E8D5"/>
+<circle cx="23.6" cy="30.5" r="4.7" fill="#0E1A2E"/><circle cx="40.4" cy="30.5" r="4.7" fill="#0E1A2E"/>
+<circle cx="25.3" cy="28.8" r="1.5" fill="#F2E8D5"/><circle cx="42.1" cy="28.8" r="1.5" fill="#F2E8D5"/>
+<path d="M17 21.6 Q24 19 32 25.4 Q40 19 47 21.6" fill="none" stroke="#1F345C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M29.2 37.6 L34.8 37.6 L32 42.6Z" fill="#C2581E"/></g></svg>
