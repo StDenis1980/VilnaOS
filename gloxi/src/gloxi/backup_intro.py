@@ -175,9 +175,10 @@ class BackupIntro:
             return text
         low = text.casefold()
         target = None
-        if low in {"yes", "y", "так", "т", _("yes").casefold()}:
+        yes, no = _("yes").casefold(), _("no").casefold()
+        if low in {"yes", "y", "так", "т", yes, yes[:1]}:
             target = _("Yes")
-        elif low in {"no", "n", "ні", "н", _("no").casefold()}:
+        elif low in {"no", "n", "ні", "н", no, no[:1]}:
             target = _("No")
         for i, choice in enumerate(self._last.choices, start=1):
             if target and choice == target:

@@ -1,0 +1,306 @@
+# Lithuanian translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: lt\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "TB"
+msgstr "TB"
+
+msgid "Backups are on"
+msgstr "Atsarginės kopijos įjungtos"
+
+msgid "Choose where to keep the backups."
+msgstr "Pasirinkite, kur laikyti kopijas."
+
+msgid "recommended"
+msgstr "rekomenduojama"
+
+msgid "{day} {month} at {time}"
+msgstr "{month} {day} d. {time}"
+
+msgid "Backing up…"
+msgstr "Daroma kopija…"
+
+msgid "Backups are off"
+msgstr "Atsarginės kopijos išjungtos"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Įjunkite jas, kad jūsų failai būtų saugūs."
+
+msgid "The last backup failed"
+msgstr "Paskutinė kopija nepavyko"
+
+msgid "Settings only"
+msgstr "Tik nustatymai"
+
+msgid "Settings and documents"
+msgstr "Nustatymai ir dokumentai"
+
+msgid "The whole home folder"
+msgstr "Visas namų aplankas"
+
+msgid "Chosen by you"
+msgstr "Pasirinkta jūsų"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Nustatymai, Gloxi, Herkos, slaptažodžiai"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "Taip pat Dokumentai, Darbalaukis ir Paveikslėliai"
+
+msgid "Everything except caches and Downloads"
+msgstr "Viskas, išskyrus podėlį ir Atsisiuntimus"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Aplankai, pasirinkti su Gloxi ar terminale"
+
+msgid "Every hour"
+msgstr "Kas valandą"
+
+msgid "Every day"
+msgstr "Kasdien"
+
+msgid "Every week"
+msgstr "Kas savaitę"
+
+msgid "Off"
+msgstr "Išjungta"
+
+msgid "today at {time}"
+msgstr "šiandien {time}"
+
+msgid "yesterday at {time}"
+msgstr "vakar {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Paskutinė kopija {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Pasirinkite aplanką išoriniame diske."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Įveskite serverio adresą: sftp:user@host:/folder, s3:https://… arba rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Aplankui šiame kompiuteryje pasirinkite išorinį diską."
+
+msgid "This server needs a login and a password."
+msgstr "Šiam serveriui reikia prisijungimo vardo ir slaptažodžio."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "Atlikta {percent} %"
+
+msgid "No backup yet · {schedule}"
+msgstr "Kopijų dar nėra · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "Failų: {n}"
+
+msgid "The server address is not right: {why}"
+msgstr "Serverio adresas neteisingas: {why}"
+
+msgid "Vilna cloud"
+msgstr "Vilna debesis"
+
+msgid "In the EU · coming later"
+msgstr "ES · bus vėliau"
+
+msgid "External disk"
+msgstr "Išorinis diskas"
+
+msgid "No folder chosen yet"
+msgstr "Aplankas dar nepasirinktas"
+
+msgid "Your own server"
+msgstr "Jūsų serveris"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 arba REST"
+
+msgid "Turn on backups"
+msgstr "Įjungti atsargines kopijas"
+
+msgid "Recovery sheet"
+msgstr "Atkūrimo lapas"
+
+msgid "Backups"
+msgstr "Atsarginės kopijos"
+
+msgid "What to keep in backups?"
+msgstr "Ką laikyti kopijose?"
+
+msgid "Where"
+msgstr "Kur"
+
+msgid "Choose…"
+msgstr "Pasirinkti…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Adresas, pvz., sftp:as@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Prisijungimo vardas (S3 ir REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Slaptažodis (S3 ir REST)"
+
+msgid "How often"
+msgstr "Kaip dažnai"
+
+msgid "Back up"
+msgstr "Daryti kopiją"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Kopijos užšifruojamos šiame kompiuteryje. Be rakto niekas jų neperskaitys, net ir mes."
+
+msgid "Later"
+msgstr "Vėliau"
+
+msgid "Next"
+msgstr "Toliau"
+
+msgid "Folder for backups on the external disk"
+msgstr "Kopijų aplankas išoriniame diske"
+
+msgid "Type the key from your sheet"
+msgstr "Įveskite raktą iš savo lapo"
+
+msgid "Start again with another place"
+msgstr "Pradėti iš naujo su kita vieta"
+
+msgid "Confirm and turn on"
+msgstr "Patvirtinti ir įjungti"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Užsirašykite šį raktą ant popieriaus ir laikykite atskirai nuo kompiuterio. Jei šis kompiuteris bus prarastas, tik šis raktas atvers jūsų kopijas. Mes jo nežinome ir negalime atsiųsti iš naujo."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "Raktas rodomas tik dabar. Raidės I, L, O ir U niekada nenaudojamos."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Kopijos liks išjungtos, kol iš savo lapo vėl neįvesite atkūrimo rakto. Jis buvo parodytas vieną kartą, kai buvo nustatoma vieta."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "Neturite lapo? Pradėkite iš naujo su kita vieta: bus sukurtas naujas raktas."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Atsarginės kopijos įjungtos. Pirmoji kopija prasidėjo."
+
+msgid "Back up now"
+msgstr "Daryti kopiją dabar"
+
+msgid "Settings"
+msgstr "Nustatymai"
+
+msgid "What to keep"
+msgstr "Ką laikyti"
+
+msgid "Restore puts the files into a new folder; nothing is replaced."
+msgstr "Atkuriant failai dedami į naują aplanką; niekas nepakeičiama."
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Užšifruota šiame kompiuteryje. Be rakto niekas jų neperskaitys, net ir mes."
+
+msgid "Cannot read the state of backups"
+msgstr "Nepavyksta nuskaityti kopijų būsenos"
+
+msgid "Where to put the restored files"
+msgstr "Kur dėti atkurtus failus"
+
+msgid "Cannot list the backups"
+msgstr "Nepavyksta parodyti kopijų sąrašo"
+
+msgid "Restore…"
+msgstr "Atkurti…"
+
+msgid "No backups yet"
+msgstr "Kopijų dar nėra"
+
+msgid "A backup is already running."
+msgstr "Kopija jau daroma."
+
+msgid "Restored from backup {stamp}"
+msgstr "Atkurta iš kopijos {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "Atkuriama: {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "Nepavyko nustatyti kopijų: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "Tai ne tas raktas: {why}"
+
+msgid "Could not start: {why}"
+msgstr "Nepavyko pradėti: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "Atkurta failų: {n}, į {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "Nepavyko atkurti: {why}"
+
+msgid "January"
+msgstr "sausio"
+
+msgid "February"
+msgstr "vasario"
+
+msgid "March"
+msgstr "kovo"
+
+msgid "April"
+msgstr "balandžio"
+
+msgid "May"
+msgstr "gegužės"
+
+msgid "June"
+msgstr "birželio"
+
+msgid "July"
+msgstr "liepos"
+
+msgid "August"
+msgstr "rugpjūčio"
+
+msgid "September"
+msgstr "rugsėjo"
+
+msgid "October"
+msgstr "spalio"
+
+msgid "November"
+msgstr "lapkričio"
+
+msgid "December"
+msgstr "gruodžio"
+
+msgid "Disk"
+msgstr "Diskas"
+
+msgid "Vilna server"
+msgstr "Vilna serveris"

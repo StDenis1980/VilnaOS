@@ -1,0 +1,447 @@
+# Lithuanian translation of Herkos.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: lt\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# Window and terminal
+msgid "Herkos: permission"
+msgstr "Herkos: leidimas"
+
+msgid "Herkos: Gloxi asks for permission"
+msgstr "Herkos: Gloxi prašo leidimo"
+
+msgid "Gloxi's reason: "
+msgstr "Gloxi paaiškinimas: "
+
+msgid "… and {n} more"
+msgstr "… ir dar {n}"
+
+msgid "Can be undone."
+msgstr "Galima atšaukti."
+
+msgid "Cannot be undone."
+msgstr "Atšaukti negalima."
+
+msgid "Riskier than usual: {why}."
+msgstr "Rizikingiau nei įprastai: {why}."
+
+msgid "Untrusted content came from: {src}"
+msgstr "Nepatikimas turinys gautas iš: {src}"
+
+msgid "Exactly this will be done:"
+msgstr "Bus atlikta būtent tai:"
+
+msgid "Deny"
+msgstr "Atmesti"
+
+msgid "Allow once"
+msgstr "Leisti vieną kartą"
+
+msgid "Allow for this session"
+msgstr "Leisti šiam seansui"
+
+msgid "Always allow"
+msgstr "Leisti visada"
+
+msgid "[o] allow once"
+msgstr "[o] leisti vieną kartą"
+
+msgid "[s] allow for this session"
+msgstr "[s] leisti šiam seansui"
+
+msgid "[a] always allow"
+msgstr "[a] leisti visada"
+
+msgid "[n] deny"
+msgstr "[n] atmesti"
+
+msgid "Allowed."
+msgstr "Leista."
+
+msgid "Denied."
+msgstr "Atmesta."
+
+msgid "No answer: denied."
+msgstr "Nėra atsakymo: atmesta."
+
+# Why an action is riskier (policy)
+msgid "the tool has no Herkos manifest"
+msgstr "įrankis neturi Herkos manifesto"
+
+msgid "the program changed this action since it was allowed"
+msgstr "programa pakeitė šį veiksmą po to, kai jis buvo leistas"
+
+msgid "the program describes this action at too great a length"
+msgstr "programa aprašo šį veiksmą per ilgai"
+
+msgid "Let Gloxi use this program: {program}"
+msgstr "Leisti Gloxi naudoti šią programą: {program}"
+
+msgid "the tool describes this operation as riskier"
+msgstr "įrankis šią operaciją apibūdina kaip rizikingesnę"
+
+msgid "untrusted content is in the conversation"
+msgstr "pokalbyje yra nepatikimo turinio"
+
+msgid "content read earlier {kinds}"
+msgstr "anksčiau perskaitytas turinys {kinds}"
+
+msgid "it touches something outside the allowed folders"
+msgstr "tai paliečia kažką už leistų aplankų ribų"
+
+msgid "it touches more than {n} items at once"
+msgstr "tai paliečia daugiau nei {n} elementų iš karto"
+
+msgid "it cannot be undone"
+msgstr "to atšaukti negalima"
+
+msgid "Herkos cannot tell which of the program's commands this runs"
+msgstr "Herkos negali nustatyti, kurią programos komandą tai vykdo"
+
+msgid "the manifest gives no level for the program's command {commands}"
+msgstr "manifestas nenurodo lygio programos komandai {commands}"
+
+msgid "data leaves this device"
+msgstr "duomenys palieka šį įrenginį"
+
+msgid "it sends data to an address that came from untrusted content"
+msgstr "siunčia duomenis adresu, gautu iš nepatikimo turinio"
+
+# Keros findings
+msgid "asks the assistant to ignore its instructions"
+msgstr "prašo asistento nepaisyti savo nurodymų"
+
+msgid "tries to give the assistant a new role or new instructions"
+msgstr "bando suteikti asistentui naują vaidmenį ar naujus nurodymus"
+
+msgid "contains chat-template or system markers"
+msgstr "turi pokalbio šablono ar sistemos žymių"
+
+msgid "contains text hidden from people (HTML/CSS)"
+msgstr "turi žmonėms paslėpto teksto (HTML/CSS)"
+
+msgid "contains a link that could carry data away"
+msgstr "turi nuorodą, kuria galėtų nutekėti duomenys"
+
+msgid "contains invisible or direction-changing characters"
+msgstr "turi nematomų ar teksto kryptį keičiančių simbolių"
+
+msgid "the local check found text addressed to the assistant"
+msgstr "vietinė patikra rado asistentui skirto teksto"
+
+# Tool operations (manifest summaries)
+msgid "List a folder"
+msgstr "Parodyti aplanko turinį"
+
+msgid "Search files by name and text"
+msgstr "Ieškoti failų pagal pavadinimą ir tekstą"
+
+msgid "Read a file"
+msgstr "Perskaityti failą"
+
+msgid "Create a file"
+msgstr "Sukurti failą"
+
+msgid "Change a file"
+msgstr "Pakeisti failą"
+
+msgid "Delete a file"
+msgstr "Ištrinti failą"
+
+msgid "Undo an earlier change to a file"
+msgstr "Atšaukti ankstesnį failo pakeitimą"
+
+# Backups (org.vilna.mcp.backup)
+msgid "See whether backups are on and how the last one went"
+msgstr "Pažiūrėti, ar atsarginės kopijos įjungtos ir kaip pavyko paskutinė"
+
+msgid "List the backups"
+msgstr "Parodyti atsargines kopijas"
+
+msgid "See how much space the folders take"
+msgstr "Pažiūrėti, kiek vietos užima aplankai"
+
+msgid "Make a backup now"
+msgstr "Padaryti kopiją dabar"
+
+msgid "Change how often backups are made"
+msgstr "Pakeisti, kaip dažnai daromos kopijos"
+
+msgid "Change what goes into backups"
+msgstr "Pakeisti, kas įtraukiama į kopijas"
+
+msgid "Bring a backup back into a new folder"
+msgstr "Atkurti kopiją į naują aplanką"
+
+msgid "Choose where backups are kept"
+msgstr "Pasirinkti, kur laikomos kopijos"
+
+msgid "Bring files back over the current ones"
+msgstr "Atkurti failus vietoje dabartinių"
+
+msgid "Delete backups"
+msgstr "Ištrinti kopijas"
+
+msgid "Move backups to another place"
+msgstr "Perkelti kopijas į kitą vietą"
+
+msgid "Replace the backup keys"
+msgstr "Pakeisti kopijų raktus"
+
+msgid "Protect backups after a device was stolen"
+msgstr "Apsaugoti kopijas po įrenginio vagystės"
+
+# The «Дозволи» window (permissions_window.py, permissions_view.py)
+
+msgid "All"
+msgstr "Visi"
+
+msgid "Allowed, but the tool failed"
+msgstr "Leista, bet įrankis nesuveikė"
+
+msgid "Always"
+msgstr "Visada"
+
+msgid "January"
+msgstr "sausio"
+
+msgid "February"
+msgstr "vasario"
+
+msgid "March"
+msgstr "kovo"
+
+msgid "April"
+msgstr "balandžio"
+
+msgid "May"
+msgstr "gegužės"
+
+msgid "June"
+msgstr "birželio"
+
+msgid "July"
+msgstr "liepos"
+
+msgid "August"
+msgstr "rugpjūčio"
+
+msgid "September"
+msgstr "rugsėjo"
+
+msgid "October"
+msgstr "spalio"
+
+msgid "November"
+msgstr "lapkričio"
+
+msgid "December"
+msgstr "gruodžio"
+
+msgid "Backups"
+msgstr "Atsarginės kopijos"
+
+msgid "Cancel"
+msgstr "Atšaukti"
+
+msgid "Changes can be undone for 30 days. The journal cannot be altered."
+msgstr "Pakeitimus galima atšaukti 30 dienų. Žurnalo pakeisti negalima."
+
+msgid "Done"
+msgstr "Atlikta"
+
+msgid "Done, then undone"
+msgstr "Atlikta, paskui atšaukta"
+
+msgid "Files"
+msgstr "Failai"
+
+msgid "Gloxi asked to {what}"
+msgstr "Gloxi prašė: {what}"
+
+msgid "Gloxi asks before it changes anything. Here is what you allowed without asking again; take back anything you no longer want."
+msgstr "Gloxi klausia prieš ką nors keisdamas. Čia matote, ką leidote be pakartotinio klausimo; atšaukite tai, ko nebenorite."
+
+msgid "Gloxi brought a backup back into a new folder"
+msgstr "Gloxi atkūrė kopiją į naują aplanką"
+
+msgid "Gloxi brought back an earlier version of a file"
+msgstr "Gloxi grąžino ankstesnę failo versiją"
+
+msgid "Gloxi changed a file"
+msgstr "Gloxi pakeitė failą"
+
+msgid "Gloxi changed how often backups are made"
+msgstr "Gloxi pakeitė, kaip dažnai daromos kopijos"
+
+msgid "Gloxi changed what goes into backups"
+msgstr "Gloxi pakeitė, kas įtraukiama į kopijas"
+
+msgid "Gloxi checked the backups"
+msgstr "Gloxi patikrino kopijas"
+
+msgid "Gloxi created a file"
+msgstr "Gloxi sukūrė failą"
+
+msgid "Gloxi deleted a file"
+msgstr "Gloxi ištrynė failą"
+
+msgid "Gloxi listed the backups"
+msgstr "Gloxi parodė kopijų sąrašą"
+
+msgid "Gloxi looked at how much space the folders take"
+msgstr "Gloxi pažiūrėjo, kiek vietos užima aplankai"
+
+msgid "Gloxi looked into a folder"
+msgstr "Gloxi pažiūrėjo į aplanką"
+
+msgid "Gloxi read a file"
+msgstr "Gloxi perskaitė failą"
+
+msgid "Gloxi searched files"
+msgstr "Gloxi ieškojo failų"
+
+msgid "Gloxi started a backup"
+msgstr "Gloxi pradėjo kopiją"
+
+msgid "Gloxi will ask you again before it does this: {what}."
+msgstr "Gloxi vėl jūsų paklaus, prieš tai darydamas: {what}."
+
+msgid "Gloxi will ask you each time."
+msgstr "Gloxi klaus jūsų kiekvieną kartą."
+
+msgid "Gloxi's reason"
+msgstr "Gloxi paaiškinimas"
+
+msgid "Herkos did not allow it"
+msgstr "Herkos neleido"
+
+msgid "Herkos is not answering: {why}"
+msgstr "Herkos neatsako: {why}"
+
+msgid "Journal"
+msgstr "Žurnalas"
+
+msgid "No answer recorded"
+msgstr "Atsakymas neužfiksuotas"
+
+msgid "No permissions"
+msgstr "Leidimų nėra"
+
+msgid "Nobody answered in time"
+msgstr "Niekas laiku neatsakė"
+
+msgid "Not allowed at all"
+msgstr "Visai neleista"
+
+msgid "Not assessed"
+msgstr "Neįvertinta"
+
+msgid "Not undone: you said no."
+msgstr "Neatšaukta: atsisakėte."
+
+msgid "Not undone: {why}"
+msgstr "Neatšaukta: {why}"
+
+msgid "Nothing here yet"
+msgstr "Čia kol kas nieko nėra"
+
+msgid "Permission revoked."
+msgstr "Leidimas atšauktas."
+
+msgid "Permissions"
+msgstr "Leidimai"
+
+msgid "Programs"
+msgstr "Programos"
+
+msgid "Refresh"
+msgstr "Atnaujinti"
+
+msgid "Revoke"
+msgstr "Atšaukti leidimą"
+
+msgid "Revoke this permission?"
+msgstr "Atšaukti šį leidimą?"
+
+msgid "Risk level {level}"
+msgstr "Rizikos lygis {level}"
+
+msgid "There is nothing left to undo for this action."
+msgstr "Šiam veiksmui nebėra ko atšaukti."
+
+msgid "Today"
+msgstr "Šiandien"
+
+msgid "Undo"
+msgstr "Atšaukti"
+
+msgid "Undone. The earlier version is back."
+msgstr "Atšaukta. Ankstesnė versija grąžinta."
+
+msgid "Until the session ends"
+msgstr "Iki seanso pabaigos"
+
+msgid "What"
+msgstr "Kas"
+
+msgid "When Gloxi does something for you, it shows up here."
+msgstr "Kai Gloxi ką nors padarys už jus, tai atsiras čia."
+
+msgid "Yesterday"
+msgstr "Vakar"
+
+msgid "You said no"
+msgstr "Atsisakėte"
+
+msgid "{day} {month}"
+msgstr "{month} {day} d."
+
+msgid "{how} · in {where}"
+msgstr "{how} · {where}"
+
+msgid "{name} and {n} more"
+msgstr "{name} ir dar {n}"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Pažiūrėti darbalaukio nustatymus"
+
+msgid "Switch between the light and the dark style"
+msgstr "Perjungti šviesų ir tamsų stilių"
+
+msgid "Change the accent colour"
+msgstr "Pakeisti akcento spalvą"
+
+msgid "Change the text size"
+msgstr "Pakeisti teksto dydį"
+
+msgid "Change night light"
+msgstr "Pakeisti naktinę šviesą"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Įjungti arba išjungti „Netrukdyti“"
+
+msgid "Change the volume"
+msgstr "Pakeisti garsumą"
+
+msgid "Mute or unmute the sound"
+msgstr "Išjungti arba įjungti garsą"
+
+msgid "Play sound through another output"
+msgstr "Leisti garsą per kitą išvestį"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Atšaukti ankstesnį nustatymų pakeitimą"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Parodyti kalendorių sąrašą"
+
+msgid "Read the calendar"
+msgstr "Perskaityti kalendorių"
+
+msgid "Search the calendar"
+msgstr "Ieškoti kalendoriuje"

@@ -1,0 +1,306 @@
+# Spanish translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: es\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "TB"
+msgstr "TB"
+
+msgid "Backups are on"
+msgstr "Las copias están activadas"
+
+msgid "Choose where to keep the backups."
+msgstr "Elige dónde guardar las copias."
+
+msgid "recommended"
+msgstr "recomendado"
+
+msgid "{day} {month} at {time}"
+msgstr "{day} de {month} a las {time}"
+
+msgid "Backing up…"
+msgstr "Haciendo la copia…"
+
+msgid "Backups are off"
+msgstr "Las copias están desactivadas"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Actívalas para mantener tus archivos a salvo."
+
+msgid "The last backup failed"
+msgstr "La última copia falló"
+
+msgid "Settings only"
+msgstr "Solo la configuración"
+
+msgid "Settings and documents"
+msgstr "Configuración y documentos"
+
+msgid "The whole home folder"
+msgstr "Toda la carpeta personal"
+
+msgid "Chosen by you"
+msgstr "Elegido por ti"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Configuración, Gloxi, Herkos, contraseñas"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "También Documentos, Escritorio e Imágenes"
+
+msgid "Everything except caches and Downloads"
+msgstr "Todo salvo cachés y Descargas"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Carpetas elegidas con Gloxi o en la terminal"
+
+msgid "Every hour"
+msgstr "Cada hora"
+
+msgid "Every day"
+msgstr "Cada día"
+
+msgid "Every week"
+msgstr "Cada semana"
+
+msgid "Off"
+msgstr "Desactivado"
+
+msgid "today at {time}"
+msgstr "hoy a las {time}"
+
+msgid "yesterday at {time}"
+msgstr "ayer a las {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Última copia {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Elige una carpeta en el disco externo."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Escribe la dirección del servidor: sftp:user@host:/folder, s3:https://… o rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Para una carpeta en este ordenador, elige el disco externo."
+
+msgid "This server needs a login and a password."
+msgstr "Este servidor necesita un usuario y una contraseña."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "{percent} % hecho"
+
+msgid "No backup yet · {schedule}"
+msgstr "Aún no hay copias · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "{n} archivos"
+
+msgid "The server address is not right: {why}"
+msgstr "La dirección del servidor no es correcta: {why}"
+
+msgid "Vilna cloud"
+msgstr "Nube Vilna"
+
+msgid "In the EU · coming later"
+msgstr "En la UE · llegará más adelante"
+
+msgid "External disk"
+msgstr "Disco externo"
+
+msgid "No folder chosen yet"
+msgstr "Aún no se ha elegido ninguna carpeta"
+
+msgid "Your own server"
+msgstr "Tu propio servidor"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 o REST"
+
+msgid "Turn on backups"
+msgstr "Activar las copias"
+
+msgid "Recovery sheet"
+msgstr "Hoja de recuperación"
+
+msgid "Backups"
+msgstr "Copias de seguridad"
+
+msgid "What to keep in backups?"
+msgstr "¿Qué guardar en las copias?"
+
+msgid "Where"
+msgstr "Dónde"
+
+msgid "Choose…"
+msgstr "Elegir…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Dirección, p. ej. sftp:yo@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Usuario (S3 y REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Contraseña (S3 y REST)"
+
+msgid "How often"
+msgstr "Frecuencia"
+
+msgid "Back up"
+msgstr "Hacer copia"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Las copias se cifran en este ordenador. Sin la clave nadie puede leerlas, ni siquiera nosotros."
+
+msgid "Later"
+msgstr "Más tarde"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Folder for backups on the external disk"
+msgstr "Carpeta para las copias en el disco externo"
+
+msgid "Type the key from your sheet"
+msgstr "Escribe la clave de tu hoja"
+
+msgid "Start again with another place"
+msgstr "Empezar de nuevo con otro lugar"
+
+msgid "Confirm and turn on"
+msgstr "Confirmar y activar"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Apunta esta clave en papel y guárdala lejos del ordenador. Si pierdes este ordenador, solo esta clave abre tus copias. Nosotros no la conocemos y no podemos volver a enviarla."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "La clave solo se muestra ahora. Nunca se usan las letras I, L, O y U."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Las copias siguen desactivadas hasta que escribas la clave de recuperación de tu hoja. Se mostró una vez, cuando se configuró el lugar."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "¿No tienes la hoja? Empieza de nuevo con otro lugar: se creará una clave nueva."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Las copias están activadas. La primera copia ha empezado."
+
+msgid "Back up now"
+msgstr "Hacer copia ahora"
+
+msgid "Settings"
+msgstr "Configuración"
+
+msgid "What to keep"
+msgstr "Qué guardar"
+
+msgid "Restore puts the files into a new folder; nothing is replaced."
+msgstr "La restauración pone los archivos en una carpeta nueva; no se sustituye nada."
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Cifradas en este ordenador. Sin la clave nadie puede leerlas, ni siquiera nosotros."
+
+msgid "Cannot read the state of backups"
+msgstr "No se puede leer el estado de las copias"
+
+msgid "Where to put the restored files"
+msgstr "Dónde poner los archivos restaurados"
+
+msgid "Cannot list the backups"
+msgstr "No se pueden listar las copias"
+
+msgid "Restore…"
+msgstr "Restaurar…"
+
+msgid "No backups yet"
+msgstr "Aún no hay copias"
+
+msgid "A backup is already running."
+msgstr "Ya hay una copia en curso."
+
+msgid "Restored from backup {stamp}"
+msgstr "Restaurado desde la copia {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "Restaurando {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "No se pudieron configurar las copias: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "Esta no es la clave: {why}"
+
+msgid "Could not start: {why}"
+msgstr "No se pudo iniciar: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "Se restauraron {n} archivos en {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "No se pudo restaurar: {why}"
+
+msgid "January"
+msgstr "enero"
+
+msgid "February"
+msgstr "febrero"
+
+msgid "March"
+msgstr "marzo"
+
+msgid "April"
+msgstr "abril"
+
+msgid "May"
+msgstr "mayo"
+
+msgid "June"
+msgstr "junio"
+
+msgid "July"
+msgstr "julio"
+
+msgid "August"
+msgstr "agosto"
+
+msgid "September"
+msgstr "septiembre"
+
+msgid "October"
+msgstr "octubre"
+
+msgid "November"
+msgstr "noviembre"
+
+msgid "December"
+msgstr "diciembre"
+
+msgid "Disk"
+msgstr "Disco"
+
+msgid "Vilna server"
+msgstr "Servidor Vilna"

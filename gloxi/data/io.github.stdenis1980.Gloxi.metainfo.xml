@@ -8,6 +8,14 @@
   <name>Gloxi</name>
   <summary>AI assistant that acts only with your permission</summary>
   <summary xml:lang="uk">AI-асистент, який діє лише з вашого дозволу</summary>
+  <summary xml:lang="es">Asistente de IA que solo actúa con tu permiso</summary>
+  <summary xml:lang="pl">Asystent AI, który działa tylko za twoją zgodą</summary>
+  <summary xml:lang="de">KI-Assistent, der nur mit Ihrer Erlaubnis handelt</summary>
+  <summary xml:lang="fr">Assistant IA qui n’agit qu’avec votre autorisation</summary>
+  <summary xml:lang="it">Assistente IA che agisce solo con il tuo permesso</summary>
+  <summary xml:lang="ro">Asistent AI care acționează doar cu permisiunea dumneavoastră</summary>
+  <summary xml:lang="cs">AI asistent, který jedná jen s vaším svolením</summary>
+  <summary xml:lang="lt">DI asistentas, veikiantis tik jums leidus</summary>
 
   <description>
     <p>
@@ -18,13 +26,45 @@
       Gloxi — асистент Vilna OS. Він говорить із малою мовною моделлю на вашому
       комп'ютері, тож за замовчуванням ніщо з написаного вами його не покидає.
     </p>
+    <p xml:lang="es">Gloxi es el asistente de Vilna OS. Habla con un pequeño modelo de lenguaje en tu propio ordenador, así que, de forma predeterminada, nada de lo que escribes sale de él.</p>
+    <p xml:lang="pl">Gloxi to asystent Vilna OS. Rozmawia z małym modelem językowym na twoim własnym komputerze, więc domyślnie nic, co piszesz, go nie opuszcza.</p>
+    <p xml:lang="de">Gloxi ist der Assistent von Vilna OS. Er spricht mit einem kleinen Sprachmodell auf Ihrem eigenen Computer, daher verlässt standardmäßig nichts, was Sie schreiben, den Computer.</p>
+    <p xml:lang="fr">Gloxi est l’assistant de Vilna OS. Il dialogue avec un petit modèle de langage sur votre propre ordinateur : par défaut, rien de ce que vous écrivez n’en sort.</p>
+    <p xml:lang="it">Gloxi è l’assistente di Vilna OS. Parla con un piccolo modello linguistico sul tuo computer, quindi per impostazione predefinita nulla di ciò che scrivi lo lascia.</p>
+    <p xml:lang="ro">Gloxi este asistentul Vilna OS. Comunică cu un model de limbaj mic de pe propriul dumneavoastră calculator, așa că, implicit, nimic din ce scrieți nu îl părăsește.</p>
+    <p xml:lang="cs">Gloxi je asistent systému Vilna OS. Mluví s malým jazykovým modelem na vašem vlastním počítači, takže ve výchozím stavu nic z toho, co napíšete, počítač neopustí.</p>
+    <p xml:lang="lt">Gloxi – Vilna OS asistentas. Jis kalbasi su mažu kalbos modeliu jūsų kompiuteryje, todėl pagal numatymą niekas, ką rašote, jo nepalieka.</p>
     <ul>
       <li>Chats with a local model through llama.cpp or any OpenAI-compatible server</li>
       <li xml:lang="uk">Розмова з локальною моделлю через llama.cpp або будь-який OpenAI-сумісний сервер</li>
+      <li xml:lang="es">Conversa con un modelo local a través de llama.cpp o de cualquier servidor compatible con OpenAI</li>
+      <li xml:lang="pl">Rozmowa z lokalnym modelem przez llama.cpp lub dowolny serwer zgodny z OpenAI</li>
+      <li xml:lang="de">Unterhält sich mit einem lokalen Modell über llama.cpp oder jeden OpenAI-kompatiblen Server</li>
+      <li xml:lang="fr">Dialogue avec un modèle local via llama.cpp ou tout serveur compatible OpenAI</li>
+      <li xml:lang="it">Conversa con un modello locale tramite llama.cpp o qualsiasi server compatibile con OpenAI</li>
+      <li xml:lang="ro">Conversație cu un model local prin llama.cpp sau orice server compatibil OpenAI</li>
+      <li xml:lang="cs">Konverzace s místním modelem přes llama.cpp nebo jakýkoli server kompatibilní s OpenAI</li>
+      <li xml:lang="lt">Pokalbis su vietiniu modeliu per llama.cpp ar bet kurį su OpenAI suderinamą serverį</li>
       <li>If you turn the cloud on with your own key, personal data is masked before it leaves</li>
       <li xml:lang="uk">Якщо ви вмикаєте хмару власним ключем, особисті дані маскуються, перш ніж покинуть комп'ютер</li>
+      <li xml:lang="es">Si activas la nube con tu propia clave, los datos personales se enmascaran antes de salir</li>
+      <li xml:lang="pl">Jeśli włączysz chmurę własnym kluczem, dane osobowe są maskowane, zanim opuszczą komputer</li>
+      <li xml:lang="de">Wenn Sie die Cloud mit Ihrem eigenen Schlüssel einschalten, werden persönliche Daten maskiert, bevor sie den Computer verlassen</li>
+      <li xml:lang="fr">Si vous activez le cloud avec votre propre clé, les données personnelles sont masquées avant de partir</li>
+      <li xml:lang="it">Se attivi il cloud con la tua chiave, i dati personali vengono mascherati prima di uscire</li>
+      <li xml:lang="ro">Dacă activați cloudul cu propria cheie, datele personale sunt mascate înainte de a pleca</li>
+      <li xml:lang="cs">Pokud zapnete cloud s vlastním klíčem, osobní údaje se před odesláním maskují</li>
+      <li xml:lang="lt">Jei įjungiate debesį savo raktu, asmens duomenys užmaskuojami prieš jiems išeinant</li>
       <li>Works only in the folders you choose, and only through Herkos, which asks you first</li>
       <li xml:lang="uk">Працює лише в теках, які ви обрали, і лише через Herkos, який спершу питає вас</li>
+      <li xml:lang="es">Solo trabaja en las carpetas que eliges, y solo a través de Herkos, que antes te pregunta</li>
+      <li xml:lang="pl">Działa tylko w wybranych przez ciebie folderach i tylko przez Herkosa, który najpierw cię pyta</li>
+      <li xml:lang="de">Arbeitet nur in den Ordnern, die Sie wählen, und nur über Herkos, der Sie zuerst fragt</li>
+      <li xml:lang="fr">Ne travaille que dans les dossiers que vous choisissez, et uniquement via Herkos, qui vous demande d’abord</li>
+      <li xml:lang="it">Lavora solo nelle cartelle che scegli e solo tramite Herkos, che prima ti chiede</li>
+      <li xml:lang="ro">Lucrează doar în dosarele pe care le alegeți și doar prin Herkos, care vă întreabă mai întâi</li>
+      <li xml:lang="cs">Pracuje jen ve složkách, které vyberete, a jen přes Herkos, který se vás nejprve zeptá</li>
+      <li xml:lang="lt">Dirba tik jūsų pasirinktuose aplankuose ir tik per Herkos, kuris pirmiausia jūsų paklausia</li>
     </ul>
     <p>
       In this package Herkos runs in the same sandbox as Gloxi. That is weaker
@@ -36,8 +76,24 @@
       захист, ніж у Vilna OS, де Herkos — системна служба, відокремлена від
       вашого сеансу.
     </p>
+    <p xml:lang="es">En este paquete, Herkos se ejecuta en el mismo entorno aislado que Gloxi. Eso protege menos que en Vilna OS, donde Herkos es un servicio del sistema separado de tu sesión.</p>
+    <p xml:lang="pl">W tym pakiecie Herkos działa w tej samej piaskownicy co Gloxi. To słabsza ochrona niż w Vilna OS, gdzie Herkos jest usługą systemową oddzieloną od twojej sesji.</p>
+    <p xml:lang="de">In diesem Paket läuft Herkos in derselben Sandbox wie Gloxi. Das schützt schwächer als in Vilna OS, wo Herkos ein Systemdienst ist, der von Ihrer Sitzung getrennt ist.</p>
+    <p xml:lang="fr">Dans ce paquet, Herkos tourne dans le même bac à sable que Gloxi. C’est moins protecteur que dans Vilna OS, où Herkos est un service système séparé de votre session.</p>
+    <p xml:lang="it">In questo pacchetto Herkos gira nella stessa sandbox di Gloxi. È una protezione più debole che in Vilna OS, dove Herkos è un servizio di sistema separato dalla tua sessione.</p>
+    <p xml:lang="ro">În acest pachet, Herkos rulează în același mediu izolat ca Gloxi. Protecția este mai slabă decât în Vilna OS, unde Herkos este un serviciu de sistem separat de sesiunea dumneavoastră.</p>
+    <p xml:lang="cs">V tomto balíčku běží Herkos ve stejném izolovaném prostředí jako Gloxi. To chrání méně než ve Vilna OS, kde je Herkos systémová služba oddělená od vašeho sezení.</p>
+    <p xml:lang="lt">Šiame pakete Herkos veikia toje pačioje smėliadėžėje kaip Gloxi. Tai silpnesnė apsauga nei Vilna OS, kur Herkos yra sistemos tarnyba, atskirta nuo jūsų seanso.</p>
     <p>This is a preview for testers.</p>
     <p xml:lang="uk">Це попередня версія для тестувальників.</p>
+    <p xml:lang="es">Es una versión preliminar para probadores.</p>
+    <p xml:lang="pl">To wersja testowa dla testerów.</p>
+    <p xml:lang="de">Dies ist eine Vorschau für Testerinnen und Tester.</p>
+    <p xml:lang="fr">Ceci est une préversion pour les testeurs.</p>
+    <p xml:lang="it">Questa è un’anteprima per i tester.</p>
+    <p xml:lang="ro">Aceasta este o versiune de previzualizare pentru testeri.</p>
+    <p xml:lang="cs">Toto je testovací verze pro testery.</p>
+    <p xml:lang="lt">Tai bandomoji versija testuotojams.</p>
   </description>
 
   <launchable type="desktop-id">io.github.stdenis1980.Gloxi.desktop</launchable>

@@ -1,0 +1,306 @@
+# Romanian translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: ro\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "TB"
+msgstr "TB"
+
+msgid "Backups are on"
+msgstr "Copiile de siguranță sunt activate"
+
+msgid "Choose where to keep the backups."
+msgstr "Alegeți unde să păstrați copiile."
+
+msgid "recommended"
+msgstr "recomandat"
+
+msgid "{day} {month} at {time}"
+msgstr "{day} {month}, ora {time}"
+
+msgid "Backing up…"
+msgstr "Se face copia…"
+
+msgid "Backups are off"
+msgstr "Copiile de siguranță sunt dezactivate"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Activați-le ca să vă păstrați fișierele în siguranță."
+
+msgid "The last backup failed"
+msgstr "Ultima copie a eșuat"
+
+msgid "Settings only"
+msgstr "Doar setările"
+
+msgid "Settings and documents"
+msgstr "Setări și documente"
+
+msgid "The whole home folder"
+msgstr "Tot dosarul personal"
+
+msgid "Chosen by you"
+msgstr "Alese de dumneavoastră"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Setări, Gloxi, Herkos, parole"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "Și Documente, Birou și Imagini"
+
+msgid "Everything except caches and Downloads"
+msgstr "Totul, în afară de cache și Descărcări"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Dosare alese cu Gloxi sau în terminal"
+
+msgid "Every hour"
+msgstr "În fiecare oră"
+
+msgid "Every day"
+msgstr "În fiecare zi"
+
+msgid "Every week"
+msgstr "În fiecare săptămână"
+
+msgid "Off"
+msgstr "Dezactivat"
+
+msgid "today at {time}"
+msgstr "azi, ora {time}"
+
+msgid "yesterday at {time}"
+msgstr "ieri, ora {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Ultima copie {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Alegeți un dosar pe discul extern."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Scrieți adresa serverului: sftp:user@host:/folder, s3:https://… sau rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Pentru un dosar de pe acest calculator, alegeți discul extern."
+
+msgid "This server needs a login and a password."
+msgstr "Acest server cere un nume de utilizator și o parolă."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "{percent} % gata"
+
+msgid "No backup yet · {schedule}"
+msgstr "Încă nicio copie · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "{n} fișiere"
+
+msgid "The server address is not right: {why}"
+msgstr "Adresa serverului nu este corectă: {why}"
+
+msgid "Vilna cloud"
+msgstr "Cloud Vilna"
+
+msgid "In the EU · coming later"
+msgstr "În UE · urmează"
+
+msgid "External disk"
+msgstr "Disc extern"
+
+msgid "No folder chosen yet"
+msgstr "Încă nu s-a ales un dosar"
+
+msgid "Your own server"
+msgstr "Serverul dumneavoastră"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 sau REST"
+
+msgid "Turn on backups"
+msgstr "Activați copiile de siguranță"
+
+msgid "Recovery sheet"
+msgstr "Foaie de recuperare"
+
+msgid "Backups"
+msgstr "Copii de siguranță"
+
+msgid "What to keep in backups?"
+msgstr "Ce păstrăm în copii?"
+
+msgid "Where"
+msgstr "Unde"
+
+msgid "Choose…"
+msgstr "Alegeți…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Adresă, de ex. sftp:eu@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Nume de utilizator (S3 și REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Parolă (S3 și REST)"
+
+msgid "How often"
+msgstr "Cât de des"
+
+msgid "Back up"
+msgstr "Faceți copia"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Copiile sunt criptate pe acest calculator. Fără cheie nimeni nu le poate citi, nici măcar noi."
+
+msgid "Later"
+msgstr "Mai târziu"
+
+msgid "Next"
+msgstr "Înainte"
+
+msgid "Folder for backups on the external disk"
+msgstr "Dosar pentru copii pe discul extern"
+
+msgid "Type the key from your sheet"
+msgstr "Scrieți cheia de pe foaie"
+
+msgid "Start again with another place"
+msgstr "Începeți din nou cu alt loc"
+
+msgid "Confirm and turn on"
+msgstr "Confirmați și activați"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Scrieți această cheie pe hârtie și păstrați-o departe de calculator. Dacă pierdeți acest calculator, doar această cheie vă deschide copiile. Noi nu o cunoaștem și nu o putem trimite din nou."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "Cheia este afișată doar acum. Literele I, L, O și U nu sunt folosite niciodată."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Copiile rămân dezactivate până când rescrieți cheia de recuperare de pe foaie. A fost afișată o dată, când a fost configurat locul."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "Nu aveți foaia? Începeți din nou cu alt loc: va fi creată o cheie nouă."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Copiile de siguranță sunt activate. Prima copie a început."
+
+msgid "Back up now"
+msgstr "Faceți copia acum"
+
+msgid "Settings"
+msgstr "Setări"
+
+msgid "What to keep"
+msgstr "Ce păstrăm"
+
+msgid "Restore puts the files into a new folder; nothing is replaced."
+msgstr "Restaurarea pune fișierele într-un dosar nou; nu se înlocuiește nimic."
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Criptate pe acest calculator. Fără cheie nimeni nu le poate citi, nici măcar noi."
+
+msgid "Cannot read the state of backups"
+msgstr "Nu se poate citi starea copiilor"
+
+msgid "Where to put the restored files"
+msgstr "Unde să fie puse fișierele restaurate"
+
+msgid "Cannot list the backups"
+msgstr "Nu se pot lista copiile"
+
+msgid "Restore…"
+msgstr "Restaurare…"
+
+msgid "No backups yet"
+msgstr "Încă nicio copie"
+
+msgid "A backup is already running."
+msgstr "O copie este deja în curs."
+
+msgid "Restored from backup {stamp}"
+msgstr "Restaurat din copia {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "Se restaurează {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "Copiile nu au putut fi configurate: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "Aceasta nu este cheia: {why}"
+
+msgid "Could not start: {why}"
+msgstr "Nu s-a putut porni: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "{n} fișiere restaurate în {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "Nu s-a putut restaura: {why}"
+
+msgid "January"
+msgstr "ianuarie"
+
+msgid "February"
+msgstr "februarie"
+
+msgid "March"
+msgstr "martie"
+
+msgid "April"
+msgstr "aprilie"
+
+msgid "May"
+msgstr "mai"
+
+msgid "June"
+msgstr "iunie"
+
+msgid "July"
+msgstr "iulie"
+
+msgid "August"
+msgstr "august"
+
+msgid "September"
+msgstr "septembrie"
+
+msgid "October"
+msgstr "octombrie"
+
+msgid "November"
+msgstr "noiembrie"
+
+msgid "December"
+msgstr "decembrie"
+
+msgid "Disk"
+msgstr "Disc"
+
+msgid "Vilna server"
+msgstr "Server Vilna"

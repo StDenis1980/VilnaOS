@@ -22,6 +22,10 @@ jobs:
         run: |
           python3 obs/packages/vilna-software-picks/build_picks.py --defaults image/packages.yaml check
           python3 tools/test_software_picks.py
+      - name: Every program is translated into the main languages (ADR 0009)
+        run: |
+          python3 tools/test_check_translations.py
+          python3 tools/check_translations.py
 
   gloxi:
     runs-on: ubuntu-latest

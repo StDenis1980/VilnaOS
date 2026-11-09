@@ -85,6 +85,13 @@ NO_MODEL_EXIT = N_(
 YES = {"y", "yes", "т", "так"}
 
 
+def yes_words() -> set[str]:
+    """What counts as yes: English, Ukrainian, and the translated word with its first letter
+    (the prompt shows that letter, e.g. "[j/N]" in German)."""
+    word = _("yes").casefold()
+    return YES | {word, word[:1]}
+
+
 class NoModel(Exception):
     """The model is needed but missing: declined, failed to download or to start."""
 
@@ -145,7 +152,7 @@ def prepare_engine(
             answer = read(_("Download it now? [y/N] ")).strip().casefold()
         except (EOFError, KeyboardInterrupt):
             answer = ""
-        if answer not in YES | {_("yes").casefold()}:
+        if answer not in yes_words():
             print(_("Not downloaded. Gloxi will ask again next time."), file=out)
             raise NoModel
         try:
@@ -182,7 +189,7 @@ def _offer_large_model(p, settings, ram, read, out, fetch, measure) -> None:
         answer = read(_("Download it now? [y/N] ")).strip().casefold()
     except (EOFError, KeyboardInterrupt):
         answer = ""
-    yes = answer in YES | {_("yes").casefold()}
+    yes = answer in yes_words()
     upgrade.record_answer(p.folder, yes)
     if not yes:
         print(_("Gloxi keeps the current model and will not ask again."), file=out)

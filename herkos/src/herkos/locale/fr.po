@@ -1,0 +1,447 @@
+# French translation of Herkos.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# Window and terminal
+msgid "Herkos: permission"
+msgstr "Herkos : autorisation"
+
+msgid "Herkos: Gloxi asks for permission"
+msgstr "Herkos : Gloxi demande une autorisation"
+
+msgid "Gloxi's reason: "
+msgstr "Raison donnée par Gloxi : "
+
+msgid "… and {n} more"
+msgstr "… et {n} de plus"
+
+msgid "Can be undone."
+msgstr "Peut être annulé."
+
+msgid "Cannot be undone."
+msgstr "Ne peut pas être annulé."
+
+msgid "Riskier than usual: {why}."
+msgstr "Plus risqué que d’habitude : {why}."
+
+msgid "Untrusted content came from: {src}"
+msgstr "Du contenu non fiable vient de : {src}"
+
+msgid "Exactly this will be done:"
+msgstr "Voici exactement ce qui sera fait :"
+
+msgid "Deny"
+msgstr "Refuser"
+
+msgid "Allow once"
+msgstr "Autoriser une fois"
+
+msgid "Allow for this session"
+msgstr "Autoriser pour cette session"
+
+msgid "Always allow"
+msgstr "Toujours autoriser"
+
+msgid "[o] allow once"
+msgstr "[o] autoriser une fois"
+
+msgid "[s] allow for this session"
+msgstr "[s] autoriser pour cette session"
+
+msgid "[a] always allow"
+msgstr "[a] toujours autoriser"
+
+msgid "[n] deny"
+msgstr "[n] refuser"
+
+msgid "Allowed."
+msgstr "Autorisé."
+
+msgid "Denied."
+msgstr "Refusé."
+
+msgid "No answer: denied."
+msgstr "Pas de réponse : refusé."
+
+# Why an action is riskier (policy)
+msgid "the tool has no Herkos manifest"
+msgstr "l’outil n’a pas de manifeste Herkos"
+
+msgid "the program changed this action since it was allowed"
+msgstr "le programme a modifié cette action depuis qu’elle a été autorisée"
+
+msgid "the program describes this action at too great a length"
+msgstr "le programme décrit cette action trop longuement"
+
+msgid "Let Gloxi use this program: {program}"
+msgstr "Laisser Gloxi utiliser ce programme : {program}"
+
+msgid "the tool describes this operation as riskier"
+msgstr "l’outil décrit cette opération comme plus risquée"
+
+msgid "untrusted content is in the conversation"
+msgstr "du contenu non fiable est dans la conversation"
+
+msgid "content read earlier {kinds}"
+msgstr "le contenu lu plus tôt {kinds}"
+
+msgid "it touches something outside the allowed folders"
+msgstr "cela touche quelque chose hors des dossiers autorisés"
+
+msgid "it touches more than {n} items at once"
+msgstr "cela touche plus de {n} éléments à la fois"
+
+msgid "it cannot be undone"
+msgstr "cela ne peut pas être annulé"
+
+msgid "Herkos cannot tell which of the program's commands this runs"
+msgstr "Herkos ne peut pas savoir quelle commande du programme ceci exécute"
+
+msgid "the manifest gives no level for the program's command {commands}"
+msgstr "le manifeste ne donne pas de niveau pour la commande {commands} du programme"
+
+msgid "data leaves this device"
+msgstr "des données quittent cet appareil"
+
+msgid "it sends data to an address that came from untrusted content"
+msgstr "cela envoie des données à une adresse venue d’un contenu non fiable"
+
+# Keros findings
+msgid "asks the assistant to ignore its instructions"
+msgstr "demande à l’assistant d’ignorer ses instructions"
+
+msgid "tries to give the assistant a new role or new instructions"
+msgstr "tente de donner à l’assistant un nouveau rôle ou de nouvelles instructions"
+
+msgid "contains chat-template or system markers"
+msgstr "contient des marqueurs de modèle de conversation ou de système"
+
+msgid "contains text hidden from people (HTML/CSS)"
+msgstr "contient du texte caché aux personnes (HTML/CSS)"
+
+msgid "contains a link that could carry data away"
+msgstr "contient un lien qui pourrait emporter des données"
+
+msgid "contains invisible or direction-changing characters"
+msgstr "contient des caractères invisibles ou qui changent le sens de l’écriture"
+
+msgid "the local check found text addressed to the assistant"
+msgstr "la vérification locale a trouvé du texte adressé à l’assistant"
+
+# Tool operations (manifest summaries)
+msgid "List a folder"
+msgstr "Lister un dossier"
+
+msgid "Search files by name and text"
+msgstr "Chercher des fichiers par nom et par texte"
+
+msgid "Read a file"
+msgstr "Lire un fichier"
+
+msgid "Create a file"
+msgstr "Créer un fichier"
+
+msgid "Change a file"
+msgstr "Modifier un fichier"
+
+msgid "Delete a file"
+msgstr "Supprimer un fichier"
+
+msgid "Undo an earlier change to a file"
+msgstr "Annuler une modification antérieure d’un fichier"
+
+# Backups (org.vilna.mcp.backup)
+msgid "See whether backups are on and how the last one went"
+msgstr "Voir si les sauvegardes sont activées et comment s’est passée la dernière"
+
+msgid "List the backups"
+msgstr "Lister les sauvegardes"
+
+msgid "See how much space the folders take"
+msgstr "Voir la place occupée par les dossiers"
+
+msgid "Make a backup now"
+msgstr "Faire une sauvegarde maintenant"
+
+msgid "Change how often backups are made"
+msgstr "Modifier la fréquence des sauvegardes"
+
+msgid "Change what goes into backups"
+msgstr "Modifier ce qui va dans les sauvegardes"
+
+msgid "Bring a backup back into a new folder"
+msgstr "Récupérer une sauvegarde dans un nouveau dossier"
+
+msgid "Choose where backups are kept"
+msgstr "Choisir où garder les sauvegardes"
+
+msgid "Bring files back over the current ones"
+msgstr "Récupérer des fichiers par-dessus les actuels"
+
+msgid "Delete backups"
+msgstr "Supprimer des sauvegardes"
+
+msgid "Move backups to another place"
+msgstr "Déplacer les sauvegardes ailleurs"
+
+msgid "Replace the backup keys"
+msgstr "Remplacer les clés des sauvegardes"
+
+msgid "Protect backups after a device was stolen"
+msgstr "Protéger les sauvegardes après le vol d’un appareil"
+
+# The «Дозволи» window (permissions_window.py, permissions_view.py)
+
+msgid "All"
+msgstr "Tout"
+
+msgid "Allowed, but the tool failed"
+msgstr "Autorisé, mais l’outil a échoué"
+
+msgid "Always"
+msgstr "Toujours"
+
+msgid "January"
+msgstr "janvier"
+
+msgid "February"
+msgstr "février"
+
+msgid "March"
+msgstr "mars"
+
+msgid "April"
+msgstr "avril"
+
+msgid "May"
+msgstr "mai"
+
+msgid "June"
+msgstr "juin"
+
+msgid "July"
+msgstr "juillet"
+
+msgid "August"
+msgstr "août"
+
+msgid "September"
+msgstr "septembre"
+
+msgid "October"
+msgstr "octobre"
+
+msgid "November"
+msgstr "novembre"
+
+msgid "December"
+msgstr "décembre"
+
+msgid "Backups"
+msgstr "Sauvegardes"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Changes can be undone for 30 days. The journal cannot be altered."
+msgstr "Les modifications peuvent être annulées pendant 30 jours. Le journal ne peut pas être modifié."
+
+msgid "Done"
+msgstr "Fait"
+
+msgid "Done, then undone"
+msgstr "Fait, puis annulé"
+
+msgid "Files"
+msgstr "Fichiers"
+
+msgid "Gloxi asked to {what}"
+msgstr "Gloxi a demandé : {what}"
+
+msgid "Gloxi asks before it changes anything. Here is what you allowed without asking again; take back anything you no longer want."
+msgstr "Gloxi demande avant de modifier quoi que ce soit. Voici ce que vous avez autorisé sans nouvelle question ; retirez ce que vous ne voulez plus."
+
+msgid "Gloxi brought a backup back into a new folder"
+msgstr "Gloxi a récupéré une sauvegarde dans un nouveau dossier"
+
+msgid "Gloxi brought back an earlier version of a file"
+msgstr "Gloxi a rétabli une version antérieure d’un fichier"
+
+msgid "Gloxi changed a file"
+msgstr "Gloxi a modifié un fichier"
+
+msgid "Gloxi changed how often backups are made"
+msgstr "Gloxi a modifié la fréquence des sauvegardes"
+
+msgid "Gloxi changed what goes into backups"
+msgstr "Gloxi a modifié ce qui va dans les sauvegardes"
+
+msgid "Gloxi checked the backups"
+msgstr "Gloxi a vérifié les sauvegardes"
+
+msgid "Gloxi created a file"
+msgstr "Gloxi a créé un fichier"
+
+msgid "Gloxi deleted a file"
+msgstr "Gloxi a supprimé un fichier"
+
+msgid "Gloxi listed the backups"
+msgstr "Gloxi a listé les sauvegardes"
+
+msgid "Gloxi looked at how much space the folders take"
+msgstr "Gloxi a regardé la place occupée par les dossiers"
+
+msgid "Gloxi looked into a folder"
+msgstr "Gloxi a regardé dans un dossier"
+
+msgid "Gloxi read a file"
+msgstr "Gloxi a lu un fichier"
+
+msgid "Gloxi searched files"
+msgstr "Gloxi a cherché des fichiers"
+
+msgid "Gloxi started a backup"
+msgstr "Gloxi a lancé une sauvegarde"
+
+msgid "Gloxi will ask you again before it does this: {what}."
+msgstr "Gloxi vous redemandera avant de faire ceci : {what}."
+
+msgid "Gloxi will ask you each time."
+msgstr "Gloxi vous demandera à chaque fois."
+
+msgid "Gloxi's reason"
+msgstr "Raison donnée par Gloxi"
+
+msgid "Herkos did not allow it"
+msgstr "Herkos ne l’a pas autorisé"
+
+msgid "Herkos is not answering: {why}"
+msgstr "Herkos ne répond pas : {why}"
+
+msgid "Journal"
+msgstr "Journal"
+
+msgid "No answer recorded"
+msgstr "Aucune réponse enregistrée"
+
+msgid "No permissions"
+msgstr "Aucune autorisation"
+
+msgid "Nobody answered in time"
+msgstr "Personne n’a répondu à temps"
+
+msgid "Not allowed at all"
+msgstr "Pas du tout autorisé"
+
+msgid "Not assessed"
+msgstr "Non évalué"
+
+msgid "Not undone: you said no."
+msgstr "Non annulé : vous avez refusé."
+
+msgid "Not undone: {why}"
+msgstr "Non annulé : {why}"
+
+msgid "Nothing here yet"
+msgstr "Rien pour l’instant"
+
+msgid "Permission revoked."
+msgstr "Autorisation retirée."
+
+msgid "Permissions"
+msgstr "Autorisations"
+
+msgid "Programs"
+msgstr "Programmes"
+
+msgid "Refresh"
+msgstr "Actualiser"
+
+msgid "Revoke"
+msgstr "Retirer"
+
+msgid "Revoke this permission?"
+msgstr "Retirer cette autorisation ?"
+
+msgid "Risk level {level}"
+msgstr "Niveau de risque {level}"
+
+msgid "There is nothing left to undo for this action."
+msgstr "Il n’y a plus rien à annuler pour cette action."
+
+msgid "Today"
+msgstr "Aujourd’hui"
+
+msgid "Undo"
+msgstr "Annuler"
+
+msgid "Undone. The earlier version is back."
+msgstr "Annulé. La version précédente est de retour."
+
+msgid "Until the session ends"
+msgstr "Jusqu’à la fin de la session"
+
+msgid "What"
+msgstr "Quoi"
+
+msgid "When Gloxi does something for you, it shows up here."
+msgstr "Quand Gloxi fait quelque chose pour vous, cela apparaît ici."
+
+msgid "Yesterday"
+msgstr "Hier"
+
+msgid "You said no"
+msgstr "Vous avez refusé"
+
+msgid "{day} {month}"
+msgstr "{day} {month}"
+
+msgid "{how} · in {where}"
+msgstr "{how} · dans {where}"
+
+msgid "{name} and {n} more"
+msgstr "{name} et {n} de plus"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Voir les paramètres du bureau"
+
+msgid "Switch between the light and the dark style"
+msgstr "Basculer entre le style clair et le style sombre"
+
+msgid "Change the accent colour"
+msgstr "Modifier la couleur d’accentuation"
+
+msgid "Change the text size"
+msgstr "Modifier la taille du texte"
+
+msgid "Change night light"
+msgstr "Modifier l’éclairage nocturne"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Activer ou désactiver Ne pas déranger"
+
+msgid "Change the volume"
+msgstr "Modifier le volume"
+
+msgid "Mute or unmute the sound"
+msgstr "Couper ou rétablir le son"
+
+msgid "Play sound through another output"
+msgstr "Diffuser le son sur une autre sortie"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Annuler une modification antérieure des paramètres"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Lister les agendas"
+
+msgid "Read the calendar"
+msgstr "Lire l’agenda"
+
+msgid "Search the calendar"
+msgstr "Chercher dans l’agenda"
