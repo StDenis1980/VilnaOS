@@ -88,6 +88,7 @@ def test_a_person_who_left_loses_their_gloxi(tmp_path):
     sync.apply()
     assert "systemctl disable gloxi@1005.socket" in rec.cmds
     assert "systemctl stop gloxi@1005.socket gloxi@1005.service" in rec.cmds
+    assert "systemctl revert gloxi@1005.service" in rec.cmds
     assert "userdel gloxi-1005" in rec.cmds
 
 

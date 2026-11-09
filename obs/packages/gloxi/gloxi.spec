@@ -80,7 +80,8 @@ what the person types.
 install -Dm0644 data/io.github.stdenis1980.Gloxi.desktop \
   %{buildroot}%{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
 for unit in gloxi@.socket gloxi@.service vilna-llm.service \
-            vilna-people-sync.service vilna-people-sync.path; do
+            vilna-people-sync.service vilna-people-sync.path \
+            vilna-mcp-gloxi-network@.service; do
   install -Dm0644 systemd/$unit %{buildroot}%{_unitdir}/$unit
 done
 install -Dm0644 systemd/gloxi.sysusers %{buildroot}%{_sysusersdir}/gloxi.conf
@@ -107,12 +108,14 @@ install -d %{buildroot}%{_datadir}/vilna/models
 %{_bindir}/gloxi
 %{_bindir}/gloxid
 %{_bindir}/vilna-people-sync
+%{_bindir}/vilna-mcp-gloxi-network
 %{_bindir}/gloxi-bench
 %{_unitdir}/gloxi@.socket
 %{_unitdir}/gloxi@.service
 %{_unitdir}/vilna-llm.service
 %{_unitdir}/vilna-people-sync.service
 %{_unitdir}/vilna-people-sync.path
+%{_unitdir}/vilna-mcp-gloxi-network@.service
 %{_sysusersdir}/gloxi.conf
 %dir %{_datadir}/vilna
 %dir %{_datadir}/vilna/models

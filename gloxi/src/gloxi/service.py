@@ -310,6 +310,7 @@ def build_controller(view: EventView):
     from gloxi.config import load_settings
     from gloxi.gui.controller import ChatController
     from gloxi.llm import ChatClient
+    from gloxi.network import herkos_network
     from gloxi.privacy import guard_factory
     from gloxi.router import Router
     from gloxi.tools import file_tools
@@ -317,7 +318,19 @@ def build_controller(view: EventView):
     settings = load_settings()
     local = ChatClient(settings.local)
     cloud = ChatClient(settings.cloud) if settings.cloud else None
-    router = Router(local, cloud, settings.router, guard_factory=guard_factory(settings.router))
+    # The service may reach only this computer; the cloud needs a yes from
+    # the person through Herkos first (ADR 0025, section 3).
+    network = herkos_network()
+    router = Router(
+        local,
+        cloud,
+        settings.router,
+        guard_factory=guard_factory(settings.router),
+        network=network,
+    )
+    if network is not None and not router.cloud_enabled:
+        # The cloud was turned off: close the way it may have left open.
+        threading.Thread(target=network.close, daemon=True).start()
     tools = file_tools(settings.tools_enabled)
     conversation = Conversation(router, settings.system_prompt, tools=tools)
     return ChatController(conversation, view, intro=backup_intro(settings.tools_enabled))

@@ -173,6 +173,8 @@ class Sync:
             self._do("systemctl", "disable", f"gloxi@{uid}.socket")
             if live:
                 self._do("systemctl", "stop", f"gloxi@{uid}.socket", f"gloxi@{uid}.service")
+            # The internet opened for the cloud (gloxi.network) goes with them.
+            self._do("systemctl", "revert", f"gloxi@{uid}.service")
             self._do("userdel", f"gloxi-{uid}")
 
         new = system_toml(found)

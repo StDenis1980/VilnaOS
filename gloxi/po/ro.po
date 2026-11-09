@@ -919,6 +919,26 @@ msgstr "Translucid"
 msgid "Your own size. Drag an edge of the panel to change it."
 msgstr "Dimensiunea dumneavoastră. Trageți de o margine a panoului pentru a o schimba."
 
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxi verifică dacă se poate conecta la internet."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi nu are voie să se conecteze la internet, așa că modelul din cloud nu poate răspunde."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxi are nevoie de internet ca să trimită mesajul dumneavoastră modelului din cloud."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos nu rulează, așa că Gloxi nu se poate conecta la internet pentru cloud."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "Cloudul este dezactivat."
+
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"
 msgstr ""

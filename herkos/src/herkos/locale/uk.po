@@ -233,3 +233,12 @@ msgstr "Прочитати календар"
 
 msgid "Search the calendar"
 msgstr "Шукати в календарі"
+
+msgid "See whether Gloxi may reach the internet"
+msgstr "Подивитися, чи може Gloxi виходити в інтернет"
+
+msgid "Let Gloxi reach the internet for the cloud model"
+msgstr "Дозволити Gloxi виходити в інтернет для хмарної моделі"
+
+msgid "Let Gloxi reach only this computer"
+msgstr "Дозволити Gloxi зв'язок лише з цим комп'ютером"

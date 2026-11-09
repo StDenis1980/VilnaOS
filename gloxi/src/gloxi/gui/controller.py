@@ -35,7 +35,7 @@ from gloxi.engine import (
 )
 from gloxi.feedback import FeedbackTalk, wants_feedback
 from gloxi.llm import ModelError, ModelUnavailable
-from gloxi.router import CloudNotAllowed, Route, Router
+from gloxi.router import CloudNotAllowed, NetworkRefused, Route, Router
 
 # Runs a callable on a worker; replaced by a synchronous runner in tests.
 Runner = Callable[[Callable[[], None]], None]
@@ -258,6 +258,10 @@ class ChatController:
                 self.view.show_error(_("Cannot reach the cloud model."))
         except ModelError as exc:
             self.view.show_error(_("The model returned an error: {error}").format(error=exc))
+        except NetworkRefused as exc:
+            self.view.show_error(str(exc))
+        except CloudNotAllowed:
+            self.view.show_error(_("The cloud is turned off in the settings."))
         finally:
             self.view.finish_answer()
             self.busy = False

@@ -919,6 +919,26 @@ msgstr "Permatomas"
 msgid "Your own size. Drag an edge of the panel to change it."
 msgstr "Jūsų pačių dydis. Norėdami pakeisti, tempkite skydelio kraštą."
 
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxi tikrina, ar gali jungtis prie interneto."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi negali jungtis prie interneto, todėl debesijos modelis negali atsakyti."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxi reikia interneto, kad išsiųstų jūsų žinutę debesijos modeliui."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos neveikia, todėl Gloxi negali prisijungti prie interneto debesijai."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "Debesija išjungta."
+
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"
 msgstr ""

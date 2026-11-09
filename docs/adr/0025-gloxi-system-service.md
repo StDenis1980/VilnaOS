@@ -32,7 +32,7 @@
 
 ### 3. Хмара — лише після дозволу Herkos (рішення Denys 2026-11-09)
 
-Без хмари Gloxi потрібна лише локальна мережа (модель і нічого більше). Коли людина вмикає хмару, Gloxi просить Herkos про дію R2 «дозволити Gloxi з'єднання з інтернетом». `herkosd` після підтвердження запускає `vilna-gloxi-network@<uid>.service` (root, oneshot; правило polkit дозволяє `herkosd` лише цей юніт), який пише drop-in `gloxi@<uid>.service.d/50-network.conf` із `IPAddressAllow=any` і перезапускає сервіс. Вимкнення хмари прибирає drop-in тим самим шляхом; Mitos пише обидві дії в журнал. Так увімкнути собі інтернет сам Gloxi не може.
+Без хмари Gloxi потрібна лише локальна мережа (модель і нічого більше). Коли людина вмикає хмару, Gloxi перед першим повідомленням у хмару просить Herkos про дію R2 `org.vilna.gloxi.network.allow_cloud` («дозволити Gloxi виходити в інтернет»). Після «так» `herkosd` викликає інструмент `vilna-mcp-gloxi-network@<uid>.service` (root; правило polkit дозволяє `herkosd` лише цей юніт, uid береться з назви юніта, а не із запиту). Інструмент робить `systemctl set-property gloxi@<uid>.service IPAddressAllow=any`: systemd застосовує це до запущеного сервісу одразу, без перезапуску (розмова триває), і зберігає після перезавантаження. Коли хмару вимкнено, `gloxid` на старті повертає «лише localhost» дією `block_cloud` (теж R2). Mitos пише обидві дії в журнал. Модель цих дій не бачить. Так увімкнути собі інтернет сам Gloxi не може.
 
 ### 4. Одна модель на комп'ютер
 
@@ -70,7 +70,7 @@
 1. Цей ADR.
 2. `gloxid` і протокол; `gloxi-gtk` як клієнт; тести двох процесів без systemd.
 3. Юніти, sysusers, `vilna-people-sync`, `vilna-llm`; RPM `gloxi` і `gloxi-session`; тест у контейнері з systemd (як `herkos/conformance/test_system.py`).
-4. Мережа для хмари: `vilna-gloxi-network@`, дія R2 у маніфесті Herkos.
+4. Мережа для хмари: `vilna-mcp-gloxi-network@`, дії `allow_cloud`/`block_cloud` (R2) у маніфесті Herkos `org.vilna.gloxi.network`.
 5. Пакет ваг `vilna-model-default` або запасний шлях із завантаженням.
 6. Образ: пресети, перевірка у VM на Denis-KLX — Gloxi відповідає, читає файл через Herkos, не бачить `/home` напряму.
 
