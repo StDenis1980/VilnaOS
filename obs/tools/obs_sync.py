@@ -113,6 +113,18 @@ TARBALLS: dict[str, Tarball] = {
             ("docs/design/icons/vilna-backup-symbolic.svg", "data/vilna-backup-symbolic.svg"),
         ),
     ),
+    "vilna-installer": Tarball(
+        "installer",
+        pyproject_version("installer"),
+        extra=(
+            ("LICENSE", "LICENSE"),
+            ("docs/design/icons/vilna-installer.svg", "data/vilna-installer.svg"),
+            (
+                "docs/design/icons/vilna-installer-symbolic.svg",
+                "data/vilna-installer-symbolic.svg",
+            ),
+        ),
+    ),
     "vilna-mcp-backup": Tarball(
         "mcp/backup",
         pyproject_version("mcp/backup"),
@@ -120,6 +132,9 @@ TARBALLS: dict[str, Tarball] = {
     ),
     "vilna-mcp-files": Tarball(
         "mcp/files", pyproject_version("mcp/files"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
+    "vilna-mcp-installer": Tarball(
+        "mcp/installer", pyproject_version("mcp/installer"), extra=(("mcp/LICENSE", "LICENSE"),)
     ),
     "vilna-mcp-settings": Tarball(
         "mcp/settings", pyproject_version("mcp/settings"), extra=(("mcp/LICENSE", "LICENSE"),)

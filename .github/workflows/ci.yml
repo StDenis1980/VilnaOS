@@ -44,6 +44,11 @@ jobs:
       - name: The pinned model is the one Hugging Face serves
         if: matrix.python == '3.13'
         run: uv run python tools/check_model.py
+      - name: The pinned voice models are the ones GitHub serves (ADR 0015)
+        if: matrix.python == '3.13'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: uv run python tools/check_voice.py
       - run: uv run pytest
 
   herkos:
@@ -180,6 +185,24 @@ jobs:
     defaults:
       run:
         working-directory: installer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  mcp-installer:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: mcp/installer
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6

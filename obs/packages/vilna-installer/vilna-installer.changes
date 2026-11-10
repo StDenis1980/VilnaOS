@@ -1,0 +1,13 @@
+-------------------------------------------------------------------
+Tue Nov 10 08:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The conversation with Gloxi (steps 1-13): chat with the plan beside
+  it, protected password fields; vilna-installer-chat; requires
+  vilna-mcp-installer
+
+-------------------------------------------------------------------
+Mon Nov  9 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: vilna-installer, the first installer screen
+  (languages, screen reader, with or without Gloxi) for the live
+  image Vilna-Live.

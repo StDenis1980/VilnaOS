@@ -14,6 +14,9 @@ dependencies = [
 [project.optional-dependencies]
 # The files tool goes through Herkos; without it Gloxi just chats.
 tools = ["herkos"]
+# Voice on this computer (ADR 0015): speech recognition and synthesis. In the
+# Flatpak it is always there; without it Gloxi has no microphone button.
+voice = ["sherpa-onnx>=2.0.1"]
 
 [project.scripts]
 gloxi = "gloxi.cli:main"

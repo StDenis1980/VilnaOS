@@ -154,6 +154,56 @@ modules:
   # Gloxi, the privacy gateway, Herkos-lite and the files and settings tools,
   # straight from this repository. They are pure Python with no build step, so they are copied in
   # rather than built with hatchling (which the SDK does not have).
+  # Voice on this computer (ADR 0015): sherpa-onnx (Apache-2.0) runs speech
+  # recognition and the voices; its wheel carries onnxruntime (MIT). The models
+  # are not in the package: Gloxi downloads them after the person agrees.
+  - name: python3-sherpa-onnx
+    buildsystem: simple
+    build-commands:
+      - >
+        pip3 install --verbose --no-index --find-links="file://${PWD}"
+        --prefix="${FLATPAK_DEST}" --no-build-isolation --no-deps sherpa_onnx sherpa_onnx_core
+    sources:
+      - type: file
+        only-arches: [x86_64]
+        url: https://files.pythonhosted.org/packages/3d/91/b63d3278c0a05a73c6c66350556b2b8824958d213da47421d6cb4f79cf6c/sherpa_onnx-2.0.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+        sha256: a52606059a84495374bbd752c8de2b36d3f018cd715eddac559686b4e6868789
+      - type: file
+        only-arches: [x86_64]
+        url: https://files.pythonhosted.org/packages/9a/4e/d946cc081864c8c242e787a73dd2ea61f861445f3d4207787d873e4dc65d/sherpa_onnx_core-2.0.1-py3-none-manylinux2014_x86_64.whl
+        sha256: f4ee0ab91c4ae596e0e49d7de32522a946295e038a652f1c1884d89014ee4ec2
+      - type: file
+        only-arches: [aarch64]
+        url: https://files.pythonhosted.org/packages/b4/2c/ea5299fc05894caac323d2210ac31b423451888c6f81fa6d21918539bd6b/sherpa_onnx-2.0.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl
+        sha256: dae9c8972e2dfe1fcaccdc48f7465f0db2e4220f1f7b299b4c0970a5f46c66e2
+      - type: file
+        only-arches: [aarch64]
+        url: https://files.pythonhosted.org/packages/73/d0/399776c4b6fa0a618d23cf711d580607d9890f7838352dacb36a9246f2b7/sherpa_onnx_core-2.0.1-py3-none-manylinux2014_aarch64.whl
+        sha256: 4a855a5c89c89885111e4e9c570e5da1aed63373c031b757d8046792d95fe8fe
+
+  # eSpeak NG (GPL-3.0-or-later, like Gloxi): the phonemes for the Kokoro voices,
+  # and the voice of the languages without a downloaded one (ADR 0015, section 2).
+  # Without a configure script flatpak-builder runs autogen.sh first.
+  - name: espeak-ng
+    buildsystem: autotools
+    no-parallel-make: true
+    config-opts:
+      - --disable-static
+      - --with-pcaudiolib=no
+      - --with-sonic=no
+      - --with-speechplayer=no
+      - --with-mbrola=no
+      - --with-klatt=no
+      - --with-async=no
+    cleanup: ["/include", "/lib/pkgconfig", "*.la", "/share/vim"]
+    post-install:
+      - install -Dm644 COPYING "${FLATPAK_DEST}/share/licenses/espeak-ng/COPYING"
+    sources:
+      - type: git
+        url: https://github.com/espeak-ng/espeak-ng.git
+        tag: "1.52.0"
+        commit: 4870adfa25b1a32b4361592f1be8a40337c58d6c
+
   - name: gloxi
     buildsystem: simple
     build-commands:
