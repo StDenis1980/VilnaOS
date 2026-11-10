@@ -171,7 +171,10 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 
 %post selinux
 # Also inside an image build (chroot): semodule works on the policy store.
-%{_sbindir}/semodule -X 200 -i %{_datadir}/selinux/packages/herkos/herkos.cil
+# A policy store semodule cannot load into must not fail the installation
+# (OBS herkos build 66.1); `semodule -l | grep herkos` shows whether it loaded.
+%{_sbindir}/semodule -X 200 -i %{_datadir}/selinux/packages/herkos/herkos.cil || \
+  echo "herkos-selinux: semodule could not load the module herkos" >&2
 
 %postun selinux
 if [ $1 -eq 0 ]; then
@@ -206,6 +209,8 @@ fi
 
 %files selinux
 %license LICENSE
+%dir %{_datadir}/selinux
+%dir %{_datadir}/selinux/packages
 %dir %{_datadir}/selinux/packages/herkos
 %{_datadir}/selinux/packages/herkos/herkos.cil
 

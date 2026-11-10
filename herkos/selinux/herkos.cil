@@ -13,4 +13,9 @@
 ;
 ; The socket stays 0600 and owned by herkos, so only root can connect: the
 ; person's own programs still cannot pose as a tool.
-(allow init_t unconfined_service_t (unix_stream_socket (connectto)))
+;
+; optional: where the loaded policy lacks one of these types (the build root
+; of OBS, OBS herkos build 66.1), the module still installs and the rule is
+; left out, instead of failing the whole transaction.
+(optional herkos_tools_connect
+    (allow init_t unconfined_service_t (unix_stream_socket (connectto))))
