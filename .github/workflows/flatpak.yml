@@ -77,6 +77,25 @@ jobs:
           assert 'set_night_light' in tools, out
           print('settings ok', sorted(tools))
           "
+      - name: Voice works inside the sandbox (ADR 0015)
+        run: |
+          echo "Dobrý den" | flatpak run --command=espeak-ng io.github.stdenis1980.Gloxi -q --ipa -v cs
+          flatpak run --command=python3 io.github.stdenis1980.Gloxi -c "
+          from pathlib import Path
+          import gi
+          gi.require_version('Gst', '1.0')
+          from gi.repository import Gst
+          import sherpa_onnx
+          from gloxi.gui.window import voice_available
+          from gloxi.voice.tts import Synthesizer
+          Gst.init(None)
+          for name in ('pulsesrc', 'pulsesink', 'appsrc', 'appsink', 'audioconvert', 'audioresample'):
+              assert Gst.ElementFactory.find(name), name
+          sound = Synthesizer(Path('/nonexistent')).synthesize('Dzień dobry.', 'pl')
+          assert sound.seconds > 0.3, sound.seconds
+          assert voice_available()
+          print('voice ok', sherpa_onnx.__version__)
+          "
       - name: Is Evolution Data Server in the runtime? (for the calendar tool, not required yet)
         run: |
           flatpak run --command=python3 io.github.stdenis1980.Gloxi -c "
