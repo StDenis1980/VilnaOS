@@ -95,6 +95,11 @@ def default_config_path() -> Path:
 
 
 def socket_path() -> Path:
+    # HERKOS_SOCKET: the system herkosd (/run/herkos/herkos.sock) for gloxid,
+    # which has no session of its own (ADR 0025).
+    value = os.environ.get("HERKOS_SOCKET")
+    if value and os.path.isabs(value):
+        return Path(value)
     return runtime_dir() / "vilna" / "herkos.sock"
 
 

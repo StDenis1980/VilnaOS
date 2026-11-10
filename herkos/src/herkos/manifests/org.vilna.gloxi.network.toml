@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the internet of the Gloxi service (gloxi/src/gloxi/network.py,
+# ADR 0025, section 3). The service gloxi@<uid> may reach only this computer;
+# the cloud model needs the internet, and Gloxi may not open it for itself.
+# Opening it is R2: a reversible change, undone by block_cloud. Closing it is
+# a change of the same kind (and the server says it changes something), so
+# R2 as well; Gloxi asks for it only when the cloud was turned off. Nothing is
+# sent by these operations themselves; what goes to the cloud is masked by
+# the privacy gateway in Gloxi.
+tool = "org.vilna.gloxi.network"
+description = "Whether the person's Gloxi may reach the internet"
+
+# Only the system Herkos starts it: vilna-mcp-gloxi-network@<uid>, as root,
+# and it changes nothing but gloxi@<uid>.service. Herkos-lite has no module
+# to run, so in the Flatpak these operations are not available.
+[launch]
+program = "vilna-mcp-gloxi-network"
+args = []
+
+[operations.status]
+level = "R0"
+summary = "See whether Gloxi may reach the internet"
+
+[operations.allow_cloud]
+level = "R2"
+summary = "Let Gloxi reach the internet for the cloud model"
+reversible = true
+
+[operations.block_cloud]
+level = "R2"
+summary = "Let Gloxi reach only this computer"
+reversible = true

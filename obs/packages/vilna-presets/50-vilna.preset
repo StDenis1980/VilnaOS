@@ -19,7 +19,12 @@ enable NetworkManager.service
 enable NetworkManager-wait-online.service
 
 # Vilna components (no effect until the units are installed).
-# herkosd starts on demand through its socket; Gloxi has no system
-# service yet, it runs in the person's session.
+# herkosd starts on demand through its socket. Each person's Gloxi
+# (gloxi@<uid>.socket) is enabled by vilna-people-sync, which runs on
+# every boot and whenever /etc/passwd changes (ADR 0025); the shared
+# local model starts with the system.
 enable herkosd.socket
+enable vilna-people-sync.service
+enable vilna-people-sync.path
+enable vilna-llm.service
 enable vilna-flatpak-defaults.service

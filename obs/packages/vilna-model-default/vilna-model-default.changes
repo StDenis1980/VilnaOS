@@ -1,0 +1,5 @@
+-------------------------------------------------------------------
+Tue Nov 10 00:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: Qwen3 4B Q4_K_M for vilna-llm.service (ADR 0025,
+  step 5)
