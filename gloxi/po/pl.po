@@ -685,11 +685,11 @@ msgstr ""
 msgid "Gloxi, feedback"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "Local"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "On this computer"
 msgstr ""
 
@@ -744,6 +744,18 @@ msgstr "Gloxi myśli"
 #: src/gloxi/gui/panel.py
 msgid "Gloxi is waiting for you"
 msgstr "Gloxi czeka na ciebie"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr "Gloxi jest niedostępny: jego usługa nie działa. Spróbuj ponownie za chwilę."
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr "Gloxi jest otwarty w innym oknie."
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
+msgstr "Utracono połączenie z usługą Gloxi. Spróbuj ponownie."
 
 #: src/gloxi/gui/shortcuts.py
 msgid "Show or hide Gloxi"
@@ -934,6 +946,26 @@ msgstr "Półprzezroczysty"
 #: src/gloxi/gui/window.py
 msgid "Your own size. Drag an edge of the panel to change it."
 msgstr "Twój własny rozmiar. Aby go zmienić, przeciągnij krawędź panelu."
+
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxi sprawdza, czy może łączyć się z internetem."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi nie może łączyć się z internetem, więc model w chmurze nie może odpowiedzieć."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxi potrzebuje internetu, aby wysłać twoją wiadomość do modelu w chmurze."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos nie działa, więc Gloxi nie może połączyć się z internetem dla chmury."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "Chmura jest wyłączona."
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"

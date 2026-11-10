@@ -685,11 +685,11 @@ msgstr ""
 msgid "Gloxi, feedback"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "Local"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "On this computer"
 msgstr ""
 
@@ -744,6 +744,18 @@ msgstr "Gloxi denkt nach"
 #: src/gloxi/gui/panel.py
 msgid "Gloxi is waiting for you"
 msgstr "Gloxi wartet auf Sie"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr "Gloxi ist nicht erreichbar: Sein Dienst läuft nicht. Versuchen Sie es gleich noch einmal."
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr "Gloxi ist in einem anderen Fenster geöffnet."
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
+msgstr "Die Verbindung zum Gloxi-Dienst ist abgebrochen. Versuchen Sie es noch einmal."
 
 #: src/gloxi/gui/shortcuts.py
 msgid "Show or hide Gloxi"
@@ -934,6 +946,26 @@ msgstr "Durchscheinend"
 #: src/gloxi/gui/window.py
 msgid "Your own size. Drag an edge of the panel to change it."
 msgstr "Ihre eigene Größe. Ziehen Sie an einem Rand der Leiste, um sie zu ändern."
+
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxi prüft, ob es ins Internet darf."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi darf keine Verbindung zum Internet herstellen, daher kann das Cloud-Modell nicht antworten."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxi braucht das Internet, um Ihre Nachricht an das Cloud-Modell zu senden."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos läuft nicht, daher kann Gloxi für die Cloud keine Verbindung zum Internet herstellen."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "Die Cloud ist ausgeschaltet."
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"

@@ -21,6 +21,9 @@ voice = ["sherpa-onnx>=2.0.1"]
 [project.scripts]
 gloxi = "gloxi.cli:main"
 gloxi-gtk = "gloxi.gui.window:main"
+gloxid = "gloxi.service:main"
+vilna-people-sync = "gloxi.people:main"
+vilna-mcp-gloxi-network = "gloxi.network:main"
 gloxi-bench = "gloxi.bench.__main__:main"
 
 [dependency-groups]

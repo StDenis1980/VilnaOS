@@ -685,11 +685,11 @@ msgstr ""
 msgid "Gloxi, feedback"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "Local"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "On this computer"
 msgstr ""
 
@@ -744,6 +744,18 @@ msgstr "Gloxi galvoja"
 #: src/gloxi/gui/panel.py
 msgid "Gloxi is waiting for you"
 msgstr "Gloxi laukia jūsų"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr "Gloxi nepasiekiamas: jo paslauga neveikia. Pabandykite po akimirkos."
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr "Gloxi atidarytas kitame lange."
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
+msgstr "Ryšys su Gloxi paslauga nutrūko. Bandykite dar kartą."
 
 #: src/gloxi/gui/shortcuts.py
 msgid "Show or hide Gloxi"
@@ -934,6 +946,26 @@ msgstr "Permatomas"
 #: src/gloxi/gui/window.py
 msgid "Your own size. Drag an edge of the panel to change it."
 msgstr "Jūsų pačių dydis. Norėdami pakeisti, tempkite skydelio kraštą."
+
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxi tikrina, ar gali jungtis prie interneto."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi negali jungtis prie interneto, todėl debesijos modelis negali atsakyti."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxi reikia interneto, kad išsiųstų jūsų žinutę debesijos modeliui."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos neveikia, todėl Gloxi negali prisijungti prie interneto debesijai."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "Debesija išjungta."
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"

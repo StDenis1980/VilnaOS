@@ -685,11 +685,11 @@ msgstr ""
 msgid "Gloxi, feedback"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "Local"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "On this computer"
 msgstr ""
 
@@ -744,6 +744,18 @@ msgstr "Gloxi sta pensando"
 #: src/gloxi/gui/panel.py
 msgid "Gloxi is waiting for you"
 msgstr "Gloxi ti aspetta"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr "Gloxi non è raggiungibile: il suo servizio non è in esecuzione. Riprova tra un momento."
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr "Gloxi è aperto in un'altra finestra."
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
+msgstr "La connessione al servizio di Gloxi si è interrotta. Riprova."
 
 #: src/gloxi/gui/shortcuts.py
 msgid "Show or hide Gloxi"
@@ -934,6 +946,26 @@ msgstr "Traslucido"
 #: src/gloxi/gui/window.py
 msgid "Your own size. Drag an edge of the panel to change it."
 msgstr "Le tue dimensioni. Trascina un bordo del pannello per cambiarle."
+
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxi controlla se può accedere a internet."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi non può connettersi a internet, quindi il modello cloud non può rispondere."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxi ha bisogno di internet per inviare il tuo messaggio al modello cloud."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos non è in esecuzione, quindi Gloxi non può connettersi a internet per il cloud."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "Il cloud è disattivato."
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"

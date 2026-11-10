@@ -21,14 +21,9 @@ from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
 from gloxi.gui import APP_ID, panel  # noqa: E402
 from gloxi.gui import shell as vilna_shell  # noqa: E402
-from gloxi.gui.controller import (  # noqa: E402
-    ChatController,
-    ModelSetup,
-    cloud_status,
-    current_choice,
-    model_choices,
-)
+from gloxi.gui.controller import ChatController, ModelSetup  # noqa: E402
 from gloxi.gui.panel import OwlState, OwlStates, PanelPrefs  # noqa: E402
+from gloxi.gui.remote import RemoteController, ServiceError  # noqa: E402
 from gloxi.gui.shortcuts import FALLBACK_COMMAND, GlobalShortcut  # noqa: E402
 from gloxi.herkos_local import (  # noqa: E402
     LocalHerkos,
@@ -41,7 +36,8 @@ from gloxi.i18n import setup  # noqa: E402
 from gloxi.llm import ChatClient  # noqa: E402
 from gloxi.privacy import guard_factory  # noqa: E402
 from gloxi.programs import Program, Programs, programs  # noqa: E402
-from gloxi.router import CloudNotAllowed, Router  # noqa: E402
+from gloxi.router import Router  # noqa: E402
+from gloxi.service import service_socket  # noqa: E402
 from gloxi.tools import file_tools  # noqa: E402
 from gloxi.voice import session as voice_session  # noqa: E402
 
@@ -83,6 +79,10 @@ window.gloxi-panel headerbar {{ background: none; box-shadow: none; }}
 SIZE_KEYS = {"compact": "<Control>1", "one-sixth": "<Control>2", "one-third": "<Control>3"}
 
 
+def _on_main_loop(job) -> None:
+    GLib.idle_add(lambda: job() and False)
+
+
 def _idle(func):
     """Run a view callback on the GTK main loop, whatever thread calls it."""
 
@@ -96,14 +96,25 @@ class ChatWindow(Adw.ApplicationWindow):
     def __init__(
         self,
         app: Adw.Application,
-        conversation: Conversation,
+        conversation: Conversation | None,
         intro: BackupIntro | None = None,
         *,
         shell: vilna_shell.VilnaShell | None = None,
         prefs: PanelPrefs | None = None,
+        service: Path | None = None,
     ) -> None:
         super().__init__(application=app, title="Gloxi")
-        self.controller = ChatController(conversation, self, intro=intro)
+        if service is not None:
+            # Vilna: Gloxi is the system service gloxid (ADR 0025); this window
+            # only shows it. Events go through the main loop, in order.
+            remote = RemoteController(service, self, dispatch=_on_main_loop)
+            try:
+                remote.connect()
+            except ServiceError as exc:
+                print(f"gloxi: no Gloxi service at {service}: {exc}", file=sys.stderr)
+            self.controller = remote
+        else:
+            self.controller = ChatController(conversation, self, intro=intro)
         self._answer_label: Gtk.Label | None = None
         # The side panel (stage A): its size and look, and the Shell that
         # keeps it at the right edge, when the Vilna extension runs.
@@ -113,7 +124,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.add_css_class("gloxi-panel")
 
         header = Adw.HeaderBar()
-        self.title = Adw.WindowTitle(title="Gloxi", subtitle=cloud_status(conversation))
+        self.title = Adw.WindowTitle(title="Gloxi", subtitle=self.controller.cloud_status())
         header.set_title_widget(self.title)
         header.pack_start(self._make_owl())
         new_button = Gtk.Button(icon_name="list-add-symbolic", tooltip_text=_("New conversation"))
@@ -559,12 +570,11 @@ class ChatWindow(Adw.ApplicationWindow):
     # -- model switcher -----------------------------------------------------------
 
     def _fill_model_switch(self) -> None:
-        router = self.controller.conversation.router
-        self._choices = model_choices(router)
+        self._choices = self.controller.choices()
         self._filling = True
         self.model_switch.set_model(Gtk.StringList.new([c.label for c in self._choices]))
         modes = [c.mode for c in self._choices]
-        self.model_switch.set_selected(modes.index(current_choice(router)))
+        self.model_switch.set_selected(modes.index(self.controller.current_choice()))
         self._filling = False
         self._show_model_choice()
         if len(self._choices) == 1:
@@ -577,15 +587,13 @@ class ChatWindow(Adw.ApplicationWindow):
         if len(self._choices) > 1:
             choice = self._choices[self.model_switch.get_selected()]
             self.model_switch.set_tooltip_text(choice.detail)
-        self.title.set_subtitle(cloud_status(self.controller.conversation))
+        self.title.set_subtitle(self.controller.cloud_status())
 
     def _on_model_selected(self, *_args) -> None:
         if self._filling:
             return
         choice = self._choices[self.model_switch.get_selected()]
-        try:
-            self.controller.conversation.router.set_mode(choice.mode)
-        except CloudNotAllowed:
+        if not self.controller.set_mode(choice.mode):
             self.show_error(_("The cloud is turned off in the settings."))
             self._fill_model_switch()
             return
@@ -946,6 +954,14 @@ class GloxiApp(Adw.Application):
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
+        sock = service_socket()
+        if sock.exists():
+            # Vilna: the conversation, the models and Herkos are gloxid's.
+            window = ChatWindow(
+                self, None, shell=vilna_shell.connect(), prefs=panel.load_prefs(), service=sock
+            )
+            GLib.idle_add(lambda: window.controller.offer_intro() and False)
+            return window
         local = ChatClient(settings.local)
         cloud = ChatClient(settings.cloud) if settings.cloud else None
         self._clients = [c for c in (local, cloud) if c]
@@ -977,8 +993,11 @@ class GloxiApp(Adw.Application):
     def do_shutdown(self) -> None:
         if self._shortcut is not None:
             self._shortcut.stop()
-        for client in self._clients:
+        for client in getattr(self, "_clients", []):
             client.close()
+        window = self.get_active_window()
+        if isinstance(window, ChatWindow) and isinstance(window.controller, RemoteController):
+            window.controller.close()
         if getattr(self, "_tools", None):
             self._tools.close()
         if getattr(self, "_intro", None):
