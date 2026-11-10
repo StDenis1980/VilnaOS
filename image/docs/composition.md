@@ -97,8 +97,8 @@
 | --- | --- | --- |
 | `vilna-privacy-gateway` | Бібліотека шлюзу приватності | Apache-2.0 |
 | `vilna-mcp-files` | MCP-сервер «файли» | Apache-2.0 |
-| `vilna-mcp-settings` | MCP-сервер «налаштування GNOME» (через GSettings / D-Bus) | Apache-2.0 |
-| `vilna-mcp-calendar` | MCP-сервер «календар» (CalDAV / GNOME Online Accounts) | Apache-2.0 |
+| `vilna-mcp-settings` | MCP-сервер «налаштування GNOME»: тема, акцент, розмір тексту, нічне світло, «не турбувати», звук (GSettings і PipeWire, [ADR 0023](../../docs/adr/0023-gloxi-calendar-settings-hotkey.md)) | Apache-2.0 |
+| `vilna-mcp-calendar` | MCP-сервер «календар», лише читання: календарі GNOME і GNOME Online Accounts через Evolution Data Server ([ADR 0023](../../docs/adr/0023-gloxi-calendar-settings-hotkey.md)) | Apache-2.0 |
 | `vilna-mcp-apps` | MCP-сервер «програми»: пошук, запуск, встановлення, оновлення і видалення Flatpak через libflatpak, лише через Herkos ([ADR 0012](../../docs/adr/0012-recommended-apps-and-install-via-gloxi.md)) | Apache-2.0 |
 | `vilna-software-picks` | Добірка «Рекомендовано Vilna»: метадані AppStream, за якими GNOME Software показує вибрані програми Flathub (ADR 0012) | GPL-3.0-or-later |
 | `vilna-mcp-mail` | MCP-сервер «пошта» (IMAP / SMTP) | Apache-2.0 |

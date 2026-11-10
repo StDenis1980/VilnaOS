@@ -24,6 +24,22 @@ finish-args:
   # No access to files. Herkos-lite and the files tool run inside this sandbox
   # (gloxi/herkos_local.py); the folders the person chooses with the system
   # folder chooser come in through the document portal, and nothing else.
+  #
+  # The settings tool (ADR 0023, section 6): the person's GNOME settings in
+  # dconf, which are not files of theirs. The tool changes only the keys in
+  # its list (mcp/settings), and only through Herkos.
+  - --filesystem=xdg-run/dconf
+  - --filesystem=xdg-config/dconf:ro
+  - --talk-name=ca.desrt.dconf
+  - --env=DCONF_USER_CONFIG_DIR=.config/dconf
+  - --env=GSETTINGS_BACKEND=dconf
+  # Volume, mute and sound output through PipeWire; voice needs it too (ADR 0015).
+  - --socket=pulseaudio
+  # The Vilna GNOME Shell extension (shell-extension/README.md): keeps the
+  # Gloxi panel at the right edge and above other windows. Gloxi only reads
+  # and sets its own properties there; without the extension the name is
+  # missing and Gloxi hides those switches.
+  - --talk-name=io.github.stdenis1980.VilnaShell
 
 cleanup:
   - "*.pyc~"
@@ -97,8 +113,21 @@ modules:
         url: https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl
         sha256: 481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8
 
-  # Gloxi, the privacy gateway, Herkos-lite and the files tool, straight from this
-  # repository. They are pure Python with no build step, so they are copied in
+  # The settings tool's one dependency, the version pinned in mcp/settings/uv.lock.
+  # Pure Python; it loads libpulse from the runtime.
+  - name: python3-pulsectl
+    buildsystem: simple
+    build-commands:
+      - >
+        pip3 install --verbose --no-index --find-links="file://${PWD}"
+        --prefix="${FLATPAK_DEST}" --no-build-isolation --no-deps pulsectl
+    sources:
+      - type: file
+        url: https://files.pythonhosted.org/packages/62/a9/5b119f86dd1a053c55da7d0355fca2ad215bae6f7f4777d46b307a8cc3e9/pulsectl-24.12.0-py2.py3-none-any.whl
+        sha256: 13a60be940594f03ead3245b3dfe3aff4a3f9a792af347674bde5e716d4f76d2
+
+  # Gloxi, the privacy gateway, Herkos-lite and the files and settings tools,
+  # straight from this repository. They are pure Python with no build step, so they are copied in
   # rather than built with hatchling (which the SDK does not have).
   - name: gloxi
     buildsystem: simple
@@ -107,10 +136,15 @@ modules:
         SITE="$(python3 -c 'import sysconfig; print(sysconfig.get_path("purelib", vars={"base": "/app"}))')"
         && mkdir -p "${SITE}"
         && cp -r gloxi/src/gloxi privacy-gateway/src/privacy_gateway herkos/src/herkos
-        mcp-files/src/vilna_mcp_files "${SITE}/"
+        mcp-files/src/vilna_mcp_files mcp-settings/src/vilna_mcp_settings "${SITE}/"
         && rm -rf "${SITE}"/*/__pycache__ "${SITE}"/*/*/__pycache__
         && python3 -m compileall -q "${SITE}/gloxi" "${SITE}/privacy_gateway" "${SITE}/herkos"
-        "${SITE}/vilna_mcp_files"
+        "${SITE}/vilna_mcp_files" "${SITE}/vilna_mcp_settings"
+      # The night light keys, which the GNOME runtime has no schema for.
+      - >
+        install -Dm644 mcp-settings/data/org.gnome.settings-daemon.plugins.color.gschema.xml
+        -t "${FLATPAK_DEST}/share/glib-2.0/schemas"
+      - glib-compile-schemas --strict "${FLATPAK_DEST}/share/glib-2.0/schemas"
       - install -Dm755 gloxi/flatpak/gloxi-gtk "${FLATPAK_DEST}/bin/gloxi-gtk"
       - install -Dm755 gloxi/flatpak/gloxi "${FLATPAK_DEST}/bin/gloxi"
       - install -Dm644 gloxi/data/io.github.stdenis1980.Gloxi.desktop -t "${FLATPAK_DEST}/share/applications"
@@ -137,4 +171,8 @@ modules:
       - type: dir
         path: ../../mcp/files
         dest: mcp-files
+        skip: [".venv", "__pycache__"]
+      - type: dir
+        path: ../../mcp/settings
+        dest: mcp-settings
         skip: [".venv", "__pycache__"]

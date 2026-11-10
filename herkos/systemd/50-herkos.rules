@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // The system Herkos (user herkos) may start and stop its tool units for
 // people (uid 1000-59999), and nothing else in systemd. It never gets to
-// start a unit of its choice: that would be as good as root.
+// start a unit of its choice: that would be as good as root. One of the
+// units, vilna-mcp-gloxi-network@, runs as root and can only open or close
+// the internet for that person's Gloxi (ADR 0025).
 polkit.addRule(function (action, subject) {
     if (subject.user !== "herkos") {
         return polkit.Result.NOT_HANDLED;
@@ -10,7 +12,7 @@ polkit.addRule(function (action, subject) {
         return polkit.Result.NO;
     }
     var verb = action.lookup("verb");
-    var m = /^vilna-mcp-(files|backup|ext-[a-z0-9][a-z0-9-]*)@([0-9]+)\.service$/.exec(action.lookup("unit") || "");
+    var m = /^vilna-mcp-(files|backup|settings|calendar|gloxi-network|ext-[a-z0-9][a-z0-9-]*)@([0-9]+)\.service$/.exec(action.lookup("unit") || "");
     if (m && (verb === "start" || verb === "stop")) {
         var uid = parseInt(m[2], 10);
         if (uid >= 1000 && uid < 60000) {

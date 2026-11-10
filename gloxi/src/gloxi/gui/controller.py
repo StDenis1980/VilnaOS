@@ -35,7 +35,7 @@ from gloxi.engine import (
 )
 from gloxi.feedback import FeedbackTalk, wants_feedback
 from gloxi.llm import ModelError, ModelUnavailable
-from gloxi.router import CloudNotAllowed, Route, Router
+from gloxi.router import CloudNotAllowed, NetworkRefused, Route, Router
 
 # Runs a callable on a worker; replaced by a synchronous runner in tests.
 Runner = Callable[[Callable[[], None]], None]
@@ -226,6 +226,25 @@ class ChatController:
         if not self.busy:
             self.conversation.reset()
 
+    # -- the model switcher and the header (the same calls as RemoteController) ---
+
+    def choices(self) -> list[ModelChoice]:
+        return model_choices(self.conversation.router)
+
+    def current_choice(self) -> str:
+        return current_choice(self.conversation.router)
+
+    def set_mode(self, mode: str) -> bool:
+        """Pick auto, local or cloud; False if the cloud is off or the mode unknown."""
+        try:
+            self.conversation.router.set_mode(mode)
+        except (CloudNotAllowed, ValueError):
+            return False
+        return True
+
+    def cloud_status(self) -> str:
+        return cloud_status(self.conversation)
+
     def _stream(self, text: str, route: Route) -> None:
         try:
             for piece in self.conversation.ask(text, route):
@@ -239,6 +258,10 @@ class ChatController:
                 self.view.show_error(_("Cannot reach the cloud model."))
         except ModelError as exc:
             self.view.show_error(_("The model returned an error: {error}").format(error=exc))
+        except NetworkRefused as exc:
+            self.view.show_error(str(exc))
+        except CloudNotAllowed:
+            self.view.show_error(_("The cloud is turned off in the settings."))
         finally:
             self.view.finish_answer()
             self.busy = False

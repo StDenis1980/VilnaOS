@@ -121,6 +121,12 @@ TARBALLS: dict[str, Tarball] = {
     "vilna-mcp-files": Tarball(
         "mcp/files", pyproject_version("mcp/files"), extra=(("mcp/LICENSE", "LICENSE"),)
     ),
+    "vilna-mcp-settings": Tarball(
+        "mcp/settings", pyproject_version("mcp/settings"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
+    "vilna-mcp-calendar": Tarball(
+        "mcp/calendar", pyproject_version("mcp/calendar"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
     "python-vilna-privacy-gateway": Tarball(
         "privacy-gateway", pyproject_version("privacy-gateway")
     ),

@@ -35,21 +35,37 @@ from herkos.mitos import Journal, JournalError, digest, read_records
 from herkos.pins import PinStore
 from herkos.policy import Assessment, SessionState, assess
 from herkos.programs import ProgramStore
-from herkos.request import ActionRequest, parse_request
+from herkos.request import ActionRequest, RequestError, parse_request
 from herkos.risk import Level
 from herkos.tools import ToolError, ToolRegistry
 
 JOURNAL_MAX_RESOURCES = 50
 
 
+UNDO_ARGUMENTS_MAX = 4096  # bytes of JSON (ADR 0023, section 3)
+
+
 def undo_info(request: ActionRequest, op: Operation, result: Any) -> dict | None:
-    """What Mitos needs to undo a change later: the tool's backup id and the file."""
+    """What Mitos needs to undo a change later.
+
+    Either the files tool's backup id and the file, or (ADR 0023, section 3)
+    the arguments the tool itself gave for its ``restore`` operation, such as
+    a setting and the value it had before.
+    """
     if not op.undoable or not isinstance(result, dict):
         return None
     backup_id = result.get("backup_id")
     path = request.arguments.get(op.resource_args[0]) if op.resource_args else None
     if isinstance(backup_id, str) and backup_id.isalnum() and isinstance(path, str):
         return {"backup_id": backup_id, "path": posixpath.normpath(path)}
+    arguments = result.get("undo_arguments")
+    if isinstance(arguments, dict) and arguments:
+        try:
+            size = len(json.dumps(arguments, ensure_ascii=False).encode())
+        except (TypeError, ValueError):
+            return None
+        if size <= UNDO_ARGUMENTS_MAX:
+            return {"arguments": arguments}
     return None
 
 
@@ -532,15 +548,26 @@ class Gate:
                     undo = data.get("undo")
         if not tool or not isinstance(undo, dict):
             return Outcome(new_action_id(), False, None, "denied_unknown", "nothing to undo")
-        request = parse_request(
-            {
-                "tool": tool,
-                "operation": "restore",
-                "resources": [Path(undo["path"]).as_uri()],
-                "reason": f"Undo action {action_id}",
-                "arguments": {"path": undo["path"], "backup_id": undo["backup_id"]},
-            }
-        )
+        if isinstance(undo.get("arguments"), dict):
+            # A change the tool can put back itself (ADR 0023, section 3).
+            resources, arguments = [], undo["arguments"]
+        elif isinstance(undo.get("path"), str) and isinstance(undo.get("backup_id"), str):
+            resources = [Path(undo["path"]).as_uri()]
+            arguments = {"path": undo["path"], "backup_id": undo["backup_id"]}
+        else:
+            return Outcome(new_action_id(), False, None, "denied_unknown", "nothing to undo")
+        try:
+            request = parse_request(
+                {
+                    "tool": tool,
+                    "operation": "restore",
+                    "resources": resources,
+                    "reason": f"Undo action {action_id}",
+                    "arguments": arguments,
+                }
+            )
+        except RequestError:
+            return Outcome(new_action_id(), False, None, "denied_unknown", "nothing to undo")
         return self.handle(request, session)
 
     @staticmethod

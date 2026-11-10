@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# A person added or removed (installer, GNOME Settings, useradd): run
+# vilna-people-sync again.
+[Unit]
+Description=Watch /etc/passwd for people to give a Gloxi
+
+[Path]
+PathChanged=/etc/passwd
+
+[Install]
+WantedBy=paths.target
