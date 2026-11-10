@@ -84,6 +84,33 @@ FIRST_QUESTION = (
     "Which languages do you write in? I will add their keyboard layouts too, for example "
     "Ukrainian and English."
 )
+# A step's first question is fixed text when it needs no data: the person gets
+# it at once, and the model has one round less to spend a minute or two on
+# (a 4B model on a CPU) and one less chance to ask "shall we go on?".
+NETWORK_QUESTION = (
+    "Shall we connect to a network now? It is not needed: everything for installing is "
+    "already on the USB stick. Name your Wi-Fi network, or say that we go on without a network."
+)
+DISK_QUESTION = (
+    "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; "
+    "the other way is your own layout in the partition editor."
+)
+KEEP_KEY = (
+    "Keep the recovery key safe: without it nobody, not even you, can open the disk if "
+    "something in this computer changes."
+)
+USER_QUESTION = (
+    "What is your name? From it I will suggest a login name and a name for the computer."
+)
+TIME_QUESTION = (
+    "I suggest the time zone {timezone} and the date and number formats of {region}. Is "
+    "that right? If not, name your city or country."
+)
+PRIVACY_TEXT = (
+    "Gloxi works right on this computer, and what you tell it stays here. A cloud model is "
+    "off now; you can choose it after the first login, and then the privacy gateway hides "
+    "names and numbers before anything leaves the computer. Shall we go on?"
+)
 WAKING = (
     "Gloxi is waking up… The first start from the USB stick can take a few minutes. "
     "You can also go on without the assistant."
@@ -132,6 +159,12 @@ SECTIONS = {
 TEXTS = (
     INTRO,
     FIRST_QUESTION,
+    NETWORK_QUESTION,
+    DISK_QUESTION,
+    KEEP_KEY,
+    USER_QUESTION,
+    TIME_QUESTION,
+    PRIVACY_TEXT,
     WAKING,
     NO_MODEL,
     MODEL_FAILED,
@@ -346,6 +379,18 @@ LOCAL_TOOLS = [
     },
 ]
 EXTERNAL = frozenset({"disks_survey", "network_scan"})
+# What the installer tells the model when the step changed under it.
+MOVED_ON = (
+    "The previous step is saved. Start this step now: ask its question. Do not ask whether "
+    "to go on."
+)
+CHANGING = (
+    "The person pressed «Change» on this part of the plan to change it. Ask what they want instead."
+)
+AFTER_SECRET = (
+    "The person has just done this in the installer window themselves; "
+    "do not ask for it again. Go on with the current step."
+)
 
 
 # --- the installer's MCP server ------------------------------------------------------
@@ -624,6 +669,10 @@ class Conversation:
             return plan.get("confirmed_by_user") is True
         return False
 
+    def _encrypted(self) -> bool:
+        enc = (self.plan.get("disk") or {}).get("encryption") or {}
+        return enc.get("method") in ("tpm2", "passphrase")
+
     def _applies(self, key: str) -> bool:
         """Old files (6) and old encrypted data (7) only when the chosen disk has them."""
         disk = self.plan.get("disk") or {}
@@ -677,20 +726,40 @@ class Conversation:
         """Go on without a new message: after a protected field, or «Change» in the plan."""
         self.refresh()
         self._fetched.clear()
-        self._note = (
-            "The person has just done this in the installer window themselves; "
-            "do not ask for it again. Go on with the current step."
-        )
-        try:
-            return self._answer()
-        finally:
-            self._note = ""
+        question = self.question(self.current())
+        if question:
+            self.history.append({"role": "assistant", "content": question})
+            return self._reply(question)
+        self._note = CHANGING if self.state.focus else AFTER_SECRET
+        return self._answer()
+
+    def question(self, step: Step) -> str | None:
+        """The step's first question as fixed text, or None when only the model can ask it."""
+        key = step.key
+        if key == "languages":
+            return self.texts(FIRST_QUESTION)
+        if key == "network":
+            return self.texts(NETWORK_QUESTION)
+        if key == "disk":
+            return self.texts(DISK_QUESTION)
+        if key == "user":
+            return self.texts(USER_QUESTION)
+        if key == "time":
+            suggested = self._suggested_time()
+            names = {lang.locale: lang.name for lang in start.LANGUAGES}
+            region = names.get(suggested["region"], suggested["region"].split(".")[0])
+            return self.texts(TIME_QUESTION).format(timezone=suggested["timezone"], region=region)
+        if key == "privacy":
+            return self.texts(PRIVACY_TEXT)
+        return None
 
     def _answer(self) -> Reply:
         try:
             answer = self._turn()
         except (ModelError, ToolsError):
             return self._reply(self.texts(MODEL_FAILED), failed=True)
+        finally:
+            self._note = ""
         self.history.append({"role": "assistant", "content": answer})
         return self._reply(answer)
 
@@ -714,6 +783,16 @@ class Conversation:
                 exchange.append(
                     {"role": "tool", "tool_call_id": call.get("id", ""), "content": result}
                 )
+            after = self.current()
+            if after.key != step.key:
+                # A new step: its fixed question if it has one, or the model asks it.
+                question = self.question(after)
+                if question:
+                    said = [reply.text.strip()] if reply.text.strip() else []
+                    if step.key == "encryption" and self._encrypted():
+                        said.append(self.texts(KEEP_KEY))
+                    return "\n\n".join([*said, question])
+                self._note = MOVED_ON
         # Out of rounds: say what was done, the plan on the right shows the rest.
         return reply.text.strip() or self.texts(MODEL_FAILED)
 

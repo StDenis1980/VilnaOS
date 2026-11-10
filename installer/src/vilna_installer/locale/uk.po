@@ -149,3 +149,21 @@ msgstr "Приватність"
 
 msgid "Gloxi is waking up… The first start from the USB stick can take a few minutes. You can also go on without the assistant."
 msgstr "Gloxi прокидається… Перший запуск із флешки може тривати кілька хвилин. Можна й продовжити без асистента."
+
+msgid "Shall we connect to a network now? It is not needed: everything for installing is already on the USB stick. Name your Wi-Fi network, or say that we go on without a network."
+msgstr "Підключимося до мережі зараз? Це не обов'язково: усе для встановлення вже є на флешці. Назвіть свою мережу Wi-Fi або скажіть, що продовжимо без мережі."
+
+msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
+msgstr "Що зробимо з диском? Раджу стерти весь диск і встановити Vilna; інший спосіб — власна розмітка в редакторі розділів."
+
+msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
+msgstr "Збережіть ключ відновлення в надійному місці: без нього ніхто, навіть ви, не відкриє диск, якщо в комп'ютері щось зміниться."
+
+msgid "What is your name? From it I will suggest a login name and a name for the computer."
+msgstr "Як вас звати? З імені я запропоную ім'я для входу й назву комп'ютера."
+
+msgid "I suggest the time zone {timezone} and the date and number formats of {region}. Is that right? If not, name your city or country."
+msgstr "Пропоную часовий пояс {timezone} і формати дат і чисел за мовою «{region}». Так? Якщо ні, назвіть своє місто або країну."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. Shall we go on?"
+msgstr "Gloxi працює просто на цьому комп'ютері, і те, що ви йому кажете, лишається тут. Хмарна модель зараз вимкнена; її можна обрати після першого входу, і тоді шлюз приватності приховає імена й номери, перш ніж щось вийде за межі комп'ютера. Продовжимо?"
