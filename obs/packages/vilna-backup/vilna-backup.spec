@@ -27,8 +27,10 @@ BuildRequires:  hicolor-icon-theme
 BuildRequires:  python-rpm-macros
 Requires:       python3 >= 3.11
 Requires:       restic >= 0.17
-# secret-tool keeps the repository password in GNOME Keyring.
-Requires:       /usr/bin/secret-tool
+# secret-tool keeps the repository password in GNOME Keyring. Named as a
+# package: OBS cannot resolve the file path /usr/bin/secret-tool when it
+# builds images, so Vilna and Vilna-Live were unresolvable.
+Requires:       secret-tool
 # The Backups window.
 Requires:       python3-gobject
 Requires:       typelib(Adw) = 1
