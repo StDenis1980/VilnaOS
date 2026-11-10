@@ -72,8 +72,34 @@ chmod 0644 /etc/polkit-1/rules.d/49-vilna-live.rules
 # live user: vilna-llm.service (enabled by the Vilna presets above) wants
 # its key, which only the group gloxi may read (ADR 0025).
 usermod --append --groups gloxi live
-systemctl is-enabled vilna-llm.service
 test -x /usr/bin/vilna-mcp-installer
+# But not at boot: on a live system the model (~2.5 GB) is read from the
+# USB stick, and while it loads every other read waits. In the VM test of
+# Build2.2 (2026-11-10) gnome-shell hung on the disk for minutes, GDM
+# gave up the automatic login ("Session never registered") and showed a
+# login screen the passwordless live user cannot pass. So here the model
+# starts once the live session is up (the autostart entry below), and
+# reads at idle I/O priority, after the desktop and the installer.
+systemctl disable vilna-llm.service
+install -d /etc/systemd/system/vilna-llm.service.d
+cat >/etc/systemd/system/vilna-llm.service.d/50-vilna-live.conf <<'LLM'
+# Vilna live image only (obs/images/Vilna-Live/config.sh)
+[Service]
+IOSchedulingClass=idle
+Nice=10
+LLM
+
+# Plymouth hands the screen over to GDM without falling back to text:
+# in the VM test of Build2.2 boot finished after the live session had
+# started, and "plymouth quit" put the boot log on the screen over the
+# desktop until a VT switch. GDM itself quits Plymouth this way.
+install -d /etc/systemd/system/plymouth-quit.service.d
+cat >/etc/systemd/system/plymouth-quit.service.d/50-vilna-live.conf <<'PLY'
+# Vilna live image only (obs/images/Vilna-Live/config.sh)
+[Service]
+ExecStart=
+ExecStart=-/usr/bin/plymouth quit --retain-splash
+PLY
 
 # GDM logs "live" in at once, without GNOME Initial Setup (the installer
 # asks the language itself). openSUSE's GDM reads the autologin user
@@ -101,6 +127,15 @@ echo yes >"$home/.config/gnome-initial-setup-done"
 desktop=/usr/share/applications/io.github.stdenis1980.VilnaInstaller.desktop
 test -e "$desktop"
 cp "$desktop" "$home/.config/autostart/"
+# The polkit rule above lets the active live user start a system service.
+cat >"$home/.config/autostart/vilna-live-model.desktop" <<'MODEL'
+[Desktop Entry]
+Type=Application
+Name=Vilna Live: local model
+Exec=systemctl start --no-block vilna-llm.service
+NoDisplay=true
+X-GNOME-Autostart-Phase=Application
+MODEL
 chown -R live:live "$home/.config"
 # GNOME opens the Activities overview at login, and the installer sat
 # under it as a thumbnail until Esc (VM test of 2026-11-09). A small

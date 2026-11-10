@@ -46,7 +46,7 @@
       mediacheck="false"
       volid="VILNA_LIVE"
       publisher="Vilna"
-      kernelcmdline="quiet splash loglevel=3 rd.udev.log_level=3 security=selinux selinux=1 enforcing=0"
+      kernelcmdline="quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false rd.systemd.show_status=false security=selinux selinux=1 enforcing=0"
     >
       <!-- The menu stays hidden for 3 seconds: Esc (or any arrow key)
            shows it, with KIWI's failsafe entry. No console attribute:
