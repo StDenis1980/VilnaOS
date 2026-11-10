@@ -28,3 +28,7 @@ enable vilna-people-sync.service
 enable vilna-people-sync.path
 enable vilna-llm.service
 enable vilna-flatpak-defaults.service
+# A new person's home: useradd makes it a btrfs subvolume (ADR 0026), but
+# under SELinux cannot give it to the person; vilna-home-setup does.
+enable vilna-home-setup.path
+enable vilna-home-setup.service
