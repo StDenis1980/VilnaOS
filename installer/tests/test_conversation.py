@@ -263,14 +263,49 @@ def test_when_the_model_fails_the_person_can_go_on_without_it(plan_path):
         tools.close()
 
 
-def test_no_model_means_no_conversation(plan_path):
-    class Gone(conv.LocalModel):
-        def available(self):
-            return False
+class Waking:
+    """A model that answers after ``after`` checks."""
 
-    conversation, close = conv.start_conversation(plan_path, demo="empty", model=Gone())
+    def __init__(self, after):
+        self.after, self.checks = after, 0
+
+    def available(self):
+        self.checks += 1
+        return self.checks > self.after
+
+
+def test_the_conversation_waits_for_a_model_still_starting():
+    slept = []
+    model = Waking(after=3)
+    assert conv.wait_ready(model, timeout=60, interval=3, failed=lambda: False, sleep=slept.append)
+    assert slept == [3, 3, 3]
+
+
+def test_waiting_ends_at_the_timeout_or_when_the_service_failed():
+    slept = []
+    assert not conv.wait_ready(
+        Waking(after=99), timeout=9, interval=3, failed=lambda: False, sleep=slept.append
+    )
+    assert slept == [3, 3, 3]
+    assert not conv.wait_ready(Waking(after=99), failed=lambda: True, sleep=slept.append)
+    assert not conv.wait_ready(
+        Waking(after=99), stopped=lambda: True, failed=lambda: False, sleep=slept.append
+    )
+
+
+def test_the_key_made_after_the_installer_started_is_read(tmp_path):
+    key = tmp_path / "key"
+    model = conv.LocalModel("http://127.0.0.1:9/v1", key)
+    assert model.key == ""
+    key.write_text("abc\n")
+    assert not model.available()  # nothing listens; the key is read anyway
+    assert model.key == "abc"
+
+
+def test_start_conversation_does_not_wait_for_the_model(plan_path):
+    conversation, close = conv.start_conversation(plan_path, demo="empty", model=Waking(99))
     close()
-    assert conversation is None
+    assert conversation.current().key == "intro"
 
 
 def test_other_languages_get_english_from_gloxi(tmp_path):

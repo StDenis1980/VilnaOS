@@ -146,3 +146,6 @@ msgstr "Час і регіон"
 
 msgid "Privacy"
 msgstr "Приватність"
+
+msgid "Gloxi is waking up… The first start from the USB stick can take a few minutes. You can also go on without the assistant."
+msgstr "Gloxi прокидається… Перший запуск із флешки може тривати кілька хвилин. Можна й продовжити без асистента."
