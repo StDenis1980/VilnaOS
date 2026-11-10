@@ -29,6 +29,7 @@ def used_messages() -> set[str]:
         "org.vilna.mcp.backup",
         "org.vilna.mcp.settings",
         "org.vilna.mcp.calendar",
+        "org.vilna.mcp.system",
         "org.vilna.gloxi.network",
     ):
         found |= {op.summary for op in ManifestRegistry.builtin().get(tool).operations.values()}

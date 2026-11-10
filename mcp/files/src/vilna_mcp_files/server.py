@@ -81,7 +81,20 @@ TOOLS = [
         readOnlyHint=False,
         destructiveHint=False,
     ),
+    _tool(
+        "restore_snapshot",
+        "Undo a change from a Mitos snapshot of the home: put files back as they were",
+        {
+            "pre": {"type": "integer", "minimum": 1, "description": "Snapshot before the change"},
+            "post": {"type": "integer", "minimum": 1, "description": "Snapshot right after it"},
+            "paths": {"type": "array", "items": _PATH, "description": "Files the change touched"},
+        },
+        ["pre", "paths"],
+        readOnlyHint=False,
+        destructiveHint=False,
+    ),
 ]
+_KINDS = {"string": "a string", "integer": "an integer", "array": "a list of strings"}
 _SCHEMAS = {t["name"]: t["inputSchema"] for t in TOOLS}
 
 
@@ -96,8 +109,15 @@ def check_arguments(name: str, args: Any) -> dict:
     if missing:
         raise FilesError(f"missing arguments: {missing}")
     for k, v in args.items():
-        if not isinstance(v, str):
-            raise FilesError(f"'{k}' must be a string")
+        kind = schema["properties"][k].get("type", "string")
+        if kind == "integer":
+            ok = isinstance(v, int) and not isinstance(v, bool)
+        elif kind == "array":
+            ok = isinstance(v, list) and all(isinstance(i, str) for i in v)
+        else:
+            ok = isinstance(v, str)
+        if not ok:
+            raise FilesError(f"'{k}' must be {_KINDS[kind]}")
     return args
 
 
@@ -112,6 +132,7 @@ class Server:
             "write": files.write,
             "delete": files.delete,
             "restore": files.restore,
+            "restore_snapshot": files.restore_snapshot,
         }
 
     def handle(self, msg: Any) -> dict | None:

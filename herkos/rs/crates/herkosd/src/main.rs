@@ -20,7 +20,9 @@ mod passwd;
 mod pins;
 mod programs;
 mod rpc;
+mod snapshots;
 mod system;
+mod systool;
 mod units;
 
 use std::fs;
@@ -37,7 +39,7 @@ use serde_json::Value;
 /// A longer message closes the connection (protocol.md).
 const MAX_LINE: usize = 1024 * 1024;
 
-const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd ext-unit MANIFEST.toml\n       herkosd ext-exec PROGRAM ARGS-FILE\n       herkosd --version";
+const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd mitos-setup [--system-config PATH] [--passwd PATH]\n       herkosd system-tool UID\n       herkosd ext-unit MANIFEST.toml\n       herkosd ext-exec PROGRAM ARGS-FILE\n       herkosd --version";
 
 fn default_socket() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")
@@ -367,6 +369,35 @@ fn run_system(args: &[String]) -> Result<(), String> {
     Ok(())
 }
 
+fn run_mitos_setup(args: &[String]) -> Result<(), String> {
+    let mut system_config = PathBuf::from(system::SYSTEM_CONFIG);
+    let mut passwd_path = PathBuf::from("/etc/passwd");
+    let mut rest = args.iter();
+    while let Some(a) = rest.next() {
+        match a.as_str() {
+            "--system-config" => system_config = absolute(a, rest.next())?,
+            "--passwd" => passwd_path = absolute(a, rest.next())?,
+            _ => return Err(format!("unknown argument {a}\n{USAGE}")),
+        }
+    }
+    let accounts = passwd::load(&passwd_path)?;
+    let people = system::load_system(&system_config, &accounts)?;
+    let snapper = ["/usr/bin/snapper", "/usr/sbin/snapper"]
+        .into_iter()
+        .map(PathBuf::from)
+        .find(|p| p.is_file());
+    let Some(snapper) = snapper else {
+        // Not an error: without snapper, herkosd works as before, without snapshots.
+        eprintln!("herkosd mitos-setup: snapper is not installed; no snapshots of homes");
+        return Ok(());
+    };
+    let homes: Vec<passwd::Account> = people.people.into_iter().map(|p| p.account).collect();
+    for line in snapshots::setup(&homes, &snapper, Path::new(system::SNAPPER_CONFIGS)) {
+        eprintln!("herkosd mitos-setup: {line}");
+    }
+    Ok(())
+}
+
 fn run(args: &[String]) -> Result<(), String> {
     match args.first().map(String::as_str) {
         Some("--version") => {
@@ -387,6 +418,10 @@ fn run(args: &[String]) -> Result<(), String> {
             Ok(())
         }
         Some("system") => run_system(&args[1..]),
+        // As root, before herkosd starts: snapper configs of people's homes (ADR 0026).
+        Some("mitos-setup") => run_mitos_setup(&args[1..]),
+        // As root, for one person: the system's saved states (vilna-mcp-system@.service).
+        Some("system-tool") => systool::main(&args[1..]),
         // In a vilna-mcp-ext-<name>@<uid> unit, as the person (ADR 0017).
         Some("ext-exec") => match (args.get(1), args.get(2), args.len()) {
             (Some(program), Some(file), 3) if Path::new(file).is_absolute() => {

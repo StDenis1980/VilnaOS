@@ -35,6 +35,9 @@ Recommends:     vilna-mcp-files
 Recommends:     vilna-mcp-backup
 Recommends:     vilna-mcp-settings
 Recommends:     vilna-mcp-calendar
+# Mitos snapshots of people's homes and the system's saved states (ADR 0026).
+Recommends:     snapper
+Recommends:     transactional-update
 %{?systemd_ordering}
 
 %description
@@ -102,6 +105,7 @@ install -Dm0644 systemd/vilna-mcp-files@.service %{buildroot}%{_unitdir}/vilna-m
 install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-mcp-backup@.service
 install -Dm0644 systemd/vilna-mcp-settings@.service %{buildroot}%{_unitdir}/vilna-mcp-settings@.service
 install -Dm0644 systemd/vilna-mcp-calendar@.service %{buildroot}%{_unitdir}/vilna-mcp-calendar@.service
+install -Dm0644 systemd/vilna-mcp-system@.service %{buildroot}%{_unitdir}/vilna-mcp-system@.service
 install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos.rules
 install -Dm0644 systemd/herkos.sysusers %{buildroot}%{_sysusersdir}/herkos.conf
 install -Dm0644 systemd/system.toml %{buildroot}%{_sysconfdir}/herkos/system.toml
@@ -154,6 +158,7 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{_unitdir}/vilna-mcp-backup@.service
 %{_unitdir}/vilna-mcp-settings@.service
 %{_unitdir}/vilna-mcp-calendar@.service
+%{_unitdir}/vilna-mcp-system@.service
 %{_datadir}/polkit-1/rules.d/50-herkos.rules
 %{_sysusersdir}/herkos.conf
 %dir %{_sysconfdir}/herkos

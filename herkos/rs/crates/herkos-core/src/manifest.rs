@@ -48,7 +48,7 @@ const MAX_FIXED: usize = 16;
 const MAX_ROOT_FLAGS: usize = 4;
 
 /// The manifests shipped with Herkos: the same files Herkos-lite reads.
-const BUILTIN: [(&str, &str); 5] = [
+const BUILTIN: [(&str, &str); 6] = [
     (
         "org.vilna.gloxi.network.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.gloxi.network.toml"),
@@ -68,6 +68,10 @@ const BUILTIN: [(&str, &str); 5] = [
     (
         "org.vilna.mcp.settings.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.settings.toml"),
+    ),
+    (
+        "org.vilna.mcp.system.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.system.toml"),
     ),
 ];
 

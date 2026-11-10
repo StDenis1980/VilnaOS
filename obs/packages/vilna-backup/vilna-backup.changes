@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 10 09:20:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Folders named .snapshots (Mitos snapshots of the home, ADR 0026)
+  never go into backups
+
+-------------------------------------------------------------------
 Tue Nov 10 09:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Require the secret-tool package instead of /usr/bin/secret-tool:

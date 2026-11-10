@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "system" tool (herkosd system-tool, ADR 0026, section 5):
+# the saved states of the whole system that transactional-update makes
+# (snapper config `root`), and a return to one of them.
+#
+# A return changes what the whole computer starts after a restart, for
+# everybody on it. It loses nothing (the state it replaces stays saved, and
+# `restore` brings it back), but it is never a small step, so it is R4: asked
+# every time, with the exact state shown. Only an administrator of the
+# computer (group wheel) may do it; the tool checks that itself.
+tool = "org.vilna.mcp.system"
+description = "Saved states of the system, and a return to one of them"
+
+# Only the system Herkos starts it: vilna-mcp-system@<uid>, as root, because
+# transactional-update needs root. Herkos-lite has no module to run, so in
+# the Flatpak these operations are not available.
+[launch]
+program = "vilna-mcp-system"
+args = []
+
+[operations.list_snapshots]
+level = "R0"
+summary = "See the saved states of the system"
+
+[operations.rollback]
+level = "R4"
+summary = "Return the whole system to a saved state, after a restart"
+undoable = true
+
+[operations.restore]
+level = "R4"
+summary = "Undo a return of the system to a saved state"
+undoable = true
