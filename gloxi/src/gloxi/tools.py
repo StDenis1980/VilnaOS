@@ -34,8 +34,9 @@ from typing import Any, Protocol
 
 FILES_TOOL = "org.vilna.mcp.files"
 # Built-in tools Gloxi does not turn into generic functions: files has its own
-# (files_*), backup has its own flow in Gloxi and is not offered to the model.
-NOT_GENERIC = frozenset({FILES_TOOL, "org.vilna.mcp.backup"})
+# (files_*), backup has its own flow in Gloxi and is not offered to the model,
+# and the model never asks for the internet itself (gloxi.network, ADR 0025).
+NOT_GENERIC = frozenset({FILES_TOOL, "org.vilna.mcp.backup", "org.vilna.gloxi.network"})
 # Functions of other programs offered at once (ADR 0017, step 5). Small local
 # models choose worse among many functions; measure on gloxi-bench before raising.
 MAX_PROGRAM_FUNCTIONS = 8

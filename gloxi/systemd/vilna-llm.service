@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The local model of this computer, shared by every person's Gloxi
+# (ADR 0025, point 4): one llama-server, so 8 GB of RAM hold one model.
+# It listens only on 127.0.0.1 and wants a key, which only the group gloxi
+# can read.
+[Unit]
+Description=Local model for Gloxi (llama-server)
+Documentation=https://github.com/StDenis1980/VilnaOS/blob/main/docs/adr/0025-gloxi-system-service.md
+# The weights come from vilna-model-default (or a download, ADR 0025 step 5).
+ConditionPathExists=/usr/share/vilna/models/default.gguf
+
+[Service]
+Type=simple
+User=vilna-llm
+Group=gloxi
+StateDirectory=vilna-llm
+StateDirectoryMode=0750
+UMask=0027
+# One key for as long as the computer lives: every Gloxi reads it when it starts.
+ExecStartPre=/bin/sh -c 'test -s "$STATE_DIRECTORY/key" || (umask 0027; head -c 32 /dev/urandom | od -An -tx1 | tr -d " \\n" > "$STATE_DIRECTORY/key")'
+ExecStart=/usr/bin/llama-server --model /usr/share/vilna/models/default.gguf \
+  --host 127.0.0.1 --port 8080 --api-key-file ${STATE_DIRECTORY}/key \
+  --ctx-size 4096 --jinja --chat-template-kwargs '{"enable_thinking":false}'
+WorkingDirectory=/usr/share/vilna/models
+Restart=on-failure
+RestartSec=5
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

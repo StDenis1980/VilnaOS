@@ -53,6 +53,18 @@ class CloudNotAllowed(Exception):
     """The user asked for the cloud, but it is off or not configured."""
 
 
+class NetworkRefused(CloudNotAllowed):
+    """The cloud is on, but Gloxi may not reach the internet (ADR 0025, section 3).
+
+    ``str(exc)`` is already in the person's language.
+    """
+
+
+# Opens the way to the internet before the first message to the cloud, or
+# raises NetworkRefused. The system service asks Herkos (gloxi.network).
+NetworkGate = Callable[[], None]
+
+
 @dataclass(frozen=True)
 class Route:
     target: Target
@@ -69,8 +81,10 @@ class Router:
         policy: RouterPolicy,
         *,
         guard_factory: GuardFactory | None = None,
+        network: NetworkGate | None = None,
     ) -> None:
         self.local = local
+        self.network = network
         self.cloud = cloud
         self.policy = policy
         self._guard_factory = guard_factory
@@ -137,6 +151,8 @@ class Router:
             return
         if not self.cloud_enabled:
             raise CloudNotAllowed("the cloud is turned off")
+        if self.network is not None:
+            self.network()
         if self.guard is None:
             yield from self.cloud.stream(messages)
             return
