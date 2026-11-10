@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 10 22:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkos-selinux: the rule is optional in herkos.cil, so a policy
+  without one of its types (the OBS build root) leaves it out instead of
+  failing the installation; %post no longer fails when semodule does;
+  owns /usr/share/selinux and /usr/share/selinux/packages (OBS build 66.1)
+
+-------------------------------------------------------------------
 Tue Nov 10 15:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - herkos-agent requires hicolor-icon-theme, which owns the icon
