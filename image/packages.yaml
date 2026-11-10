@@ -56,6 +56,7 @@ vilna:
     # Спільні компоненти
     - {name: vilna-privacy-gateway,        license: Apache-2.0,       status: planned}
     - {name: vilna-mcp-files,              license: Apache-2.0,       status: obs}
+    - {name: vilna-backup,                 license: GPL-3.0-or-later, status: obs}      # копії: вікно «Копії» і таймери, backup/
     - {name: vilna-mcp-settings,           license: Apache-2.0,       status: obs}      # ADR 0023
     - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: obs}      # ADR 0023
     - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}  # ADR 0012

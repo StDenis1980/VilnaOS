@@ -193,6 +193,218 @@ msgstr "Замінити ключі копій"
 msgid "Protect backups after a device was stolen"
 msgstr "Захистити копії після крадіжки пристрою"
 
+# The «Дозволи» window (permissions_window.py, permissions_view.py)
+
+msgid "All"
+msgstr "Усе"
+
+msgid "Allowed, but the tool failed"
+msgstr "Дозволено, але інструмент не впорався"
+
+msgid "Always"
+msgstr "Завжди"
+
+msgid "January"
+msgstr "січня"
+
+msgid "February"
+msgstr "лютого"
+
+msgid "March"
+msgstr "березня"
+
+msgid "April"
+msgstr "квітня"
+
+msgid "May"
+msgstr "травня"
+
+msgid "June"
+msgstr "червня"
+
+msgid "July"
+msgstr "липня"
+
+msgid "August"
+msgstr "серпня"
+
+msgid "September"
+msgstr "вересня"
+
+msgid "October"
+msgstr "жовтня"
+
+msgid "November"
+msgstr "листопада"
+
+msgid "December"
+msgstr "грудня"
+
+msgid "Backups"
+msgstr "Копії"
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "Changes can be undone for 30 days. The journal cannot be altered."
+msgstr "Зміни можна скасувати протягом 30 днів. Записи журналу захищені від зміни."
+
+msgid "Done"
+msgstr "Виконано"
+
+msgid "Done, then undone"
+msgstr "Виконано, потім скасовано"
+
+msgid "Files"
+msgstr "Файли"
+
+msgid "Gloxi asked to {what}"
+msgstr "Gloxi просив {what}"
+
+msgid "Gloxi asks before it changes anything. Here is what you allowed without asking again; take back anything you no longer want."
+msgstr "Gloxi питає, перш ніж щось змінити. Тут видно, що ви дозволили робити без повторного питання; заберіть дозвіл, який вам більше не потрібен."
+
+msgid "Gloxi brought a backup back into a new folder"
+msgstr "Gloxi відновив копію в нову теку"
+
+msgid "Gloxi brought back an earlier version of a file"
+msgstr "Gloxi повернув попередню версію файлу"
+
+msgid "Gloxi changed a file"
+msgstr "Gloxi змінив файл"
+
+msgid "Gloxi changed how often backups are made"
+msgstr "Gloxi змінив, як часто робити копії"
+
+msgid "Gloxi changed what goes into backups"
+msgstr "Gloxi змінив, що входить у копії"
+
+msgid "Gloxi checked the backups"
+msgstr "Gloxi перевірив копії"
+
+msgid "Gloxi created a file"
+msgstr "Gloxi створив файл"
+
+msgid "Gloxi deleted a file"
+msgstr "Gloxi видалив файл"
+
+msgid "Gloxi listed the backups"
+msgstr "Gloxi переглянув список копій"
+
+msgid "Gloxi looked at how much space the folders take"
+msgstr "Gloxi подивився, скільки місця займають теки"
+
+msgid "Gloxi looked into a folder"
+msgstr "Gloxi переглянув теку"
+
+msgid "Gloxi read a file"
+msgstr "Gloxi прочитав файл"
+
+msgid "Gloxi searched files"
+msgstr "Gloxi шукав файли"
+
+msgid "Gloxi started a backup"
+msgstr "Gloxi почав резервну копію"
+
+msgid "Gloxi will ask you again before it does this: {what}."
+msgstr "Gloxi знову питатиме вас, перш ніж зробити це: {what}."
+
+msgid "Gloxi will ask you each time."
+msgstr "Gloxi питатиме вас щоразу."
+
+msgid "Gloxi's reason"
+msgstr "Причина від Gloxi"
+
+msgid "Herkos did not allow it"
+msgstr "Herkos не дозволив"
+
+msgid "Herkos is not answering: {why}"
+msgstr "Herkos не відповідає: {why}"
+
+msgid "Journal"
+msgstr "Журнал"
+
+msgid "No answer recorded"
+msgstr "Відповіді не записано"
+
+msgid "No permissions"
+msgstr "Дозволів немає"
+
+msgid "Nobody answered in time"
+msgstr "Ніхто не відповів вчасно"
+
+msgid "Not allowed at all"
+msgstr "Заборонено завжди"
+
+msgid "Not assessed"
+msgstr "Без оцінки"
+
+msgid "Not undone: you said no."
+msgstr "Не скасовано: ви відмовили."
+
+msgid "Not undone: {why}"
+msgstr "Не скасовано: {why}"
+
+msgid "Nothing here yet"
+msgstr "Тут поки порожньо"
+
+msgid "Permission revoked."
+msgstr "Дозвіл відкликано."
+
+msgid "Permissions"
+msgstr "Дозволи"
+
+msgid "Programs"
+msgstr "Програми"
+
+msgid "Refresh"
+msgstr "Оновити"
+
+msgid "Revoke"
+msgstr "Відкликати"
+
+msgid "Revoke this permission?"
+msgstr "Відкликати цей дозвіл?"
+
+msgid "Risk level {level}"
+msgstr "Рівень ризику {level}"
+
+msgid "There is nothing left to undo for this action."
+msgstr "Для цієї дії вже нічого скасовувати."
+
+msgid "Today"
+msgstr "Сьогодні"
+
+msgid "Undo"
+msgstr "Скасувати"
+
+msgid "Undone. The earlier version is back."
+msgstr "Скасовано. Попередню версію повернуто."
+
+msgid "Until the session ends"
+msgstr "До кінця сеансу"
+
+msgid "What"
+msgstr "Що саме"
+
+msgid "When Gloxi does something for you, it shows up here."
+msgstr "Коли Gloxi щось зробить для вас, це з’явиться тут."
+
+msgid "Yesterday"
+msgstr "Учора"
+
+msgid "You said no"
+msgstr "Ви відмовили"
+
+msgid "{day} {month}"
+msgstr "{day} {month}"
+
+msgid "{how} · in {where}"
+msgstr "{how} · у {where}"
+
+msgid "{name} and {n} more"
+msgstr "{name} і ще {n}"
+
 # Settings (org.vilna.mcp.settings, ADR 0023)
 msgid "See the desktop settings"
 msgstr "Подивитися налаштування стільниці"

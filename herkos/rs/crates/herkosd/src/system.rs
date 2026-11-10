@@ -34,6 +34,7 @@ use crate::config::{Config, Owner};
 use crate::gate::{Answer, Confirmer, Gate, Question, Tools};
 use crate::passwd::{self, Account};
 use crate::rpc;
+use herkos_core::policy::SessionState;
 
 pub const SYSTEM_CONFIG: &str = "/etc/herkos/system.toml";
 pub const CONFIG: &str = "/etc/herkos/config.toml";
@@ -326,15 +327,32 @@ fn connection(stream: UnixStream, system: &System) {
             Ok(gate) => crate::serve_connection(stream, gate),
             Err(e) => eprintln!("herkosd: {}: {e}", person.account.name),
         },
-        Some(Role::Agent(person)) => agent(stream, person.account.uid, &system.agents),
+        Some(Role::Agent(person)) => agent(stream, person, system),
         // Not one of ours: no answer at all.
         None => {}
     }
 }
 
-/// A session agent's connection: it says hello, registers, then answers
-/// `herkos.agent.ask` requests. It cannot ask for actions.
-fn agent(stream: UnixStream, uid: u32, agents: &Agents) {
+/// A connection from the person: their session agent, which says hello,
+/// registers, then answers `herkos.agent.ask` requests, or their «Дозволи»
+/// window, which lists and revokes their permissions, reads their journal
+/// and undoes an action. Neither can ask for actions; Gloxi, a different
+/// user, can do none of this (protocol.md 2).
+fn agent(stream: UnixStream, person: &Person, system: &System) {
+    agent_loop(
+        stream,
+        person.account.uid,
+        &system.agents,
+        &|id: &Value, method: &str, params: &Value| match system.gate(person) {
+            Ok(gate) => person_method(&gate, id, method, params),
+            Err(e) => rpc::error(id, rpc::INTERNAL_ERROR, &e),
+        },
+    );
+}
+
+type PersonMethods<'a> = dyn Fn(&Value, &str, &Value) -> Value + 'a;
+
+fn agent_loop(stream: UnixStream, uid: u32, agents: &Agents, person: &PersonMethods<'_>) {
     let Ok(w) = stream.try_clone() else {
         return;
     };
@@ -405,6 +423,10 @@ fn agent(stream: UnixStream, uid: u32, agents: &Agents) {
                 }
                 rpc::result(&id, json!({"registered": true}))
             }
+            "herkos.permissions" | "herkos.revoke" | "herkos.journal" | "herkos.undo" => {
+                let params = msg.get("params").cloned().unwrap_or(Value::Null);
+                person(&id, method, &params)
+            }
             _ => rpc::error(
                 &id,
                 rpc::METHOD_NOT_FOUND,
@@ -421,6 +443,55 @@ fn agent(stream: UnixStream, uid: u32, agents: &Agents) {
     // Questions still waiting get "no" now, not at their timeout.
     if let Ok(mut p) = pending.lock() {
         p.clear();
+    }
+}
+
+/// Most journal records one `herkos.journal` call returns.
+pub const JOURNAL_MAX: u64 = 1000;
+
+fn is_id(v: Option<&str>) -> Option<&str> {
+    v.filter(|a| !a.is_empty() && a.chars().count() <= 64 && a.chars().all(char::is_alphanumeric))
+}
+
+/// The person's own methods (their «Дозволи» window).
+fn person_method(gate: &Gate, id: &Value, method: &str, params: &Value) -> Value {
+    match method {
+        "herkos.permissions" => rpc::result(id, gate.permissions()),
+        "herkos.revoke" => match is_id(params.get("grant_id").and_then(Value::as_str)) {
+            Some(g) => match gate.revoke(g) {
+                Ok(revoked) => rpc::result(id, json!({ "revoked": revoked })),
+                Err(e) => rpc::error(id, rpc::INTERNAL_ERROR, &e),
+            },
+            None => rpc::error(
+                id,
+                rpc::INVALID_PARAMS,
+                "'grant_id' must be a permission id",
+            ),
+        },
+        "herkos.journal" => {
+            let limit = match params.get("limit") {
+                None => Some(200),
+                Some(v) => v.as_u64().filter(|n| (1..=JOURNAL_MAX).contains(n)),
+            };
+            match limit.and_then(|n| usize::try_from(n).ok()) {
+                Some(n) => rpc::result(id, gate.recent(n)),
+                None => rpc::error(
+                    id,
+                    rpc::INVALID_PARAMS,
+                    &format!("'limit' must be from 1 to {JOURNAL_MAX}"),
+                ),
+            }
+        }
+        "herkos.undo" => match is_id(params.get("action_id").and_then(Value::as_str)) {
+            // A clean session: the person asked, not a model that read something.
+            Some(a) => rpc::result(id, gate.undo(a, &mut SessionState::default()).to_json()),
+            None => rpc::error(id, rpc::INVALID_PARAMS, "'action_id' must be an action id"),
+        },
+        _ => rpc::error(
+            id,
+            rpc::METHOD_NOT_FOUND,
+            &format!("unknown method {method}"),
+        ),
     }
 }
 
@@ -508,7 +579,11 @@ mod tests {
         fn start(agents: &Arc<Agents>) -> FakeAgent {
             let (ours, theirs) = UnixStream::pair().expect("pair");
             let a = Arc::clone(agents);
-            thread::spawn(move || agent(theirs, 1000, &a));
+            thread::spawn(move || {
+                agent_loop(theirs, 1000, &a, &|id, _, _| {
+                    rpc::result(id, json!({"person": true}))
+                })
+            });
             let mut fake = FakeAgent {
                 reader: std::io::BufReader::new(ours.try_clone().expect("clone")),
                 writer: ours,
@@ -545,6 +620,56 @@ mod tests {
                 q
             })
         }
+    }
+
+    #[test]
+    fn the_person_s_own_methods() {
+        let (g, docs) = crate::gate::tests::gate("person-rpc", Answer::Session);
+        let mut s = SessionState::default();
+        let o = g.handle(
+            &crate::gate::tests::files("write", &docs.join("a.txt")),
+            &mut s,
+        );
+        assert!(o.allowed);
+        let id = json!(1);
+        let call = |m: &str, p: Value| person_method(&g, &id, m, &p);
+        let list = call("herkos.permissions", Value::Null);
+        let gid = list["result"]["permissions"][0]["grant_id"].clone();
+        assert_eq!(
+            call("herkos.journal", json!({"limit": 0}))["error"]["code"],
+            rpc::INVALID_PARAMS
+        );
+        assert_eq!(
+            call("herkos.journal", json!({"limit": 5000}))["error"]["code"],
+            rpc::INVALID_PARAMS
+        );
+        let recent = call("herkos.journal", json!({"limit": 2}));
+        assert_eq!(
+            recent["result"]["records"].as_array().map(Vec::len),
+            Some(2)
+        );
+        assert_eq!(
+            call("herkos.revoke", json!({"grant_id": "../x"}))["error"]["code"],
+            rpc::INVALID_PARAMS
+        );
+        assert_eq!(
+            call("herkos.revoke", json!({"grant_id": gid}))["result"]["revoked"],
+            true
+        );
+        assert_eq!(
+            call("herkos.undo", json!({"action_id": ""}))["error"]["code"],
+            rpc::INVALID_PARAMS
+        );
+        let undone = call("herkos.undo", json!({"action_id": o.action_id}));
+        assert_eq!(undone["result"]["code"], "allowed", "{undone}");
+    }
+
+    #[test]
+    fn the_agent_connection_passes_the_person_s_methods_on() {
+        let agents = Arc::new(Agents::default());
+        let mut fake = FakeAgent::start(&agents);
+        fake.send(&json!({"jsonrpc": "2.0", "id": 9, "method": "herkos.permissions"}));
+        assert_eq!(fake.read()["result"]["person"], true);
     }
 
     #[test]

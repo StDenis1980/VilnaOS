@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-backgrounds
-Version:        0.1
+Version:        0.2
 Release:        0
 Summary:        Vilna desktop wallpapers
 License:        GPL-3.0-or-later
@@ -26,6 +26,10 @@ Source11:        vilna-malva-light.jpg
 Source12:        vilna-malva-dark.jpg
 Source13:        vilna-blavet-light.jpg
 Source14:        vilna-blavet-dark.jpg
+# The login screen (GDM): Сонце dark, blurred and darkened, so that white
+# text in the middle stays readable (contrast at least 6.9:1). Made by the
+# Pillow script in the .changes entry of 0.2.
+Source15:       vilna-login.jpg
 BuildArch:      noarch
 
 %description
@@ -33,7 +37,8 @@ The Vilna wallpapers for GNOME: one Petrykivka element on a play of light
 and shadow, each as a light and a dark picture that GNOME switches with
 the style. Сонце, Схід, Тюльпан, Соняшник, Волошка, Мальва and Blavet
 (the wing of the kingfisher, for the first Vilna release). Сонце is the
-default (gnome-branding-Vilna).
+default (gnome-branding-Vilna). vilna-login.jpg is the background of
+the login screen, set by the Vilna GNOME Shell extension.
 
 %prep
 
@@ -55,6 +60,7 @@ install -m 0644 %{SOURCE11} %{buildroot}%{_datadir}/backgrounds/vilna/
 install -m 0644 %{SOURCE12} %{buildroot}%{_datadir}/backgrounds/vilna/
 install -m 0644 %{SOURCE13} %{buildroot}%{_datadir}/backgrounds/vilna/
 install -m 0644 %{SOURCE14} %{buildroot}%{_datadir}/backgrounds/vilna/
+install -m 0644 %{SOURCE15} %{buildroot}%{_datadir}/backgrounds/vilna/
 install -D -m 0644 %{SOURCE0} %{buildroot}%{_datadir}/gnome-background-properties/vilna-backgrounds.xml
 
 %files

@@ -205,7 +205,7 @@ msgstr "Робити резервні копії ваших даних, щоб �
 
 #: src/gloxi/backup_intro.py
 msgid "The Vilna cloud is not open yet in this preview. Choose another place."
-msgstr "Хмара Vilna ще не відкрита в цій попередній версії. Виберіть інше місце."
+msgstr "Vilna хмара ще не відкрита в цій попередній версії. Виберіть інше місце."
 
 #: src/gloxi/backup_intro.py
 msgid "The last step is yours, because it is about keys: run this in a terminal. It shows the recovery key once; write it on paper and keep it away from the computer. Without it, backups cannot be restored if this computer is lost. The first backup starts right after."
@@ -229,7 +229,7 @@ msgstr "Відео"
 
 #: src/gloxi/backup_intro.py
 msgid "Vilna cloud (EU)"
-msgstr "Хмара Vilna (ЄС)"
+msgstr "Vilna хмара (ЄС)"
 
 #: src/gloxi/backup_intro.py
 msgid "We are not talking about backups now."

@@ -19,14 +19,15 @@
 | Пакет | Що містить | Замінює в Aeon |
 | --- | --- | --- |
 | `Vilna-release` | `/usr/lib/os-release` (`NAME="Vilna"`, `ID=vilna`, `ID_LIKE="opensuse-tumbleweed opensuse suse"`, `LOGO=vilna-logo`) | `Aeon-release` (через `Provides: distribution-release`) |
-| `distribution-logos-Vilna` | Іконка `vilna-logo` (звичайна й symbolic) і `/usr/share/pixmaps/distribution-logos/`. **Логотип — тимчасова заглушка** до готового логотипа | `distribution-logos-openSUSE-Aeon` |
+| `distribution-logos-Vilna` | Іконка `vilna-logo` (звичайна й symbolic) і `/usr/share/pixmaps/distribution-logos/`. **Іконка `vilna-logo` — ще тимчасова заглушка**; остаточний логотип для темного тла (`vilna-logo-dark-bg.svg`) уже стоїть на екрані входу | `distribution-logos-openSUSE-Aeon` |
 | `vilna-presets` | `50-vilna.preset`: avahi, samba, openssh вимкнені за замовчуванням; увімкнені `herkosd.socket` і `vilna-flatpak-defaults.service`; пресет користувача вмикає `herkos-agent.service` | Поки що **доповнює** пресети Aeon, а не замінює їх; згодом стане `systemd-presets-branding-Vilna` (див. нижче) |
 | `gloxi` | Gloxi 0.1 preview: команда `gloxi` (чат у терміналі з локальною моделлю). Тарбол робиться з папки [`../gloxi/`](../gloxi/), версія береться з `gloxi/pyproject.toml` | — |
 | `vilna-flatpak-defaults` | Одноразова служба: коли комп'ютер уперше в мережі, ставить з Flathub Firefox, базові програми GNOME і KeePassXC (список — `flatpaks.list`). Якщо не вийшло, пробує при наступному завантаженні | — |
-| `gnome-shell-extension-vilna` | Розширення GNOME Shell Vilna з папки [`../shell-extension/`](../shell-extension/): латинська розкладка в полях паролів, Gloxi поверх усіх вікон, смуга під панель Gloxi. Версія — `version-name` з `metadata.json`. Поки лише встановлюється: увімкнути для всіх і для `gdm` — наступний крок образу | — |
+| `gnome-shell-extension-vilna` | Розширення GNOME Shell Vilna з папки [`../shell-extension/`](../shell-extension/): латинська розкладка в полях паролів, Gloxi поверх усіх вікон, смуга під панель Gloxi, екран входу в кольорах Vilna. Версія — `version-name` з `metadata.json`. Увімкнене для всіх і на екрані входу (`gnome-branding-Vilna`) | — |
 | `python-vilna-privacy-gateway` | Шлюз приватності (`python3-vilna-privacy-gateway`), потрібен Gloxi. Тарбол — з папки [`../privacy-gateway/`](../privacy-gateway/), версія — з її `pyproject.toml` | — |
 | `vilna-software-picks` | Добірка «Рекомендовано Vilna» для GNOME Software (ADR 0012): метадані AppStream і заголовок блоку 10 мовами, генеруються під час збірки з [`picks.toml`](packages/vilna-software-picks/picks.toml). Як додати програму — [`README`](packages/vilna-software-picks/README.md) пакета | — |
 | `plymouth-branding-Vilna` | Екран завантаження Vilna (тема Plymouth `vilna`): мазок замикається в коло, ластівка вилітає, у кутах виростають мотиви в манері петриківки; поле пароля диска в тому самому стилі. Картинки малюються під час збірки з логотипа ([`../image/plymouth/`](../image/plymouth/)), версія — з `image/plymouth/VERSION` | Тему `bgrt` (логотип виробника) |
+| `vilna-backup` | Зашифровані копії ([`../backup/`](../backup/)): команда `vilna-backup`, таймери й вікно «Копії» (`vilna-backup-gui`, значок `vilna-backup`). Тарбол — з папки `backup/`, версія — з її `pyproject.toml` | — |
 
 Пакет `gloxi` збирається з поточного коду `gloxi/`. Коли в Gloxi з'являться нові залежності, системний сервіс чи користувач `gloxi`, треба оновити `packages/gloxi/gloxi.spec`; CI на PR покаже, якщо spec відстав від коду.
 

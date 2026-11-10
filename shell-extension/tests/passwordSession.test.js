@@ -32,8 +32,14 @@ test('password and repeat-password keep the original layout', () => {
 
 test('nothing to restore when the layout never changed', () => {
     const s = new PasswordSession();
-    assert.deepEqual(s.enter(sources, pl, ['us']), {action: 'stay'});
-    assert.deepEqual(s.leave(sources, pl), {action: 'stay'});
+    assert.deepEqual(s.enter(sources, us, ['us']), {action: 'stay'});
+    assert.deepEqual(s.leave(sources, us), {action: 'stay'});
+});
+
+test('Polish switches to English and comes back', () => {
+    const s = new PasswordSession();
+    assert.deepEqual(s.enter(sources, pl, ['us']), {action: 'switch', to: us});
+    assert.deepEqual(s.leave(sources, us), {action: 'switch', to: pl});
 });
 
 test('a layout removed meanwhile is not restored', () => {

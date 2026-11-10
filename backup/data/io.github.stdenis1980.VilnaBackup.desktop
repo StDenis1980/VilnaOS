@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[Desktop Entry]
+Type=Application
+Name=Backups
+Name[uk]=Копії
+Name[es]=Copias de seguridad
+Name[pl]=Kopie zapasowe
+Name[de]=Sicherungen
+Name[fr]=Sauvegardes
+Name[it]=Backup
+Name[ro]=Copii de siguranță
+Name[cs]=Zálohy
+Name[lt]=Atsarginės kopijos
+Comment=Encrypted backups of your files
+Comment[uk]=Зашифровані копії ваших файлів
+Icon=vilna-backup
+Exec=vilna-backup-gui
+Terminal=false
+Categories=GNOME;GTK;Utility;Archiving;
+Keywords=backup;restore;restic;копії;відновлення;
+StartupNotify=true
