@@ -474,6 +474,8 @@ class ChatWindow(Adw.ApplicationWindow):
     def _on_change(self, _button, key: str) -> None:
         if self.conversation is None or self.busy:
             return
+        # What the person did shows in the chat like a message of theirs.
+        self._bubble(f"{self._(conv.CHANGE)}: {self._(conv.SECTIONS[key])}", True)
         self.conversation.goto(STEP_OF_SECTION[key])
         self._turn(None)
 

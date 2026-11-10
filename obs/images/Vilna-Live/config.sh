@@ -77,9 +77,10 @@ test -x /usr/bin/vilna-mcp-installer
 # USB stick, and while it loads every other read waits. In the VM test of
 # Build2.2 (2026-11-10) gnome-shell hung on the disk for minutes, GDM
 # gave up the automatic login ("Session never registered") and showed a
-# login screen the passwordless live user cannot pass. So here the model
-# starts once the live session is up (the autostart entry below), and
-# reads at idle I/O priority, after the desktop and the installer.
+# login screen the passwordless live user cannot pass. Started at login,
+# it still kept the installer window away for ~3 minutes (Build3.2). So
+# the installer starts it (systemctl, allowed by the polkit rule below)
+# once its own window is on the screen (vilna_installer.start.wake_model).
 systemctl disable vilna-llm.service
 install -d /etc/systemd/system/vilna-llm.service.d
 cat >/etc/systemd/system/vilna-llm.service.d/50-vilna-live.conf <<'LLM'
@@ -127,15 +128,6 @@ echo yes >"$home/.config/gnome-initial-setup-done"
 desktop=/usr/share/applications/io.github.stdenis1980.VilnaInstaller.desktop
 test -e "$desktop"
 cp "$desktop" "$home/.config/autostart/"
-# The polkit rule above lets the active live user start a system service.
-cat >"$home/.config/autostart/vilna-live-model.desktop" <<'MODEL'
-[Desktop Entry]
-Type=Application
-Name=Vilna Live: local model
-Exec=systemctl start --no-block vilna-llm.service
-NoDisplay=true
-X-GNOME-Autostart-Phase=Application
-MODEL
 chown -R live:live "$home/.config"
 # GNOME opens the Activities overview at login, and the installer sat
 # under it as a thumbnail until Esc (VM test of 2026-11-09). A small
