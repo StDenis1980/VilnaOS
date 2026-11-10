@@ -232,6 +232,32 @@ def pick_allowed(opened_us: int, now_us: int) -> bool:
     return now_us - opened_us >= PICK_GUARD_MS * 1000
 
 
+# The local model (vilna-llm.service, ADR 0025) is ~2.5 GB. On the live
+# image it is read from the USB stick, and while it loads every other read
+# waits: started at login, it kept the installer window off the screen for
+# almost three minutes (VM test of Build3.2, 2026-11-10; idle I/O priority
+# is lost on the loop devices under squashfs). So the installer wakes the
+# model itself, once its own window is on the screen, and the conversation
+# says «Gloxi is waking up…» until it answers.
+MODEL_WAKE_DELAY_S = 3
+MODEL_WAKE_COMMAND = (
+    "systemctl",
+    "start",
+    "--no-block",
+    "--no-ask-password",
+    "vilna-llm.service",
+)
+
+
+def wake_model(run: Callable[..., object] = subprocess.run) -> bool:
+    """Ask systemd to start the local model; never wait for it, never ask."""
+    try:
+        run(list(MODEL_WAKE_COMMAND), check=False, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return True
+
+
 # The Vilna mark sits in the bottom-left corner of the Blavet wallpapers,
 # up to 6.5 % of the width from the left and from 90 % of the height down.
 # Cropping the same share from the left and the bottom keeps 16:9 and the
