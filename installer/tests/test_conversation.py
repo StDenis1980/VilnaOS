@@ -80,7 +80,6 @@ def test_the_whole_simple_path_next_to_windows(plan_path):
                 keyboards=["ua", "us"],
             )
         ],
-        "Додала українську й англійську. Підключимося до Wi-Fi?",
         [call("plan_set_network", mode="wifi", ssid="DemoHome")],
         "Введіть пароль у захищене поле.",
         "На диску 512 ГБ є Windows із BitLocker. Що зробимо з диском?",
@@ -91,18 +90,19 @@ def test_the_whole_simple_path_next_to_windows(plan_path):
         [call("conversation_next")],
         "Раджу шифрування з TPM2.",
         [call("plan_set_encryption", method="tpm2")],
-        "Збережіть ключ відновлення.",
         [call("plan_set_user", full_name="Олена Демо", username="olena", hostname="olena-pc")],
         "Пароль введіть у захищене поле.",
         [call("plan_set_time", timezone="Europe/Kyiv", region="uk_UA.UTF-8")],
-        "Gloxi працює на комп'ютері, хмара вимкнена.",
         [call("conversation_next")],
         "Ось план: стерти весь диск, встановити Vilna з шифруванням.",
     )
+    texts = start.Texts("uk")
     try:
         opening = c.opening()
         assert "Gloxi" in opening.text and opening.step.key == "languages"
-        assert c.send("Українська й англійська").step.key == "network"
+        reply = c.send("Українська й англійська")
+        # The next step's question is fixed text: no second round of the model.
+        assert reply.step.key == "network" and reply.text == texts(conv.NETWORK_QUESTION)
         reply = c.send("так, DemoHome")
         assert reply.needs == ["wifi_password"] and reply.step.key == "network"
         person(plan_path, c, "network")
@@ -110,14 +110,18 @@ def test_the_whole_simple_path_next_to_windows(plan_path):
         assert c.send("далі").step.key == "survey"
         assert "<external-data>" in model.last_system
         assert c.send("стерти все").step.key == "old_files"
+        assert conv.MOVED_ON in model.last_system  # a step without a fixed question
         assert c.send("файлів не треба").step.key == "old_encrypted"
         assert c.send("добре").step.key == "encryption"
-        assert c.send("з TPM").step.key == "user"
+        reply = c.send("з TPM")
+        assert reply.step.key == "user"
+        assert reply.text == texts(conv.KEEP_KEY) + "\n\n" + texts(conv.USER_QUESTION)
         reply = c.send("Олена Демо")
         assert reply.needs == ["user_password"] and reply.step.key == "user"
         person(plan_path, c, "user")
         assert c.current().key == "time"
-        assert c.send("Київ").step.key == "privacy"
+        assert "Europe/Kyiv" in c.question(c.current())
+        assert c.send("Київ").text == texts(conv.PRIVACY_TEXT)
         reply = c.send("зрозуміло")
         assert reply.step.key == "summary"
         assert reply.needs == ["confirm"]
@@ -127,6 +131,34 @@ def test_the_whole_simple_path_next_to_windows(plan_path):
         assert report["valid"], report
         assert sum(ch["action"] == "erase" for ch in report["changes"]) == 4
         assert model.replies == []
+    finally:
+        tools.close()
+
+
+def test_change_in_the_plan_asks_the_step_question_again(plan_path):
+    """«Change» on the network: its question at once, not "shall we go on?" from the model."""
+    c, model, tools = make(
+        plan_path,
+        "empty",
+        [call("plan_set_languages", languages=["uk_UA.UTF-8"], keyboards=["ua", "us"])],
+        [call("plan_set_network", mode="offline")],
+        "На диску нічого немає. Що зробимо з ним?",
+        "Як зашифрувати новий диск?",
+    )
+    try:
+        c.opening()
+        c.send("українська")
+        c.send("без мережі")
+        assert c.current().key == "survey"
+        c.goto("network")
+        reply = c.resume()
+        assert reply.step.key == "network"
+        assert reply.text == start.Texts("uk")(conv.NETWORK_QUESTION)
+        assert len(model.seen) == 3  # the model was not asked
+        # Without a fixed question the model is told why the step is back.
+        c.goto("encryption")
+        assert c.resume().text == "Як зашифрувати новий диск?"
+        assert conv.CHANGING in model.last_system
     finally:
         tools.close()
 
@@ -227,9 +259,7 @@ def test_going_back_to_a_step_and_on(plan_path):
         plan_path,
         "empty",
         [call("plan_set_languages", languages=["uk_UA.UTF-8"], keyboards=["ua", "us"])],
-        "Добре. Мережа?",
         [call("conversation_goto", step="languages")],
-        "Які мови додати?",
         [
             call(
                 "plan_set_languages",
