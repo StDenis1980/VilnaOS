@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 10 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- New subpackage herkos-selinux (herkos.cil): with SELinux enforcing,
+  systemd (init_t) could not connect a tool unit's stdin to herkosd
+  (unconfined_service_t), so no tool started (VM test of Build13.2).
+  herkos pulls it in when selinux-policy-targeted is installed
+
+-------------------------------------------------------------------
 Tue Nov 10 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - vilna-home-setup (path and service, as root): a new home that

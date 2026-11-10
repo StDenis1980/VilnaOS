@@ -33,6 +33,8 @@ Requires:       polkit
 # vilna-home-setup: restorecon, pgrep.
 Requires:       policycoreutils
 Requires:       procps
+# With SELinux, systemd may connect a tool unit to herkosd only with this module.
+Requires:       (herkos-selinux if selinux-policy-targeted)
 # The tools run as the person (vilna-mcp-*@.service); packaged separately.
 Recommends:     vilna-mcp-files
 Recommends:     vilna-mcp-backup
@@ -67,6 +69,20 @@ the person's screen (herkos-agent, a user service) in Herkos's own
 window. The "Permissions" window (herkos-permissions) shows what Gloxi
 did, undoes a change, and takes back a permission. It also contains Herkos-lite, the preview gate that runs in the
 person's session.
+
+%package selinux
+Summary:        SELinux module for the Herkos permission gate
+License:        GPL-3.0-or-later
+Requires:       %{name} = %{version}-%{release}
+Requires:       selinux-policy-targeted
+Requires(post): policycoreutils
+Requires(postun): policycoreutils
+BuildArch:      noarch
+
+%description selinux
+Lets systemd connect the tools herkosd starts for a person
+(vilna-mcp-*@<uid>.service) to herkosd's own socket. Without it SELinux
+refuses that connection and Gloxi has no tools.
 
 %package -n herkos-manifests
 Summary:        Herkos manifests for programs Gloxi may use
@@ -115,6 +131,7 @@ install -Dm0644 systemd/vilna-home-setup.service %{buildroot}%{_unitdir}/vilna-h
 install -Dm0644 systemd/vilna-home-setup.path %{buildroot}%{_unitdir}/vilna-home-setup.path
 install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos.rules
 install -Dm0644 systemd/herkos.sysusers %{buildroot}%{_sysusersdir}/herkos.conf
+install -Dm0644 selinux/herkos.cil %{buildroot}%{_datadir}/selinux/packages/herkos/herkos.cil
 install -Dm0644 systemd/system.toml %{buildroot}%{_sysconfdir}/herkos/system.toml
 install -Dm0644 systemd/herkos-agent.service %{buildroot}%{_userunitdir}/herkos-agent.service
 # The «Дозволи» window (herkos-permissions) in the app grid.
@@ -148,6 +165,15 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %postun
 %service_del_postun herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path
 
+%post selinux
+# Also inside an image build (chroot): semodule works on the policy store.
+%{_sbindir}/semodule -X 200 -i %{_datadir}/selinux/packages/herkos/herkos.cil
+
+%postun selinux
+if [ $1 -eq 0 ]; then
+  %{_sbindir}/semodule -X 200 -r herkos || :
+fi
+
 %post agent
 %systemd_user_post herkos-agent.service
 
@@ -173,6 +199,11 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{_sysusersdir}/herkos.conf
 %dir %{_sysconfdir}/herkos
 %config(noreplace) %{_sysconfdir}/herkos/system.toml
+
+%files selinux
+%license LICENSE
+%dir %{_datadir}/selinux/packages/herkos
+%{_datadir}/selinux/packages/herkos/herkos.cil
 
 %files -n herkos-manifests
 %license LICENSE

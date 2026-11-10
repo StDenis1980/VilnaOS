@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import pwd
 import re
 import signal
 import socket
@@ -299,7 +300,21 @@ class Service:
 # -- start-up --------------------------------------------------------------------------
 
 
-def build_controller(view: EventView):
+def owner_home(owner_uid: int) -> Path | None:
+    """The home of the person gloxid serves, when that is not gloxid's own user.
+
+    gloxi@<uid> runs as gloxi-<uid> with HOME=/var/lib/gloxi/<uid>; ``~`` and
+    the default folders must still be the person's (ADR 0025).
+    """
+    if owner_uid == os.getuid():
+        return None
+    try:
+        return Path(pwd.getpwuid(owner_uid).pw_dir)
+    except KeyError:
+        return None
+
+
+def build_controller(view: EventView, owner_uid: int | None = None):
     """The same Gloxi as the window builds for itself, without the model download.
 
     In Vilna the model runs as vilna-llm.service; outside Vilna whoever starts
@@ -331,7 +346,8 @@ def build_controller(view: EventView):
     if network is not None and not router.cloud_enabled:
         # The cloud was turned off: close the way it may have left open.
         threading.Thread(target=network.close, daemon=True).start()
-    tools = file_tools(settings.tools_enabled)
+    home = owner_home(owner_uid) if owner_uid is not None else None
+    tools = file_tools(settings.tools_enabled, owner_home=home)
     conversation = Conversation(router, settings.system_prompt, tools=tools)
     return ChatController(conversation, view, intro=backup_intro(settings.tools_enabled))
 
@@ -391,7 +407,7 @@ def main(argv: list[str] | None = None) -> int:
         listener = bind(args.socket or service_socket())
     view = EventView()
     try:
-        controller = build_controller(view)
+        controller = build_controller(view, args.owner_uid)
     except ConfigError as exc:
         print(f"gloxid: {exc}", file=sys.stderr)
         return 78  # EX_CONFIG: systemd does not restart in a loop
