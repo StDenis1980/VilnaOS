@@ -36,6 +36,9 @@ echo "%{sha256}  %{SOURCE0}" | sha256sum -c -
 %install
 install -Dm0644 %{SOURCE0} %{buildroot}%{_datadir}/vilna/models/%{gguf}
 ln -s %{gguf} %{buildroot}%{_datadir}/vilna/models/default.gguf
+# A stable path and sum for whoever copies the weights elsewhere (the
+# installer copies them from the live medium to the new disk).
+echo "%{sha256}  %{gguf}" > %{buildroot}%{_datadir}/vilna/models/default.gguf.sha256
 
 %files
 %license LICENSE
@@ -43,5 +46,6 @@ ln -s %{gguf} %{buildroot}%{_datadir}/vilna/models/default.gguf
 %dir %{_datadir}/vilna/models
 %{_datadir}/vilna/models/%{gguf}
 %{_datadir}/vilna/models/default.gguf
+%{_datadir}/vilna/models/default.gguf.sha256
 
 %changelog
