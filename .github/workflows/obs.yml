@@ -50,7 +50,8 @@ jobs:
           # as a local repository and build the python-* libraries first.
           mkdir -p build/rpm/RPMS
           zypper -n addrepo --no-gpgcheck --type plaindir "$PWD/build/rpm/RPMS" local-build
-          dirs="$(ls -d build/obs/python-*/ 2>/dev/null || true) $(ls -d build/obs/*/ | grep -v '/python-')"
+          # Then the vilna-mcp-* tools (vilna-installer's tests need vilna-mcp-installer).
+          dirs="$(ls -d build/obs/python-*/ build/obs/vilna-mcp-*/ 2>/dev/null || true) $(ls -d build/obs/*/ | grep -v -e '/python-' -e '/vilna-mcp-')"
           for dir in $dirs; do
             name=$(basename "$dir")
             spec="$dir$name.spec"

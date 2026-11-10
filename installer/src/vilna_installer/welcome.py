@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The first installer screen (GTK 4 + libadwaita), design 10.12.
 
-    vilna-installer [--window] [--plan PATH]
+    vilna-installer [--window] [--plan PATH] [--demo empty|windows]
 
 Step 0 of image/docs/installer.md: no model yet. The person picks the
 language (its own name, no flags), can turn on the screen reader, and goes
 on with Gloxi or without the assistant. The screen writes the start of the
-plan (``start.write_plan``) and ends; the next steps read it.
+plan (``start.write_plan``). With Gloxi, the conversation window
+(``chat.ChatWindow``, steps 1–13) follows in the same program; without the
+assistant the program ends with status 3 and the classic wizard goes on
+with the same plan.
 
 Under the greeting: the Blavet mark and the release name, on the Blavet
 wallpaper (light by default, dark when the system is dark).
@@ -33,6 +36,7 @@ from vilna_installer import start  # noqa: E402
 APP_ID = "io.github.stdenis1980.VilnaInstaller"
 BACKGROUNDS = Path(os.environ.get("VILNA_BACKGROUNDS", "/usr/share/backgrounds/vilna"))
 A11Y_SCHEMA = "org.gnome.desktop.a11y.applications"
+EXIT_WIZARD = 3  # «Without the assistant»: the classic wizard goes on
 
 CSS = """
 .vilna-veil { background-image: radial-gradient(ellipse 55% 62% at 50% 52%,
@@ -332,14 +336,49 @@ class Welcome(Adw.ApplicationWindow):
         start.write_plan(plan, self.plan_path)
         print(json.dumps(plan, ensure_ascii=False))
         app = self.get_application()
-        if app is not None:
-            app.quit()
+        if isinstance(app, InstallerApp):
+            if assistant:
+                app.open_chat(self)
+            else:
+                app.exit_code = EXIT_WIZARD
+                app.quit()
 
 
 class InstallerApp(Adw.Application):
-    def __init__(self, plan_path: Path, window: bool, language: str) -> None:
+    def __init__(
+        self, plan_path: Path, window: bool, language: str, demo: str | None = None
+    ) -> None:
         super().__init__(application_id=APP_ID)
         self.plan_path, self.window, self.language = plan_path, window, language
+        self.demo = demo
+        self.exit_code = 1  # closed before the end
+        self.close_tools = lambda: None
+
+    def open_chat(self, welcome: Gtk.Window) -> None:
+        """Steps 1–13: the conversation with Gloxi, or a note that it cannot start."""
+        from vilna_installer import chat, conversation
+
+        css = Gtk.CssProvider()
+        css.load_from_string(chat.CSS)
+        display = Gdk.Display.get_default()
+        if display is not None:
+            Gtk.StyleContext.add_provider_for_display(
+                display, css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
+        try:
+            talk, self.close_tools = conversation.start_conversation(self.plan_path, demo=self.demo)
+        except conversation.ToolsError as e:
+            print(f"vilna-installer: {e}", file=sys.stderr)
+            talk = None
+        win = chat.ChatWindow(self, talk, self.plan_path, demo=bool(self.demo))
+        if not self.window:
+            win.fullscreen()
+        win.present()
+        welcome.destroy()
+
+    def do_shutdown(self) -> None:
+        self.close_tools()
+        Adw.Application.do_shutdown(self)
 
     def do_startup(self) -> None:
         Adw.Application.do_startup(self)
@@ -363,11 +402,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--plan", type=Path, default=None, help="where to write the plan")
     p.add_argument("--window", action="store_true", help="a window, not the whole screen")
     p.add_argument("--language", choices=start.CODES, help="start in this language")
+    p.add_argument("--demo", choices=("empty", "windows"), help="a synthetic computer")
     args = p.parse_args(sys.argv[1:] if argv is None else argv)
     language = args.language or start.default_language()
-    app = InstallerApp(args.plan or start.default_plan_path(), args.window, language)
+    app = InstallerApp(args.plan or start.default_plan_path(), args.window, language, args.demo)
     GLib.set_application_name("Vilna")
-    return app.run([sys.argv[0]])
+    app.run([sys.argv[0]])
+    return app.exit_code
 
 
 if __name__ == "__main__":

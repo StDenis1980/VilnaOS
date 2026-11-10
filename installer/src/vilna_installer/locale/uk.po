@@ -29,3 +29,120 @@ msgstr "Інші мови"
 
 msgid "Search for a language"
 msgstr "Пошук мови"
+
+# The conversation with Gloxi (steps 1–13). New texts are in uk only for now;
+# the other eight languages fall back to English until they are translated.
+
+msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the right and change any item yourself."
+msgstr "Я Gloxi, допоможу встановити Vilna. Нічого на диску не зміниться, доки ви не підтвердите план; його видно праворуч, і будь-який пункт можна змінити самостійно."
+
+msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
+msgstr "Якими мовами ви пишете? Я додам і їхні розкладки клавіатури, наприклад українську й англійську."
+
+msgid "Gloxi cannot start on this computer right now. You can go on without the assistant: the steps are the same, and what you chose stays in the plan."
+msgstr "Gloxi зараз не може запуститися на цьому комп'ютері. Можна продовжити без асистента: кроки ті самі, а вже обране лишається в плані."
+
+msgid "Gloxi did not answer. Try again, or go on without the assistant."
+msgstr "Gloxi не відповів. Спробуйте ще раз або продовжте без асистента."
+
+msgid "Gloxi is thinking…"
+msgstr "Gloxi думає…"
+
+msgid "Send"
+msgstr "Надіслати"
+
+msgid "Message to Gloxi"
+msgstr "Повідомлення для Gloxi"
+
+msgid "Change"
+msgstr "Змінити"
+
+msgid "Plan"
+msgstr "План"
+
+msgid "Not decided yet"
+msgstr "Ще не вирішено"
+
+msgid "Check and confirm the plan"
+msgstr "Перевірити й підтвердити план"
+
+msgid "Wi-Fi password for {name}"
+msgstr "Пароль Wi‑Fi для {name}"
+
+msgid "Connect"
+msgstr "Підключити"
+
+msgid "Connecting…"
+msgstr "Підключення…"
+
+msgid "Could not connect. Check the password and try again."
+msgstr "Не вдалося підключитися. Перевірте пароль і спробуйте ще раз."
+
+msgid "Password for {name}"
+msgstr "Пароль для {name}"
+
+msgid "Repeat the password"
+msgstr "Повторіть пароль"
+
+msgid "The passwords are not the same."
+msgstr "Паролі не збігаються."
+
+msgid "At least 8 characters."
+msgstr "Щонайменше 8 символів."
+
+msgid "Passphrase for the disk"
+msgstr "Фраза-пароль для диска"
+
+msgid "Save"
+msgstr "Зберегти"
+
+msgid "Gloxi does not see what you type here."
+msgstr "Gloxi не бачить того, що ви тут вводите."
+
+msgid "entered"
+msgstr "введено"
+
+msgid "Without a network"
+msgstr "Без мережі"
+
+msgid "Cable"
+msgstr "Кабель"
+
+msgid "Erase the whole disk"
+msgstr "Стерти весь диск"
+
+msgid "Manual layout"
+msgstr "Розмітка вручну"
+
+msgid "Encrypted, with a recovery key"
+msgstr "Зашифровано, з ключем відновлення"
+
+msgid "Encrypted with a passphrase"
+msgstr "Зашифровано фразою-паролем"
+
+msgid "Not encrypted"
+msgstr "Без шифрування"
+
+msgid "Cloud model off until the first login"
+msgstr "Хмарна модель вимкнена до першого входу"
+
+msgid "Languages and keyboard"
+msgstr "Мови й клавіатура"
+
+msgid "Network"
+msgstr "Мережа"
+
+msgid "Disk"
+msgstr "Диск"
+
+msgid "Encryption"
+msgstr "Шифрування"
+
+msgid "Account"
+msgstr "Обліковий запис"
+
+msgid "Time and region"
+msgstr "Час і регіон"
+
+msgid "Privacy"
+msgstr "Приватність"

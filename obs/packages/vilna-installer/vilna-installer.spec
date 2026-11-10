@@ -25,6 +25,9 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  fdupes
 BuildRequires:  hicolor-icon-theme
 BuildRequires:  python-rpm-macros
+# %%check runs the conversation tests against the installer's MCP server.
+BuildRequires:  timezone
+BuildRequires:  vilna-mcp-installer
 Requires:       python3 >= 3.11
 Requires:       python3-gobject
 Requires:       typelib(Adw) = 1
@@ -37,17 +40,21 @@ Requires:       iso-codes
 Requires:       typelib(GnomeDesktop) = 4.0
 # The first screen stands on the Blavet wallpaper.
 Requires:       vilna-backgrounds >= 0.1
+# The conversation with Gloxi (steps 1-13): the installer's MCP server, the
+# plan format and its validator; Gloxi is the local model of vilna-llm.service
+# (gloxi, vilna-model-default), which the live image has through vilna_base.
+Requires:       vilna-mcp-installer
 # «Screen reader» turns on Orca, as GNOME Settings does.
 Recommends:     orca
 BuildArch:      noarch
 
 %description
 The Vilna OS installer (image/docs/installer.md), started in the live
-image. So far step 0, the first screen: the ten languages of Vilna and
+image. Step 0, the first screen: the ten languages of Vilna and
 every other language of the system, the screen reader, and going on with
-the Gloxi assistant or without it. The screen writes the start of the
-installation plan; the conversation with Gloxi, the plan check and
-Herkos's final confirmation come next.
+the Gloxi assistant or without it; then steps 1-13 as a conversation with
+Gloxi, with the installation plan beside it. Gloxi only fills the plan;
+Herkos's final confirmation and the install engine come next.
 
 %prep
 %autosetup -p1
@@ -70,6 +77,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{appid}.desktop
 %license LICENSE
 %doc README.md
 %{_bindir}/vilna-installer
+%{_bindir}/vilna-installer-chat
 %{python_sitelib}/vilna_installer
 %{python_sitelib}/vilna_installer-*.dist-info
 %{_datadir}/applications/%{appid}.desktop

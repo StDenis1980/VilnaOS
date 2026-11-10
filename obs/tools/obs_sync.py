@@ -133,6 +133,9 @@ TARBALLS: dict[str, Tarball] = {
     "vilna-mcp-files": Tarball(
         "mcp/files", pyproject_version("mcp/files"), extra=(("mcp/LICENSE", "LICENSE"),)
     ),
+    "vilna-mcp-installer": Tarball(
+        "mcp/installer", pyproject_version("mcp/installer"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
     "vilna-mcp-settings": Tarball(
         "mcp/settings", pyproject_version("mcp/settings"), extra=(("mcp/LICENSE", "LICENSE"),)
     ),

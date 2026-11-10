@@ -1,6 +1,9 @@
 # Встановлення Vilna
 
-Установник Vilna як розмова з Gloxi ([`../image/docs/installer.md`](../image/docs/installer.md), [ADR 0006](../docs/adr/0006-conversational-installer.md)). Поки готовий лише **крок 0, перший екран** (макет 10.12 «Vilna Design v0.1»):
+Установник Vilna як розмова з Gloxi ([`../image/docs/installer.md`](../image/docs/installer.md), [ADR 0006](../docs/adr/0006-conversational-installer.md)). Готові **крок 0, перший екран** (макет 10.12 «Vilna Design v0.1»), і **розмова кроків 1–13** з панеллю плану.
+
+## Крок 0: перший екран
+
 
 - привітання, знак і назва випуску Blavet на шпалерах Blavet (світлих або темних, як система);
 - десять мов [ADR 0009](../docs/adr/0009-languages.md), кожна своєю назвою, без прапорів. Екран одразу перемикається на обрану мову;
@@ -21,6 +24,25 @@ vilna-installer --window --language pl --plan /tmp/plan.json
 
 Тексти екрана лежать у `src/vilna_installer/locale/*.po`, усі десять мов разом, бо екран перемикає мову одразу. Переклади, крім української, варто перевірити носіям мови (Weblate). Логіка без GTK — `start.py`, тести — `tests/`.
 
-Пакет OBS — `vilna-installer` ([`../obs/packages/vilna-installer/`](../obs/packages/vilna-installer/)): команда, пункт меню «Встановити Vilna» десятьма мовами (`data/`), значки `vilna-installer`. Він вимагає `typelib(GnomeDesktop) = 4.0`, `iso-codes` і `vilna-backgrounds`. Ставиться лише в живий образ `Vilna-Live`, де установник запускається сам після автовходу ([`../obs/README.md`](../obs/README.md#живий-образ-з-установником)); у встановленій системі його немає.
+## Кроки 1–13: розмова з Gloxi
 
-Далі: розмова з Gloxi (кроки 1–13), MCP-сервер `vilna-mcp-installer`, валідатор плану й екран підтвердження Herkos.
+«Далі з Gloxi» відкриває у тій самій програмі вікно розмови (`chat.py`, логіка без GTK — `conversation.py`): чат ліворуч, план праворуч. Кожен пункт плану має «Змінити», що повертає розмову до цього кроку. Знімки: `design/installer/gloxi-chat-*.png` у файлах проєкту.
+
+- Gloxi — локальна модель `vilna-llm.service` ([ADR 0025](../docs/adr/0025-gloxi-system-service.md)): `http://127.0.0.1:8080/v1`, ключ із `/var/lib/vilna-llm/key` (група `gloxi`). Інше — `VILNA_INSTALLER_MODEL_URL`, `VILNA_INSTALLER_MODEL_KEY_FILE`. Без моделі вікно каже, що Gloxi не запуститься, і пропонує «Без асистента».
+- План заповнює лише MCP-сервер [`vilna-mcp-installer`](../mcp/installer/), який установник запускає сам; там же формат плану і валідатор. Інструмента, що стирає диск чи встановлює, немає.
+- Паролі (Wi‑Fi, обліковий запис, фраза диска) — у захищених полях вікна (`Gtk.PasswordEntry`, розширення Vilna перемикає їх на латиницю). У план іде «введено», сам пароль — лише в пам'яті процесу (`chat.Secrets`) для рушія; Wi‑Fi підключається через NetworkManager, пароль — у приватному файлі, не в командному рядку.
+- Мітки дисків і назви мереж ідуть до моделі в `<external-data>` як дані.
+- Нові рядки — українською й англійською (`locale/uk.po`); вісім інших мов поки бачать англійську, їх додає переклад.
+
+Код завершення `vilna-installer`: **0** — людина натиснула «Перевірити й підтвердити план» (далі екран підтвердження Herkos), **3** — «Без асистента» або немає моделі (далі звичайний майстер з тим самим планом), **1** — вікно закрито.
+
+```
+vilna-installer --window --demo windows          # синтетичний комп'ютер із Windows і BitLocker
+vilna-installer-chat --window --plan /tmp/plan.json --demo empty   # лише розмова
+```
+
+Ще не зроблено: екран підтвердження Herkos (R4) і показ ключа відновлення, звичайний майстер і редактор розділів, рушій встановлення (крок 13 читає його прогрес з `progress.json` поруч із планом), перенесення файлів і відкриття старих зашифрованих томів (бета).
+
+## Пакет OBS
+
+Пакет `vilna-installer` ([`../obs/packages/vilna-installer/`](../obs/packages/vilna-installer/)): команди `vilna-installer` і `vilna-installer-chat`, пункт меню «Встановити Vilna» десятьма мовами (`data/`), значки `vilna-installer`. Він вимагає `vilna-mcp-installer`, `typelib(GnomeDesktop) = 4.0`, `iso-codes` і `vilna-backgrounds`. Ставиться лише в живий образ `Vilna-Live`, де установник запускається сам після автовходу ([`../obs/README.md`](../obs/README.md#живий-образ-з-установником)); у встановленій системі його немає.

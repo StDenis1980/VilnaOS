@@ -68,6 +68,13 @@ polkit.addRule(function (action, subject) {
 RULES
 chmod 0644 /etc/polkit-1/rules.d/49-vilna-live.rules
 
+# The installer's conversation with Gloxi talks to the local model as the
+# live user: vilna-llm.service (enabled by the Vilna presets above) wants
+# its key, which only the group gloxi may read (ADR 0025).
+usermod --append --groups gloxi live
+systemctl is-enabled vilna-llm.service
+test -x /usr/bin/vilna-mcp-installer
+
 # GDM logs "live" in at once, without GNOME Initial Setup (the installer
 # asks the language itself). openSUSE's GDM reads the autologin user
 # from /etc/sysconfig/displaymanager; custom.conf says the same for
