@@ -34,11 +34,13 @@ use crate::config::{Config, Owner};
 use crate::gate::{Answer, Confirmer, Gate, Question, Tools};
 use crate::passwd::{self, Account};
 use crate::rpc;
+use crate::snapshots::{Snapper, Snapshots};
 use herkos_core::policy::SessionState;
 
 pub const SYSTEM_CONFIG: &str = "/etc/herkos/system.toml";
 pub const CONFIG: &str = "/etc/herkos/config.toml";
 pub const STATE: &str = "/var/lib/herkos";
+pub const SNAPPER_CONFIGS: &str = "/etc/snapper/configs";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Person {
@@ -250,6 +252,9 @@ pub struct System {
     pub agents: Arc<Agents>,
     pub tools: Box<ToolsFor>,
     gates: Mutex<HashMap<u32, Arc<Gate>>>,
+    /// Where snapper keeps its configs: a person with `mitos-<uid>` there
+    /// gets Mitos snapshots of their home (ADR 0026).
+    pub snapper_configs: PathBuf,
 }
 
 impl System {
@@ -266,6 +271,7 @@ impl System {
             agents: Arc::new(Agents::default()),
             tools,
             gates: Mutex::new(HashMap::new()),
+            snapper_configs: PathBuf::from(SNAPPER_CONFIGS),
         }
     }
 
@@ -292,11 +298,19 @@ impl System {
             uid,
             agents: Arc::clone(&self.agents),
         };
-        let gate = Arc::new(crate::build_gate_from(config, tools, Box::new(confirmer))?);
+        let snapshots = Snapper::for_person(uid, &person.account.home, &self.snapper_configs)
+            .map(|s| Box::new(s) as Box<dyn Snapshots>);
+        let mitos = snapshots
+            .as_ref()
+            .map(|s| s.subvolume().display().to_string());
+        let gate = crate::build_gate_from(config, tools, Box::new(confirmer))?;
+        let gate = Arc::new(gate.with_snapshots(snapshots));
         let start = json!({
             "server": concat!("herkosd/", env!("CARGO_PKG_VERSION")),
             "mode": "system",
             "person": person.account.name,
+            // Snapshots of the home (ADR 0026), or null: no undo through them.
+            "snapshots": mitos,
         });
         gate.journal()
             .append("start", start, None)

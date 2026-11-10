@@ -101,6 +101,42 @@ def test_an_undo_marks_the_action_undone():
     assert acts["u1"].undo_of == "a1"
 
 
+def test_every_kind_of_undo_shows_the_button():
+    """A backup, the tool's own arguments (ADR 0023) or Mitos snapshots (ADR 0026)."""
+    for undo, can in (
+        ({"backup_id": "b1", "path": "/x"}, True),
+        ({"arguments": {"values": {"color_scheme": "default"}}}, True),
+        ({"snapshot": {"pre": 4, "post": 5}}, True),
+        ({"snapshot": {"pre": 4, "post": None}}, True),
+        ({"snapshot": {"pre": "4"}}, False),
+        ({"arguments": "x"}, False),
+        ({}, False),
+        (None, False),
+    ):
+        assert view.can_be_undone(undo) is can, undo
+
+
+def test_an_undo_from_snapshots_marks_the_action_undone(ukrainian):
+    undo = [
+        rec(
+            "request",
+            "u1",
+            {
+                "tool": FILES,
+                "operation": "restore_snapshot",
+                "resources": ["file:///home/ola/Documents/zvit.odt"],
+                "reason": "Undo action a1",
+            },
+        ),
+        rec("decision", "u1", {"decision": "allowed", "level": "R2"}),
+        rec("result", "u1", {"ok": True, "undo": {"snapshot": {"pre": 6, "post": 7}}}),
+    ]
+    acts = {a.action_id: a for a in view.actions([*change("a1", "zvit.odt"), *undo])}
+    assert acts["a1"].undone_by == "u1"
+    assert acts["u1"].can_undo(NOW)
+    assert view.title(acts["u1"]) == "Gloxi повернув файли зі знімка: zvit.odt"
+
+
 def test_plain_language(ukrainian):
     reg = ManifestRegistry.builtin()
     a = view.actions(change("a1", "zvit.odt"))[0]

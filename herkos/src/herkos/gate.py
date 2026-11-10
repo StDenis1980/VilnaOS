@@ -101,11 +101,19 @@ class Outcome:
 def undeclared_resource(request: ActionRequest, op: Operation) -> str | None:
     """Name of the first resource argument that is not a declared file resource."""
     declared = {r.path for r in request.resources if r.path is not None}
+
+    def undeclared(value: object) -> bool:
+        if not isinstance(value, str) or not value.startswith("/") or "\x00" in value:
+            return True
+        return posixpath.normpath(value) not in declared
+
     for name in op.resource_args:
         value = request.arguments.get(name)
-        if not isinstance(value, str) or not value.startswith("/") or "\x00" in value:
-            return name
-        if posixpath.normpath(value) not in declared:
+        # A list of files (restore_snapshot, ADR 0026): each one declared.
+        if isinstance(value, list):
+            if not value or any(undeclared(v) for v in value):
+                return name
+        elif undeclared(value):
             return name
     return None
 

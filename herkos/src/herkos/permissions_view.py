@@ -37,7 +37,10 @@ UNDO_DAYS = 30  # how long the files tool keeps what it replaced (permissions.md
 JOURNAL_LIMIT = 500
 FILES = "org.vilna.mcp.files"
 BACKUP = "org.vilna.mcp.backup"
+SYSTEM = "org.vilna.mcp.system"
 UNDO_PREFIX = "Undo action "
+# The operations Herkos itself sends to undo an action (herkos.undo).
+UNDO_OPERATIONS = ("restore", "restore_snapshot")
 
 # What Gloxi did, in the past tense, for the built-in tools. A catalogue
 # program's operation shows its manifest summary instead.
@@ -49,6 +52,10 @@ DONE: dict[tuple[str, str], str] = {
     (FILES, "write"): "Gloxi changed a file",
     (FILES, "delete"): "Gloxi deleted a file",
     (FILES, "restore"): "Gloxi brought back an earlier version of a file",
+    (FILES, "restore_snapshot"): "Gloxi brought back files from a snapshot",
+    (SYSTEM, "list_snapshots"): "Gloxi looked at the saved states of the system",
+    (SYSTEM, "rollback"): "Gloxi returned the system to a saved state",
+    (SYSTEM, "restore"): "Gloxi undid a return of the system to a saved state",
     (BACKUP, "status"): "Gloxi checked the backups",
     (BACKUP, "list_snapshots"): "Gloxi listed the backups",
     (BACKUP, "overview"): "Gloxi looked at how much space the folders take",
@@ -175,7 +182,7 @@ def actions(records: Iterable[Mapping[str, Any] | None]) -> list[Action]:
                 resource_count=count if isinstance(count, int) else len(uris),
                 reason=reason,
             )
-            if op == "restore" and reason.startswith(UNDO_PREFIX):
+            if op in UNDO_OPERATIONS and reason.startswith(UNDO_PREFIX):
                 a.undo_of = reason[len(UNDO_PREFIX) :].strip() or None
             by_id[aid] = a
         elif (a := by_id.get(aid)) is None:
@@ -192,12 +199,24 @@ def actions(records: Iterable[Mapping[str, Any] | None]) -> list[Action]:
             code = data.get("code")
             if isinstance(code, str):
                 a.code = code
-            undo = data.get("undo")
-            a.has_undo = isinstance(undo, Mapping) and bool(undo.get("backup_id"))
+            a.has_undo = can_be_undone(data.get("undo"))
     for a in by_id.values():
         if a.undo_of and a.ok and (target := by_id.get(a.undo_of)) is not None:
             target.undone_by = a.action_id
     return sorted(by_id.values(), key=lambda a: a.when, reverse=True)
+
+
+def can_be_undone(undo: Any) -> bool:
+    """The journal says how to undo: a backup of the files tool, the tool's own
+    arguments for ``restore`` (ADR 0023) or a pair of Mitos snapshots (ADR 0026)."""
+    if not isinstance(undo, Mapping):
+        return False
+    snapshot = undo.get("snapshot")
+    return (
+        bool(undo.get("backup_id"))
+        or isinstance(undo.get("arguments"), Mapping)
+        or (isinstance(snapshot, Mapping) and isinstance(snapshot.get("pre"), int))
+    )
 
 
 def _summary(registry: ManifestRegistry | None, tool: str, operation: str) -> str:

@@ -10,6 +10,9 @@ After=herkosd.socket
 
 [Service]
 Type=simple
+# As root ("+"), and never fatal ("-"): a snapper config for each person's
+# home that is a btrfs subvolume, so Mitos can snapshot it (ADR 0026).
+ExecStartPre=-+/usr/libexec/herkos/herkosd mitos-setup
 ExecStart=/usr/libexec/herkos/herkosd system
 # The listening socket arrives as stdin (herkosd forbids unsafe code, and
 # adopting fd 3 would need it); stdout and stderr go to the journal.
