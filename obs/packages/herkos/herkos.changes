@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 10 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkos-agent requires hicolor-icon-theme, which owns the icon
+  directories of the Permissions window; the OBS filelist check failed
+  the build without it.
+
+-------------------------------------------------------------------
 Tue Nov 10 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - vilna-home-setup (path and service, as root): a new home that
