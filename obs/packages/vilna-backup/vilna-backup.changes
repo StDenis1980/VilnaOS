@@ -1,8 +1,14 @@
 -------------------------------------------------------------------
-Tue Nov 10 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Tue Nov 10 09:20:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Folders named .snapshots (Mitos snapshots of the home, ADR 0026)
   never go into backups
+
+-------------------------------------------------------------------
+Tue Nov 10 09:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Require the secret-tool package instead of /usr/bin/secret-tool:
+  OBS does not resolve that file path for KIWI images.
 
 -------------------------------------------------------------------
 Mon Nov  9 17:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
