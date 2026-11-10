@@ -313,7 +313,6 @@ impl GrantStore {
         false
     }
 
-    #[cfg(test)]
     pub fn all(&mut self) -> Vec<Grant> {
         self.refresh();
         self.session
@@ -334,6 +333,16 @@ pub fn grant_record(g: &Grant) -> Value {
     m.insert("level".into(), json!(g.level.name()));
     m.insert("duration".into(), json!(g.duration.name()));
     Value::Object(m)
+}
+
+/// For the person's own window (`herkos.permissions`): the journal fields
+/// plus when it was given.
+pub fn grant_listing(g: &Grant) -> Value {
+    let mut v = grant_record(g);
+    if let Some(m) = v.as_object_mut() {
+        m.insert("created".into(), json!(g.created));
+    }
+    v
 }
 
 #[cfg(test)]

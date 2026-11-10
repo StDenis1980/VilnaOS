@@ -27,3 +27,27 @@
   background-color: #1f345c; /* night #1F345C */
   border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* The login screen (GDM). GNOME Shell always draws it dark; Vilna puts
+   the blurred Сонце wallpaper behind it (vilna-backgrounds), with the
+   night colour underneath in case the picture is missing. In the
+   person's own session this group is only the lock screen, which covers
+   it with their own blurred wallpaper. Login screen in the Vilna design
+   (docs/design/brief.md): our background and logo, otherwise standard GDM. */
+#lockDialogGroup {
+  background: #0e1a2e url("file:///usr/share/backgrounds/vilna/vilna-login.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Frosted-glass password field, as in the design. */
+.login-dialog .login-dialog-prompt-entry {
+  background-color: rgba(14, 26, 46, 0.6); /* dark glass rgba(14,26,46,.6) */
+  border: 1px solid rgba(242, 232, 213, 0.18); /* cream #F2E8D5 */
+  color: #eef1f7;
+}
+
+.login-dialog .login-dialog-prompt-entry:focus {
+  border-color: #2d6bff; /* blue #2D6BFF */
+}

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Nov  9 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.7: gnome-branding-Vilna enables the Vilna GNOME Shell extension for
+  everyone and for the login screen (org.gnome.shell enabled-extensions;
+  GDM reads the same defaults) and shows the final logo for dark
+  backgrounds on the login screen. Requires gnome-shell-extension-vilna.
+
+-------------------------------------------------------------------
 Mon Nov  9 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.6: gnome-branding-Vilna sets the Vilna wallpaper Сонце (light and

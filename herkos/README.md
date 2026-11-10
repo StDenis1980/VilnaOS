@@ -35,6 +35,10 @@ uv run herkos undo <action_id>           # скасувати зміну (id —
 
 Налаштування: `~/.config/herkos/config.toml` (див. [`src/herkos/config.py`](src/herkos/config.py)): `allowed_roots` (типово `~/Documents`), `bulk_threshold`, `confirm_timeout`, `keros_model` (типово `http://127.0.0.1:8080/v1`, або `"off"`), `keros_budget`. Замір Keros: `herkos keros-bench` ([`docs/keros-bench.md`](docs/keros-bench.md)).
 
+## Вікно «Дозволи»
+
+`herkos-permissions` (GTK 4 і libadwaita, макет 10.9 «Vilna Design v0.1»): журнал дій Gloxi простими словами («Gloxi змінив файл: Нотатки.txt») по днях, з відбором «Файли / Копії / Програми» і кнопкою «Скасувати» для змін, яким ще не минуло 30 днів; і дозволи, які дала людина, з кнопкою «Відкликати». Із системним `herkosd` вікно говорить через власне з'єднання людини (`herkos.permissions`, `herkos.revoke`, `herkos.journal`, `herkos.undo`, [`docs/protocol.md`](docs/protocol.md), розд. 8), якого Gloxi не має. З Herkos-lite читає його файли саме (`--state-dir` — інша тека). Скасування — нова дія через Herkos, тож Herkos питає у своєму вікні. Логіка без GTK і її тести — `permissions_view.py`, `tests/test_permissions_view.py`.
+
 ## Тести відповідності
 
 [`conformance/`](conformance/) говорить з Herkos лише через сокет, як Gloxi, тому ті самі тести перевіряють і Herkos-lite, і `herkosd`. Програму задає змінна `HERKOS_SERVE` (типово Herkos-lite):

@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Nov  9 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: the final Vilna logo for dark backgrounds
+  (docs/design/logo/Vilna_logo_dark-bg.svg, with a 72x75 size so that
+  GNOME Shell draws it small) as
+  /usr/share/pixmaps/distribution-logos/vilna-logo-dark-bg.svg, the
+  logo of the login screen.
+
+-------------------------------------------------------------------
 Thu Nov  5 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.2: subpackage hicolor-icon-theme-branding-Vilna (the Vilna logo

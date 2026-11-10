@@ -13,6 +13,11 @@ dependencies = []
 [project.scripts]
 vilna-backup = "vilna_backup.cli:main"
 
+# The Backups window needs GTK 4 and libadwaita through PyGObject, taken from
+# the system (python3-gobject), not from PyPI.
+[project.gui-scripts]
+vilna-backup-gui = "vilna_backup.gui:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8",

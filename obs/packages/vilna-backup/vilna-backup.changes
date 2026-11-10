@@ -1,0 +1,7 @@
+-------------------------------------------------------------------
+Mon Nov  9 17:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: vilna-backup (command line and timers) and the
+  Backups window vilna-backup-gui: turn backups on (what, where, how
+  often, the recovery sheet typed back), state, back up now, restore
+  into a new folder. Ukrainian translation of the window.

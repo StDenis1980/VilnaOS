@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Nov 10 07:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.8: require vilna-backup (the Backups window and timers).
+
+-------------------------------------------------------------------
 Mon Nov  9 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.7: require gloxi-session (the Gloxi window, split from gloxi,
