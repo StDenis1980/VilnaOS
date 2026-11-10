@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | [`protocol/`](protocol/) | Формат звіту про збій і відгуку, перевірка полів, повторне очищення, сигнатура. Спільний для сервера й збирача `vilna-reportd` | GPL-3.0-or-later |
 | [`server/`](server/) | `vilna-reports-server`: HTTP, SQLite, 90 днів, issue `auto-report` | GPL-3.0-or-later |
-| [`deploy/`](deploy/) | systemd-служба, Caddy, журнал на 7 днів, `install.sh` для Debian 13 на Hetzner | GPL-3.0-or-later |
+| [`deploy/`](deploy/) | systemd-служба, Caddy, журнал на 7 днів, `install.sh` для Debian 13 на OVHcloud VPS | GPL-3.0-or-later |
 | `client/` | `vilna-reportd` на пристрої (етап 2) — ще немає | GPL-3.0-or-later |
 
 Документи:
