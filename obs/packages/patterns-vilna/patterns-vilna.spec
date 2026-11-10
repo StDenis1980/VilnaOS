@@ -40,6 +40,8 @@ Requires:       herkos-agent
 Requires:       herkos-manifests
 Requires:       gloxi
 Requires:       gloxi-session
+# The model weights, so the installer and the first talk work offline (ADR 0006).
+Requires:       vilna-model-default
 Requires:       vilna-mcp-files
 Requires:       vilna-mcp-backup
 Requires:       vilna-mcp-settings

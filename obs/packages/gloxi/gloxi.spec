@@ -38,6 +38,8 @@ Requires:       herkos-agent
 Requires:       shadow
 # The shared local model (vilna-llm.service).
 Requires:       llamacpp
+# vilna-llm.service starts only when the weights are there.
+Recommends:     vilna-model-default
 %{?systemd_ordering}
 BuildArch:      noarch
 

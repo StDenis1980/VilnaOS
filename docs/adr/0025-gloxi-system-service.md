@@ -71,7 +71,7 @@
 2. `gloxid` і протокол; `gloxi-gtk` як клієнт; тести двох процесів без systemd.
 3. Юніти, sysusers, `vilna-people-sync`, `vilna-llm`; RPM `gloxi` і `gloxi-session`; тест у контейнері з systemd (як `herkos/conformance/test_system.py`).
 4. Мережа для хмари: `vilna-mcp-gloxi-network@`, дії `allow_cloud`/`block_cloud` (R2) у маніфесті Herkos `org.vilna.gloxi.network`.
-5. Пакет ваг `vilna-model-default` або запасний шлях із завантаженням.
+5. Пакет ваг `vilna-model-default`: OBS сам завантажує ваги (`_service`: `download_url` і `verify_file` із SHA-256), CI — `obs/tools/fetch_sources.py`; `patterns-vilna` його вимагає. Запасний шлях із завантаженням — лише якщо OBS не прийме файл.
 6. Образ: пресети, перевірка у VM на Denis-KLX — Gloxi відповідає, читає файл через Herkos, не бачить `/home` напряму.
 
 ## Розглянуті варіанти
