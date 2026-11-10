@@ -3,8 +3,8 @@
 
 - The Ukrainian Piper voice reads letters: lower case, with й, ї split into a
   letter and its mark (Unicode NFD), as it was trained.
-- Kokoro reads the phonemes of eSpeak NG (``espeak-ng --ipa``), as the
-  phonemizer it was trained with does for es, it and fr.
+- Kokoro and the other Piper voices read the phonemes of eSpeak NG
+  (``espeak-ng --ipa``), as the phonemizer they were trained with does.
 
 The sherpa-onnx wheel has no phonemizer of its own, so Gloxi runs the
 ``espeak-ng`` program that ships in the package (GPL-3.0-or-later, like
@@ -27,7 +27,14 @@ def espeak_binary() -> str | None:
     return shutil.which("espeak-ng")
 
 
-def espeak_ipa(text: str, voice: str, *, binary: str | None = None, timeout: float = 10.0) -> str:
+def espeak_ipa(
+    text: str,
+    voice: str,
+    *,
+    binary: str | None = None,
+    timeout: float = 10.0,
+    secondary_stress: bool = False,
+) -> str:
     """The IPA of ``text`` by eSpeak NG, one line per clause joined by spaces."""
     binary = binary or espeak_binary()
     if binary is None:
@@ -45,9 +52,11 @@ def espeak_ipa(text: str, voice: str, *, binary: str | None = None, timeout: flo
         raise PhonemeError(f"espeak-ng failed: {exc}") from exc
     if done.returncode != 0:
         raise PhonemeError(f"espeak-ng failed: exit {done.returncode}")
-    # Secondary stress and the joining marks are not in Kokoro's symbols.
+    # The joining marks are in no voice's symbols; secondary stress is in
+    # Piper's but not in Kokoro's.
     ipa = " ".join(line.strip() for line in done.stdout.splitlines() if line.strip())
-    return ipa.replace("ˌ", "").replace("_", "").replace("‍", "")
+    ipa = ipa.replace("_", "").replace("\u200d", "")
+    return ipa if secondary_stress else ipa.replace("ˌ", "")
 
 
 def letters(text: str) -> str:

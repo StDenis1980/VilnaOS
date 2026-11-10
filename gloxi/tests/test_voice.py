@@ -23,7 +23,7 @@ import pytest
 
 from gloxi.bench import voice as bench
 from gloxi.engine import DownloadCancelled, EngineError, ModelFile
-from gloxi.voice import language, models, phonemes, speech, store
+from gloxi.voice import language, models, phonemes, speech, store, tts
 from gloxi.voice.session import VoiceController, VoicePrefs, consent_text, load_prefs, save_prefs
 from gloxi.voice.stt import Dictation
 from gloxi.voice.tts import Audio, SpeechError, Synthesizer, wav_to_audio
@@ -53,7 +53,8 @@ def test_every_language_has_a_voice():
 def test_packs_for_a_language():
     assert models.packs_for("uk") == (models.PARAKEET, models.SILERO_VAD, models.PIPER_UK)
     assert models.packs_for("es")[-1] is models.KOKORO
-    assert models.packs_for("pl") == (models.PARAKEET, models.SILERO_VAD)  # eSpeak NG
+    assert models.packs_for("pl")[-1] is models.PIPER_PL
+    assert models.packs_for("lt") == (models.PARAKEET, models.SILERO_VAD)  # eSpeak NG
     assert models.voice_for("xx") is models.VOICES["en"]
 
 
@@ -283,6 +284,28 @@ def test_letters_and_codepoints(tmp_path):
 def test_espeak_missing_is_an_error():
     with pytest.raises(phonemes.PhonemeError):
         phonemes.espeak_ipa("hi", "en-us", binary="/nonexistent/espeak-ng")
+
+
+def _fake_espeak(tmp_path: Path, script: str) -> str:
+    path = tmp_path / "espeak-ng"
+    path.write_text("#!/bin/sh\n" + script + "\n")
+    path.chmod(0o755)
+    return str(path)
+
+
+def test_secondary_stress_only_for_piper(tmp_path):
+    binary = _fake_espeak(tmp_path, "cat >/dev/null; printf 'ˈa_ˌb\\n'")
+    assert phonemes.espeak_ipa("x", "pl", binary=binary) == "ˈab"
+    assert phonemes.espeak_ipa("x", "pl", binary=binary, secondary_stress=True) == "ˈaˌb"
+
+
+def test_phoneme_failure_is_a_speech_error(tmp_path, monkeypatch):
+    # gloxi-bench and the window catch SpeechError, not the phonemizer's own error.
+    monkeypatch.setattr(tts, "installed", lambda pack, base: tmp_path)
+    synth = Synthesizer(tmp_path, espeak=_fake_espeak(tmp_path, "exit 3"))
+    monkeypatch.setattr(synth, "_engine", lambda voice: (None, set()))
+    with pytest.raises(SpeechError):
+        synth.synthesize("Dzień dobry.", "pl")
 
 
 def _wav(samples: list[int], rate=22050, data_size=None) -> bytes:
@@ -681,7 +704,7 @@ REAL = os.environ.get("GLOXI_VOICE_MODELS")
 
 
 @pytest.mark.skipif(not REAL, reason="set GLOXI_VOICE_MODELS to a folder with the voice models")
-@pytest.mark.parametrize("lang", ["uk", "en", "es", "it", "fr"])
+@pytest.mark.parametrize("lang", ["uk", "en", "es", "it", "fr", "pl", "cs", "ro", "de"])
 def test_round_trip_with_real_models(lang):
     pytest.importorskip("sherpa_onnx")
     [result] = bench.run(Path(REAL), [lang])

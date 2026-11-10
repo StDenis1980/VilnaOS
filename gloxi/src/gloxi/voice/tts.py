@@ -64,10 +64,18 @@ class Synthesizer:
             return self._espeak(sentence, voice.espeak or voice.lang)
         with self._lock:
             engine, symbols = self._engine(voice)
-            if voice.pack.kind == "piper":
-                text = phonemes.letters(sentence)
-            else:
-                text = phonemes.espeak_ipa(sentence, voice.espeak, binary=self.espeak)
+            try:
+                if voice.pack.kind == "piper" and not voice.espeak:
+                    text = phonemes.letters(sentence)  # the Ukrainian voice reads letters
+                else:
+                    text = phonemes.espeak_ipa(
+                        sentence,
+                        voice.espeak,
+                        binary=self.espeak,
+                        secondary_stress=voice.pack.kind == "piper",
+                    )
+            except phonemes.PhonemeError as exc:
+                raise SpeechError(str(exc)) from exc
             points = phonemes.codepoints(text, symbols)
             if not points:
                 return Audio(array("f"), 22050)
