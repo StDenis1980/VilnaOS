@@ -121,6 +121,8 @@ fi
 # BTRFS_SUBVOLUME_HOME. herkosd mitos-setup then gives that home a snapper
 # config, and Mitos snapshots it around Gloxi's actions. A home that is a
 # plain folder still works, only without those snapshots.
+# Under SELinux the new subvolume has no label and useradd cannot give
+# it to the person; vilna-home-setup (herkos) finishes it right after.
 useradd_defaults=/etc/default/useradd
 if [ ! -e "$useradd_defaults" ] && [ -e /usr/etc/default/useradd ]; then
     install -Dm0644 /usr/etc/default/useradd "$useradd_defaults"
