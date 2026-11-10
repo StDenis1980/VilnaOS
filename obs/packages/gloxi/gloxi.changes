@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 10 00:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.2.0~a1 (ADR 0023): calendar (read only) and GNOME
+  settings through Herkos, with undo; a global key through the
+  GlobalShortcuts portal (gloxi-gtk --toggle); the side panel
+
+-------------------------------------------------------------------
 Mon Nov  9 23:55:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The cloud needs a yes through Herkos (ADR 0025, section 3): the

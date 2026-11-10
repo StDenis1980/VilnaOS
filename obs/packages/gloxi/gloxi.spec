@@ -9,7 +9,7 @@
 %define pythons python3
 # Version comes from gloxi/pyproject.toml; obs/tools/obs_sync.py fills it in.
 Name:           gloxi
-Version:        0.1.0~a1
+Version:        0.2.0~a1
 Release:        0
 Summary:        AI assistant of Vilna OS
 License:        GPL-3.0-or-later

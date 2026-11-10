@@ -64,6 +64,9 @@ jobs:
           import json, subprocess, sys
           import pulsectl
           from gi.repository import Gio
+          # GSettings must reach the person's dconf, not a keyfile in the sandbox.
+          backend = type(Gio.SettingsBackend.get_default()).__name__
+          assert backend == 'DConfSettingsBackend', backend
           # The night light schema the package carries (no gnome-settings-daemon in the runtime).
           assert Gio.SettingsSchemaSource.get_default().lookup(
               'org.gnome.settings-daemon.plugins.color', True)
