@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[Desktop Entry]
+Type=Application
+Name=Install Vilna
+Name[uk]=Встановити Vilna
+Name[es]=Instalar Vilna
+Name[pl]=Zainstaluj Vilna
+Name[de]=Vilna installieren
+Name[fr]=Installer Vilna
+Name[it]=Installa Vilna
+Name[ro]=Instalează Vilna
+Name[cs]=Nainstalovat Vilna
+Name[lt]=Įdiegti Vilna
+Comment=Install Vilna on this computer
+Comment[uk]=Встановити Vilna на цей комп'ютер
+Comment[es]=Instalar Vilna en este ordenador
+Comment[pl]=Zainstaluj Vilna na tym komputerze
+Comment[de]=Vilna auf diesem Computer installieren
+Comment[fr]=Installer Vilna sur cet ordinateur
+Comment[it]=Installa Vilna su questo computer
+Comment[ro]=Instalează Vilna pe acest calculator
+Comment[cs]=Nainstalovat Vilna na tento počítač
+Comment[lt]=Įdiegti Vilna šiame kompiuteryje
+Icon=vilna-installer
+Exec=vilna-installer
+Terminal=false
+Categories=GNOME;GTK;System;
+Keywords=install;installer;Vilna;встановити;установник;
+StartupNotify=true

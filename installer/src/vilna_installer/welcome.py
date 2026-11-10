@@ -25,7 +25,8 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
+gi.require_version("GdkPixbuf", "2.0")
+from gi.repository import Adw, Gdk, GdkPixbuf, Gio, GLib, Gtk  # noqa: E402
 
 from vilna_installer import start  # noqa: E402
 
@@ -55,6 +56,21 @@ CSS = """
 .vilna-other.chosen { background-color: @accent_bg_color; color: @accent_fg_color; }
 .vilna-note { font-size: 10.5pt; }
 """
+
+
+def _wallpaper(path: Path) -> Gdk.Texture | None:
+    """The Blavet wallpaper without its bottom-left corner (start.wallpaper_crop).
+
+    The corner holds the Vilna mark: cut by the screen edge on 16:10 screens
+    and under «Screen reader» on any screen (VM test of 2026-11-09), while
+    the screen shows the Blavet mark itself.
+    """
+    try:
+        full = GdkPixbuf.Pixbuf.new_from_file(str(path))
+    except GLib.Error:
+        return None
+    x, y, width, height = start.wallpaper_crop(full.get_width(), full.get_height())
+    return Gdk.Texture.new_for_pixbuf(full.new_subpixbuf(x, y, width, height))
 
 
 def language_names() -> tuple[object, object]:
@@ -99,13 +115,12 @@ class Welcome(Adw.ApplicationWindow):
         variant = "dark" if dark else "light"
 
         overlay = Gtk.Overlay()
-        wall = BACKGROUNDS / f"vilna-blavet-{variant}.jpg"
-        if wall.is_file():
-            picture = Gtk.Picture.new_for_filename(str(wall))
-            picture.set_content_fit(Gtk.ContentFit.COVER)
-            overlay.set_child(picture)
-        else:
-            overlay.set_child(Gtk.Box())
+        backdrop = Gtk.Box(hexpand=True, vexpand=True)
+        texture = _wallpaper(BACKGROUNDS / f"vilna-blavet-{variant}.jpg")
+        if texture is not None:
+            backdrop = Gtk.Picture.new_for_paintable(texture)
+            backdrop.set_content_fit(Gtk.ContentFit.COVER)
+        overlay.set_child(backdrop)
         veil = Gtk.Box(hexpand=True, vexpand=True)
         veil.add_css_class("vilna-veil")
         overlay.add_overlay(veil)
@@ -202,6 +217,14 @@ class Welcome(Adw.ApplicationWindow):
         self.set_default_widget(self.with_gloxi)
         self._relabel()
         self.buttons[language].grab_focus()
+        # Read every language of the system once the screen is up, so that
+        # «Other languages…» opens at once (it took 1-2 s in the VM).
+        GLib.timeout_add(500, self._load_others)
+
+    def _load_others(self) -> bool:
+        if self.others is None:
+            self.others = start.other_languages(start.system_locales(), self.own_name)
+        return GLib.SOURCE_REMOVE
 
     @property
     def language(self) -> str:
@@ -245,7 +268,21 @@ class Welcome(Adw.ApplicationWindow):
             rows.append(row)
         rows.set_filter_func(lambda row: search.get_text().casefold() in row.search)
         search.connect("search-changed", lambda _s: rows.invalidate_filter())
-        rows.connect("row-activated", lambda _l, row: self._pick_other(dialog, row.locale))
+        # The dialog opens where the person just clicked «Other languages…»:
+        # a double click, or a second click a moment later, landed on a row
+        # and chose a language by accident (VM tests of 2026-11-09). Rows
+        # answer only start.PICK_GUARD_MS after the dialog is on screen
+        # ("map"), not after it was built: building can take a second or two.
+        shown: list[int] = []
+        dialog.connect("map", lambda _d: shown.append(GLib.get_monotonic_time()))
+
+        def on_row(_list: Gtk.ListBox, row: Gtk.ListBoxRow) -> None:
+            if shown and start.pick_allowed(shown[0], GLib.get_monotonic_time()):
+                self._pick_other(dialog, row.locale)
+
+        rows.connect("row-activated", on_row)
+        # Esc in the search field closes the dialog, as anywhere else.
+        search.connect("stop-search", lambda _s: dialog.close())
         scroll = Gtk.ScrolledWindow(vexpand=True, hscrollbar_policy=Gtk.PolicyType.NEVER)
         scroll.set_child(rows)
         box.append(scroll)
