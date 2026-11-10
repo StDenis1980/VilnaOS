@@ -189,6 +189,8 @@ class OwlStates:
         self.waiting = 0
         self.error = False
         self.focused = False
+        self.mic = False  # the microphone is open (ADR 0015)
+        self.speaking = False  # an answer is being read aloud
 
     @property
     def state(self) -> OwlState:
@@ -196,8 +198,12 @@ class OwlStates:
             return OwlState.WAITING
         if self.error:
             return OwlState.ERROR
+        if self.mic:
+            return OwlState.LISTENING
         if self.busy:
             return OwlState.ANSWERING if self.answering else OwlState.THINKING
+        if self.speaking:
+            return OwlState.ANSWERING
         return OwlState.LISTENING if self.focused else OwlState.IDLE
 
     def set_busy(self, busy: bool) -> None:
@@ -221,3 +227,11 @@ class OwlStates:
 
     def focus(self, focused: bool) -> None:
         self.focused = focused
+
+    def set_mic(self, on: bool) -> None:
+        self.mic = on
+        if on:
+            self.error = False
+
+    def set_speaking(self, on: bool) -> None:
+        self.speaking = on

@@ -42,3 +42,7 @@ vilna-installer-chat --window --plan /tmp/plan.json --demo empty   # лише р
 ```
 
 Ще не зроблено: екран підтвердження Herkos (R4) і показ ключа відновлення, звичайний майстер і редактор розділів, рушій встановлення (крок 13 читає його прогрес з `progress.json` поруч із планом), перенесення файлів і відкриття старих зашифрованих томів (бета).
+
+## Пакет OBS
+
+Пакет `vilna-installer` ([`../obs/packages/vilna-installer/`](../obs/packages/vilna-installer/)): команди `vilna-installer` і `vilna-installer-chat`, пункт меню «Встановити Vilna» десятьма мовами (`data/`), значки `vilna-installer`. Він вимагає `vilna-mcp-installer`, `typelib(GnomeDesktop) = 4.0`, `iso-codes` і `vilna-backgrounds`. Ставиться лише в живий образ `Vilna-Live`, де установник запускається сам після автовходу ([`../obs/README.md`](../obs/README.md#живий-образ-з-установником)); у встановленій системі його немає.

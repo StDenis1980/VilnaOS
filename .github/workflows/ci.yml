@@ -44,6 +44,11 @@ jobs:
       - name: The pinned model is the one Hugging Face serves
         if: matrix.python == '3.13'
         run: uv run python tools/check_model.py
+      - name: The pinned voice models are the ones GitHub serves (ADR 0015)
+        if: matrix.python == '3.13'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: uv run python tools/check_voice.py
       - run: uv run pytest
 
   herkos:

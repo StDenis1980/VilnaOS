@@ -147,3 +147,43 @@ def test_plan_for_another_language_says_it_is_not_translated():
         start.start_plan("pt", False, True, locale="de_AT.UTF-8")
     with pytest.raises(ValueError, match="not a UTF-8 locale"):
         start.start_plan("pt", False, True, locale="pt_BR.ISO-8859-1")
+
+
+def test_the_menu_entry_is_named_in_the_ten_languages():
+    desktop = (
+        SRC.parent.parent / "data" / "io.github.stdenis1980.VilnaInstaller.desktop"
+    ).read_text(encoding="utf-8")
+    entry = dict(
+        line.split("=", 1)
+        for line in desktop.splitlines()
+        if "=" in line and not line.startswith("#")
+    )
+    assert entry["Exec"] == "vilna-installer"
+    assert entry["Icon"] == "vilna-installer"
+    for key in ("Name", "Comment"):
+        assert entry[key]
+        for code in start.CODES:
+            if code != "en":
+                assert entry.get(f"{key}[{code}]"), f"{key}[{code}]"
+
+
+def test_euro_is_the_same_utf8_locale():
+    assert start.normalize_locale("pt_PT.UTF-8@euro") == "pt_PT.UTF-8"
+    assert start.parse_supported("pt_PT.UTF-8@euro UTF-8\npt_PT.UTF-8 UTF-8\n") == [
+        "pt_PT.UTF-8",
+        "pt_PT.UTF-8",
+    ]
+
+
+def test_the_wallpaper_loses_the_corner_with_the_vilna_mark():
+    # The mark in the 3840x2160 wallpapers: x 130-250, y 1940-2070.
+    x, y, width, height = start.wallpaper_crop(3840, 2160)
+    assert (x, y) == (461, 0)
+    assert x > 250 and y + height < 1940
+    assert abs(width / height - 16 / 9) < 0.01
+    assert start.wallpaper_crop(1, 1) == (0, 0, 1, 1)
+
+
+def test_a_row_chosen_right_after_the_dialog_opens_does_not_count():
+    assert not start.pick_allowed(1_000_000, 1_000_000 + 200_000)
+    assert start.pick_allowed(1_000_000, 1_000_000 + start.PICK_GUARD_MS * 1000)

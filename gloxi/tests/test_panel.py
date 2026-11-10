@@ -177,3 +177,17 @@ def test_waiting_for_the_person_comes_first():
 def test_every_state_has_words_for_screen_readers():
     texts = {panel.state_text(state) for state in OwlState}
     assert len(texts) == len(OwlState)
+
+
+def test_owl_listens_to_the_microphone_and_speaks():
+    owl = OwlStates()
+    owl.set_mic(True)
+    assert owl.state is OwlState.LISTENING
+    owl.set_busy(True)
+    assert owl.state is OwlState.LISTENING  # the open microphone shows first
+    owl.set_mic(False)
+    owl.set_busy(False)
+    owl.set_speaking(True)
+    assert owl.state is OwlState.ANSWERING
+    owl.set_speaking(False)
+    assert owl.state is OwlState.IDLE

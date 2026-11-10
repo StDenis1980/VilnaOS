@@ -9,4 +9,4 @@
 - налаштування знімків btrfs і транзакційних оновлень, на які спирається Mitos;
 - перевірка на мінімальному залізі (Intel Core 8 / Ryzen 2000, 8 ГБ RAM).
 
-Стан: визначено склад образу (чернетка) — [`docs/composition.md`](docs/composition.md), список пакетів — [`packages.yaml`](packages.yaml), встановлення в діалозі з Gloxi — [`docs/installer.md`](docs/installer.md). Перший каркас образу (KIWI, диск для віртуальної машини) — [`../obs/images/Vilna/`](../obs/images/Vilna/), опис у [`../obs/README.md`](../obs/README.md#образ).
+Стан: визначено склад образу (чернетка) — [`docs/composition.md`](docs/composition.md), список пакетів — [`packages.yaml`](packages.yaml), встановлення в діалозі з Gloxi — [`docs/installer.md`](docs/installer.md). Перший каркас образу (KIWI, диск для віртуальної машини) — [`../obs/images/Vilna/`](../obs/images/Vilna/), опис у [`../obs/README.md`](../obs/README.md#образ). Живий образ ISO з установником — [`../obs/images/Vilna-Live/`](../obs/images/Vilna-Live/), опис у [`../obs/README.md`](../obs/README.md#живий-образ-з-установником).

@@ -221,6 +221,10 @@ def build_parser() -> argparse.ArgumentParser:
     ask = sub.add_parser("ask", help="ask one question and exit")
     ask.add_argument("question", nargs="+")
     sub.add_parser("check", help="will this computer run the local model well?")
+    voice = sub.add_parser("voice", help="speech on this computer: status, download, say, listen")
+    voice.add_argument("action", choices=("status", "download", "say", "listen"))
+    voice.add_argument("text", nargs="*", help="for say: what to read aloud")
+    voice.add_argument("--lang", help="language code (uk, en, es, pl, de, fr, it, ro, cs, lt)")
     return parser
 
 
@@ -391,6 +395,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "check":
         print(check.collect().render())
         return 0
+    if args.command == "voice":
+        from gloxi.voice import cli as voice_cli
+
+        return voice_cli.main(args.action, args.text, args.lang)
     try:
         settings = _settings(args)
     except ConfigError as exc:
