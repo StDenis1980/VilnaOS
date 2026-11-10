@@ -1,0 +1,5 @@
+-------------------------------------------------------------------
+Tue Nov 10 08:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: the installer's MCP server, the installation plan
+  format and its validator (vilna-plan-check), 0.1 preview
