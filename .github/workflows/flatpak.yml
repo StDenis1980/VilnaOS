@@ -8,9 +8,9 @@ on:
   push:
     branches: [main]
     tags: ["gloxi-v*"]
-    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", ".github/workflows/flatpak.yml"]
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", "mcp/settings/**", "mcp/calendar/**", ".github/workflows/flatpak.yml"]
   pull_request:
-    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", ".github/workflows/flatpak.yml"]
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", "mcp/settings/**", "mcp/calendar/**", ".github/workflows/flatpak.yml"]
   workflow_dispatch:
 
 permissions:
@@ -58,6 +58,36 @@ jobs:
           h.stop()
           print('herkos ok', h.socket)
           "
+      - name: The settings tool answers inside the sandbox
+        run: |
+          flatpak run --command=python3 io.github.stdenis1980.Gloxi -c "
+          import json, subprocess, sys
+          import pulsectl
+          from gi.repository import Gio
+          # GSettings must reach the person's dconf, not a keyfile in the sandbox.
+          backend = type(Gio.SettingsBackend.get_default()).__name__
+          assert backend == 'DConfSettingsBackend', backend
+          # The night light schema the package carries (no gnome-settings-daemon in the runtime).
+          assert Gio.SettingsSchemaSource.get_default().lookup(
+              'org.gnome.settings-daemon.plugins.color', True)
+          req = {'jsonrpc': '2.0', 'id': 1, 'method': 'tools/list'}
+          out = subprocess.run([sys.executable, '-m', 'vilna_mcp_settings', '--memory'],
+              input=json.dumps(req) + '\\n', capture_output=True, text=True, timeout=30)
+          tools = {t['name'] for t in json.loads(out.stdout)['result']['tools']}
+          assert 'set_night_light' in tools, out
+          print('settings ok', sorted(tools))
+          "
+      - name: Is Evolution Data Server in the runtime? (for the calendar tool, not required yet)
+        run: |
+          flatpak run --command=python3 io.github.stdenis1980.Gloxi -c "
+          import gi
+          for name, version in (('EDataServer', '1.2'), ('ECal', '2.0'), ('ICalGLib', '3.0')):
+              try:
+                  gi.require_version(name, version)
+                  print(name, version, 'present')
+              except ValueError as e:
+                  print(name, version, 'missing:', e)
+          " || true
       - name: The bundled llama-server runs a model through Gloxi's engine
         run: |
           # A tiny test model (not the real one): this checks the build, not the answers.
@@ -82,12 +112,70 @@ jobs:
           assert r.status_code == 200
           e.stop()
           "
+      - name: A signed Vilna repository from this very bundle (ADR 0024)
+        id: repo
+        env:
+          # The real signing key and address only on a release tag. Everywhere
+          # else a throwaway key checks the path from the bundle to an install.
+          REPO_KEY: ${{ startsWith(github.ref, 'refs/tags/gloxi-v') && secrets.VILNA_FLATPAK_KEY || '' }}
+          REPO_URL: ${{ startsWith(github.ref, 'refs/tags/gloxi-v') && vars.VILNA_FLATPAK_URL || '' }}
+        run: |
+          set -eu
+          export GNUPGHOME="$(mktemp -d)"
+          real=false
+          if [ -n "$REPO_KEY" ] && [ -n "$REPO_URL" ]; then
+            printf '%s\n' "$REPO_KEY" | gpg --batch --import
+            real=true
+          else
+            gpg --batch --passphrase '' --quick-gen-key 'Vilna CI check <ci-check@invalid>' ed25519 sign 1d
+          fi
+          fpr="$(gpg --batch --list-secret-keys --with-colons | awk -F: '/^fpr:/ {print $10; exit}')"
+          gpg --batch --export "$fpr" > "$PWD/vilna-key.gpg"
+          mkdir -p vilna-flatpak
+          if command -v ostree >/dev/null; then ostree init --mode=archive-z2 --repo=vilna-flatpak/repo; fi
+          flatpak build-import-bundle --gpg-sign="$fpr" --gpg-homedir="$GNUPGHOME" vilna-flatpak/repo gloxi.flatpak
+          flatpak build-update-repo --gpg-sign="$fpr" --gpg-homedir="$GNUPGHOME" \
+            --title=Vilna --generate-static-deltas --prune vilna-flatpak/repo
+          # The tool runs on the Python inside the installed Gloxi: this image
+          # need not have python3 of its own. Inside the sandbox it cannot
+          # create folders in the checkout (owned by the runner's user), so
+          # the folders it writes to are made here first.
+          mkdir -p check-ref
+          chmod 0777 check-ref vilna-flatpak
+          tool() {
+            flatpak run --filesystem="$PWD" --command=python3 io.github.stdenis1980.Gloxi \
+              "$PWD/gloxi/tools/flatpak_repo.py" --key "$PWD/vilna-key.gpg" "$@"
+          }
+          tool --test --url "file://$PWD/vilna-flatpak/repo/" --out "$PWD/check-ref"
+          if [ "$real" = true ]; then
+            tool --url "$REPO_URL" --out "$PWD/vilna-flatpak"
+          elif [ "${GITHUB_REF#refs/tags/gloxi-v}" != "$GITHUB_REF" ]; then
+            echo "::warning::No VILNA_FLATPAK_KEY secret or VILNA_FLATPAK_URL variable: the Vilna repository is not built for this release."
+          fi
+          echo "real=$real" >> "$GITHUB_OUTPUT"
+      - name: Gloxi installs from that repository with a .flatpakref, signature checked
+        run: |
+          set -eu
+          flatpak uninstall -y --noninteractive io.github.stdenis1980.Gloxi
+          flatpak install -y --noninteractive --from check-ref/io.github.stdenis1980.Gloxi.flatpakref
+          flatpak remote-ls --columns=application vilna | grep -x io.github.stdenis1980.Gloxi
+          test "$(flatpak remote-info --show-ref vilna io.github.stdenis1980.Gloxi)" \
+            = app/io.github.stdenis1980.Gloxi/x86_64/master
+          flatpak remotes -d --columns=name,options | grep '^vilna' | grep -v 'no-gpg-verify'
+          flatpak run --command=gloxi io.github.stdenis1980.Gloxi --version
       - name: Keep the checked bundle for the release
         if: startsWith(github.ref, 'refs/tags/gloxi-v')
         uses: actions/upload-artifact@v4
         with:
           name: gloxi-release
           path: gloxi.flatpak
+          if-no-files-found: error
+      - name: Keep the signed repository for publishing (only with Denys's agreement)
+        if: steps.repo.outputs.real == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vilna-flatpak-repo
+          path: vilna-flatpak
           if-no-files-found: error
 
   release:
@@ -117,3 +205,25 @@ jobs:
           if [ "$PRERELEASE" = true ]; then flag="--prerelease"; fi
           gh release create "$GITHUB_REF_NAME" gloxi.flatpak gloxi.flatpak.sha256 \
             --verify-tag --title "Gloxi $VERSION" --notes-file notes.md $flag
+
+  publish:
+    # The signed Vilna repository goes to bunny.net (ADR 0024) only when Denys
+    # turned it on (variable VILNA_FLATPAK_PUBLISH = true) and, if the
+    # flatpak-publish environment asks for a reviewer, approved this run.
+    if: startsWith(github.ref, 'refs/tags/gloxi-v') && vars.VILNA_FLATPAK_PUBLISH == 'true'
+    needs: [gloxi, release]
+    runs-on: ubuntu-latest
+    environment: flatpak-publish
+    concurrency: vilna-flatpak-publish
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: vilna-flatpak-repo
+          path: vilna-flatpak
+      - name: Upload, summary last
+        env:
+          BUNNY_STORAGE_PASSWORD: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+          ZONE: ${{ vars.BUNNY_STORAGE_ZONE }}
+          ENDPOINT: ${{ vars.BUNNY_STORAGE_ENDPOINT || 'storage.bunnycdn.com' }}
+        run: python3 gloxi/tools/upload_bunny.py vilna-flatpak --zone "$ZONE" --endpoint "$ENDPOINT"

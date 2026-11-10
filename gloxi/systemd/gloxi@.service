@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The Gloxi of the person with uid %i (ADR 0025): the conversation, the
+# router, the privacy gateway and the cloud key, as the system user
+# gloxi-%i. It sees none of the person's files and none of their session:
+# everything it does goes through the system Herkos.
+[Unit]
+Description=Gloxi assistant for uid %i
+Documentation=https://github.com/StDenis1980/VilnaOS/blob/main/docs/adr/0025-gloxi-system-service.md
+Requires=gloxi@%i.socket
+After=gloxi@%i.socket vilna-llm.service
+# The shared local model; Gloxi still answers (with an error) without it.
+Wants=vilna-llm.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/gloxid --owner-uid %i
+# The listening socket arrives as stdin, as for herkosd.
+StandardInput=socket
+StandardOutput=journal
+StandardError=journal
+User=gloxi-%i
+Group=gloxi
+StateDirectory=gloxi/%i
+StateDirectoryMode=0700
+UMask=0077
+Environment=HOME=/var/lib/gloxi/%i
+Environment=XDG_CONFIG_HOME=/var/lib/gloxi/%i/config
+Environment=XDG_STATE_HOME=/var/lib/gloxi/%i/state
+Environment=XDG_DATA_HOME=/var/lib/gloxi/%i/data
+Environment=XDG_CACHE_HOME=/var/lib/gloxi/%i/cache
+Environment=GLOXI_START_SERVER=0
+Environment=GLOXI_LOCAL_URL=http://127.0.0.1:8080/v1
+Environment=GLOXI_LOCAL_KEY_FILE=/var/lib/vilna-llm/key
+Environment=HERKOS_SOCKET=/run/herkos/herkos.sock
+Restart=on-failure
+RestartSec=2
+# A broken config.toml: do not restart in a loop (gloxid exits with 78).
+RestartPreventExitStatus=78
+
+# Hardening (permissions.md 9.1).
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+# Unix sockets for the window and Herkos; TCP for the model on localhost.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+# No internet until the person turns the cloud on and Herkos allows it
+# (ADR 0025, point 3: vilna-gloxi-network@%i adds a drop-in).
+IPAddressDeny=any
+IPAddressAllow=localhost
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

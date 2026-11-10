@@ -6,6 +6,13 @@
     <value nick="one-third" value="1"/>
   </enum>
 
+  <enum id="org.gnome.shell.extensions.vilna.PanelSize">
+    <value nick="compact" value="0"/>
+    <value nick="one-sixth" value="1"/>
+    <value nick="one-third" value="2"/>
+    <value nick="custom" value="3"/>
+  </enum>
+
   <schema id="org.gnome.shell.extensions.vilna" path="/org/gnome/shell/extensions/vilna/">
     <key name="password-latin-layout" type="b">
       <default>true</default>
@@ -21,6 +28,16 @@
       <default>true</default>
       <summary>Keep Gloxi above other windows</summary>
       <description>Keep the Gloxi window above all other windows. The Herkos confirmation dialog is always kept above.</description>
+    </key>
+    <key name="gloxi-panel-edge" type="b">
+      <default>true</default>
+      <summary>Keep Gloxi at the right edge of the screen</summary>
+      <description>Place the Gloxi window at the right edge of the screen, like a side panel, when it appears and when its size changes. Gloxi sets the size.</description>
+    </key>
+    <key name="gloxi-panel-size" enum="org.gnome.shell.extensions.vilna.PanelSize">
+      <default>'one-sixth'</default>
+      <summary>Size of the Gloxi panel</summary>
+      <description>compact: the last lines of the chat and the input, at the bottom right; one-sixth or one-third: that share of the screen width, the whole height; custom: the size the person gave the window.</description>
     </key>
     <key name="gloxi-dock" type="b">
       <default>false</default>

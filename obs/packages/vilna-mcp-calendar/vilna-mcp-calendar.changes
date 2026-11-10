@@ -1,0 +1,5 @@
+-------------------------------------------------------------------
+Mon Nov  9 21:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: MCP server "calendar" 0.1 preview (ADR 0023, read only), started
+  by Herkos as the person (vilna-mcp-calendar@.service)

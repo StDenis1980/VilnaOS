@@ -9,7 +9,7 @@
 %define pythons python3
 # Version comes from gloxi/pyproject.toml; obs/tools/obs_sync.py fills it in.
 Name:           gloxi
-Version:        0.1.0~a1
+Version:        0.2.0~a1
 Release:        0
 Summary:        AI assistant of Vilna OS
 License:        GPL-3.0-or-later
@@ -24,15 +24,23 @@ BuildRequires:  %{python_module vilna-privacy-gateway}
 BuildRequires:  %{python_module wheel}
 BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
+BuildRequires:  sysuser-tools
+BuildRequires:  systemd-rpm-macros
+%sysusers_requires
 Requires:       python3-httpx >= 0.27
 # Masks personal data before it goes to the cloud (on by default).
 Requires:       python3-vilna-privacy-gateway
-# The chat window (gloxi-gtk): PyGObject with GTK 4 and libadwaita.
-Requires:       python3-gobject
-Requires:       typelib(Adw) = 1
-Requires:       typelib(Gtk) = 4.0
-# llama-server is optional: Gloxi can talk to any OpenAI-compatible server.
-Recommends:     llama.cpp
+# Everything Gloxi does goes through the system Herkos (herkosd); the
+# client library is in herkos-agent.
+Requires:       herkos
+Requires:       herkos-agent
+# useradd/userdel for vilna-people-sync.
+Requires:       shadow
+# The shared local model (vilna-llm.service).
+Requires:       llamacpp
+# vilna-llm.service starts only when the weights are there.
+Recommends:     vilna-model-default
+%{?systemd_ordering}
 BuildArch:      noarch
 
 %description
@@ -40,8 +48,25 @@ Gloxi is the AI assistant of Vilna OS. It answers simple and private
 requests with a small local model and does everything on the system only
 through the Herkos permission gateway.
 
-This 0.1 preview is a chat (GTK window and terminal) with a local model
-served by llama-server (or any OpenAI-compatible API).
+This package is the Gloxi service (ADR 0025): each person's Gloxi runs
+as its own system user (gloxi@<uid>.service) and talks to the system
+Herkos; one local model (vilna-llm.service) serves everybody, and
+vilna-people-sync gives every person on the computer their Gloxi.
+
+%package session
+Summary:        Gloxi window in the person's session
+License:        GPL-3.0-or-later
+Requires:       %{name} = %{version}-%{release}
+# The chat window (gloxi-gtk): PyGObject with GTK 4 and libadwaita.
+Requires:       python3-gobject
+Requires:       typelib(Adw) = 1
+Requires:       typelib(Gtk) = 4.0
+BuildArch:      noarch
+
+%description session
+The Gloxi window (gloxi-gtk): the side panel, the hotkey and the
+conversation. It only shows the person's Gloxi service and passes on
+what the person types.
 
 %prep
 %autosetup -p1
@@ -49,23 +74,59 @@ served by llama-server (or any OpenAI-compatible API).
 %build
 %pyproject_wheel
 
+%sysusers_generate_pre systemd/gloxi.sysusers gloxi gloxi.conf
+
 %install
 %pyproject_install
 %python_expand %fdupes %{buildroot}%{$python_sitelib}
 install -Dm0644 data/io.github.stdenis1980.Gloxi.desktop \
   %{buildroot}%{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
+for unit in gloxi@.socket gloxi@.service vilna-llm.service \
+            vilna-people-sync.service vilna-people-sync.path \
+            vilna-mcp-gloxi-network@.service; do
+  install -Dm0644 systemd/$unit %{buildroot}%{_unitdir}/$unit
+done
+install -Dm0644 systemd/gloxi.sysusers %{buildroot}%{_sysusersdir}/gloxi.conf
+install -d %{buildroot}%{_datadir}/vilna/models
 
 %check
 %pytest
+
+%pre -f gloxi.pre
+%service_add_pre vilna-people-sync.service vilna-people-sync.path vilna-llm.service
+
+%post
+%service_add_post vilna-people-sync.service vilna-people-sync.path vilna-llm.service
+
+%preun
+%service_del_preun vilna-people-sync.service vilna-people-sync.path vilna-llm.service
+
+%postun
+%service_del_postun vilna-people-sync.service vilna-people-sync.path vilna-llm.service
 
 %files
 %license LICENSE
 %doc README.md
 %{_bindir}/gloxi
-%{_bindir}/gloxi-gtk
+%{_bindir}/gloxid
+%{_bindir}/vilna-people-sync
+%{_bindir}/vilna-mcp-gloxi-network
 %{_bindir}/gloxi-bench
-%{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
+%{_unitdir}/gloxi@.socket
+%{_unitdir}/gloxi@.service
+%{_unitdir}/vilna-llm.service
+%{_unitdir}/vilna-people-sync.service
+%{_unitdir}/vilna-people-sync.path
+%{_unitdir}/vilna-mcp-gloxi-network@.service
+%{_sysusersdir}/gloxi.conf
+%dir %{_datadir}/vilna
+%dir %{_datadir}/vilna/models
 %{python_sitelib}/gloxi
 %{python_sitelib}/gloxi-*.dist-info
+
+%files session
+%license LICENSE
+%{_bindir}/gloxi-gtk
+%{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
 
 %changelog

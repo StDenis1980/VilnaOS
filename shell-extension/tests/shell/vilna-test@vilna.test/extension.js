@@ -152,6 +152,59 @@ const dockPanel = () => {
     return p ? [p.x, p.y, p.width, p.height] : null;
 };
 
+function setShellProperty(name, variant) {
+    return new Promise((resolve, reject) => Gio.DBus.session.call('io.github.stdenis1980.VilnaShell',
+        '/io/github/stdenis1980/VilnaShell', 'org.freedesktop.DBus.Properties', 'Set',
+        new GLib.Variant('(ssv)', ['io.github.stdenis1980.VilnaShell1', name, variant]),
+        null, Gio.DBusCallFlags.NONE, -1, null, (connection, result) => {
+            try {
+                connection.call_finish(result);
+                resolve(true);
+            } catch (e) {
+                reject(e);
+            }
+        }));
+}
+
+const frame = w => {
+    const r = w.get_frame_rect();
+    return [r.x, r.y, r.width, r.height];
+};
+
+// Stage A: the Shell keeps the Gloxi window at the right edge.
+async function panelPlacement(settings) {
+    const gloxi = findWindow(GLOXI);
+    const [, top, , height] = workArea();
+    const bottom = top + height;
+    const tall = h => h - 16;
+    await waitFor(() => frame(gloxi)[0] === 1592, 3000);
+    check('panel: a sixth at the right edge on first show', frame(gloxi), [1592, top + 8, 320, tall(height)]);
+    settings.set_string('gloxi-panel-size', 'compact');
+    await sleep(800);
+    check('panel: compact at the bottom right', frame(gloxi), [1592, bottom - 8 - 220, 320, 220]);
+    await setShellProperty('GloxiPanelSize', new GLib.Variant('s', 'one-third'));
+    await sleep(800);
+    check('panel: a third, set over D-Bus', [settings.get_string('gloxi-panel-size'), frame(gloxi)],
+        ['one-third', [1272, top + 8, 640, tall(height)]]);
+    await setShellProperty('GloxiPanelSize', new GLib.Variant('s', 'half')).catch(() => false);
+    await sleep(300);
+    check('panel: an unknown size over D-Bus is ignored', settings.get_string('gloxi-panel-size'), 'one-third');
+    gloxi.move_resize_frame(true, 300, 200, 500, 600);
+    await sleep(500);
+    settings.set_string('gloxi-panel-size', 'custom');
+    await sleep(800);
+    check('panel: custom keeps the size, back at the edge', frame(gloxi), [1920 - 8 - 500, top + 8, 500, 600]);
+    await setShellProperty('GloxiPanelEdge', new GLib.Variant('b', false));
+    await sleep(300);
+    gloxi.move_frame(true, 100, 100);
+    settings.set_string('gloxi-panel-size', 'one-sixth');
+    await sleep(800);
+    check('panel: edge off, the window stays where it is', frame(gloxi).slice(0, 2), [100, 100]);
+    settings.set_boolean('gloxi-panel-edge', true);
+    await sleep(800);
+    check('panel: edge on again', frame(gloxi), [1592, top + 8, 320, tall(height)]);
+}
+
 async function windows() {
     const settings = vilnaSettings();
     GLib.file_set_contents(`${GLib.getenv('VILNA_TEST_OUT')}.windows`, '');
@@ -190,6 +243,7 @@ async function windows() {
     check('setting on again: Gloxi above', findWindow(GLOXI).is_above(), true);
 
     check('D-Bus name owned in the user session', await nameOwned('io.github.stdenis1980.VilnaShell'), true);
+    await panelPlacement(settings);
 
     const [mx, mw, mh] = [0, 1920, 1080];
     check('monitor is 1920x1080', [Main.layoutManager.primaryMonitor.width, Main.layoutManager.primaryMonitor.height], [mw, mh]);

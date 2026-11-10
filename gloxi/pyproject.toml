@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 [project]
 name = "gloxi"
-version = "0.1.0a1"
+version = "0.2.0a1"
 description = "Gloxi, the AI assistant of Vilna OS"
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -18,6 +18,9 @@ tools = ["herkos"]
 [project.scripts]
 gloxi = "gloxi.cli:main"
 gloxi-gtk = "gloxi.gui.window:main"
+gloxid = "gloxi.service:main"
+vilna-people-sync = "gloxi.people:main"
+vilna-mcp-gloxi-network = "gloxi.network:main"
 gloxi-bench = "gloxi.bench.__main__:main"
 
 [dependency-groups]

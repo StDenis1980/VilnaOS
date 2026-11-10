@@ -550,7 +550,7 @@ msgstr ""
 msgid "Please write a few words, or /cancel to stop."
 msgstr ""
 
-#: src/gloxi/feedback.py
+#: src/gloxi/feedback.py src/gloxi/gui/panel.py
 msgid "Something went wrong"
 msgstr ""
 
@@ -685,11 +685,11 @@ msgstr ""
 msgid "Gloxi, feedback"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "Local"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "On this computer"
 msgstr ""
 
@@ -725,6 +725,62 @@ msgstr ""
 msgid "{model}, on this computer"
 msgstr ""
 
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is answering"
+msgstr "Gloxi está respondiendo"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is listening"
+msgstr "Gloxi te escucha"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is ready"
+msgstr "Gloxi espera tu pregunta"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is thinking"
+msgstr "Gloxi está pensando"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is waiting for you"
+msgstr "Gloxi te espera"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr "Gloxi no está disponible: su servicio no se está ejecutando. Inténtalo de nuevo en un momento."
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr "Gloxi está abierto en otra ventana."
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
+msgstr "Se perdió la conexión con el servicio de Gloxi. Inténtalo de nuevo."
+
+#: src/gloxi/gui/shortcuts.py
+msgid "Show or hide Gloxi"
+msgstr "Mostrar u ocultar Gloxi"
+
+#: src/gloxi/gui/window.py
+msgid "1/3"
+msgstr "1/3"
+
+#: src/gloxi/gui/window.py
+msgid "1/6"
+msgstr "1/6"
+
+#: src/gloxi/gui/window.py
+msgid "A sixth of the screen"
+msgstr "Un sexto de la pantalla"
+
+#: src/gloxi/gui/window.py
+msgid "A third of the screen"
+msgstr "Un tercio de la pantalla"
+
+#: src/gloxi/gui/window.py
+msgid "Above other windows"
+msgstr "Encima de otras ventanas"
+
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
 msgstr ""
@@ -736,6 +792,14 @@ msgstr ""
 #: src/gloxi/gui/window.py
 msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Background"
+msgstr "Fondo"
+
+#: src/gloxi/gui/window.py
+msgid "Background opacity"
+msgstr "Opacidad del fondo"
 
 #: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
@@ -804,8 +868,16 @@ msgid "Not turned on: you said no in the Herkos window."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Off in high contrast"
+msgstr "Desactivado con alto contraste"
+
+#: src/gloxi/gui/window.py
 msgid "Only the local model: turn the cloud on in the settings to choose another"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Panel size and look"
+msgstr "Tamaño y aspecto del panel"
 
 #: src/gloxi/gui/window.py
 msgid "Programs for Gloxi"
@@ -820,8 +892,52 @@ msgid "Send"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Show Gloxi, or hide it if it is in front"
+msgstr "Muestra Gloxi, o lo oculta si está delante"
+
+#: src/gloxi/gui/window.py
+msgid "Size"
+msgstr "Tamaño"
+
+#: src/gloxi/gui/window.py
+msgid "Small"
+msgstr "Pequeño"
+
+#: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "The last lines of the chat and the input"
+msgstr "Las últimas líneas del chat y el campo de texto"
+
+#: src/gloxi/gui/window.py
+msgid "Translucent"
+msgstr "Translúcido"
+
+#: src/gloxi/gui/window.py
+msgid "Your own size. Drag an edge of the panel to change it."
+msgstr "Tu propio tamaño. Arrastra un borde del panel para cambiarlo."
+
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxi comprueba si puede conectarse a internet."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi no puede conectarse a internet, así que el modelo en la nube no puede responder."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxi necesita internet para enviar tu mensaje al modelo en la nube."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos no está en marcha, así que Gloxi no puede conectarse a internet para la nube."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "La nube está desactivada."
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"

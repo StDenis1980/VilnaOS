@@ -46,7 +46,7 @@ The full guide covers installing llama.cpp and uv, the GTK window, working with 
 | When | What |
 | --- | --- |
 | January 2027 | **Gloxi 0.1 preview**: chat with a local model, model router, privacy gateway, Herkos-lite with a files tool |
-| February to March 2027 | Gloxi 0.2: calendar, GNOME settings, side panel window, Flathub |
+| February to March 2027 | Gloxi 0.2: calendar, GNOME settings, side panel window, Vilna Flatpak repository |
 | April to September 2027 | First Vilna image on openSUSE Aeon, Gloxi as a system service, system Herkos in Rust |
 | by January 2028 | Vilna alpha |
 | 2028 | Public beta |

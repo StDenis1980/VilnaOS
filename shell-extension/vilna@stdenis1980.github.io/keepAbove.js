@@ -11,7 +11,7 @@
 
 import {wantsAbove, windowRole} from './lib/windowRules.js';
 
-function roleOf(window) {
+export function roleOf(window) {
     return windowRole([window.get_wm_class(), window.get_gtk_application_id()]);
 }
 

@@ -33,6 +33,15 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           python3 obs/tools/obs_sync.py assemble build/obs
+      - name: Cache downloaded sources
+        uses: actions/cache@v4
+        with:
+          path: build/downloads
+          key: obs-downloads-${{ hashFiles('obs/packages/*/_service') }}
+      - name: Fetch downloaded sources
+        # What OBS downloads itself (_service: download_url + verify_file),
+        # such as the model weights of vilna-model-default.
+        run: python3 obs/tools/fetch_sources.py build/obs --cache build/downloads
       - name: Build RPMs
         run: |
           set -e

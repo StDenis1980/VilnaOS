@@ -25,16 +25,22 @@
       <li xml:lang="uk">Якщо ви вмикаєте хмару власним ключем, особисті дані маскуються, перш ніж покинуть комп'ютер</li>
       <li>Works only in the folders you choose, and only through Herkos, which asks you first</li>
       <li xml:lang="uk">Працює лише в теках, які ви обрали, і лише через Herkos, який спершу питає вас</li>
+      <li>Changes a few GNOME settings when you ask: light or dark style, night light, text size, do not disturb and sound, each with undo</li>
+      <li xml:lang="uk">На ваше прохання змінює кілька налаштувань GNOME: світлий чи темний стиль, нічне світло, розмір тексту, «Не турбувати» і звук, кожне можна скасувати</li>
     </ul>
     <p>
       In this package Herkos runs in the same sandbox as Gloxi. That is weaker
       than in Vilna OS, where Herkos is a system service kept apart from your
-      session.
+      session. For the settings, this package can reach the GNOME settings
+      store (dconf) and the sound server; only Herkos-lite keeps Gloxi to the
+      settings in its list.
     </p>
     <p xml:lang="uk">
       У цьому пакеті Herkos працює в тій самій пісочниці, що й Gloxi. Це слабший
       захист, ніж у Vilna OS, де Herkos — системна служба, відокремлена від
-      вашого сеансу.
+      вашого сеансу. Заради налаштувань цей пакет має доступ до сховища
+      налаштувань GNOME (dconf) і до звукового сервера; тримати Gloxi в межах
+      свого списку налаштувань може лише Herkos-lite.
     </p>
     <p>This is a preview for testers.</p>
     <p xml:lang="uk">Це попередня версія для тестувальників.</p>
@@ -74,6 +80,17 @@
   </supports>
 
   <releases>
+    <release version="0.2.0~a1" type="development" date="2026-11-10">
+      <description>
+        <p>Second trial release for testers.</p>
+        <ul>
+          <li>Reads your calendars (in Vilna OS; not yet in this package)</li>
+          <li>Changes light or dark style, accent colour, text size, night light, do not disturb and sound when you ask, each with undo in the Permissions window</li>
+          <li>A key to show or hide Gloxi from anywhere: Super+G or the assistant key, which you confirm in GNOME</li>
+          <li>A side panel at the right edge of the screen</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.0~a1" type="development" date="2026-11-04">
       <description>
         <p>First trial release for testers: it checks the release path from the tag to the download.</p>

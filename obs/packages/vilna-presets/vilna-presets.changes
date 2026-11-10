@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov  9 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.4: enable vilna-people-sync (service and path) and
+  vilna-llm.service: a Gloxi service for every person (ADR 0025)
+
+-------------------------------------------------------------------
 Thu Nov  5 14:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.3: enable NetworkManager.service (and wait-online);

@@ -404,3 +404,53 @@ msgstr "{how} · у {where}"
 
 msgid "{name} and {n} more"
 msgstr "{name} і ще {n}"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Подивитися налаштування стільниці"
+
+msgid "Switch between the light and the dark style"
+msgstr "Перемкнути світлу чи темну тему"
+
+msgid "Change the accent colour"
+msgstr "Змінити колір акценту"
+
+msgid "Change the text size"
+msgstr "Змінити розмір тексту"
+
+msgid "Change night light"
+msgstr "Змінити нічне світло"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Увімкнути чи вимкнути «Не турбувати»"
+
+msgid "Change the volume"
+msgstr "Змінити гучність"
+
+msgid "Mute or unmute the sound"
+msgstr "Вимкнути чи ввімкнути звук"
+
+msgid "Play sound through another output"
+msgstr "Виводити звук на інший пристрій"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Скасувати попередню зміну налаштувань"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Переглянути список календарів"
+
+msgid "Read the calendar"
+msgstr "Прочитати календар"
+
+msgid "Search the calendar"
+msgstr "Шукати в календарі"
+
+msgid "See whether Gloxi may reach the internet"
+msgstr "Подивитися, чи може Gloxi виходити в інтернет"
+
+msgid "Let Gloxi reach the internet for the cloud model"
+msgstr "Дозволити Gloxi виходити в інтернет для хмарної моделі"
+
+msgid "Let Gloxi reach only this computer"
+msgstr "Дозволити Gloxi зв'язок лише з цим комп'ютером"

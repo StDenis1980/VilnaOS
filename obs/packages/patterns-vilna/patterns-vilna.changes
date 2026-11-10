@@ -1,7 +1,14 @@
 -------------------------------------------------------------------
-Mon Nov  9 17:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Tue Nov 10 07:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
-- 0.7: require vilna-backup (the Backups window and timers).
+- 0.8: require vilna-backup (the Backups window and timers).
+
+-------------------------------------------------------------------
+Mon Nov  9 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.7: require gloxi-session (the Gloxi window, split from gloxi,
+  which is now the Gloxi service, ADR 0025) and vilna-model-default
+  (the weights of the local model, in the image, ADR 0006).
 
 -------------------------------------------------------------------
 Sat Nov  7 23:59:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
