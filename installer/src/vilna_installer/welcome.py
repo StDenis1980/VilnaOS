@@ -224,6 +224,16 @@ class Welcome(Adw.ApplicationWindow):
         # Read every language of the system once the screen is up, so that
         # «Other languages…» opens at once (it took 1-2 s in the VM).
         GLib.timeout_add(500, self._load_others)
+        self.connect("map", self._on_map)
+
+    def _on_map(self, _window: Gtk.Window) -> None:
+        if not getattr(self, "_model_woken", False):
+            self._model_woken = True
+            GLib.timeout_add_seconds(start.MODEL_WAKE_DELAY_S, self._wake_model)
+
+    def _wake_model(self) -> bool:
+        start.wake_model()
+        return GLib.SOURCE_REMOVE
 
     def _load_others(self) -> bool:
         if self.others is None:

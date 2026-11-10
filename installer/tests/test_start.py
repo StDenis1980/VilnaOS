@@ -187,3 +187,20 @@ def test_the_wallpaper_loses_the_corner_with_the_vilna_mark():
 def test_a_row_chosen_right_after_the_dialog_opens_does_not_count():
     assert not start.pick_allowed(1_000_000, 1_000_000 + 200_000)
     assert start.pick_allowed(1_000_000, 1_000_000 + start.PICK_GUARD_MS * 1000)
+
+
+def test_the_model_is_woken_without_waiting_or_asking():
+    calls = []
+    assert start.wake_model(lambda cmd, **kw: calls.append((cmd, kw)))
+    [(cmd, kw)] = calls
+    assert cmd[:2] == ["systemctl", "start"]
+    assert "--no-block" in cmd and "--no-ask-password" in cmd
+    assert cmd[-1] == "vilna-llm.service"
+    assert kw["check"] is False
+
+
+def test_no_systemctl_is_no_crash():
+    def missing(cmd, **kw):
+        raise FileNotFoundError(cmd[0])
+
+    assert not start.wake_model(missing)
