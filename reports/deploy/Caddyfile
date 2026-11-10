@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Caddy in front of vilna-reports-server: TLS (Let's Encrypt) and nothing
+# else. There is no `log` directive in the site, so Caddy writes no access
+# log; the global log below drops client addresses from the error log too
+# (ADR 0018 section 6: IP addresses are not stored).
+{
+	log {
+		output stderr
+		format filter {
+			wrap json
+			fields {
+				remote_ip delete
+				remote_port delete
+				client_ip delete
+				request>remote_ip delete
+				request>remote_port delete
+				request>client_ip delete
+				request>headers delete
+			}
+		}
+	}
+}
+
+reports.vilnaos.com {
+	request_body {
+		max_size 64KB
+	}
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000"
+	}
+	@app path / /healthz /v1/* /admin /admin/*
+	reverse_proxy @app 127.0.0.1:8087 {
+		# Used for the request limits in memory only, never stored.
+		header_up X-Forwarded-For {remote_host}
+	}
+	respond 404
+}
