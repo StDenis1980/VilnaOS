@@ -1,6 +1,6 @@
 # Встановлення Vilna в діалозі з Gloxi
 
-Стан: **чернетка v0.1** (2 листопада 2026). Документ описує, як встановлення Vilna проходить як розмова з Gloxi: асистент на кожному кроці питає, чого хоче людина (мови, мережа, розмітка диска, що робити зі старими файлами, доступ до старих зашифрованих даних), і складає з відповідей план встановлення. Рішення про ваги моделі в образі — [ADR 0006](../../docs/adr/0006-conversational-installer.md).
+Стан: **v0.2** (10 листопада 2026): крок 0 (перший екран), розмова кроків 1–13, MCP-сервер установника і валідатор плану зроблено ([`installer/`](../../installer/), [`mcp/installer/`](../../mcp/installer/)); звичайний майстер, екран підтвердження Herkos і рушій — окремо. Документ описує, як встановлення Vilna проходить як розмова з Gloxi: асистент на кожному кроці питає, чого хоче людина (мови, мережа, розмітка диска, що робити зі старими файлами, доступ до старих зашифрованих даних), і складає з відповідей план встановлення. Рішення про ваги моделі в образі — [ADR 0006](../../docs/adr/0006-conversational-installer.md).
 
 Пов'язані документи: [`composition.md`](composition.md) (склад образу), [`../../herkos/docs/permissions.md`](../../herkos/docs/permissions.md) (рівні ризику, підтвердження).
 
@@ -48,7 +48,7 @@ Live-ISO (завантаження з USB)
 
 **Рушій.** Aeon встановлюється через tik (Transactional Installation Kit): він записує готовий образ системи, налаштовує шифрування з TPM2 і вміє перенести користувачів зі старої системи. Рекомендація: використати логіку tik для запису образу і шифрування, а план і інтерфейс зробити своїми; зміни, корисні Aeon, пропонувати в upstream. Що саме з tik можна викликати як бібліотеку, а що доведеться переписати, — перевірити на етапі 2.
 
-**Інструменти Gloxi під час встановлення** (MCP-сервер `vilna-mcp-installer`):
+**Інструменти Gloxi під час встановлення** (MCP-сервер `vilna-mcp-installer`, [`mcp/installer/`](../../mcp/installer/)). У коді назви з `_` замість `.` (`disks_survey`), бо виклик функцій у стилі OpenAI крапок не приймає; `plan.set_*` — це `plan_set_languages`, `plan_set_network`, `plan_set_disk`, `plan_set_encryption`, `plan_set_user`, `plan_set_time`. Альфа: `network.connect` робить не модель, а захищене поле установника (пароль іде в NetworkManager, у план — «введено»); `disks.unlock_readonly` і `files.summarize` — разом із перенесенням файлів у беті.
 
 | Інструмент | Що робить | Рівень |
 | --- | --- | --- |
@@ -86,31 +86,36 @@ Live-ISO (завантаження з USB)
 | 13 | Встановлення | Прогрес; Gloxi пояснює, що відбувається, і відповідає на питання | — |
 | 14 | Після перезавантаження | Gloxi продовжує розмову з того самого місця: перенесення файлів (якщо обрано), перший запуск (`vilna-initial-setup`), далі — що зберігати в копіях і в якому обсязі ([`backup/docs/design.md`](../../backup/docs/design.md), розд. 2а) | Склад, обсяг і місце копій |
 
+**Як розмова тримає малу модель на кроці** ([`installer/src/vilna_installer/conversation.py`](../../installer/src/vilna_installer/conversation.py)): поточний крок — перший, чия частина плану ще не вирішена (або той, до якого людина повернулася кнопкою «Змінити» чи словами); модель бачить лише його мету й до п'яти його функцій; що треба знати (диски, мережі, звіт валідатора), установник читає сам і кладе в підказку; привітання і обіцянка «нічого не зміниться без підтвердження» — перекладений текст, а не згенерований; до моделі йдуть лише останні 8 повідомлень, пам'ять — сам план. Кроки 6 і 7 у альфі лише попереджають, що дані на диску буде стерто, і радять спершу скопіювати їх.
+
 Дані зі старого диска (назви файлів і папок, мітки томів) — **зовнішній вміст** для Keros: вони не можуть змінити план чи права Gloxi (позначка `tainted`, розд. 6 permissions.md).
 
 ## 4. План встановлення
 
-План — єдиний результат розмови. Приблизний формат:
+План — єдиний результат розмови і звичайного майстра. Нормативний формат і валідатор — [`mcp/installer/src/vilna_mcp_installer/plan.py`](../../mcp/installer/src/vilna_mcp_installer/plan.py) (JSON у `$XDG_RUNTIME_DIR/vilna-installer/plan.json`); нижче той самий план у YAML:
 
 ```yaml
 version: 1
 ui: {language: uk, locale: uk_UA.UTF-8, translated: true, screen_reader: false}
 locale: {languages: [uk_UA, en_US, pl_PL], keyboards: [ua, us, pl], region: uk_UA, timezone: Europe/Kyiv}
-network: {wifi: "HomeNet", secret: entered}        # пароль у плані не зберігається
+network: {mode: wifi, wifi: "HomeNet", secret: entered}  # offline | wired | wifi; пароль у плані не зберігається
 disk:
-  target: /dev/nvme0n1                              # стабільний ID диска, не лише назва
+  target: nvme-Samsung_SSD_980_S64…                 # стабільний ID з /dev/disk/by-id, не /dev/nvme0n1
+  survey: 3f2a…                                     # відбиток набору дисків під час огляду
   layout: alongside                                 # replace | alongside | free_space | manual
-  keep_partitions: [nvme0n1p3]                      # Windows
-  shrink: {partition: nvme0n1p3, to: 300GiB}
-  encryption: {method: tpm2, recovery_key_acknowledged: true}
+  keep_partitions: [<PARTUUID>]                     # Windows; розділи — за PARTUUID
+  shrink: {partition: <PARTUUID>, to: 300GiB, bitlocker: suspended, checked: true, backup_confirmed: true}
+  encryption: {method: tpm2, recovery_key_acknowledged: true}  # tpm2 | passphrase (+ passphrase: entered) | none
 migrate:
-  - {source: nvme0n1p3, unlock: bitlocker, secret: entered, folders: [Documents, Pictures], size: 38GiB}
-user: {full_name: "…", username: "…", password: entered}
+  - {source: <PARTUUID>, unlock: bitlocker, secret: entered, folders: [Documents, Pictures], size: 38GiB}
+user: {full_name: "…", username: "…", hostname: "…", password: entered}
 privacy: {cloud: disabled}
 confirmed_by_user: false                            # ставить лише екран Herkos
 ```
 
 ## 5. Правила валідатора (не залежать від моделі)
+
+Валідатор (`vilna_mcp_installer.plan.validate`, з командного рядка `vilna-plan-check`) повертає `problems` (що блокує), `warnings`, `missing` (які кроки ще не вирішено) і `changes` — кожен розділ, що стирається, зберігається, зменшується чи створюється, окремим рядком для екрана Herkos. Що ставить лише людина (позначки «введено», ключ відновлення збережено, копія є, `confirmed_by_user`), не входить в аргументи жодного інструмента Gloxi. Будь-яка зміна плану знімає `confirmed_by_user`.
 
 - Розділ із знайденою ОС або даними стирається лише тоді, коли в плані явно `layout: replace` або він явно перелічений як той, що стирається, **і** це показано на екрані підтвердження окремим рядком.
 - Якщо людина обрала «перенести файли», а файли лежать на розділі, який стирається, план можливий лише з копіюванням **до** стирання на інший диск або в пам'ять із перевіркою, що місця вистачає. Інакше — помилка.
@@ -118,6 +123,8 @@ confirmed_by_user: false                            # ставить лише е
 - Невідомі файлові системи, RAID, LVM на кількох дисках → лише ручна розмітка у звичайному майстрі.
 - Ціль задається стабільним ідентифікатором диска; якщо між оглядом і підтвердженням диски змінилися (вставили флешку), план недійсний.
 - Шифрування нової системи без підтвердженого ключа відновлення неможливе.
+- Не на флешку, з якої запущено Vilna; щонайменше 40 ГіБ; хмара під час встановлення вимкнена; у плані немає жодного секрету, лише позначки.
+- Альфа приймає лише `replace` і `manual` (розд. 8); `alongside`, `free_space` і перенесення файлів перевіряються вже зараз, але в альфі відхиляються як `later_stage`.
 
 ## 6. Доступ до старих зашифрованих даних
 
