@@ -150,10 +150,9 @@ mask_cloud = true            # шлюз приватності: маскуват
 | Кінець мовлення | Silero VAD | 1 МБ | MIT | Silero Team |
 | Голос uk | Piper uk_UA ukrainian_tts medium (голос «Микита») | 80 МБ | CC0-1.0 | Rhasspy Piper, NabuCasa voice-datasets |
 | Голоси en, es, it, fr | Kokoro-82M v1.0, int8 | 132 МБ | Apache-2.0 | hexgrad; французький голос — SIWIS (CC-BY-4.0) |
-| Голоси pl, cs, ro, de | Piper gosia, jirka, mihai, thorsten (medium) | по 67 МБ | CC0-1.0 | Rhasspy Piper; ONNX — sherpa-onnx |
-| Литовська і фонеми для Kokoro та Piper | eSpeak NG 1.52 (у пакеті) | — | GPL-3.0-or-later | eSpeak NG |
+| Решта мов і фонеми для Kokoro | eSpeak NG 1.52 (у пакеті) | — | GPL-3.0-or-later | eSpeak NG |
 
-Для української людина завантажує ≈568 МБ, для англійської, іспанської, італійської, французької ≈620 МБ, для польської, чеської, румунської, німецької ≈555 МБ, для литовської ≈488 МБ. RHVoice (розд. 2.1 ADR) sherpa-onnx не читає, тож pl, cs, ro читають голоси Piper; литовський ingute (розд. 2.3) ще не закріплено, бо йому потрібен власний фонемізатор, і поки литовську читає eSpeak NG.
+Для української людина завантажує ≈568 МБ, для англійської, іспанської, італійської, французької ≈620 МБ, для решти мов ≈488 МБ: польську, німецьку, чеську, румунську й литовську читає eSpeak NG. Голоси Piper для цих мов (і литовський ingute) дотреновано з en_US-lessac, яку ADR 0015 (розд. 2.1) не дозволяє, а RHVoice sherpa-onnx не читає; голоси, навчені з нуля, — окремий крок.
 
 ```sh
 uv sync --extra voice                       # sherpa-onnx; ще потрібні espeak-ng і GStreamer (PyGObject)

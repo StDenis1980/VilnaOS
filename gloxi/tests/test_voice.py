@@ -53,8 +53,7 @@ def test_every_language_has_a_voice():
 def test_packs_for_a_language():
     assert models.packs_for("uk") == (models.PARAKEET, models.SILERO_VAD, models.PIPER_UK)
     assert models.packs_for("es")[-1] is models.KOKORO
-    assert models.packs_for("pl")[-1] is models.PIPER_PL
-    assert models.packs_for("lt") == (models.PARAKEET, models.SILERO_VAD)  # eSpeak NG
+    assert models.packs_for("pl") == (models.PARAKEET, models.SILERO_VAD)  # eSpeak NG
     assert models.voice_for("xx") is models.VOICES["en"]
 
 
@@ -62,6 +61,15 @@ def test_no_lessac_or_ryan_or_non_commercial_voices():
     # ADR 0015 2.1: voices fine-tuned from these cannot be shipped.
     for pack in models.PACKS:
         assert not re.search(r"lessac|ryan|pavoque|cezary", pack.file.filename)
+
+
+def test_every_voice_is_trained_from_scratch():
+    # Most Piper voices (pl gosia, cs jirka, ro mihai, de thorsten, lt ingute…)
+    # are fine-tuned from en_US-lessac: their own data is clean, but the base
+    # is not. A voice states what its MODEL_CARD says, and only "scratch" ships.
+    for pack in models.PACKS:
+        if pack.kind in {"piper", "kokoro"}:
+            assert pack.base == "scratch", pack.key
 
 
 # -- downloading and unpacking -------------------------------------------------------
@@ -305,7 +313,7 @@ def test_phoneme_failure_is_a_speech_error(tmp_path, monkeypatch):
     synth = Synthesizer(tmp_path, espeak=_fake_espeak(tmp_path, "exit 3"))
     monkeypatch.setattr(synth, "_engine", lambda voice: (None, set()))
     with pytest.raises(SpeechError):
-        synth.synthesize("Dzień dobry.", "pl")
+        synth.synthesize("Good morning.", "en")
 
 
 def _wav(samples: list[int], rate=22050, data_size=None) -> bytes:
@@ -704,7 +712,7 @@ REAL = os.environ.get("GLOXI_VOICE_MODELS")
 
 
 @pytest.mark.skipif(not REAL, reason="set GLOXI_VOICE_MODELS to a folder with the voice models")
-@pytest.mark.parametrize("lang", ["uk", "en", "es", "it", "fr", "pl", "cs", "ro", "de"])
+@pytest.mark.parametrize("lang", ["uk", "en", "es", "it", "fr"])
 def test_round_trip_with_real_models(lang):
     pytest.importorskip("sherpa_onnx")
     [result] = bench.run(Path(REAL), [lang])

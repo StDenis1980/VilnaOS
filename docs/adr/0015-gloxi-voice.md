@@ -180,13 +180,16 @@
 
 Пік пам'яті процесу ≈1,1 ГБ (Parakeet і один голос). Висновки: розпізнавання швидке (фраза 5 с — за ≈0,4 с). Kokoro на CPU ледь встигає за мовленням (RTF ≈1), тож перший звук для en/es/it/fr — 3–4 с замість цілі ≤ 0,5 с; на кроці 0 міряємо на ноутбуці й, якщо так само, ріжемо перше речення коротше або беремо для цих мов чистий голос Piper, коли знайдемо. Мовлення eSpeak NG для ro, cs, lt Parakeet майже не розуміє: голоси для них потрібні до альфи (pl, cs, ro, de закрито 2026-11-10, див. нижче). WER людей у кімнаті показують лише заміри на FLEURS і Common Voice (крок 0).
 
-## Голоси pl, cs, ro, de (2026-11-10)
+## Голоси pl, cs, ro, de, lt (2026-11-10)
+
+> **Виправлення того самого дня.** Голоси Piper gosia, jirka, mihai і thorsten, злиті в PR #121, дотреновано з en_US-lessac (у їхніх MODEL_CARD: «Finetuned from U.S. English lessac voice»). Розділ 2.1 такі голоси забороняє, тож їх прибрано: pl, cs, ro, de знову читає eSpeak NG. Кожен голос у `models.py` тепер вказує, з чого його навчено (`base`), і тест пропускає лише «scratch». Таблиці нижче лишаються як заміри, а не як вибір.
 
 На ноутбуці перевірили голоси, яких бракувало (дані — з Hugging Face, файли — з релізів sherpa-onnx на GitHub):
 
 - **RHVoice не підходить:** це голоси HTS, а не VITS/ONNX, і sherpa-onnx їх не читає. Замість RHVoice беремо голоси Piper з даними CC0, які sherpa-onnx уже перепаковує: **pl — gosia, cs — jirka, ro — mihai, de — thorsten** (усі medium, ≈67 МБ кожен). Фонеми для них робить той самий `espeak-ng --ipa`, що й для Kokoro (з другорядним наголосом, бо він є в символах Piper).
 - **Французька** лишається на Kokoro (SIWIS): Piper siwis і mls — CC-BY-4.0 і не кращі, upmc — CC-BY-SA-4.0.
-- **Литовський ingute** (розд. 2.3) поки не закріплено: модель має `phoneme_type: text` з власною таблицею символів і потребує свого фонемізатора (`phonemize_lithuanian.py` і словника наголосів), який ще треба перенести й перевірити його ліцензію. До того lt читає eSpeak NG.
+- **Литовський ingute** (розд. 2.3) не беремо: його ланцюжок донавчання — Reginutė ← ru_RU-irina-medium ← en_US-lessac-medium, тобто та сама пастка lessac. Крім того, п. 5(v) LICENSE-VOICE (NewGenLTU Open RAIL-D 1.0) дозволяє використання «only for Model training or other language technology development or production of datasets», що буквально не покриває асистента для людей. Код фонемізатора — GPL-3.0, словник наголосів `lt_kirciai.tsv` — CC-BY-4.0 (LIEPA, svogunas/g2p-lt-lexicon); їх можна використати для власного литовського голосу.
+- **Що далі для pl, cs, ro, de, lt:** голоси, навчені з нуля на чистих даних, — наш власний Piper на Common Voice (CC0) чи LIEPA (CC-BY-4.0), або перевірені з нуля голоси інших авторів. До того — eSpeak NG (для ro, cs, lt Parakeet його майже не розуміє).
 
 Прогін `gloxi-bench --tasks voice` з новими голосами (2026-11-10, той самий хмарний контейнер):
 

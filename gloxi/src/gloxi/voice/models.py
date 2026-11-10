@@ -7,7 +7,7 @@ which repackages the original models for the engine Gloxi uses; the
 licence is that of the original model, named here and shown to the person.
 ``tools/check_voice.py`` checks these values against GitHub.
 
-Languages without a voice here (Lithuanian) are read by eSpeak NG (``VOICES``): it is
+Languages without a voice here are read by eSpeak NG (``VOICES``): it is
 part of the package, needs no download, and sounds mechanical but clear.
 """
 
@@ -30,6 +30,10 @@ class Pack:
     file: ModelFile
     folder: str  # the folder inside the archive; for a single file, where it goes
     author: str  # for the "About" window and share/licenses (CC-BY needs it)
+    # For a voice: what it was trained from, "scratch" or the base model. ADR
+    # 0015 section 2.1: a voice fine-tuned from en_US-lessac or -ryan inherits
+    # their non-commercial terms, so only "scratch" (or Kokoro's own) ships.
+    base: str = ""
 
     @property
     def archive(self) -> bool:
@@ -89,63 +93,9 @@ PIPER_UK = Pack(
     ),
     folder="vits-piper-uk_UA-ukrainian_tts-medium",
     author="Rhasspy Piper, NabuCasa voice-datasets (ukrainian_tts)",
+    base="scratch",  # MODEL_CARD: "Trained from scratch."
 )
 
-
-def _piper(lang: str, name: str, size: int, sha256: str, licence: str, author: str) -> Pack:
-    """A Piper voice trained on eSpeak NG phonemes, as sherpa-onnx repackages it."""
-    folder = f"vits-piper-{lang}-{name}-medium"
-    return Pack(
-        key=f"piper-{lang.split('_')[0]}-{name}-medium",
-        kind="piper",
-        file=ModelFile(
-            name=f"Piper {lang} {name} (medium)",
-            filename=f"{folder}.tar.bz2",
-            url=f"{RELEASES}/tts-models/{folder}.tar.bz2",
-            sha256=sha256,
-            size=size,
-            source=N_("Piper via sherpa-onnx on GitHub"),
-            licence=licence,
-        ),
-        folder=folder,
-        author=author,
-    )
-
-
-# Section 2.1: Piper voices with CC0 datasets, in place of RHVoice (RHVoice is
-# an HTS voice that sherpa-onnx cannot read; see ADR 0015, 2026-11-10).
-PIPER_PL = _piper(
-    "pl_PL",
-    "gosia",
-    67_211_182,
-    "75bd34dcbdc4dd98d763954756b4b34b4208100497c836381542e4d73dcefa9c",
-    "CC0-1.0",
-    "Rhasspy Piper, OHF-Voice voice-datasets (gosia)",
-)
-PIPER_CS = _piper(
-    "cs_CZ",
-    "jirka",
-    67_212_775,
-    "321aafd83dd89b3d5b2c36c5898e0710d4f472f3c191cb7f73901a89b7f8539f",
-    "CC0-1.0",
-    "Rhasspy Piper (jirka)",
-)
-PIPER_RO = _piper(
-    "ro_RO",
-    "mihai",
-    67_182_137,
-    "cfbee3cdc25cf063339f69e189f4d93cc3be6610d267567537323ced3cf87f4d",
-    "CC0-1.0",
-    "Rhasspy Piper (mihai)",
-)
-PIPER_DE = _piper(
-    "de_DE",
-    "thorsten",
-    67_214_254,
-    "50487d9c95fdf2191f31d2588569381063ba1591dcd4c7d4bdd30f12b2191714",
-    "CC0-1.0",
-    "Rhasspy Piper, Thorsten Müller (Thorsten-Voice)",
-)
 
 # Section 2.2: one model and 54 voices; Gloxi uses those of en, es, it and fr.
 KOKORO = Pack(
@@ -162,9 +112,10 @@ KOKORO = Pack(
     ),
     folder="kokoro-int8-multi-lang-v1_0",
     author="hexgrad (Kokoro-82M), StyleTTS 2; SIWIS (CC-BY-4.0) for French",
+    base="scratch",  # its own model, not a Piper voice (section 2.2)
 )
 
-PACKS = (PARAKEET, SILERO_VAD, PIPER_UK, PIPER_PL, PIPER_CS, PIPER_RO, PIPER_DE, KOKORO)
+PACKS = (PARAKEET, SILERO_VAD, PIPER_UK, KOKORO)
 
 
 @dataclass(frozen=True)
@@ -178,19 +129,22 @@ class Voice:
     name: str = ""  # shown in the settings
 
 
-# ADR 0015, decision 4. Lithuanian (ingute, section 2.3) is not pinned yet: it
-# needs a phonemizer of its own, not eSpeak NG's; until then eSpeak NG reads
-# Lithuanian, as section 2 allows. French uses Kokoro's SIWIS voice.
+# ADR 0015, decision 4. Every voice is trained from scratch (``base``): most
+# Piper voices, among them pl gosia, cs jirka, ro mihai and de thorsten, are
+# fine-tuned from en_US-lessac, whose data forbids commercial use (section
+# 2.1). RHVoice (pl, cs, ro) is an HTS voice sherpa-onnx cannot read, and
+# Lithuanian ingute is fine-tuned from lessac too; eSpeak NG reads those
+# languages, as section 2 allows. French uses Kokoro's SIWIS voice.
 VOICES: dict[str, Voice] = {
     "uk": Voice("uk", PIPER_UK, speaker=1, name="Mykyta"),
     "en": Voice("en", KOKORO, speaker=3, espeak="en-us", name="Heart"),
     "es": Voice("es", KOKORO, speaker=28, espeak="es", name="Dora"),
     "it": Voice("it", KOKORO, speaker=35, espeak="it", name="Sara"),
     "fr": Voice("fr", KOKORO, speaker=30, espeak="fr-fr", name="Siwis"),
-    "de": Voice("de", PIPER_DE, espeak="de", name="Thorsten"),
-    "pl": Voice("pl", PIPER_PL, espeak="pl", name="Gosia"),
-    "cs": Voice("cs", PIPER_CS, espeak="cs", name="Jirka"),
-    "ro": Voice("ro", PIPER_RO, espeak="ro", name="Mihai"),
+    "de": Voice("de", None, espeak="de", name="eSpeak NG"),
+    "pl": Voice("pl", None, espeak="pl", name="eSpeak NG"),
+    "cs": Voice("cs", None, espeak="cs", name="eSpeak NG"),
+    "ro": Voice("ro", None, espeak="ro", name="eSpeak NG"),
     "lt": Voice("lt", None, espeak="lt", name="eSpeak NG"),
 }
 
