@@ -1,0 +1,16 @@
+; SPDX-License-Identifier: GPL-3.0-or-later
+; SELinux module "herkos" (package herkos-selinux).
+;
+; herkosd starts each tool of a person as a template unit
+; (vilna-mcp-*@<uid>.service, herkos/rs/crates/herkosd/src/units.rs). The
+; unit's stdin and stdout are a connection to a socket herkosd listens on in
+; /run/herkos-tools/<uid>/ (StandardInput=file:). systemd itself (PID 1,
+; init_t) opens that connection before the tool starts, and herkosd runs
+; unconfined (unconfined_service_t) until it gets a policy of its own
+; (item 25 of the alpha plan). Without this rule the policy refuses the
+; connection, every tool unit fails with 208/STDIN and Gloxi has no tools
+; (found on the image, Build13.2, ADR 0025 step 6).
+;
+; The socket stays 0600 and owned by herkos, so only root can connect: the
+; person's own programs still cannot pose as a tool.
+(allow init_t unconfined_service_t (unix_stream_socket (connectto)))

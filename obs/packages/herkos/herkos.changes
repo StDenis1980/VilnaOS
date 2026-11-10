@@ -1,9 +1,19 @@
 -------------------------------------------------------------------
-Tue Nov 10 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Tue Nov 10 15:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - herkos-agent requires hicolor-icon-theme, which owns the icon
   directories of the Permissions window; the OBS filelist check failed
   the build without it.
+- herkos-agent: herkosd closing the connection before the first line
+  (EPIPE on write) also means "this account is not served" (exit 77).
+
+-------------------------------------------------------------------
+Tue Nov 10 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- New subpackage herkos-selinux (herkos.cil): with SELinux enforcing,
+  systemd (init_t) could not connect a tool unit's stdin to herkosd
+  (unconfined_service_t), so no tool started (VM test of Build13.2).
+  herkos pulls it in when selinux-policy-targeted is installed
 
 -------------------------------------------------------------------
 Tue Nov 10 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
