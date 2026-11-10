@@ -44,8 +44,24 @@ DEFAULT_KEROS_BUDGET = 20.0
 SESSION_IDLE_SECONDS = 30 * 60
 
 
+# The system Herkos's settings for every person (ADR 0013, ADR 0025): ``~``
+# in them is the home of the person a request is for.
+SYSTEM_CONFIG_PATH = Path("/etc/herkos/config.toml")
+
+
 class ConfigError(Exception):
     """The config file exists but cannot be used."""
+
+
+def expand_user(path: str, home: Path | None = None) -> Path:
+    """``~`` as this process's home, or as ``home`` (the person gloxid serves)."""
+    if home is None:
+        return Path(path).expanduser()
+    if path == "~":
+        return home
+    if path.startswith("~/"):
+        return home / path[2:]
+    return Path(path)
 
 
 def _xdg(var: str, fallback: str) -> Path:
@@ -103,13 +119,16 @@ def socket_path() -> Path:
     return runtime_dir() / "vilna" / "herkos.sock"
 
 
-def load_config(path: Path | None = None) -> Config:
+def load_config(path: Path | None = None, *, home: Path | None = None) -> Config:
+    """The settings at ``path``; with ``home``, ``~`` is that person's home, not ours."""
     path = path or default_config_path()
     try:
         with path.open("rb") as f:
             data = tomllib.load(f)
     except FileNotFoundError:
-        return Config()
+        if home is None:
+            return Config()
+        return Config(allowed_roots=tuple(expand_user(r, home) for r in DEFAULT_ALLOWED_ROOTS))
     except (OSError, tomllib.TOMLDecodeError) as e:
         raise ConfigError(f"{path}: {e}") from None
 
@@ -122,7 +141,7 @@ def load_config(path: Path | None = None) -> Config:
         roots = data["allowed_roots"]
         if not isinstance(roots, list) or not all(isinstance(r, str) and r for r in roots):
             raise ConfigError(f"{path}: allowed_roots must be a list of folders")
-        expanded = tuple(Path(r).expanduser() for r in roots)
+        expanded = tuple(expand_user(r, home) for r in roots)
         if not all(r.is_absolute() for r in expanded):
             raise ConfigError(f"{path}: allowed_roots must be absolute or start with ~")
         kwargs["allowed_roots"] = expanded

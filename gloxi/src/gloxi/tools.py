@@ -180,9 +180,13 @@ class FileTools:
         roots: Sequence[Path],
         *,
         available: Callable[[], bool] = lambda: True,
+        home: Path | None = None,
     ) -> None:
         self._connect = connect
         self.roots = tuple(roots)
+        # Whose ``~`` the model means: gloxid's own HOME is /var/lib/gloxi/<uid>,
+        # not the person's (ADR 0025).
+        self.home = home
         self._available = available
         self._client: HerkosLike | None = None
         # Set once a connection that may carry taint is lost; cleared by reset().
@@ -416,7 +420,10 @@ class FileTools:
         text = raw.strip()
         if not text:
             return None
-        p = Path(os.path.expanduser(text))
+        if self.home is not None and (text == "~" or text.startswith("~/")):
+            p = self.home / text[2:]
+        else:
+            p = Path(os.path.expanduser(text))
         if not p.is_absolute():
             if not self.roots:
                 return None
@@ -443,17 +450,25 @@ class FileTools:
                 self._client = None
 
 
-def file_tools(enabled: bool) -> FileTools | None:
-    """FileTools wired to the real Herkos, or None if tools are off or Herkos is missing."""
+def file_tools(enabled: bool, *, owner_home: Path | None = None) -> FileTools | None:
+    """FileTools wired to the real Herkos, or None if tools are off or Herkos is missing.
+
+    ``owner_home``: gloxid serving another person (ADR 0025). Their folders
+    are the system Herkos's (``/etc/herkos/config.toml``, ``~`` = their home),
+    the same the files tool gets, not those of gloxid's own HOME.
+    """
     if not enabled:
         return None
     try:
         from herkos.client import HerkosClient
-        from herkos.config import ConfigError, load_config, socket_path
+        from herkos.config import SYSTEM_CONFIG_PATH, ConfigError, load_config, socket_path
     except ImportError:
         return None
     try:
-        roots = load_config().allowed_roots
+        if owner_home is None:
+            roots = load_config().allowed_roots
+        else:
+            roots = load_config(SYSTEM_CONFIG_PATH, home=owner_home).allowed_roots
     except (ConfigError, OSError):
         roots = ()
     try:
@@ -461,7 +476,9 @@ def file_tools(enabled: bool) -> FileTools | None:
     except ConfigError:
         # No XDG_RUNTIME_DIR (e.g. an ssh shell or a container): no Herkos, just chat.
         return None
-    return FileTools(lambda: HerkosClient.connect(sock), roots, available=sock.exists)
+    return FileTools(
+        lambda: HerkosClient.connect(sock), roots, available=sock.exists, home=owner_home
+    )
 
 
 class _NeverRaised(Exception):
