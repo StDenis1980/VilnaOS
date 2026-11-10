@@ -1,6 +1,6 @@
 # 0026. Mitos на знімках btrfs: відкат файлів і системи
 
-- Стан: Запропоновано
+- Стан: Прийнято (Denys, 2026-11-10)
 - Дата: 2026-11-10
 - Пов'язано: [ADR 0013](0013-herkos-rust.md) (системний `herkosd`, крок 7: знімки відкладено), [ADR 0017](0017-third-party-mcp-servers.md) (програми з каталогу, Tinta), [ADR 0023](0023-gloxi-calendar-settings-hotkey.md) розд. 3 (`undo_arguments`), [`herkos/docs/permissions.md`](../../herkos/docs/permissions.md) розд. 4, 7.2 і 11, [`herkos/docs/protocol.md`](../../herkos/docs/protocol.md), [`image/docs/composition.md`](../../image/docs/composition.md), [roadmap](../roadmap.md) розд. 3, пункт 14 переліку робіт до альфи
 
