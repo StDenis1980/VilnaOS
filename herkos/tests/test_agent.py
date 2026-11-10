@@ -36,6 +36,21 @@ def test_account_herkos_does_not_serve(tmp_path: Path) -> None:
     t.join(5)
 
 
+def test_closed_before_the_first_line_is_not_served(tmp_path: Path) -> None:
+    # The same, when herkosd has closed before the agent writes (EPIPE).
+    ours, theirs = socket.socketpair()
+    theirs.close()
+    a = agent.Agent(ours, ["true"])
+    try:
+        a.register()
+    except agent.NotServed:
+        pass
+    else:
+        raise AssertionError("register() should raise NotServed")
+    finally:
+        ours.close()
+
+
 def test_herkos_goes_away_after_registering(tmp_path: Path) -> None:
     # herkosd restarted (an update): systemd should start the agent again.
     def handle(conn: socket.socket) -> None:

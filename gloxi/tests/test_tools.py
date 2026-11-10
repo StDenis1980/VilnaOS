@@ -6,6 +6,7 @@ import asyncio
 import json
 import sys
 import threading
+from pathlib import Path
 
 import pytest
 from fake_server import ScriptedLlamaServer
@@ -154,6 +155,28 @@ def test_paths_are_made_absolute_and_match_the_resource():
     call = conn.made[0].calls[0]
     assert call["arguments"] == {"path": "/home/u/Documents/plan.txt", "text": "x"}
     assert call["resources"] == ["file:///home/u/Documents/plan.txt"]
+
+
+def test_tilde_is_the_persons_home_not_the_services():
+    # gloxid runs with HOME=/var/lib/gloxi/<uid>; "~" must still be the person's.
+    conn = Connector()
+    t = tools(conn, home=Path("/home/u"))
+    t.call("files_list", args(path="~/Documents", reason="r"), user_turn=1)
+    assert conn.made[0].calls[0]["resources"] == ["file:///home/u/Documents"]
+
+
+def test_gloxid_takes_the_system_herkos_folders_of_the_person(monkeypatch, tmp_path):
+    herkos_config = pytest.importorskip("herkos.config")
+    monkeypatch.setenv("HERKOS_SOCKET", str(tmp_path / "herkos.sock"))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "service"))
+    system = tmp_path / "config.toml"
+    monkeypatch.setattr(herkos_config, "SYSTEM_CONFIG_PATH", system)
+    home = tmp_path / "home" / "person"
+    t = file_tools(True, owner_home=home)
+    assert t.roots == (home / "Documents",) and t.home == home
+    system.write_text('allowed_roots = ["~/Desktop", "/srv/shared"]\n')
+    t = file_tools(True, owner_home=home)
+    assert t.roots == (home / "Desktop", Path("/srv/shared"))
 
 
 def test_model_fields_herkos_sets_itself_are_not_passed_on():

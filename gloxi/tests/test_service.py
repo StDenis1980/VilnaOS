@@ -227,3 +227,17 @@ def test_bind_refuses_to_replace_a_file(tmp_path):
         assert oct(path.stat().st_mode & 0o777) == "0o600"
     finally:
         sock.close()
+
+
+def test_gloxid_finds_the_home_of_the_person_it_serves():
+    import os
+    import pwd
+
+    from gloxi.service import owner_home
+
+    # Its own user: Gloxi in the person's session, ~ is already theirs.
+    assert owner_home(os.getuid()) is None
+    other = next((p for p in pwd.getpwall() if p.pw_uid != os.getuid()), None)
+    if other is not None:
+        assert str(owner_home(other.pw_uid)) == other.pw_dir
+    assert owner_home(2**31 - 7) is None  # no such person
