@@ -30,11 +30,17 @@ BuildRequires:  systemd-rpm-macros
 %sysusers_requires
 # 50-herkos.rules: herkosd may start only its tool units.
 Requires:       polkit
+# vilna-home-setup: restorecon, pgrep.
+Requires:       policycoreutils
+Requires:       procps
 # The tools run as the person (vilna-mcp-*@.service); packaged separately.
 Recommends:     vilna-mcp-files
 Recommends:     vilna-mcp-backup
 Recommends:     vilna-mcp-settings
 Recommends:     vilna-mcp-calendar
+# Mitos snapshots of people's homes and the system's saved states (ADR 0026).
+Recommends:     snapper
+Recommends:     transactional-update
 %{?systemd_ordering}
 
 %description
@@ -102,6 +108,11 @@ install -Dm0644 systemd/vilna-mcp-files@.service %{buildroot}%{_unitdir}/vilna-m
 install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-mcp-backup@.service
 install -Dm0644 systemd/vilna-mcp-settings@.service %{buildroot}%{_unitdir}/vilna-mcp-settings@.service
 install -Dm0644 systemd/vilna-mcp-calendar@.service %{buildroot}%{_unitdir}/vilna-mcp-calendar@.service
+install -Dm0644 systemd/vilna-mcp-system@.service %{buildroot}%{_unitdir}/vilna-mcp-system@.service
+# New homes useradd could not finish under SELinux (ADR 0026).
+install -Dm0755 systemd/vilna-home-setup %{buildroot}%{_libexecdir}/herkos/vilna-home-setup
+install -Dm0644 systemd/vilna-home-setup.service %{buildroot}%{_unitdir}/vilna-home-setup.service
+install -Dm0644 systemd/vilna-home-setup.path %{buildroot}%{_unitdir}/vilna-home-setup.path
 install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos.rules
 install -Dm0644 systemd/herkos.sysusers %{buildroot}%{_sysusersdir}/herkos.conf
 install -Dm0644 systemd/system.toml %{buildroot}%{_sysconfdir}/herkos/system.toml
@@ -126,16 +137,16 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{buildroot}%{_libexecdir}/herkos/herkosd --version
 
 %pre -f herkos.pre
-%service_add_pre herkosd.socket herkosd.service
+%service_add_pre herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path
 
 %post
-%service_add_post herkosd.socket herkosd.service
+%service_add_post herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path
 
 %preun
-%service_del_preun herkosd.socket herkosd.service
+%service_del_preun herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path
 
 %postun
-%service_del_postun herkosd.socket herkosd.service
+%service_del_postun herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path
 
 %post agent
 %systemd_user_post herkos-agent.service
@@ -148,12 +159,16 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %doc README.md
 %dir %{_libexecdir}/herkos
 %{_libexecdir}/herkos/herkosd
+%{_libexecdir}/herkos/vilna-home-setup
+%{_unitdir}/vilna-home-setup.service
+%{_unitdir}/vilna-home-setup.path
 %{_unitdir}/herkosd.socket
 %{_unitdir}/herkosd.service
 %{_unitdir}/vilna-mcp-files@.service
 %{_unitdir}/vilna-mcp-backup@.service
 %{_unitdir}/vilna-mcp-settings@.service
 %{_unitdir}/vilna-mcp-calendar@.service
+%{_unitdir}/vilna-mcp-system@.service
 %{_datadir}/polkit-1/rules.d/50-herkos.rules
 %{_sysusersdir}/herkos.conf
 %dir %{_sysconfdir}/herkos

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- OBS-ExclusiveArch: x86_64 -->
+<!--
+  Vilna OS live image: an ISO for a USB stick (image/README.md,
+  image/docs/installer.md, section 2). It boots the same system as the
+  disk image Vilna (the vilna_base pattern) from a read-only squashfs
+  with a RAM overlay, logs the "live" user in and starts the installer
+  (vilna-installer) on the whole screen. Nothing is written to the
+  computer's disks; changes are gone after a restart.
+
+  So far the installer has only its first screen (step 0): it writes the
+  start of the plan to $XDG_RUNTIME_DIR/vilna-installer/plan.json and
+  ends, and the live desktop stays to try Vilna. The conversation with
+  Gloxi, the plan check, Herkos's confirmation and the install engine
+  come next (alpha work list, items 15 to 17).
+
+  grub2 with shim, as the openSUSE live images: KIWI builds the ISO's
+  EFI image from it, and Secure Boot works with the signed shim. The
+  installed system keeps systemd-boot (the Vilna image).
+-->
+<image schemaversion="7.6" name="Vilna-Live">
+  <description type="system">
+    <author>Vilna contributors</author>
+    <contact>https://github.com/StDenis1980/VilnaOS/issues</contact>
+    <specification>Vilna OS live image with the installer</specification>
+  </description>
+  <preferences>
+    <version>0.0.1</version>
+    <packagemanager>zypper</packagemanager>
+    <bootsplash-theme>vilna</bootsplash-theme>
+    <rpm-excludedocs>false</rpm-excludedocs>
+    <rpm-check-signatures>false</rpm-check-signatures>
+    <locale>en_US</locale>
+    <timezone>UTC</timezone>
+    <!-- flags="overlay": the kiwi-live dracut module, squashfs root with
+         an overlayfs in RAM. SELinux is permissive in the live session
+         (enforcing=0): the squashfs and its RAM overlay were never
+         checked enforcing on Vilna; the installed system stays
+         enforcing. -->
+    <type
+      image="iso"
+      primary="true"
+      flags="overlay"
+      firmware="uefi"
+      mediacheck="false"
+      volid="VILNA_LIVE"
+      publisher="Vilna"
+      kernelcmdline="quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false rd.systemd.show_status=false security=selinux selinux=1 enforcing=0"
+    >
+      <!-- The menu stays hidden for 3 seconds: Esc (or any arrow key)
+           shows it, with KIWI's failsafe entry. No console attribute:
+           console="gfxterm" made KIWI write "terminal_input gfxterm"
+           too, and grub printed "terminal `gfxterm' isn't found" on
+           every boot (VM test of 2026-11-09); KIWI's default is gfxterm
+           out, console in. -->
+      <bootloader name="grub2" timeout="3" timeout_style="hidden"/>
+    </type>
+  </preferences>
+  <!-- OBS gives the image the repositories of the build repository:
+       this project's openSUSE_Tumbleweed and openSUSE Tumbleweed itself. -->
+  <repository type="rpm-md">
+    <source path="obsrepositories:/"/>
+  </repository>
+  <packages type="image">
+    <!-- The same system as the disk image Vilna -->
+    <namedCollection name="vilna_base"/>
+    <package name="vilna-installer"/>
+    <!-- Boot of a live ISO -->
+    <package name="kernel-default"/>
+    <package name="dracut-kiwi-live"/>
+    <package name="grub2"/>
+    <package name="grub2-x86_64-efi"/>
+    <package name="shim"/>
+  </packages>
+  <packages type="bootstrap">
+    <package name="filesystem"/>
+    <package name="glibc-locale-base"/>
+    <package name="ca-certificates-mozilla"/>
+    <package name="Vilna-release"/>
+  </packages>
+</image>

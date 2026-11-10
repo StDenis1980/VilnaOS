@@ -1,4 +1,32 @@
 -------------------------------------------------------------------
+Tue Nov 10 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-home-setup (path and service, as root): a new home that
+  useradd made a btrfs subvolume (BTRFS_SUBVOLUME_HOME, ADR 0026) has no
+  SELinux label, so useradd could not give it to the person or copy the
+  skeleton, and no setting was kept (VM test of Build13.2). The service
+  waits for useradd, then copies the skeleton, gives the home to its
+  person, sets HOME_MODE and runs restorecon; also on every boot, to
+  mend a home made earlier
+
+-------------------------------------------------------------------
+Tue Nov 10 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Mitos on btrfs snapshots (ADR 0026): herkosd takes a snapper pre/post
+  pair of the person's home around an action the tool cannot undo
+  itself (Tinta programs saving a file), so it is R2 and undoable;
+  undo puts back the changed files through the files tool
+  (restore_snapshot) and leaves alone what the person changed since
+- herkosd mitos-setup (ExecStartPre, as root): a snapper config
+  mitos-<uid> for each person whose home is a btrfs subvolume; pairs
+  kept 30 days, or down to a day when the disk is nearly full
+- New tool "system" (herkosd system-tool, vilna-mcp-system@.service):
+  the saved states of the system and, for an administrator, a return
+  to one with transactional-update rollback (R4, after a restart),
+  undoable like any other change
+- The "Permissions" window offers undo for settings and snapshots too
+
+-------------------------------------------------------------------
 Mon Nov  9 18:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - New window "Permissions" (herkos-permissions, in herkos-agent): the

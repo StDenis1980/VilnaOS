@@ -116,6 +116,24 @@ if [ -e /etc/zypp/zypp.conf ]; then
     sed -i 's/^#\? *solver.onlyRequires.*/solver.onlyRequires = true/' /etc/zypp/zypp.conf
 fi
 
+# Each new person's home is a btrfs subvolume of its own (ADR 0026):
+# useradd (also through AccountsService and GNOME Initial Setup) reads
+# BTRFS_SUBVOLUME_HOME. herkosd mitos-setup then gives that home a snapper
+# config, and Mitos snapshots it around Gloxi's actions. A home that is a
+# plain folder still works, only without those snapshots.
+# Under SELinux the new subvolume has no label and useradd cannot give
+# it to the person; vilna-home-setup (herkos) finishes it right after.
+useradd_defaults=/etc/default/useradd
+if [ ! -e "$useradd_defaults" ] && [ -e /usr/etc/default/useradd ]; then
+    install -Dm0644 /usr/etc/default/useradd "$useradd_defaults"
+fi
+if grep -q '^#\? *BTRFS_SUBVOLUME_HOME=' "$useradd_defaults" 2>/dev/null; then
+    sed -i 's/^#\? *BTRFS_SUBVOLUME_HOME=.*/BTRFS_SUBVOLUME_HOME=yes/' "$useradd_defaults"
+else
+    install -d /etc/default
+    echo 'BTRFS_SUBVOLUME_HOME=yes' >>"$useradd_defaults"
+fi
+
 # Branding check (composition.md, section 4.5): no openSUSE or Aeon
 # release, logo or branding package may be left in the image. Warn for
 # now, while the *-branding-Vilna packages do not exist yet; this

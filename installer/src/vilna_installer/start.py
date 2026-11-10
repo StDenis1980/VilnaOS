@@ -142,6 +142,10 @@ def default_language(environ: dict[str, str] | None = None) -> str:
 def normalize_locale(name: str) -> str | None:
     """``pt_BR.UTF-8``, ``pt_BR.utf8``, ``sr_RS@latin`` (UTF-8) → ``xx_YY.UTF-8[@mod]``."""
     base, _, modifier = name.strip().partition("@")
+    # "@euro" only chose the euro sign in old 8-bit charsets; in UTF-8 it is
+    # the same locale (pt_PT.UTF-8@euro showed as a second, raw entry).
+    if modifier == "euro":
+        modifier = ""
     lang, _, charset = base.partition(".")
     if charset and charset.lower().replace("-", "") != "utf8":
         return None
@@ -216,6 +220,30 @@ def start_plan(
         "assistant": bool(assistant),
         "confirmed_by_user": False,  # only the Herkos screen sets it (installer.md 1.4)
     }
+
+
+# A row of «Other languages» does nothing for this long after the dialog
+# opens under the pointer (welcome.py, _on_other).
+PICK_GUARD_MS = 500
+
+
+def pick_allowed(opened_us: int, now_us: int) -> bool:
+    """Whether a row activated at ``now_us`` (GLib monotonic µs) counts."""
+    return now_us - opened_us >= PICK_GUARD_MS * 1000
+
+
+# The Vilna mark sits in the bottom-left corner of the Blavet wallpapers,
+# up to 6.5 % of the width from the left and from 90 % of the height down.
+# Cropping the same share from the left and the bottom keeps 16:9 and the
+# feather fan in the top-right corner.
+WALLPAPER_CORNER_CROP = 0.12
+
+
+def wallpaper_crop(width: int, height: int) -> tuple[int, int, int, int]:
+    """(x, y, width, height) of the wallpaper the first screen shows."""
+    left = round(width * WALLPAPER_CORNER_CROP)
+    bottom = round(height * WALLPAPER_CORNER_CROP)
+    return left, 0, max(1, width - left), max(1, height - bottom)
 
 
 def default_plan_path() -> Path:

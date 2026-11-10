@@ -92,12 +92,29 @@ wheels = [
 name = "vilna-installer"
 version = "0.1.0.dev0"
 source = { editable = "." }
+dependencies = [
+    { name = "vilna-mcp-installer" },
+]
 
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
     { name = "ruff" },
 ]
+
+[package.metadata]
+requires-dist = [{ name = "vilna-mcp-installer", editable = "../mcp/installer" }]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=8" },
+    { name = "ruff", specifier = ">=0.6" },
+]
+
+[[package]]
+name = "vilna-mcp-installer"
+version = "0.1.0.dev0"
+source = { editable = "../mcp/installer" }
 
 [package.metadata]
 

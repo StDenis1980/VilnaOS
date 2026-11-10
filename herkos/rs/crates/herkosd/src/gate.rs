@@ -31,8 +31,11 @@ use crate::mitos::{Journal, JournalError, digest, read_records};
 use crate::pins::PinStore;
 use crate::programs::ProgramStore;
 use crate::rpc::new_action_id;
+use crate::snapshots::{Snapshots, in_snapshots, within};
 
 const JOURNAL_MAX_RESOURCES: usize = 50;
+/// The files tool: it also puts back what a snapshot of Mitos holds.
+pub const FILES: &str = "org.vilna.mcp.files";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Answer {
@@ -194,6 +197,9 @@ pub struct Outcome {
     pub result: Option<Value>,
     /// For results with external content: where it came from and what Keros saw.
     pub keros: Option<Value>,
+    /// Mitos takes snapshots of the home before and after (ADR 0026): the
+    /// level was set as for an action that can be undone.
+    pub snapshot: bool,
 }
 
 impl Outcome {
@@ -212,7 +218,14 @@ impl Outcome {
             message,
             result: None,
             keros: None,
+            snapshot: false,
         }
+    }
+
+    #[must_use]
+    fn with_snapshot(mut self, snapshot: bool) -> Outcome {
+        self.snapshot = snapshot && self.allowed;
+        self
     }
 
     fn level_name(&self) -> &'static str {
@@ -244,12 +257,18 @@ pub fn undeclared_resource<'a>(request: &ActionRequest, op: &'a Operation) -> Op
         .iter()
         .filter_map(|r| r.path.as_deref())
         .collect();
+    let undeclared = |v: &Value| match v.as_str() {
+        Some(v) if v.starts_with('/') && !v.contains('\0') => {
+            !declared.contains(&normpath(v).as_str())
+        }
+        _ => true,
+    };
     op.resource_args.iter().map(String::as_str).find(|name| {
-        match request.arguments.get(*name).and_then(Value::as_str) {
-            Some(v) if v.starts_with('/') && !v.contains('\0') => {
-                !declared.contains(&normpath(v).as_str())
-            }
-            _ => true,
+        match request.arguments.get(*name) {
+            // A list of files (restore_snapshot): each one declared.
+            Some(Value::Array(items)) => items.is_empty() || items.iter().any(undeclared),
+            Some(v) => undeclared(v),
+            None => true,
         }
     })
 }
@@ -322,6 +341,8 @@ pub struct Gate {
     pins: PinStore,
     /// Which catalogue programs the person turned on (ADR 0017, step 6).
     pub programs: ProgramStore,
+    /// Snapshots of the person's home, where the system has them (ADR 0026).
+    snapshots: Option<Box<dyn Snapshots>>,
 }
 
 fn decision_record(o: &Outcome) -> Value {
@@ -361,6 +382,7 @@ impl Gate {
             confirmer,
             ask_lock: Mutex::new(()),
             model_check: None,
+            snapshots: None,
         }
     }
 
@@ -504,6 +526,42 @@ impl Gate {
         self
     }
 
+    #[must_use]
+    pub fn with_snapshots(mut self, snapshots: Option<Box<dyn Snapshots>>) -> Gate {
+        self.snapshots = snapshots;
+        self
+    }
+
+    /// A snapshot of the home makes this action undoable (ADR 0026, section 2):
+    /// it changes something (base R2 or more), the tool cannot put it back
+    /// itself, and everything it may touch is in the person's home. A
+    /// built-in tool qualifies only for operations that name files.
+    fn snapshot_covers(
+        &self,
+        request: &ActionRequest,
+        op: &Operation,
+        base: Option<Level>,
+    ) -> bool {
+        let Some(snapshots) = &self.snapshots else {
+            return false;
+        };
+        if op.undoable || op.reversible || base.is_none_or(|b| b < Level::R2) {
+            return false;
+        }
+        let home = snapshots.subvolume();
+        let inside = |p: &str| within(p, home) && !in_snapshots(p);
+        let files = request
+            .resources
+            .iter()
+            .all(|r| r.path.as_deref().is_some_and(inside));
+        if self.manifests.is_builtin(&request.tool) {
+            return files && !op.resource_args.is_empty() && !request.resources.is_empty();
+        }
+        // A program writes where it may: in the allowed folders.
+        let roots = &self.config.allowed_roots;
+        files && !roots.is_empty() && roots.iter().all(|r| inside(&r.to_string_lossy()))
+    }
+
     pub fn journal(&self) -> &Journal {
         &self.journal
     }
@@ -556,6 +614,24 @@ impl Gate {
             resolve: &resolve_path,
         };
         let mut a = assess(request, manifest, session, &limits, annotations.as_ref());
+        // Undoable through Mitos snapshots: assessed as such (no "it cannot be undone").
+        let mut snapshot = false;
+        if let (Some(m), Some(op)) = (manifest, a.operation.as_ref()) {
+            if self.snapshot_covers(request, op, a.base) {
+                let mut covered = m.clone();
+                if let Some(o) = covered.operations.get_mut(&request.operation) {
+                    o.undoable = true;
+                }
+                a = assess(
+                    request,
+                    Some(&covered),
+                    session,
+                    &limits,
+                    annotations.as_ref(),
+                );
+                snapshot = true;
+            }
+        }
         let deny = |level, code, message: String| Ok(Outcome::new(id, false, level, code, message));
         if manifest.is_none() {
             return deny(
@@ -639,9 +715,11 @@ impl Gate {
         };
         if let Some(g) = found {
             let msg = format!("permission {} ({})", g.id, g.duration.name());
-            return Ok(Outcome::new(id, true, a.level, "allowed", msg));
+            return Ok(Outcome::new(id, true, a.level, "allowed", msg).with_snapshot(snapshot));
         }
-        let outcome = self.ask(id, request, session, &a, &op, level, changed.is_some())?;
+        let outcome = self
+            .ask(id, request, session, &a, &op, level, changed.is_some())?
+            .with_snapshot(snapshot);
         if let (true, Some(fp)) = (outcome.allowed, &changed) {
             self.pins
                 .pin(&request.tool, &request.operation, fp)
@@ -754,10 +832,25 @@ impl Gate {
                 ..outcome
             };
         };
+        let pre = match (outcome.snapshot, &self.snapshots) {
+            (true, Some(s)) => match s.before(&outcome.action_id) {
+                Ok(n) => Some(n),
+                Err(e) => return self.not_carried_out(outcome, &e),
+            },
+            (true, None) => return self.not_carried_out(outcome, "no snapshots"),
+            _ => None,
+        };
         let (result, code, message) = match self.tools.execute(request) {
             Ok(v) => (Some(v), "allowed", outcome.message.clone()),
             Err(e) => (None, "tool_error", e),
         };
+        // Even a failed call may have changed something: the pair is kept.
+        let post = pre.and_then(|p| {
+            let s = self.snapshots.as_ref()?;
+            s.after(p, &outcome.action_id)
+                .map_err(|e| eprintln!("herkosd: Mitos: no snapshot after the action: {e}"))
+                .ok()
+        });
         let mut record = Map::new();
         record.insert("ok".into(), json!(result.is_some()));
         record.insert("code".into(), json!(code));
@@ -793,6 +886,12 @@ impl Gate {
         }
         if let Some(undo) = result.as_ref().and_then(|r| undo_info(request, op, r)) {
             record.insert("undo".into(), undo);
+        } else if let Some(pre) = pre {
+            // Without the post snapshot, undo compares with the home as it is then.
+            record.insert(
+                "undo".into(),
+                json!({"snapshot": {"pre": pre, "post": post}}),
+            );
         }
         if let Err(e) =
             self.journal
@@ -814,6 +913,29 @@ impl Gate {
             message,
             result,
             keros,
+            ..outcome
+        }
+    }
+
+    /// Allowed, but Mitos could not take the snapshot first: nothing is done.
+    fn not_carried_out(&self, outcome: Outcome, why: &str) -> Outcome {
+        let message = format!("Mitos could not take a snapshot first, so nothing was done: {why}");
+        let record = json!({"ok": false, "code": "denied_mitos", "result": null});
+        if let Err(e) = self
+            .journal
+            .append("result", record, Some(&outcome.action_id))
+        {
+            return Outcome {
+                allowed: false,
+                code: "denied_journal",
+                message: e.0,
+                ..outcome
+            };
+        }
+        Outcome {
+            allowed: false,
+            code: "denied_mitos",
+            message,
             ..outcome
         }
     }
@@ -885,6 +1007,9 @@ impl Gate {
         let (Some(tool), Some(undo)) = (tool, undo) else {
             return nothing();
         };
+        if let Some(snapshot) = undo.get("snapshot") {
+            return self.undo_snapshot(action_id, snapshot, session);
+        }
         let (resources, arguments) = if let Some(arguments) = undo.get("arguments") {
             // A change the tool can put back itself (ADR 0023, section 3).
             if !arguments.is_object() {
@@ -913,6 +1038,75 @@ impl Gate {
         match parse_request(&params) {
             Ok(request) => self.handle(&request, session),
             Err(_) => nothing(),
+        }
+    }
+}
+
+impl Gate {
+    /// Undo from Mitos snapshots (ADR 0026, section 3): the files the action
+    /// changed in the allowed folders go back as they were in the `pre`
+    /// snapshot, through the files tool (it runs as the person). A file the
+    /// person changed again after the action is left alone by the tool.
+    fn undo_snapshot(
+        &self,
+        action_id: &str,
+        snapshot: &Value,
+        session: &mut SessionState,
+    ) -> Outcome {
+        let refuse =
+            |code, message: String| Outcome::new(&new_action_id(), false, None, code, message);
+        let Some(snapshots) = &self.snapshots else {
+            return refuse(
+                "denied_unknown",
+                "nothing to undo: this computer has no Mitos snapshots".into(),
+            );
+        };
+        let Some(pre) = snapshot.get("pre").and_then(Value::as_u64) else {
+            return refuse("denied_unknown", "nothing to undo".into());
+        };
+        let post = snapshot.get("post").and_then(Value::as_u64);
+        let changes = match snapshots.changes(pre, post.unwrap_or(0)) {
+            Ok(c) => c,
+            // Snapper cleaned the snapshot up, or cannot compare: say so.
+            Err(e) => {
+                return refuse(
+                    "denied_error",
+                    format!("Mitos cannot compare snapshots: {e}"),
+                );
+            }
+        };
+        let home = snapshots.subvolume();
+        let roots = &self.config.allowed_roots;
+        let mut paths: Vec<String> = changes
+            .into_iter()
+            .filter(|c| c.kind != '.')
+            .map(|c| c.path)
+            .filter(|p| within(p, home) && !in_snapshots(p))
+            .filter(|p| roots.iter().any(|r| within(p, r)))
+            .collect();
+        paths.sort();
+        paths.dedup();
+        if paths.is_empty() {
+            return refuse(
+                "denied_unknown",
+                "nothing to undo: no files changed in the allowed folders".into(),
+            );
+        }
+        let resources: Vec<Value> = paths.iter().map(|p| json!(file_uri(p))).collect();
+        let mut arguments = json!({"pre": pre, "paths": paths});
+        if let Some(post) = post {
+            arguments["post"] = json!(post);
+        }
+        let params = json!({
+            "tool": FILES,
+            "operation": "restore_snapshot",
+            "resources": resources,
+            "reason": format!("Undo action {action_id}"),
+            "arguments": arguments,
+        });
+        match parse_request(&params) {
+            Ok(request) => self.handle(&request, session),
+            Err(e) => refuse("denied_error", format!("cannot undo: {e}")),
         }
     }
 }
@@ -957,12 +1151,17 @@ pub(crate) mod tests {
 
     impl Tools for FakeTools {
         fn running(&self, tool: &str) -> bool {
-            tool == "org.vilna.mcp.files" || tool == SETTINGS
+            tool == "org.vilna.mcp.files" || tool == SETTINGS || tool == SYSTEM
         }
         fn annotations(&self, _t: &str, _o: &str) -> Option<Map<String, Value>> {
             None
         }
         fn execute(&self, request: &ActionRequest) -> Result<Value, String> {
+            if request.tool == SYSTEM {
+                // What starts next, before: 7; after a return to 1, undo goes back to 7.
+                let before = if request.operation == "restore" { 1 } else { 7 };
+                return Ok(json!({"restart_needed": true, "undo_arguments": {"snapshot": before}}));
+            }
             if request.tool == SETTINGS {
                 // Puts back what it was given and says what was there before.
                 let before = match request.operation.as_str() {
@@ -974,6 +1173,7 @@ pub(crate) mod tests {
             }
             match request.operation.as_str() {
                 "write" | "restore" | "delete" => Ok(json!({"backup_id": "b1"})),
+                "restore_snapshot" => Ok(json!({"restored": request.arguments["paths"]})),
                 "read" => Ok(json!({"text": "hello"})),
                 _ => Err("boom".into()),
             }
@@ -1374,6 +1574,228 @@ pub(crate) mod tests {
     }
 
     const SETTINGS: &str = "org.vilna.mcp.settings";
+    const SYSTEM: &str = "org.vilna.mcp.system";
+
+    #[test]
+    fn a_return_of_the_system_is_r4_and_undone_like_any_change() {
+        let (base, _docs) = gate("system", Answer::Once);
+        let mut config = base.config.clone();
+        config.max_level = Level::R4;
+        let journal = Journal::open(&config.state_dir.join("j3.jsonl")).expect("journal");
+        let grants = GrantStore::new(&config.state_dir.join("p3.json"), now);
+        let asked = std::sync::Arc::new(Mutex::new(Vec::new()));
+        struct Record(std::sync::Arc<Mutex<Vec<Question>>>);
+        impl Confirmer for Record {
+            fn ask(&self, q: &Question, _t: f64) -> Answer {
+                self.0.lock().expect("lock").push(q.clone());
+                Answer::Once
+            }
+        }
+        let g = Gate::new(
+            config,
+            Registry::builtin().expect("manifests"),
+            Box::new(FakeTools),
+            grants,
+            journal,
+            Box::new(Record(std::sync::Arc::clone(&asked))),
+        );
+        let mut s = SessionState::default();
+        let back = parse_request(&json!({
+            "tool": SYSTEM, "operation": "rollback", "reason": "the update broke the sound",
+            "arguments": {"snapshot": 1}
+        }))
+        .expect("valid");
+        let o = g.handle(&back, &mut s);
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R4)), "{o:?}");
+        let u = g.undo(&o.action_id, &mut s);
+        assert_eq!((u.code, u.level), ("allowed", Some(Level::R4)), "{u:?}");
+        let asked = asked.lock().expect("lock");
+        // Asked every time, once only, with the state it goes to.
+        assert_eq!(asked.len(), 2);
+        assert_eq!(asked[0].choices, vec![Answer::Once]);
+        assert_eq!(asked[0].content, Some(json!({"snapshot": 1})));
+        assert_eq!(
+            (asked[1].operation.as_str(), asked[1].content.clone()),
+            ("restore", Some(json!({"snapshot": 7})))
+        );
+    }
+
+    /// Snapper as seen by the gate: numbers count up; `changes` gives a fixed list.
+    pub(crate) struct FakeSnapshots {
+        pub home: PathBuf,
+        pub log: std::sync::Arc<Mutex<Vec<String>>>,
+        pub fail: bool,
+        pub changed: Vec<crate::snapshots::Change>,
+    }
+
+    impl Snapshots for FakeSnapshots {
+        fn subvolume(&self) -> &Path {
+            &self.home
+        }
+        fn before(&self, action_id: &str) -> Result<u64, String> {
+            if self.fail {
+                return Err("snapperd is not running".into());
+            }
+            let mut log = self.log.lock().expect("log");
+            log.push(format!("pre {action_id}"));
+            Ok(log.len() as u64)
+        }
+        fn after(&self, pre: u64, action_id: &str) -> Result<u64, String> {
+            let mut log = self.log.lock().expect("log");
+            log.push(format!("post {pre} {action_id}"));
+            Ok(log.len() as u64)
+        }
+        fn changes(&self, from: u64, to: u64) -> Result<Vec<crate::snapshots::Change>, String> {
+            self.log
+                .lock()
+                .expect("log")
+                .push(format!("status {from}..{to}"));
+            Ok(self.changed.clone())
+        }
+    }
+
+    fn change(kind: char, path: &Path) -> crate::snapshots::Change {
+        crate::snapshots::Change {
+            kind,
+            path: path.display().to_string(),
+        }
+    }
+
+    fn restore_request(path: &Path) -> ActionRequest {
+        let p = path.display().to_string();
+        parse_request(&json!({
+            "tool": FILES, "operation": "restore_snapshot", "reason": "r",
+            "resources": [file_uri(&p)],
+            "arguments": {"pre": 1, "paths": [p]}
+        }))
+        .expect("valid")
+    }
+
+    #[test]
+    fn snapshots_make_a_change_undoable() {
+        let (g, docs) = gate("snap", Answer::Once);
+        let home = docs.parent().expect("home").to_path_buf();
+        let a = docs.join("a.txt");
+        let mut s = SessionState::default();
+
+        // No snapshots: the tool keeps no backup, so it cannot be undone (R3,
+        // more than this gate may do).
+        let o = g.handle(&restore_request(&a), &mut s);
+        assert_eq!(
+            (o.code, o.level),
+            ("denied_level", Some(Level::R3)),
+            "{o:?}"
+        );
+
+        let log = std::sync::Arc::new(Mutex::new(Vec::new()));
+        let g = g.with_snapshots(Some(Box::new(FakeSnapshots {
+            home: home.clone(),
+            log: log.clone(),
+            fail: false,
+            changed: vec![
+                change('c', &a),
+                change('.', &docs.join("only-metadata")),
+                change('+', &home.join(".snapshots/9/snapshot/x")),
+                change('-', &home.join("Downloads/b")),
+                change('+', &docs.join("new.txt")),
+            ],
+        })));
+        let o = g.handle(&restore_request(&a), &mut s);
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R2)), "{o:?}");
+        let id = o.action_id.clone();
+        assert_eq!(
+            *log.lock().expect("log"),
+            vec![format!("pre {id}"), format!("post 1 {id}")]
+        );
+
+        // Undo: only the files changed in the allowed folders go back.
+        let u = g.undo(&id, &mut s);
+        assert_eq!(u.code, "allowed", "{u:?}");
+        let restored = u.result.as_ref().map(|r| r["restored"].clone());
+        let expect = json!([
+            a.display().to_string(),
+            docs.join("new.txt").display().to_string()
+        ]);
+        assert_eq!(restored, Some(expect));
+        assert_eq!(log.lock().expect("log")[2], "status 1..2");
+        // The undo took its own pair of snapshots: it can be undone too.
+        let records = read_records(g.journal().path()).expect("records");
+        let undo = records
+            .iter()
+            .flatten()
+            .filter(|r| r["action_id"] == u.action_id.as_str() && r["kind"] == "result")
+            .map(|r| r["data"]["undo"].clone())
+            .next();
+        assert_eq!(undo, Some(json!({"snapshot": {"pre": 4, "post": 5}})));
+        assert!(verify(g.journal().path()).is_ok());
+    }
+
+    #[test]
+    fn no_snapshot_no_action() {
+        let (g, docs) = gate("snapfail", Answer::Once);
+        let home = docs.parent().expect("home").to_path_buf();
+        let g = g.with_snapshots(Some(Box::new(FakeSnapshots {
+            home,
+            log: std::sync::Arc::new(Mutex::new(Vec::new())),
+            fail: true,
+            changed: Vec::new(),
+        })));
+        let mut s = SessionState::default();
+        let o = g.handle(&restore_request(&docs.join("a")), &mut s);
+        assert!(!o.allowed);
+        assert_eq!(o.code, "denied_mitos", "{o:?}");
+        assert!(o.message.contains("snapperd"), "{o:?}");
+        assert!(verify(g.journal().path()).is_ok());
+    }
+
+    #[test]
+    fn snapshots_cover_only_the_home() {
+        let (g, docs) = gate("snapout", Answer::Once);
+        let g = g.with_snapshots(Some(Box::new(FakeSnapshots {
+            home: PathBuf::from("/elsewhere"),
+            log: std::sync::Arc::new(Mutex::new(Vec::new())),
+            fail: false,
+            changed: Vec::new(),
+        })));
+        let mut s = SessionState::default();
+        let o = g.handle(&restore_request(&docs.join("a")), &mut s);
+        assert_eq!(
+            (o.code, o.level),
+            ("denied_level", Some(Level::R3)),
+            "{o:?}"
+        );
+        // A file tool's own undo needs no snapshot.
+        let w = parse_request(&json!({
+            "tool": FILES, "operation": "write", "reason": "r",
+            "resources": [file_uri(&docs.join("a").display().to_string())],
+            "arguments": {"path": docs.join("a").display().to_string(), "text": "x"}
+        }))
+        .expect("valid");
+        assert!(!g.handle(&w, &mut s).snapshot);
+    }
+
+    #[test]
+    fn a_list_of_files_must_all_be_declared() {
+        let (g, docs) = gate("snaplist", Answer::Once);
+        let (a, b) = (
+            docs.join("a").display().to_string(),
+            docs.join("b").display().to_string(),
+        );
+        let mut s = SessionState::default();
+        let r = parse_request(&json!({
+            "tool": FILES, "operation": "restore_snapshot", "reason": "r",
+            "resources": [file_uri(&a)],
+            "arguments": {"pre": 1, "paths": [a, b]}
+        }))
+        .expect("valid");
+        assert_eq!(g.handle(&r, &mut s).code, "denied_mismatch");
+        let empty = parse_request(&json!({
+            "tool": FILES, "operation": "restore_snapshot", "reason": "r",
+            "resources": [], "arguments": {"pre": 1, "paths": []}
+        }))
+        .expect("valid");
+        assert_eq!(g.handle(&empty, &mut s).code, "denied_mismatch");
+    }
 
     #[test]
     fn undo_with_arguments_from_the_tool() {

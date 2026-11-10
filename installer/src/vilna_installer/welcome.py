@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The first installer screen (GTK 4 + libadwaita), design 10.12.
 
-    vilna-installer [--window] [--plan PATH]
+    vilna-installer [--window] [--plan PATH] [--demo empty|windows]
 
 Step 0 of image/docs/installer.md: no model yet. The person picks the
 language (its own name, no flags), can turn on the screen reader, and goes
 on with Gloxi or without the assistant. The screen writes the start of the
-plan (``start.write_plan``) and ends; the next steps read it.
+plan (``start.write_plan``). With Gloxi, the conversation window
+(``chat.ChatWindow``, steps 1–13) follows in the same program; without the
+assistant the program ends with status 3 and the classic wizard goes on
+with the same plan.
 
 Under the greeting: the Blavet mark and the release name, on the Blavet
 wallpaper (light by default, dark when the system is dark).
@@ -25,13 +28,15 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
+gi.require_version("GdkPixbuf", "2.0")
+from gi.repository import Adw, Gdk, GdkPixbuf, Gio, GLib, Gtk  # noqa: E402
 
 from vilna_installer import start  # noqa: E402
 
 APP_ID = "io.github.stdenis1980.VilnaInstaller"
 BACKGROUNDS = Path(os.environ.get("VILNA_BACKGROUNDS", "/usr/share/backgrounds/vilna"))
 A11Y_SCHEMA = "org.gnome.desktop.a11y.applications"
+EXIT_WIZARD = 3  # «Without the assistant»: the classic wizard goes on
 
 CSS = """
 .vilna-veil { background-image: radial-gradient(ellipse 55% 62% at 50% 52%,
@@ -55,6 +60,21 @@ CSS = """
 .vilna-other.chosen { background-color: @accent_bg_color; color: @accent_fg_color; }
 .vilna-note { font-size: 10.5pt; }
 """
+
+
+def _wallpaper(path: Path) -> Gdk.Texture | None:
+    """The Blavet wallpaper without its bottom-left corner (start.wallpaper_crop).
+
+    The corner holds the Vilna mark: cut by the screen edge on 16:10 screens
+    and under «Screen reader» on any screen (VM test of 2026-11-09), while
+    the screen shows the Blavet mark itself.
+    """
+    try:
+        full = GdkPixbuf.Pixbuf.new_from_file(str(path))
+    except GLib.Error:
+        return None
+    x, y, width, height = start.wallpaper_crop(full.get_width(), full.get_height())
+    return Gdk.Texture.new_for_pixbuf(full.new_subpixbuf(x, y, width, height))
 
 
 def language_names() -> tuple[object, object]:
@@ -99,13 +119,12 @@ class Welcome(Adw.ApplicationWindow):
         variant = "dark" if dark else "light"
 
         overlay = Gtk.Overlay()
-        wall = BACKGROUNDS / f"vilna-blavet-{variant}.jpg"
-        if wall.is_file():
-            picture = Gtk.Picture.new_for_filename(str(wall))
-            picture.set_content_fit(Gtk.ContentFit.COVER)
-            overlay.set_child(picture)
-        else:
-            overlay.set_child(Gtk.Box())
+        backdrop = Gtk.Box(hexpand=True, vexpand=True)
+        texture = _wallpaper(BACKGROUNDS / f"vilna-blavet-{variant}.jpg")
+        if texture is not None:
+            backdrop = Gtk.Picture.new_for_paintable(texture)
+            backdrop.set_content_fit(Gtk.ContentFit.COVER)
+        overlay.set_child(backdrop)
         veil = Gtk.Box(hexpand=True, vexpand=True)
         veil.add_css_class("vilna-veil")
         overlay.add_overlay(veil)
@@ -202,6 +221,14 @@ class Welcome(Adw.ApplicationWindow):
         self.set_default_widget(self.with_gloxi)
         self._relabel()
         self.buttons[language].grab_focus()
+        # Read every language of the system once the screen is up, so that
+        # «Other languages…» opens at once (it took 1-2 s in the VM).
+        GLib.timeout_add(500, self._load_others)
+
+    def _load_others(self) -> bool:
+        if self.others is None:
+            self.others = start.other_languages(start.system_locales(), self.own_name)
+        return GLib.SOURCE_REMOVE
 
     @property
     def language(self) -> str:
@@ -245,7 +272,21 @@ class Welcome(Adw.ApplicationWindow):
             rows.append(row)
         rows.set_filter_func(lambda row: search.get_text().casefold() in row.search)
         search.connect("search-changed", lambda _s: rows.invalidate_filter())
-        rows.connect("row-activated", lambda _l, row: self._pick_other(dialog, row.locale))
+        # The dialog opens where the person just clicked «Other languages…»:
+        # a double click, or a second click a moment later, landed on a row
+        # and chose a language by accident (VM tests of 2026-11-09). Rows
+        # answer only start.PICK_GUARD_MS after the dialog is on screen
+        # ("map"), not after it was built: building can take a second or two.
+        shown: list[int] = []
+        dialog.connect("map", lambda _d: shown.append(GLib.get_monotonic_time()))
+
+        def on_row(_list: Gtk.ListBox, row: Gtk.ListBoxRow) -> None:
+            if shown and start.pick_allowed(shown[0], GLib.get_monotonic_time()):
+                self._pick_other(dialog, row.locale)
+
+        rows.connect("row-activated", on_row)
+        # Esc in the search field closes the dialog, as anywhere else.
+        search.connect("stop-search", lambda _s: dialog.close())
         scroll = Gtk.ScrolledWindow(vexpand=True, hscrollbar_policy=Gtk.PolicyType.NEVER)
         scroll.set_child(rows)
         box.append(scroll)
@@ -295,14 +336,49 @@ class Welcome(Adw.ApplicationWindow):
         start.write_plan(plan, self.plan_path)
         print(json.dumps(plan, ensure_ascii=False))
         app = self.get_application()
-        if app is not None:
-            app.quit()
+        if isinstance(app, InstallerApp):
+            if assistant:
+                app.open_chat(self)
+            else:
+                app.exit_code = EXIT_WIZARD
+                app.quit()
 
 
 class InstallerApp(Adw.Application):
-    def __init__(self, plan_path: Path, window: bool, language: str) -> None:
+    def __init__(
+        self, plan_path: Path, window: bool, language: str, demo: str | None = None
+    ) -> None:
         super().__init__(application_id=APP_ID)
         self.plan_path, self.window, self.language = plan_path, window, language
+        self.demo = demo
+        self.exit_code = 1  # closed before the end
+        self.close_tools = lambda: None
+
+    def open_chat(self, welcome: Gtk.Window) -> None:
+        """Steps 1–13: the conversation with Gloxi, or a note that it cannot start."""
+        from vilna_installer import chat, conversation
+
+        css = Gtk.CssProvider()
+        css.load_from_string(chat.CSS)
+        display = Gdk.Display.get_default()
+        if display is not None:
+            Gtk.StyleContext.add_provider_for_display(
+                display, css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
+        try:
+            talk, self.close_tools = conversation.start_conversation(self.plan_path, demo=self.demo)
+        except conversation.ToolsError as e:
+            print(f"vilna-installer: {e}", file=sys.stderr)
+            talk = None
+        win = chat.ChatWindow(self, talk, self.plan_path, demo=bool(self.demo))
+        if not self.window:
+            win.fullscreen()
+        win.present()
+        welcome.destroy()
+
+    def do_shutdown(self) -> None:
+        self.close_tools()
+        Adw.Application.do_shutdown(self)
 
     def do_startup(self) -> None:
         Adw.Application.do_startup(self)
@@ -326,11 +402,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--plan", type=Path, default=None, help="where to write the plan")
     p.add_argument("--window", action="store_true", help="a window, not the whole screen")
     p.add_argument("--language", choices=start.CODES, help="start in this language")
+    p.add_argument("--demo", choices=("empty", "windows"), help="a synthetic computer")
     args = p.parse_args(sys.argv[1:] if argv is None else argv)
     language = args.language or start.default_language()
-    app = InstallerApp(args.plan or start.default_plan_path(), args.window, language)
+    app = InstallerApp(args.plan or start.default_plan_path(), args.window, language, args.demo)
     GLib.set_application_name("Vilna")
-    return app.run([sys.argv[0]])
+    app.run([sys.argv[0]])
+    return app.exit_code
 
 
 if __name__ == "__main__":

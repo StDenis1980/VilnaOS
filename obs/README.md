@@ -9,7 +9,7 @@
 | `project/_meta` | Опис OBS-проєкту: репозиторій `openSUSE_Tumbleweed` (RPM, збірка проти `openSUSE:Factory/snapshot`) і `images` (образи KIWI з цих RPM), x86_64, публікація ввімкнена. `@PROJECT@` і `@USER@` підставляє інструмент |
 | `project/_prjconf` | Конфігурація проєкту: для репозиторію `images` — тип KIWI і перевага пакетів брендування Vilna; решта береться з Factory |
 | `packages/<назва>/` | Один пакет OBS: spec, `.changes` і джерела. Файли вивантажуються в OBS як є |
-| `images/<назва>/` | Один образ KIWI: `<назва>.kiwi`, `config.sh`, `_constraints`. OBS збирає його лише в репозиторії `images` (див. [«Образ»](#образ)) |
+| `images/<назва>/` | Один образ KIWI: `<назва>.kiwi`, `config.sh`, `_constraints`. OBS збирає його лише в репозиторії `images`: диск `Vilna` (див. [«Образ»](#образ)) і ISO `Vilna-Live` ([«Живий образ»](#живий-образ-з-установником)) |
 | `tools/obs_sync.py` | Збирає пакети й образи з репозиторію (`assemble`) і вивантажує їх в OBS (`upload`) |
 | `tools/check_images.py` | Перевіряє описи образів: KIWI читає й перевіряє схему, `config.sh` без синтаксичних помилок, кожен наш пакет з образу справді збирається з `packages/` |
 | [`../.github/workflows/obs.yml`](../.github/workflows/obs.yml) | CI: збирає всі RPM і перевіряє описи образів у контейнері Tumbleweed на кожному PR, а на `main` вивантажує все в OBS |
@@ -110,6 +110,19 @@ python3 obs/tools/obs_sync.py assemble build/obs   # усі пакети в buil
 
 Опис написано заново, а не скопійовано: старий опис `openSUSE-Aeon` з `devel:microos:aeon:images`, на який посилався `composition.md`, виведений з ужитку у вересні 2025. Aeon тепер ставиться самим образом-встановлювачем, і цей спосіб варто взяти, коли дійде до ISO.
 
+## Живий образ з установником
+
+`images/Vilna-Live/` — ISO для флешки (етап альфи, пункт 11 переліку робіт). Та сама система, що й у диску `Vilna` (патерн `vilna_base`), плюс установник `vilna-installer` (`packages/vilna-installer`, код у [`../installer/`](../installer/)).
+
+- **Що виходить:** `Vilna-Live.x86_64-<версія>.iso`, лише UEFI, grub2 із shim (як у живих образах openSUSE; KIWI будує з нього завантажувач ISO, Secure Boot працює з підписаним shim). Меню сховане на 3 с, Esc його показує. Корінь — squashfs із накладкою в пам'яті (`flags="overlay"`, модуль dracut `kiwi-live`): на диски комп'ютера нічого не пишеться, після перезапуску змін немає. Встановлена система й далі на systemd-boot.
+- **Сеанс:** GDM одразу входить користувачем `live` без пароля, без GNOME Initial Setup, і запускає установник на весь екран. Мале розширення `vilna-live` (лише в цьому образі) не відкриває огляд «Діяльності» при вході, щоб установник був попереду. Установник першим у доку, щоб відкрити його знову; екран не блокується. `live` може діяти як адміністратор без пароля (sudo і правило polkit, лише в цьому образі): рушію встановлення знадобляться права root, а своїх даних живий сеанс не має.
+- **Модель Gloxi** (`vilna-llm.service`) у живому образі не стартує під час завантаження, а лише після входу `live` (запис автозапуску), з найнижчим пріоритетом читання диска. Інакше ~2,5 ГБ ваг читаються з флешки разом із сеансом, GNOME Shell чекає на диск, і GDM замість автовходу показує екран входу (перевірка Build2.2, 2026-11-10). Plymouth передає екран GDM без повернення до тексту (`plymouth quit --retain-splash`), а `systemd.show_status=false` ховає повідомлення systemd.
+- **SELinux** у живому сеансі в режимі permissive (`enforcing=0`): squashfs із накладкою ще не перевіряли в режимі enforcing. Встановлена система лишається enforcing.
+- **Вимкнено** те, що не має сенсу без btrfs-знімка: `transactional-update`, snapper, обслуговування btrfs, `health-checker`, kdump, `systemd-repart`, а також `vilna-flatpak-defaults` (інакше програми з Flathub завантажувалися б у пам'ять при кожному старті).
+- **Розмір:** ISO близько 4,5 ГБ, бо `patterns-vilna` вимагає `vilna-model-default` (ваги моделі Gloxi, ~2,5 ГБ, ADR 0025): установник і Gloxi працюють без мережі. Для флешки потрібно щонайменше 8 ГБ.
+- **Поки що** установник має лише перший екран: мова, читач екрана, «Без асистента» / «Далі з Gloxi». Він записує початок плану в `$XDG_RUNTIME_DIR/vilna-installer/plan.json` і закривається, а живий стіл лишається, щоб спробувати Vilna. Розмова з Gloxi, перевірка плану, підтвердження Herkos і рушій — пункти 15–17.
+- **Перевірка у VM:** `qemu-system-x86_64 -enable-kvm -m 8G -machine q35 -bios /usr/share/qemu/ovmf-x86_64.bin -cdrom Vilna-Live*.iso` (або GNOME Boxes). Перевірити: тихе завантаження з Plymouth, автовхід, установник на шпалерах Blavet, `plan.json`, «Інші мови», `systemctl --failed`, `/sys/fs/selinux/enforce` = 0 (permissive; `getenforce` в образі немає).
+
 ## Що далі
 
 - `vilna-presets` → `systemd-presets-branding-Vilna`: скопіювати пресети з `systemd-presets-branding-Aeon`, додати `Provides: systemd-presets-branding` і конфлікт із пакетом Aeon, щоб повністю його замінити (rpmlint вимагає цього від пакетів з `branding` у назві).
@@ -117,4 +130,4 @@ python3 obs/tools/obs_sync.py assemble build/obs   # усі пакети в buil
 - Справжній логотип замість заглушки; решта пакетів `*-branding-Vilna` з [`composition.md`](../image/docs/composition.md), розд. 4.5.
 - Замінити пакети брендування Aeon, які ще лишаються в `vilna_base` (`gnome-branding-Aeon`, `gdm-branding-Aeon`, `systemd-presets-branding-Aeon`, `systemd-repart-branding-Aeon`, `x86_64_v3-branding-Aeon`, `aeon-check`), на пакети Vilna.
 - Репозиторій для `aarch64` і оптимізованої збірки x86-64-v3 — разом з образом на етапі 2.
-- Образ: ISO-встановлювач (tik), перевірка завантаження образу у VM в CI (Herkos і Gloxi стартують, відкат знімка), брендування як помилка, а не попередження.
+- Образ: рушій встановлення для `Vilna-Live` (tik чи свій, `image/docs/installer.md`), перевірка завантаження образу у VM в CI (Herkos і Gloxi стартують, відкат знімка), брендування як помилка, а не попередження.

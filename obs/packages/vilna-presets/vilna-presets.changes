@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 10 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.5: enable vilna-home-setup.path and .service (herkos),
+  which finish a new person's home that useradd left unlabeled and
+  owned by root under SELinux
+
+-------------------------------------------------------------------
 Mon Nov  9 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.4: enable vilna-people-sync (service and path) and

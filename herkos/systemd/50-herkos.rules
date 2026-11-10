@@ -3,7 +3,9 @@
 // people (uid 1000-59999), and nothing else in systemd. It never gets to
 // start a unit of its choice: that would be as good as root. One of the
 // units, vilna-mcp-gloxi-network@, runs as root and can only open or close
-// the internet for that person's Gloxi (ADR 0025).
+// the internet for that person's Gloxi (ADR 0025). Another, vilna-mcp-system@,
+// runs as root and can only list the system's saved states and, for an
+// administrator, make one of them start next (ADR 0026).
 polkit.addRule(function (action, subject) {
     if (subject.user !== "herkos") {
         return polkit.Result.NOT_HANDLED;
@@ -12,7 +14,7 @@ polkit.addRule(function (action, subject) {
         return polkit.Result.NO;
     }
     var verb = action.lookup("verb");
-    var m = /^vilna-mcp-(files|backup|settings|calendar|gloxi-network|ext-[a-z0-9][a-z0-9-]*)@([0-9]+)\.service$/.exec(action.lookup("unit") || "");
+    var m = /^vilna-mcp-(files|backup|settings|calendar|system|gloxi-network|ext-[a-z0-9][a-z0-9-]*)@([0-9]+)\.service$/.exec(action.lookup("unit") || "");
     if (m && (verb === "start" || verb === "stop")) {
         var uid = parseInt(m[2], 10);
         if (uid >= 1000 && uid < 60000) {

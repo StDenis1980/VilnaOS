@@ -153,6 +153,9 @@ msgstr "Видалити файл"
 msgid "Undo an earlier change to a file"
 msgstr "Скасувати попередню зміну файлу"
 
+msgid "Undo an earlier change from a snapshot"
+msgstr "Скасувати попередню зміну за знімком"
+
 # Backups (org.vilna.mcp.backup)
 msgid "See whether backups are on and how the last one went"
 msgstr "Подивитися, чи ввімкнено копії і як пройшла остання"
@@ -269,6 +272,18 @@ msgstr "Gloxi відновив копію в нову теку"
 
 msgid "Gloxi brought back an earlier version of a file"
 msgstr "Gloxi повернув попередню версію файлу"
+
+msgid "Gloxi brought back files from a snapshot"
+msgstr "Gloxi повернув файли зі знімка"
+
+msgid "Gloxi looked at the saved states of the system"
+msgstr "Gloxi переглянув збережені стани системи"
+
+msgid "Gloxi returned the system to a saved state"
+msgstr "Gloxi повернув систему до збереженого стану"
+
+msgid "Gloxi undid a return of the system to a saved state"
+msgstr "Gloxi скасував повернення системи до збереженого стану"
 
 msgid "Gloxi changed a file"
 msgstr "Gloxi змінив файл"
@@ -454,3 +469,12 @@ msgstr "Дозволити Gloxi виходити в інтернет для х�
 
 msgid "Let Gloxi reach only this computer"
 msgstr "Дозволити Gloxi зв'язок лише з цим комп'ютером"
+
+msgid "See the saved states of the system"
+msgstr "Переглянути збережені стани системи"
+
+msgid "Return the whole system to a saved state, after a restart"
+msgstr "Повернути всю систему до збереженого стану (після перезапуску)"
+
+msgid "Undo a return of the system to a saved state"
+msgstr "Скасувати повернення системи до збереженого стану"
