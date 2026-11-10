@@ -51,6 +51,12 @@ from vilna_installer import start
 MODEL_URL = os.environ.get("VILNA_INSTALLER_MODEL_URL", "http://127.0.0.1:8080/v1")
 MODEL_KEY_FILE = Path(os.environ.get("VILNA_INSTALLER_MODEL_KEY_FILE", "/var/lib/vilna-llm/key"))
 MODEL_TIMEOUT = 120.0
+# In the live image vilna-llm.service starts only after login, reading about
+# 2.5 GB of weights from the USB stick, and makes its key on start: the
+# conversation waits for it this long before offering to go on without it.
+MODEL_WAIT = float(os.environ.get("VILNA_INSTALLER_MODEL_WAIT", "300"))
+MODEL_POLL = 3.0
+MODEL_UNIT = "vilna-llm.service"
 HISTORY = 8  # messages of the conversation that go to the model
 MAX_ROUNDS = 4  # model ↔ function rounds in one turn
 MAX_DATA_CHARS = 2500  # of fetched data in the prompt (small context)
@@ -77,6 +83,10 @@ INTRO = (
 FIRST_QUESTION = (
     "Which languages do you write in? I will add their keyboard layouts too, for example "
     "Ukrainian and English."
+)
+WAKING = (
+    "Gloxi is waking up… The first start from the USB stick can take a few minutes. "
+    "You can also go on without the assistant."
 )
 NO_MODEL = (
     "Gloxi cannot start on this computer right now. You can go on without the assistant: "
@@ -122,6 +132,7 @@ SECTIONS = {
 TEXTS = (
     INTRO,
     FIRST_QUESTION,
+    WAKING,
     NO_MODEL,
     MODEL_FAILED,
     THINKING,
@@ -437,12 +448,21 @@ class LocalModel:
     ) -> None:
         self.url = url.rstrip("/")
         self.model = model
+        self.key_file = key_file
+        self.key = ""
+        self._read_key()
+
+    def _read_key(self) -> None:
+        # The service makes its key when it starts, maybe after the installer.
+        if self.key:
+            return
         try:
-            self.key = key_file.read_text(encoding="utf-8").strip()
+            self.key = self.key_file.read_text(encoding="utf-8").strip()
         except OSError:
             self.key = ""
 
     def _request(self, path: str, body: dict | None = None, timeout: float = MODEL_TIMEOUT):
+        self._read_key()
         data = json.dumps(body).encode() if body is not None else None
         req = urllib.request.Request(self.url + path, data=data, method="POST" if data else "GET")
         req.add_header("Content-Type", "application/json")
@@ -471,6 +491,40 @@ class LocalModel:
         except (KeyError, IndexError, TypeError) as e:
             raise ModelError(f"unexpected answer: {str(out)[:200]}") from e
         return ModelReply(message.get("content") or "", message.get("tool_calls") or [])
+
+
+def unit_failed(unit: str = MODEL_UNIT) -> bool:
+    """True when systemd says the model's service failed: waiting longer is pointless."""
+    try:
+        done = subprocess.run(
+            ["systemctl", "is-failed", "--quiet", unit], capture_output=True, timeout=5, check=False
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return done.returncode == 0
+
+
+def wait_ready(
+    model: ModelLike,
+    *,
+    timeout: float = MODEL_WAIT,
+    interval: float = MODEL_POLL,
+    stopped: Callable[[], bool] = lambda: False,
+    failed: Callable[[], bool] = unit_failed,
+    sleep: Callable[[float], None] | None = None,
+) -> bool:
+    """Wait until the model answers; False after ``timeout``, a failed service or ``stopped``."""
+    import time
+
+    pause = sleep or time.sleep
+    waited = 0.0
+    while True:
+        if model.available():
+            return True
+        if stopped() or failed() or waited >= timeout:
+            return False
+        pause(interval)
+        waited += interval
 
 
 # --- the conversation ------------------------------------------------------------------
@@ -796,10 +850,7 @@ def start_conversation(
     demo: str | None = None,
     model: ModelLike | None = None,
     stage: str = "alpha",
-) -> tuple[Conversation | None, Callable[[], None]]:
-    """The conversation, or None when the model is not there (go on without the assistant)."""
+) -> tuple[Conversation, Callable[[], None]]:
+    """The conversation and how to stop its tools; the window waits for the model (wait_ready)."""
     tools = InstallerTools(plan_path, demo=demo, stage=stage)
-    model = model or LocalModel()
-    if isinstance(model, LocalModel) and not model.available():
-        return None, tools.close
-    return Conversation(plan_path, tools, model), tools.close
+    return Conversation(plan_path, tools, model or LocalModel()), tools.close

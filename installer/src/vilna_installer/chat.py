@@ -290,14 +290,63 @@ class ChatWindow(Adw.ApplicationWindow):
         view.set_content(body)
         self.set_content(view)
 
+        self._show_plan(plan, None)
+        self._ready(False)
+        self.waking: Gtk.Widget | None = None
+        self.closed = False
+        self.connect("close-request", self._on_close)
         if conversation is None:
             self._say(_(conv.NO_MODEL))
-            self.entry.set_sensitive(False)
-            self.send.set_sensitive(False)
-            self._show_plan(plan, None)
         else:
-            self._show(conversation.opening())
+            threading.Thread(target=self._wait_for_model, daemon=True).start()
         GLib.idle_add(_once(self.entry.grab_focus))
+
+    def _on_close(self, *_args) -> bool:
+        self.closed = True
+        return False
+
+    def _ready(self, ready: bool) -> None:
+        self.entry.set_sensitive(ready)
+        self.send.set_sensitive(ready)
+
+    def _wait_for_model(self) -> None:
+        """The model may still be starting (live image): say so and wait, then begin."""
+        conversation = self.conversation
+        if conversation is None:
+            return
+        if not conversation.model.available():
+            GLib.idle_add(self._show_waking)
+            if not conv.wait_ready(conversation.model, stopped=lambda: self.closed):
+                GLib.idle_add(self._no_model)
+                return
+        GLib.idle_add(self._model_ready)
+
+    def _show_waking(self) -> bool:
+        self._say(self._(conv.WAKING))
+        self.waking = self.list.get_last_child()
+        self.thinking.set_visible(True)
+        return False
+
+    def _model_ready(self) -> bool:
+        if self.waking is not None:
+            self.list.remove(self.waking)
+            self.waking = None
+        self.thinking.set_visible(False)
+        if self.conversation is not None:
+            self._show(self.conversation.opening())
+            self._ready(True)
+            self.entry.grab_focus()
+        return False
+
+    def _no_model(self) -> bool:
+        self.thinking.set_visible(False)
+        self._say(self._(conv.NO_MODEL))
+        self.conversation = None
+        for row, _value in self.rows.values():
+            change = row.get_last_child()
+            if isinstance(change, Gtk.Button):
+                change.set_visible(False)
+        return False
 
     # showing
 
