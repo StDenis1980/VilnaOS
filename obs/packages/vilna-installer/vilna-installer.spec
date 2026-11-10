@@ -25,6 +25,9 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  fdupes
 BuildRequires:  hicolor-icon-theme
 BuildRequires:  python-rpm-macros
+# %%check runs the conversation tests against the installer's MCP server.
+BuildRequires:  timezone
+BuildRequires:  vilna-mcp-installer
 Requires:       python3 >= 3.11
 Requires:       python3-gobject
 Requires:       typelib(Adw) = 1
