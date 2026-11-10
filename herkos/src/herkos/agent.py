@@ -69,10 +69,12 @@ class Agent:
     def call(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
         """A request of ours, before any question can arrive."""
         self.next_id += 1
-        self.send({"jsonrpc": "2.0", "id": self.next_id, "method": method, "params": params})
         try:
+            # herkosd may close the connection of an unknown uid before our
+            # first line arrives: then writing fails, not reading.
+            self.send({"jsonrpc": "2.0", "id": self.next_id, "method": method, "params": params})
             reply = self.read()
-        except ConnectionResetError as e:
+        except (BrokenPipeError, ConnectionResetError) as e:
             raise NotServed("Herkos closed the connection without an answer") from e
         if reply is None:
             raise NotServed("Herkos closed the connection without an answer")

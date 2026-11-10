@@ -24,6 +24,8 @@ BuildRequires:  %{python_module hatchling >= 1.26}
 BuildRequires:  %{python_module pip}
 BuildRequires:  %{python_module wheel}
 BuildRequires:  fdupes
+# Owns the icon directories of herkos-agent (OBS filelist check).
+BuildRequires:  hicolor-icon-theme
 BuildRequires:  python-rpm-macros
 BuildRequires:  sysuser-tools
 BuildRequires:  systemd-rpm-macros
@@ -61,6 +63,8 @@ License:        GPL-3.0-or-later
 Requires:       python3-gobject
 Requires:       typelib(Adw) = 1
 Requires:       typelib(Gtk) = 4.0
+# /usr/share/icons/hicolor/{scalable,symbolic}/apps for the Permissions icons.
+Requires:       hicolor-icon-theme
 BuildArch:      noarch
 
 %description agent
