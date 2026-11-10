@@ -1044,6 +1044,10 @@ msgstr ""
 msgid "hexgrad via sherpa-onnx on GitHub"
 msgstr ""
 
+#: src/gloxi/voice/models.py
+msgid "lang-uk via PyPI"
+msgstr ""
+
 #: src/gloxi/voice/session.py
 #, python-brace-format
 msgid "Downloading the voice models: {percent}%"
@@ -1097,6 +1101,10 @@ msgstr ""
 
 #: src/gloxi/voice/session.py
 msgid "The voice models are still downloading."
+msgstr ""
+
+#: src/gloxi/voice/session.py
+msgid "Ukrainian word stress"
 msgstr ""
 
 #: src/gloxi/voice/session.py

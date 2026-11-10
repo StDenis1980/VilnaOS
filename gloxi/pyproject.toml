@@ -16,7 +16,8 @@ dependencies = [
 tools = ["herkos"]
 # Voice on this computer (ADR 0015): speech recognition and synthesis. In the
 # Flatpak it is always there; without it Gloxi has no microphone button.
-voice = ["sherpa-onnx>=2.0.1"]
+# marisa-trie reads the Ukrainian stress dictionary, downloaded after a yes.
+voice = ["sherpa-onnx>=2.0.1", "marisa-trie>=1.4.1"]
 
 [project.scripts]
 gloxi = "gloxi.cli:main"
@@ -35,6 +36,8 @@ dev = [
     "vilna-mcp-files",
     "vilna-mcp-backup",
     "vilna-backup",
+    # The stress dictionary tests build a tiny trie of their own.
+    "marisa-trie>=1.4.1",
 ]
 
 [tool.uv.sources]

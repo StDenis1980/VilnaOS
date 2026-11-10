@@ -15,6 +15,7 @@ import re
 import shutil
 import struct
 import tarfile
+import zipfile
 from array import array
 from dataclasses import replace
 from pathlib import Path
@@ -23,7 +24,7 @@ import pytest
 
 from gloxi.bench import voice as bench
 from gloxi.engine import DownloadCancelled, EngineError, ModelFile
-from gloxi.voice import language, models, phonemes, speech, store, tts
+from gloxi.voice import language, models, phonemes, speech, store, stress, tts
 from gloxi.voice.session import VoiceController, VoicePrefs, consent_text, load_prefs, save_prefs
 from gloxi.voice.stt import Dictation
 from gloxi.voice.tts import Audio, SpeechError, Synthesizer, wav_to_audio
@@ -35,8 +36,9 @@ def test_every_pack_is_pinned():
     for pack in models.PACKS:
         assert re.fullmatch(r"[0-9a-f]{64}", pack.file.sha256), pack.key
         assert pack.file.size > 0
-        assert pack.file.url.startswith(models.RELEASES + "/")
+        assert pack.file.url.startswith((models.RELEASES + "/", models.PYPI + "/"))
         assert pack.file.url.endswith("/" + pack.file.filename)
+        assert pack.wheel == bool(pack.members), pack.key
         assert pack.file.licence in {"CC-BY-4.0", "MIT", "CC0-1.0", "Apache-2.0"}
         assert pack.author
 
@@ -51,7 +53,12 @@ def test_every_language_has_a_voice():
 
 
 def test_packs_for_a_language():
-    assert models.packs_for("uk") == (models.PARAKEET, models.SILERO_VAD, models.PIPER_UK)
+    assert models.packs_for("uk") == (
+        models.PARAKEET,
+        models.SILERO_VAD,
+        models.PIPER_UK,
+        models.STRESS_UK,
+    )
     assert models.packs_for("es")[-1] is models.KOKORO
     assert models.packs_for("pl") == (models.PARAKEET, models.SILERO_VAD)  # eSpeak NG
     assert models.voice_for("xx") is models.VOICES["en"]
@@ -129,6 +136,50 @@ def test_install_unpacks_and_marks(tmp_path):
     assert store.missing((pack,), base) == ()
     store.remove(pack, base)
     assert store.installed(pack, base) is None
+
+
+def _wheel(tmp_path: Path, files: dict[str, bytes]) -> Path:
+    path = tmp_path / "x-1.0-py3-none-any.whl"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for name, data in files.items():
+            zf.writestr(name, data)
+    return path
+
+
+def test_install_takes_only_the_named_files_of_a_wheel(tmp_path):
+    src = _wheel(
+        tmp_path,
+        {
+            "x/data/stress.trie": b"trie",
+            "x-1.0.dist-info/licenses/LICENSE": b"MIT",
+            "x/__init__.py": b"import os",
+            "../evil": b"no",
+        },
+    )
+    pack = replace(
+        _pack(src, folder="stress-x"),
+        kind="stress",
+        members=("x/data/stress.trie", "x-1.0.dist-info/licenses/LICENSE"),
+    )
+    folder = store.install(pack, tmp_path / "voice", fetch=_local_fetch(src))
+    assert sorted(p.name for p in folder.iterdir()) == [".gloxi-pack", "LICENSE", "stress.trie"]
+    assert (folder / "stress.trie").read_bytes() == b"trie"
+    assert not (tmp_path / "evil").exists()
+
+
+def test_a_wheel_without_the_dictionary_is_refused(tmp_path):
+    src = _wheel(tmp_path, {"x/__init__.py": b""})
+    pack = replace(_pack(src, folder="stress-x"), kind="stress", members=("x/data/stress.trie",))
+    with pytest.raises(EngineError, match="lacks"):
+        store.install(pack, tmp_path / "voice", fetch=_local_fetch(src))
+    assert store.installed(pack, tmp_path / "voice") is None
+
+
+def test_a_wheel_member_too_large_is_refused(tmp_path):
+    src = _wheel(tmp_path, {"x/big": b"0" * 100_000})  # compresses far below its size
+    pack = replace(_pack(src, folder="stress-x"), kind="stress", members=("x/big",))
+    with pytest.raises(EngineError, match="larger"):
+        store.install(pack, tmp_path / "voice", fetch=_local_fetch(src))
 
 
 def test_install_a_single_file(tmp_path):
@@ -273,6 +324,75 @@ def test_uk_numbers_in_text():
 
 
 # -- phonemes and sound ----------------------------------------------------------------
+
+
+# -- stress marks for the Ukrainian voice ---------------------------------------------
+
+
+def _dictionary(tmp_path: Path, words: dict[str, bytes]) -> Path:
+    marisa_trie = pytest.importorskip("marisa_trie")
+    folder = tmp_path / "stress"
+    folder.mkdir()
+    marisa_trie.BytesTrie(words.items()).save(str(folder / stress.DICTIONARY))
+    return folder
+
+
+def test_stress_positions():
+    assert stress.positions(bytes([3])) == (3,)
+    assert stress.positions(bytes([2, 7])) == (2, 7)
+    agree = bytes([4, 0xFE, 0x11, 0xFF, 4, 0xFE, 0x12])
+    assert stress.positions(agree) == (4,)
+    differ = bytes([2, 0xFE, 0x61, 0xFF, 4, 0xFE, 0x67])  # за́мок / замо́к
+    assert stress.positions(differ) == ()
+
+
+def test_stress_mark_ignores_bad_positions():
+    assert stress.mark("мама", (2,)) == "ма\u0301ма"
+    assert stress.mark("мама", (0,)) == "мама"
+    assert stress.mark("мама", (99,)) == "мама"
+    assert stress.mark("мама", ()) == "мама"
+
+
+def test_stresses_in_a_sentence(tmp_path):
+    folder = _dictionary(
+        tmp_path,
+        {
+            "мама": bytes([2]),
+            "м'яч": bytes([3]),
+            "київ": bytes([2]),
+            "львів": bytes([4]),
+            "замок": bytes([2, 0xFE, 0x61, 0xFF, 4, 0xFE, 0x67]),
+        },
+    )
+    marks = stress.Stresses(folder)
+    a = "\u0301"
+    assert marks("Мама купила м’яч.") == f"Ма{a}ма купила м’я{a}ч."
+    assert marks("МАМА") == f"МА{a}МА"
+    assert marks("Київ-Львів, замок") == f"Ки{a}їв-Льві{a}в, замок"
+    assert marks("за\u0301мок мама") == "за\u0301мок мама"  # marked by hand: kept
+    assert marks("2 мами") == "2 мами"  # not in the dictionary
+
+
+def test_stresses_without_the_dictionary(tmp_path):
+    assert stress.Stresses(None)("мама") == "мама"
+    assert stress.Stresses(tmp_path)("мама") == "мама"  # folder without the file
+    broken = tmp_path / "broken"
+    broken.mkdir()
+    (broken / stress.DICTIONARY).write_bytes(b"not a trie")
+    assert stress.Stresses(broken)("мама") == "мама"
+
+
+def test_the_ukrainian_voice_reads_stress_marks(tmp_path):
+    _dictionary(tmp_path, {"мама": bytes([2])})
+    base = tmp_path / "voice"
+    marker = base / models.STRESS_UK.folder
+    marker.mkdir(parents=True)
+    shutil.copyfile(tmp_path / "stress" / stress.DICTIONARY, marker / stress.DICTIONARY)
+    (marker / store.MARKER).write_text(models.STRESS_UK.file.sha256 + "\n")
+    synth = Synthesizer(base)
+    assert phonemes.letters(synth._stress("Мама")) == "ма\u0301ма"
+    store.remove(models.STRESS_UK, base)
+    assert synth._stress("Мама") == "Мама"
 
 
 def test_letters_and_codepoints(tmp_path):
@@ -517,6 +637,10 @@ def _fetching(tmp_path):
                 info = tarfile.TarInfo(f"{pack.folder}/tokens.txt")
                 info.size = 4
                 tar.addfile(info, io.BytesIO(b"a 0\n"))
+        elif pack.wheel:
+            with zipfile.ZipFile(target, "w") as zf:
+                for member in pack.members:
+                    zf.writestr(member, b"x")
         else:
             target.write_bytes(b"vad")
         return target

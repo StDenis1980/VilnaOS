@@ -5,7 +5,8 @@ Every file is pinned by size and SHA-256, as the language model is
 (``gloxi.engine``). They come from the releases of sherpa-onnx on GitHub,
 which repackages the original models for the engine Gloxi uses; the
 licence is that of the original model, named here and shown to the person.
-``tools/check_voice.py`` checks these values against GitHub.
+The Ukrainian stress dictionary comes from PyPI instead (``STRESS_UK``).
+``tools/check_voice.py`` checks these values against GitHub and PyPI.
 
 Languages without a voice here are read by eSpeak NG (``VOICES``): it is
 part of the package, needs no download, and sounds mechanical but clear.
@@ -19,6 +20,7 @@ from gloxi.engine import ModelFile
 from gloxi.i18n import N_
 
 RELEASES = "https://github.com/k2-fsa/sherpa-onnx/releases/download"
+PYPI = "https://files.pythonhosted.org/packages"
 
 
 @dataclass(frozen=True)
@@ -26,7 +28,7 @@ class Pack:
     """One download: an archive unpacked into ``folder``, or a single file."""
 
     key: str
-    kind: str  # "stt", "vad", "piper" or "kokoro"
+    kind: str  # "stt", "vad", "piper", "kokoro" or "stress"
     file: ModelFile
     folder: str  # the folder inside the archive; for a single file, where it goes
     author: str  # for the "About" window and share/licenses (CC-BY needs it)
@@ -34,10 +36,16 @@ class Pack:
     # 0015 section 2.1: a voice fine-tuned from en_US-lessac or -ryan inherits
     # their non-commercial terms, so only "scratch" (or Kokoro's own) ships.
     base: str = ""
+    # For a wheel (.whl, a zip): the only files taken from it, put flat in ``folder``.
+    members: tuple[str, ...] = ()
 
     @property
     def archive(self) -> bool:
         return self.file.filename.endswith(".tar.bz2")
+
+    @property
+    def wheel(self) -> bool:
+        return self.file.filename.endswith(".whl")
 
     @property
     def size(self) -> int:
@@ -115,7 +123,33 @@ KOKORO = Pack(
     base="scratch",  # its own model, not a Piper voice (section 2.2)
 )
 
-PACKS = (PARAKEET, SILERO_VAD, PIPER_UK, KOKORO)
+# Where the stress falls in Ukrainian words, for the Ukrainian voice: it reads
+# letters and guesses the stress otherwise. The dictionary of lang-uk's
+# ukrainian-word-stress (MIT) holds the stresses of ULIF's "Словники України".
+# Gloxi takes only the dictionary and its licence from the wheel; it is never
+# part of the Flatpak or the system image, only downloaded after a yes.
+STRESS_UK = Pack(
+    key="ukrainian-word-stress-2.1.0",
+    kind="stress",
+    file=ModelFile(
+        name="ukrainian-word-stress 2.1.0",
+        filename="ukrainian_word_stress-2.1.0-py3-none-any.whl",
+        url=f"{PYPI}/ad/b6/3b0d27ddcc452d1c98f74ac8b86fbbb2a4d0e3c591c6a210308602c4cd3f"
+        "/ukrainian_word_stress-2.1.0-py3-none-any.whl",
+        sha256="5292dbb52a79bc8a652fe9cc3e2e5511b0fdabe5481ab9cbe1cd0d246f90cb1f",
+        size=7_069_391,
+        source=N_("lang-uk via PyPI"),
+        licence="MIT",
+    ),
+    folder="ukrainian-word-stress",
+    author="lang-uk (ukrainian-word-stress); stresses from ULIF, «Словники України»",
+    members=(
+        "ukrainian_word_stress/data/stress.trie",
+        "ukrainian_word_stress-2.1.0.dist-info/licenses/LICENSE",
+    ),
+)
+
+PACKS = (PARAKEET, SILERO_VAD, PIPER_UK, KOKORO, STRESS_UK)
 
 
 @dataclass(frozen=True)
@@ -162,4 +196,6 @@ def packs_for(lang: str) -> tuple[Pack, ...]:
     packs = [PARAKEET, SILERO_VAD]
     if voice.pack is not None:
         packs.append(voice.pack)
+    if voice.pack is PIPER_UK:
+        packs.append(STRESS_UK)
     return tuple(packs)

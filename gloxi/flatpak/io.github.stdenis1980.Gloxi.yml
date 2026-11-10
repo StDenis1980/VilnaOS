@@ -181,6 +181,25 @@ modules:
         url: https://files.pythonhosted.org/packages/73/d0/399776c4b6fa0a618d23cf711d580607d9890f7838352dacb36a9246f2b7/sherpa_onnx_core-2.0.1-py3-none-manylinux2014_aarch64.whl
         sha256: 4a855a5c89c89885111e4e9c570e5da1aed63373c031b757d8046792d95fe8fe
 
+  # marisa-trie (MIT; the marisa library under BSD-2-Clause) reads the Ukrainian
+  # stress dictionary. The dictionary is not in the package: Gloxi downloads it
+  # from PyPI after the person agrees, together with the Ukrainian voice.
+  - name: python3-marisa-trie
+    buildsystem: simple
+    build-commands:
+      - >
+        pip3 install --verbose --no-index --find-links="file://${PWD}"
+        --prefix="${FLATPAK_DEST}" --no-build-isolation --no-deps marisa_trie
+    sources:
+      - type: file
+        only-arches: [x86_64]
+        url: https://files.pythonhosted.org/packages/1b/dc/cbb5e8416ff5d193847b0e838b0b525773af7b6f4e1e4a33728d1b097fcb/marisa_trie-1.4.1-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+        sha256: eaa3db575cb757f98d2754bcab5e1e0b2a884dc611964ac2659be13b58ef32e8
+      - type: file
+        only-arches: [aarch64]
+        url: https://files.pythonhosted.org/packages/dc/41/6ae103ef7448320a7324f9866a253d595159ffe367c11e06baabb92ca4d2/marisa_trie-1.4.1-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl
+        sha256: 84ce9b69a0516a52169d28e27ea14f015f6daf467fc8cb661eb841565d728ccf
+
   # eSpeak NG (GPL-3.0-or-later, like Gloxi): the phonemes for the Kokoro voices,
   # and the voice of the languages without a downloaded one (ADR 0015, section 2).
   # Without a configure script flatpak-builder runs autogen.sh first.

@@ -1052,6 +1052,10 @@ msgstr "Silero через sherpa-onnx на GitHub"
 msgid "hexgrad via sherpa-onnx on GitHub"
 msgstr "hexgrad через sherpa-onnx на GitHub"
 
+#: src/gloxi/voice/models.py
+msgid "lang-uk via PyPI"
+msgstr "lang-uk через PyPI"
+
 #: src/gloxi/voice/session.py
 #, python-brace-format
 msgid "Downloading the voice models: {percent}%"
@@ -1111,6 +1115,10 @@ msgstr "Мовлення не розпізнано: {why}"
 #: src/gloxi/voice/session.py
 msgid "The voice models are still downloading."
 msgstr "Голосові моделі ще завантажуються."
+
+#: src/gloxi/voice/session.py
+msgid "Ukrainian word stress"
+msgstr "Наголоси в українських словах"
 
 #: src/gloxi/voice/session.py
 msgid "Unpacking the voice models…"
