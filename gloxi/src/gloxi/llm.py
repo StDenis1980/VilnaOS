@@ -45,6 +45,11 @@ class ToolCall:
         }
 
 
+# Seconds to wait for llama-server to read a whole prompt (prefill): about
+# 2,300 tokens at 16 tokens a second is two and a half minutes.
+PREFILL_TIMEOUT = 600.0
+
+
 class ModelError(Exception):
     """The model endpoint failed or returned something we cannot use."""
 
@@ -101,6 +106,24 @@ class ChatClient:
             return response.json()["choices"][0]["message"]["content"] or ""
         except (ValueError, KeyError, IndexError, TypeError) as exc:
             raise ModelError(f"unexpected response: {response.text[:200]}") from exc
+
+    def prefill(self, messages: Sequence[Message], tools: Sequence[dict] | None = None) -> None:
+        """Have llama-server read ``messages`` and ``tools`` now and keep them cached.
+
+        The next request that starts the same way reuses what was read
+        (``cache_prompt``), so the person does not wait for the model to read
+        the system prompt and the functions after their first message. One
+        token is generated and thrown away. Reading may take minutes on a slow
+        processor, so this waits longer than a normal request.
+        """
+        payload = self._payload(messages, False, tools)
+        payload.update(max_tokens=1, cache_prompt=True)
+        timeout = httpx.Timeout(max(self.endpoint.timeout, PREFILL_TIMEOUT), connect=5.0)
+        try:
+            response = self._http.post("/chat/completions", json=payload, timeout=timeout)
+        except httpx.TransportError as exc:
+            raise ModelUnavailable(self._unavailable_text(exc)) from exc
+        _raise_for_status(response)
 
     def stream(self, messages: Sequence[Message]) -> Iterator[str]:
         """Yield the reply in pieces as the model produces them (SSE)."""

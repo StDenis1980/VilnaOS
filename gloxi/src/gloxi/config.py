@@ -38,7 +38,9 @@ DEFAULT_LOCAL_URL = "http://127.0.0.1:8080/v1"
 
 DEFAULT_SYSTEM_PROMPT = (
     "You are Gloxi, the assistant of Vilna OS. Answer briefly and clearly, "
-    "in the language the user writes in. If you are not sure, say so."
+    "in the language of the user's latest message. Ukrainian and Russian are "
+    "different languages: answer a Ukrainian message in Ukrainian, never in Russian. "
+    "If you are not sure, say so."
 )
 
 

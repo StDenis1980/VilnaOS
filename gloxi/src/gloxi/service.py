@@ -412,6 +412,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"gloxid: {exc}", file=sys.stderr)
         return 78  # EX_CONFIG: systemd does not restart in a loop
     service = Service(controller, view, owner_uid=args.owner_uid)
+    # The window that started gloxid is about to be used: have the model read
+    # the prompt and the functions while the person types.
+    controller.warm()
     stop = threading.Event()
     signal.signal(signal.SIGTERM, lambda *_a: stop.set())
     signal.signal(signal.SIGINT, lambda *_a: stop.set())

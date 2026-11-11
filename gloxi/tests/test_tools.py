@@ -751,7 +751,9 @@ def test_a_program_operation_becomes_a_function_from_its_schema():
     t, _ = with_programs(notes())
     (fn,) = program_functions(t).values()
     assert fn["name"] == "notes_read"
-    assert fn["description"] == "Notes: Read a note. The program says: Reads one note file."
+    # The function name names the program; its own description is not repeated
+    # in every function (each costs the local model time to read, Build14.6).
+    assert fn["description"] == "Read a note. Reads one note file."
     params = fn["parameters"]
     assert set(params["properties"]) == {"path", "line", "reason"}
     assert params["required"] == ["path", "reason"]
@@ -837,3 +839,25 @@ def test_with_many_program_functions_the_ones_the_message_names_come_first():
     assert f"p{len(many) - 1}_op{len(many) - 1}" in picked
     last_tie = f"p{MAX_PROGRAM_FUNCTIONS}_op{MAX_PROGRAM_FUNCTIONS}"
     assert "p0_op0" in picked and last_tie not in picked
+
+
+def test_warm_reads_the_same_functions_the_first_message_gets():
+    server = ScriptedLlamaServer("ok")
+    conv = conversation(server, tools())
+    assert conv.warm() is True
+    warm, first = server.requests[0], None
+    ask(conv, "Покажи файли в Документах")
+    first = server.requests[1]
+    assert warm["max_tokens"] == 1
+    assert warm["messages"][0] == first["messages"][0]
+    assert warm["tools"] == first["tools"]
+
+
+def test_function_definitions_stay_short():
+    # The local model reads every definition before each first answer, about
+    # 16 tokens a second on a slow processor (Build14.6): keep them lean.
+    defs = tools().definitions()
+    assert len(defs) == 5
+    assert len(json.dumps(defs)) < 2000
+    for d in defs:
+        assert len(d["function"]["parameters"]["properties"]["reason"]["description"]) < 60
