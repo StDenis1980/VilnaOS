@@ -25,6 +25,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -198,6 +199,7 @@ class ChatWindow(Adw.ApplicationWindow):
         plan_path: Path,
         *,
         demo: bool,
+        starting: Callable[[], conv.Conversation | None] | None = None,
     ) -> None:
         super().__init__(application=app)
         self.conversation = conversation
@@ -212,6 +214,9 @@ class ChatWindow(Adw.ApplicationWindow):
         self.set_title(_(start.TITLE))
         self.busy = False
         self.cards: set[str] = set()
+        # The last «Change» pressed: a second press (a double click) asks nothing new.
+        self.last_change: str | None = None
+        talks = conversation is not None or starting is not None
 
         header = Adw.HeaderBar()
         header.set_title_widget(Gtk.Label(label=_(start.TITLE)))
@@ -270,7 +275,7 @@ class ChatWindow(Adw.ApplicationWindow):
                     [Gtk.AccessibleProperty.LABEL], [f"{_(conv.CHANGE)}: {_(name)}"]
                 )
                 change.connect("clicked", self._on_change, key)
-                change.set_visible(conversation is not None)  # «Change» talks to Gloxi
+                change.set_visible(talks)  # «Change» talks to Gloxi
                 row.append(change)
             panel.append(row)
             self.rows[key] = (row, value)
@@ -295,10 +300,15 @@ class ChatWindow(Adw.ApplicationWindow):
         self.waking: Gtk.Widget | None = None
         self.closed = False
         self.connect("close-request", self._on_close)
-        if conversation is None:
+        if not talks:
             self._say(_(conv.NO_MODEL))
         else:
-            threading.Thread(target=self._wait_for_model, daemon=True).start()
+            if starting is not None:
+                # Starting the tools reads Python from the USB stick while the model
+                # loads from it too: seconds on a live image. The window shows first
+                # and says Gloxi is waking up, so it never stops answering.
+                self._show_waking()
+            threading.Thread(target=self._wait_for_model, args=(starting,), daemon=True).start()
         GLib.idle_add(_once(self.entry.grab_focus))
 
     def _on_close(self, *_args) -> bool:
@@ -309,17 +319,30 @@ class ChatWindow(Adw.ApplicationWindow):
         self.entry.set_sensitive(ready)
         self.send.set_sensitive(ready)
 
-    def _wait_for_model(self) -> None:
+    def _wait_for_model(
+        self, starting: Callable[[], conv.Conversation | None] | None = None
+    ) -> None:
         """The model may still be starting (live image): say so and wait, then begin."""
         conversation = self.conversation
+        if starting is not None:
+            conversation = starting()
+            if conversation is None:
+                GLib.idle_add(self._no_model)
+                return
+            GLib.idle_add(self._attach, conversation)
         if conversation is None:
             return
         if not conversation.model.available():
-            GLib.idle_add(self._show_waking)
+            if starting is None:  # otherwise the window already says so
+                GLib.idle_add(self._show_waking)
             if not conv.wait_ready(conversation.model, stopped=lambda: self.closed):
                 GLib.idle_add(self._no_model)
                 return
         GLib.idle_add(self._model_ready)
+
+    def _attach(self, conversation: conv.Conversation) -> bool:
+        self.conversation = conversation
+        return False
 
     def _show_waking(self) -> bool:
         self._say(self._(conv.WAKING))
@@ -466,14 +489,16 @@ class ChatWindow(Adw.ApplicationWindow):
         plans.save(plan, self.plan_path)
         self.list.remove(card)
         self.cards.discard(need)
+        self.last_change = None
         self._turn(None)
         return False
 
     # the conversation
 
     def _on_change(self, _button, key: str) -> None:
-        if self.conversation is None or self.busy:
+        if self.conversation is None or self.busy or self.last_change == key:
             return
+        self.last_change = key
         # What the person did shows in the chat like a message of theirs.
         self._bubble(f"{self._(conv.CHANGE)}: {self._(conv.SECTIONS[key])}", True)
         self.conversation.goto(STEP_OF_SECTION[key])
@@ -484,6 +509,7 @@ class ChatWindow(Adw.ApplicationWindow):
         if not text or self.busy or self.conversation is None:
             return
         self.entry.set_text("")
+        self.last_change = None
         self._bubble(text, True)
         self._turn(text)
 

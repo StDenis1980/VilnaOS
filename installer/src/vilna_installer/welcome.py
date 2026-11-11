@@ -375,12 +375,19 @@ class InstallerApp(Adw.Application):
             Gtk.StyleContext.add_provider_for_display(
                 display, css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
             )
-        try:
-            talk, self.close_tools = conversation.start_conversation(self.plan_path, demo=self.demo)
-        except conversation.ToolsError as e:
-            print(f"vilna-installer: {e}", file=sys.stderr)
-            talk = None
-        win = chat.ChatWindow(self, talk, self.plan_path, demo=bool(self.demo))
+
+        def starting() -> conversation.Conversation | None:
+            # Runs off the main thread (ChatWindow): the window answers meanwhile.
+            try:
+                talk, self.close_tools = conversation.start_conversation(
+                    self.plan_path, demo=self.demo
+                )
+            except conversation.ToolsError as e:
+                print(f"vilna-installer: {e}", file=sys.stderr)
+                return None
+            return talk
+
+        win = chat.ChatWindow(self, None, self.plan_path, demo=bool(self.demo), starting=starting)
         if not self.window:
             win.fullscreen()
         win.present()
