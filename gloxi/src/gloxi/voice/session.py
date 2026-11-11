@@ -54,6 +54,7 @@ WHAT = {
     "vad": N_("End of speech"),
     "piper": N_("Voice"),
     "kokoro": N_("Voices"),
+    "stress": N_("Ukrainian word stress"),
 }
 
 

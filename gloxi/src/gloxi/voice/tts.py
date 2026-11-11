@@ -18,8 +18,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from gloxi.voice import phonemes, speech
-from gloxi.voice.models import Voice, voice_for
+from gloxi.voice.models import STRESS_UK, Voice, voice_for
 from gloxi.voice.store import installed
+from gloxi.voice.stress import Stresses
 
 
 class SpeechError(Exception):
@@ -48,6 +49,7 @@ class Synthesizer:
         self.espeak = espeak
         self._lock = threading.Lock()
         self._loaded: tuple[str, object, set[str]] | None = None  # pack key, engine, symbols
+        self._stresses: Stresses | None = None
 
     def voice(self, lang: str) -> Voice:
         """The voice that will read ``lang`` now: eSpeak NG if its model is missing."""
@@ -66,7 +68,8 @@ class Synthesizer:
             engine, symbols = self._engine(voice)
             try:
                 if voice.pack.kind == "piper" and not voice.espeak:
-                    text = phonemes.letters(sentence)  # the Ukrainian voice reads letters
+                    # The Ukrainian voice reads letters, with stress marks where known.
+                    text = phonemes.letters(self._stress(sentence))
                 else:
                     text = phonemes.espeak_ipa(
                         sentence,
@@ -89,6 +92,12 @@ class Synthesizer:
         if result.sample_rate <= 0:
             raise SpeechError("the voice produced no sound")
         return Audio(array("f", result.samples), result.sample_rate)
+
+    def _stress(self, sentence: str) -> str:
+        folder = installed(STRESS_UK, self.base)
+        if self._stresses is None or self._stresses.folder != folder:
+            self._stresses = Stresses(folder)
+        return self._stresses(sentence)
 
     def _engine(self, voice: Voice):
         pack = voice.pack
@@ -148,6 +157,7 @@ class Synthesizer:
     def unload(self) -> None:
         with self._lock:
             self._loaded = None
+            self._stresses = None
 
 
 def wav_to_audio(data: bytes) -> Audio:

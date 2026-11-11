@@ -6,13 +6,15 @@ Layout, next to the language model (``gloxi.engine.models_dir``)::
     ~/.local/share/gloxi/models/voice/
         sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8/   unpacked archive
         silero-vad/silero_vad.onnx                    single file
+        ukrainian-word-stress/stress.trie, LICENSE    the files taken from a wheel
         <folder>/.gloxi-pack                          the SHA-256 it came from
 
 An archive is checked against its pinned SHA-256 before it is opened
 (``gloxi.engine.download``), unpacked into a temporary folder and only then
 moved into place, so a folder that exists is complete. Unpacking refuses
 links, devices, absolute paths and ``..`` (the tar "data" filter) and stops
-past a size limit, even though the archive's hash is already known.
+past a size limit, even though the archive's hash is already known. From a
+wheel only the named files are read, by name, and nothing else is opened.
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ from __future__ import annotations
 import os
 import shutil
 import tarfile
+import zipfile
 from collections.abc import Callable
 from pathlib import Path
 
@@ -70,6 +73,8 @@ def install(
     try:
         if pack.archive:
             unpack(path, tmp, pack.folder, limit=pack.size * MAX_UNPACKED_RATIO)
+        elif pack.wheel:
+            take(path, tmp, pack.members, limit=pack.size * MAX_UNPACKED_RATIO)
         else:
             tmp.mkdir(parents=True)
             shutil.copyfile(path, tmp / pack.file.filename)
@@ -102,6 +107,31 @@ def unpack(archive: Path, dest: Path, top: str, *, limit: int) -> None:
                 member.name = name.removeprefix(top + "/")
                 tar.extract(member, dest, filter="data")
     except (tarfile.TarError, EOFError) as exc:
+        raise EngineError(f"the voice model archive is damaged: {exc}") from exc
+
+
+def take(wheel: Path, dest: Path, members: tuple[str, ...], *, limit: int) -> None:
+    """Copy ``members`` of a wheel (a zip) into ``dest``, each by its base name."""
+    dest.mkdir(parents=True)
+    total = 0
+    try:
+        with zipfile.ZipFile(wheel) as zf:
+            for member in members:
+                info = zf.getinfo(member)  # KeyError: not in the wheel
+                total += info.file_size
+                if total > limit:
+                    raise EngineError("the voice model is larger than expected")
+                name = member.rsplit("/", 1)[-1]
+                with zf.open(info) as src, open(dest / name, "wb") as out:
+                    copied = 0
+                    while chunk := src.read(1 << 20):
+                        copied += len(chunk)
+                        if copied > info.file_size:  # the header lied
+                            raise EngineError("the voice model is larger than expected")
+                        out.write(chunk)
+    except KeyError as exc:
+        raise EngineError(f"the voice model lacks {exc}") from exc
+    except (zipfile.BadZipFile, EOFError) as exc:
         raise EngineError(f"the voice model archive is damaged: {exc}") from exc
 
 
