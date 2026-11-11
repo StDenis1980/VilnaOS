@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 11 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The chat window shows at once and says Gloxi is waking up while
+  the installer's tools start (they froze the window for ~8 s on
+  the live image); a double click on Change asks once
+
+-------------------------------------------------------------------
 Tue Nov 10 08:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The conversation with Gloxi (steps 1-13): chat with the plan beside
