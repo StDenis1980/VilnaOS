@@ -374,11 +374,76 @@ msgstr "Введіть фразу для диска."
 msgid "The disks changed (a disk added or removed?). Choose the disk again."
 msgstr "Диски змінилися (додали чи вийняли диск?). Виберіть диск ще раз."
 
+# The summary of the plan and the Herkos confirmation screen (step 12).
+
+msgid "{n} GiB"
+msgstr "{n} ГіБ"
+
+msgid "{n} MiB"
+msgstr "{n} МіБ"
+
+msgid "Erased: {what}"
+msgstr "Буде стерто: {what}"
+
+msgid "Formatted for {use}, everything on it erased: {what}"
+msgstr "Буде відформатовано під {use}, усе на ньому стерто: {what}"
+
+msgid "Kept as it is: {what}"
+msgstr "Лишається як є: {what}"
+
+msgid "Shrunk to {to}: {what}"
+msgstr "Буде зменшено до {to}: {what}"
+
+msgid "Used for {use} without formatting: {what}"
+msgstr "Використовується під {use} без форматування: {what}"
+
+msgid "New: Vilna, {size}"
+msgstr "Нове: Vilna, {size}"
+
+msgid "New: Vilna, {size}, encrypted"
+msgstr "Нове: Vilna, {size}, зашифровано"
+
+msgid "New partition for {use}: {size}"
+msgstr "Новий розділ під {use}: {size}"
+
+msgid "Your own layout of {disk}"
+msgstr "Власна розмітка диска {disk}"
+
+msgid "{model} ({name}, {size})"
+msgstr "{model} ({name}, {size})"
+
+msgid "Disk {name}, {size}"
+msgstr "Диск {name}, {size}"
+
+msgid "encrypted with {kind}"
+msgstr "зашифровано {kind}"
+
+msgid "unknown contents"
+msgstr "невідомий вміст"
+
+msgid "empty"
+msgstr "порожній"
+
+msgid "the boot partition (EFI)"
+msgstr "розділ завантаження (EFI)"
+
+msgid "the system"
+msgstr "систему"
+
+msgid "home folders"
+msgstr "домашні теки"
+
+msgid "swap"
+msgstr "підкачку"
+
+msgid "The disks changed since they were looked at (a USB stick put in or taken out?). Choose the disk again."
+msgstr "Диски змінилися після огляду (вставили чи вийняли флешку?). Виберіть диск ще раз."
+
 msgid "The chosen disk is not in the computer now. Choose the disk again."
 msgstr "Вибраного диска зараз немає в комп'ютері. Виберіть диск ще раз."
 
 msgid "This is the USB stick Vilna is running from. Choose another disk."
-msgstr "Це флешка, з якої зараз працює Vilna. Виберіть інший диск."
+msgstr "З цієї флешки зараз працює Vilna. Виберіть інший диск."
 
 msgid "This disk is read-only. Choose another disk."
 msgstr "Цей диск лише для читання. Виберіть інший диск."
@@ -442,3 +507,116 @@ msgstr "Варто знати"
 
 msgid "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its recovery key (48 digits) once. Save the key before going on: it is in your Microsoft account or on the printout you made."
 msgstr "Windows на цьому диску використовує BitLocker. Після встановлення Vilna Windows може один раз попросити ключ відновлення (48 цифр). Збережіть ключ, перш ніж продовжити: він є у вашому обліковому записі Microsoft або на роздруківці, яку ви зробили."
+
+msgstr "З цієї флешки зараз працює Vilna. Виберіть інший диск."
+
+msgid "The chosen disk cannot be written to."
+msgstr "На вибраний диск не можна записувати."
+
+msgid "The disk is too small: Vilna needs at least 40 GiB."
+msgstr "Диск замалий: Vilna потрібно щонайменше 40 ГіБ."
+
+msgid "The disk has RAID, LVM or a filesystem Vilna does not know: only your own layout in the partition editor is possible."
+msgstr "На диску RAID, LVM або файлова система, якої Vilna не знає: можлива лише власна розмітка в редакторі розділів."
+
+msgid "This way of installing comes in a later version of Vilna."
+msgstr "Такий спосіб встановлення з'явиться в одній із наступних версій Vilna."
+
+msgid "Make the layout in the partition editor first."
+msgstr "Спершу зробіть розмітку в редакторі розділів."
+
+msgid "The Wi-Fi password is not entered yet."
+msgstr "Пароль Wi-Fi ще не введено."
+
+msgid "The account password is not entered yet."
+msgstr "Пароль облікового запису ще не введено."
+
+msgid "The disk passphrase is not entered yet."
+msgstr "Фразу для диска ще не введено."
+
+msgid "There is not enough free space for Vilna on the disk."
+msgstr "На диску замало вільного місця для Vilna."
+
+msgid "This computer has no TPM 2.0 chip that can keep the disk key. Choose encryption with a passphrase instead."
+msgstr "У цьому комп'ютері немає чипа TPM 2.0, який може зберігати ключ диска. Виберіть натомість шифрування з фразою."
+
+msgid "Without encryption anyone who has the disk can read your files."
+msgstr "Без шифрування будь-хто, у кого опиниться диск, прочитає ваші файли."
+
+msgid "The chosen disk is removable, such as a USB disk."
+msgstr "Вибраний диск знімний, наприклад USB-диск."
+
+msgid "The plan cannot be installed yet: {message}"
+msgstr "План поки не можна встановити: {message}"
+
+msgid "Not decided yet: {parts}"
+msgstr "Ще не вирішено: {parts}"
+
+msgid "Herkos"
+msgstr "Herkos"
+
+msgid "Confirm the installation"
+msgstr "Підтвердьте встановлення"
+
+msgid "Check what will happen. Nothing has changed on the disks yet; after you confirm, Vilna is installed and this cannot be undone."
+msgstr "Перевірте, що станеться. На дисках поки нічого не змінено; після підтвердження Vilna встановиться, і скасувати це буде неможливо."
+
+msgid "What happens to the disks"
+msgstr "Що станеться з дисками"
+
+msgid "The plan"
+msgstr "План"
+
+msgid "What has to be fixed first"
+msgstr "Що треба виправити спершу"
+
+msgid "The plan cannot be installed yet. Go back and change it:"
+msgstr "План поки не можна встановити. Поверніться й змініть його:"
+
+msgid "Note"
+msgstr "Зверніть увагу"
+
+msgid "Recovery key"
+msgstr "Ключ відновлення"
+
+msgid "Write this key down or take a photo of it, and keep it away from the computer. You need it if the disk does not open by itself: after a change of the hardware or of Secure Boot, or when you forget the passphrase. Nobody else has it, not even Vilna."
+msgstr "Запишіть цей ключ або сфотографуйте його й зберігайте окремо від комп'ютера. Він знадобиться, якщо диск не відкриється сам: після зміни обладнання чи Secure Boot або якщо ви забудете фразу. Більше ні в кого його немає, навіть у Vilna."
+
+msgid "To show that you saved it, type the last group of the key (8 letters):"
+msgstr "Щоб підтвердити, що ключ збережено, введіть його останню групу (8 літер):"
+
+msgid "The last group of the recovery key"
+msgstr "Остання група ключа відновлення"
+
+msgid "That is not the last group. Look at the key again."
+msgstr "Це не остання група. Погляньте на ключ ще раз."
+
+msgid "Right. The key is saved."
+msgstr "Так. Ключ збережено."
+
+msgid "Recovery key, letter by letter: {key}"
+msgstr "Ключ відновлення, по літері: {key}"
+
+msgid "I understand that everything on {disk} is erased"
+msgstr "Я розумію, що все на диску {disk} буде стерто"
+
+msgid "I understand that the partitions marked above are erased"
+msgstr "Я розумію, що позначені вище розділи буде стерто"
+
+msgid "Back to the plan"
+msgstr "Назад до плану"
+
+msgid "Erase and install"
+msgstr "Стерти й встановити"
+
+msgid "Install"
+msgstr "Встановити"
+
+msgid "Read the changes first…"
+msgstr "Спершу прочитайте зміни…"
+
+msgid "The disks changed while this screen was open. Go back and choose the disk again."
+msgstr "Диски змінилися, поки цей екран був відкритий. Поверніться й виберіть диск ще раз."
+
+msgid "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its buttons."
+msgstr "Цей екран показує Herkos, а не Gloxi. Gloxi не може натиснути його кнопки."

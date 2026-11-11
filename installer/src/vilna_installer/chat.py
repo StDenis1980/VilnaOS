@@ -11,10 +11,13 @@ Latin layout), never into the chat: the plan gets ``"entered"`` and the
 secret stays in this process's memory (``Secrets``) for the installation
 engine.
 
-Exit status: 0 when the person pressed «Check and confirm the plan» (the
-Herkos confirmation screen comes next), 3 for «Without the assistant» (the
-classic wizard goes on with the same plan; inside ``vilna-installer`` it
-opens in the same program instead), 1 when the window was closed.
+«Check and confirm the plan» opens the Herkos confirmation screen
+(``confirm_window.ask``) from this same process, so the secrets are still in
+its ``Vault`` for the engine. Exit status: 0 when the person confirmed the
+plan there (the installation engine, step 13, comes next), 3 for «Without
+the assistant» (the classic wizard goes on with the same plan; inside
+``vilna-installer`` it opens in the same program instead), 1 when the window
+was closed.
 
 A manual layout is made in the classic wizard's partition editor; the chat
 offers it in a card when Gloxi saved the manual layout.
@@ -39,8 +42,9 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
+from vilna_installer import confirm_window, start, summary  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
-from vilna_installer import start  # noqa: E402
+from vilna_installer.vault import Vault  # noqa: E402
 
 APP_ID = "io.github.stdenis1980.VilnaInstaller.Chat"
 EXIT_CONFIRM, EXIT_CLOSED, EXIT_WIZARD = 0, 1, 3
@@ -73,21 +77,9 @@ def _once(fn):
     return run
 
 
-class Secrets:
-    """What the person typed in protected fields; in memory only, never in the plan."""
-
-    def __init__(self) -> None:
-        self._values: dict[str, str] = {}
-
-    def put(self, which: str, value: str) -> None:
-        self._values[which] = value
-
-    def has(self, which: str) -> bool:
-        return which in self._values
-
-    def take(self, which: str) -> str | None:
-        """For the installation engine: hands the secret over once and forgets it."""
-        return self._values.pop(which, None)
+# The protected fields' secrets: one vault for the conversation, the classic
+# wizard and the Herkos screen of the same process (vault.py).
+Secrets = Vault
 
 
 def connect_wifi(ssid: str, password: str, *, demo: bool) -> bool:
@@ -138,42 +130,8 @@ def connect_wifi(ssid: str, password: str, *, demo: bool) -> bool:
         Path(path).unlink(missing_ok=True)
 
 
-def describe(plan: dict[str, Any], _: start.Texts) -> dict[str, str | None]:
-    """One line per part of the plan, in the person's language; None: not decided."""
-    loc = plan.get("locale") or {}
-    net = plan.get("network") or {}
-    disk = plan.get("disk") or {}
-    enc = disk.get("encryption") or {}
-    user = plan.get("user") or {}
-    out: dict[str, str | None] = dict.fromkeys(conv.SECTIONS)
-    if loc.get("languages"):
-        names = {lang.locale: lang.name for lang in start.LANGUAGES}
-        langs = ", ".join(names.get(lang, lang.split(".")[0]) for lang in loc["languages"])
-        out["languages"] = f"{langs} · {', '.join(loc.get('keyboards') or [])}"
-    mode = net.get("mode")
-    if mode == "wifi":
-        entered = f" · {_(conv.ENTERED_TEXT)}" if net.get("secret") == plans.ENTERED else ""
-        out["network"] = f"Wi‑Fi «{net.get('wifi')}»{entered}"
-    elif mode:
-        out["network"] = _(conv.WIRED) if mode == "wired" else _(conv.OFFLINE)
-    if disk.get("layout"):
-        what = _(conv.ERASE_ALL) if disk["layout"] == "replace" else _(conv.MANUAL)
-        out["disk"] = f"{what} · {disk.get('target')}"
-    method = enc.get("method")
-    if method:
-        out["encryption"] = {
-            "tpm2": _(conv.ENCRYPT_TPM),
-            "passphrase": _(conv.ENCRYPT_PASS),
-            "none": _(conv.NOT_ENCRYPTED),
-        }[method]
-    if user.get("username"):
-        entered = f" · {_(conv.ENTERED_TEXT)}" if user.get("password") == plans.ENTERED else ""
-        who = f"{user['username']}@{user.get('hostname')}"
-        out["user"] = f"{user.get('full_name')} ({who}){entered}"
-    if loc.get("timezone"):
-        out["time"] = f"{loc['timezone']} · {(loc.get('region') or '').split('.')[0]}"
-    out["privacy"] = _(conv.CLOUD_OFF)
-    return out
+# The plan in the person's words: the same lines in the wizard and on the Herkos screen.
+describe = summary.describe
 
 
 STEP_OF_SECTION = {
@@ -202,15 +160,17 @@ class ChatWindow(Adw.ApplicationWindow):
         plan_path: Path,
         *,
         demo: bool,
-        demo_kind: str | None = None,
         starting: Callable[[], conv.Conversation | None] | None = None,
+        demo_kind: str | None = None,
     ) -> None:
         super().__init__(application=app)
-        self.demo_kind = demo_kind or ("empty" if demo else None)
         self.conversation = conversation
         self.plan_path = plan_path
         self.demo = demo
-        self.secrets = Secrets()
+        # the synthetic computer, for the Herkos screen and the wizard too
+        self.demo_kind = demo_kind or ("empty" if demo else None)
+        self.secrets = Vault()
+        self.confirmed: confirm_window.confirm.Outcome | None = None
         plan = plans.load(plan_path)
         code = (plan.get("ui") or {}).get("language", "en")
         self._ = start.Texts(code if code in start.CODES else "en")
@@ -288,7 +248,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.confirm = Gtk.Button(label=_(conv.CHECK_PLAN), visible=False)
         self.confirm.add_css_class("vilna-go")
         self.confirm.add_css_class("pill")
-        self.confirm.connect("clicked", lambda *_a: self._finish(EXIT_CONFIRM))
+        self.confirm.connect("clicked", self._on_confirm)
         panel.append(self.confirm)
 
         body = Gtk.Box()
@@ -584,6 +544,30 @@ class ChatWindow(Adw.ApplicationWindow):
             app.open_wizard(self, self.secrets)
         else:
             self._finish(EXIT_WIZARD)
+
+    def _on_confirm(self, *_args) -> None:
+        """Step 12: the Herkos screen, a separate process; this window waits for it."""
+        if self.busy:
+            return
+        confirm_window.ask(
+            self,
+            self.plan_path,
+            self.secrets,
+            self._confirm_done,
+            demo=self.demo_kind,
+            window=not self.is_fullscreen(),
+        )
+
+    def _confirm_done(self, outcome) -> None:
+        if outcome.confirmed:
+            self.confirmed = outcome
+            self._finish(EXIT_CONFIRM)
+            return
+        # Back to the plan: the screen may have changed nothing; show it as it is.
+        if self.conversation is not None:
+            self.conversation.refresh()
+            self._show_plan(self.conversation.plan, self.conversation.current().key)
+        self.confirm.grab_focus()
 
     def _finish(self, code: int) -> None:
         app = self.get_application()

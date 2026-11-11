@@ -14,6 +14,7 @@ dependencies = ["vilna-mcp-installer"]
 vilna-installer = "vilna_installer.welcome:main"
 vilna-installer-chat = "vilna_installer.chat:main"
 vilna-installer-wizard = "vilna_installer.wizard_window:main"
+vilna-installer-confirm = "vilna_installer.confirm_window:main"
 
 [dependency-groups]
 dev = [

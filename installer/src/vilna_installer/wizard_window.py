@@ -32,9 +32,10 @@ from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import machine as machines  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import chat, start  # noqa: E402
+from vilna_installer import chat, confirm_window, start  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer import wizard as wiz  # noqa: E402
+from vilna_installer.vault import Vault  # noqa: E402
 
 APP_ID = "io.github.stdenis1980.VilnaInstaller.Wizard"
 EXIT_CONFIRM, EXIT_CLOSED = 0, 1
@@ -263,13 +264,14 @@ class WizardWindow(Adw.ApplicationWindow):
         plan_path: Path,
         machine: machines.Machine,
         *,
-        secrets: chat.Secrets | None = None,
-        demo: bool = False,
+        secrets: Vault | None = None,
+        demo: str | None = None,
     ) -> None:
         super().__init__(application=app)
         self.wizard = wiz.Wizard(plan_path, machine)
-        self.secrets = secrets or chat.Secrets()
-        self.demo = demo
+        self.secrets = secrets if secrets is not None else Vault()
+        self.demo = demo  # the synthetic computer, for the Herkos screen too
+        self.confirmed: confirm_window.confirm.Outcome | None = None
         code = (self.wizard.plan.get("ui") or {}).get("language", "en")
         self._ = start.Texts(code if code in start.CODES else "en")
         _ = self._
@@ -400,13 +402,31 @@ class WizardWindow(Adw.ApplicationWindow):
         announce(self.error, text)
 
     def _finish(self) -> None:
+        """The plan is ready: the Herkos screen shows every change and asks for the yes."""
         if self.wizard.to_do():
             self.go("summary", strict=False)
             return
-        app = self.get_application()
-        if app is not None:
-            app.exit_code = EXIT_CONFIRM
-            app.quit()
+        confirm_window.ask(
+            self,
+            self.wizard.plan_path,
+            self.secrets,
+            self._confirm_done,
+            demo=self.demo,
+            window=not self.is_fullscreen(),
+            stage=self.wizard.stage,
+        )
+
+    def _confirm_done(self, outcome: confirm_window.confirm.Outcome) -> None:
+        if outcome.confirmed:
+            self.confirmed = outcome
+            app = self.get_application()
+            if app is not None:
+                app.exit_code = EXIT_CONFIRM
+                app.quit()
+            return
+        # Not confirmed: back to the summary, as the plan is now.
+        self.go("summary", strict=False)
+        self.next.grab_focus()
 
     # the pages: each returns (widget, commit) where commit saves it into the plan
 
@@ -551,7 +571,7 @@ class WizardWindow(Adw.ApplicationWindow):
             connect.set_sensitive(False)
 
             def work() -> None:
-                ok = chat.connect_wifi(net["ssid"], value, demo=self.demo)
+                ok = chat.connect_wifi(net["ssid"], value, demo=bool(self.demo))
                 GLib.idle_add(done, ok, value)
 
             threading.Thread(target=work, daemon=True).start()
@@ -909,7 +929,7 @@ class WizardApp(Adw.Application):
 
     def do_activate(self) -> None:
         win = self.get_active_window() or WizardWindow(
-            self, self.plan_path, wiz.machine_for(self.demo), demo=bool(self.demo)
+            self, self.plan_path, wiz.machine_for(self.demo), demo=self.demo
         )
         if not self.window:
             win.fullscreen()

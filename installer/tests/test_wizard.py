@@ -9,7 +9,7 @@ from vilna_mcp_installer import plan as plans
 from vilna_mcp_installer.machine import DemoMachine
 
 from vilna_installer import conversation as conv
-from vilna_installer import start
+from vilna_installer import start, summary
 from vilna_installer import wizard as wiz
 
 SRC = Path(__file__).resolve().parents[1] / "src" / "vilna_installer"
@@ -228,3 +228,12 @@ def test_a_layout_next_to_windows_warns_about_the_bitlocker_key(tmp_path):
     _ = start.Texts("uk")
     texts = [wiz.problem_text(x, _) for x in report["warnings"]]
     assert any("BitLocker" in t and "ключ відновлення" in t for t in texts)
+
+
+def test_the_herkos_screen_speaks_of_the_bitlocker_key_too(tmp_path):
+    w = new_wizard(tmp_path, "windows")
+    walk(w, layout="manual")
+    w.set_partitions(wiz.editor_suggest(w.target()))
+    s = summary.summarize(w.plan, w.report(), w.survey(), start.Texts("uk"))
+    assert s.ready
+    assert any("BitLocker" in t for t in s.warnings)

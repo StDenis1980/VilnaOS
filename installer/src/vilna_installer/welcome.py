@@ -393,8 +393,8 @@ class InstallerApp(Adw.Application):
             None,
             self.plan_path,
             demo=bool(self.demo),
-            demo_kind=self.demo,
             starting=starting,
+            demo_kind=self.demo,
         )
         if not self.window:
             win.fullscreen()
@@ -411,7 +411,7 @@ class InstallerApp(Adw.Application):
             self.plan_path,
             wizard.machine_for(self.demo),
             secrets=secrets,
-            demo=bool(self.demo),
+            demo=self.demo,
         )
         if not self.window:
             win.fullscreen()

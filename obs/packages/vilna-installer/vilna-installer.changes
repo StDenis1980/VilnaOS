@@ -5,6 +5,12 @@ Wed Nov 11 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   the same steps and plan with no model, a partition editor for
   manual layout; «Without the assistant» opens it in the same program
   instead of ending with status 3
+- Step 12: the summary of the plan and the Herkos confirmation
+  screen (vilna-installer-confirm, its own process): every change of
+  the disks, the recovery key typed back, the plan confirmed only
+  there; requires tpm2.0-tools
+- Disk encryption for the engine: LUKS2 with systemd-repart, the
+  recovery key, then TPM2 or a passphrase, as in Aeon
 
 -------------------------------------------------------------------
 Wed Nov 11 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

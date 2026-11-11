@@ -22,7 +22,7 @@ if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")) or not G
 from vilna_mcp_installer import plan as plans  # noqa: E402
 from vilna_mcp_installer.machine import DemoMachine  # noqa: E402
 
-from vilna_installer import chat, start, welcome, wizard_window  # noqa: E402
+from vilna_installer import chat, confirm, start, welcome, wizard_window  # noqa: E402
 from vilna_installer import wizard as wiz  # noqa: E402
 
 Adw.init()
@@ -47,7 +47,7 @@ def plan_path(tmp_path):
 def window(plan_path, kind="empty"):
     app = Adw.Application()
     app.register(None)
-    return wizard_window.WizardWindow(app, plan_path, DemoMachine(kind), demo=True)
+    return wizard_window.WizardWindow(app, plan_path, DemoMachine(kind), demo=kind)
 
 
 def test_it_opens_at_the_first_undecided_step(plan_path):
@@ -128,3 +128,38 @@ def test_every_step_shows(plan_path):
         win.go(key, strict=False)
         assert win.key == key
         assert win.holder.get_first_child() is not None
+
+
+def fill(win):
+    w = win.wizard
+    w.set_languages(["uk_UA.UTF-8"], None)
+    w.set_network("offline")
+    w.set_disk(w.disks()[0]["id"], "replace")
+    w.set_encryption("tpm2")
+    w.set_user("Олена Демо", "olena", "olena-vilna")
+    w.mark_entered("user")
+    w.set_time(*w.suggested_time())
+    w.seen.add("privacy")
+
+
+def test_the_wizard_ends_on_the_herkos_screen(plan_path, monkeypatch):
+    asked = []
+
+    def ask(parent, path, vault, on_done, **kw):
+        asked.append((path, vault, kw))
+        on_done(confirm.Outcome(False))
+
+    monkeypatch.setattr(wizard_window.confirm_window, "ask", ask)
+    win = window(plan_path)
+    app = win.get_application()
+    app.exit_code = 1
+    fill(win)
+    win._finish()
+    assert len(asked) == 1
+    path, vault, kw = asked[0]
+    assert path == plan_path and vault is win.secrets
+    assert kw["demo"] == "empty" and kw["stage"] == "alpha"
+    # Not confirmed: the person is back on the summary, nothing ends.
+    assert win.key == "summary" and app.exit_code == 1
+    win._confirm_done(confirm.Outcome(True, "abc", "1234-5678"))
+    assert app.exit_code == wizard_window.EXIT_CONFIRM
