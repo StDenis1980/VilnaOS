@@ -44,6 +44,10 @@ Requires:       vilna-backgrounds >= 0.1
 # plan format and its validator; Gloxi is the local model of vilna-llm.service
 # (gloxi, vilna-model-default), which the live image has through vilna_base.
 Requires:       vilna-mcp-installer
+# The Herkos screen asks the TPM whether it can keep the disk key
+# (tpm2_getcap). What encrypting the disk runs (systemd-repart, cryptsetup,
+# keyutils, sdbootutil; encryption.py) comes with the engine that runs it.
+Requires:       tpm2.0-tools
 # «Screen reader» turns on Orca, as GNOME Settings does.
 Recommends:     orca
 BuildArch:      noarch
@@ -54,7 +58,8 @@ image. Step 0, the first screen: the ten languages of Vilna and
 every other language of the system, the screen reader, and going on with
 the Gloxi assistant or without it; then steps 1-13 as a conversation with
 Gloxi, with the installation plan beside it. Gloxi only fills the plan;
-Herkos's final confirmation and the install engine come next.
+Herkos's confirmation screen shows every change and the recovery key
+of the encrypted disk; the install engine comes next.
 
 %prep
 %autosetup -p1
@@ -78,6 +83,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{appid}.desktop
 %doc README.md
 %{_bindir}/vilna-installer
 %{_bindir}/vilna-installer-chat
+%{_bindir}/vilna-installer-confirm
 %{python_sitelib}/vilna_installer
 %{python_sitelib}/vilna_installer-*.dist-info
 %{_datadir}/applications/%{appid}.desktop

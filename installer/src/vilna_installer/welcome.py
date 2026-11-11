@@ -387,7 +387,14 @@ class InstallerApp(Adw.Application):
                 return None
             return talk
 
-        win = chat.ChatWindow(self, None, self.plan_path, demo=bool(self.demo), starting=starting)
+        win = chat.ChatWindow(
+            self,
+            None,
+            self.plan_path,
+            demo=bool(self.demo),
+            starting=starting,
+            demo_kind=self.demo,
+        )
         if not self.window:
             win.fullscreen()
         win.present()
