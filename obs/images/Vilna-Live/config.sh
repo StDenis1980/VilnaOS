@@ -82,6 +82,9 @@ test -x /usr/bin/vilna-mcp-installer
 # the installer starts it (systemctl, allowed by the polkit rule below)
 # once its own window is on the screen (vilna_installer.start.wake_model).
 systemctl disable vilna-llm.service
+# Nor does Gloxi wake at login (gloxi wake starts gloxid, which wants
+# vilna-llm.service and would load the model before the installer is up).
+rm -f /etc/xdg/autostart/io.github.stdenis1980.Gloxi-wake.desktop
 install -d /etc/systemd/system/vilna-llm.service.d
 cat >/etc/systemd/system/vilna-llm.service.d/50-vilna-live.conf <<'LLM'
 # Vilna live image only (obs/images/Vilna-Live/config.sh)

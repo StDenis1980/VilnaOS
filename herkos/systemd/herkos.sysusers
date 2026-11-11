@@ -1,3 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # The system user of the system Herkos (herkosd.service).
 u herkos - "Herkos permission gate" /var/lib/herkos /usr/sbin/nologin
+# Keros asks the shared local model (vilna-llm.service, package gloxi),
+# whose key only the group gloxi may read (ADR 0025). The group line is
+# the same as in gloxi.sysusers, so either package may make it first.
+g gloxi -
+m herkos gloxi

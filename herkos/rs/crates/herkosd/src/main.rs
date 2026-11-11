@@ -148,7 +148,10 @@ fn build_gate_from(
     let model_check = match &config.keros_model {
         None => None,
         Some(url) => match keros_model::Judge::new(url) {
-            Ok(judge) => Some(keros_model::ModelCheck::new(judge, config.keros_budget)),
+            Ok(judge) => Some(keros_model::ModelCheck::new(
+                with_model_key(judge),
+                config.keros_budget,
+            )),
             Err(e) => {
                 eprintln!("herkosd: Keros model check off: {e}");
                 None
@@ -159,6 +162,26 @@ fn build_gate_from(
         gate::Gate::new(config, manifests, tools, grants, journal, confirmer)
             .with_model_check(model_check),
     )
+}
+
+/// Where the key of the shared local model is, when it wants one:
+/// herkosd.service sets it to vilna-llm's key (ADR 0025).
+const KEROS_KEY_FILE_ENV: &str = "HERKOS_KEROS_KEY_FILE";
+
+/// The Keros judge with the model's key, when there is one to read. Without
+/// it the check stays on, and a server that wants a key answers
+/// "unavailable": rules and levels still hold.
+fn with_model_key(judge: keros_model::Judge) -> keros_model::Judge {
+    let Some(path) = std::env::var_os(KEROS_KEY_FILE_ENV).filter(|p| !p.is_empty()) else {
+        return judge;
+    };
+    match keros_model::read_key(Path::new(&path)) {
+        Ok(key) => judge.with_key(key),
+        Err(e) => {
+            eprintln!("herkosd: Keros model key not read: {e}");
+            judge
+        }
+    }
 }
 
 /// An executable on PATH (the tool servers are installed like any program).
