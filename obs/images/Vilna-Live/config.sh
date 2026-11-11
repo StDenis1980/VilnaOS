@@ -90,17 +90,31 @@ IOSchedulingClass=idle
 Nice=10
 LLM
 
-# Plymouth hands the screen over to GDM without falling back to text:
-# in the VM test of Build2.2 boot finished after the live session had
-# started, and "plymouth quit" put the boot log on the screen over the
-# desktop until a VT switch. GDM itself quits Plymouth this way.
-install -d /etc/systemd/system/plymouth-quit.service.d
-cat >/etc/systemd/system/plymouth-quit.service.d/50-vilna-live.conf <<'PLY'
+# Plymouth is gone before GDM starts. openSUSE's display-manager-legacy
+# unit conflicts with plymouth-quit.service, so GDM quits Plymouth itself,
+# and on the live image it did so only when boot finished (50-54 s,
+# after the live session had started at ~20 s on the same tty1). In one
+# of four VM boots of Build4.5 the boot log then covered the installer
+# until a VT switch (the same as Build2.2). Quitting it here, keeping its
+# last picture on the screen, leaves no Plymouth that could take tty1
+# back from the session later.
+cat >/etc/systemd/system/vilna-live-plymouth-quit.service <<'PLY'
 # Vilna live image only (obs/images/Vilna-Live/config.sh)
+[Unit]
+Description=Hand the screen from Plymouth to GDM (Vilna live)
+After=plymouth-start.service systemd-user-sessions.service
+Before=display-manager.service display-manager-legacy.service gdm.service
+ConditionPathExists=/run/plymouth/pid
+
 [Service]
-ExecStart=
+Type=oneshot
 ExecStart=-/usr/bin/plymouth quit --retain-splash
+TimeoutSec=20
+
+[Install]
+WantedBy=graphical.target
 PLY
+systemctl enable vilna-live-plymouth-quit.service
 
 # GDM logs "live" in at once, without GNOME Initial Setup (the installer
 # asks the language itself). openSUSE's GDM reads the autologin user
