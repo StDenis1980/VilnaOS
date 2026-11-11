@@ -606,6 +606,10 @@ class WizardWindow(Adw.ApplicationWindow):
         manual_row.add_suffix(editor)
         what.add(replace_row)
         what.add(manual_row)
+        bitlocker = plain_row(title=_(wiz.BITLOCKER_KEY), visible=False)
+        bitlocker.set_title_lines(0)
+        bitlocker.add_prefix(Gtk.Image(icon_name="dialog-warning-symbolic"))
+        what.add(bitlocker)
         if disk_plan.get("layout") == "manual":
             manual.set_active(True)
         elif disk_plan.get("layout") == "replace":
@@ -623,6 +627,7 @@ class WizardWindow(Adw.ApplicationWindow):
             else:
                 replace_row.set_subtitle("")
             editor.set_sensitive(disk is not None and manual.get_active())
+            bitlocker.set_visible(manual.get_active() and wiz.has_bitlocker(disk))
             parts = (self.wizard.plan.get("disk") or {}).get("partitions")
             same = disk is not None and disk["id"] == disk_plan.get("target")
             if manual.get_active() and parts and same:
@@ -845,8 +850,15 @@ class WizardWindow(Adw.ApplicationWindow):
             row.add_suffix(Gtk.Image(icon_name="go-next-symbolic"))
             row.connect("activated", lambda _r, key=key: self.go(key, strict=False))
             todo.add(row)
+        known = _group(_(wiz.WORTH_KNOWING))
+        for warning in report["warnings"]:
+            row = plain_row(title=wiz.problem_text(warning, _))
+            row.set_title_lines(0)
+            row.add_prefix(Gtk.Image(icon_name="dialog-warning-symbolic"))
+            known.add(row)
         self.next.set_sensitive(not to_do)
-        page = self._page(todo, plan_group, changes)
+        groups = [todo, known] if report["warnings"] else [todo]
+        page = self._page(*groups, plan_group, changes)
 
         def commit() -> str | None:
             self.next.set_sensitive(True)

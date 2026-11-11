@@ -216,3 +216,15 @@ def test_the_window_uses_only_known_texts():
         assert names, alias
         for name in names:
             assert getattr(module, name) in texts, f"{alias}.{name}"
+
+
+def test_a_layout_next_to_windows_warns_about_the_bitlocker_key(tmp_path):
+    w = new_wizard(tmp_path, "windows")
+    walk(w, layout="manual")
+    assert wiz.has_bitlocker(w.target())
+    assert w.set_partitions(wiz.editor_suggest(w.target())) is None
+    report = w.report()
+    assert w.to_do(report) == []  # a warning, not a block
+    _ = start.Texts("uk")
+    texts = [wiz.problem_text(x, _) for x in report["warnings"]]
+    assert any("BitLocker" in t and "ключ відновлення" in t for t in texts)

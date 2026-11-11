@@ -804,6 +804,19 @@ def _check_manual(disk: dict[str, Any], target: dict[str, Any], r: _Report) -> N
             r.changes.append({"action": "erase", "use": item["use"], **line})
         else:
             r.changes.append({"action": "use", "use": item["use"], **line})
+    erased = {pid for pid, item in used.items() if item.get("format") is True}
+    if any(
+        p.get("encrypted") == "bitlocker" and p["id"] not in erased
+        for p in target.get("partitions", [])
+    ):
+        # Windows stays; its BitLocker measures the boot chain with the TPM, and a new
+        # boot loader in the shared EFI partition can make it ask for the recovery key.
+        r.warn(
+            "bitlocker_recovery_key",
+            "disk.partitions",
+            "Windows on this disk uses BitLocker and may ask for its recovery key after "
+            "Vilna is installed; the person should save the key first",
+        )
     for item in items:
         if isinstance(item, dict) and item.get("partition") is None and item.get("use") in USES:
             size = item.get("size")

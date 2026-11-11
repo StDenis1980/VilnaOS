@@ -101,6 +101,12 @@ DISK_CHANGES = "What happens to the disk"
 STILL_TO_DO = "Still to do"
 READY = "The plan is ready. The next screen, from Herkos, shows exactly what will change."
 NEEDED_TEXT = "Fill in this step."
+WORTH_KNOWING = "Worth knowing"
+BITLOCKER_KEY = (
+    "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its "
+    "recovery key (48 digits) once. Save the key before going on: it is in your Microsoft "
+    "account or on the printout you made."
+)
 CHANGE_ERASE = "{name} ({size}{what}) will be erased"
 CHANGE_KEEP = "{name} ({size}{what}) stays as it is"
 CHANGE_USE = "{name} ({size}) is used as {use}, its files stay"
@@ -153,6 +159,7 @@ PROBLEM_TEXT = {
     "one_home": "Choose at most one partition for home folders.",
     "one_swap": "Choose at most one swap partition.",
     "later_stage": "This comes in a later version of Vilna.",
+    "bitlocker_recovery_key": BITLOCKER_KEY,
     "reserved_username": TAKEN_USERNAME,
     "bad_username": BAD_USERNAME,
     "bad_hostname": BAD_HOSTNAME,
@@ -216,6 +223,7 @@ TEXTS = (
     STILL_TO_DO,
     READY,
     NEEDED_TEXT,
+    WORTH_KNOWING,
     CHANGE_ERASE,
     CHANGE_KEEP,
     CHANGE_USE,
@@ -225,7 +233,12 @@ TEXTS = (
     CHOOSE_DISK,
     CHOOSE,
     WIFI_NOT_CONNECTED,
-    *(t for t in PROBLEM_TEXT.values() if t not in (TAKEN_USERNAME, BAD_USERNAME, BAD_HOSTNAME)),
+    *(
+        t
+        for t in PROBLEM_TEXT.values()
+        if t not in (TAKEN_USERNAME, BAD_USERNAME, BAD_HOSTNAME, BITLOCKER_KEY)
+    ),
+    BITLOCKER_KEY,
     BAD_USERNAME,
     TAKEN_USERNAME,
     BAD_HOSTNAME,
@@ -349,6 +362,10 @@ def disk_subtitle(disk: dict[str, Any], _: start.Texts) -> str:
     if not disk.get("empty") and disk.get("largest_free", 0) >= GiB:
         parts.append(_(FREE).format(size=size_text(disk["largest_free"])))
     return " · ".join([disk.get("name", ""), *parts])
+
+
+def has_bitlocker(disk: dict[str, Any] | None) -> bool:
+    return any(p.get("encrypted") == "bitlocker" for p in (disk or {}).get("partitions", []))
 
 
 def erased_by_replace(disk: dict[str, Any]) -> str | None:

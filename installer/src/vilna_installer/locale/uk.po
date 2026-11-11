@@ -436,3 +436,9 @@ msgstr "Система вже використовує це ім'я для вх�
 
 msgid "A computer name has only small Latin letters, digits and «-»."
 msgstr "Назва комп'ютера має лише малі латинські літери, цифри і «-»."
+
+msgid "Worth knowing"
+msgstr "Варто знати"
+
+msgid "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its recovery key (48 digits) once. Save the key before going on: it is in your Microsoft account or on the printout you made."
+msgstr "Windows на цьому диску використовує BitLocker. Після встановлення Vilna Windows може один раз попросити ключ відновлення (48 цифр). Збережіть ключ, перш ніж продовжити: він є у вашому обліковому записі Microsoft або на роздруківці, яку ви зробили."

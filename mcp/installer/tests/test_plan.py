@@ -302,6 +302,8 @@ def test_manual_layout_next_to_windows_keeps_what_the_person_did_not_choose():
     assert ("keep", "nvme0n1p3") in actions  # Windows stays
     assert ("create", "system") in actions and ("create", "swap") in actions
     assert not [c for c in report["changes"] if c["action"] == "erase"]
+    # Windows stays and uses BitLocker: it may ask for its recovery key.
+    assert [w["code"] for w in report["warnings"]] == ["bitlocker_recovery_key"]
 
 
 def test_manual_layout_says_which_partitions_it_erases():
@@ -318,6 +320,7 @@ def test_manual_layout_says_which_partitions_it_erases():
     assert report["valid"], report
     erased = {c["name"]: c["use"] for c in report["changes"] if c["action"] == "erase"}
     assert erased == {"nvme0n1p1": "efi", "nvme0n1p3": "system"}
+    assert report["warnings"] == []  # BitLocker is erased with Windows: no key to ask for
 
 
 @pytest.mark.parametrize(
