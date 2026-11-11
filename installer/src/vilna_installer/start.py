@@ -16,11 +16,14 @@ because the screen changes language as soon as one is picked.
 from __future__ import annotations
 
 import ast
+import contextlib
 import json
 import os
 import re
 import subprocess
+import sys
 import tempfile
+import time
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from importlib import resources
@@ -247,6 +250,24 @@ MODEL_WAKE_COMMAND = (
     "--no-ask-password",
     "vilna-llm.service",
 )
+
+
+def log(event: str, out: Callable[[str], object] | None = None) -> None:
+    """One line on stderr (the session journal) with the seconds since boot.
+
+    The live image is slow in ways a test machine is not; these lines say where
+    the time went on a check of the live image, without a debugger.
+    """
+    try:
+        since_boot = time.clock_gettime(time.CLOCK_BOOTTIME)
+    except (AttributeError, OSError):  # not Linux
+        since_boot = time.monotonic()
+    line = f"vilna-installer: {since_boot:.1f} s after boot: {event}"
+    if out is not None:
+        out(line)
+        return
+    with contextlib.suppress(OSError, ValueError):  # no stderr: no log, still no crash
+        print(line, file=sys.stderr, flush=True)
 
 
 def wake_model(run: Callable[..., object] = subprocess.run) -> bool:

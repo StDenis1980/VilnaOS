@@ -204,3 +204,13 @@ def test_no_systemctl_is_no_crash():
         raise FileNotFoundError(cmd[0])
 
     assert not start.wake_model(missing)
+
+
+def test_a_log_line_says_the_seconds_since_boot():
+    lines = []
+    start.log("chat window presented", out=lines.append)
+    assert len(lines) == 1
+    prefix, event = lines[0].split(" after boot: ")
+    assert event == "chat window presented"
+    assert prefix.startswith("vilna-installer: ") and prefix.endswith(" s")
+    assert float(prefix.removeprefix("vilna-installer: ").removesuffix(" s")) >= 0
