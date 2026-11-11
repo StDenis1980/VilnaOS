@@ -55,6 +55,9 @@ every other language of the system, the screen reader, and going on with
 the Gloxi assistant or without it; then steps 1-13 as a conversation with
 Gloxi, with the installation plan beside it. Gloxi only fills the plan;
 Herkos's final confirmation and the install engine come next.
+Without the assistant, the classic wizard goes through the same steps
+and fills the same plan with no model, including manual layout in its
+partition editor.
 
 %prep
 %autosetup -p1
@@ -78,6 +81,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{appid}.desktop
 %doc README.md
 %{_bindir}/vilna-installer
 %{_bindir}/vilna-installer-chat
+%{_bindir}/vilna-installer-wizard
 %{python_sitelib}/vilna_installer
 %{python_sitelib}/vilna_installer-*.dist-info
 %{_datadir}/applications/%{appid}.desktop

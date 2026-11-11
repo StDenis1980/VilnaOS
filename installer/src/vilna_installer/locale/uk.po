@@ -167,3 +167,272 @@ msgstr "Пропоную часовий пояс {timezone} і формати д
 
 msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. Shall we go on?"
 msgstr "Gloxi працює просто на цьому комп'ютері, і те, що ви йому кажете, лишається тут. Хмарна модель зараз вимкнена; її можна обрати після першого входу, і тоді шлюз приватності приховає імена й номери, перш ніж щось вийде за межі комп'ютера. Продовжимо?"
+
+# The classic wizard without the assistant (wizard.py).
+
+msgid "Summary"
+msgstr "Підсумок"
+
+msgid "Step {number} of {count}: {title}"
+msgstr "Крок {number} з {count}: {title}"
+
+msgid "Back"
+msgstr "Назад"
+
+msgid "Next"
+msgstr "Далі"
+
+msgid "Which languages do you write in? The first one chosen is the main language."
+msgstr "Якими мовами ви пишете? Перша вибрана мова — основна."
+
+msgid "Main language"
+msgstr "Основна мова"
+
+msgid "Keyboard layouts"
+msgstr "Розкладки клавіатури"
+
+msgid "Another keyboard layout"
+msgstr "Ще одна розкладка"
+
+msgid "None"
+msgstr "Немає"
+
+msgid "A network is not needed: everything for installing is already on the USB stick."
+msgstr "Мережа не потрібна: усе для встановлення вже є на флешці."
+
+msgid "Wi-Fi networks"
+msgstr "Мережі Wi‑Fi"
+
+msgid "Look for networks again"
+msgstr "Шукати мережі ще раз"
+
+msgid "No Wi-Fi networks found."
+msgstr "Мереж Wi‑Fi не знайдено."
+
+msgid "Connected"
+msgstr "Підключено"
+
+msgid "Choose the disk for Vilna and what to do with it."
+msgstr "Виберіть диск для Vilna і що з ним зробити."
+
+msgid "Disks"
+msgstr "Диски"
+
+msgid "What to do with the disk"
+msgstr "Що зробити з диском"
+
+msgid "Erase the whole disk and install Vilna"
+msgstr "Стерти весь диск і встановити Vilna"
+
+msgid "Choose the partitions yourself in the partition editor"
+msgstr "Самі виберіть розділи в редакторі розділів"
+
+msgid "Empty"
+msgstr "Порожній"
+
+msgid "{size} free"
+msgstr "вільно {size}"
+
+msgid "Everything on this disk will be erased: {what}."
+msgstr "Усе на цьому диску буде стерто: {what}."
+
+msgid "Open the partition editor"
+msgstr "Відкрити редактор розділів"
+
+msgid "Partition editor"
+msgstr "Редактор розділів"
+
+msgid "Choose what each partition is for. Partitions you do not use stay as they are. New partitions go into the largest free space."
+msgstr "Виберіть, для чого кожен розділ. Розділи, які ви не використовуєте, лишаються як є. Нові розділи створюються в найбільшому вільному місці."
+
+msgid "Partitions on the disk"
+msgstr "Розділи на диску"
+
+msgid "New partitions"
+msgstr "Нові розділи"
+
+msgid "Add a partition"
+msgstr "Додати розділ"
+
+msgid "Remove"
+msgstr "Прибрати"
+
+msgid "Suggest a layout"
+msgstr "Запропонувати розмітку"
+
+msgid "Use"
+msgstr "Призначення"
+
+msgid "Format (erase)"
+msgstr "Форматувати (стерти)"
+
+msgid "Size, GiB"
+msgstr "Розмір, GiB"
+
+msgid "Not used, keep"
+msgstr "Не використовувати, лишити"
+
+msgid "EFI system partition"
+msgstr "Системний розділ EFI"
+
+msgid "System"
+msgstr "Система"
+
+msgid "Home folders"
+msgstr "Домашні теки"
+
+msgid "Swap"
+msgstr "Підкачка"
+
+msgid "Partitions chosen: {count}"
+msgstr "Вибрано розділів: {count}"
+
+msgid "Encryption keeps your files safe if the computer or the disk is lost or stolen."
+msgstr "Шифрування береже ваші файли, якщо комп'ютер чи диск загубиться або його вкрадуть."
+
+msgid "The disk opens by itself on this computer; a recovery key opens it if something changes. Recommended."
+msgstr "Диск відкривається сам на цьому комп'ютері; ключ відновлення відкриє його, якщо щось зміниться. Рекомендовано."
+
+msgid "This computer has no TPM 2.0 chip, so this way is not available."
+msgstr "У цьому комп'ютері немає чипа TPM 2.0, тому цей спосіб недоступний."
+
+msgid "You type the passphrase every time the computer starts."
+msgstr "Фразу треба вводити щоразу, коли комп'ютер вмикається."
+
+msgid "Anyone who has the disk can read your files."
+msgstr "Будь-хто, у кого опиниться диск, зможе прочитати ваші файли."
+
+msgid "The next screen shows the recovery key; keep it safe."
+msgstr "Наступний екран покаже ключ відновлення; збережіть його в надійному місці."
+
+msgid "Your name"
+msgstr "Ваше ім'я"
+
+msgid "Login name"
+msgstr "Ім'я для входу"
+
+msgid "Computer name"
+msgstr "Назва комп'ютера"
+
+msgid "Time zone"
+msgstr "Часовий пояс"
+
+msgid "Date and number formats"
+msgstr "Формати дат і чисел"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi працює просто на цьому комп'ютері, і те, що ви йому кажете, лишається тут. Хмарна модель зараз вимкнена; її можна вибрати після першого входу, і тоді шлюз приватності ховає імена й номери, перш ніж щось покине комп'ютер."
+
+msgid "What happens to the disk"
+msgstr "Що станеться з диском"
+
+msgid "Still to do"
+msgstr "Що ще зробити"
+
+msgid "The plan is ready. The next screen, from Herkos, shows exactly what will change."
+msgstr "План готовий. Наступний екран, від Herkos, точно покаже, що зміниться."
+
+msgid "Fill in this step."
+msgstr "Заповніть цей крок."
+
+msgid "{name} ({size}{what}) will be erased"
+msgstr "{name} ({size}{what}) буде стерто"
+
+msgid "{name} ({size}{what}) stays as it is"
+msgstr "{name} ({size}{what}) лишається як є"
+
+msgid "{name} ({size}) is used as {use}, its files stay"
+msgstr "{name} ({size}) стає розділом «{use}», файли на ньому лишаються"
+
+msgid "A new partition of {size} is created{use}"
+msgstr "Створюється новий розділ на {size}{use}"
+
+msgid "Partitions are chosen in the partition editor"
+msgstr "Розділи вибираються в редакторі розділів"
+
+msgid "Type your name."
+msgstr "Введіть своє ім'я."
+
+msgid "Choose a disk."
+msgstr "Виберіть диск."
+
+msgid "Choose one of the options."
+msgstr "Виберіть один із варіантів."
+
+msgid "Connect to the Wi-Fi network first, or choose another way."
+msgstr "Спершу підключіться до мережі Wi‑Fi або виберіть інший спосіб."
+
+msgid "Type the Wi-Fi password and connect."
+msgstr "Введіть пароль Wi‑Fi і підключіться."
+
+msgid "Type the password for the account."
+msgstr "Введіть пароль облікового запису."
+
+msgid "Type the passphrase for the disk."
+msgstr "Введіть фразу для диска."
+
+msgid "The disks changed (a disk added or removed?). Choose the disk again."
+msgstr "Диски змінилися (додали чи вийняли диск?). Виберіть диск ще раз."
+
+msgid "The chosen disk is not in the computer now. Choose the disk again."
+msgstr "Вибраного диска зараз немає в комп'ютері. Виберіть диск ще раз."
+
+msgid "This is the USB stick Vilna is running from. Choose another disk."
+msgstr "Це флешка, з якої зараз працює Vilna. Виберіть інший диск."
+
+msgid "This disk is read-only. Choose another disk."
+msgstr "Цей диск лише для читання. Виберіть інший диск."
+
+msgid "There is not enough room: Vilna needs at least 40 GiB."
+msgstr "Замало місця: Vilna потрібно щонайменше 40 ГіБ."
+
+msgid "There is not enough free space for these partitions."
+msgstr "Для цих розділів замало вільного місця."
+
+msgid "The EFI system partition needs at least 256 MiB."
+msgstr "Системному розділу EFI потрібно щонайменше 256 МіБ."
+
+msgid "This disk has RAID, LVM or a filesystem Vilna does not know: only the partition editor can use it."
+msgstr "На цьому диску RAID, LVM або файлова система, якої Vilna не знає: його можна використати лише в редакторі розділів."
+
+msgid "Choose the partitions in the partition editor."
+msgstr "Виберіть розділи в редакторі розділів."
+
+msgid "Choose exactly one EFI system partition."
+msgstr "Виберіть рівно один системний розділ EFI."
+
+msgid "Choose exactly one partition for the system."
+msgstr "Виберіть рівно один розділ для системи."
+
+msgid "The system and swap partitions are always formatted."
+msgstr "Розділи системи й підкачки завжди форматуються."
+
+msgid "This partition is not an EFI system partition; format it or choose another."
+msgstr "Цей розділ — не системний розділ EFI; відформатуйте його або виберіть інший."
+
+msgid "This partition cannot be kept for home folders; format it or choose another."
+msgstr "Цей розділ не можна лишити для домашніх тек; відформатуйте його або виберіть інший."
+
+msgid "Only a Linux partition can be kept for home folders; format it."
+msgstr "Для домашніх тек можна лишити лише розділ Linux; відформатуйте цей."
+
+msgid "A partition is chosen twice."
+msgstr "Один розділ вибрано двічі."
+
+msgid "Choose at most one partition for home folders."
+msgstr "Виберіть не більше одного розділу для домашніх тек."
+
+msgid "Choose at most one swap partition."
+msgstr "Виберіть не більше одного розділу підкачки."
+
+msgid "This comes in a later version of Vilna."
+msgstr "Це буде в наступних версіях Vilna."
+
+msgid "A login name starts with a Latin letter and has only small Latin letters, digits, «-» and «_»."
+msgstr "Ім'я для входу починається з латинської літери і має лише малі латинські літери, цифри, «-» і «_»."
+
+msgid "The system already uses this login name; choose another."
+msgstr "Система вже використовує це ім'я для входу; виберіть інше."
+
+msgid "A computer name has only small Latin letters, digits and «-»."
+msgstr "Назва комп'ютера має лише малі латинські літери, цифри і «-»."

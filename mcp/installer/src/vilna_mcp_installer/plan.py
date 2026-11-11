@@ -15,7 +15,10 @@ Three kinds of fields:
   was entered (``network.secret``, ``user.password``,
   ``disk.encryption.passphrase``), ``disk.encryption.recovery_key_acknowledged``,
   ``disk.shrink.backup_confirmed`` and ``confirmed_by_user``. A plan holds
-  only the marker ``"entered"``, never a password or a key.
+  only the marker ``"entered"``, never a password or a key. The partitions
+  of a manual layout (``disk.partitions``, ``set_partitions``) come only
+  from the partition editor of the classic wizard, where the person sees
+  every partition they choose.
 - **Fixed** for the installation: ``privacy.cloud`` is ``"disabled"``; the
   choice of a cloud model comes after the first login (section 3, step 11).
 
@@ -48,6 +51,12 @@ LAYOUTS = ("replace", "alongside", "free_space", "manual")
 # Windows, shrinking and moving files come in the beta, after testers.
 STAGE_LAYOUTS = {"alpha": ("replace", "manual"), "beta": LAYOUTS}
 ENCRYPTION = ("tpm2", "passphrase", "none")
+# What a partition of a manual layout is for: the EFI system partition, the
+# system itself (the image is written on it), the home folders, swap.
+USES = ("efi", "system", "home", "swap")
+MiB = 1 << 20
+MIN_EFI = 256 * MiB
+MAX_PARTITIONS = 8
 NETWORK = ("offline", "wired", "wifi")
 TOP_LEVEL = (
     "version",
@@ -249,6 +258,9 @@ def set_disk(
             if bad:
                 raise PlanError(f"no partitions {bad} on {disk['id']}; partitions: {sorted(known)}")
             new[key] = list(dict.fromkeys(value))
+    same = old.get("target") == disk["id"] and old.get("survey") == survey.get("fingerprint")
+    if layout == "manual" and old.get("layout") == "manual" and same and old.get("partitions"):
+        new["partitions"] = old["partitions"]
     if old.get("encryption") and old.get("target") == disk["id"]:
         new["encryption"] = old["encryption"]
     elif old.get("encryption"):
@@ -312,6 +324,52 @@ def set_time(plan: dict[str, Any], timezone: str, region: str, **_: Any) -> dict
     loc["timezone"], loc["region"] = timezone, region
     _unconfirm(plan)
     return {"timezone": timezone, "region": region}
+
+
+def set_partitions(
+    plan: dict[str, Any], survey: dict[str, Any], partitions: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """The partitions of a manual layout, from the classic wizard's partition editor.
+
+    Each item is for one use (``USES``) and is either a partition of the
+    target disk (``partition``: its id; ``format``: whether it is erased)
+    or a new one in the free space (``size`` in bytes). Not in ``SETTERS``:
+    Gloxi never chooses partitions, the person does, seeing every one.
+    The checks that need the whole plan are the validator's (``_check_manual``).
+    """
+    disk = plan.get("disk") or {}
+    if disk.get("layout") != "manual":
+        raise PlanError("partitions are only for the manual layout; choose it first")
+    target = _find_disk(survey, disk.get("target"))
+    if target is None:
+        raise PlanError("choose the disk again: it is not in the survey")
+    if not isinstance(partitions, list) or not partitions:
+        raise PlanError("'partitions' must be a non-empty list")
+    if len(partitions) > MAX_PARTITIONS:
+        raise PlanError(f"at most {MAX_PARTITIONS} partitions")
+    known = {p["id"] for p in target.get("partitions", [])}
+    out: list[dict[str, Any]] = []
+    for item in partitions:
+        if not isinstance(item, dict) or item.get("use") not in USES:
+            raise PlanError(f"each partition needs 'use', one of {list(USES)}")
+        row: dict[str, Any] = {"use": item["use"]}
+        if item.get("partition") is not None:
+            if item["partition"] not in known:
+                raise PlanError(f"no partition {item['partition']!r} on {target['id']}")
+            if "size" in item and item["size"] is not None:
+                raise PlanError("a partition is either an existing one or a new 'size', not both")
+            row["partition"] = item["partition"]
+            row["format"] = item.get("format") is True
+        else:
+            size = item.get("size")
+            if not isinstance(size, int) or isinstance(size, bool) or size <= 0:
+                raise PlanError("a new partition needs a 'size' in bytes")
+            row["size"] = size
+        out.append(row)
+    disk["partitions"] = out
+    plan["disk"] = disk
+    _unconfirm(plan)
+    return out
 
 
 SETTERS: dict[str, Callable[..., dict[str, Any]]] = {
@@ -547,13 +605,15 @@ def _check_disk(plan: dict[str, Any], survey: dict[str, Any], r: _Report, stage:
         r.warn("removable", "disk.target", "the target is a removable disk")
     _check_encryption(disk.get("encryption"), r)
     if layout == "manual":
-        r.changes.append({"action": "manual", "disk": target["id"]})
         if not disk.get("partitions"):
+            r.changes.append({"action": "manual", "disk": target["id"]})
             r.error(
                 "manual_needs_editor",
                 "disk.partitions",
                 "manual layout is made in the partition editor of the classic wizard",
             )
+        else:
+            _check_manual(disk, target, r)
     else:
         _changes(disk, target, r)
     _check_migrate(plan, survey, target, r, stage)
@@ -658,6 +718,110 @@ def _changes(disk: dict[str, Any], target: dict[str, Any], r: _Report) -> None:
     for part in target.get("partitions", []):
         if part["id"] in erase and part.get("holds_data"):
             r.warn("erases_data", "disk.erase_partitions", f"{part.get('name')} holds data")
+
+
+def _check_manual(disk: dict[str, Any], target: dict[str, Any], r: _Report) -> None:
+    """The partition editor's choices: one EFI and one system partition, room, no surprises."""
+    items = disk.get("partitions")
+    if not isinstance(items, list) or len(items) > MAX_PARTITIONS:
+        r.error("bad_partitions", "disk.partitions", "'partitions' must be a short list")
+        return
+    parts = {p["id"]: p for p in target.get("partitions", [])}
+    used: dict[str, dict[str, Any]] = {}
+    count = dict.fromkeys(USES, 0)
+    new_total = 0
+    for i, item in enumerate(items):
+        where = f"disk.partitions[{i}]"
+        if not isinstance(item, dict) or item.get("use") not in USES:
+            r.error("bad_partitions", where, f"each partition needs 'use', one of {list(USES)}")
+            continue
+        use = item["use"]
+        count[use] += 1
+        pid = item.get("partition")
+        if pid is None:
+            size = item.get("size")
+            if not isinstance(size, int) or isinstance(size, bool) or size <= 0:
+                r.error("bad_partitions", where, "a new partition needs a 'size' in bytes")
+                continue
+            new_total += size
+            _check_use_size(use, size, where, r)
+            continue
+        part = parts.get(pid)
+        if part is None:
+            r.error("no_partition", where, f"no partition {pid!r} on the disk")
+            continue
+        if pid in used:
+            r.error("partition_twice", where, f"{part.get('name')} is chosen twice")
+            continue
+        used[pid] = item
+        fmt = item.get("format") is True
+        _check_use_size(use, part.get("size", 0), where, r)
+        if use in ("system", "swap") and not fmt:
+            r.error(
+                "must_format",
+                where,
+                f"the {use} partition is always formatted; its old contents are erased",
+            )
+        elif use == "efi" and not fmt and part.get("kind") != "efi":
+            r.error("not_efi", where, f"{part.get('name')} is not an EFI system partition")
+        elif use == "home" and not fmt and (part.get("encrypted") or part.get("kind") != "data"):
+            r.error(
+                "home_unreadable",
+                where,
+                f"{part.get('name')} cannot be kept as home: format it or choose another",
+            )
+        elif use == "home" and not fmt and part.get("system") != "Linux":
+            r.error("home_not_linux", where, "only a Linux filesystem can be kept as home")
+    for use, how_many in count.items():
+        if use in ("efi", "system") and how_many != 1:
+            r.error(
+                f"needs_one_{use}",
+                "disk.partitions",
+                f"the layout needs exactly one {use} partition (now {how_many})",
+            )
+        elif how_many > 1:
+            r.error(f"one_{use}", "disk.partitions", f"at most one {use} partition")
+    if new_total > target.get("largest_free", 0):
+        r.error(
+            "not_enough_space",
+            "disk.partitions",
+            f"the new partitions take {_size(new_total)}; the largest free space is "
+            f"{_size(target.get('largest_free', 0))}",
+        )
+    for part in target.get("partitions", []):
+        line = {
+            "partition": part["id"],
+            "name": part.get("name"),
+            "size": part.get("size"),
+            "system": part.get("system"),
+            "label": part.get("label"),
+            "holds_data": part.get("holds_data"),
+        }
+        item = used.get(part["id"])
+        if item is None:
+            r.changes.append({"action": "keep", **line})
+        elif item.get("format") is True:
+            r.changes.append({"action": "erase", "use": item["use"], **line})
+        else:
+            r.changes.append({"action": "use", "use": item["use"], **line})
+    for item in items:
+        if isinstance(item, dict) and item.get("partition") is None and item.get("use") in USES:
+            size = item.get("size")
+            if isinstance(size, int) and not isinstance(size, bool) and size > 0:
+                r.changes.append(
+                    {"action": "create", "use": item["use"], "disk": target["id"], "size": size}
+                )
+
+
+def _check_use_size(use: str, size: int, where: str, r: _Report) -> None:
+    if use == "system" and size < MIN_SYSTEM:
+        r.error(
+            "too_small",
+            where,
+            f"the system partition needs at least {_size(MIN_SYSTEM)}; it has {_size(size)}",
+        )
+    elif use == "efi" and size < MIN_EFI:
+        r.error("efi_too_small", where, f"the EFI partition needs at least {_size(MIN_EFI)}")
 
 
 def _shrink_of(disk: dict[str, Any], pid: str) -> int | None:

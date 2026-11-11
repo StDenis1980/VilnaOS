@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 11 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The classic wizard without the assistant (vilna-installer-wizard):
+  the same steps and plan with no model, a partition editor for
+  manual layout; «Without the assistant» opens it in the same program
+  instead of ending with status 3
+
+-------------------------------------------------------------------
 Wed Nov 11 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The chat window shows at once and says Gloxi is waking up while

@@ -273,3 +273,133 @@ def test_step_zero_plans_are_read(tmp_path):
     report = plans.validate(plans.load(path), surveyed())
     assert report["problems"] == []
     assert "languages" in report["missing"]
+
+
+# --- the partition editor of the classic wizard (manual layout) --------------------
+
+
+def manual(kind="windows"):
+    p, s = complete(kind)
+    plans.set_disk(p, s["disks"][0]["id"], "manual", s)
+    return p, s
+
+
+def test_manual_layout_next_to_windows_keeps_what_the_person_did_not_choose():
+    p, s = manual()
+    plans.set_partitions(
+        p,
+        s,
+        [
+            {"use": "efi", "partition": "p-efi"},
+            {"use": "system", "size": 100 * GiB},
+            {"use": "swap", "size": 8 * GiB},
+        ],
+    )
+    report = plans.validate(p, s)
+    assert report["valid"], report
+    actions = {(c["action"], c.get("name") or c.get("use")) for c in report["changes"]}
+    assert ("use", "nvme0n1p1") in actions  # the EFI partition, shared, not erased
+    assert ("keep", "nvme0n1p3") in actions  # Windows stays
+    assert ("create", "system") in actions and ("create", "swap") in actions
+    assert not [c for c in report["changes"] if c["action"] == "erase"]
+
+
+def test_manual_layout_says_which_partitions_it_erases():
+    p, s = manual()
+    plans.set_partitions(
+        p,
+        s,
+        [
+            {"use": "efi", "partition": "p-efi", "format": True},
+            {"use": "system", "partition": "p-win", "format": True},
+        ],
+    )
+    report = plans.validate(p, s)
+    assert report["valid"], report
+    erased = {c["name"]: c["use"] for c in report["changes"] if c["action"] == "erase"}
+    assert erased == {"nvme0n1p1": "efi", "nvme0n1p3": "system"}
+
+
+@pytest.mark.parametrize(
+    ("partitions", "code"),
+    [
+        ([{"use": "system", "size": 100 * GiB}], "needs_one_efi"),
+        ([{"use": "efi", "partition": "p-efi"}], "needs_one_system"),
+        (
+            [
+                {"use": "efi", "partition": "p-efi"},
+                {"use": "system", "partition": "p-win"},  # not formatted
+            ],
+            "must_format",
+        ),
+        (
+            [
+                {"use": "efi", "partition": "p-rec"},  # NTFS recovery, not EFI
+                {"use": "system", "size": 100 * GiB},
+            ],
+            "not_efi",
+        ),
+        (
+            [
+                {"use": "efi", "partition": "p-efi"},
+                {"use": "system", "size": 20 * GiB},
+            ],
+            "too_small",
+        ),
+        (
+            [
+                {"use": "efi", "partition": "p-efi"},
+                {"use": "system", "size": 300 * GiB},  # about 131 GiB is free
+            ],
+            "not_enough_space",
+        ),
+        (
+            [
+                {"use": "efi", "partition": "p-efi"},
+                {"use": "system", "size": 100 * GiB},
+                {"use": "home", "partition": "p-win"},  # BitLocker kept as home
+            ],
+            "home_unreadable",
+        ),
+        (
+            [
+                {"use": "efi", "partition": "p-efi"},
+                {"use": "system", "size": 60 * GiB},
+                {"use": "home", "partition": "p-efi", "format": True},
+            ],
+            "partition_twice",
+        ),
+    ],
+)
+def test_the_validator_refuses_a_broken_manual_layout(partitions, code):
+    p, s = manual()
+    plans.set_partitions(p, s, partitions)
+    assert code in codes(plans.validate(p, s))
+
+
+def test_partitions_are_only_for_the_manual_layout_and_this_disk():
+    p, s = complete("windows")
+    with pytest.raises(plans.PlanError, match="manual"):
+        plans.set_partitions(p, s, [{"use": "system", "size": 50 * GiB}])
+    p, s = manual()
+    with pytest.raises(plans.PlanError, match="no partition"):
+        plans.set_partitions(p, s, [{"use": "home", "partition": "sda1"}])
+    with pytest.raises(plans.PlanError, match="not both"):
+        plans.set_partitions(p, s, [{"use": "home", "partition": "p-win", "size": GiB}])
+    with pytest.raises(plans.PlanError, match="use"):
+        plans.set_partitions(p, s, [{"use": "boot", "size": GiB}])
+
+
+def test_choosing_the_disk_again_keeps_the_editor_s_work_only_for_the_same_disk():
+    p, s = manual()
+    plans.set_partitions(
+        p, s, [{"use": "efi", "partition": "p-efi"}, {"use": "system", "size": 100 * GiB}]
+    )
+    plans.set_disk(p, s["disks"][0]["id"], "manual", s)
+    assert len(p["disk"]["partitions"]) == 2
+    plans.set_disk(p, s["disks"][0]["id"], "replace", s)
+    assert "partitions" not in p["disk"]
+
+
+def test_gloxi_cannot_choose_partitions():
+    assert "set_partitions" not in plans.SETTERS

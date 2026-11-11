@@ -12,9 +12,12 @@ secret stays in this process's memory (``Secrets``) for the installation
 engine.
 
 Exit status: 0 when the person pressed «Check and confirm the plan» (the
-Herkos confirmation screen comes next), 3 for «Without the assistant» or when
-there is no model (the classic wizard goes on with the same plan), 1 when the
-window was closed.
+Herkos confirmation screen comes next), 3 for «Without the assistant» (the
+classic wizard goes on with the same plan; inside ``vilna-installer`` it
+opens in the same program instead), 1 when the window was closed.
+
+A manual layout is made in the classic wizard's partition editor; the chat
+offers it in a card when Gloxi saved the manual layout.
 """
 
 from __future__ import annotations
@@ -199,9 +202,11 @@ class ChatWindow(Adw.ApplicationWindow):
         plan_path: Path,
         *,
         demo: bool,
+        demo_kind: str | None = None,
         starting: Callable[[], conv.Conversation | None] | None = None,
     ) -> None:
         super().__init__(application=app)
+        self.demo_kind = demo_kind or ("empty" if demo else None)
         self.conversation = conversation
         self.plan_path = plan_path
         self.demo = demo
@@ -221,7 +226,7 @@ class ChatWindow(Adw.ApplicationWindow):
         header = Adw.HeaderBar()
         header.set_title_widget(Gtk.Label(label=_(start.TITLE)))
         without = Gtk.Button(label=_(start.WITHOUT))
-        without.connect("clicked", lambda *_a: self._finish(EXIT_WIZARD))
+        without.connect("clicked", lambda *_a: self._without())
         header.pack_end(without)
 
         # The chat
@@ -364,6 +369,13 @@ class ChatWindow(Adw.ApplicationWindow):
     def _no_model(self) -> bool:
         self.thinking.set_visible(False)
         self._say(self._(conv.NO_MODEL))
+        # The way on is right under the message, and the keyboard is on it.
+        go_on = Gtk.Button(label=self._(start.WITHOUT), halign=Gtk.Align.START)
+        go_on.add_css_class("suggested-action")
+        go_on.add_css_class("pill")
+        go_on.connect("clicked", lambda *_a: self._without())
+        self.list.append(go_on)
+        GLib.idle_add(_once(go_on.grab_focus))
         self.conversation = None
         for row, _value in self.rows.values():
             change = row.get_last_child()
@@ -416,7 +428,7 @@ class ChatWindow(Adw.ApplicationWindow):
         if need == "confirm":
             return
         if need == "partition_editor":
-            # The partition editor belongs to the classic wizard (separate work).
+            self._editor_card()
             return
         self.cards.add(need)
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, halign=Gtk.Align.START)
@@ -453,6 +465,35 @@ class ChatWindow(Adw.ApplicationWindow):
         first.connect("activate", lambda *_a: button.emit("clicked"))
         self.list.append(card)
         GLib.idle_add(_once(first.grab_focus))
+
+    def _editor_card(self) -> None:
+        """Manual layout: the partition editor of the classic wizard, opened from the chat."""
+        from vilna_installer import wizard, wizard_window
+
+        _ = self._
+        self.cards.add("partition_editor")
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, halign=Gtk.Align.START)
+        card.add_css_class("vilna-card")
+        heading = Gtk.Label(label=_(wizard.PROBLEM_TEXT["manual_needs_editor"]), xalign=0)
+        heading.add_css_class("vilna-section")
+        card.append(heading)
+        button = Gtk.Button(label=_(wizard.OPEN_EDITOR), halign=Gtk.Align.START)
+        button.add_css_class("suggested-action")
+        card.append(button)
+        self.list.append(card)
+
+        def saved() -> None:
+            self.list.remove(card)
+            self.cards.discard("partition_editor")
+            self.last_change = None
+            self._turn(None)
+
+        def open_editor(*_args) -> None:
+            helper = wizard.Wizard(self.plan_path, wizard.machine_for(self.demo_kind))
+            wizard_window.PartitionEditor(helper, _, saved).present(self)
+
+        button.connect("clicked", open_editor)
+        GLib.idle_add(_once(button.grab_focus))
 
     def _on_secret(self, button, need, card, first, second, note) -> None:
         _ = self._
@@ -536,6 +577,14 @@ class ChatWindow(Adw.ApplicationWindow):
         self.entry.grab_focus()
         return False
 
+    def _without(self) -> None:
+        """«Without the assistant»: the classic wizard, in the same program when it can."""
+        app = self.get_application()
+        if hasattr(app, "open_wizard"):
+            app.open_wizard(self, self.secrets)
+        else:
+            self._finish(EXIT_WIZARD)
+
     def _finish(self, code: int) -> None:
         app = self.get_application()
         if app is not None:
@@ -570,7 +619,9 @@ class ChatApp(Adw.Application):
             except conv.ToolsError as e:
                 print(f"vilna-installer-chat: {e}", file=sys.stderr)
                 conversation = None
-            win = ChatWindow(self, conversation, self.plan_path, demo=bool(self.demo))
+            win = ChatWindow(
+                self, conversation, self.plan_path, demo=bool(self.demo), demo_kind=self.demo
+            )
         if not self.window:
             win.fullscreen()
         win.present()
