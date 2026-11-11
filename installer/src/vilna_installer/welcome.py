@@ -8,8 +8,11 @@ language (its own name, no flags), can turn on the screen reader, and goes
 on with Gloxi or without the assistant. The screen writes the start of the
 plan (``start.write_plan``). With Gloxi, the conversation window
 (``chat.ChatWindow``, steps 1–13) follows in the same program; without the
-assistant the program ends with status 3 and the classic wizard goes on
-with the same plan.
+assistant, the classic wizard (``wizard_window.WizardWindow``) does, with
+the same plan and no model.
+
+Exit status: 0 when the plan goes to the Herkos confirmation screen, 1 when
+the window was closed before.
 
 Under the greeting: the Blavet mark and the release name, on the Blavet
 wallpaper (light by default, dark when the system is dark).
@@ -36,7 +39,6 @@ from vilna_installer import start  # noqa: E402
 APP_ID = "io.github.stdenis1980.VilnaInstaller"
 BACKGROUNDS = Path(os.environ.get("VILNA_BACKGROUNDS", "/usr/share/backgrounds/vilna"))
 A11Y_SCHEMA = "org.gnome.desktop.a11y.applications"
-EXIT_WIZARD = 3  # «Without the assistant»: the classic wizard goes on
 
 CSS = """
 .vilna-veil { background-image: radial-gradient(ellipse 55% 62% at 50% 52%,
@@ -350,8 +352,7 @@ class Welcome(Adw.ApplicationWindow):
             if assistant:
                 app.open_chat(self)
             else:
-                app.exit_code = EXIT_WIZARD
-                app.quit()
+                app.open_wizard(self)
 
 
 class InstallerApp(Adw.Application):
@@ -399,6 +400,26 @@ class InstallerApp(Adw.Application):
             win.fullscreen()
         win.present()
         welcome.destroy()
+
+    def open_wizard(self, previous: Gtk.Window, secrets: object | None = None) -> None:
+        """The classic wizard: the same steps and plan, no model (installer.md 1.7)."""
+        from vilna_installer import wizard, wizard_window
+
+        wizard_window.install_css()
+        win = wizard_window.WizardWindow(
+            self,
+            self.plan_path,
+            wizard.machine_for(self.demo),
+            secrets=secrets,
+            demo=self.demo,
+        )
+        if not self.window:
+            win.fullscreen()
+        win.present()
+        previous.destroy()
+        # Gloxi is not needed any more: its tools stop, the model may keep running.
+        self.close_tools()
+        self.close_tools = lambda: None
 
     def do_shutdown(self) -> None:
         self.close_tools()

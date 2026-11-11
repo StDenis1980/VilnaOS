@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 11 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Manual layout in the plan: disk.partitions (EFI, system, home,
+  swap; an existing partition or a new one), set by the classic
+  wizard's partition editor only; the validator checks it and lists
+  every partition erased, used, kept or created
+
+-------------------------------------------------------------------
 Tue Nov 10 08:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: the installer's MCP server, the installation plan
