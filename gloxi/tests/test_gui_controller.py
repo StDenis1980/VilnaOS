@@ -292,3 +292,13 @@ def test_feedback_phrase_starts_the_talk_and_cancel_opens_nothing():
     assert not talk.active
     assert server.requests == []
     assert not [e for e in view.events if e[0] == "open"]
+
+
+def test_a_new_conversation_has_the_model_read_the_prompt_in_advance():
+    server = FakeLlamaServer("ok")
+    controller, _view, conv = make(server)
+    controller.submit("привіт")
+    controller.reset()
+    assert conv.history == []
+    warm = server.requests[-1]
+    assert warm["max_tokens"] == 1 and warm["messages"] == [conv.messages()[0]]

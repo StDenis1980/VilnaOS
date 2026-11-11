@@ -225,6 +225,11 @@ class ChatController:
     def reset(self) -> None:
         if not self.busy:
             self.conversation.reset()
+            self.warm()
+
+    def warm(self) -> None:
+        """Let the local model read the prompt and the functions before the next message."""
+        self.runner(self.conversation.warm)
 
     # -- the model switcher and the header (the same calls as RemoteController) ---
 
