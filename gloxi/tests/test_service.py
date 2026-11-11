@@ -241,3 +241,60 @@ def test_gloxid_finds_the_home_of_the_person_it_serves():
     if other is not None:
         assert str(owner_home(other.pw_uid)) == other.pw_dir
     assert owner_home(2**31 - 7) is None  # no such person
+
+
+# -- a new login (Build14.9: gloxid kept the conversation after a logout) ----------
+
+
+def test_a_new_login_session_starts_a_new_conversation(running, monkeypatch):
+    r = running()
+    monkeypatch.setenv("XDG_SESSION_ID", "3")
+    remote, view = r.client()
+    assert remote.submit("привіт")
+    assert wait_for(lambda: len(r.controller.conversation.history) == 2)
+    remote.close()
+
+    # The same login opens the window again: the conversation goes on.
+    remote, _view = r.client()
+    assert len(r.controller.conversation.history) == 2
+    remote.close()
+
+    # After logging out and in again it starts afresh.
+    monkeypatch.setenv("XDG_SESSION_ID", "7")
+    remote, _view = r.client()
+    assert r.controller.conversation.history == []
+    assert r.service.session == "7"
+
+
+def test_a_bad_session_id_is_refused(running):
+    r = running()
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+        s.connect(str(r.path))
+        s.sendall(b'{"id": 1, "method": "hello", "params": {"session": "../x y"}}\n')
+        answer = json.loads(s.makefile().readline())
+    assert answer["error"]["code"] == "bad_params"
+
+
+def test_wake_says_hello_with_the_language_and_session(running, monkeypatch):
+    from gloxi.service import wake
+
+    r = running()
+    monkeypatch.setenv("XDG_SESSION_ID", "c2")
+    monkeypatch.setenv("LANGUAGE", "pl_PL.UTF-8")
+    assert wake(r.path) is True
+    assert r.environ["LANGUAGE"] == "pl_PL.UTF-8"
+    assert r.service.session == "c2"
+
+
+def test_wake_without_gloxid_is_quiet(tmp_path):
+    from gloxi.service import wake
+
+    assert wake(tmp_path / "nothing.sock") is False
+
+
+def test_the_wake_autostart_runs_gloxi_wake():
+    from pathlib import Path
+
+    desktop = Path(__file__).parents[1] / "data/autostart/io.github.stdenis1980.Gloxi-wake.desktop"
+    text = desktop.read_text(encoding="utf-8")
+    assert "Exec=gloxi wake\n" in text and "NoDisplay=true\n" in text

@@ -112,6 +112,24 @@ pub struct Judge {
     addrs: Vec<SocketAddr>,
     host: String,
     path: String,
+    /// The key of the shared local model (vilna-llm.service wants one,
+    /// ADR 0025): without it every check is "unavailable" (Build14.9).
+    key: Option<String>,
+}
+
+/// The longest key accepted from a key file.
+const MAX_KEY: usize = 256;
+
+/// The model key from `path`: one line of URL-safe characters, so it can
+/// never end the header it goes into.
+pub fn read_key(path: &std::path::Path) -> Result<String, String> {
+    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let key = text.trim();
+    let fine = |c: char| c.is_ascii_alphanumeric() || "-._~+/=".contains(c);
+    if key.is_empty() || key.len() > MAX_KEY || !key.chars().all(fine) {
+        return Err(format!("{}: not a key", path.display()));
+    }
+    Ok(key.to_owned())
 }
 
 /// Accept only http(s) URLs on this machine: content must not leave it.
@@ -180,7 +198,14 @@ impl Judge {
             addrs,
             host: authority.to_owned(),
             path: format!("{base}/chat/completions"),
+            key: None,
         })
+    }
+
+    /// Send `key` as a bearer token (from `read_key`).
+    pub fn with_key(mut self, key: String) -> Judge {
+        self.key = Some(key);
+        self
     }
 
     /// `true`: the text tries to instruct the assistant.
@@ -221,8 +246,13 @@ impl Judge {
                 .max(Duration::from_millis(1))
         };
         let mut stream = TcpStream::connect_timeout(&self.addrs[0], left()).map_err(io)?;
+        let auth = self
+            .key
+            .as_ref()
+            .map(|k| format!("Authorization: Bearer {k}\r\n"))
+            .unwrap_or_default();
         let head = format!(
-            "POST {} HTTP/1.1\r\nHost: {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            "POST {} HTTP/1.1\r\nHost: {}\r\n{auth}Content-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
             self.path,
             self.host,
             body.len()
@@ -444,6 +474,68 @@ mod tests {
         let broken = "HTTP/1.1 500 Oops\r\n\r\n";
         let check = ModelCheck::new(Judge::new(&serve_once(broken)).expect("judge"), 5.0);
         assert_eq!(check.check("hello").status, "unavailable");
+    }
+
+    /// A server that answers like llama-server with `--api-key`: 401 without
+    /// the right bearer token.
+    fn serve_with_key(key: &'static str) -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").expect("bind");
+        let port = listener.local_addr().expect("addr").port();
+        std::thread::spawn(move || {
+            for stream in listener.incoming().take(2) {
+                let Ok(mut s) = stream else { continue };
+                let mut got = Vec::new();
+                let mut buf = [0u8; 65536];
+                while let Ok(n @ 1..) = s.read(&mut buf) {
+                    got.extend_from_slice(&buf[..n]);
+                    let text = String::from_utf8_lossy(&got);
+                    if let Some(end) = text.find("\r\n\r\n") {
+                        let len = text
+                            .lines()
+                            .find_map(|l| l.strip_prefix("Content-Length: "))
+                            .and_then(|n| n.trim().parse::<usize>().ok())
+                            .unwrap_or(0);
+                        if got.len() >= end + 4 + len {
+                            break;
+                        }
+                    }
+                }
+                let text = String::from_utf8_lossy(&got);
+                let reply = if text.contains(&format!("\r\nAuthorization: Bearer {key}\r\n")) {
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"choices\":[{\"message\":{\"content\":\"{\\\"answer\\\": \\\"no\\\"}\"}}]}"
+                } else {
+                    "HTTP/1.1 401 Unauthorized\r\nContent-Type: application/json\r\n\r\n{\"error\":{\"message\":\"Invalid API Key\"}}"
+                };
+                let _ = s.write_all(reply.as_bytes());
+            }
+        });
+        format!("http://127.0.0.1:{port}/v1")
+    }
+
+    #[test]
+    fn sends_the_model_key() {
+        let url = serve_with_key("s3cret-key");
+        let without = ModelCheck::new(Judge::new(&url).expect("judge"), 5.0);
+        assert_eq!(without.check("hello").status, "unavailable");
+        let judge = Judge::new(&url)
+            .expect("judge")
+            .with_key("s3cret-key".into());
+        assert_eq!(ModelCheck::new(judge, 5.0).check("hello").status, "clean");
+    }
+
+    #[test]
+    fn key_files() {
+        let dir = std::env::temp_dir().join(format!("herkos-key-{}", random_hex(6)));
+        std::fs::create_dir_all(&dir).expect("dir");
+        let file = dir.join("key");
+        std::fs::write(&file, "0a1b2c\n").expect("write");
+        assert_eq!(read_key(&file), Ok("0a1b2c".to_owned()));
+        for bad in ["", "two words", "a\r\nX-Evil: 1", &"k".repeat(300)] {
+            std::fs::write(&file, bad).expect("write");
+            assert!(read_key(&file).is_err(), "{bad:?}");
+        }
+        assert!(read_key(&dir.join("missing")).is_err());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
