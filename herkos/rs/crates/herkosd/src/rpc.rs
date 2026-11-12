@@ -147,7 +147,6 @@ impl Connection {
                 result(
                     id,
                     json!({
-                        "keros_model_pending": self.session.pending(),
                         "tainted": self.session.tainted,
                         "taint_sources": self.session.taint_sources,
                         "findings": self.session.keros.findings.iter().map(|(src, f)| {

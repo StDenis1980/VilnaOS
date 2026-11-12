@@ -352,6 +352,7 @@ pub struct Session {
 }
 
 impl Session {
+    #[cfg(test)]
     /// How many model checks are still running.
     pub fn pending(&self) -> usize {
         self.pending.len()
