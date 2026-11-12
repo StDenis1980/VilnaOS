@@ -286,6 +286,84 @@ def test_wake_says_hello_with_the_language_and_session(running, monkeypatch):
     assert r.service.session == "c2"
 
 
+def test_without_xdg_session_id_the_session_comes_from_logind(monkeypatch):
+    # Build14.10: Vilna's GNOME session has no XDG_SESSION_ID.
+    import subprocess
+
+    from gloxi.gui.remote import login_session
+
+    calls = []
+
+    def loginctl(argv, **_kwargs):
+        calls.append(argv)
+        return subprocess.CompletedProcess(argv, 0, stdout="5\n", stderr="")
+
+    assert login_session({}, run=loginctl) == "5"
+    assert calls[0][:2] == ["loginctl", "show-user"] and "--property=Display" in calls[0]
+    assert login_session({"XDG_SESSION_ID": "c2"}, run=loginctl) == "c2"
+    assert len(calls) == 1
+
+    def missing(argv, **_kwargs):
+        raise FileNotFoundError(argv[0])
+
+    def no_display(argv, **_kwargs):
+        return subprocess.CompletedProcess(argv, 0, stdout="\n", stderr="")
+
+    def odd(argv, **_kwargs):
+        return subprocess.CompletedProcess(argv, 0, stdout="../x y\n", stderr="")
+
+    assert login_session({}, run=missing) is None
+    assert login_session({}, run=no_display) is None
+    assert login_session({}, run=odd) is None
+
+
+def test_a_new_login_without_xdg_session_id_starts_a_new_conversation(running, monkeypatch):
+    monkeypatch.delenv("XDG_SESSION_ID", raising=False)
+    r = running()
+    remote, _view = r.client(session=lambda: "4")
+    assert remote.submit("привіт")
+    assert wait_for(lambda: len(r.controller.conversation.history) == 2)
+    remote.close()
+    remote, _view = r.client(session=lambda: "9")
+    assert r.controller.conversation.history == []
+
+
+def test_a_window_opened_again_shows_the_kept_conversation(running):
+    r = running()
+    remote, view = r.client(session=lambda: "4")
+    assert remote.submit("привіт")
+    assert wait_for(lambda: not remote.busy and ("finish",) in view.events)
+    remote.close()
+
+    # Build14.10: the window opened again was empty, yet gloxid remembered.
+    remote, view = r.client(session=lambda: "4")
+    assert wait_for(lambda: ("finish",) in view.events)
+    assert view.events[:2] == [("user", "привіт"), ("start", "Gloxi")]
+    assert view.answer() == "Привіт, я Gloxi."
+    # Shown once: a reconnect does not show it twice.
+    remote.close()
+    remote._closed = False
+    remote.connect()
+    assert [e for e in view.events if e[0] == "user"] == [("user", "привіт")]
+
+
+def test_hello_sends_back_only_what_was_said_and_not_too_much(running):
+    from gloxi.service import HISTORY_BYTES
+
+    r = running()
+    r.controller.conversation.history[:] = [
+        {"role": "user", "content": "старе " * HISTORY_BYTES},
+        {"role": "assistant", "content": None, "tool_calls": []},
+        {"role": "tool", "content": "вміст файлу"},
+        {"role": "user", "content": "нове"},
+        {"role": "assistant", "content": "відповідь"},
+    ]
+    assert r.service.history() == [
+        {"role": "user", "text": "нове"},
+        {"role": "assistant", "text": "відповідь"},
+    ]
+
+
 def test_wake_without_gloxid_is_quiet(tmp_path):
     from gloxi.service import wake
 

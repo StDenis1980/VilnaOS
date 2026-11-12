@@ -746,6 +746,10 @@ msgid "Gloxi is waiting for you"
 msgstr "Gloxi vă așteaptă"
 
 #: src/gloxi/gui/remote.py
+msgid "Gloxi"
+msgstr "Gloxi"
+
+#: src/gloxi/gui/remote.py
 msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
 msgstr "Gloxi nu este disponibil: serviciul său nu rulează. Încercați din nou peste câteva clipe."
 
