@@ -19,7 +19,7 @@ msgstr ""
 msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 #, python-brace-format
 msgid "Choose a number from 1 to {n}."
 msgstr ""
@@ -92,11 +92,11 @@ msgid ""
 "Then: vilna-backup restore --in-place"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Herkos sent an answer Gloxi does not understand"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Herkos, the permission service, is not available"
 msgstr ""
 
@@ -130,7 +130,7 @@ msgstr ""
 msgid "Keep your conversations with Gloxi in backups too?"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Later"
 msgstr ""
 
@@ -150,7 +150,7 @@ msgstr ""
 msgid "My own storage (S3, SFTP)"
 msgstr ""
 
-#: src/gloxi/backup_intro.py src/gloxi/feedback.py
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py src/gloxi/vpn_intro.py
 msgid "No"
 msgstr ""
 
@@ -372,7 +372,7 @@ msgid "Cloud: on ({mode} mode)."
 msgstr ""
 
 #: src/gloxi/cli.py
-msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
+msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /vpn sets up a VPN, /feedback reports a problem or suggests something, /exit quits."
 msgstr ""
 
 #: src/gloxi/cli.py
@@ -412,9 +412,18 @@ msgstr ""
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
 msgstr ""
 
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "Open the app: {app}"
+msgstr ""
+
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Starting {name} on this computer…"
+msgstr ""
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "The VPN needs Vilna and Herkos, and Herkos is not running."
 msgstr ""
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
@@ -675,6 +684,10 @@ msgstr ""
 #: src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Cloud: {host}, not masked"
+msgstr ""
+
+#: src/gloxi/gui/controller.py
+msgid "Gloxi, VPN"
 msgstr ""
 
 #: src/gloxi/gui/controller.py
@@ -940,6 +953,11 @@ msgid "Stop sharing this folder"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "The app {app} is not installed."
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "The last lines of the chat and the input"
 msgstr ""
 
@@ -1143,4 +1161,93 @@ msgstr ""
 
 #: src/gloxi/voice/speech.py
 msgid "password hidden"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. I will ask once more in a week. You can also type /vpn any time."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. Type /vpn when you want to go on."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Connected"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Create a free Proton account (5 countries, 1 device)"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether a VPN protects this computer"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether the VPN is connected"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening Proton's sign-up page. You can create the account with a Proton address, without another email. Then sign in in the Proton VPN app that I open next, press Connect and tell me when it is connected."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Mullvad app. Enter your account number or activation code there, not here: I do not see it and do not keep it. Then press Connect and tell me when it is connected."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Proton VPN app. Sign in there, not here: I do not see your password. Then press Connect and tell me when it is connected."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+#, python-brace-format
+msgid "I could not continue: {why}. We can go on later: type /vpn."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I do not see a VPN connection yet. Press Connect in the app, wait a few seconds and tell me again."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I have a Mullvad account number or code"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Mullvad app: in its settings turn on “Auto-connect”, so the VPN comes up by itself."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Proton VPN app: in its settings turn on “Connect at startup”, so the VPN comes up by itself."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Shall we protect your traffic with a VPN? It hides what you do from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones. Your encrypted DNS already works without a VPN."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Sign in to Proton VPN"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "The VPN is connected. Shall I turn on the kill switch? Then nothing leaves this computer outside the VPN: if the VPN drops, the internet stops until it is back. Turning it off later always asks you first."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch is on."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch stays off. You can turn it on any time: type /vpn."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Turn on the VPN kill switch"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "We are not talking about a VPN now."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Yes, recommended"
 msgstr ""

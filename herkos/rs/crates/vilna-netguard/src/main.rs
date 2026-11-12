@@ -98,6 +98,15 @@ fn run(paths: &Paths, words: &[&str]) -> Result<String, String> {
             v["portal_open"] = state.portal_open(now).into();
             v["applied"] = table_present(paths).into();
             v["dns"] = current_resolver(paths).name().into();
+            // How many WireGuard servers the tunnels talk to now: 0 means no VPN is up,
+            // and turning the kill switch on would leave no way out.
+            v["tunnels"] = run_command(
+                Command::new(&paths.wg).args(["show", "all", "endpoints"]),
+                None,
+            )
+            .map(|out| parse_wg_endpoints(&out).len())
+            .unwrap_or(0)
+            .into();
             Ok(v.to_string())
         }
         ["apply"] => apply(paths, &load(&paths.state), now).map(|_| String::new()),

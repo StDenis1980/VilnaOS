@@ -160,6 +160,9 @@ class EventView:
     def open_uri(self, url: str) -> None:
         self._event("open_uri", url=url)
 
+    def launch_app(self, app_id: str) -> None:
+        self._event("launch_app", app=app_id)
+
 
 class RequestError(Exception):
     def __init__(self, code: str, message: str) -> None:
@@ -401,6 +404,7 @@ def build_controller(view: EventView, owner_uid: int | None = None):
     from gloxi.privacy import guard_factory
     from gloxi.router import Router
     from gloxi.tools import file_tools
+    from gloxi.vpn_intro import vpn_intro
 
     settings = load_settings()
     local = ChatClient(settings.local)
@@ -421,7 +425,12 @@ def build_controller(view: EventView, owner_uid: int | None = None):
     home = owner_home(owner_uid) if owner_uid is not None else None
     tools = file_tools(settings.tools_enabled, owner_home=home)
     conversation = Conversation(router, settings.system_prompt, tools=tools)
-    return ChatController(conversation, view, intro=backup_intro(settings.tools_enabled))
+    return ChatController(
+        conversation,
+        view,
+        intro=backup_intro(settings.tools_enabled),
+        vpn=vpn_intro(settings.tools_enabled),
+    )
 
 
 def inherited_listener() -> socket.socket | None:
