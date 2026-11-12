@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.9
+Version:        0.8
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -244,9 +244,6 @@ Requires:       udev-configure-printer
 Requires:       yast2-logs
 Requires:       NetworkManager-openconnect-gnome
 Requires:       NetworkManager-openvpn-gnome
-# VPN (ADR 0027): Proton VPN by default, its service stays off until the
-# person signs in. Mullvad comes from the Vilna OBS project (planned).
-Requires:       proton-vpn-gtk-app
 Requires:       NetworkManager-wifi
 Requires:       alsa-ucm-conf
 Requires:       combustion
