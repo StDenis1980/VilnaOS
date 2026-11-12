@@ -9,7 +9,6 @@
 | `/` | заглушка «Coming soon» (до релізу Gloxi 0.1; повна головна uk/en — в історії git, коміт f113a49) |
 | `/gloxi/` | Gloxi 0.1 preview для тестувальників (до релізу — лише за прямим посиланням, `noindex`) |
 | `/privacy/` | політика приватності за GDPR: сайт, відгуки, звіти про збої, Gloxi, обробники, права (`noindex` до релізу) |
-| `/legal/` | правова інформація (Aviso legal / Impressum): власник, ліцензії, назви (`noindex` до релізу) |
 | `/feedback/` | форма відгуку без JavaScript і без GitHub; надсилає на `reports.vilnaos.com/v1/feedback` ([протокол](../reports/docs/protocol.md)); помилку сервер повертає якорем `#error-<поле>`, її показує CSS `:target` |
 | `/feedback/thanks/` | «Дякуємо», сюди сервер звітів повертає після надсилання |
 | `/blavet/` | перший випуск Vilna «Blavet»: назва, знак, шпалери (`noindex`, лише за прямим посиланням) |
@@ -28,7 +27,7 @@
 
 Відгуки тестувальників приходять через форму [`.github/ISSUE_TEMPLATE/gloxi-feedback.yml`](../.github/ISSUE_TEMPLATE/gloxi-feedback.yml) з міткою `gloxi-feedback` і через `/feedback/` на сервер звітів (ADR 0018).
 
-Власника й контакт на `/privacy/` і `/legal/` задають рядки `owner` і `contact` у кожному `src/i18n/<мова>.json`.
+Власника й контакт на `/privacy/` задають рядки `owner` і `contact` у кожному `src/i18n/<мова>.json`; поки (рішення Denys 12.11.2026) — без імені, контакт через форму. Сторінка правової інформації (Aviso legal / Impressum) уже написана, `src/pages/legal.html` і рядки `legal_*`, але не публікується: щоб увімкнути, додайте `"legal": ("legal.html", "legal/index.html", NOINDEX)` у `PAGES` і посилання в підвал, коли буде рішення про ім'я, адресу й пошту.
 
 ## Перевірка
 

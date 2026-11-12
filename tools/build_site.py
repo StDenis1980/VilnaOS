@@ -63,7 +63,6 @@ PAGES = {
     "feedback": ("feedback.html", "feedback/index.html", NOINDEX),
     # The reports server sends the site form here (reports/server/src/app.rs).
     "feedback-thanks": ("feedback-thanks.html", "feedback/thanks/index.html", NOINDEX),
-    "legal": ("legal.html", "legal/index.html", NOINDEX),
     "404": ("404.html", "404.html", NOINDEX),
 }
 
@@ -162,7 +161,6 @@ def render(lang: str, strings: dict[str, str]) -> dict[str, str]:
             home_url=lang_root(lang),
             gloxi_url=page_url(lang, PAGES["gloxi"][1]),
             privacy_url=page_url(lang, PAGES["privacy"][1]),
-            legal_url=page_url(lang, PAGES["legal"][1]),
             feedback_url=page_url(lang, PAGES["feedback"][1]),
             feedback_action=FEEDBACK_ACTION,
             guide_url=f"{REPO}/blob/main/docs/getting-started"
@@ -173,7 +171,6 @@ def render(lang: str, strings: dict[str, str]) -> dict[str, str]:
             icon="/assets/gloxi.svg" if page == "gloxi" else "/assets/vilna-icon.svg",
             privacy_current=' aria-current="page"' if page == "privacy" else "",
             gloxi_current=' aria-current="page"' if page == "gloxi" else "",
-            legal_current=' aria-current="page"' if page == "legal" else "",
             feedback_current=' aria-current="page"' if page == "feedback" else "",
         )
         # The page body may set the title, footer and navigation of the layout.
