@@ -93,7 +93,7 @@
 
 ### Форма на сайті
 
-Та сама точка приймає `application/x-www-form-urlencoded` без JavaScript: поля `kind`, `text`, `contact`, `may_publish` (`on`), `lang` (одна з 10 мов ADR 0009), `program`, `version`, `system` і приховане поле `website`, яке людина не бачить (бот, що його заповнив, отримує «дякуємо», а сервер нічого не зберігає). Номер робить сервер. Відповідь — `303` на `https://vilnaos.com[/<мова>]/feedback/thanks/`, а при помилці на `…/feedback/?error=<поле>` (`text`, `contact`, `kind`, `server`). Ці дві сторінки на сайті ще треба зробити (Gloxi 0.2).
+Та сама точка приймає `application/x-www-form-urlencoded` без JavaScript: поля `kind`, `text`, `contact`, `may_publish` (`on`), `lang` (одна з 10 мов ADR 0009), `program`, `version`, `system` і приховане поле `website`, яке людина не бачить (бот, що його заповнив, отримує «дякуємо», а сервер нічого не зберігає). Номер робить сервер. Відповідь — `303` на `https://vilnaos.com[/<мова>]/feedback/thanks/`, а при помилці на `…/feedback/?error=<поле>#error-<поле>` (`text`, `contact`, `kind`, `server`): сайт без JavaScript, тож повідомлення про помилку показує CSS `:target` за якорем. Обидві сторінки — `site/src/pages/feedback.html` і `feedback-thanks.html`.
 
 ## `POST /v1/forget` — видалити свої звіти (GDPR)
 

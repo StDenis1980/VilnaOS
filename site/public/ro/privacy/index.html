@@ -6,7 +6,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Confidențialitate · Vilna OS</title>
-<meta name="description" content="Ce vede site-ul Vilna OS, ce vede GitHub când descarci și ce face Gloxi cu datele tale.">
+<meta name="description" content="Ce fac cu datele dumneavoastră site-ul Vilna OS, formularul de păreri, rapoartele de erori, Gloxi și Vilna OS, și drepturile dumneavoastră conform GDPR.">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://vilnaos.com/ro/privacy/">
 <link rel="alternate" hreflang="en" href="https://vilnaos.com/privacy/">
@@ -28,7 +28,7 @@
 <header class="site"><div class="wrap">
   <a class="brand" href="/ro/"><img src="/assets/vilna-icon.svg" alt="" width="36" height="36">Vilna OS</a>
   <div class="menus">
-  <nav class="site" aria-label="Secțiuni"><a href="/ro/">Acasă</a> <a href="/ro/gloxi/">Gloxi</a> <a href="https://github.com/StDenis1980/VilnaOS">Cod</a></nav>
+  <nav class="site" aria-label="Secțiuni"><a href="/ro/">Acasă</a> <a href="/ro/gloxi/">Gloxi</a> <a href="/ro/feedback/">Păreri</a> <a href="https://github.com/StDenis1980/VilnaOS">Cod</a></nav>
   <details class="langs">
     <summary aria-label="Limba: Română">Română</summary>
     <ul>
@@ -49,33 +49,82 @@
 
 <main id="main"><div class="wrap">
   <h1>Confidențialitate</h1>
-  <p class="lead">Pe scurt: acest site nu colectează nimic despre tine, iar Gloxi, în mod implicit, nu trimite nimic de pe calculatorul tău.</p>
+  <p class="lead">Pe scurt: acest site nu colectează nimic despre dumneavoastră. Părerile și rapoartele de erori ajung la noi doar dacă alegeți să le trimiteți, sunt păstrate 90 de zile, iar adresele IP nu le păstrăm niciodată.</p>
+
+  <h2>Cine răspunde</h2>
+  <dl class="facts">
+    <dt>Operator</dt><dd>proiectul Vilna OS</dd>
+    <dt>Contact</dt><dd><a href="/ro/feedback/">formularul de păreri</a> (lăsați o adresă de e-mail dacă doriți un răspuns)</dd>
+  </dl>
+  <p>Acesta este operatorul, în sensul Regulamentului general privind protecția datelor al UE (GDPR), pentru datele descrise pe această pagină.</p>
 
   <h2>Acest site</h2>
   <ul>
     <li>Fără cookie-uri, analiză, contoare, reclame, videoclipuri încorporate sau butoane de rețele sociale.</li>
     <li>Toate fonturile, pictogramele și stilurile vin de pe acest site; browserul tău nu contactează alte servere.</li>
     <li>Site-ul este găzduit în Europa. Furnizorul vede pentru scurt timp datele tehnice ale fiecărei cereri (ca orice server web), dar nu păstrează adresa ta IP în jurnale.</li>
+    <li>Domeniile Gloxi (gloxi.eu și altele) doar redirecționează către acest site prin bunny.net (Slovenia), cu jurnalele de cereri dezactivate.</li>
+  </ul>
+
+  <h2>Păreri</h2>
+  <ul>
+    <li>Puteți trimite o părere prin <a href="/ro/feedback/">formularul de pe acest site</a>, iar mai târziu din Gloxi sau din fereastra de păreri a Vilna OS. Primim ce ați scris, tipul, limba și, doar dacă alegeți să le adăugați, adresa de e-mail, informații despre sistem și numerele rapoartelor dumneavoastră de erori.</li>
+    <li>Aceasta ajunge pe serverul nostru reports.vilnaos.com, care funcționează la IONOS într-un centru de date din UE, pe baza unui acord de prelucrare a datelor.</li>
+    <li>Serverul nu păstrează adrese IP, antete ale cererilor sau jurnale de acces. Pentru a preveni abuzurile, numără cererile per adresă doar în memorie și doar timp de o oră.</li>
+    <li>Înainte de salvare, serverul elimină a doua oară din text adresele de e-mail, adresele IP și de rețea, căile fișierelor și numerele lungi.</li>
+    <li>Adresa de e-mail este păstrată separat de mesaj, folosită doar pentru răspuns, niciodată publicată și ștearsă odată cu mesajul.</li>
+    <li>Părerile sunt șterse după 90 de zile. Doar noi le putem citi. Devin un issue public pe GitHub doar dacă ați bifat această opțiune, după verificarea noastră și fără adresa de e-mail.</li>
+  </ul>
+
+  <h2>Rapoarte de erori</h2>
+  <ul>
+    <li>Vilna OS și Gloxi trimit rapoarte de erori doar cu acordul dumneavoastră. Întreabă o singură dată (în programul de instalare sau la prima pornire a Gloxi), iar răspunsul îl puteți schimba oricând din setări sau spunându-i lui Gloxi.</li>
+    <li>Un raport spune ce program s-a oprit, versiunea, tipul erorii și locul din cod. Nu conține niciodată o copie a memoriei, conținut de fișiere, căi, nume de utilizator sau de calculator, nume de rețele, adrese IP ori textul mesajelor de eroare.</li>
+    <li>Nu există un identificator permanent al dispozitivului. Fiecare raport are un număr aleatoriu care rămâne pe dispozitivul dumneavoastră; cu el, dispozitivul își poate șterge oricând rapoartele de pe serverul nostru.</li>
+    <li>Rapoartele sunt șterse după 90 de zile. Rămâne doar un contor pentru fiecare tip de eroare (program, versiune, de câte ori), fără nimic despre dumneavoastră sau dispozitiv.</li>
+  </ul>
+
+  <h2>Gloxi și Vilna OS</h2>
+  <ul>
+    <li>În mod implicit, Gloxi folosește un model de pe calculatorul tău, iar conversațiile nu ies de acolo.</li>
+    <li>Modelul se descarcă doar după acordul tău; se trimite doar cererea pentru fișier.</li>
+    <li>Cloudul îl activezi tu, cu propria cheie pentru serviciul ales. Datele personale sunt mascate pe dispozitiv înainte de trimitere. Ce face acel serviciu cu textul mascat ține de propria sa politică.</li>
+    <li>Gloxi nu trimite statistici de utilizare. Părerile și rapoartele de erori părăsesc calculatorul dumneavoastră doar cu acordul dumneavoastră, așa cum este descris mai sus.</li>
+    <li>Vilna OS descarcă actualizările de pe serverele openSUSE și oglinzile lor, iar aplicațiile din magazinele pe care le folosiți, cum ar fi Flathub; se aplică propriile lor politici de confidențialitate.</li>
   </ul>
 
   <h2>Descărcări de pe GitHub</h2>
   <p>Fișierele și codul Gloxi sunt pe GitHub. Când intri acolo sau descarci o versiune, se aplică <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">declarația de confidențialitate GitHub</a>. Părerile din GitHub Issues sunt publice.</p>
 
-  <h2>Gloxi</h2>
+  <h2>Temeiul legal</h2>
   <ul>
-    <li>În mod implicit, Gloxi folosește un model de pe calculatorul tău, iar conversațiile nu ies de acolo.</li>
-    <li>Modelul se descarcă doar după acordul tău; se trimite doar cererea pentru fișier.</li>
-    <li>Cloudul îl activezi tu, cu propria cheie pentru serviciul ales. Datele personale sunt mascate pe dispozitiv înainte de trimitere. Ce face acel serviciu cu textul mascat ține de propria sa politică.</li>
-    <li>Gloxi nu ne trimite statistici și nici rapoarte de erori.</li>
+    <li>Păreri și rapoarte de erori: consimțământul dumneavoastră (art. 6 alin. (1) lit. (a) GDPR). Îl puteți retrage oricând; asta nu afectează ce a fost trimis înainte.</li>
+    <li>Funcționarea sigură a site-ului: interesul nostru legitim de a-l administra (art. 6 alin. (1) lit. (f) GDPR). Găzduirea nu păstrează adrese IP.</li>
   </ul>
 
+  <h2>Cine prelucrează date pentru noi</h2>
+  <p>Nu vindem și nu partajăm date. Acești furnizori le prelucrează în numele nostru, toți în UE:</p>
+  <ul>
+    <li>statichost.eu: găzduirea acestui site.</li>
+    <li>IONOS SE (Germania): serverul reports.vilnaos.com, într-un centru de date din UE.</li>
+    <li>BunnyWay d.o.o. (bunny.net, Slovenia): redirecționarea domeniilor Gloxi.</li>
+  </ul>
+
+  <h2>Drepturile dumneavoastră</h2>
+  <p>Aveți dreptul de acces la date, de rectificare și ștergere, de restricționare a prelucrării sau de opoziție, la portabilitatea datelor și de a vă retrage consimțământul.</p>
+  <p>Pentru a vă șterge rapoartele, folosiți Vilna OS sau Gloxi: trimit numerele rapoartelor, iar serverul le șterge imediat. Dacă ați lăsat o adresă de e-mail la o părere, scrieți-ne de pe ea și vom șterge acea părere. Fără e-mail nu putem ști care părere este a dumneavoastră, pentru că nimic nu o leagă de dumneavoastră; oricum este ștearsă după 90 de zile.</p>
+  <p>Puteți depune o plângere la autoritatea de protecție a datelor din țara dumneavoastră (în România, ANSPDCP) sau la autoritatea spaniolă, <a href="https://www.aepd.es/">AEPD</a>.</p>
+
+  <h2>Modificări</h2>
+  <p>Când se schimbă ceva, actualizăm această pagină; întregul ei istoric se află în depozitul public. Ultima actualizare: 12 noiembrie 2026.</p>
+
   <h2>Contact</h2>
-  <p>Întrebări despre confidențialitate: <a href="https://github.com/StDenis1980/VilnaOS/issues">GitHub Issues</a>; vulnerabilități: în privat, vezi <a href="/.well-known/security.txt">security.txt</a>.</p>
+  <p>Întrebări despre confidențialitate: <a href="/ro/feedback/">formularul de păreri</a> (lăsați o adresă de e-mail dacă doriți un răspuns). Vulnerabilități: în privat, vedeți <a href="/.well-known/security.txt">security.txt</a>.</p>
 </div></main>
 
 <footer class="site"><div class="wrap">
   <span>Vilna OS · Bazat pe openSUSE</span>
-  <span><a href="/ro/privacy/" aria-current="page">Confidențialitate</a> · <a href="/.well-known/security.txt">Securitate</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
+  <span><a href="/ro/privacy/" aria-current="page">Confidențialitate</a> · <a href="/ro/feedback/">Păreri</a> · <a href="/.well-known/security.txt">Securitate</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
 </div></footer>
 </body>
 </html>

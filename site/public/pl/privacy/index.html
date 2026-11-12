@@ -6,7 +6,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Prywatność · Vilna OS</title>
-<meta name="description" content="Co widzi strona Vilna OS, co widzi GitHub podczas pobierania i co Gloxi robi z Twoimi danymi.">
+<meta name="description" content="Co strona Vilna OS, formularz opinii, raporty o awariach, Gloxi i Vilna OS robią z twoimi danymi oraz twoje prawa wynikające z RODO.">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://vilnaos.com/pl/privacy/">
 <link rel="alternate" hreflang="en" href="https://vilnaos.com/privacy/">
@@ -28,7 +28,7 @@
 <header class="site"><div class="wrap">
   <a class="brand" href="/pl/"><img src="/assets/vilna-icon.svg" alt="" width="36" height="36">Vilna OS</a>
   <div class="menus">
-  <nav class="site" aria-label="Sekcje"><a href="/pl/">Strona główna</a> <a href="/pl/gloxi/">Gloxi</a> <a href="https://github.com/StDenis1980/VilnaOS">Kod</a></nav>
+  <nav class="site" aria-label="Sekcje"><a href="/pl/">Strona główna</a> <a href="/pl/gloxi/">Gloxi</a> <a href="/pl/feedback/">Opinie</a> <a href="https://github.com/StDenis1980/VilnaOS">Kod</a></nav>
   <details class="langs">
     <summary aria-label="Język: Polski">Polski</summary>
     <ul>
@@ -49,33 +49,82 @@
 
 <main id="main"><div class="wrap">
   <h1>Prywatność</h1>
-  <p class="lead">W skrócie: ta strona nic o Tobie nie zbiera, a Gloxi domyślnie niczego nie wysyła z Twojego komputera.</p>
+  <p class="lead">W skrócie: ta strona nie zbiera o tobie nic. Opinie i raporty o awariach docierają do nas tylko wtedy, gdy zdecydujesz się je wysłać, są przechowywane przez 90 dni, a adresów IP nie zapisujemy nigdy.</p>
+
+  <h2>Kto odpowiada</h2>
+  <dl class="facts">
+    <dt>Administrator danych</dt><dd>projekt Vilna OS</dd>
+    <dt>Kontakt</dt><dd><a href="/pl/feedback/">formularz opinii</a> (zostaw e-mail, jeśli chcesz odpowiedzi)</dd>
+  </dl>
+  <p>To administrator w rozumieniu ogólnego rozporządzenia UE o ochronie danych (RODO) dla danych opisanych na tej stronie.</p>
 
   <h2>Ta strona</h2>
   <ul>
     <li>Bez ciasteczek, analityki, liczników, reklam, osadzonych filmów i przycisków serwisów społecznościowych.</li>
     <li>Wszystkie czcionki, ikony i style pochodzą z tej strony; Twoja przeglądarka nie łączy się z innymi serwerami.</li>
     <li>Strona jest hostowana w Europie. Dostawca przez chwilę widzi techniczne dane każdego żądania (jak każdy serwer WWW), ale nie zapisuje Twojego adresu IP w logach.</li>
+    <li>Domeny Gloxi (gloxi.eu i inne) tylko przekierowują na tę stronę przez bunny.net (Słowenia), z wyłączonymi dziennikami żądań.</li>
+  </ul>
+
+  <h2>Opinie</h2>
+  <ul>
+    <li>Opinię możesz wysłać przez <a href="/pl/feedback/">formularz na tej stronie</a>, a później także z Gloxi lub okna opinii w Vilna OS. Otrzymujemy to, co napisano, rodzaj, język i tylko wtedy, gdy zdecydujesz się je dodać, twój e-mail, informacje o systemie i numery twoich raportów o awariach.</li>
+    <li>Trafia ona na nasz serwer reports.vilnaos.com działający w IONOS w centrum danych w UE na podstawie umowy powierzenia przetwarzania danych.</li>
+    <li>Serwer nie zapisuje adresów IP, nagłówków żądań ani dzienników dostępu. Aby zapobiec nadużyciom, liczy żądania z danego adresu wyłącznie w pamięci i tylko przez godzinę.</li>
+    <li>Przed zapisaniem serwer ponownie usuwa z tekstu adresy e-mail, adresy IP i sieciowe, ścieżki plików i długie liczby.</li>
+    <li>Twój e-mail jest przechowywany osobno od wiadomości, używany tylko do odpowiedzi, nigdy nie jest publikowany i jest usuwany razem z wiadomością.</li>
+    <li>Opinie są usuwane po 90 dniach. Czytać je możemy tylko my. Publicznym zgłoszeniem na GitHubie stają się tylko wtedy, gdy zaznaczono tę opcję, po naszym przejrzeniu i bez twojego e-maila.</li>
+  </ul>
+
+  <h2>Raporty o awariach</h2>
+  <ul>
+    <li>Vilna OS i Gloxi wysyłają raporty o awariach tylko za twoją zgodą. Pytają raz (w instalatorze lub przy pierwszym uruchomieniu Gloxi), a odpowiedź możesz zmienić w każdej chwili w ustawieniach albo mówiąc o tym Gloxi.</li>
+    <li>Raport mówi, który program uległ awarii, jego wersję, rodzaj awarii i miejsce w kodzie. Nigdy nie zawiera zrzutu pamięci, zawartości plików, ścieżek, nazw użytkownika i komputera, nazw sieci, adresów IP ani treści komunikatów o błędach.</li>
+    <li>Nie ma stałego identyfikatora urządzenia. Każdy raport ma losowy numer, który zostaje na twoim urządzeniu; dzięki niemu urządzenie może w każdej chwili usunąć swoje raporty z naszego serwera.</li>
+    <li>Raporty są usuwane po 90 dniach. Zostaje tylko licznik dla każdego rodzaju awarii (program, wersja, ile razy), bez niczego o tobie ani twoim urządzeniu.</li>
+  </ul>
+
+  <h2>Gloxi i Vilna OS</h2>
+  <ul>
+    <li>Domyślnie Gloxi korzysta z modelu na Twoim komputerze, a rozmowy go nie opuszczają.</li>
+    <li>Model jest pobierany dopiero po Twojej zgodzie; wysyłane jest tylko żądanie pliku.</li>
+    <li>Chmurę włączasz sam, własnym kluczem do wybranej usługi. Dane osobowe są maskowane na urządzeniu przed wysłaniem. Co usługa robi z zamaskowanym tekstem, określa jej własna polityka.</li>
+    <li>Gloxi nie wysyła statystyk użycia. Opinie i raporty o awariach opuszczają twój komputer tylko za twoją zgodą, jak opisano wyżej.</li>
+    <li>Vilna OS pobiera aktualizacje z serwerów openSUSE i ich serwerów lustrzanych, a aplikacje ze sklepów, z których korzystasz, na przykład Flathub; obowiązują tam ich własne polityki prywatności.</li>
   </ul>
 
   <h2>Pobieranie z GitHuba</h2>
   <p>Pliki i kod Gloxi są na GitHubie. Gdy tam przechodzisz lub pobierasz wydanie, obowiązuje <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">polityka prywatności GitHuba</a>. Opinie w GitHub Issues są publiczne.</p>
 
-  <h2>Gloxi</h2>
+  <h2>Podstawa prawna</h2>
   <ul>
-    <li>Domyślnie Gloxi korzysta z modelu na Twoim komputerze, a rozmowy go nie opuszczają.</li>
-    <li>Model jest pobierany dopiero po Twojej zgodzie; wysyłane jest tylko żądanie pliku.</li>
-    <li>Chmurę włączasz sam, własnym kluczem do wybranej usługi. Dane osobowe są maskowane na urządzeniu przed wysłaniem. Co usługa robi z zamaskowanym tekstem, określa jej własna polityka.</li>
-    <li>Gloxi nie wysyła nam statystyk ani raportów o błędach.</li>
+    <li>Opinie i raporty o awariach: twoja zgoda (art. 6 ust. 1 lit. a RODO). Możesz ją wycofać w każdej chwili; nie wpływa to na to, co wysłano wcześniej.</li>
+    <li>Bezpieczne udostępnianie strony: nasz prawnie uzasadniony interes w jej prowadzeniu (art. 6 ust. 1 lit. f RODO). Hosting nie zapisuje adresów IP.</li>
   </ul>
 
+  <h2>Kto przetwarza dane w naszym imieniu</h2>
+  <p>Nie sprzedajemy ani nie udostępniamy danych. W naszym imieniu przetwarzają je ci dostawcy, wszyscy w UE:</p>
+  <ul>
+    <li>statichost.eu: hosting tej strony.</li>
+    <li>IONOS SE (Niemcy): serwer reports.vilnaos.com w centrum danych w UE.</li>
+    <li>BunnyWay d.o.o. (bunny.net, Słowenia): przekierowania domen Gloxi.</li>
+  </ul>
+
+  <h2>Twoje prawa</h2>
+  <p>Masz prawo dostępu do swoich danych, ich sprostowania i usunięcia, ograniczenia przetwarzania lub sprzeciwu wobec niego, przenoszenia danych i wycofania zgody.</p>
+  <p>Aby usunąć swoje raporty, użyj Vilna OS lub Gloxi: wysyłają numery twoich raportów, a serwer od razu je usuwa. Jeśli w opinii podano e-mail, napisz do nas z tego adresu, a usuniemy tę opinię. Bez e-maila nie wiemy, która opinia jest twoja, bo nic jej z tobą nie łączy; i tak jest usuwana po 90 dniach.</p>
+  <p>Możesz złożyć skargę do organu ochrony danych w swoim kraju lub do hiszpańskiego organu, <a href="https://www.aepd.es/">AEPD</a>.</p>
+
+  <h2>Zmiany</h2>
+  <p>Gdy coś się zmienia, aktualizujemy tę stronę; cała jej historia jest w publicznym repozytorium. Ostatnia aktualizacja: 12 listopada 2026.</p>
+
   <h2>Kontakt</h2>
-  <p>Pytania o prywatność: <a href="https://github.com/StDenis1980/VilnaOS/issues">GitHub Issues</a>; podatności: prywatnie, zobacz <a href="/.well-known/security.txt">security.txt</a>.</p>
+  <p>Pytania o prywatność: <a href="/pl/feedback/">formularz opinii</a> (zostaw e-mail, jeśli chcesz odpowiedzi). Luki w zabezpieczeniach: prywatnie, zobacz <a href="/.well-known/security.txt">security.txt</a>.</p>
 </div></main>
 
 <footer class="site"><div class="wrap">
   <span>Vilna OS · Na bazie openSUSE</span>
-  <span><a href="/pl/privacy/" aria-current="page">Prywatność</a> · <a href="/.well-known/security.txt">Bezpieczeństwo</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
+  <span><a href="/pl/privacy/" aria-current="page">Prywatność</a> · <a href="/pl/feedback/">Opinie</a> · <a href="/.well-known/security.txt">Bezpieczeństwo</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
 </div></footer>
 </body>
 </html>

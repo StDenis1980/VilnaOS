@@ -391,13 +391,17 @@ fn site_feedback(state: &AppState, body: &[u8]) -> Response {
     };
     let fb = match Feedback::from_wire(wire, new_id) {
         Ok(f) => f,
-        Err(e) => return Redirect::to(&page(&format!("?error={}", e.field))).into_response(),
+        // The site has no JavaScript: the fragment lets CSS (`:target`) show
+        // the message for this field on the static page.
+        Err(e) => {
+            return Redirect::to(&page(&format!("?error={0}#error-{0}", e.field))).into_response();
+        }
     };
     match state.store.insert_feedback(&fb, (state.now)()) {
         Ok(_) => Redirect::to(&page("thanks/")).into_response(),
         Err(e) => {
             eprintln!("{e}");
-            Redirect::to(&page("?error=server")).into_response()
+            Redirect::to(&page("?error=server#error-server")).into_response()
         }
     }
 }

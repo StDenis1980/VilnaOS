@@ -6,7 +6,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy · Vilna OS</title>
-<meta name="description" content="What the Vilna OS site sees, what GitHub sees when you download, and what Gloxi does with your data.">
+<meta name="description" content="What the Vilna OS site, the feedback form, crash reports, Gloxi and Vilna OS do with your data, and your rights under the GDPR.">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://vilnaos.com/privacy/">
 <link rel="alternate" hreflang="en" href="https://vilnaos.com/privacy/">
@@ -28,7 +28,7 @@
 <header class="site"><div class="wrap">
   <a class="brand" href="/"><img src="/assets/vilna-icon.svg" alt="" width="36" height="36">Vilna OS</a>
   <div class="menus">
-  <nav class="site" aria-label="Sections"><a href="/">Home</a> <a href="/gloxi/">Gloxi</a> <a href="https://github.com/StDenis1980/VilnaOS">Code</a></nav>
+  <nav class="site" aria-label="Sections"><a href="/">Home</a> <a href="/gloxi/">Gloxi</a> <a href="/feedback/">Feedback</a> <a href="https://github.com/StDenis1980/VilnaOS">Code</a></nav>
   <details class="langs">
     <summary aria-label="Language: English">English</summary>
     <ul>
@@ -49,33 +49,82 @@
 
 <main id="main"><div class="wrap">
   <h1>Privacy</h1>
-  <p class="lead">In short: this site collects nothing about you, and by default Gloxi sends nothing from your computer.</p>
+  <p class="lead">In short: this site collects nothing about you. Feedback and crash reports reach us only when you choose to send them, are kept for 90 days, and we never store IP addresses.</p>
+
+  <h2>Who is responsible</h2>
+  <dl class="facts">
+    <dt>Controller</dt><dd>the Vilna OS project</dd>
+    <dt>Contact</dt><dd><a href="/feedback/">the feedback form</a> (leave an email if you want a reply)</dd>
+  </dl>
+  <p>This is the controller under the EU General Data Protection Regulation (GDPR) for the data described on this page.</p>
 
   <h2>This site</h2>
   <ul>
     <li>No cookies, analytics, counters, ads, embedded videos or social buttons.</li>
     <li>All fonts, icons and styles are served by this site; your browser does not contact other servers.</li>
     <li>The site is hosted in Europe. The host briefly sees the technical details of each request (as every web server does) but does not keep your IP address in its logs.</li>
+    <li>The Gloxi domains (gloxi.eu and others) only redirect to this site through bunny.net (Slovenia), with request logs turned off.</li>
+  </ul>
+
+  <h2>Feedback</h2>
+  <ul>
+    <li>You can send feedback with the <a href="/feedback/">form on this site</a>, and later from Gloxi or the Feedback window in Vilna OS. We receive what you wrote, the type, the language and, only if you choose to add them, your email, details about your system and the numbers of your crash reports.</li>
+    <li>It goes to our server reports.vilnaos.com, run at IONOS in an EU data centre under a data processing agreement.</li>
+    <li>The server does not store IP addresses, request headers or access logs. To stop abuse it counts requests per address in memory for one hour only.</li>
+    <li>Before storing, the server removes email addresses, IP and network addresses, file paths and long numbers from the text a second time.</li>
+    <li>Your email is kept apart from the message, used only to reply, never published, and deleted together with the message.</li>
+    <li>Feedback is deleted after 90 days. Only we can read it. It becomes a public GitHub issue only if you ticked that box, after we review it, and without your email.</li>
+  </ul>
+
+  <h2>Crash reports</h2>
+  <ul>
+    <li>Vilna OS and Gloxi send crash reports only if you agree. They ask once (in the installer, or on the first start of Gloxi), and you can change the answer at any time in the settings or by telling Gloxi.</li>
+    <li>A report says which program crashed, its version, the kind of crash and where in the code it happened. It never contains a memory dump, file contents, file paths, user or computer names, network names, IP addresses or the text of error messages.</li>
+    <li>There is no permanent device identifier. Each report has a random number that stays on your device; with it the device can delete its reports from our server at any time.</li>
+    <li>Reports are deleted after 90 days. Only a counter per kind of crash remains (program, version, how many times), with nothing about you or your device.</li>
+  </ul>
+
+  <h2>Gloxi and Vilna OS</h2>
+  <ul>
+    <li>By default Gloxi uses a model on your computer, and your conversations do not leave it.</li>
+    <li>The model is downloaded only after you agree; only the request for the file is sent.</li>
+    <li>You turn the cloud on yourself, with your own key for a service you choose. Personal data is masked on the device before it is sent. What that service does with the masked text is up to its own policy.</li>
+    <li>Gloxi sends no usage statistics. Feedback and crash reports leave your computer only with your consent, as described above.</li>
+    <li>Vilna OS downloads updates from openSUSE servers and their mirrors, and apps from the stores you use, such as Flathub; their own privacy policies apply.</li>
   </ul>
 
   <h2>Downloads from GitHub</h2>
   <p>Gloxi's files and code are on GitHub. When you go there or download a release, the <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub privacy statement</a> applies. Feedback in GitHub Issues is public.</p>
 
-  <h2>Gloxi</h2>
+  <h2>Why we may process it</h2>
   <ul>
-    <li>By default Gloxi uses a model on your computer, and your conversations do not leave it.</li>
-    <li>The model is downloaded only after you agree; only the request for the file is sent.</li>
-    <li>You turn the cloud on yourself, with your own key for a service you choose. Personal data is masked on the device before it is sent. What that service does with the masked text is up to its own policy.</li>
-    <li>Gloxi sends us no statistics and no crash reports.</li>
+    <li>Feedback and crash reports: your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time; that does not affect what was sent before.</li>
+    <li>Delivering this site safely: our legitimate interest in running it (Art. 6(1)(f) GDPR). The host does not keep IP addresses.</li>
   </ul>
 
+  <h2>Who handles data for us</h2>
+  <p>We do not sell or share data. These providers handle it on our behalf, all in the EU:</p>
+  <ul>
+    <li>statichost.eu: hosting of this site.</li>
+    <li>IONOS SE (Germany): the server reports.vilnaos.com, in an EU data centre.</li>
+    <li>BunnyWay d.o.o. (bunny.net, Slovenia): redirects of the Gloxi domains.</li>
+  </ul>
+
+  <h2>Your rights</h2>
+  <p>You have the right to access, correct and delete your data, to restrict or object to its processing, to data portability, and to withdraw consent.</p>
+  <p>To delete your reports, use Vilna OS or Gloxi: they send the numbers of your reports, and the server deletes them at once. If you left an email with feedback, write to us from it and we will delete that feedback. Without an email we cannot tell which feedback is yours, because nothing links it to you; it is deleted after 90 days anyway.</p>
+  <p>You can complain to the data protection authority of your country, or to the Spanish authority, the <a href="https://www.aepd.es/">AEPD</a>.</p>
+
+  <h2>Changes</h2>
+  <p>When something changes, we update this page; its full history is in the public repository. Last updated: 12 November 2026.</p>
+
   <h2>Contact</h2>
-  <p>Privacy questions: <a href="https://github.com/StDenis1980/VilnaOS/issues">GitHub Issues</a>; vulnerabilities: privately, see <a href="/.well-known/security.txt">security.txt</a>.</p>
+  <p>Privacy questions: <a href="/feedback/">the feedback form</a> (leave an email if you want a reply). Vulnerabilities: privately, see <a href="/.well-known/security.txt">security.txt</a>.</p>
 </div></main>
 
 <footer class="site"><div class="wrap">
   <span>Vilna OS · Based on openSUSE</span>
-  <span><a href="/privacy/" aria-current="page">Privacy</a> · <a href="/.well-known/security.txt">Security</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
+  <span><a href="/privacy/" aria-current="page">Privacy</a> · <a href="/feedback/">Feedback</a> · <a href="/.well-known/security.txt">Security</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
 </div></footer>
 </body>
 </html>

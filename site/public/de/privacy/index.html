@@ -6,7 +6,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Datenschutz · Vilna OS</title>
-<meta name="description" content="Was die Website von Vilna OS sieht, was GitHub beim Herunterladen sieht und was Gloxi mit deinen Daten macht.">
+<meta name="description" content="Was die Website von Vilna OS, das Feedback-Formular, Absturzberichte, Gloxi und Vilna OS mit Ihren Daten tun, und Ihre Rechte nach der DSGVO.">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://vilnaos.com/de/privacy/">
 <link rel="alternate" hreflang="en" href="https://vilnaos.com/privacy/">
@@ -28,7 +28,7 @@
 <header class="site"><div class="wrap">
   <a class="brand" href="/de/"><img src="/assets/vilna-icon.svg" alt="" width="36" height="36">Vilna OS</a>
   <div class="menus">
-  <nav class="site" aria-label="Bereiche"><a href="/de/">Start</a> <a href="/de/gloxi/">Gloxi</a> <a href="https://github.com/StDenis1980/VilnaOS">Code</a></nav>
+  <nav class="site" aria-label="Bereiche"><a href="/de/">Start</a> <a href="/de/gloxi/">Gloxi</a> <a href="/de/feedback/">Feedback</a> <a href="https://github.com/StDenis1980/VilnaOS">Code</a></nav>
   <details class="langs">
     <summary aria-label="Sprache: Deutsch">Deutsch</summary>
     <ul>
@@ -49,33 +49,82 @@
 
 <main id="main"><div class="wrap">
   <h1>Datenschutz</h1>
-  <p class="lead">Kurz gesagt: Diese Website sammelt nichts über dich, und Gloxi sendet standardmäßig nichts von deinem Computer.</p>
+  <p class="lead">Kurz gesagt: Diese Website erhebt nichts über Sie. Feedback und Absturzberichte erreichen uns nur, wenn Sie sie senden möchten, werden 90 Tage gespeichert, und IP-Adressen speichern wir nie.</p>
+
+  <h2>Wer verantwortlich ist</h2>
+  <dl class="facts">
+    <dt>Verantwortlicher</dt><dd>das Projekt Vilna OS</dd>
+    <dt>Kontakt</dt><dd><a href="/de/feedback/">das Feedback-Formular</a> (mit E-Mail-Adresse, wenn Sie eine Antwort möchten)</dd>
+  </dl>
+  <p>Dies ist der Verantwortliche im Sinne der Datenschutz-Grundverordnung der EU (DSGVO) für die auf dieser Seite beschriebenen Daten.</p>
 
   <h2>Diese Website</h2>
   <ul>
     <li>Keine Cookies, keine Analyse, keine Zähler, keine Werbung, keine eingebetteten Videos und keine Social-Media-Schaltflächen.</li>
     <li>Alle Schriften, Symbole und Stile kommen von dieser Website; dein Browser kontaktiert keine anderen Server.</li>
     <li>Die Website wird in Europa gehostet. Der Anbieter sieht kurz die technischen Daten jeder Anfrage (wie jeder Webserver), speichert deine IP-Adresse aber nicht in seinen Protokollen.</li>
+    <li>Die Gloxi-Domains (gloxi.eu und weitere) leiten nur über bunny.net (Slowenien) auf diese Website weiter; Anfrageprotokolle sind abgeschaltet.</li>
+  </ul>
+
+  <h2>Feedback</h2>
+  <ul>
+    <li>Sie können Feedback über das <a href="/de/feedback/">Formular auf dieser Website</a> senden, später auch aus Gloxi oder dem Feedback-Fenster von Vilna OS. Wir erhalten Ihren Text, die Art, die Sprache und, nur wenn Sie sie hinzufügen, Ihre E-Mail-Adresse, Angaben zu Ihrem System und die Nummern Ihrer Absturzberichte.</li>
+    <li>Es geht an unseren Server reports.vilnaos.com, der bei IONOS in einem Rechenzentrum in der EU mit einem Vertrag zur Auftragsverarbeitung läuft.</li>
+    <li>Der Server speichert keine IP-Adressen, keine Anfrage-Header und keine Zugriffsprotokolle. Gegen Missbrauch zählt er Anfragen je Adresse nur im Arbeitsspeicher und nur für eine Stunde.</li>
+    <li>Vor dem Speichern entfernt der Server ein zweites Mal E-Mail-Adressen, IP- und Netzwerkadressen, Dateipfade und lange Zahlen aus dem Text.</li>
+    <li>Ihre E-Mail-Adresse wird getrennt von der Nachricht gespeichert, nur für eine Antwort genutzt, nie veröffentlicht und zusammen mit der Nachricht gelöscht.</li>
+    <li>Feedback wird nach 90 Tagen gelöscht. Nur wir können es lesen. Ein öffentliches GitHub-Issue wird daraus nur, wenn Sie das angekreuzt haben, nach unserer Prüfung und ohne Ihre E-Mail-Adresse.</li>
+  </ul>
+
+  <h2>Absturzberichte</h2>
+  <ul>
+    <li>Vilna OS und Gloxi senden Absturzberichte nur mit Ihrer Einwilligung. Sie fragen einmal (im Installationsprogramm oder beim ersten Start von Gloxi), und Sie können die Antwort jederzeit in den Einstellungen ändern oder es Gloxi sagen.</li>
+    <li>Ein Bericht nennt das abgestürzte Programm, seine Version, die Art des Absturzes und die Stelle im Code. Er enthält nie ein Speicherabbild, Dateiinhalte, Dateipfade, Benutzer- oder Rechnernamen, Netzwerknamen, IP-Adressen oder den Text von Fehlermeldungen.</li>
+    <li>Es gibt keine dauerhafte Gerätekennung. Jeder Bericht hat eine Zufallsnummer, die auf Ihrem Gerät bleibt; damit kann das Gerät seine Berichte jederzeit von unserem Server löschen.</li>
+    <li>Berichte werden nach 90 Tagen gelöscht. Es bleibt nur ein Zähler je Absturzart (Programm, Version, Anzahl), ohne Angaben über Sie oder Ihr Gerät.</li>
+  </ul>
+
+  <h2>Gloxi und Vilna OS</h2>
+  <ul>
+    <li>Standardmäßig nutzt Gloxi ein Modell auf deinem Computer, und deine Gespräche verlassen ihn nicht.</li>
+    <li>Das Modell wird erst nach deiner Zustimmung heruntergeladen; gesendet wird nur die Anfrage nach der Datei.</li>
+    <li>Die Cloud schaltest du selbst ein, mit deinem eigenen Schlüssel für einen Dienst deiner Wahl. Persönliche Daten werden vor dem Senden auf dem Gerät maskiert. Was dieser Dienst mit dem maskierten Text macht, regelt seine eigene Richtlinie.</li>
+    <li>Gloxi sendet keine Nutzungsstatistiken. Feedback und Absturzberichte verlassen Ihren Computer nur mit Ihrer Einwilligung, wie oben beschrieben.</li>
+    <li>Vilna OS lädt Updates von den Servern von openSUSE und deren Spiegeln, Apps aus den Stores, die Sie nutzen, etwa Flathub; dort gelten deren eigene Datenschutzerklärungen.</li>
   </ul>
 
   <h2>Downloads von GitHub</h2>
   <p>Die Dateien und der Code von Gloxi liegen auf GitHub. Wenn du dorthin gehst oder eine Version herunterlädst, gilt die <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">Datenschutzerklärung von GitHub</a>. Rückmeldungen in GitHub Issues sind öffentlich.</p>
 
-  <h2>Gloxi</h2>
+  <h2>Rechtsgrundlage</h2>
   <ul>
-    <li>Standardmäßig nutzt Gloxi ein Modell auf deinem Computer, und deine Gespräche verlassen ihn nicht.</li>
-    <li>Das Modell wird erst nach deiner Zustimmung heruntergeladen; gesendet wird nur die Anfrage nach der Datei.</li>
-    <li>Die Cloud schaltest du selbst ein, mit deinem eigenen Schlüssel für einen Dienst deiner Wahl. Persönliche Daten werden vor dem Senden auf dem Gerät maskiert. Was dieser Dienst mit dem maskierten Text macht, regelt seine eigene Richtlinie.</li>
-    <li>Gloxi sendet uns weder Statistiken noch Absturzberichte.</li>
+    <li>Feedback und Absturzberichte: Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Sie können sie jederzeit widerrufen; das berührt nicht, was vorher gesendet wurde.</li>
+    <li>Sicherer Betrieb dieser Website: unser berechtigtes Interesse an ihrem Betrieb (Art. 6 Abs. 1 lit. f DSGVO). Der Hoster speichert keine IP-Adressen.</li>
   </ul>
 
+  <h2>Wer Daten für uns verarbeitet</h2>
+  <p>Wir verkaufen und teilen keine Daten. Diese Dienstleister verarbeiten sie in unserem Auftrag, alle in der EU:</p>
+  <ul>
+    <li>statichost.eu: Hosting dieser Website.</li>
+    <li>IONOS SE (Deutschland): der Server reports.vilnaos.com in einem Rechenzentrum in der EU.</li>
+    <li>BunnyWay d.o.o. (bunny.net, Slowenien): Weiterleitungen der Gloxi-Domains.</li>
+  </ul>
+
+  <h2>Ihre Rechte</h2>
+  <p>Sie haben das Recht auf Auskunft, Berichtigung und Löschung, auf Einschränkung der Verarbeitung und Widerspruch, auf Datenübertragbarkeit und auf Widerruf Ihrer Einwilligung.</p>
+  <p>Um Ihre Berichte zu löschen, nutzen Sie Vilna OS oder Gloxi: Sie senden die Nummern Ihrer Berichte, und der Server löscht sie sofort. Wenn Sie bei einem Feedback eine E-Mail-Adresse angegeben haben, schreiben Sie uns von dieser Adresse, und wir löschen das Feedback. Ohne E-Mail-Adresse können wir Ihr Feedback nicht finden, weil nichts es mit Ihnen verbindet; es wird ohnehin nach 90 Tagen gelöscht.</p>
+  <p>Sie können sich bei der Datenschutzaufsichtsbehörde Ihres Landes beschweren oder bei der spanischen Behörde, der <a href="https://www.aepd.es/">AEPD</a>.</p>
+
+  <h2>Änderungen</h2>
+  <p>Wenn sich etwas ändert, aktualisieren wir diese Seite; ihre ganze Geschichte steht im öffentlichen Repository. Zuletzt aktualisiert: 12. November 2026.</p>
+
   <h2>Kontakt</h2>
-  <p>Fragen zum Datenschutz: <a href="https://github.com/StDenis1980/VilnaOS/issues">GitHub Issues</a>; Sicherheitslücken: vertraulich, siehe <a href="/.well-known/security.txt">security.txt</a>.</p>
+  <p>Fragen zum Datenschutz: <a href="/de/feedback/">das Feedback-Formular</a> (mit E-Mail-Adresse, wenn Sie eine Antwort möchten). Sicherheitslücken: vertraulich, siehe <a href="/.well-known/security.txt">security.txt</a>.</p>
 </div></main>
 
 <footer class="site"><div class="wrap">
   <span>Vilna OS · Basiert auf openSUSE</span>
-  <span><a href="/de/privacy/" aria-current="page">Datenschutz</a> · <a href="/.well-known/security.txt">Sicherheit</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
+  <span><a href="/de/privacy/" aria-current="page">Datenschutz</a> · <a href="/de/feedback/">Feedback</a> · <a href="/.well-known/security.txt">Sicherheit</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
 </div></footer>
 </body>
 </html>

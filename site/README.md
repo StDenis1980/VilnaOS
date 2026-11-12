@@ -8,7 +8,9 @@
 | --- | --- |
 | `/` | заглушка «Coming soon» (до релізу Gloxi 0.1; повна головна uk/en — в історії git, коміт f113a49) |
 | `/gloxi/` | Gloxi 0.1 preview для тестувальників (до релізу — лише за прямим посиланням, `noindex`) |
-| `/privacy/` | приватність (`noindex` до релізу) |
+| `/privacy/` | політика приватності за GDPR: сайт, відгуки, звіти про збої, Gloxi, обробники, права (`noindex` до релізу) |
+| `/feedback/` | форма відгуку без JavaScript і без GitHub; надсилає на `reports.vilnaos.com/v1/feedback` ([протокол](../reports/docs/protocol.md)); помилку сервер повертає якорем `#error-<поле>`, її показує CSS `:target` |
+| `/feedback/thanks/` | «Дякуємо», сюди сервер звітів повертає після надсилання |
 | `/blavet/` | перший випуск Vilna «Blavet»: назва, знак, шпалери (`noindex`, лише за прямим посиланням) |
 | `/404.html` | сторінка «не знайдено», для кожної мови своя |
 | `/.well-known/security.txt` | контакт для вразливостей (RFC 9116) |
@@ -23,7 +25,9 @@
 
 Переклади es, pl, de, fr, it, ro, cs, lt зроблено машинно (Claude) і ще не вичитано носіями мов; формат JSON підтримує Weblate.
 
-Відгуки тестувальників приходять через форму [`.github/ISSUE_TEMPLATE/gloxi-feedback.yml`](../.github/ISSUE_TEMPLATE/gloxi-feedback.yml) з міткою `gloxi-feedback`.
+Відгуки тестувальників приходять через форму [`.github/ISSUE_TEMPLATE/gloxi-feedback.yml`](../.github/ISSUE_TEMPLATE/gloxi-feedback.yml) з міткою `gloxi-feedback` і через `/feedback/` на сервер звітів (ADR 0018).
+
+Власника й контакт на `/privacy/` задають рядки `owner` і `contact` у кожному `src/i18n/<мова>.json`; поки (рішення Denys 12.11.2026) — без імені, контакт через форму. Сторінка правової інформації (Aviso legal / Impressum) уже написана, `src/pages/legal.html` і рядки `legal_*`, але не публікується: щоб увімкнути, додайте `"legal": ("legal.html", "legal/index.html", NOINDEX)` у `PAGES` і посилання в підвал, коли буде рішення про ім'я, адресу й пошту.
 
 ## Перевірка
 
@@ -46,7 +50,7 @@ python3 tools/check_site.py
 Хостинг — [statichost.eu](https://statichost.eu/) (рішення Denys 3.11.2026). Публікує й змінює DNS лише Denys або за його згодою.
 
 - [`statichost.yml`](statichost.yml): збірки немає, публікується тека `public/` як є.
-- [`public/_headers`](public/_headers): заголовки безпеки для всього сайту (CSP без сторонніх джерел, HSTS на тиждень, `no-referrer`). Через місяць без проблем — `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
+- [`public/_headers`](public/_headers): заголовки безпеки для всього сайту (CSP без сторонніх джерел; `form-action` дозволяє лише сервер звітів і повернення на vilnaos.com; HSTS на тиждень, `no-referrer`). Через місяць без проблем — `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
 - На кожній сторінці `<link rel="canonical">` на https://vilnaos.com/…, тож копії на інших адресах не заважають пошуку.
 
 ### Один раз у панелі statichost.eu

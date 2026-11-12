@@ -6,7 +6,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Soukromí · Vilna OS</title>
-<meta name="description" content="Co vidí web Vilna OS, co vidí GitHub při stahování a co Gloxi dělá s vašimi daty.">
+<meta name="description" content="Co web Vilna OS, formulář zpětné vazby, hlášení o pádech, Gloxi a Vilna OS dělají s vašimi údaji, a vaše práva podle GDPR.">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://vilnaos.com/cs/privacy/">
 <link rel="alternate" hreflang="en" href="https://vilnaos.com/privacy/">
@@ -28,7 +28,7 @@
 <header class="site"><div class="wrap">
   <a class="brand" href="/cs/"><img src="/assets/vilna-icon.svg" alt="" width="36" height="36">Vilna OS</a>
   <div class="menus">
-  <nav class="site" aria-label="Sekce"><a href="/cs/">Domů</a> <a href="/cs/gloxi/">Gloxi</a> <a href="https://github.com/StDenis1980/VilnaOS">Kód</a></nav>
+  <nav class="site" aria-label="Sekce"><a href="/cs/">Domů</a> <a href="/cs/gloxi/">Gloxi</a> <a href="/cs/feedback/">Zpětná vazba</a> <a href="https://github.com/StDenis1980/VilnaOS">Kód</a></nav>
   <details class="langs">
     <summary aria-label="Jazyk: Čeština">Čeština</summary>
     <ul>
@@ -49,33 +49,82 @@
 
 <main id="main"><div class="wrap">
   <h1>Soukromí</h1>
-  <p class="lead">Stručně: tento web o vás nic nesbírá a Gloxi ve výchozím stavu nic z vašeho počítače neodesílá.</p>
+  <p class="lead">Stručně: tento web o vás nic nesbírá. Zpětná vazba a hlášení o pádech k nám dorazí, jen když se je rozhodnete poslat, uchovávají se 90 dní a IP adresy nikdy neukládáme.</p>
+
+  <h2>Kdo odpovídá</h2>
+  <dl class="facts">
+    <dt>Správce</dt><dd>projekt Vilna OS</dd>
+    <dt>Kontakt</dt><dd><a href="/cs/feedback/">formulář zpětné vazby</a> (pokud chcete odpověď, uveďte e-mail)</dd>
+  </dl>
+  <p>Jde o správce podle obecného nařízení EU o ochraně osobních údajů (GDPR) pro údaje popsané na této stránce.</p>
 
   <h2>Tento web</h2>
   <ul>
     <li>Žádné cookies, analytika, počítadla, reklamy, vložená videa ani tlačítka sociálních sítí.</li>
     <li>Všechna písma, ikony a styly poskytuje tento web; váš prohlížeč nekontaktuje jiné servery.</li>
     <li>Web je hostován v Evropě. Poskytovatel krátce vidí technické údaje každého požadavku (jako každý webový server), ale vaši IP adresu v záznamech neuchovává.</li>
+    <li>Domény Gloxi (gloxi.eu a další) jen přesměrovávají na tento web přes bunny.net (Slovinsko), se záznamy požadavků vypnutými.</li>
+  </ul>
+
+  <h2>Zpětná vazba</h2>
+  <ul>
+    <li>Zpětnou vazbu můžete poslat <a href="/cs/feedback/">formulářem na tomto webu</a>, později i z Gloxi nebo z okna zpětné vazby ve Vilna OS. Dostaneme váš text, typ, jazyk a jen pokud je sami přidáte, váš e-mail, údaje o systému a čísla vašich hlášení o pádech.</li>
+    <li>Míří na náš server reports.vilnaos.com, který běží u IONOS v datovém centru v EU na základě smlouvy o zpracování osobních údajů.</li>
+    <li>Server neukládá IP adresy, hlavičky požadavků ani přístupové záznamy. Proti zneužití jen počítá požadavky z jedné adresy, a to pouze v paměti a po dobu jedné hodiny.</li>
+    <li>Před uložením server z textu podruhé odstraní e-mailové adresy, IP a síťové adresy, cesty k souborům a dlouhá čísla.</li>
+    <li>Váš e-mail se ukládá odděleně od zprávy, používá se jen k odpovědi, nikdy se nezveřejňuje a maže se spolu se zprávou.</li>
+    <li>Zpětná vazba se maže po 90 dnech. Číst ji můžeme jen my. Veřejným issue na GitHubu se stane, jen pokud jste to zaškrtli, po naší kontrole a bez vašeho e-mailu.</li>
+  </ul>
+
+  <h2>Hlášení o pádech</h2>
+  <ul>
+    <li>Vilna OS a Gloxi posílají hlášení o pádech jen s vaším souhlasem. Zeptají se jednou (v instalátoru nebo při prvním spuštění Gloxi) a odpověď můžete kdykoli změnit v nastavení nebo tím, že to řeknete Gloxi.</li>
+    <li>Hlášení uvádí, který program spadl, jeho verzi, druh pádu a místo v kódu. Nikdy neobsahuje výpis paměti, obsah souborů, cesty, jména uživatele či počítače, názvy sítí, IP adresy ani text chybových hlášek.</li>
+    <li>Neexistuje žádný trvalý identifikátor zařízení. Každé hlášení má náhodné číslo, které zůstává ve vašem zařízení; s ním může zařízení svá hlášení z našeho serveru kdykoli smazat.</li>
+    <li>Hlášení se mažou po 90 dnech. Zůstane jen počítadlo pro každý druh pádu (program, verze, kolikrát), bez čehokoli o vás nebo vašem zařízení.</li>
+  </ul>
+
+  <h2>Gloxi a Vilna OS</h2>
+  <ul>
+    <li>Ve výchozím stavu Gloxi používá model na vašem počítači a vaše konverzace ho neopouštějí.</li>
+    <li>Model se stáhne až po vašem souhlasu; odesílá se pouze požadavek na soubor.</li>
+    <li>Cloud zapínáte sami, vlastním klíčem ke službě, kterou si vyberete. Osobní údaje se před odesláním zamaskují na zařízení. Co služba se zamaskovaným textem udělá, určují její vlastní zásady.</li>
+    <li>Gloxi neposílá statistiky používání. Zpětná vazba a hlášení o pádech opouštějí váš počítač jen s vaším souhlasem, jak je popsáno výše.</li>
+    <li>Vilna OS stahuje aktualizace ze serverů openSUSE a jejich zrcadel a aplikace z obchodů, které používáte, například Flathub; platí jejich vlastní zásady ochrany soukromí.</li>
   </ul>
 
   <h2>Stahování z GitHubu</h2>
   <p>Soubory a kód Gloxi jsou na GitHubu. Když tam přejdete nebo stáhnete vydání, platí <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">prohlášení o ochraně soukromí GitHubu</a>. Zpětná vazba v GitHub Issues je veřejná.</p>
 
-  <h2>Gloxi</h2>
+  <h2>Právní základ</h2>
   <ul>
-    <li>Ve výchozím stavu Gloxi používá model na vašem počítači a vaše konverzace ho neopouštějí.</li>
-    <li>Model se stáhne až po vašem souhlasu; odesílá se pouze požadavek na soubor.</li>
-    <li>Cloud zapínáte sami, vlastním klíčem ke službě, kterou si vyberete. Osobní údaje se před odesláním zamaskují na zařízení. Co služba se zamaskovaným textem udělá, určují její vlastní zásady.</li>
-    <li>Gloxi nám neposílá žádné statistiky ani hlášení o pádech.</li>
+    <li>Zpětná vazba a hlášení o pádech: váš souhlas (čl. 6 odst. 1 písm. a) GDPR). Můžete ho kdykoli odvolat; na to, co už bylo odesláno, to nemá vliv.</li>
+    <li>Bezpečný provoz webu: náš oprávněný zájem na jeho provozu (čl. 6 odst. 1 písm. f) GDPR). Hosting neukládá IP adresy.</li>
   </ul>
 
+  <h2>Kdo pro nás zpracovává údaje</h2>
+  <p>Údaje neprodáváme ani nesdílíme. Jménem nás je zpracovávají tito poskytovatelé, všichni v EU:</p>
+  <ul>
+    <li>statichost.eu: hosting tohoto webu.</li>
+    <li>IONOS SE (Německo): server reports.vilnaos.com v datovém centru v EU.</li>
+    <li>BunnyWay d.o.o. (bunny.net, Slovinsko): přesměrování domén Gloxi.</li>
+  </ul>
+
+  <h2>Vaše práva</h2>
+  <p>Máte právo na přístup ke svým údajům, jejich opravu a výmaz, na omezení zpracování nebo námitku proti němu, na přenositelnost údajů a na odvolání souhlasu.</p>
+  <p>Svá hlášení smažete přes Vilna OS nebo Gloxi: pošlou čísla vašich hlášení a server je hned smaže. Pokud jste ke zpětné vazbě uvedli e-mail, napište nám z něj a tu zpětnou vazbu smažeme. Bez e-mailu nepoznáme, která zpětná vazba je vaše, protože ji s vámi nic nespojuje; po 90 dnech se stejně smaže.</p>
+  <p>Stížnost můžete podat u úřadu pro ochranu osobních údajů ve své zemi (v Česku ÚOOÚ) nebo u španělského úřadu <a href="https://www.aepd.es/">AEPD</a>.</p>
+
+  <h2>Změny</h2>
+  <p>Když se něco změní, tuto stránku aktualizujeme; celá její historie je ve veřejném repozitáři. Naposledy aktualizováno: 12. listopadu 2026.</p>
+
   <h2>Kontakt</h2>
-  <p>Dotazy k soukromí: <a href="https://github.com/StDenis1980/VilnaOS/issues">GitHub Issues</a>; zranitelnosti: soukromě, viz <a href="/.well-known/security.txt">security.txt</a>.</p>
+  <p>Dotazy k soukromí: <a href="/cs/feedback/">formulář zpětné vazby</a> (pokud chcete odpověď, uveďte e-mail). Zranitelnosti: soukromě, viz <a href="/.well-known/security.txt">security.txt</a>.</p>
 </div></main>
 
 <footer class="site"><div class="wrap">
   <span>Vilna OS · Postaveno na openSUSE</span>
-  <span><a href="/cs/privacy/" aria-current="page">Soukromí</a> · <a href="/.well-known/security.txt">Bezpečnost</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
+  <span><a href="/cs/privacy/" aria-current="page">Soukromí</a> · <a href="/cs/feedback/">Zpětná vazba</a> · <a href="/.well-known/security.txt">Bezpečnost</a> · <a href="https://github.com/StDenis1980/VilnaOS">GitHub</a></span>
 </div></footer>
 </body>
 </html>
