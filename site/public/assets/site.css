@@ -117,3 +117,29 @@ footer.site a { color: var(--muted); }
 
 .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 16px 0; }
 .shots img { width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); display: block; }
+
+/* Feedback form: no JavaScript; the browser checks required fields. */
+form.feedback { margin: 24px 0; }
+form.feedback fieldset { border: 0; margin: 0 0 20px; padding: 0; }
+form.feedback legend, form.feedback label[for] { display: block; font-weight: 700; margin: 0 0 6px; }
+form.feedback label.choice { display: block; margin: 6px 0; cursor: pointer; }
+form.feedback .hint { color: var(--muted); font-size: 15px; margin: 0 0 8px; }
+form.feedback textarea, form.feedback input[type="email"] {
+  display: block; width: 100%; margin: 0 0 20px; padding: 10px 12px;
+  background: var(--ink); color: var(--text); border: 1px solid var(--line); border-radius: 10px;
+  font: inherit;
+}
+form.feedback textarea { resize: vertical; min-height: 180px; }
+form.feedback textarea:focus-visible, form.feedback input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+form.feedback input[type="radio"], form.feedback input[type="checkbox"] { accent-color: var(--blue); width: 18px; height: 18px; vertical-align: -3px; }
+form.feedback button { border: 0; font: inherit; font-weight: 700; cursor: pointer; }
+/* A field for bots only: people never see it, and the server drops what fills it. */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+/* The reports server returns to /feedback/?error=<field>#error-<field>. */
+.error { display: none; }
+.error:target { display: block; }
+.error p { margin: 0; }
+
+dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 12px 0; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; }

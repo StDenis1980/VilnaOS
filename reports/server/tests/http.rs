@@ -256,7 +256,7 @@ async fn the_site_form_returns_to_the_thanks_page_in_its_language() {
     let (_, headers, _) = s.send(form("kind=idea&text=+&lang=en")).await;
     assert_eq!(
         headers[header::LOCATION],
-        "https://vilnaos.com/feedback/?error=text"
+        "https://vilnaos.com/feedback/?error=text#error-text"
     );
 
     // A bot that fills the hidden field is thanked; nothing is kept.

@@ -1,0 +1,40 @@
+<!-- title: {{fb_title}} · Vilna OS -->
+<!-- description: {{fb_desc}} -->
+<!-- nav: <nav class="site" aria-label="{{sections}}"><a href="{{home_url}}">{{nav_home}}</a> <a href="{{gloxi_url}}">Gloxi</a> <a href="{{feedback_url}}"{{feedback_current}}>{{nav_feedback}}</a> <a href="{{repo_url}}">{{nav_code}}</a></nav> -->
+  <h1>{{fb_title}}</h1>
+  <p class="lead">{{fb_lead}}</p>
+
+  <div class="card warn error" id="error-text" role="alert"><p>{{fb_err_text}}</p></div>
+  <div class="card warn error" id="error-contact" role="alert"><p>{{fb_err_contact}}</p></div>
+  <div class="card warn error" id="error-kind" role="alert"><p>{{fb_err_kind}}</p></div>
+  <div class="card warn error" id="error-server" role="alert"><p>{{fb_err_server}}</p></div>
+
+  <form class="feedback" method="post" action="{{feedback_action}}" accept-charset="utf-8">
+    <input type="hidden" name="lang" value="{{lang}}">
+    <fieldset>
+      <legend>{{fb_kind_legend}}</legend>
+      <label class="choice"><input type="radio" name="kind" value="bug" required> {{fb_kind_bug}}</label>
+      <label class="choice"><input type="radio" name="kind" value="idea"> {{fb_kind_idea}}</label>
+      <label class="choice"><input type="radio" name="kind" value="other"> {{fb_kind_other}}</label>
+    </fieldset>
+
+    <label for="text">{{fb_text_label}}</label>
+    <p class="hint" id="text-hint">{{fb_text_hint}}</p>
+    <textarea id="text" name="text" rows="9" maxlength="8000" required aria-describedby="text-hint"></textarea>
+
+    <label for="contact">{{fb_contact_label}}</label>
+    <p class="hint" id="contact-hint">{{fb_contact_hint}}</p>
+    <input type="email" id="contact" name="contact" maxlength="254" autocomplete="email" aria-describedby="contact-hint">
+
+    <label class="choice"><input type="checkbox" name="may_publish"> {{fb_publish}}</label>
+
+    <div class="hp" aria-hidden="true">
+      <label>{{fb_honeypot}} <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <p class="hint">{{fb_note}}</p>
+    <button type="submit" class="button">{{fb_send}}</button>
+  </form>
+
+  <h2>{{fb_alt_h}}</h2>
+  <p>{{fb_alt_p}}</p>
