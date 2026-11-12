@@ -22,10 +22,13 @@ from __future__ import annotations
 
 import argparse
 import faulthandler
+import importlib
 import json
 import os
 import signal
 import sys
+import threading
+from collections.abc import Callable
 from importlib import resources
 from pathlib import Path
 
@@ -41,6 +44,30 @@ from vilna_installer import start  # noqa: E402
 APP_ID = "io.github.stdenis1980.VilnaInstaller"
 BACKGROUNDS = Path(os.environ.get("VILNA_BACKGROUNDS", "/usr/share/backgrounds/vilna"))
 A11Y_SCHEMA = "org.gnome.desktop.a11y.applications"
+
+# The code of the next screens. On the live image it is read from the USB
+# stick, and once the model loads every read waits behind it: importing the
+# chat took 47 s after «Next with Gloxi» (VM test of Build6.2, 2026-11-12).
+# So the first screen reads it while the person picks a language, and only
+# then wakes the model.
+PRELOAD = (
+    "vilna_installer.chat",
+    "vilna_installer.conversation",
+    "vilna_installer.wizard",
+    "vilna_installer.wizard_window",
+)
+
+
+def preload(
+    modules: tuple[str, ...] = PRELOAD, load: Callable[[str], object] = importlib.import_module
+) -> None:
+    """Import the next screens' code; a failure is only logged (the screen imports it again)."""
+    for name in modules:
+        try:
+            load(name)
+        except Exception as e:  # noqa: BLE001 - the real import later reports it
+            print(f"vilna-installer: cannot preload {name}: {e}", file=sys.stderr)
+
 
 CSS = """
 .vilna-veil { background-image: radial-gradient(ellipse 55% 62% at 50% 52%,
@@ -230,10 +257,39 @@ class Welcome(Adw.ApplicationWindow):
         GLib.timeout_add(500, self._load_others)
         self.connect("map", self._on_map)
 
+    preloaded: threading.Event | None = None
+
     def _on_map(self, _window: Gtk.Window) -> None:
-        if not getattr(self, "_model_woken", False):
-            self._model_woken = True
+        if self.preloaded is None:
+            self.preloaded = threading.Event()
+            threading.Thread(target=self._preload_then_wake, daemon=True).start()
+
+    def _preload_then_wake(self, load: Callable[[], None] = preload) -> None:
+        # Off the main thread: the screen answers while the code is read.
+        try:
+            load()
+        finally:
+            start.log("next screens loaded")
+            if self.preloaded is not None:
+                self.preloaded.set()
             GLib.timeout_add_seconds(start.MODEL_WAKE_DELAY_S, self._wake_model)
+
+    def _when_loaded(self, then: Callable[[], None]) -> None:
+        """Run ``then`` on the main thread once the next screens are read."""
+        ready = self.preloaded
+        if ready is None or ready.is_set():
+            then()
+            return
+
+        def go() -> bool:
+            then()
+            return GLib.SOURCE_REMOVE
+
+        def wait() -> None:
+            ready.wait()
+            GLib.idle_add(go)
+
+        threading.Thread(target=wait, daemon=True).start()
 
     def _wake_model(self) -> bool:
         start.wake_model()
@@ -356,9 +412,9 @@ class Welcome(Adw.ApplicationWindow):
         app = self.get_application()
         if isinstance(app, InstallerApp):
             if assistant:
-                app.open_chat(self)
+                self._when_loaded(lambda: app.open_chat(self))
             else:
-                app.open_wizard(self)
+                self._when_loaded(lambda: app.open_wizard(self))
 
 
 def _once_mapped(welcome: Gtk.Window):

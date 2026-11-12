@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 12 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The first screen reads the code of the chat and the wizard while
+  the person picks a language, and wakes the model only after that:
+  on the live image the import waited 47 s behind the model
+
+-------------------------------------------------------------------
 Wed Nov 11 20:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The first screen stays until the chat window is on the screen and
