@@ -289,7 +289,13 @@ class FileTools:
         """Other programs' operations to offer now, at most ``MAX_PROGRAM_FUNCTIONS``.
 
         When there are more, the ones whose names and descriptions share the
-        most words with the user's message come first; ties keep Herkos' order.
+        most words with the user's message are chosen; ties keep Herkos' order.
+        The chosen ones are offered in Herkos' order, not by score: the local
+        model caches the start of the request it read when Gloxi warmed up
+        (``Conversation.warm``, no message yet), and functions in another
+        order made it read them all again. Build14.13: English messages share
+        words with most descriptions, were reordered and took 70-90 s each,
+        while Ukrainian ones matched nothing and reused the cache.
         """
         self.offered()
         ops = list(self._programs.values())
@@ -297,7 +303,7 @@ class FileTools:
             return ops
         asked = _words(query or "")
         ranked = sorted(enumerate(ops), key=lambda io: (-len(io[1].words() & asked), io[0]))
-        return [op for _, op in ranked[:MAX_PROGRAM_FUNCTIONS]]
+        return [op for _, op in sorted(ranked[:MAX_PROGRAM_FUNCTIONS], key=lambda io: io[0])]
 
     def prompt(self) -> str:
         out = ""
