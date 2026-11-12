@@ -16,7 +16,7 @@
 
 Обмеження:
 
-- **openSUSE офіційно не підтримує жоден із двох провайдерів.** Mullvad випускає пакети для Ubuntu, Debian і Fedora; Fedora-RPM на openSUSE має проблеми із залежностями. Proton випускає стабільний GTK-застосунок для Ubuntu і Fedora; `proton-vpn-gtk-app` є в OBS openSUSE, але не в основному репозиторії Tumbleweed (перевірка CI 12.11.2026), тож образ його сам не знайде.
+- **openSUSE офіційно не підтримує жоден із двох провайдерів.** Mullvad випускає пакети для Ubuntu, Debian і Fedora; Fedora-RPM на openSUSE має проблеми із залежностями. Proton випускає стабільний GTK-застосунок для Ubuntu і Fedora; в openSUSE він зветься `proton-vpn` (у Factory 4.15.0, upstream уже 4.19.0), а не `proton-vpn-gtk-app`, як в upstream (через цю назву CI 12.11.2026 його не знайшов).
 - **Обидва працюють на WireGuard.** Proton GTK-застосунок створює з'єднання WireGuard у NetworkManager; Mullvad має свій сервіс `mullvad-daemon`, який сам налаштовує тунель і свій файрвол (nftables).
 - **Обидва вимагають акаунт.** Увімкнути VPN «з коробки», без жодного кроку людини, неможливо.
 - **Vilna не бачить облікових даних.** Пароль Proton, номер акаунта Mullvad чи код активації людина вводить лише в застосунок провайдера (або його офіційний потік входу в браузері), а не в поле Vilna чи Gloxi. Номер Mullvad і є обліковими даними, тож Gloxi його не просить і не зберігає.
@@ -28,7 +28,7 @@
 
 | Провайдер | Роль | Як підключається | Застосунок |
 | --- | --- | --- | --- |
-| Proton VPN | За замовчуванням, пропонуємо першим | Вхід у застосунку Proton або створення безкоштовного акаунта на сайті Proton | `proton-vpn-gtk-app` з нашого OBS (зі своєю закріпленою версією та залежностями `python3-proton-*`) |
+| Proton VPN | За замовчуванням, пропонуємо першим | Вхід у застосунку Proton або створення безкоштовного акаунта на сайті Proton | `proton-vpn` з нашого OBS (закріплена версія з Factory та залежності `python3-proton-*`; див. «Відкрите») |
 | Mullvad | «Максимум анонімності» | Номер акаунта або код активації в застосунку Mullvad | `mullvad-vpn` з нашого OBS (перепакований офіційний RPM, підпис Mullvad перевіряється в збірці) |
 | WireGuard `.conf`, Tailscale/Headscale | Ручні варіанти | Імпорт у NetworkManager / вхід у Tailscale | `NetworkManager` (є), `tailscale` (з добірки) |
 
@@ -92,7 +92,7 @@ Kill switch належить Vilna, а не провайдеру: працює �
 
 ### 6. Gloxi
 
-Дії VPN — окремий інструмент Herkos `org.vilna.mcp.vpn` (рівні в таблиці розділу 3); Gloxi бачить їх як функції `vpn_*`, як і інші інструменти Herkos. Gloxi не входить в акаунт провайдера і не просить номер Mullvad: лише відкриває застосунок провайдера, і лише один із двох (`proton.vpn.app.gtk`, `mullvad-vpn`).
+Дії VPN — окремий інструмент Herkos `org.vilna.mcp.vpn` (рівні в таблиці розділу 3); Gloxi бачить їх як функції `vpn_*`, як і інші інструменти Herkos. Gloxi не входить в акаунт провайдера і не просить номер Mullvad: лише відкриває застосунок провайдера, і лише один із двох (`proton-vpn` чи `proton.vpn.app.gtk`, `mullvad-vpn`).
 
 Розмова «Хочете ще більше захисту з VPN?» (`gloxi/src/gloxi/vpn_intro.py`) — фіксований сценарій, як розмова про резервні копії, а не модель: вибір той самий для всіх. Вона йде на наступному запуску після розмови про копії, щоб нова людина не отримала всі питання разом; «Пізніше» — ще одне питання через тиждень, далі лише на `/vpn`. Коли тунель піднявся, Gloxi пропонує kill switch (R2) і нагадує ввімкнути автозапуск у застосунку провайдера. Поки сторінка у `vilna-initial-setup` (крок 5) не готова, ця розмова і є кроком першого запуску.
 
@@ -103,7 +103,7 @@ Kill switch належить Vilna, а не провайдеру: працює �
 | 1 | Цей ADR | Згода Denys |
 | 2 | `vilna-netguard`: таблиця nftables, набір `vpn_endpoints`, дії Herkos і правило polkit | Тести правил у мережевому просторі імен: без тунелю нічого не виходить, DNS не тече, після підняття WireGuard трафік іде |
 | 3 | Зашифрований DNS у `gnome-branding-Vilna` (drop-in `systemd-resolved`) і обробка captive portal | У VM: DoT працює, у мережі з порталом людина може увійти |
-| 4 | Пакети `proton-vpn-gtk-app` і `mullvad-vpn` у проєкті OBS Vilna, служби вимкнені | Збірка образу; у VM: вхід, з'єднання, перезапуск, kill switch з кожним провайдером |
+| 4 | Пакети `proton-vpn` і `mullvad-vpn` у проєкті OBS Vilna, служби вимкнені | Збірка образу; у VM: вхід, з'єднання, перезапуск, kill switch з кожним провайдером |
 | 5 | Крок VPN у `vilna-initial-setup` і класичному майстрі, 10 мовами | Знімки екрана, Orca |
 | 6 | Дії `vpn_*` і розмова про VPN у Gloxi (зроблено), пропозиція VPN у чужій Wi-Fi | Тести Herkos: вимкнення — R3, з забрудненого вмісту — R4 |
 
@@ -123,6 +123,8 @@ Kill switch належить Vilna, а не провайдеру: працює �
 - Чи дозволить Proton створювати акаунт прямо з кроку Vilna (зараз — сторінка Proton у браузері).
 - Застосунок Proton ходить до API Proton (список серверів, сертифікат) до того, як тунель піднявся. Служба Mullvad пропускається за cgroup (`system.slice/mullvad-daemon.service`), а застосунок Proton працює в сеансі людини, тож його cgroup щоразу інша. Варіанти: запускати його як фіксований юніт користувача й пропускати цю cgroup, або покладатися на кеш серверів і сертифіката Proton. Перевірити у VM разом із кроком 4.
 - Як надійно ввімкнути «Connect at startup» у застосунку Proton без ручного кроку людини (перевірити у VM).
+- **Звідки брати Proton** (дані з Denis-KLX, 12.11.2026). openSUSE:Factory уже має стек Proton: `proton-vpn` 4.15.0 (файл `proton-vpn.desktop`), `python3xx-proton-vpn-api-core` 4.16.0 (ще noarch), `proton-core` 0.7.0, `proton-keyring-linux` 0.2.3, `proton-vpn-local-agent` 1.6.3. Upstream (репозиторій Fedora від Proton) — `proton-vpn-gtk-app` 4.19.0, а `python3-proton-vpn-api-core` 6.1.1 тепер x86_64 з модулем Rust, вбирає `network-manager` і `local-agent`, тягне `NetworkManager-openvpn`, `sentry-sdk`, `fido2`, `pynacl` і має власний kill switch (служба D-Bus, polkit). Усе GPL-3.0, теги GitHub збігаються; на PyPI лише порожні заглушки. Пропозиція: на альфу — пакети Factory, закріплені посиланням у нашому OBS; власну збірку 6.x — пізніше. Перевірити: чи власний kill switch Proton не конфліктує з `vilna-netguard`; `proton-keyring-linux` вимагає `gnome-keyring`, що зайве на Kalpa (KDE).
+- **Mullvad** — `mullvad-vpn` 2026.5 (x86_64, GPL-3.0-or-later, файл `mullvad-vpn.desktop`, служби `mullvad-daemon` і `mullvad-early-boot-blocking`, ставиться в `/opt/Mullvad VPN`). Ключ репозиторію: відбиток `A119 8702 FC3E 0A09 A9AE 5B75 D5A1 D4F2 66DE 8DDF`. Скрипти RPM самі вмикають і запускають службу, а при видаленні стирають `~/.config/Mullvad VPN` усіх людей і відв'язують пристрій через API Mullvad. Для Vilna перепаковуємо RPM зі своїми скриптами: служба вимкнена до вибору, без стирання чужих тек. `mullvad-early-boot-blocking` перекривається з `vilna-netguard` — вирішити, яку з них лишати.
 
 ## Розглянуті варіанти
 

@@ -40,7 +40,7 @@ from gloxi.router import Router  # noqa: E402
 from gloxi.service import service_socket  # noqa: E402
 from gloxi.tools import file_tools  # noqa: E402
 from gloxi.voice import session as voice_session  # noqa: E402
-from gloxi.vpn_intro import LAUNCHABLE, VpnIntro, vpn_intro  # noqa: E402
+from gloxi.vpn_intro import DESKTOP_IDS, LAUNCHABLE, VpnIntro, vpn_intro  # noqa: E402
 
 CSS = """
 .bubble { padding: 8px 12px; border-radius: 12px; }
@@ -885,8 +885,11 @@ class ChatWindow(Adw.ApplicationWindow):
         # anything else on someone's say-so.
         if app_id not in LAUNCHABLE:
             return
-        info = Gio.DesktopAppInfo.new(f"{app_id}.desktop")
-        if info is None:
+        for desktop_id in DESKTOP_IDS[app_id]:
+            info = Gio.DesktopAppInfo.new(f"{desktop_id}.desktop")
+            if info is not None:
+                break
+        else:
             self.show_error(_("The app {app} is not installed.").format(app=app_id))
             return
         try:

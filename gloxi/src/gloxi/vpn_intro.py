@@ -29,13 +29,18 @@ from gloxi.backup_intro import IntroStopped, Request, Turn, _pick
 VPN_TOOL = "org.vilna.mcp.vpn"
 REMIND_AFTER = 7 * 86400
 
-# The providers' own apps, by desktop file id. The window launches only these
-# (LAUNCHABLE, checked again by gui/window.py and gui/remote.py). Check both
-# names in the VM with the packages from the Vilna OBS project (ADR 0027, step 4).
-PROTON_APP = "proton.vpn.app.gtk"
+# The providers' own apps. The window launches only these (LAUNCHABLE, checked
+# again by gui/window.py and gui/remote.py), trying each desktop file id in
+# turn: Tumbleweed's package names Proton's file proton-vpn.desktop, upstream's
+# RPM proton.vpn.app.gtk.desktop. Mullvad's RPM: mullvad-vpn.desktop.
+PROTON_APP = "proton-vpn"
 MULLVAD_APP = "mullvad-vpn"
+DESKTOP_IDS = {
+    PROTON_APP: ("proton-vpn", "proton.vpn.app.gtk"),
+    MULLVAD_APP: ("mullvad-vpn",),
+}
 PROTON_SIGNUP = "https://protonvpn.com/free-vpn"
-LAUNCHABLE = frozenset({PROTON_APP, MULLVAD_APP})
+LAUNCHABLE = frozenset(DESKTOP_IDS)
 
 
 def state_path() -> Path:
