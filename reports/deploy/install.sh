@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Installs or updates reports.vilnaos.com on a Debian 13 server (run as root
+# Installs or updates reports.vilnaos.com on a Debian 12 or 13 server (run as root
 # from a checkout of VilnaOS: sh reports/deploy/install.sh). Safe to run
 # again: it keeps the database and existing secrets. See reports/docs/deploy.md.
 set -eu
@@ -21,7 +21,31 @@ if ! command -v cargo >/dev/null 2>&1 && [ ! -x "$HOME/.cargo/bin/cargo" ]; then
 fi
 PATH="$HOME/.cargo/bin:$PATH"
 
-(cd "$root" && cargo build --release --locked -p vilna-reports-server)
+# A small VPS (1 vCPU, 2 GB) can run out of memory while linking: add a
+# temporary swap file for the build when there is less than 3 GB of memory
+# and no swap, and limit cargo to one job there.
+swap=""
+jobs=""
+mem_kb=$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)
+swap_kb=$(awk '/^SwapTotal:/ {print $2}' /proc/meminfo)
+if [ "$mem_kb" -lt 3000000 ]; then
+	jobs="-j 1"
+	if [ "$swap_kb" -eq 0 ]; then
+		swap=/var/tmp/vilna-reports-build.swap
+		fallocate -l 2G "$swap" 2>/dev/null || dd if=/dev/zero of="$swap" bs=1M count=2048 status=none
+		chmod 600 "$swap"
+		mkswap "$swap" >/dev/null
+		swapon "$swap"
+		trap 'swapoff "$swap" 2>/dev/null; rm -f "$swap"' EXIT
+	fi
+fi
+# shellcheck disable=SC2086 # $jobs is empty or "-j 1"
+(cd "$root" && cargo build --release --locked $jobs -p vilna-reports-server)
+if [ -n "$swap" ]; then
+	swapoff "$swap"
+	rm -f "$swap"
+	trap - EXIT
+fi
 install -m 0755 "$root/target/release/vilna-reports-server" /usr/local/bin/vilna-reports-server
 
 install -d -m 0700 /etc/vilna-reports
