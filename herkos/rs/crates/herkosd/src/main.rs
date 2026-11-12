@@ -24,6 +24,7 @@ mod snapshots;
 mod system;
 mod systool;
 mod units;
+mod vpntool;
 
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
@@ -39,7 +40,7 @@ use serde_json::Value;
 /// A longer message closes the connection (protocol.md).
 const MAX_LINE: usize = 1024 * 1024;
 
-const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd mitos-setup [--system-config PATH] [--passwd PATH]\n       herkosd system-tool UID\n       herkosd ext-unit MANIFEST.toml\n       herkosd ext-exec PROGRAM ARGS-FILE\n       herkosd --version";
+const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd mitos-setup [--system-config PATH] [--passwd PATH]\n       herkosd system-tool UID\n       herkosd vpn-tool UID\n       herkosd ext-unit MANIFEST.toml\n       herkosd ext-exec PROGRAM ARGS-FILE\n       herkosd --version";
 
 fn default_socket() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")
@@ -445,6 +446,8 @@ fn run(args: &[String]) -> Result<(), String> {
         Some("mitos-setup") => run_mitos_setup(&args[1..]),
         // As root, for one person: the system's saved states (vilna-mcp-system@.service).
         Some("system-tool") => systool::main(&args[1..]),
+        // As root, for one person: the VPN kill switch and DNS (vilna-mcp-vpn@.service).
+        Some("vpn-tool") => vpntool::main(&args[1..]),
         // In a vilna-mcp-ext-<name>@<uid> unit, as the person (ADR 0017).
         Some("ext-exec") => match (args.get(1), args.get(2), args.len()) {
             (Some(program), Some(file), 3) if Path::new(file).is_absolute() => {

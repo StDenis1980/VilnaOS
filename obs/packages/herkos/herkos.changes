@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Nov 12 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The VPN kill switch of Vilna (ADR 0027): vilna-netguard and its
+  service (nftables table inet vilna_killswitch, off until the person
+  turns it on), and the Herkos tool vilna-mcp-vpn@ (herkosd vpn-tool)
+  with the kill switch and the choice of encrypted DNS (Quad9 or
+  Mullvad). The polkit rule lets herkos start vilna-mcp-vpn@ too.
+
+-------------------------------------------------------------------
 Tue Nov 10 22:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - herkos-selinux: the rule is optional in herkos.cil, so a policy

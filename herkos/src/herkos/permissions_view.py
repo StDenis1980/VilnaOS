@@ -38,6 +38,7 @@ JOURNAL_LIMIT = 500
 FILES = "org.vilna.mcp.files"
 BACKUP = "org.vilna.mcp.backup"
 SYSTEM = "org.vilna.mcp.system"
+VPN = "org.vilna.mcp.vpn"
 UNDO_PREFIX = "Undo action "
 # The operations Herkos itself sends to undo an action (herkos.undo).
 UNDO_OPERATIONS = ("restore", "restore_snapshot")
@@ -56,6 +57,13 @@ DONE: dict[tuple[str, str], str] = {
     (SYSTEM, "list_snapshots"): "Gloxi looked at the saved states of the system",
     (SYSTEM, "rollback"): "Gloxi returned the system to a saved state",
     (SYSTEM, "restore"): "Gloxi undid a return of the system to a saved state",
+    (VPN, "status"): "Gloxi looked at the VPN kill switch and the DNS",
+    (VPN, "killswitch_on"): "Gloxi turned on the VPN kill switch",
+    (VPN, "killswitch_off"): "Gloxi turned off the VPN kill switch",
+    (VPN, "allow_lan"): "Gloxi let a local network through the VPN kill switch",
+    (VPN, "forget_lan"): "Gloxi stopped letting a local network through the VPN kill switch",
+    (VPN, "open_portal"): "Gloxi opened the VPN kill switch to sign in to a Wi-Fi network",
+    (VPN, "set_dns"): "Gloxi changed the encrypted DNS",
     (BACKUP, "status"): "Gloxi checked the backups",
     (BACKUP, "list_snapshots"): "Gloxi listed the backups",
     (BACKUP, "overview"): "Gloxi looked at how much space the folders take",
