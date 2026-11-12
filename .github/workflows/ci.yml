@@ -94,6 +94,21 @@ jobs:
           HERKOSD: ${{ github.workspace }}/herkos/rs/target/debug/herkosd
         run: uv sync --locked && uv run pytest conformance
 
+  reports:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: reports
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: rustup toolchain install stable --profile minimal -c rustfmt,clippy && rustup default stable
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - name: Deploy script parses
+        run: sh -n deploy/install.sh
+
   privacy-gateway:
     runs-on: ubuntu-latest
     strategy:

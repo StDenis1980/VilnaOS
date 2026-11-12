@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# reports.vilnaos.com (ADR 0018 section 6). Listens on loopback only; Caddy
+# in front terminates TLS (Caddyfile). Secrets come as systemd credentials.
+[Unit]
+Description=Vilna crash reports and feedback server
+Documentation=https://github.com/StDenis1980/VilnaOS/tree/main/reports
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/vilna-reports-server
+Environment=VILNA_REPORTS_LISTEN=127.0.0.1:8087
+Environment=VILNA_REPORTS_DB=/var/lib/vilna-reports/reports.sqlite
+Environment=VILNA_REPORTS_RETENTION_DAYS=90
+Environment=VILNA_REPORTS_TRUST_PROXY=true
+Environment=VILNA_REPORTS_GITHUB_REPO=StDenis1980/VilnaOS
+Environment=VILNA_REPORTS_SITE=https://vilnaos.com
+# Files made by install.sh, readable by root only. Missing github_token: no
+# issues are filed; missing admin_key: /admin is off.
+LoadCredential=admin_key:/etc/vilna-reports/admin_key
+LoadCredential=github_token:/etc/vilna-reports/github_token
+DynamicUser=yes
+StateDirectory=vilna-reports
+StateDirectoryMode=0700
+UMask=0077
+Restart=on-failure
+RestartSec=2
+
+# Hardening: the server writes only its database and talks to Caddy on
+# loopback and to api.github.com.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+MemoryMax=256M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target
