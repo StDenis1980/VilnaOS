@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov 12 22:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.9: vilna_base requires proton-vpn-gtk-app, the default VPN of
+  Vilna (ADR 0027).
+
+-------------------------------------------------------------------
 Tue Nov 10 07:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.8: require vilna-backup (the Backups window and timers).
