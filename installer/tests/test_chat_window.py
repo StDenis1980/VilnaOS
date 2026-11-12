@@ -154,3 +154,55 @@ def test_the_first_screen_stays_until_the_chat_is_on_the_screen(plan_path):
     on_map(None)
     on_map(None)  # mapped again (unfullscreen, a workspace switch): nothing more
     assert screen not in app.get_windows()
+
+
+def test_preloading_goes_on_after_a_module_that_fails():
+    from vilna_installer import welcome as first
+
+    seen = []
+
+    def load(name):
+        seen.append(name)
+        if name == "b":
+            raise ImportError("broken")
+
+    first.preload(("a", "b", "c"), load=load)
+    assert seen == ["a", "b", "c"]
+
+
+def test_the_next_screen_opens_only_after_its_code_is_read(plan_path, monkeypatch):
+    from vilna_installer import welcome as first
+
+    woken = []
+    monkeypatch.setattr(first.start, "MODEL_WAKE_DELAY_S", 0)
+    monkeypatch.setattr(first.start, "wake_model", lambda: woken.append(True))
+    app = first.InstallerApp(plan_path, True, "en")
+    app.register(None)
+    screen = first.Welcome(app, plan_path, "en")
+    screen.preloaded = threading.Event()
+    opened = []
+    app.open_chat = opened.append
+    screen._finish(assistant=True)
+    assert spin(lambda: False, seconds=0.3) is False
+    assert opened == []  # still reading: the screen stays and answers
+    assert woken == []
+
+    threading.Thread(
+        target=screen._preload_then_wake, kwargs={"load": lambda: None}, daemon=True
+    ).start()
+    assert spin(lambda: opened == [screen])
+    assert spin(lambda: woken == [True])  # the model wakes after the code is read
+
+
+def test_the_next_screen_opens_at_once_when_the_code_is_read(plan_path):
+    from vilna_installer import welcome as first
+
+    app = first.InstallerApp(plan_path, True, "en")
+    app.register(None)
+    screen = first.Welcome(app, plan_path, "en")
+    screen.preloaded = threading.Event()
+    screen.preloaded.set()
+    opened = []
+    app.open_wizard = opened.append
+    screen._finish(assistant=False)
+    assert opened == [screen]
