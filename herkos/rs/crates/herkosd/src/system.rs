@@ -31,11 +31,10 @@ use serde_json::{Value, json};
 use toml::Table;
 
 use crate::config::{Config, Owner};
-use crate::gate::{Answer, Confirmer, Gate, Question, Tools};
+use crate::gate::{Answer, Confirmer, Gate, Question, Session, Tools};
 use crate::passwd::{self, Account};
 use crate::rpc;
 use crate::snapshots::{Snapper, Snapshots};
-use herkos_core::policy::SessionState;
 
 pub const SYSTEM_CONFIG: &str = "/etc/herkos/system.toml";
 pub const CONFIG: &str = "/etc/herkos/config.toml";
@@ -498,7 +497,7 @@ fn person_method(gate: &Gate, id: &Value, method: &str, params: &Value) -> Value
         }
         "herkos.undo" => match is_id(params.get("action_id").and_then(Value::as_str)) {
             // A clean session: the person asked, not a model that read something.
-            Some(a) => rpc::result(id, gate.undo(a, &mut SessionState::default()).to_json()),
+            Some(a) => rpc::result(id, gate.undo(a, &mut Session::default()).to_json()),
             None => rpc::error(id, rpc::INVALID_PARAMS, "'action_id' must be an action id"),
         },
         _ => rpc::error(
@@ -639,7 +638,7 @@ mod tests {
     #[test]
     fn the_person_s_own_methods() {
         let (g, docs) = crate::gate::tests::gate("person-rpc", Answer::Session);
-        let mut s = SessionState::default();
+        let mut s = Session::default();
         let o = g.handle(
             &crate::gate::tests::files("write", &docs.join("a.txt")),
             &mut s,
