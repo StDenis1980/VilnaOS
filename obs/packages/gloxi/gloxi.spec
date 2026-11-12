@@ -81,6 +81,8 @@ what the person types.
 %python_expand %fdupes %{buildroot}%{$python_sitelib}
 install -Dm0644 data/io.github.stdenis1980.Gloxi.desktop \
   %{buildroot}%{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
+install -Dm0644 data/autostart/io.github.stdenis1980.Gloxi-wake.desktop \
+  %{buildroot}%{_sysconfdir}/xdg/autostart/io.github.stdenis1980.Gloxi-wake.desktop
 for unit in gloxi@.socket gloxi@.service vilna-llm.service \
             vilna-people-sync.service vilna-people-sync.path \
             vilna-mcp-gloxi-network@.service; do
@@ -128,5 +130,7 @@ install -d %{buildroot}%{_datadir}/vilna/models
 %license LICENSE
 %{_bindir}/gloxi-gtk
 %{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
+%dir %{_sysconfdir}/xdg/autostart
+%config %{_sysconfdir}/xdg/autostart/io.github.stdenis1980.Gloxi-wake.desktop
 
 %changelog

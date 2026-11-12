@@ -8,6 +8,10 @@ Wed Nov 11 20:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
 -------------------------------------------------------------------
 Wed Nov 11 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
+- The classic wizard without the assistant (vilna-installer-wizard):
+  the same steps and plan with no model, a partition editor for
+  manual layout; «Without the assistant» opens it in the same program
+  instead of ending with status 3
 - Step 12: the summary of the plan and the Herkos confirmation
   screen (vilna-installer-confirm, its own process): every change of
   the disks, the recovery key typed back, the plan confirmed only

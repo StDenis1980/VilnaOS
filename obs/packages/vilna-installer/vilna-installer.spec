@@ -60,6 +60,9 @@ the Gloxi assistant or without it; then steps 1-13 as a conversation with
 Gloxi, with the installation plan beside it. Gloxi only fills the plan;
 Herkos's confirmation screen shows every change and the recovery key
 of the encrypted disk; the install engine comes next.
+Without the assistant, the classic wizard goes through the same steps
+and fills the same plan with no model, including manual layout in its
+partition editor.
 
 %prep
 %autosetup -p1
@@ -83,6 +86,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{appid}.desktop
 %doc README.md
 %{_bindir}/vilna-installer
 %{_bindir}/vilna-installer-chat
+%{_bindir}/vilna-installer-wizard
 %{_bindir}/vilna-installer-confirm
 %{python_sitelib}/vilna_installer
 %{python_sitelib}/vilna_installer-*.dist-info

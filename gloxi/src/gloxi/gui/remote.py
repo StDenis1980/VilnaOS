@@ -77,6 +77,8 @@ class RemoteController:
         self._sock = sock
         threading.Thread(target=self._reader, args=(sock,), daemon=True).start()
         params = {"language": self.language} if self.language else {}
+        if os.environ.get("XDG_SESSION_ID"):
+            params["session"] = os.environ["XDG_SESSION_ID"]
         hello = self._call("hello", params, reconnect=False)
         self._take_state(hello.get("state"))
 

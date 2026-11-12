@@ -2,7 +2,7 @@
 [project]
 name = "vilna-installer"
 version = "0.1.0.dev0"
-description = "Vilna OS installer: the first screen and the conversation with Gloxi"
+description = "Vilna OS installer: the first screen, the conversation with Gloxi and the classic wizard"
 readme = "README.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.11"
@@ -13,6 +13,7 @@ dependencies = ["vilna-mcp-installer"]
 [project.gui-scripts]
 vilna-installer = "vilna_installer.welcome:main"
 vilna-installer-chat = "vilna_installer.chat:main"
+vilna-installer-wizard = "vilna_installer.wizard_window:main"
 vilna-installer-confirm = "vilna_installer.confirm_window:main"
 
 [dependency-groups]

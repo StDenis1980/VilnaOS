@@ -38,6 +38,8 @@ PROTOCOL = 1
 MAX_LINE = 1 << 20
 # What the window may send as its language (LANGUAGE / LANG values).
 LANGUAGE_RE = re.compile(r"^[A-Za-z0-9_@.:-]{1,100}$")
+# The login session a window belongs to (XDG_SESSION_ID).
+SESSION_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
 MODES = ("auto", "local", "cloud")
 
 
@@ -47,6 +49,35 @@ def service_socket(env: dict[str, str] | None = None) -> Path:
     if env.get("GLOXI_SERVICE_SOCKET"):
         return Path(env["GLOXI_SERVICE_SOCKET"])
     return Path("/run/gloxi") / str(os.getuid()) / "gloxi.sock"
+
+
+def wake(path: Path | None = None, *, timeout: float = 5.0) -> bool:
+    """Say hello to gloxid at login, so it starts and reads the prompt in advance.
+
+    gloxid starts on the first connection (gloxi@<uid>.socket) and then has
+    the local model read the system prompt and the functions, which takes
+    about two minutes on a slow processor (Build14.9). At login, not when the
+    window first opens, that wait is over before the person writes. The
+    session id also tells gloxid that a new login began.
+    """
+    from gloxi.gui.remote import window_language
+
+    params: dict[str, str] = {}
+    language = window_language()
+    if language and LANGUAGE_RE.match(language):
+        params["language"] = language
+    session = os.environ.get("XDG_SESSION_ID", "")
+    if SESSION_RE.match(session):
+        params["session"] = session
+    line = json.dumps({"id": 1, "method": "hello", "params": params}) + "\n"
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+            sock.settimeout(timeout)
+            sock.connect(str(path or service_socket()))
+            sock.sendall(line.encode())
+            return bool(sock.recv(MAX_LINE))
+    except OSError:
+        return False
 
 
 def peer_uid(conn: socket.socket) -> int | None:
@@ -153,6 +184,8 @@ class Service:
         self.allow_root = allow_root
         # gettext reads LANGUAGE on every call: the window's language wins.
         self.environ = os.environ if environ is None else environ
+        # The login session of the last window: gloxid outlives a logout.
+        self.session: str | None = None
         self._handlers: dict[str, Callable[[dict], Any]] = {
             "hello": self._hello,
             "state": lambda _p: self.state(),
@@ -182,6 +215,16 @@ class Service:
             if not isinstance(language, str) or not LANGUAGE_RE.match(language):
                 raise RequestError("bad_params", "language must look like uk_UA.UTF-8 or uk:en")
             self.environ["LANGUAGE"] = language
+        session = params.get("session")
+        if session is not None:
+            if not isinstance(session, str) or not SESSION_RE.match(session):
+                raise RequestError("bad_params", "session must be a login session id")
+            if self.session is not None and session != self.session:
+                # gloxid lives on after the person logs out (Build14.9): a new
+                # login starts a new conversation, as a new window would
+                # without the service, and does not answer from the old one.
+                self.controller.reset()
+            self.session = session
         return {"protocol": PROTOCOL, "version": __version__, "state": self.state()}
 
     def _submit(self, params: dict) -> dict:

@@ -18,6 +18,7 @@ from vilna_mcp_installer import plan as plans
 
 from vilna_installer import conversation as conv
 from vilna_installer import start
+from vilna_installer import wizard as wiz
 
 Texts = Callable[[str], str]
 
@@ -272,6 +273,9 @@ def problem_text(problem: dict[str, Any], _: Texts) -> str:
     code = problem.get("code", "")
     if code in PROBLEMS:
         return _(PROBLEMS[code])
+    # The partition editor's codes and warnings have their words in the wizard.
+    if code in wiz.PROBLEM_TEXT:
+        return _(wiz.PROBLEM_TEXT[code])
     return _(GENERIC).format(message=problem.get("message", code))
 
 
@@ -325,7 +329,11 @@ def summarize(
     ]
     if missing:
         problems.insert(0, _(NOT_DECIDED_YET).format(parts=", ".join(dict.fromkeys(missing))))
-    warnings = [problem_text(w, _) for w in report.get("warnings", []) if w.get("code") in PROBLEMS]
+    warnings = [
+        problem_text(w, _)
+        for w in report.get("warnings", [])
+        if w.get("code") in PROBLEMS or w.get("code") in wiz.PROBLEM_TEXT
+    ]
     target = _find(survey, (plan.get("disk") or {}).get("target"))
     return Summary(
         lines=lines,

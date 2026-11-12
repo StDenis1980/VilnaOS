@@ -221,6 +221,7 @@ def build_parser() -> argparse.ArgumentParser:
     ask = sub.add_parser("ask", help="ask one question and exit")
     ask.add_argument("question", nargs="+")
     sub.add_parser("check", help="will this computer run the local model well?")
+    sub.add_parser("wake", help="start gloxid at login so it is ready (Vilna)")
     voice = sub.add_parser("voice", help="speech on this computer: status, download, say, listen")
     voice.add_argument("action", choices=("status", "download", "say", "listen"))
     voice.add_argument("text", nargs="*", help="for say: what to read aloud")
@@ -395,6 +396,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "check":
         print(check.collect().render())
         return 0
+    if args.command == "wake":
+        from gloxi.service import wake
+
+        return 0 if wake() else 1
     if args.command == "voice":
         from gloxi.voice import cli as voice_cli
 

@@ -28,6 +28,10 @@ RuntimeDirectory=herkos-tools
 RuntimeDirectoryMode=0711
 UMask=0077
 Restart=on-failure
+# The key of the shared local model for the Keros check (vilna-llm.service,
+# ADR 0025): without it llama-server refuses every check (Build14.9).
+# herkos reads it as a member of the group gloxi (herkos.sysusers).
+Environment=HERKOS_KEROS_KEY_FILE=/var/lib/vilna-llm/key
 
 # Hardening: herkosd reads the settings and passwd, writes only its own
 # state. It cannot become anybody: tools that act as a person are template
