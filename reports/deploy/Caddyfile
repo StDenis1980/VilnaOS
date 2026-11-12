@@ -29,10 +29,16 @@ reports.vilnaos.com {
 		-Server
 		Strict-Transport-Security "max-age=31536000"
 	}
+	# `handle` blocks keep the order as written: Caddy otherwise runs
+	# `respond` before `reverse_proxy` and every path would get 404.
 	@app path / /healthz /v1/* /admin /admin/*
-	reverse_proxy @app 127.0.0.1:8087 {
-		# Used for the request limits in memory only, never stored.
-		header_up X-Forwarded-For {remote_host}
+	handle @app {
+		reverse_proxy 127.0.0.1:8087 {
+			# Used for the request limits in memory only, never stored.
+			header_up X-Forwarded-For {remote_host}
+		}
 	}
-	respond 404
+	handle {
+		respond 404
+	}
 }
