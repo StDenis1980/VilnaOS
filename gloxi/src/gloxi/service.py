@@ -38,8 +38,10 @@ PROTOCOL = 1
 MAX_LINE = 1 << 20
 # What the window may send as its language (LANGUAGE / LANG values).
 LANGUAGE_RE = re.compile(r"^[A-Za-z0-9_@.:-]{1,100}$")
-# The login session a window belongs to (XDG_SESSION_ID).
+# The login session a window belongs to (gloxi.gui.remote.login_session).
 SESSION_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
+# At most this much of the kept conversation goes back to a window in hello.
+HISTORY_BYTES = 256 * 1024
 MODES = ("auto", "local", "cloud")
 
 
@@ -60,14 +62,14 @@ def wake(path: Path | None = None, *, timeout: float = 5.0) -> bool:
     window first opens, that wait is over before the person writes. The
     session id also tells gloxid that a new login began.
     """
-    from gloxi.gui.remote import window_language
+    from gloxi.gui.remote import login_session, window_language
 
     params: dict[str, str] = {}
     language = window_language()
     if language and LANGUAGE_RE.match(language):
         params["language"] = language
-    session = os.environ.get("XDG_SESSION_ID", "")
-    if SESSION_RE.match(session):
+    session = login_session()
+    if session:
         params["session"] = session
     line = json.dumps({"id": 1, "method": "hello", "params": params}) + "\n"
     try:
@@ -225,7 +227,34 @@ class Service:
                 # without the service, and does not answer from the old one.
                 self.controller.reset()
             self.session = session
-        return {"protocol": PROTOCOL, "version": __version__, "state": self.state()}
+        return {
+            "protocol": PROTOCOL,
+            "version": __version__,
+            "state": self.state(),
+            "history": self.history(),
+        }
+
+    def history(self) -> list[dict]:
+        """The kept conversation, newest last, for a window that opens again.
+
+        Only what the person wrote and Gloxi answered: tool results never
+        enter the history, and the language hint is never stored. The oldest
+        messages are left out past HISTORY_BYTES.
+        """
+        conversation = getattr(self.controller, "conversation", None)
+        kept = list(getattr(conversation, "history", None) or [])
+        out: list[dict] = []
+        size = 0
+        for message in reversed(kept):
+            role, text = message.get("role"), message.get("content")
+            if role not in ("user", "assistant") or not isinstance(text, str):
+                continue
+            size += len(text.encode("utf-8"))
+            if size > HISTORY_BYTES:
+                break
+            out.append({"role": role, "text": text})
+        out.reverse()
+        return out
 
     def _submit(self, params: dict) -> dict:
         text = params.get("text")
