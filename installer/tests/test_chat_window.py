@@ -134,3 +134,23 @@ def test_a_double_click_on_change_is_one_change(plan_path):
     win._on_change(None, "disk")
     assert spin(lambda: not win.busy)
     assert talk.gone_to == ["disk", "disk"]
+
+
+def test_the_first_screen_stays_until_the_chat_is_on_the_screen(plan_path):
+    from vilna_installer import welcome as first
+
+    app = first.InstallerApp(plan_path, True, "en")
+    app.register(None)
+    screen = first.Welcome(app, plan_path, "en")
+    opened = []
+    app.open_chat = opened.append
+    screen._finish(assistant=True)
+    screen._finish(assistant=True)  # a second press while the chat comes up
+    assert opened == [screen]
+    assert not screen.get_sensitive()
+
+    on_map = first._once_mapped(screen)
+    assert screen in app.get_windows()  # nothing yet: the chat is not on the screen
+    on_map(None)
+    on_map(None)  # mapped again (unfullscreen, a workspace switch): nothing more
+    assert screen not in app.get_windows()

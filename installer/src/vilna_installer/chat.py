@@ -310,12 +310,14 @@ class ChatWindow(Adw.ApplicationWindow):
         return False
 
     def _show_waking(self) -> bool:
+        start.log("waiting for the model")
         self._say(self._(conv.WAKING))
         self.waking = self.list.get_last_child()
         self.thinking.set_visible(True)
         return False
 
     def _model_ready(self) -> bool:
+        start.log("model ready")
         if self.waking is not None:
             self.list.remove(self.waking)
             self.waking = None

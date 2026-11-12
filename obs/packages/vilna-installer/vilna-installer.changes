@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 11 20:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The first screen stays until the chat window is on the screen and
+  takes one press; each step towards the chat logs the seconds since
+  boot, and SIGUSR1 writes the Python stacks to the journal
+
+-------------------------------------------------------------------
 Wed Nov 11 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The classic wizard without the assistant (vilna-installer-wizard):

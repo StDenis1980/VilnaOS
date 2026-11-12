@@ -21,8 +21,10 @@ wallpaper (light by default, dark when the system is dark).
 from __future__ import annotations
 
 import argparse
+import faulthandler
 import json
 import os
+import signal
 import sys
 from importlib import resources
 from pathlib import Path
@@ -342,6 +344,10 @@ class Welcome(Adw.ApplicationWindow):
             Gio.Settings.new(A11Y_SCHEMA).set_boolean("screen-reader-enabled", button.get_active())
 
     def _finish(self, assistant: bool) -> None:
+        if not self.get_sensitive():
+            return  # already pressed: the screen stays until the chat shows
+        self.set_sensitive(False)
+        start.log("with Gloxi" if assistant else "without the assistant")
         plan = start.start_plan(
             self.language, self.reader.get_active(), assistant, locale=self.locale
         )
@@ -353,6 +359,21 @@ class Welcome(Adw.ApplicationWindow):
                 app.open_chat(self)
             else:
                 app.open_wizard(self)
+
+
+def _once_mapped(welcome: Gtk.Window):
+    """The first screen stays until the chat is on the screen: never a bare desktop."""
+    done = False
+
+    def on_map(_win: Gtk.Window) -> None:
+        nonlocal done
+        if done:
+            return
+        done = True
+        start.log("chat window on the screen")
+        welcome.destroy()
+
+    return on_map
 
 
 class InstallerApp(Adw.Application):
@@ -368,6 +389,8 @@ class InstallerApp(Adw.Application):
     def open_chat(self, welcome: Gtk.Window) -> None:
         """Steps 1–13: the conversation with Gloxi, or a note that it cannot start."""
         from vilna_installer import chat, conversation
+
+        start.log("chat code loaded")
 
         css = Gtk.CssProvider()
         css.load_from_string(chat.CSS)
@@ -386,6 +409,7 @@ class InstallerApp(Adw.Application):
             except conversation.ToolsError as e:
                 print(f"vilna-installer: {e}", file=sys.stderr)
                 return None
+            start.log("tools started")
             return talk
 
         win = chat.ChatWindow(
@@ -398,8 +422,9 @@ class InstallerApp(Adw.Application):
         )
         if not self.window:
             win.fullscreen()
+        win.connect("map", _once_mapped(welcome))
         win.present()
-        welcome.destroy()
+        start.log("chat window presented")
 
     def open_wizard(self, previous: Gtk.Window, secrets: object | None = None) -> None:
         """The classic wizard: the same steps and plan, no model (installer.md 1.7)."""
@@ -449,6 +474,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--language", choices=start.CODES, help="start in this language")
     p.add_argument("--demo", choices=("empty", "windows"), help="a synthetic computer")
     args = p.parse_args(sys.argv[1:] if argv is None else argv)
+    if hasattr(signal, "SIGUSR1"):
+        # kill -USR1 <pid> writes every thread's Python stack to the journal.
+        faulthandler.register(signal.SIGUSR1, all_threads=True)
+    start.log("started")
     language = args.language or start.default_language()
     app = InstallerApp(args.plan or start.default_plan_path(), args.window, language, args.demo)
     GLib.set_application_name("Vilna")
