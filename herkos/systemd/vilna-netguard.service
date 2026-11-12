@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The VPN kill switch of Vilna OS (docs/adr/0027-vpn-proton-mullvad.md,
+# section 3). It keeps the nftables table inet vilna_killswitch in step with
+# the person's decision (/var/lib/vilna-netguard/state.json, changed only by
+# Herkos after the person confirmed) and with the servers of the tunnels that
+# are up. It starts before the network, so a computer whose kill switch is on
+# never sends a packet outside the tunnel, not even at boot.
+[Unit]
+Description=VPN kill switch of Vilna (Herkos)
+DefaultDependencies=no
+Wants=network-pre.target
+Before=network-pre.target shutdown.target
+Conflicts=shutdown.target
+After=local-fs.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/vilna-netguard apply
+ExecStart=/usr/bin/vilna-netguard watch 2
+Restart=always
+RestartSec=1
+StateDirectory=vilna-netguard
+StateDirectoryMode=0700
+
+# Root, but only to change nftables and read WireGuard peers.
+CapabilityBoundingSet=CAP_NET_ADMIN
+AmbientCapabilities=CAP_NET_ADMIN
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+
+[Install]
+WantedBy=multi-user.target

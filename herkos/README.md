@@ -61,3 +61,13 @@ cd herkos/rs
 cargo test
 cargo run -p herkosd -- serve --confirm deny
 ```
+
+### Kill switch VPN (`vilna-netguard`)
+
+[ADR 0027](../docs/adr/0027-vpn-proton-mullvad.md), розд. 3: [`rs/crates/vilna-netguard/`](rs/crates/vilna-netguard/) тримає таблицю nftables `inet vilna_killswitch`. Коли kill switch увімкнено, назовні йде лише трафік через тунелі (`wg*`, `proton*`, `pvpn*`, `tun*`), пакети тунелів до їхніх серверів (з `wg show all endpoints`), DHCP і служба провайдера (`mullvad-daemon.service`); DNS повз тунель не йде навіть до роутера. Локальну мережу можна пропустити лише з приватних діапазонів, вікно для captive portal — до 5 хвилин. Служба [`systemd/vilna-netguard.service`](systemd/vilna-netguard.service) стартує до мережі. Змінювати рішення (`on`, `off`, `allow-lan`, `portal`) буде лише Herkos після підтвердження людини; дії й маніфест — наступний крок ADR 0027.
+
+```sh
+cd herkos/rs
+cargo test -p vilna-netguard   # перевіряє скрипт справжнім nft -c, якщо є права
+sudo unshare -n target/debug/vilna-netguard --state /tmp/s.json on
+```
