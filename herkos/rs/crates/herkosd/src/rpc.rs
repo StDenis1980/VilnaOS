@@ -8,11 +8,10 @@ use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use herkos_core::PROTOCOL_VERSION;
-use herkos_core::policy::SessionState;
 use herkos_core::request::parse_request;
 use serde_json::{Value, json};
 
-use crate::gate::Gate;
+use crate::gate::{Gate, Session};
 
 pub const PARSE_ERROR: i64 = -32700;
 pub const INVALID_REQUEST: i64 = -32600;
@@ -48,7 +47,7 @@ pub fn new_action_id() -> String {
 
 pub struct Connection {
     gate: Arc<Gate>,
-    session: SessionState,
+    session: Session,
     hello: bool,
 }
 
@@ -56,7 +55,7 @@ impl Connection {
     pub fn new(gate: Arc<Gate>) -> Connection {
         Connection {
             gate,
-            session: SessionState::default(),
+            session: Session::default(),
             hello: false,
         }
     }
@@ -142,16 +141,21 @@ impl Connection {
                     ),
                 }
             }
-            "herkos.session" => result(
-                id,
-                json!({
-                    "tainted": self.session.tainted,
-                    "taint_sources": self.session.taint_sources,
-                    "findings": self.session.keros.findings.iter().map(|(src, f)| {
-                        json!({"source": src, "rule": f.rule, "description": f.description})
-                    }).collect::<Vec<_>>(),
-                }),
-            ),
+            "herkos.session" => {
+                // Verdicts that came in meanwhile are part of the answer.
+                self.gate.settle(&mut self.session, false);
+                result(
+                    id,
+                    json!({
+                        "keros_model_pending": self.session.pending(),
+                        "tainted": self.session.tainted,
+                        "taint_sources": self.session.taint_sources,
+                        "findings": self.session.keros.findings.iter().map(|(src, f)| {
+                            json!({"source": src, "rule": f.rule, "description": f.description})
+                        }).collect::<Vec<_>>(),
+                    }),
+                )
+            }
             _ => error(id, METHOD_NOT_FOUND, &format!("unknown method {method}")),
         }
     }

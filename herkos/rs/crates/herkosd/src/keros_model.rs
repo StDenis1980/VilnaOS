@@ -337,6 +337,11 @@ impl ModelCheck {
         }
     }
 
+    /// How long one check may take.
+    pub fn budget(&self) -> Duration {
+        self.budget
+    }
+
     pub fn check(&self, text: &str) -> Report {
         let start = Instant::now();
         let parts = chunks(text, CHUNK_CHARS);
