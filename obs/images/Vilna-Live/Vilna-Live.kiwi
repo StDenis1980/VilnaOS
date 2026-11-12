@@ -38,12 +38,17 @@
          (enforcing=0): the squashfs and its RAM overlay were never
          checked enforcing on Vilna; the installed system stays
          enforcing. -->
+    <!-- squashfscompression="zstd": the live root and the model weights
+         unpack several times faster than with KIWI's default xz, for a
+         slightly larger ISO (the start of GNOME Shell and the model
+         were the slowest steps in the VM test of Build6.4). -->
     <type
       image="iso"
       primary="true"
       flags="overlay"
       firmware="uefi"
       mediacheck="false"
+      squashfscompression="zstd"
       volid="VILNA_LIVE"
       publisher="Vilna"
       kernelcmdline="quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false rd.systemd.show_status=false security=selinux selinux=1 enforcing=0"

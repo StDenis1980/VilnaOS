@@ -50,6 +50,10 @@ A11Y_SCHEMA = "org.gnome.desktop.a11y.applications"
 # chat took 47 s after «Next with Gloxi» (VM test of Build6.2, 2026-11-12).
 # So the first screen reads it while the person picks a language, and only
 # then wakes the model.
+# The model wakes this long after the code is read even if the window never
+# gets the keyboard (no keyboard, another window has it).
+SHOWN_TIMEOUT_S = 30
+
 PRELOAD = (
     "vilna_installer.chat",
     "vilna_installer.conversation",
@@ -258,6 +262,7 @@ class Welcome(Adw.ApplicationWindow):
         self.connect("map", self._on_map)
 
     preloaded: threading.Event | None = None
+    woken = False
 
     def _on_map(self, _window: Gtk.Window) -> None:
         if self.preloaded is None:
@@ -272,7 +277,31 @@ class Welcome(Adw.ApplicationWindow):
             start.log("next screens loaded")
             if self.preloaded is not None:
                 self.preloaded.set()
+            GLib.idle_add(self._wake_when_shown)
+
+    def _wake_when_shown(self) -> bool:
+        # GTK maps the window before GNOME Shell draws it. On the live image
+        # the shell showed it only 11 s after its first frame, and the model
+        # woken meanwhile (at map) kept it off the screen (VM test of
+        # Build6.4, 2026-11-12). The shell gives the window the keyboard
+        # when it shows it; without a keyboard the model wakes anyway.
+        if self.is_active():
+            self._wake_soon()
+        else:
+            self.connect("notify::is-active", self._on_active)
+            GLib.timeout_add_seconds(SHOWN_TIMEOUT_S, self._wake_soon)
+        return GLib.SOURCE_REMOVE
+
+    def _on_active(self, _window: Gtk.Window, _param: object) -> None:
+        if self.is_active():
+            self._wake_soon()
+
+    def _wake_soon(self) -> bool:
+        if not self.woken:
+            self.woken = True
+            start.log("first screen shown")
             GLib.timeout_add_seconds(start.MODEL_WAKE_DELAY_S, self._wake_model)
+        return GLib.SOURCE_REMOVE
 
     def _when_loaded(self, then: Callable[[], None]) -> None:
         """Run ``then`` on the main thread once the next screens are read."""

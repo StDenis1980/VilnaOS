@@ -187,11 +187,50 @@ def test_the_next_screen_opens_only_after_its_code_is_read(plan_path, monkeypatc
     assert opened == []  # still reading: the screen stays and answers
     assert woken == []
 
+    screen.is_active = lambda: True  # GNOME Shell shows it and gives it the keyboard
     threading.Thread(
         target=screen._preload_then_wake, kwargs={"load": lambda: None}, daemon=True
     ).start()
     assert spin(lambda: opened == [screen])
     assert spin(lambda: woken == [True])  # the model wakes after the code is read
+
+
+def test_the_model_waits_until_the_shell_shows_the_first_screen(plan_path, monkeypatch):
+    from vilna_installer import welcome as first
+
+    woken = []
+    monkeypatch.setattr(first.start, "MODEL_WAKE_DELAY_S", 0)
+    monkeypatch.setattr(first.start, "wake_model", lambda: woken.append(True))
+    app = first.InstallerApp(plan_path, True, "en")
+    app.register(None)
+    screen = first.Welcome(app, plan_path, "en")
+    shown = False
+    screen.is_active = lambda: shown
+    screen._wake_when_shown()
+    assert spin(lambda: False, seconds=0.3) is False
+    assert woken == []  # mapped, but not on the screen yet
+
+    shown = True
+    screen.notify("is-active")
+    screen.notify("is-active")  # focus comes and goes: one wake
+    assert spin(lambda: woken == [True])
+    assert spin(lambda: False, seconds=0.3) is False
+    assert woken == [True]
+
+
+def test_the_model_wakes_without_a_keyboard_too(plan_path, monkeypatch):
+    from vilna_installer import welcome as first
+
+    woken = []
+    monkeypatch.setattr(first, "SHOWN_TIMEOUT_S", 0)
+    monkeypatch.setattr(first.start, "MODEL_WAKE_DELAY_S", 0)
+    monkeypatch.setattr(first.start, "wake_model", lambda: woken.append(True))
+    app = first.InstallerApp(plan_path, True, "en")
+    app.register(None)
+    screen = first.Welcome(app, plan_path, "en")
+    screen.is_active = lambda: False
+    screen._wake_when_shown()
+    assert spin(lambda: woken == [True])
 
 
 def test_the_next_screen_opens_at_once_when_the_code_is_read(plan_path):

@@ -91,6 +91,11 @@ cat >/etc/systemd/system/vilna-llm.service.d/50-vilna-live.conf <<'LLM'
 [Service]
 IOSchedulingClass=idle
 Nice=10
+# Read the weights in one pass, not page by page: through mmap every
+# page fault unpacked a whole squashfs block again, and the model was
+# ready only 4-5 minutes after start (VM test of Build6.4, 2026-11-12).
+# Both names: llama.cpp renamed the variable of --no-mmap.
+Environment=LLAMA_ARG_NO_MMAP=1 LLAMA_ARG_MMAP=0
 LLM
 
 # Plymouth is gone before GDM starts. openSUSE's display-manager-legacy
