@@ -1234,10 +1234,6 @@ msgid "One more step in the Proton VPN app: in its settings turn on “Connect a
 msgstr "Ще один крок у застосунку Proton VPN: у його налаштуваннях увімкніть «Connect at startup» (під’єднуватися під час запуску), щоб VPN вмикався сам."
 
 #: src/gloxi/vpn_intro.py
-msgid "Shall we protect your traffic with a VPN? It hides what you do from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones. Your encrypted DNS already works without a VPN."
-msgstr "Захистимо ваш трафік через VPN? Він приховує, що ви робите, від мережі, у якій ви є (кав’ярня, готель), а вашу адресу — від сайтів. Провайдер VPN бачить, куди ви ходите, тому я пропоную лише перевірених. Зашифрований DNS уже працює й без VPN."
-
-#: src/gloxi/vpn_intro.py
 msgid "Sign in to Proton VPN"
 msgstr "Увійти в Proton VPN"
 
@@ -1264,3 +1260,7 @@ msgstr "Зараз ми не говоримо про VPN."
 #: src/gloxi/vpn_intro.py
 msgid "Yes, recommended"
 msgstr "Так, рекомендовано"
+
+#: src/gloxi/vpn_intro.py
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up. Do you want even more protection with a VPN? It also hides the rest of your traffic from that network (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones."
+msgstr "Ваше з’єднання вже захищене: Vilna шифрує DNS, тож мережа, у якій ви є, не бачить, які сайти ви шукаєте. Хочете ще більше захисту з VPN? Він приховує від цієї мережі (кав’ярня, готель) і решту трафіку, а вашу адресу — від сайтів. Провайдер VPN бачить, куди ви ходите, тому я пропоную лише перевірених."

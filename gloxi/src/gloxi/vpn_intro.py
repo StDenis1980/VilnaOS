@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """First-run talk about VPN (docs/adr/0027-vpn-proton-mullvad.md, section 2).
 
-"Protect your traffic with a VPN?" Proton VPN is offered first (it has a
+"Do you want even more protection with a VPN?" (DNS is already
+encrypted, ADR 0027 section 5.) Proton VPN is offered first (it has a
 free plan), Mullvad for the most anonymity. Gloxi never sees the person's
 account: it only opens the provider's own app, or Proton's sign-up page,
 and the person signs in there. When a tunnel is up, Gloxi offers the kill
@@ -103,10 +104,11 @@ class VpnIntro:
         self.step = "choose"
         self._last = Turn(
             _(
-                "Shall we protect your traffic with a VPN? It hides what you do from the "
-                "network you are on (a cafe, a hotel) and your address from websites. The VPN "
-                "provider sees where you go, so I only suggest proven ones. Your encrypted DNS "
-                "already works without a VPN."
+                "Your connection is already protected: Vilna encrypts DNS, so the network "
+                "you are on does not see which sites you look up. Do you want even more "
+                "protection with a VPN? It also hides the rest of your traffic from that "
+                "network (a cafe, a hotel) and your address from websites. The VPN provider "
+                "sees where you go, so I only suggest proven ones."
             ),
             (
                 _("Sign in to Proton VPN"),

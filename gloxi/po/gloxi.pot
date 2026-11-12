@@ -1221,10 +1221,6 @@ msgid "One more step in the Proton VPN app: in its settings turn on “Connect a
 msgstr ""
 
 #: src/gloxi/vpn_intro.py
-msgid "Shall we protect your traffic with a VPN? It hides what you do from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones. Your encrypted DNS already works without a VPN."
-msgstr ""
-
-#: src/gloxi/vpn_intro.py
 msgid "Sign in to Proton VPN"
 msgstr ""
 
@@ -1250,4 +1246,8 @@ msgstr ""
 
 #: src/gloxi/vpn_intro.py
 msgid "Yes, recommended"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up. Do you want even more protection with a VPN? It also hides the rest of your traffic from that network (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones."
 msgstr ""

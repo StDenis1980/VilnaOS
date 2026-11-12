@@ -71,7 +71,7 @@ def talk(intro, *answers):
 def test_proton_sign_in_then_kill_switch(make):
     intro, herkos, _ = make(tunnels=(0, 1))
     first, opened, connected, end = talk(intro, "1", "1", "1")
-    assert "Shall we protect your traffic" in first.text
+    assert "already protected" in first.text and "even more protection" in first.text
     assert len(first.choices) == 4 and "Proton" in first.choices[0]
     assert opened.launch == PROTON_APP and opened.open_uri is None
     assert "not here" in opened.text  # the password goes only to Proton's app
@@ -188,6 +188,6 @@ def test_terminal(make):
     out = io.StringIO()
     run_intro(intro, lambda prompt: next(answers), out, opened.append)
     text = out.getvalue()
-    assert "Gloxi: Shall we protect your traffic" in text
+    assert "Gloxi: Your connection is already protected" in text
     assert opened == [PROTON_SIGNUP]
     assert PROTON_APP in text
