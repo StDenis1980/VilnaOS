@@ -17,6 +17,10 @@ disable sshd.socket
 # no network (and the first-boot Flatpak install fails).
 enable NetworkManager.service
 enable NetworkManager-wait-online.service
+# Encrypted DNS (ADR 0027): NetworkManager hands DNS to systemd-resolved.
+enable systemd-resolved.service
+# The VPN kill switch; it does nothing until the person turns it on.
+enable vilna-netguard.service
 
 # Vilna components (no effect until the units are installed).
 # herkosd starts on demand through its socket. Each person's Gloxi

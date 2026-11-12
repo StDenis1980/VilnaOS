@@ -24,12 +24,13 @@ use std::process::{Command, ExitCode, Stdio};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
+use vilna_netguard::dns::{OVERRIDE_FILE, Resolver};
 use vilna_netguard::endpoints::parse_wg_endpoints;
 use vilna_netguard::ruleset::{self, PROVIDER_SERVICES, TABLE};
 use vilna_netguard::state::{Lan, State};
 
-const USAGE: &str = "usage: vilna-netguard [--state PATH] [--nft PATH] [--wg PATH] [--cgroup-root DIR] COMMAND\n\
-commands:\n  status\n  apply\n  watch [SECONDS]\n  on | off\n  allow-lan CIDR | forget-lan CIDR\n  portal SECONDS";
+const USAGE: &str = "usage: vilna-netguard [--state PATH] [--nft PATH] [--wg PATH] [--cgroup-root DIR] [--resolved-dir DIR] [--systemctl PATH] COMMAND\n\
+commands:\n  status\n  apply\n  watch [SECONDS]\n  on | off\n  allow-lan CIDR | forget-lan CIDR\n  portal SECONDS\n  dns quad9|mullvad";
 
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(10);
 const MAX_OUTPUT: u64 = 1024 * 1024;
@@ -40,6 +41,8 @@ struct Paths {
     nft: PathBuf,
     wg: PathBuf,
     cgroup_root: PathBuf,
+    resolved_dir: PathBuf,
+    systemctl: PathBuf,
 }
 
 fn main() -> ExitCode {
@@ -49,6 +52,8 @@ fn main() -> ExitCode {
         nft: PathBuf::from("/usr/sbin/nft"),
         wg: PathBuf::from("/usr/bin/wg"),
         cgroup_root: PathBuf::from("/sys/fs/cgroup"),
+        resolved_dir: PathBuf::from("/etc/systemd/resolved.conf.d"),
+        systemctl: PathBuf::from("/usr/bin/systemctl"),
     };
     while args.first().is_some_and(|a| a.starts_with("--")) {
         let flag = args.remove(0);
@@ -61,6 +66,8 @@ fn main() -> ExitCode {
             "--nft" => paths.nft = value,
             "--wg" => paths.wg = value,
             "--cgroup-root" => paths.cgroup_root = value,
+            "--resolved-dir" => paths.resolved_dir = value,
+            "--systemctl" => paths.systemctl = value,
             _ => {
                 eprintln!("unknown option {flag}\n{USAGE}");
                 return ExitCode::from(2);
@@ -90,6 +97,7 @@ fn run(paths: &Paths, words: &[&str]) -> Result<String, String> {
             let mut v = state.to_json();
             v["portal_open"] = state.portal_open(now).into();
             v["applied"] = table_present(paths).into();
+            v["dns"] = current_resolver(paths).name().into();
             Ok(v.to_string())
         }
         ["apply"] => apply(paths, &load(&paths.state), now).map(|_| String::new()),
@@ -126,6 +134,11 @@ fn run(paths: &Paths, words: &[&str]) -> Result<String, String> {
             let seconds: u64 = seconds.parse().map_err(|_| "portal takes seconds")?;
             change(paths, now, |s| s.open_portal(now, seconds))
         }
+        ["dns", name] => {
+            let resolver = Resolver::parse(name)?;
+            set_resolver(paths, resolver)?;
+            Ok(serde_json::json!({ "dns": resolver.name() }).to_string())
+        }
         _ => Err(USAGE.to_owned()),
     }
 }
@@ -150,23 +163,29 @@ fn load(path: &Path) -> State {
     }
 }
 
-/// Write the state next to its place and rename it there: a crash leaves
-/// either the old file or the new one.
-fn save(path: &Path, state: &State) -> Result<(), String> {
-    let folder = path.parent().ok_or("the state path has no folder")?;
+/// Write next to its place and rename it there: a crash leaves either the
+/// old file or the new one.
+fn write_atomic(path: &Path, text: &str, mode: u32) -> Result<(), String> {
+    let folder = path.parent().ok_or("the path has no folder")?;
     fs::create_dir_all(folder).map_err(|e| format!("{}: {e}", folder.display()))?;
-    let tmp = path.with_extension("json.new");
+    let mut tmp = path.as_os_str().to_owned();
+    tmp.push(".new");
+    let tmp = PathBuf::from(tmp);
     let mut f = fs::OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
-        .mode(0o600)
+        .mode(mode)
         .open(&tmp)
         .map_err(|e| format!("{}: {e}", tmp.display()))?;
-    f.write_all(state.to_json().to_string().as_bytes())
+    f.write_all(text.as_bytes())
         .and_then(|()| f.sync_all())
         .map_err(|e| format!("{}: {e}", tmp.display()))?;
     fs::rename(&tmp, path).map_err(|e| format!("{}: {e}", path.display()))
+}
+
+fn save(path: &Path, state: &State) -> Result<(), String> {
+    write_atomic(path, &state.to_json().to_string(), 0o600)
 }
 
 fn change(
@@ -179,6 +198,34 @@ fn change(
     save(&paths.state, &state)?;
     apply(paths, &state, now)?;
     Ok(state.to_json().to_string())
+}
+
+fn current_resolver(paths: &Paths) -> Resolver {
+    let text = fs::File::open(paths.resolved_dir.join(OVERRIDE_FILE))
+        .ok()
+        .and_then(|f| {
+            let mut t = String::new();
+            f.take(MAX_STATE).read_to_string(&mut t).ok().map(|_| t)
+        });
+    Resolver::from_override(text.as_deref())
+}
+
+/// Write or remove the override and let systemd-resolved read it again.
+fn set_resolver(paths: &Paths, resolver: Resolver) -> Result<(), String> {
+    let path = paths.resolved_dir.join(OVERRIDE_FILE);
+    match resolver.override_file() {
+        Some(text) => write_atomic(&path, &text, 0o644)?,
+        None => match fs::remove_file(&path) {
+            Ok(()) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(e) => return Err(format!("{}: {e}", path.display())),
+        },
+    }
+    run_command(
+        Command::new(&paths.systemctl).args(["try-reload-or-restart", "systemd-resolved.service"]),
+        None,
+    )
+    .map(|_| ())
 }
 
 /// Provider services that are running now: nft refuses a cgroup that does not exist.

@@ -22,6 +22,7 @@
 // Tests may unwrap: a failed unwrap is a failed test.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used))]
 
+pub mod dns;
 pub mod endpoints;
 pub mod ruleset;
 pub mod state;
