@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 12 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The model wakes once GNOME Shell shows the first screen (it gets the
+  keyboard), at most 30 s after the code is read: woken at map, it kept
+  the window off the screen for 11 s on the live image
+
+-------------------------------------------------------------------
 Thu Nov 12 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The first screen reads the code of the chat and the wizard while
