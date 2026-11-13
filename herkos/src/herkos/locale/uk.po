@@ -526,3 +526,134 @@ msgstr "Запустити службу обраного провайдера VP
 
 msgid "Gloxi started the service of the VPN provider"
 msgstr "Gloxi запустив службу провайдера VPN"
+
+# Інструмент «програми» (vilna-mcp-apps, ADR 0012)
+msgid "Look for apps on Flathub and in Vilna's repository"
+msgstr "Шукати програми на Flathub і у сховищі Vilna"
+
+msgid "See what an app is and what it may reach"
+msgstr "Подивитися, що це за програма і до чого вона матиме доступ"
+
+msgid "See the installed apps"
+msgstr "Подивитися встановлені програми"
+
+msgid "Install an app for everybody on this computer"
+msgstr "Встановити програму для всіх на цьому комп'ютері"
+
+msgid "Update apps"
+msgstr "Оновити програми"
+
+msgid "Remove an app (its data stays)"
+msgstr "Видалити програму (її дані лишаються)"
+
+msgid "Undo an install or a removal of an app"
+msgstr "Скасувати встановлення чи видалення програми"
+
+msgid "Add a source of apps"
+msgstr "Додати джерело програм"
+
+msgid "Install an app from a .flatpakref or .flatpak file"
+msgstr "Встановити програму з файлу .flatpakref чи .flatpak"
+
+msgid "Open an installed app"
+msgstr "Відкрити встановлену програму"
+
+# Що діалог Herkos показує про програму перед встановленням
+msgid "App"
+msgstr "Програма"
+
+msgid "Developer"
+msgstr "Розробник"
+
+msgid "Verified"
+msgstr "Підтверджено"
+
+msgid "In Recommended by Vilna"
+msgstr "У «Рекомендовано Vilna»"
+
+msgid "Source"
+msgstr "Джерело"
+
+msgid "Download"
+msgstr "Завантаження"
+
+msgid "License"
+msgstr "Ліцензія"
+
+msgid "Can reach"
+msgstr "Матиме доступ до"
+
+msgid "preview"
+msgstr "опис"
+
+msgid "yes"
+msgstr "так"
+
+msgid "a Vilna app"
+msgstr "програма Vilna"
+
+msgid "no: Flathub has not checked who makes it"
+msgstr "ні: Flathub не перевіряв, хто її робить"
+
+msgid "no: Vilna has not checked this app"
+msgstr "ні: Vilna цю програму не перевіряла"
+
+msgid "not given"
+msgstr "не вказано"
+
+msgid "unknown"
+msgstr "невідомо"
+
+msgid "only its own files"
+msgstr "лише власних файлів"
+
+msgid "all files on the computer"
+msgstr "усіх файлів на комп'ютері"
+
+msgid "the system's programs and libraries"
+msgstr "програм і бібліотек системи"
+
+msgid "the system's settings (/etc)"
+msgstr "налаштувань системи (/etc)"
+
+msgid "your whole home folder"
+msgstr "усієї вашої домашньої теки"
+
+msgid "the X11 display (can see other X11 windows)"
+msgstr "екрана X11 (може бачити інші вікна X11)"
+
+msgid "every program on your session bus"
+msgstr "усіх програм на шині вашого сеансу"
+
+msgid "every service on the system bus"
+msgstr "усіх служб на системній шині"
+
+msgid "your SSH keys (through the agent)"
+msgstr "ваших ключів SSH (через агента)"
+
+msgid "smart cards"
+msgstr "смарт-карток"
+
+msgid "printers"
+msgstr "принтерів"
+
+msgid "your GPG keys (through the agent)"
+msgstr "ваших ключів GPG (через агента)"
+
+msgid "all devices (camera, microphone, USB…)"
+msgstr "усіх пристроїв (камера, мікрофон, USB…)"
+
+msgid "input devices"
+msgstr "пристроїв введення"
+
+msgid "the internet and local network"
+msgstr "інтернету й локальної мережі"
+
+msgid "its permissions could not be read"
+msgstr "її дозволи не вдалося прочитати"
+
+msgid "the folder {path}"
+msgstr "теки {path}"
+
+msgid "{what} (read only)"
+msgstr "{what} (лише читання)"

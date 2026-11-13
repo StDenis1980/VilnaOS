@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The "launcher" tool (ADR 0012) for the person with uid %i, started by the
+# system Herkos (50-herkos.rules). It runs as the person and asks their
+# systemd user manager to start `flatpak run <app>` for an installed app, so
+# the app opens in their session and in its own Flatpak sandbox, not in
+# this unit's.
+[Unit]
+Description=Launcher tool of Herkos for uid %i
+ConditionPathExists=/run/herkos-tools/%i/launcher.sock
+
+[Service]
+Type=simple
+User=%i
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%i/bus
+Environment=XDG_RUNTIME_DIR=/run/user/%i
+ExecStart=/usr/bin/vilna-mcp-launcher
+StandardInput=file:/run/herkos-tools/%i/launcher.sock
+StandardOutput=file:/run/herkos-tools/%i/launcher.sock
+StandardError=journal
+Restart=no
+
+# Reads only whether an app is installed; no network, no writes.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

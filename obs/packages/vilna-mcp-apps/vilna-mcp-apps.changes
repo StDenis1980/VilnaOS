@@ -1,0 +1,8 @@
+-------------------------------------------------------------------
+Fri Nov 13 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: MCP servers "programs" (vilna-mcp-apps: search,
+  describe, list, install, update, remove Flatpak apps from Flathub and
+  Vilna) and "launcher" (vilna-mcp-launcher: open an installed app),
+  ADR 0012. Started only by Herkos; the system user vilna-apps and its
+  polkit rule (install, update and remove only, no new sources).
