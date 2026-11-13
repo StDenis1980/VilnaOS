@@ -270,6 +270,8 @@ def test_hints_never_raise_an_operation_above_its_manifest_level():
     import tomllib
 
     manifest = REPO / "herkos/src/herkos/manifests/org.vilna.mcp.apps.toml"
+    if not manifest.exists():
+        pytest.skip("the Herkos manifest is not in this tree (rpm build)")
     ops = tomllib.loads(manifest.read_text())["operations"]
     order = ["R0", "R1", "R2", "R3", "R4"]
     for tool in TOOLS:
