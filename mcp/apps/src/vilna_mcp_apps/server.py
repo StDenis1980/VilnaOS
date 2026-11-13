@@ -54,7 +54,11 @@ def _tool(name, description, props, required, **annotations):
     }
 
 
-_READ = {"readOnlyHint": True, "openWorldHint": True}
+# Herkos reads these hints as a floor for the level (openWorldHint and
+# destructiveHint mean R3), so a read must not carry openWorldHint: search
+# would then ask the person every time (seen in a VM, 2026-11-13). The
+# manifest org.vilna.mcp.apps.toml says R0 for reads and R3 for changes.
+_READ = {"readOnlyHint": True}
 _CHANGE = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": True}
 
 TOOLS = [
