@@ -64,7 +64,7 @@ vilna:
     - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: obs}      # «Рекомендовано Vilna», ADR 0012; список: obs/packages/vilna-software-picks/picks.toml
     - {name: plymouth-branding-Vilna,      license: GPL-3.0-or-later, status: obs}      # екран завантаження, image/plymouth/
     # VPN (ADR 0027): Proton за замовчуванням, Mullvad — максимальна анонімність; служби вимкнені до вибору
-    - {name: proton-vpn,                   license: GPL-3.0-or-later, status: planned}   # openSUSE:Factory 4.15.0 (upstream proton-vpn-gtk-app 4.19.0); закріпити посиланням у проєкті OBS Vilna, ADR 0027 «Відкрите»
+    - {name: proton-vpn,                   license: GPL-3.0-or-later, status: upstream}  # з Tumbleweed (4.15.0, рішення Denys 13.11.2026), у patterns-vilna 0.9; закріпити версію в OBS Vilna
     - {name: mullvad-vpn,                  license: GPL-3.0-or-later, status: planned}   # 2026.5, перепакований офіційний RPM зі своїми скриптами, підпис Mullvad
     - {name: vilna-mcp-mail,               license: Apache-2.0,       status: planned}
     # Локальна модель
