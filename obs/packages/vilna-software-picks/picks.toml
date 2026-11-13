@@ -165,7 +165,7 @@ why = "Справи і списки завдань, синхронізація �
 [[app]]
 id = "app.drey.Warp"
 category = "work"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Передати файл на інший комп'ютер за кодом, із шифруванням."
@@ -173,7 +173,7 @@ why = "Передати файл на інший комп'ютер за кодо
 [[app]]
 id = "org.localsend.localsend_app"
 category = "work"
-license = "MIT"
+license = "Apache-2.0"
 source = "flathub-verified"
 default = false
 why = "Обмін файлами з телефоном у тій самій мережі, без хмари."
@@ -189,7 +189,7 @@ why = "Нотатки, бази й дошки завдань, як Notion, ал�
 [[app]]
 id = "com.logseq.Logseq"
 category = "work"
-license = "AGPL-3.0-only"
+license = "AGPL-3.0-or-later"
 source = "flathub-verified"
 default = false
 why = "База знань зі зв'язаних нотаток у файлах Markdown, як Obsidian."
@@ -225,7 +225,7 @@ why = "Чат із наскрізним шифруванням поверх по
 [[app]]
 id = "chat.simplex.simplex"
 category = "communication"
-license = "AGPL-3.0-only"
+license = "AGPL-3.0-or-later"
 source = "flathub-verified"
 default = false
 why = "Анонімний чат без жодного ідентифікатора користувача."
@@ -251,7 +251,7 @@ why = "Планетарій: зоряне небо над будь-яким мі
 [[app]]
 id = "org.kde.gcompris"
 category = "learning"
-license = "GPL-3.0-or-later"
+license = "AGPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Понад сотня навчальних ігор для дітей від 2 до 10 років."
@@ -277,7 +277,7 @@ why = "Розпізнати текст на знімку екрана чи зо�
 [[app]]
 id = "org.gimp.GIMP"
 category = "graphics"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-or-later AND LGPL-3.0-or-later"
 source = "flathub-verified"
 default = false
 why = "Редагування фотографій і растрової графіки."
@@ -285,7 +285,7 @@ why = "Редагування фотографій і растрової гра�
 [[app]]
 id = "org.inkscape.Inkscape"
 category = "graphics"
-license = "GPL-3.0-or-later"
+license = "GPL-2.0-or-later"
 source = "flathub-verified"
 default = false
 why = "Векторна графіка: логотипи, схеми, ілюстрації."
@@ -293,7 +293,7 @@ why = "Векторна графіка: логотипи, схеми, ілюст
 [[app]]
 id = "org.kde.krita"
 category = "graphics"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Цифровий живопис і малювання на планшеті."
@@ -309,7 +309,7 @@ why = "Обробка RAW-фотографій і каталог знімків.
 [[app]]
 id = "org.blender.Blender"
 category = "graphics"
-license = "GPL-2.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "3D-моделювання, анімація і рендер."
@@ -317,7 +317,7 @@ why = "3D-моделювання, анімація і рендер."
 [[app]]
 id = "org.freecad.FreeCAD"
 category = "graphics"
-license = "LGPL-2.0-or-later"
+license = "LGPL-2.1-only"
 source = "flathub-verified"
 default = false
 why = "Креслення і 3D-моделі деталей для виготовлення."
@@ -326,7 +326,7 @@ why = "Креслення і 3D-моделі деталей для вигото�
 [[app]]
 id = "io.gitlab.adhami3310.Converter"
 category = "graphics"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Перетворити зображення в інший формат чи розмір."
@@ -344,7 +344,7 @@ why = "Відтворює майже будь-яке відео й аудіо."
 [[app]]
 id = "org.kde.kdenlive"
 category = "media"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Монтаж відео."
@@ -368,7 +368,7 @@ why = "Запис і трансляція екрана й камери."
 [[app]]
 id = "org.audacityteam.Audacity"
 category = "media"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Запис і редагування звуку."
@@ -392,7 +392,7 @@ why = "Програвач власної музики."
 [[app]]
 id = "org.gnome.Podcasts"
 category = "media"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Подкасти."
@@ -432,7 +432,7 @@ default = false
 why = "Класичний платформер."
 
 [[app]]
-id = "net.wesnoth.Wesnoth"
+id = "org.wesnoth.Wesnoth"
 category = "games"
 license = "GPL-2.0-or-later"
 source = "flathub-verified"
@@ -442,7 +442,7 @@ why = "Покрокова стратегія у фентезійному сві�
 [[app]]
 id = "com.play0ad.zeroad"
 category = "games"
-license = "GPL-2.0-or-later"
+license = "GPL-2.0-or-later AND CC-BY-SA-3.0"
 source = "flathub-verified"
 default = false
 why = "Історична стратегія в реальному часі."
@@ -477,7 +477,7 @@ why = "Вчитися робити програми для GNOME, з прикл�
 [[app]]
 id = "org.gnome.Builder"
 category = "development"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-or-later AND GPL-2.0-or-later AND LGPL-3.0-or-later AND LGPL-2.0-or-later AND MIT"
 source = "flathub-verified"
 default = false
 why = "Середовище розробки для програм GNOME і Flatpak."
@@ -493,7 +493,7 @@ why = "Контейнери Distrobox: інші Linux-дистрибутиви �
 [[app]]
 id = "com.github.marhkb.Pods"
 category = "development"
-license = "GPL-3.0-only"
+license = "GPL-3.0-or-later"
 source = "flathub-verified"
 default = false
 why = "Контейнери Podman без командного рядка."
@@ -543,7 +543,7 @@ why = "Що навантажує процесор, пам'ять, диск і в
 [[app]]
 id = "io.github.flattool.Warehouse"
 category = "system"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Керувати Flatpak-програмами та їхніми даними."

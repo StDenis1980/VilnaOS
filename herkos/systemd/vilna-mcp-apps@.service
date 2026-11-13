@@ -14,10 +14,20 @@ ConditionPathExists=/run/herkos-tools/%i/apps.sock
 Type=simple
 User=vilna-apps
 Group=vilna-apps
-# libflatpak downloads into its cache before the helper deploys.
+# libflatpak downloads an app into a repository of its own, and then
+# flatpak-system-helper (root, outside this sandbox) copies it into the system
+# one after checking its signatures. That repository has to be where the
+# helper can see it: by default it is in /var/tmp, which PrivateTmp hides from
+# the helper ("Path does not exist", seen in a VM on 2026-11-13).
 CacheDirectory=vilna-mcp-apps
 Environment=HOME=/var/cache/vilna-mcp-apps
 Environment=XDG_CACHE_HOME=/var/cache/vilna-mcp-apps
+Environment=FLATPAK_SYSTEM_CACHE_DIR=/var/cache/vilna-mcp-apps/system-cache
+# The faster way, revokefs-fuse, needs to mount FUSE through the setuid
+# fusermount3; this sandbox allows neither, on purpose. Flatpak then falls
+# back to the copy above, which only costs disk space while it installs, so it
+# does not even try.
+Environment=FLATPAK_REVOKEFS_FUSE=/usr/bin/false
 ExecStart=/usr/bin/vilna-mcp-apps
 StandardInput=file:/run/herkos-tools/%i/apps.sock
 StandardOutput=file:/run/herkos-tools/%i/apps.sock
@@ -46,3 +56,6 @@ CapabilityBoundingSet=
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
 SystemCallFilter=~@privileged @resources
+# A refused system call fails (fusermount3 -u, which Flatpak still runs
+# after the attempt above) instead of killing it with a core dump.
+SystemCallErrorNumber=EPERM

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Nov 13 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.4: Wesnoth is org.wesnoth.Wesnoth on Flathub; licences as
+  Flathub states them (LocalSend Apache-2.0, Inkscape GPL-2.0-or-later,
+  GCompris AGPL-3.0-only, Blender GPL-3.0-only, FreeCAD LGPL-2.1-only,
+  and the -only/-or-later of 13 more), checked on 2026-11-13
+
+-------------------------------------------------------------------
 Thu Nov  5 11:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.3: new «Спілкування» category (ADR 0019): Fractal moves

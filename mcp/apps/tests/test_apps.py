@@ -262,6 +262,28 @@ def call(server, name, arguments):
     return server.handle(msg)["result"]
 
 
+def test_hints_never_raise_an_operation_above_its_manifest_level():
+    # Herkos (policy.rs, level_from_annotations) treats openWorldHint and
+    # destructiveHint as R3 and anything not read-only as R2, and raises the
+    # manifest's level to that. With openWorldHint on search, Herkos asked
+    # before every search (seen in a VM, 2026-11-13).
+    import tomllib
+
+    manifest = REPO / "herkos/src/herkos/manifests/org.vilna.mcp.apps.toml"
+    ops = tomllib.loads(manifest.read_text())["operations"]
+    order = ["R0", "R1", "R2", "R3", "R4"]
+    for tool in TOOLS:
+        hints = tool["annotations"]
+        if hints.get("openWorldHint") is True or hints.get("destructiveHint") is True:
+            hinted = "R3"
+        elif hints.get("readOnlyHint") is True:
+            hinted = "R0"
+        else:
+            hinted = "R2"
+        level = ops[tool["name"]]["level"]
+        assert order.index(hinted) <= order.index(level), (tool["name"], hinted, level)
+
+
 def test_server_lists_no_way_to_add_a_source_or_install_a_file():
     names = {t["name"] for t in TOOLS}
     assert names == {

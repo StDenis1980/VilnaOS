@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Fri Nov 13 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- polkit rule: every YES now checks the remote (origin) or that the ref
+  is not a runtime. Flatpak's policy implies runtime-install from
+  app-update and runtime-uninstall from app-uninstall, so the unconditional
+  YES let vilna-apps install runtimes from any remote and remove runtimes.
+- search and describe no longer carry openWorldHint, which made Herkos
+  ask before every search.
+- Remove the empty mount points Flatpak leaves in its system cache.
+
+-------------------------------------------------------------------
 Fri Nov 13 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: MCP servers "programs" (vilna-mcp-apps: search,
