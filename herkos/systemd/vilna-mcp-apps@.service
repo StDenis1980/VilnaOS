@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The "programs" tool (ADR 0012) for the person with uid %i, started by the
+# system Herkos (50-herkos.rules) and called only after the person said yes
+# to each install, update or removal. Flatpak apps are installed for the
+# whole computer, so it runs as the system user vilna-apps (package
+# vilna-mcp-apps), not as the person and not as Gloxi: flatpak-system-helper
+# asks polkit, and polkit lets vilna-apps install, update and remove apps
+# from Flathub and Vilna only (50-vilna-apps.rules).
+[Unit]
+Description=Programs tool of Herkos for uid %i
+ConditionPathExists=/run/herkos-tools/%i/apps.sock
+
+[Service]
+Type=simple
+User=vilna-apps
+Group=vilna-apps
+# libflatpak downloads into its cache before the helper deploys.
+CacheDirectory=vilna-mcp-apps
+Environment=HOME=/var/cache/vilna-mcp-apps
+Environment=XDG_CACHE_HOME=/var/cache/vilna-mcp-apps
+ExecStart=/usr/bin/vilna-mcp-apps
+StandardInput=file:/run/herkos-tools/%i/apps.sock
+StandardOutput=file:/run/herkos-tools/%i/apps.sock
+StandardError=journal
+# The tool stops when herkosd closes the connection; no restarts behind its back.
+Restart=no
+
+# Needs the network (Flathub) and the system bus (flatpak-system-helper);
+# writes nothing but its cache. No home folders.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

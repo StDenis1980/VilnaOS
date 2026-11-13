@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from gloxi.gui.controller import ChatView, ModelChoice
+from gloxi.vpn_intro import LAUNCHABLE
 
 TIMEOUT = 10.0
 MAX_LINE = 1 << 20
@@ -226,6 +227,10 @@ class RemoteController:
             url = str(m.get("url", ""))
             if url.startswith(("https://", "mailto:")):
                 self.dispatch(lambda: view.open_uri(url))
+        elif name == "launch_app":
+            app = str(m.get("app", ""))
+            if app in LAUNCHABLE:
+                self.dispatch(lambda: view.launch_app(app))
         elif name == "replaced":
             self._closed = True  # another window took over; not an error
             self.dispatch(lambda: view.show_note(_("Gloxi is open in another window.")))

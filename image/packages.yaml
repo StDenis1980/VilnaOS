@@ -59,10 +59,13 @@ vilna:
     - {name: vilna-backup,                 license: GPL-3.0-or-later, status: obs}      # копії: вікно «Копії» і таймери, backup/
     - {name: vilna-mcp-settings,           license: Apache-2.0,       status: obs}      # ADR 0023
     - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: obs}      # ADR 0023
-    - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}  # ADR 0012
+    - {name: vilna-mcp-apps,               license: Apache-2.0,       status: obs}      # ADR 0012; також vilna-mcp-launcher
     - {name: vilna-flatpak-defaults,       license: GPL-3.0-or-later, status: obs}      # програми з Flathub при першому запуску
     - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: obs}      # «Рекомендовано Vilna», ADR 0012; список: obs/packages/vilna-software-picks/picks.toml
     - {name: plymouth-branding-Vilna,      license: GPL-3.0-or-later, status: obs}      # екран завантаження, image/plymouth/
+    # VPN (ADR 0027): Proton за замовчуванням, Mullvad — максимальна анонімність; служби вимкнені до вибору
+    - {name: proton-vpn,                   license: GPL-3.0-or-later, status: upstream}  # з Tumbleweed (4.15.0, рішення Denys 13.11.2026), у patterns-vilna 0.9; закріпити версію в OBS Vilna
+    - {name: mullvad-vpn,                  license: GPL-3.0-or-later, status: obs}       # 2026.5, перепакований офіційний RPM зі своїми скриптами, підпис Mullvad
     - {name: vilna-mcp-mail,               license: Apache-2.0,       status: planned}
     # Локальна модель
     - {name: llama.cpp,                    license: MIT,              status: upstream}

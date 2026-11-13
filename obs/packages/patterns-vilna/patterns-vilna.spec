@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.8
+Version:        0.10
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -47,9 +47,16 @@ Requires:       vilna-backup
 Requires:       vilna-mcp-backup
 Requires:       vilna-mcp-settings
 Requires:       vilna-mcp-calendar
+# Programs through Gloxi and Herkos (ADR 0012).
+Requires:       vilna-mcp-apps
 Requires:       vilna-flatpak-defaults
 Requires:       gnome-shell-extension-vilna
 Requires:       vilna-software-picks
+# VPN (ADR 0027): Proton VPN, offered first (openSUSE's package), and
+# Mullvad (Mullvad's RPM with our scriptlets, obs/packages/mullvad-vpn).
+# Their services stay off until the person chooses one.
+Requires:       proton-vpn
+Requires:       mullvad-vpn
 # Branding (composition.md, section 4.5): Vilna's own packages where
 # Aeon or openSUSE set something for the distribution, the neutral
 # *-branding-upstream ones elsewhere. The Aeon and openSUSE ones are

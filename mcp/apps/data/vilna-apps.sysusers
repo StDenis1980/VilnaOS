@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# The system user of Herkos's "programs" tool (vilna-mcp-apps@.service).
+# polkit (50-vilna-apps.rules) lets it install, update and remove Flatpak
+# apps from Flathub and Vilna, and nothing else. No home, no login.
+u vilna-apps - "Herkos programs tool" /var/cache/vilna-mcp-apps /usr/sbin/nologin

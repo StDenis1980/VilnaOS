@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-presets
-Version:        0.5
+Version:        0.6
 Release:        0
 Summary:        Vilna defaults for which systemd services are enabled
 License:        GPL-3.0-or-later

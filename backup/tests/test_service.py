@@ -120,13 +120,69 @@ def test_restore_in_place_asks_with_the_list(ready, layout):
 
     assert backup.restore_in_place(confirm=no)["restored"] is False
     assert seen["replaced"] == [str(zvit)]
-    assert seen["new"] >= 1
+    assert seen["new"] == 1  # b.jpg; folders that are here already do not count
     assert zvit.read_text() == "зіпсовано"
 
     out = backup.restore_in_place(confirm=lambda r, n: True)
     assert out["restored"] and out["replaced"] == 1
     assert zvit.read_text() == "звіт"
     assert (layout.home / "Pictures" / "2024" / "b.jpg").exists()
+
+
+def test_restore_in_place_keeps_this_devices_keys(ready, layout):
+    backup, _ = ready
+    backup.set_paths(system_secrets=True, by_assistant=False)
+    backup.run()
+    keyring = layout.home / ".local/share/keyrings/login.keyring"
+    keyring.write_text("this device")
+    (layout.home / ".local/share/keyrings/work.keyring").unlink(missing_ok=True)
+    backup.set_schedule("weekly")  # the settings change after the backup
+
+    preview = backup.preview_in_place()
+    assert str(keyring) not in preview["replaced"]
+    assert str(backup.settings_file) not in preview["replaced"]
+    out = backup.restore_in_place(confirm=lambda r, n: True)
+
+    assert keyring.read_text() == "this device"
+    restored = [p for p in keyring.parent.iterdir() if p.name.startswith("login-restored-")]
+    assert len(restored) == 1 and restored[0].read_text() == "secret"
+    assert out["keyrings"] == [restored[0].name]
+    assert oct(restored[0].stat().st_mode & 0o777) == "0o600"
+    assert backup.settings.schedule == "weekly"
+    assert not (backup.state / "restore-keyrings").exists()
+    # A second restore does not pile up copies.
+    assert backup.restore_in_place(confirm=lambda r, n: True)["keyrings"] == []
+
+
+def test_restore_in_place_rechecks_the_list(ready, layout):
+    backup, _ = ready
+    backup.run()
+    zvit = layout.home / "Documents" / "zvit.txt"
+    zvit.write_text("змінено")
+    shown = backup.preview_in_place()["replaced"]
+    assert shown == [str(zvit)]
+    (layout.home / ".config/gloxi/config.toml").write_text("changed meanwhile")
+    # The window confirms only the files it showed: more would be replaced now.
+    out = backup.restore_in_place(confirm=lambda replaced, new: set(replaced) <= set(shown))
+    assert out["restored"] is False
+    assert zvit.read_text() == "змінено"
+
+
+def test_turn_on_after_recover(ready, tmp_path, layout, systemd):
+    old, recovery = ready
+    old.run()
+    new = Backup(
+        layout=layout,
+        store=keys.FileStore(tmp_path / "new-keys"),
+        settings_file=tmp_path / "new-settings.json",
+        state=tmp_path / "new-state",
+        run_cmd=systemd,
+    )
+    with pytest.raises(BackupError, match="no place"):
+        new.turn_on()
+    new.recover(old.settings.destination, recovery)
+    assert new.turn_on().enabled
+    assert new.run()["ok"]
 
 
 def test_limit_is_respected(ready):

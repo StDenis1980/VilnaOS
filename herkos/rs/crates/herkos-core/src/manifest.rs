@@ -13,7 +13,7 @@ use crate::request::is_name;
 use crate::risk::Level;
 
 pub const FORBIDDEN: &str = "forbidden";
-const OPERATION_KEYS: [&str; 9] = [
+const OPERATION_KEYS: [&str; 10] = [
     "level",
     "summary",
     "undoable",
@@ -23,6 +23,7 @@ const OPERATION_KEYS: [&str; 9] = [
     "resource_args",
     "command_arg",
     "command_key",
+    "preview",
 ];
 /// A group of the program's commands in `[commands]`: `home.*`.
 const GROUP_SUFFIX: &str = ".*";
@@ -48,10 +49,14 @@ const MAX_FIXED: usize = 16;
 const MAX_ROOT_FLAGS: usize = 4;
 
 /// The manifests shipped with Herkos: the same files Herkos-lite reads.
-const BUILTIN: [(&str, &str); 6] = [
+const BUILTIN: [(&str, &str); 9] = [
     (
         "org.vilna.gloxi.network.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.gloxi.network.toml"),
+    ),
+    (
+        "org.vilna.mcp.apps.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.apps.toml"),
     ),
     (
         "org.vilna.mcp.backup.toml",
@@ -66,12 +71,20 @@ const BUILTIN: [(&str, &str); 6] = [
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.files.toml"),
     ),
     (
+        "org.vilna.mcp.launcher.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.launcher.toml"),
+    ),
+    (
         "org.vilna.mcp.settings.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.settings.toml"),
     ),
     (
         "org.vilna.mcp.system.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.system.toml"),
+    ),
+    (
+        "org.vilna.mcp.vpn.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.vpn.toml"),
     ),
 ];
 
@@ -107,6 +120,10 @@ pub struct Operation {
     /// string, or a list of strings or of tables whose `command_key` names it.
     pub command_arg: Option<String>,
     pub command_key: Option<String>,
+    /// An R0 operation of the same tool that Herkos runs with the same
+    /// arguments before it asks, to show the person what the action is about
+    /// (ADR 0012, section 5: the app, its developer, size and permissions).
+    pub preview: Option<String>,
 }
 
 impl Operation {
@@ -333,6 +350,7 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
         };
         let command_arg = arg_name("command_arg")?;
         let command_key = arg_name("command_key")?;
+        let preview = arg_name("preview")?;
         if command_key.is_some() && command_arg.is_none() {
             return bad(format!("{at}: 'command_key' goes only with 'command_arg'"));
         }
@@ -352,8 +370,22 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
                 resource_args,
                 command_arg,
                 command_key,
+                preview,
             },
         );
+    }
+    for op in operations.values() {
+        if let Some(p) = &op.preview {
+            let at = format!("{source}: operations.{}", op.name);
+            match operations.get(p).and_then(|o| o.level) {
+                Some(Level::R0) => {}
+                _ => {
+                    return bad(format!(
+                        "{at}: 'preview' must name an R0 operation of this tool"
+                    ));
+                }
+            }
+        }
     }
     let launch = match data.get("launch") {
         None => None,
@@ -659,6 +691,29 @@ mod tests {
         ] {
             assert!(with_launch(&wrong).is_err(), "{wrong}");
         }
+    }
+
+    #[test]
+    fn a_preview_names_an_r0_operation_of_the_same_tool() {
+        let base = "tool = \"t.x\"\n[operations.look]\nlevel = \"R0\"\n\
+                    [operations.put]\nlevel = \"R3\"\n";
+        let ok = parse_manifest_str(&format!("{base}preview = \"look\"\n"), "t").expect("ok");
+        assert_eq!(ok.operations["put"].preview.as_deref(), Some("look"));
+        for wrong in ["preview = \"put\"", "preview = \"gone\"", "preview = 3"] {
+            assert!(
+                parse_manifest_str(&format!("{base}{wrong}\n"), "t").is_err(),
+                "{wrong}"
+            );
+        }
+        let apps = Registry::builtin().expect("manifests");
+        let install = apps
+            .get("org.vilna.mcp.apps")
+            .and_then(|m| m.operation("install"));
+        assert_eq!(install.and_then(|o| o.preview.as_deref()), Some("describe"));
+        let add = apps
+            .get("org.vilna.mcp.apps")
+            .and_then(|m| m.operation("add_remote"));
+        assert!(add.is_some_and(Operation::forbidden));
     }
 
     #[test]

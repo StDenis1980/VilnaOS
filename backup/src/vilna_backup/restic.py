@@ -207,12 +207,17 @@ class Restic:
         target: Path,
         *,
         includes: Sequence[str] = (),
+        excludes: Sequence[str] = (),
         dry_run: bool = False,
         overwrite: str | None = None,
     ) -> Iterator[dict[str, Any]]:
+        if includes and excludes:
+            raise ResticError("restic restores either some paths or all but some, not both")
         args = ["restore", snapshot, "--target", str(target), "--json"]
         for inc in includes:
             args += ["--include", inc]
+        for exc in excludes:
+            args += ["--exclude", exc]
         if dry_run:
             args += ["--dry-run", "-vv"]
         if overwrite:

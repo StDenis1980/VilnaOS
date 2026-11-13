@@ -182,6 +182,12 @@ class Backup:
             )
         )
 
+    def turn_on(self) -> Settings:
+        """The person turns backups on again, e.g. on a new device after :meth:`recover`."""
+        s = self.settings
+        self._ready(s.with_changes(enabled=True))
+        return self.save(s.with_changes(enabled=True))
+
     # -- R0-R1 ---------------------------------------------------------------
 
     def status(self) -> dict[str, Any]:
@@ -477,41 +483,133 @@ class Backup:
             "bytes": summary.get("bytes_restored", 0),
         }
 
-    def restore_in_place(
-        self, *, snapshot: str = "latest", confirm: Callable[[list[str], int], bool]
-    ) -> dict[str, Any]:
-        """R3, the person in the terminal: bring the home folder back as it was.
+    def _kept_out(self) -> tuple[list[str], Path | None]:
+        """What a restore over the home folder never replaces, as restic paths.
 
-        Lists the files that would be replaced and asks before touching them.
+        - This device's own backup settings: the old ones name another
+          device's key and would cut this one off from its backups.
+        - The key rings: they hold this device's backup password and open
+          with this device's login password. Old key rings come back beside
+          them under new names instead (:meth:`_restore_keyrings`).
+
+        Returns the restic ``--exclude`` patterns (relative to the home
+        folder of the backup) and the key ring folder, if it is in the home.
+        """
+        home = self.layout.home
+        keyrings = self.layout.data / "keyrings"
+        out = [
+            "/" + path.relative_to(home).as_posix()
+            for path in (self.layout.config / "vilna-backup", keyrings)
+            if path.is_relative_to(home)
+        ]
+        return out, keyrings if keyrings.is_relative_to(home) else None
+
+    def preview_in_place(self, *, snapshot: str = "latest") -> dict[str, Any]:
+        """What a restore over the home folder would do, touching nothing.
+
+        ``replaced`` lists the files that would be replaced by their older
+        version from the backup; ``new`` counts the files that would come back.
+        Files made after the backup are never deleted.
         """
         snap = self._snapshot(snapshot)
         source = f"{snap['id']}:{self._home_of(snap)}"
         home = self.layout.home
+        excludes, _keyrings = self._kept_out()
         replaced: list[str] = []
         new = 0
-        for msg in self.restic().restore(source, home, dry_run=True, overwrite="if-changed"):
+        for msg in self.restic().restore(
+            source, home, excludes=excludes, dry_run=True, overwrite="if-changed"
+        ):
             if msg.get("message_type") != "verbose_status":
                 continue
+            # Items are relative to the snapshot folder, which is the home folder.
+            # restic reports folders too (their times and modes); they are not files.
+            item = home / msg.get("item", "").lstrip("/")
+            if item.is_dir():
+                continue
             if msg.get("action") == "updated":
-                # Items are relative to the snapshot folder, which is the home folder.
-                replaced.append(str(home / msg.get("item", "").lstrip("/")))
-            elif msg.get("action") == "restored":
+                replaced.append(str(item))
+            elif msg.get("action") == "restored" and not item.exists():
                 new += 1
-        if not confirm(replaced, new):
-            return {"snapshot": snap["id"][:8], "restored": False}
-        summary = self._restore(source, home, [], overwrite="if-changed")
+        return {"snapshot": snap["id"], "time": snap.get("time"), "replaced": replaced, "new": new}
+
+    def restore_in_place(
+        self, *, snapshot: str = "latest", confirm: Callable[[list[str], int], bool]
+    ) -> dict[str, Any]:
+        """R3, the person in the terminal or the Backups window: bring the home folder back.
+
+        Lists the files that would be replaced and asks before touching them.
+        The list is made again right before restoring, so ``confirm`` always
+        sees what will really happen.
+        """
+        preview = self.preview_in_place(snapshot=snapshot)
+        replaced = preview["replaced"]
+        short = preview["snapshot"][:8]
+        if not confirm(replaced, preview["new"]):
+            return {"snapshot": short, "restored": False}
+        snap = self._snapshot(preview["snapshot"])
+        source = f"{snap['id']}:{self._home_of(snap)}"
+        excludes, keyrings = self._kept_out()
+        summary = self._restore(
+            source, self.layout.home, [], overwrite="if-changed", excludes=excludes
+        )
+        kept = self._restore_keyrings(snap, keyrings) if keyrings else []
         return {
-            "snapshot": snap["id"][:8],
+            "snapshot": short,
             "restored": True,
             "replaced": len(replaced),
             "files": summary.get("files_restored", 0),
+            "keyrings": kept,
         }
 
+    def _restore_keyrings(self, snap: dict[str, Any], keyrings: Path) -> list[str]:
+        """Old key rings come back beside the current ones, never over them.
+
+        A key ring that is not here comes back as it was; one that is here and
+        differs comes back as ``<name>-restored-<date>.keyring``, which opens
+        with the old login password. Returns the names of the files written.
+        """
+        rel = keyrings.relative_to(self.layout.home).as_posix()
+        tmp = self.state / "restore-keyrings"
+        shutil.rmtree(tmp, ignore_errors=True)
+        tmp.mkdir(parents=True, mode=0o700)
+        try:
+            self._restore(f"{snap['id']}:{self._home_of(snap)}", tmp, ["/" + rel])
+            found = tmp / rel
+            if not found.is_dir():
+                return []  # the backup has no key rings (system secrets were off)
+            stamp = str(snap.get("time") or "")[:10] or "old"
+            written = []
+            keyrings.mkdir(parents=True, exist_ok=True, mode=0o700)
+            for f in sorted(found.iterdir()):
+                if not f.is_file() or f.is_symlink():
+                    continue
+                dest = keyrings / f.name
+                if dest.exists():
+                    if dest.read_bytes() == f.read_bytes():
+                        continue
+                    dest = keyrings / f"{f.stem}-restored-{stamp}{f.suffix}"
+                    if dest.exists():
+                        continue
+                shutil.copy2(f, dest)
+                dest.chmod(0o600)
+                written.append(dest.name)
+            return written
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
     def _restore(
-        self, source: str, target: Path, includes: list[str], overwrite: str | None = None
+        self,
+        source: str,
+        target: Path,
+        includes: list[str],
+        overwrite: str | None = None,
+        excludes: Sequence[str] = (),
     ) -> dict[str, Any]:
         summary: dict[str, Any] = {}
-        for msg in self.restic().restore(source, target, includes=includes, overwrite=overwrite):
+        for msg in self.restic().restore(
+            source, target, includes=includes, excludes=excludes, overwrite=overwrite
+        ):
             if msg.get("message_type") == "summary":
                 summary = msg
         return summary

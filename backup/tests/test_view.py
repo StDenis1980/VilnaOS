@@ -160,3 +160,26 @@ def test_ukrainian():
     assert view.human_size(3_200_000_000) == "3,2 ГБ"
     assert view.when(time.mktime((2026, 11, 3, 9, 5, 0, 0, 0, -1)), NOW) == "3 листопада о 09:05"
     assert view.preset_title("documents") == "Налаштування і документи"
+
+
+def test_replaced_files_read_inside_the_home_folder():
+    replaced = [f"/home/a/Documents/{i}.odt" for i in range(15)]
+    text = view.replaced_for_reading(replaced, "/home/a", limit=3)
+    assert text.splitlines() == [
+        "Documents/0.odt",
+        "Documents/1.odt",
+        "Documents/2.odt",
+        "…and 12 more",
+    ]
+    assert view.replaced_for_reading(["/elsewhere/x"], "/home/a") == "/elsewhere/x"
+
+
+def test_in_place_texts():
+    assert "Replace 2 files" in view.in_place_heading(2, 5)
+    assert view.in_place_heading(0, 5) == "Bring back 5 files?"
+    assert "already" in view.in_place_heading(0, 0)
+    assert "Nothing is replaced" in view.in_place_body(0, 3)
+    assert "old version" in view.in_place_body(1, 0)
+    assert "nothing was replaced" in view.in_place_done({"restored": False})
+    done = view.in_place_done({"restored": True, "files": 4, "replaced": 1, "keyrings": ["x"]})
+    assert "4 files back, 1 replaced" in done and "key ring" in done

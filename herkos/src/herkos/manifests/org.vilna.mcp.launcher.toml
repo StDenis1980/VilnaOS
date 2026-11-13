@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "launcher" tool (mcp/apps, vilna-mcp-launcher, ADR 0012,
+# section 4): opens an installed app for the person. A class of actions the
+# person may allow once and for good: R1.
+tool = "org.vilna.mcp.launcher"
+description = "Open installed apps"
+
+# Only the system Herkos starts it: vilna-mcp-launcher@<uid>, as the person,
+# so the app opens in their session (through their systemd user manager).
+[launch]
+program = "vilna-mcp-launcher"
+args = []
+
+[operations.launch]
+level = "R1"
+summary = "Open an installed app"

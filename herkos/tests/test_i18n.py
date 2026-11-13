@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from herkos import i18n
-from herkos.confirm import _LABELS, Question, choices_for, render
+from herkos.confirm import _LABELS, PREVIEW_LABELS, PREVIEW_PHRASES, Question, choices_for, render
 from herkos.dialog import LABELS
 from herkos.keros import MODEL_FINDING, RULES
 from herkos.manifest import ManifestRegistry
@@ -24,12 +24,16 @@ def used_messages() -> set[str]:
     found.add(MODEL_FINDING.description)
     found |= set(_LABELS.values()) | set(LABELS.values())
     found |= set(DONE.values()) | {ASKED} | set(MONTHS)
+    found |= set(PREVIEW_LABELS) | set(PREVIEW_PHRASES)
     for tool in (
         "org.vilna.mcp.files",
         "org.vilna.mcp.backup",
         "org.vilna.mcp.settings",
         "org.vilna.mcp.calendar",
         "org.vilna.mcp.system",
+        "org.vilna.mcp.vpn",
+        "org.vilna.mcp.apps",
+        "org.vilna.mcp.launcher",
         "org.vilna.gloxi.network",
     ):
         found |= {op.summary for op in ManifestRegistry.builtin().get(tool).operations.values()}
@@ -86,3 +90,22 @@ def test_terminal_question_in_ukrainian(ukrainian):
     assert "Gloxi просить дозволу" in text
     assert "Можна скасувати." in text
     assert "[n] відхилити" in text
+
+
+def test_preview_of_an_app_reads_in_ukrainian(ukrainian):
+    from herkos.confirm import content_lines
+
+    lines = content_lines(
+        {
+            "Verified": "no: Flathub has not checked who makes it",
+            "In Recommended by Vilna": "yes (media)",
+            "Can reach": "the internet and local network; the folder xdg-download (read only)",
+            "path": "/home/a",
+        }
+    )
+    assert lines == [
+        "Підтверджено: ні: Flathub не перевіряв, хто її робить",
+        "У «Рекомендовано Vilna»: так (media)",
+        "Матиме доступ до: інтернету й локальної мережі; теки xdg-download (лише читання)",
+        "path: /home/a",
+    ]

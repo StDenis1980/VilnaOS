@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Nov 12 20:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.8: NetworkManager-branding-Vilna sends DNS through systemd-resolved,
+  encrypted (DNS-over-TLS) to Quad9, from the first minute and before
+  any VPN (ADR 0027, decision of 2026-11-12). /etc/resolv.conf points at
+  the resolved stub. Requires systemd-resolved.
+
+-------------------------------------------------------------------
 Mon Nov  9 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.7: gnome-branding-Vilna enables the Vilna GNOME Shell extension for

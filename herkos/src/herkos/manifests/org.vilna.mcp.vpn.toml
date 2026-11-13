@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "VPN" tool (herkosd vpn-tool, ADR 0027, sections 3-5):
+# the kill switch of Vilna (vilna-netguard) and the encrypted DNS resolver.
+#
+# What makes protection stronger is R2: turning the kill switch on, choosing
+# between two encrypted resolvers, forgetting a local network, starting
+# the service of the VPN provider the person chose (Mullvad's daemon). What weakens
+# it is R3, asked every time (decision of Denys, 2026-11-04): turning the
+# kill switch off, letting a local network through, opening it for a
+# captive portal (5 minutes at most). The person's VPN account never passes
+# through here: Gloxi only opens the provider's own app.
+tool = "org.vilna.mcp.vpn"
+description = "The VPN kill switch and the encrypted DNS of this computer"
+
+# Only the system Herkos starts it: vilna-mcp-vpn@<uid>, as root, because
+# nftables and systemd-resolved belong to the whole computer. Herkos-lite has
+# no module to run, so in the Flatpak these operations are not available.
+[launch]
+program = "vilna-mcp-vpn"
+args = []
+
+[operations.status]
+level = "R0"
+summary = "See the state of the VPN kill switch and the DNS"
+
+[operations.killswitch_on]
+level = "R2"
+summary = "Turn on the VPN kill switch"
+reversible = true
+
+[operations.killswitch_off]
+level = "R3"
+summary = "Turn off the VPN kill switch"
+reversible = true
+
+[operations.allow_lan]
+level = "R3"
+summary = "Let a local network through the VPN kill switch"
+reversible = true
+
+[operations.forget_lan]
+level = "R2"
+summary = "Stop letting a local network through the VPN kill switch"
+reversible = true
+
+[operations.open_portal]
+level = "R3"
+summary = "Open the VPN kill switch for 5 minutes to sign in to a Wi-Fi network"
+reversible = true
+
+[operations.set_dns]
+level = "R2"
+summary = "Choose the encrypted DNS: Quad9 or Mullvad"
+reversible = true
+
+[operations.start_provider]
+level = "R2"
+summary = "Start the service of the chosen VPN provider"
+reversible = true

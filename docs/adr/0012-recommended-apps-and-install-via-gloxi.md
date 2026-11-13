@@ -4,6 +4,7 @@
 - Дата: 2026-11-02
 - Пов'язано: [дорожня карта](../roadmap.md) розд. 3.1, [склад образу](../../image/docs/composition.md) розд. 4.4 і 6, [`packages.yaml`](../../image/packages.yaml), [модель дозволів Herkos](../../herkos/docs/permissions.md) розд. 4 і 9.3, [ADR 0011](0011-default-office-suite.md)
 - Доповнено: [ADR 0019](0019-messengers.md) — виняток із критерію verified для збірок спільноти Flathub (Signal) і розділ «Спілкування»
+- Реалізація (2026-11-13): сервер [`mcp/apps`](../../mcp/apps/README.md). Встановлення, оновлення і видалення виконує `vilna-mcp-apps` від системного користувача `vilna-apps`, якому polkit дає лише ці дії Flatpak і лише з `flathub` і `vilna` (п. 3: «дію polkit отримує лише Herkos» — точніше, лише інструмент, якого запускає Herkos). Запуск програми (R1) — окремий інструмент `org.vilna.mcp.launcher`, бо він працює від людини, у її сеансі. Факти для діалогу (п. 5) Herkos бере з `describe` самого інструмента перед питанням (`preview` у маніфесті), а не від Gloxi.
 
 ## Контекст
 
