@@ -133,8 +133,6 @@ install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-
 install -Dm0644 systemd/vilna-mcp-settings@.service %{buildroot}%{_unitdir}/vilna-mcp-settings@.service
 install -Dm0644 systemd/vilna-mcp-calendar@.service %{buildroot}%{_unitdir}/vilna-mcp-calendar@.service
 install -Dm0644 systemd/vilna-mcp-system@.service %{buildroot}%{_unitdir}/vilna-mcp-system@.service
-%{_unitdir}/vilna-mcp-apps@.service
-%{_unitdir}/vilna-mcp-launcher@.service
 # Programs through Gloxi (ADR 0012): as vilna-apps, and the launcher as the person.
 install -Dm0644 systemd/vilna-mcp-apps@.service %{buildroot}%{_unitdir}/vilna-mcp-apps@.service
 install -Dm0644 systemd/vilna-mcp-launcher@.service %{buildroot}%{_unitdir}/vilna-mcp-launcher@.service
@@ -215,6 +213,8 @@ fi
 %{_unitdir}/vilna-mcp-settings@.service
 %{_unitdir}/vilna-mcp-calendar@.service
 %{_unitdir}/vilna-mcp-system@.service
+%{_unitdir}/vilna-mcp-apps@.service
+%{_unitdir}/vilna-mcp-launcher@.service
 %{_unitdir}/vilna-mcp-vpn@.service
 %{_bindir}/vilna-netguard
 %{_unitdir}/vilna-netguard.service
