@@ -4,4 +4,6 @@ Fri Nov 13 08:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
 - 2026.5: first package (ADR 0027). Mullvad's own RPM, checked by
   SHA-256, with Vilna's scriptlets: the service stays off until the
   person chooses Mullvad, nothing setuid, no AppArmor profile, and
-  removal leaves people's settings alone.
+  removal leaves people's settings alone. The app moves from
+  /opt/Mullvad VPN (outside the root snapshot on Vilna) to
+  /usr/lib64/mullvad-vpn.

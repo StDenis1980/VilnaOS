@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Mullvad's prebuilt Electron app under /opt (ADR 0027).
-addFilter("dir-or-file-in-opt")
+# Mullvad's prebuilt Electron app (ADR 0027), in %{_libdir}/mullvad-vpn.
+# Electron finds its own libraries next to it through RUNPATH $ORIGIN:
+addFilter("binary-or-shlib-defines-rpath")
 addFilter("unstripped-binary-or-object")
 addFilter("no-binary")
 addFilter("shlib-policy")
