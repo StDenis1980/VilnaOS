@@ -113,6 +113,10 @@ def test_switcher_groups_by_where_the_words_go():
     assert off[-1].note == "Turned off in the settings"
     assert [tag(m) for m in ("auto", "local", "cloud")] == ["recommended", "local", "cloud"]
     assert "Cloud" in switch_note(cloud)
+    from gloxi.gui.switcher import button_label
+
+    assert button_label(cloud) == "Cloud"  # not "Cloud · cloud"
+    assert button_label(auto) == "Auto · recommended"
 
 
 def test_empty_panel_offers_starts():

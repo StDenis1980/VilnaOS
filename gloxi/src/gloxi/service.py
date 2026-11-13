@@ -200,6 +200,7 @@ class Service:
             "chat.submit": self._submit,
             "chat.reset": self._reset,
             "chat.set_mode": self._set_mode,
+            "chat.share_history": self._share_history,
             "chat.offer_intro": self._offer_intro,
             "chat.report_problem": lambda _p: {"started": self.controller.report_problem()},
         }
@@ -212,6 +213,7 @@ class Service:
             "busy": bool(c.busy),
             "cloud_status": c.cloud_status(),
             "current": c.current_choice(),
+            "held_back": c.held_back(),
             "choices": [
                 {"mode": ch.mode, "label": ch.label, "detail": ch.detail} for ch in c.choices()
             ],
@@ -280,6 +282,13 @@ class Service:
         if mode not in MODES:
             raise RequestError("bad_params", f"mode must be one of {', '.join(MODES)}")
         return {"ok": self.controller.set_mode(mode), "state": self.state()}
+
+    def _share_history(self, params: dict) -> dict:
+        share = params.get("share")
+        if not isinstance(share, bool):
+            raise RequestError("bad_params", "share must be true or false")
+        self.controller.share_history(share)
+        return {"state": self.state()}
 
     def _offer_intro(self, params: dict) -> dict:
         always = params.get("always", False)

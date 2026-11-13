@@ -610,7 +610,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self._choices = self.controller.choices()
         current = self.controller.current_choice()
         chosen = next((c for c in self._choices if c.mode == current), self._choices[0])
-        self.model_switch.set_label(f"{chosen.label} · {switcher.tag(chosen.mode)}")
+        self.model_switch.set_label(switcher.button_label(chosen))
         self.model_switch.set_tooltip_text(chosen.detail)
         self.model_switch.set_popover(self._make_model_popover(current))
         self.title.set_subtitle(self.controller.cloud_status())
@@ -676,7 +676,48 @@ class ChatWindow(Adw.ApplicationWindow):
             self.show_error(_("The cloud is turned off in the settings."))
         else:
             self._system_line(switcher.switch_note(choice))
+            if self.controller.held_back():
+                self._ask_share_history()
         GLib.idle_add(lambda: self._fill_model_switch() and False)
+
+    def _ask_share_history(self) -> None:
+        """Brief 10.3, item 7: the earlier messages go to the cloud only if the person says so."""
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        card.add_css_class("vilna-consent-card")
+        title = Gtk.Label(label=_("Send the conversation to the cloud?"), xalign=0, wrap=True)
+        title.add_css_class("heading")
+        card.append(title)
+        card.append(
+            Gtk.Label(
+                label=_(
+                    "The cloud model does not see the earlier messages of this conversation. "
+                    "Send them too, so that it knows the context?"
+                ),
+                xalign=0,
+                wrap=True,
+            )
+        )
+        # One above the other: the panel can be narrow and the words are long.
+        buttons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        only_new = Gtk.Button(label=_("Only the new message"))
+        with_context = Gtk.Button(label=_("Send with context"))
+        with_context.add_css_class("suggested-action")
+        buttons.append(with_context)
+        buttons.append(only_new)
+        card.append(buttons)
+
+        def answer(share: bool) -> None:
+            self.controller.share_history(share)
+            self.messages.remove(card)
+            self._system_line(
+                _("The earlier messages will go to the cloud with the next one.")
+                if share
+                else _("The earlier messages stay on this computer.")
+            )
+
+        only_new.connect("clicked", lambda *_a: answer(False))
+        with_context.connect("clicked", lambda *_a: answer(True))
+        self._add_message(card)
 
     def _system_line(self, text: str) -> None:
         """A quiet line across the conversation (a model switch)."""

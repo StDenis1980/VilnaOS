@@ -292,12 +292,31 @@ class ChatController:
         return current_choice(self.conversation.router)
 
     def set_mode(self, mode: str) -> bool:
-        """Pick auto, local or cloud; False if the cloud is off or the mode unknown."""
+        """Pick auto, local or cloud; False if the cloud is off or the mode unknown.
+
+        Turning the cloud on in the middle of a conversation that has stayed on
+        this computer keeps what was said here until the person decides
+        (``held_back``, ``share_history``; brief 10.3): a switch alone never
+        sends earlier messages away.
+        """
+        conv = self.conversation
+        before = current_choice(conv.router)
         try:
-            self.conversation.router.set_mode(mode)
+            conv.router.set_mode(mode)
         except (CloudNotAllowed, ValueError):
             return False
+        if before == "local" and mode != "local" and conv.history and not conv.sent_to_cloud:
+            conv.hold_history_from_cloud()
         return True
+
+    def held_back(self) -> int:
+        """How many earlier messages the cloud does not get (0: nothing to decide)."""
+        return self.conversation.cloud_from
+
+    def share_history(self, share: bool) -> None:
+        """The person's answer: send the earlier messages to the cloud too, or not."""
+        if share:
+            self.conversation.share_history_with_cloud()
 
     def cloud_status(self) -> str:
         return cloud_status(self.conversation)

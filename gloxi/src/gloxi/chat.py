@@ -52,20 +52,35 @@ class Conversation:
         self.history: list[Message] = []
         self.last_route: Route | None = None
         self.user_turn = 0
+        # The cloud gets the history only from this index on: after a switch
+        # to the cloud mid-conversation the person decides (brief 10.3).
+        self.cloud_from = 0
+        self.sent_to_cloud = False
         # A message waits for warm() to finish, then reuses what it had the model read.
         self._model_lock = threading.Lock()
 
     def reset(self) -> None:
         self.history.clear()
         self.user_turn = 0
+        self.cloud_from = 0
+        self.sent_to_cloud = False
         self.router.new_conversation()
         if self.tools:
             self.tools.reset()
 
-    def messages(self) -> list[Message]:
+    def messages(self, target: str = "local") -> list[Message]:
         # One turn is a user message and the assistant's answer.
-        tail = self.history[-2 * self.max_turns :]
+        history = self.history[self.cloud_from :] if target == "cloud" else self.history
+        tail = history[-2 * self.max_turns :]
         return [{"role": "system", "content": self.system_prompt}, *tail]
+
+    def hold_history_from_cloud(self) -> int:
+        """Keep what was said so far on this computer; returns how many messages."""
+        self.cloud_from = len(self.history)
+        return self.cloud_from
+
+    def share_history_with_cloud(self) -> None:
+        self.cloud_from = 0
 
     def warm(self) -> bool:
         """Have the local model read the system prompt and the functions in advance.
@@ -112,7 +127,9 @@ class Conversation:
         self.last_route = route
         self.user_turn += 1
         pending: Message = {"role": "user", "content": text}
-        request = [*self.messages(), pending]
+        request = [*self.messages(route.target), pending]
+        if route.target == "cloud":
+            self.sent_to_cloud = True
         if route.target == "local" and is_ukrainian(text):
             # Small local models drift from Ukrainian into Russian, above all
             # after a function result in English (Build14.6). The reminder goes

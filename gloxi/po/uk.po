@@ -974,6 +974,10 @@ msgid "Off in high contrast"
 msgstr "Вимкнено за високого контрасту"
 
 #: src/gloxi/gui/window.py
+msgid "Only the new message"
+msgstr "Лише нове повідомлення"
+
+#: src/gloxi/gui/window.py
 msgid "Otherwise it waits in the field for you to check and send"
 msgstr "Інакше текст чекає в полі, щоб ви перевірили й надіслали"
 
@@ -1000,6 +1004,14 @@ msgstr "Надіслати"
 #: src/gloxi/gui/window.py
 msgid "Send dictated text at once"
 msgstr "Надсилати продиктований текст одразу"
+
+#: src/gloxi/gui/window.py
+msgid "Send the conversation to the cloud?"
+msgstr "Надіслати розмову в хмару?"
+
+#: src/gloxi/gui/window.py
+msgid "Send with context"
+msgstr "Надіслати з контекстом"
 
 #: src/gloxi/gui/window.py
 msgid "Show Gloxi, or hide it if it is in front"
@@ -1035,9 +1047,21 @@ msgid "The app {app} is not installed."
 msgstr "Застосунок {app} не встановлено."
 
 #: src/gloxi/gui/window.py
+msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
+msgstr "Хмарна модель не бачить попередніх повідомлень цієї розмови. Надіслати їх теж, щоб вона знала контекст?"
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "The content {what}."
 msgstr "Вміст {what}."
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages stay on this computer."
+msgstr "Попередні повідомлення лишаються на цьому комп'ютері."
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages will go to the cloud with the next one."
+msgstr "Попередні повідомлення підуть у хмару разом із наступним."
 
 #: src/gloxi/gui/window.py
 msgid "The last lines of the chat and the input"

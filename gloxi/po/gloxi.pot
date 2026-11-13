@@ -966,6 +966,10 @@ msgid "Off in high contrast"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Only the new message"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "Otherwise it waits in the field for you to check and send"
 msgstr ""
 
@@ -991,6 +995,14 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Send dictated text at once"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Send the conversation to the cloud?"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Send with context"
 msgstr ""
 
 #: src/gloxi/gui/window.py
@@ -1027,8 +1039,20 @@ msgid "The app {app} is not installed."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "The content {what}."
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages stay on this computer."
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages will go to the cloud with the next one."
 msgstr ""
 
 #: src/gloxi/gui/window.py

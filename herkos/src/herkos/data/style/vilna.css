@@ -108,3 +108,12 @@ button.vilna-chosen { background: alpha(@vilna_muted, 0.12); }
 /* The empty panel (brief 10.4). */
 .vilna-empty { margin: 24px 12px; }
 button.vilna-starter { font-weight: 500; }
+
+/* A question in the conversation that only the person answers
+   (send the earlier messages to the cloud, brief 10.3). */
+.vilna-consent-card {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid alpha(@vilna_blue, 0.35);
+  background: alpha(@vilna_blue, 0.06);
+}

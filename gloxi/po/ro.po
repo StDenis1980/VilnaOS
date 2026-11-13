@@ -966,6 +966,10 @@ msgid "Off in high contrast"
 msgstr "Dezactivat la contrast ridicat"
 
 #: src/gloxi/gui/window.py
+msgid "Only the new message"
+msgstr "Doar mesajul nou"
+
+#: src/gloxi/gui/window.py
 msgid "Otherwise it waits in the field for you to check and send"
 msgstr "Altfel așteaptă în câmp până îl verificați și îl trimiteți"
 
@@ -992,6 +996,14 @@ msgstr ""
 #: src/gloxi/gui/window.py
 msgid "Send dictated text at once"
 msgstr "Trimite imediat textul dictat"
+
+#: src/gloxi/gui/window.py
+msgid "Send the conversation to the cloud?"
+msgstr "Trimiți conversația în cloud?"
+
+#: src/gloxi/gui/window.py
+msgid "Send with context"
+msgstr "Trimite cu context"
 
 #: src/gloxi/gui/window.py
 msgid "Show Gloxi, or hide it if it is in front"
@@ -1027,9 +1039,21 @@ msgid "The app {app} is not installed."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
+msgstr "Modelul din cloud nu vede mesajele anterioare ale acestei conversații. Le trimiți și pe ele, ca să cunoască contextul?"
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "The content {what}."
 msgstr "Conținutul {what}."
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages stay on this computer."
+msgstr "Mesajele anterioare rămân pe acest computer."
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages will go to the cloud with the next one."
+msgstr "Mesajele anterioare vor merge în cloud odată cu următorul."
 
 #: src/gloxi/gui/window.py
 msgid "The last lines of the chat and the input"

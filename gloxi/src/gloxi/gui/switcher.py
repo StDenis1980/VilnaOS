@@ -50,3 +50,11 @@ def switch_note(choice: ModelChoice) -> str:
     return _("Model changed to «{model}» · it answers from the next message").format(
         model=choice.label
     )
+
+
+def button_label(choice: ModelChoice) -> str:
+    """The switcher's own label: the model and its tag, without saying a word twice."""
+    tagged = tag(choice.mode)
+    if tagged.casefold() == choice.label.casefold():
+        return choice.label
+    return f"{choice.label} · {tagged}"

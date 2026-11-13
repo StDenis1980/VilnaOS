@@ -330,5 +330,14 @@ class RemoteController:
         self._take_state(result.get("state"))
         return bool(result.get("ok"))
 
+    def held_back(self) -> int:
+        held = self._state.get("held_back", 0)
+        return held if isinstance(held, int) and held > 0 else 0
+
+    def share_history(self, share: bool) -> None:
+        result = self._try("chat.share_history", {"share": bool(share)})
+        if result:
+            self._take_state(result.get("state"))
+
     def cloud_status(self) -> str:
         return str(self._state.get("cloud_status", ""))

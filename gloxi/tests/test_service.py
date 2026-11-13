@@ -376,3 +376,15 @@ def test_the_wake_autostart_runs_gloxi_wake():
     desktop = Path(__file__).parents[1] / "data/autostart/io.github.stdenis1980.Gloxi-wake.desktop"
     text = desktop.read_text(encoding="utf-8")
     assert "Exec=gloxi wake\n" in text and "NoDisplay=true\n" in text
+
+
+def test_share_history_goes_through_the_service(running):
+    r = running()
+    remote, _view = r.client()
+    assert remote.held_back() == 0
+    remote.share_history(True)  # nothing held back: harmless
+    assert remote.held_back() == 0
+    answers = raw_exchange(
+        r.path, {"id": 1, "method": "chat.share_history", "params": {"share": "yes"}}
+    )
+    assert answers[0]["error"]["code"] == "bad_params"
