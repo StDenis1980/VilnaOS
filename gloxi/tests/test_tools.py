@@ -841,6 +841,26 @@ def test_with_many_program_functions_the_ones_the_message_names_come_first():
     assert "p0_op0" in picked and last_tie not in picked
 
 
+def test_chosen_program_functions_keep_herkos_order_so_the_warm_cache_holds():
+    # Build14.13: English messages were reordered by score and the local model
+    # read all the functions again (70-90 s a turn).
+    from gloxi.tools import MAX_PROGRAM_FUNCTIONS
+
+    many = [notes(f"op{i}") for i in range(MAX_PROGRAM_FUNCTIONS + 3)]
+    for i, p in enumerate(many):
+        p["tool"] = f"org.example.p{i}"
+        p["description"] = "Notes" if i % 2 else "Notes about the calendar of the day"
+    many[-1]["description"] = "Invoices from the mail of the day"
+    t, _ = with_programs(*many)
+    warm = list(program_functions(t))
+    picked = list(program_functions(t, "show the invoices of the day in my calendar mail"))
+    assert len(picked) == MAX_PROGRAM_FUNCTIONS
+    order = [int(name.split("_")[0][1:]) for name in picked]
+    assert order == sorted(order)
+    # Whatever the message, the definitions start as warm() read them.
+    assert picked[0] == warm[0]
+
+
 def test_warm_reads_the_same_functions_the_first_message_gets():
     server = ScriptedLlamaServer("ok")
     conv = conversation(server, tools())
