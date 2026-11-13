@@ -6,7 +6,7 @@ import pytest
 
 from herkos import i18n
 from herkos.confirm import _LABELS, Question, choices_for, render
-from herkos.dialog import LABELS
+from herkos.dialog import LABELS, RISK_LABELS
 from herkos.keros import MODEL_FINDING, RULES
 from herkos.manifest import ManifestRegistry
 from herkos.permissions_view import ASKED, DONE, MONTHS
@@ -22,7 +22,7 @@ def used_messages() -> set[str]:
     found |= {r.description for r in RULES}
     found.add("contains invisible or direction-changing characters")
     found.add(MODEL_FINDING.description)
-    found |= set(_LABELS.values()) | set(LABELS.values())
+    found |= set(_LABELS.values()) | set(LABELS.values()) | set(RISK_LABELS.values())
     found |= set(DONE.values()) | {ASKED} | set(MONTHS)
     for tool in (
         "org.vilna.mcp.files",

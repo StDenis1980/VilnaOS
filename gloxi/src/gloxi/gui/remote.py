@@ -24,7 +24,7 @@ from gettext import gettext as _
 from pathlib import Path
 from typing import Any
 
-from gloxi.gui.controller import ChatView, ModelChoice
+from gloxi.gui.controller import ChatView, ModelChoice, show_action
 from gloxi.vpn_intro import LAUNCHABLE
 
 TIMEOUT = 10.0
@@ -221,6 +221,10 @@ class RemoteController:
             self.dispatch(lambda: view.show_error(text))
         elif name == "note":
             self.dispatch(lambda: view.show_note(text))
+        elif name == "action":
+            card = m.get("card")
+            if isinstance(card, dict):
+                self.dispatch(lambda: show_action(view, card))
         elif name == "busy":
             self._set_busy(bool(m.get("busy")))
         elif name == "open_uri":

@@ -34,8 +34,10 @@ from gloxi.engine import (
     total_ram,
 )
 from gloxi.feedback import FeedbackTalk, wants_feedback
+from gloxi.gui.cards import card_view
 from gloxi.llm import ModelError, ModelUnavailable
 from gloxi.router import CloudNotAllowed, NetworkRefused, Route, Router
+from gloxi.tools import ToolOutcome
 from gloxi.vpn_intro import VpnIntro
 
 # Runs a callable on a worker; replaced by a synchronous runner in tests.
@@ -57,8 +59,27 @@ class ChatView(Protocol):
     def show_error(self, text: str) -> None: ...
     def set_busy(self, busy: bool) -> None: ...
     def show_note(self, text: str) -> None: ...
+    # Optional: a view without cards (the terminal) gets a note instead.
+    # def show_action(self, card: dict) -> None: ...
     def open_uri(self, url: str) -> None: ...
     def launch_app(self, app_id: str) -> None: ...
+
+
+def show_action(view: object, card: dict) -> None:
+    """An action card if the view draws cards, else the same as a short note."""
+    draw = getattr(view, "show_action", None)
+    if callable(draw):
+        draw(card)
+    else:
+        view.show_note(card_view(card).title)  # type: ignore[attr-defined]
+
+
+def show_outcome(view: object, outcome: ToolOutcome) -> None:
+    draw = getattr(view, "show_action", None)
+    if callable(draw):
+        draw(outcome.card())
+    else:
+        view.show_note(outcome.summary())  # type: ignore[attr-defined]
 
 
 def route_label(route: Route, masks_cloud: bool) -> str:
@@ -135,7 +156,7 @@ class ChatController:
         self.intro = intro
         self.vpn = vpn
         self.busy = False
-        conversation.on_tool = lambda outcome: view.show_note(outcome.summary())
+        conversation.on_tool = lambda outcome: show_outcome(view, outcome)
 
     def submit(self, raw: str) -> bool:
         """Handle one line of input. Returns False if it was ignored."""

@@ -13,14 +13,21 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
+gi.require_version("Pango", "1.0")
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 
 from gloxi import crash  # noqa: E402
 from gloxi.backup_intro import BackupIntro, backup_intro  # noqa: E402
 from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
-from gloxi.gui import APP_ID, panel  # noqa: E402
+from gloxi.gui import (  # noqa: E402
+    APP_ID,
+    panel,
+    style,
+    switcher,  # noqa: E402
+)
 from gloxi.gui import shell as vilna_shell  # noqa: E402
+from gloxi.gui.cards import card_view, starter_prompts  # noqa: E402
 from gloxi.gui.controller import ChatController, ModelSetup  # noqa: E402
 from gloxi.gui.panel import OwlState, OwlStates, PanelPrefs  # noqa: E402
 from gloxi.gui.remote import RemoteController, ServiceError  # noqa: E402
@@ -140,10 +147,11 @@ class ChatWindow(Adw.ApplicationWindow):
         header.pack_end(self.panel_button)
         # The model switcher (brief 10.3: in the input bar, Ctrl+/), also in the
         # middle of a conversation; it holds from the next message.
-        self.model_switch = Gtk.DropDown(valign=Gtk.Align.CENTER)
+        # A list that opens upwards, grouped by where the words go (switcher.py).
+        self.model_switch = Gtk.MenuButton(valign=Gtk.Align.CENTER, direction=Gtk.ArrowType.UP)
+        self.model_switch.add_css_class("vilna-model-switch")
         self.model_switch.update_property([Gtk.AccessibleProperty.LABEL], [_("Model")])
         self._fill_model_switch()
-        self.model_switch.connect("notify::selected", self._on_model_selected)
         # Only with the Herkos bundled in the Flatpak: the folders it may use.
         self.herkos: LocalHerkos | None = None
         self.tools = None
@@ -170,6 +178,8 @@ class ChatWindow(Adw.ApplicationWindow):
         self.messages.add_css_class("messages")
         for side in ("top", "bottom", "start", "end"):
             getattr(self.messages, f"set_margin_{side}")(12)
+        self.empty = self._make_empty()
+        self.messages.append(self.empty)
         self.scroller = Gtk.ScrolledWindow(vexpand=True, child=self.messages)
         # Small: always the last lines, also right after the panel shrinks.
         # (Scrolled on idle: the adjustment changes in the middle of layout.)
@@ -213,7 +223,7 @@ class ChatWindow(Adw.ApplicationWindow):
         shortcuts.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.ShortcutTrigger.parse_string("<Control>slash"),
-                action=Gtk.CallbackAction.new(lambda *_a: self.model_switch.activate()),
+                action=Gtk.CallbackAction.new(lambda *_a: self.model_switch.popup() or True),
             )
         )
         for size, key in SIZE_KEYS.items():
@@ -278,6 +288,30 @@ class ChatWindow(Adw.ApplicationWindow):
         self._show_owl()
 
     # -- the side panel: size, look, the owl ------------------------------------
+
+    def _make_empty(self) -> Gtk.Widget:
+        """The empty panel (brief 10.4): the owl, a question and a few starts."""
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, vexpand=True)
+        box.set_valign(Gtk.Align.CENTER)
+        box.add_css_class("vilna-empty")
+        box.append(Gtk.Image(icon_name=APP_ID, pixel_size=64))
+        question = Gtk.Label(label=_("How can I help?"))
+        question.add_css_class("title-2")
+        box.append(question)
+        starts = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, max_children_per_line=3)
+        starts.set_halign(Gtk.Align.CENTER)
+        for text in starter_prompts():
+            chip = Gtk.Button(label=text)
+            chip.add_css_class("pill")
+            chip.add_css_class("vilna-starter")
+            chip.connect("clicked", lambda _b, t=text: self._start_with(t))
+            starts.append(chip)
+        box.append(starts)
+        return box
+
+    def _start_with(self, text: str) -> None:
+        self.entry.set_text(text)
+        self._on_send()
 
     def _make_owl(self) -> Gtk.Widget:
         self.owl_image = Gtk.Image(icon_name=APP_ID, pixel_size=24)
@@ -566,40 +600,89 @@ class ChatWindow(Adw.ApplicationWindow):
         if self.controller.busy:
             return
         self.controller.reset()
-        while child := self.messages.get_first_child():
+        while (child := self.messages.get_last_child()) is not None and child is not self.empty:
             self.messages.remove(child)
+        self.empty.set_visible(True)
 
     # -- model switcher -----------------------------------------------------------
 
     def _fill_model_switch(self) -> None:
         self._choices = self.controller.choices()
-        self._filling = True
-        self.model_switch.set_model(Gtk.StringList.new([c.label for c in self._choices]))
-        modes = [c.mode for c in self._choices]
-        self.model_switch.set_selected(modes.index(self.controller.current_choice()))
-        self._filling = False
-        self._show_model_choice()
-        if len(self._choices) == 1:
-            self.model_switch.set_sensitive(False)
-            self.model_switch.set_tooltip_text(
-                _("Only the local model: turn the cloud on in the settings to choose another")
-            )
-
-    def _show_model_choice(self) -> None:
-        if len(self._choices) > 1:
-            choice = self._choices[self.model_switch.get_selected()]
-            self.model_switch.set_tooltip_text(choice.detail)
+        current = self.controller.current_choice()
+        chosen = next((c for c in self._choices if c.mode == current), self._choices[0])
+        self.model_switch.set_label(f"{chosen.label} · {switcher.tag(chosen.mode)}")
+        self.model_switch.set_tooltip_text(chosen.detail)
+        self.model_switch.set_popover(self._make_model_popover(current))
         self.title.set_subtitle(self.controller.cloud_status())
 
-    def _on_model_selected(self, *_args) -> None:
-        if self._filling:
+    def _make_model_popover(self, current: str) -> Gtk.Popover:
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        for side in ("top", "bottom", "start", "end"):
+            getattr(box, f"set_margin_{side}")(6)
+        heading = Gtk.Label(label=_("Model for the next messages"), xalign=0)
+        heading.add_css_class("caption-heading")
+        heading.add_css_class("dim-label")
+        box.append(heading)
+        popover = Gtk.Popover(child=box)
+        for section in switcher.sections(self._choices):
+            if section.title:
+                title = Gtk.Label(label=section.title, xalign=0, margin_top=6)
+                title.add_css_class("caption")
+                title.add_css_class("dim-label")
+                box.append(title)
+            if section.note:
+                note = Gtk.Label(label=section.note, xalign=0, margin_start=26)
+                note.add_css_class("dim-label")
+                box.append(note)
+            for choice in section.choices:
+                box.append(self._model_row(choice, choice.mode == current, popover))
+        hint = Gtk.Label(label=_("Ctrl + / opens this list"), xalign=0, margin_top=6)
+        hint.add_css_class("caption")
+        hint.add_css_class("dim-label")
+        box.append(hint)
+        return popover
+
+    def _model_row(self, choice, chosen: bool, popover: Gtk.Popover) -> Gtk.Button:
+        row = Gtk.Box(spacing=8)
+        mark = Gtk.Image.new_from_icon_name("object-select-symbolic")
+        mark.set_opacity(1.0 if chosen else 0.0)
+        mark.set_valign(Gtk.Align.START)
+        row.append(mark)
+        words = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True)
+        name = Gtk.Label(label=choice.label, xalign=0)
+        name.add_css_class("heading")
+        words.append(name)
+        detail = Gtk.Label(label=choice.detail, xalign=0, wrap=True, max_width_chars=34)
+        detail.add_css_class("caption")
+        detail.add_css_class("dim-label")
+        words.append(detail)
+        row.append(words)
+        chip = Gtk.Label(label=switcher.tag(choice.mode), valign=Gtk.Align.START)
+        chip.add_css_class("vilna-tag")
+        chip.add_css_class(choice.mode)
+        row.append(chip)
+        button = Gtk.Button(child=row)
+        button.add_css_class("flat")
+        if chosen:
+            button.add_css_class("vilna-chosen")
+        button.connect("clicked", lambda *_a: self._on_model_chosen(choice, popover))
+        return button
+
+    def _on_model_chosen(self, choice, popover: Gtk.Popover) -> None:
+        popover.popdown()
+        if choice.mode == self.controller.current_choice():
             return
-        choice = self._choices[self.model_switch.get_selected()]
         if not self.controller.set_mode(choice.mode):
             self.show_error(_("The cloud is turned off in the settings."))
-            self._fill_model_switch()
-            return
-        self._show_model_choice()
+        else:
+            self._system_line(switcher.switch_note(choice))
+        GLib.idle_add(lambda: self._fill_model_switch() and False)
+
+    def _system_line(self, text: str) -> None:
+        """A quiet line across the conversation (a model switch)."""
+        line = Gtk.Label(label=text, wrap=True, justify=Gtk.Justification.CENTER)
+        line.add_css_class("vilna-system-line")
+        self._add_message(line)
 
     # -- folders (bundled Herkos) -----------------------------------------------
 
@@ -832,9 +915,13 @@ class ChatWindow(Adw.ApplicationWindow):
         label.add_css_class("bubble")
         label.add_css_class(kind)
         box.append(label)
-        self.messages.append(box)
-        GLib.idle_add(self._scroll_to_end)
+        self._add_message(box)
         return label
+
+    def _add_message(self, widget: Gtk.Widget) -> None:
+        self.empty.set_visible(False)
+        self.messages.append(widget)
+        GLib.idle_add(self._scroll_to_end)
 
     def _scroll_to_end(self) -> bool:
         adj = self.scroller.get_vadjustment()
@@ -873,6 +960,51 @@ class ChatWindow(Adw.ApplicationWindow):
     @_idle
     def show_note(self, text: str) -> None:
         self.toasts.add_toast(Adw.Toast(title=text, timeout=4))
+
+    @_idle
+    def show_action(self, card: dict) -> None:
+        """An action card in the conversation (gloxi.gui.cards)."""
+        view = card_view(card)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        box.add_css_class("vilna-action-card")
+        box.add_css_class(view.status)
+        head = Gtk.Box(spacing=8)
+        title = Gtk.Label(label=view.title, xalign=0, wrap=True, max_width_chars=40)
+        title.add_css_class("heading")
+        title.set_hexpand(True)
+        head.append(title)
+        status = Gtk.Label(label=view.status_label, valign=Gtk.Align.START)
+        status.add_css_class("vilna-status")
+        status.add_css_class(view.status)
+        head.append(status)
+        box.append(head)
+        for text, css in ((view.target, "target"), (view.detail, "dim-label")):
+            if text:
+                line = Gtk.Label(label=text, xalign=0, wrap=True, selectable=True)
+                line.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+                line.set_max_width_chars(48)
+                line.add_css_class(css)
+                box.append(line)
+        if view.warnings:
+            # Keros found something in the content: its own block, no panic.
+            warn = Gtk.Box(spacing=8)
+            warn.add_css_class("vilna-warning")
+            icon = Gtk.Image.new_from_icon_name("dialog-warning-symbolic")
+            icon.set_valign(Gtk.Align.START)
+            warn.append(icon)
+            words = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+            heading = Gtk.Label(label=_("Suspicious content"), xalign=0)
+            heading.add_css_class("title")
+            words.append(heading)
+            for w in view.warnings:
+                words.append(
+                    Gtk.Label(label=_("The content {what}.").format(what=w), xalign=0, wrap=True)
+                )
+            strict = _("Herkos checks Gloxi's next actions more strictly.")
+            words.append(Gtk.Label(label=strict, xalign=0, wrap=True))
+            warn.append(words)
+            box.append(warn)
+        self._add_message(box)
 
     @_idle
     def open_uri(self, url: str) -> None:
@@ -974,6 +1106,7 @@ class GloxiApp(Adw.Application):
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
+        style.install()  # Vilna's colours and components (docs/design/style)
         sock = service_socket()
         if sock.exists():
             # Vilna: the conversation, the models and Herkos are gloxid's.

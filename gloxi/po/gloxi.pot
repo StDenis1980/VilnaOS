@@ -652,6 +652,34 @@ msgstr ""
 msgid "an e-mail address"
 msgstr ""
 
+#: src/gloxi/gui/cards.py
+msgid "Action"
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "Denied"
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "Done"
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "Failed"
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "Tidy up Downloads"
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "Turn on the dark theme"
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "What do I have today?"
+msgstr ""
+
 #: src/gloxi/gui/controller.py
 msgid "Auto"
 msgstr ""
@@ -702,7 +730,7 @@ msgstr ""
 msgid "Local"
 msgstr ""
 
-#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py src/gloxi/gui/switcher.py
 msgid "On this computer"
 msgstr ""
 
@@ -778,6 +806,31 @@ msgstr ""
 msgid "Show or hide Gloxi"
 msgstr ""
 
+#: src/gloxi/gui/switcher.py
+msgid "In the cloud"
+msgstr ""
+
+#: src/gloxi/gui/switcher.py
+#, python-brace-format
+msgid "Model changed to «{model}» · it answers from the next message"
+msgstr ""
+
+#: src/gloxi/gui/switcher.py
+msgid "Turned off in the settings"
+msgstr ""
+
+#: src/gloxi/gui/switcher.py
+msgid "cloud"
+msgstr ""
+
+#: src/gloxi/gui/switcher.py
+msgid "local"
+msgstr ""
+
+#: src/gloxi/gui/switcher.py
+msgid "recommended"
+msgstr ""
+
 #: src/gloxi/gui/window.py
 msgid "1/3"
 msgstr ""
@@ -823,6 +876,10 @@ msgid "Choose a folder for Gloxi"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Ctrl + / opens this list"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "Download"
 msgstr ""
 
@@ -847,6 +904,10 @@ msgid "Gloxi sees only the folders you choose here, and every action in them goe
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Herkos checks Gloxi's next actions more strictly."
+msgstr ""
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not change it: {why}"
 msgstr ""
@@ -861,6 +922,10 @@ msgid "Herkos found something suspicious in how the program describes them."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "How can I help?"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
 msgstr ""
 
@@ -870,6 +935,10 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Model"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Model for the next messages"
 msgstr ""
 
 #: src/gloxi/gui/window.py
@@ -894,10 +963,6 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Off in high contrast"
-msgstr ""
-
-#: src/gloxi/gui/window.py
-msgid "Only the local model: turn the cloud on in the settings to choose another"
 msgstr ""
 
 #: src/gloxi/gui/window.py
@@ -953,8 +1018,17 @@ msgid "Stop sharing this folder"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Suspicious content"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "The app {app} is not installed."
+msgstr ""
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "The content {what}."
 msgstr ""
 
 #: src/gloxi/gui/window.py

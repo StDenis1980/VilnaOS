@@ -1,0 +1,10 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later
+ * Vilna's colours for the dark theme: loaded after vilna.css while the
+ * system is dark (see vilna.css). Only colours, no components.
+ */
+@define-color vilna_link #5B8CFF;
+@define-color vilna_orange_text #F0963A;
+@define-color vilna_green_text #3FD283;
+@define-color vilna_red_text #FF7A7E;
+@define-color vilna_red_button #D7263D;
+@define-color vilna_muted #9AA6BF;

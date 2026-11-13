@@ -526,3 +526,28 @@ msgstr "Запустити службу обраного провайдера VP
 
 msgid "Gloxi started the service of the VPN provider"
 msgstr "Gloxi запустив службу провайдера VPN"
+
+# The Herkos window: the level chip, the Keros warning, R4 (design wave 2)
+msgid "R0 · no questions"
+msgstr "R0 · без питань"
+
+msgid "R1 · reads your data"
+msgstr "R1 · читає ваші дані"
+
+msgid "R2 · can be undone"
+msgstr "R2 · можна скасувати"
+
+msgid "R3 · hard to undo"
+msgstr "R3 · важко скасувати"
+
+msgid "R4 · cannot be undone"
+msgstr "R4 · незворотно"
+
+msgid "Suspicious content"
+msgstr "Підозрілий вміст"
+
+msgid "Allow only if you asked for exactly this yourself."
+msgstr "Дозволяйте, лише якщо саме це ви просили самі."
+
+msgid "I have read exactly what will be done"
+msgstr "Мені зрозуміло, що саме буде зроблено"
