@@ -652,6 +652,22 @@ msgstr ""
 msgid "an e-mail address"
 msgstr ""
 
+#: src/gloxi/gui/cards.py
+msgid "Action"
+msgstr "Acțiune"
+
+#: src/gloxi/gui/cards.py
+msgid "Denied"
+msgstr "Refuzat"
+
+#: src/gloxi/gui/cards.py
+msgid "Done"
+msgstr "Gata"
+
+#: src/gloxi/gui/cards.py
+msgid "Failed"
+msgstr "Eșuat"
+
 #: src/gloxi/gui/controller.py
 msgid "Auto"
 msgstr ""
@@ -847,6 +863,10 @@ msgid "Gloxi sees only the folders you choose here, and every action in them goe
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Herkos checks Gloxi's next actions more strictly."
+msgstr "Herkos va verifica mai strict următoarele acțiuni ale lui Gloxi."
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not change it: {why}"
 msgstr ""
@@ -953,9 +973,18 @@ msgid "Stop sharing this folder"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Suspicious content"
+msgstr "Conținut suspect"
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "The app {app} is not installed."
 msgstr ""
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Conținutul {what}."
 
 #: src/gloxi/gui/window.py
 msgid "The last lines of the chat and the input"

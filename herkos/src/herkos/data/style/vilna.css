@@ -70,3 +70,19 @@
 /* The allow button of an irreversible action. */
 button.vilna-danger { background: @vilna_red_button; color: #ffffff; }
 button.vilna-danger:disabled { background: alpha(@vilna_red_button, 0.35); }
+
+/* An action card in the conversation: what Gloxi did through Herkos.
+   The edge and the status word together say how it ended. */
+.vilna-action-card {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border-left: 4px solid alpha(@vilna_muted, 0.45);
+  background: alpha(@vilna_muted, 0.08);
+}
+.vilna-action-card.done { border-left-color: @vilna_green; }
+.vilna-action-card.error { border-left-color: @vilna_red_button; }
+.vilna-action-card .target { font-family: monospace; font-size: 0.9em; }
+.vilna-status { font-size: 0.85em; font-weight: 700; }
+.vilna-status.done { color: @vilna_green_text; }
+.vilna-status.denied { color: @vilna_muted; }
+.vilna-status.error { color: @vilna_red_text; }

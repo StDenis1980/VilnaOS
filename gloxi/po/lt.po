@@ -652,6 +652,22 @@ msgstr ""
 msgid "an e-mail address"
 msgstr ""
 
+#: src/gloxi/gui/cards.py
+msgid "Action"
+msgstr "Veiksmas"
+
+#: src/gloxi/gui/cards.py
+msgid "Denied"
+msgstr "Atmesta"
+
+#: src/gloxi/gui/cards.py
+msgid "Done"
+msgstr "Atlikta"
+
+#: src/gloxi/gui/cards.py
+msgid "Failed"
+msgstr "Nepavyko"
+
 #: src/gloxi/gui/controller.py
 msgid "Auto"
 msgstr ""
@@ -847,6 +863,10 @@ msgid "Gloxi sees only the folders you choose here, and every action in them goe
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Herkos checks Gloxi's next actions more strictly."
+msgstr "Herkos griežčiau tikrins tolesnius Gloxi veiksmus."
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not change it: {why}"
 msgstr ""
@@ -953,9 +973,18 @@ msgid "Stop sharing this folder"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Suspicious content"
+msgstr "Įtartinas turinys"
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "The app {app} is not installed."
 msgstr ""
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Turinys {what}."
 
 #: src/gloxi/gui/window.py
 msgid "The last lines of the chat and the input"

@@ -145,6 +145,17 @@ class ToolOutcome:
             )
         return _("{what} (done)").format(what=what)
 
+    def card(self) -> dict[str, Any]:
+        """The same call as an action card in the window (``gloxi.gui.cards``): JSON-safe."""
+        return {
+            "program": self.label,
+            "operation": self.operation,
+            "target": _short(self.path) if self.path else "",
+            "status": self.status,
+            "message": "" if self.status == "done" else self.message,
+            "warnings": list(self.warnings),
+        }
+
 
 @dataclass(frozen=True)
 class ProgramOperation:

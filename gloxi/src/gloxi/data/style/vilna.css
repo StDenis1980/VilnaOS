@@ -1,0 +1,88 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Vilna's own colours and components for the windows Vilna draws itself:
+ * Herkos, Gloxi, the installer, «Копії» (docs/design/brief.md, section 2).
+ * The rest of GNOME keeps libadwaita's system accent: this is not a GTK theme.
+ *
+ * This file is the light theme and the components. vilna-dark.css only
+ * redefines the colours; the program loads it while the system is dark.
+ * GTK 4.14 (GNOME 46) has neither var() nor prefers-color-scheme, hence
+ * @define-color and two files.
+ *
+ * Preliminary design of wave 2: the designer finishes it, then only the
+ * values here change. Copies live in the programs (herkos/src/herkos/data/style/);
+ * a test in each program checks that its copy matches this file.
+ */
+
+/* Colours (docs/design/v0.1 tokens, light) */
+@define-color vilna_night #1F345C;
+@define-color vilna_blue #2D6BFF;
+@define-color vilna_gold #F5C24A;
+@define-color vilna_orange #F0963A;
+@define-color vilna_green #2FBF71;
+@define-color vilna_red #F0484E;
+@define-color vilna_link #2457D6;
+@define-color vilna_orange_text #B85A12;
+@define-color vilna_green_text #177A43;
+@define-color vilna_red_text #C2182F;
+@define-color vilna_red_button #C2182F;
+@define-color vilna_muted #55607A;
+
+/* Risk level chip (R0-R4): text and colour together, never colour alone.
+   R1 calm, R2 blue, R3 orange, R4 red (brief, scheme 10.6). */
+.vilna-risk {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.85em;
+  font-weight: 700;
+}
+.vilna-risk.r0, .vilna-risk.r1 { background: alpha(@vilna_muted, 0.14); color: @vilna_muted; }
+.vilna-risk.r2 { background: alpha(@vilna_blue, 0.14); color: @vilna_link; }
+.vilna-risk.r3 { background: alpha(@vilna_orange, 0.18); color: @vilna_orange_text; }
+.vilna-risk.r4 { background: @vilna_red_button; color: #ffffff; }
+
+/* A question from Herkos: a coloured edge on top tells the level at a glance. */
+.vilna-sheet { border-top: 4px solid transparent; }
+.vilna-sheet.r2 { border-top-color: @vilna_blue; }
+.vilna-sheet.r3 { border-top-color: @vilna_orange; }
+.vilna-sheet.r4 { border: 2px solid @vilna_red_button; border-top-width: 4px; }
+
+/* Who asks, above the title. */
+.vilna-requester { color: @vilna_muted; font-size: 0.9em; }
+
+/* The list of what changes: a calm card. */
+.vilna-facts {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: alpha(@vilna_muted, 0.08);
+}
+
+/* Warning about suspicious content (Keros): noticeable, without panic. */
+.vilna-warning {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border-left: 4px solid @vilna_orange;
+  background: alpha(@vilna_orange, 0.12);
+}
+.vilna-warning .title { color: @vilna_orange_text; font-weight: 700; }
+.vilna-warning image { color: @vilna_orange_text; }
+
+/* The allow button of an irreversible action. */
+button.vilna-danger { background: @vilna_red_button; color: #ffffff; }
+button.vilna-danger:disabled { background: alpha(@vilna_red_button, 0.35); }
+
+/* An action card in the conversation: what Gloxi did through Herkos.
+   The edge and the status word together say how it ended. */
+.vilna-action-card {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border-left: 4px solid alpha(@vilna_muted, 0.45);
+  background: alpha(@vilna_muted, 0.08);
+}
+.vilna-action-card.done { border-left-color: @vilna_green; }
+.vilna-action-card.error { border-left-color: @vilna_red_button; }
+.vilna-action-card .target { font-family: monospace; font-size: 0.9em; }
+.vilna-status { font-size: 0.85em; font-weight: 700; }
+.vilna-status.done { color: @vilna_green_text; }
+.vilna-status.denied { color: @vilna_muted; }
+.vilna-status.error { color: @vilna_red_text; }

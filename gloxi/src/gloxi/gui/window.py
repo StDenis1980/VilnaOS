@@ -13,14 +13,16 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
+gi.require_version("Pango", "1.0")
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 
 from gloxi import crash  # noqa: E402
 from gloxi.backup_intro import BackupIntro, backup_intro  # noqa: E402
 from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
-from gloxi.gui import APP_ID, panel  # noqa: E402
+from gloxi.gui import APP_ID, panel, style  # noqa: E402
 from gloxi.gui import shell as vilna_shell  # noqa: E402
+from gloxi.gui.cards import card_view  # noqa: E402
 from gloxi.gui.controller import ChatController, ModelSetup  # noqa: E402
 from gloxi.gui.panel import OwlState, OwlStates, PanelPrefs  # noqa: E402
 from gloxi.gui.remote import RemoteController, ServiceError  # noqa: E402
@@ -875,6 +877,52 @@ class ChatWindow(Adw.ApplicationWindow):
         self.toasts.add_toast(Adw.Toast(title=text, timeout=4))
 
     @_idle
+    def show_action(self, card: dict) -> None:
+        """An action card in the conversation (gloxi.gui.cards)."""
+        view = card_view(card)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        box.add_css_class("vilna-action-card")
+        box.add_css_class(view.status)
+        head = Gtk.Box(spacing=8)
+        title = Gtk.Label(label=view.title, xalign=0, wrap=True, max_width_chars=40)
+        title.add_css_class("heading")
+        title.set_hexpand(True)
+        head.append(title)
+        status = Gtk.Label(label=view.status_label, valign=Gtk.Align.START)
+        status.add_css_class("vilna-status")
+        status.add_css_class(view.status)
+        head.append(status)
+        box.append(head)
+        for text, css in ((view.target, "target"), (view.detail, "dim-label")):
+            if text:
+                line = Gtk.Label(label=text, xalign=0, wrap=True, selectable=True)
+                line.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+                line.set_max_width_chars(48)
+                line.add_css_class(css)
+                box.append(line)
+        if view.warnings:
+            # Keros found something in the content: its own block, no panic.
+            warn = Gtk.Box(spacing=8)
+            warn.add_css_class("vilna-warning")
+            icon = Gtk.Image.new_from_icon_name("dialog-warning-symbolic")
+            icon.set_valign(Gtk.Align.START)
+            warn.append(icon)
+            words = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+            heading = Gtk.Label(label=_("Suspicious content"), xalign=0)
+            heading.add_css_class("title")
+            words.append(heading)
+            for w in view.warnings:
+                words.append(
+                    Gtk.Label(label=_("The content {what}.").format(what=w), xalign=0, wrap=True)
+                )
+            strict = _("Herkos checks Gloxi's next actions more strictly.")
+            words.append(Gtk.Label(label=strict, xalign=0, wrap=True))
+            warn.append(words)
+            box.append(warn)
+        self.messages.append(box)
+        GLib.idle_add(self._scroll_to_end)
+
+    @_idle
     def open_uri(self, url: str) -> None:
         # Through the OpenURI portal in Flatpak; the address is also in the chat.
         Gtk.UriLauncher.new(url).launch(self, None, None, None)
@@ -974,6 +1022,7 @@ class GloxiApp(Adw.Application):
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
+        style.install()  # Vilna's colours and components (docs/design/style)
         sock = service_socket()
         if sock.exists():
             # Vilna: the conversation, the models and Herkos are gloxid's.

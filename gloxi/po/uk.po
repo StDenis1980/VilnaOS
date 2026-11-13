@@ -660,6 +660,22 @@ msgstr "адресу"
 msgid "an e-mail address"
 msgstr "адресу пошти"
 
+#: src/gloxi/gui/cards.py
+msgid "Action"
+msgstr "Дія"
+
+#: src/gloxi/gui/cards.py
+msgid "Denied"
+msgstr "Відмовлено"
+
+#: src/gloxi/gui/cards.py
+msgid "Done"
+msgstr "Виконано"
+
+#: src/gloxi/gui/cards.py
+msgid "Failed"
+msgstr "Не вдалося"
+
 #: src/gloxi/gui/controller.py
 msgid "Auto"
 msgstr "Авто"
@@ -855,6 +871,10 @@ msgid "Gloxi sees only the folders you choose here, and every action in them goe
 msgstr "Gloxi бачить лише теки, які ви тут оберете, і кожна дія в них іде через Herkos, який спершу питає вас."
 
 #: src/gloxi/gui/window.py
+msgid "Herkos checks Gloxi's next actions more strictly."
+msgstr "Herkos суворіше перевірятиме наступні дії Gloxi."
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "Herkos could not change it: {why}"
 msgstr "Herkos не зміг цього змінити: {why}"
@@ -961,9 +981,18 @@ msgid "Stop sharing this folder"
 msgstr "Більше не давати цю теку"
 
 #: src/gloxi/gui/window.py
+msgid "Suspicious content"
+msgstr "Підозрілий вміст"
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "The app {app} is not installed."
 msgstr "Застосунок {app} не встановлено."
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Вміст {what}."
 
 #: src/gloxi/gui/window.py
 msgid "The last lines of the chat and the input"

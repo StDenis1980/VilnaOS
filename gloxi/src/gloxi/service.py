@@ -157,6 +157,9 @@ class EventView:
     def show_note(self, text: str) -> None:
         self._event("note", text=text)
 
+    def show_action(self, card: dict) -> None:
+        self._event("action", card=card)
+
     def open_uri(self, url: str) -> None:
         self._event("open_uri", url=url)
 
