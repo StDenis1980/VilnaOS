@@ -12,7 +12,7 @@
 # Mullvad API. Here the daemon stays off until the person chooses Mullvad
 # (vilna-presets does not enable it), nothing is setuid (split tunnelling is
 # not offered), and removal leaves people's settings alone. The app moves
-# from /opt/Mullvad VPN to %{_libdir}/mullvad-vpn: on Vilna /opt is its own
+# from /opt/Mullvad VPN to %%{_libdir}/mullvad-vpn: on Vilna /opt is its own
 # subvolume outside the root snapshot, so a transactional update would
 # write the app where a rollback cannot reach it.
 
@@ -71,9 +71,9 @@ find %{buildroot} -type l | while read -r link; do
     "/opt/Mullvad VPN"*) ln -sfn "%{appdir}${target#/opt/Mullvad VPN}" "$link" ;;
   esac
 done
-grep -rlIZ "/opt/Mullvad VPN" %{buildroot} | xargs -0 -r sed -i \
-  -e 's|"/opt/Mullvad VPN/|"%{appdir}/|g' -e "s|'/opt/Mullvad VPN/|'%{appdir}/|g" \
-  -e 's|/opt/Mullvad\\ VPN/|%{appdir}/|g' -e 's|/opt/Mullvad VPN|%{appdir}|g'
+# Whatever the space is written as ("/opt/Mullvad VPN", "\ ", systemd's
+# "\x20"), the new folder has none.
+grep -rlIZ "/opt/Mullvad" %{buildroot} | xargs -0 -r sed -i 's|/opt/Mullvad[^/"]\{1,4\}VPN|%{appdir}|g'
 # Absolute interpreters, not /usr/bin/env.
 grep -rlIZ '^#!/usr/bin/env bash' %{buildroot} | xargs -0 -r sed -i '1s|^#!/usr/bin/env bash|#!/bin/bash|'
 mkdir -p %{buildroot}%{_unitdir}/mullvad-daemon.service.d
@@ -87,7 +87,7 @@ find %{buildroot} -type f -perm /6000 -exec chmod ug-s {} +
 # Mullvad's AppArmor profile: Vilna uses SELinux.
 rm -rf %{buildroot}%{_sysconfdir}/apparmor.d
 # Nothing may still point into /opt.
-if grep -rlI "/opt/Mullvad" %{buildroot}; then echo "still names /opt" >&2; exit 1; fi
+if grep -rnI "/opt/Mullvad" %{buildroot}; then echo "still names /opt" >&2; exit 1; fi
 # The file list, from what Mullvad ships (paths with spaces quoted). Every
 # directory is owned too, except the system's own, so OBS's file-list check
 # finds no directory without an owner (completion folders and the like).
