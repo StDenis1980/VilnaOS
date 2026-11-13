@@ -44,10 +44,12 @@ from gloxi.privacy import guard_factory
 from gloxi.router import CloudNotAllowed, Route, Router, Target
 from gloxi.tools import ToolOutcome, file_tools
 from gloxi.upgrade import SpeedResult, measure_speed
+from gloxi.vpn_intro import VpnIntro, vpn_intro
 
 HELP = N_(
     "Commands: /local <text> or /cloud <text> picks the model for one message, "
-    "/reset clears the conversation, /backup sets up backups, /feedback reports a problem "
+    "/reset clears the conversation, /backup sets up backups, /vpn sets up a VPN, "
+    "/feedback reports a problem "
     "or suggests something, /exit quits."
 )
 
@@ -282,6 +284,7 @@ def repl(
     intro: BackupIntro | None = None,
     feedback: FeedbackTalk | None = None,
     open_url: Callable[[str], object] = webbrowser.open,
+    vpn: VpnIntro | None = None,
 ) -> int:
     feedback = feedback or FeedbackTalk()
     print(f"Gloxi {__version__}. {_(HELP)}", file=out)
@@ -292,8 +295,11 @@ def repl(
             print(_(UNMASKED_WARNING), file=out)
     else:
         print(_("Cloud: off. Everything stays on this computer."), file=out)
+    # One first-run talk per start: backups first, the VPN the next time.
     if intro and intro.due():
         run_intro(intro, read, out)
+    elif vpn and vpn.due():
+        run_intro(vpn, read, out, open_url)
     while True:
         try:
             text = read("> ").strip()
@@ -307,6 +313,12 @@ def repl(
         if text == "/reset":
             conversation.reset()
             print(_("Conversation cleared."), file=out)
+            continue
+        if text == "/vpn":
+            if vpn:
+                run_intro(vpn, read, out, open_url)
+            else:
+                print(_("The VPN needs Vilna and Herkos, and Herkos is not running."), file=out)
             continue
         if text == "/backup":
             if intro:
@@ -355,11 +367,21 @@ def run_feedback(
     print(file=out)
 
 
-def run_intro(intro: BackupIntro, read: Callable[[str], str], out: TextIO) -> None:
-    """The backup talk (design.md 2a) in the terminal; Ctrl+D leaves it."""
+def run_intro(
+    intro: BackupIntro | VpnIntro,
+    read: Callable[[str], str],
+    out: TextIO,
+    open_url: Callable[[str], object] = webbrowser.open,
+) -> None:
+    """A first-run talk (backups, VPN) in the terminal; Ctrl+D leaves it."""
     turn = intro.start()
     while turn is not None:
         print(f"\nGloxi: {turn.render()}", file=out)
+        if turn.open_uri:
+            print(turn.open_uri, file=out)
+            open_url(turn.open_uri)
+        if turn.launch:
+            print(_("Open the app: {app}").format(app=turn.launch), file=out)
         if turn.done:
             break
         try:
@@ -442,4 +464,7 @@ def main(argv: list[str] | None = None) -> int:
         intro = backup_intro(settings.tools_enabled)
         if intro:
             stack.callback(intro.close)
-        return repl(conversation, intro=intro)
+        vpn = vpn_intro(settings.tools_enabled)
+        if vpn:
+            stack.callback(vpn.close)
+        return repl(conversation, intro=intro, vpn=vpn)

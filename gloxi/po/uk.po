@@ -19,7 +19,7 @@ msgstr "Зовнішній диск"
 msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
 msgstr "А паролі Wi-Fi, облікові записи в мережі, ключі SSH і GPG?"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 #, python-brace-format
 msgid "Choose a number from 1 to {n}."
 msgstr "Виберіть число від 1 до {n}."
@@ -95,11 +95,11 @@ msgstr ""
 "  vilna-backup recover <де лежать копії>\n"
 "Потім: vilna-backup restore --in-place"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Herkos sent an answer Gloxi does not understand"
 msgstr "Herkos надіслав відповідь, якої Gloxi не розуміє"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Herkos, the permission service, is not available"
 msgstr "Herkos, служба дозволів, недоступна"
 
@@ -133,7 +133,7 @@ msgstr "Зберігати розмови з Gloxi в резервних коп�
 msgid "Keep your conversations with Gloxi in backups too?"
 msgstr "Зберігати в резервних копіях і ваші розмови з Gloxi?"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Later"
 msgstr "Пізніше"
 
@@ -153,7 +153,7 @@ msgstr "Музика"
 msgid "My own storage (S3, SFTP)"
 msgstr "Власне сховище (S3, SFTP)"
 
-#: src/gloxi/backup_intro.py src/gloxi/feedback.py
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py src/gloxi/vpn_intro.py
 msgid "No"
 msgstr "Ні"
 
@@ -377,8 +377,8 @@ msgid "Cloud: on ({mode} mode)."
 msgstr "Хмара: увімкнена (режим {mode})."
 
 #: src/gloxi/cli.py
-msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
-msgstr "Команди: /local <текст> чи /cloud <текст> обирає модель для одного повідомлення, /reset очищає розмову, /backup налаштовує резервні копії, /feedback — повідомити про проблему чи запропонувати щось, /exit — вихід."
+msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /vpn sets up a VPN, /feedback reports a problem or suggests something, /exit quits."
+msgstr "Команди: /local <текст> чи /cloud <текст> обирає модель для одного повідомлення, /reset очищає розмову, /backup налаштовує резервні копії, /vpn налаштовує VPN, /feedback — повідомити про проблему чи запропонувати щось, /exit — вихід."
 
 #: src/gloxi/cli.py
 msgid "Conversation cleared."
@@ -420,10 +420,19 @@ msgstr "Не завантажено. Gloxi спитає ще раз наступ
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
 msgstr "Увага: маскування вимкнено (mask_cloud = false), тож повідомлення до хмари НЕ маскуються."
 
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "Open the app: {app}"
+msgstr "Відкрийте застосунок: {app}"
+
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Starting {name} on this computer…"
 msgstr "Запуск {name} на цьому комп'ютері…"
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "The VPN needs Vilna and Herkos, and Herkos is not running."
+msgstr "Для VPN потрібні Vilna і Herkos, а Herkos не запущений."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
@@ -684,6 +693,10 @@ msgstr "Хмара: {host}, з маскуванням"
 #, python-brace-format
 msgid "Cloud: {host}, not masked"
 msgstr "Хмара: {host}, без маскування"
+
+#: src/gloxi/gui/controller.py
+msgid "Gloxi, VPN"
+msgstr "Gloxi, VPN"
 
 #: src/gloxi/gui/controller.py
 msgid "Gloxi, backups"
@@ -948,6 +961,11 @@ msgid "Stop sharing this folder"
 msgstr "Більше не давати цю теку"
 
 #: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "The app {app} is not installed."
+msgstr "Застосунок {app} не встановлено."
+
+#: src/gloxi/gui/window.py
 msgid "The last lines of the chat and the input"
 msgstr "Останні рядки чату й поле введення"
 
@@ -1157,3 +1175,96 @@ msgstr "посилання"
 #: src/gloxi/voice/speech.py
 msgid "password hidden"
 msgstr "пароль приховано"
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. I will ask once more in a week. You can also type /vpn any time."
+msgstr "Гаразд. Я спитаю ще раз за тиждень. Також можете будь-коли набрати /vpn."
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. Type /vpn when you want to go on."
+msgstr "Гаразд. Наберіть /vpn, коли захочете продовжити."
+
+#: src/gloxi/vpn_intro.py
+msgid "Connected"
+msgstr "Під’єднано"
+
+#: src/gloxi/vpn_intro.py
+msgid "Create a free Proton account (5 countries, 1 device)"
+msgstr "Створити безкоштовний акаунт Proton (5 країн, 1 пристрій)"
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether a VPN protects this computer"
+msgstr "Gloxi перевіряє, чи захищає цей комп’ютер VPN"
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether the VPN is connected"
+msgstr "Gloxi перевіряє, чи під’єднано VPN"
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening Proton's sign-up page. You can create the account with a Proton address, without another email. Then sign in in the Proton VPN app that I open next, press Connect and tell me when it is connected."
+msgstr "Відкриваю сторінку реєстрації Proton. Акаунт можна створити з адресою Proton, без іншої пошти. Потім увійдіть у застосунку Proton VPN, який я відкрию слідом, натисніть «Connect» й скажіть мені, коли під’єднається."
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Mullvad app. Enter your account number or activation code there, not here: I do not see it and do not keep it. Then press Connect and tell me when it is connected."
+msgstr "Відкриваю застосунок Mullvad. Введіть номер акаунта чи код активації там, а не тут: я його не бачу й не зберігаю. Потім натисніть «Connect» й скажіть мені, коли під’єднається."
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Proton VPN app. Sign in there, not here: I do not see your password. Then press Connect and tell me when it is connected."
+msgstr "Відкриваю застосунок Proton VPN. Увійдіть там, а не тут: я не бачу вашого пароля. Потім натисніть «Connect» й скажіть мені, коли під’єднається."
+
+#: src/gloxi/vpn_intro.py
+#, python-brace-format
+msgid "I could not continue: {why}. We can go on later: type /vpn."
+msgstr "Не вдалося продовжити: {why}. Продовжимо пізніше: наберіть /vpn."
+
+#: src/gloxi/vpn_intro.py
+msgid "I do not see a VPN connection yet. Press Connect in the app, wait a few seconds and tell me again."
+msgstr "Я ще не бачу з’єднання VPN. Натисніть «Під’єднатися» в застосунку, зачекайте кілька секунд і скажіть мені знову."
+
+#: src/gloxi/vpn_intro.py
+msgid "I have a Mullvad account number or code"
+msgstr "У мене є номер акаунта чи код Mullvad"
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Mullvad app: in its settings turn on “Auto-connect”, so the VPN comes up by itself."
+msgstr "Ще один крок у застосунку Mullvad: у його налаштуваннях увімкніть «Auto-connect» (автоматичне під’єднання), щоб VPN вмикався сам."
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Proton VPN app: in its settings turn on “Connect at startup”, so the VPN comes up by itself."
+msgstr "Ще один крок у застосунку Proton VPN: у його налаштуваннях увімкніть «Connect at startup» (під’єднуватися під час запуску), щоб VPN вмикався сам."
+
+#: src/gloxi/vpn_intro.py
+msgid "Sign in to Proton VPN"
+msgstr "Увійти в Proton VPN"
+
+#: src/gloxi/vpn_intro.py
+msgid "Start the Mullvad VPN service, so its app can connect"
+msgstr "Запустити службу Mullvad VPN, щоб її застосунок міг під’єднатися"
+
+#: src/gloxi/vpn_intro.py
+msgid "The VPN is connected. Shall I turn on the kill switch? Then nothing leaves this computer outside the VPN: if the VPN drops, the internet stops until it is back. Turning it off later always asks you first."
+msgstr "VPN під’єднано. Увімкнути аварійний вимикач? Тоді ніщо не вийде з цього комп’ютера поза VPN: якщо VPN впаде, інтернет зупиниться, доки він не повернеться. Вимкнення потім щоразу спершу питає вас."
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch is on."
+msgstr "Аварійний вимикач увімкнено."
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch stays off. You can turn it on any time: type /vpn."
+msgstr "Аварійний вимикач лишається вимкненим. Його можна будь-коли ввімкнути: наберіть /vpn."
+
+#: src/gloxi/vpn_intro.py
+msgid "Turn on the VPN kill switch"
+msgstr "Увімкнути аварійний вимикач VPN"
+
+#: src/gloxi/vpn_intro.py
+msgid "We are not talking about a VPN now."
+msgstr "Зараз ми не говоримо про VPN."
+
+#: src/gloxi/vpn_intro.py
+msgid "Yes, recommended"
+msgstr "Так, рекомендовано"
+
+#: src/gloxi/vpn_intro.py
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up. Do you want even more protection with a VPN? It also hides the rest of your traffic from that network (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones."
+msgstr "Ваше з’єднання вже захищене: Vilna шифрує DNS, тож мережа, у якій ви є, не бачить, які сайти ви шукаєте. Хочете ще більше захисту з VPN? Він приховує від цієї мережі (кав’ярня, готель) і решту трафіку, а вашу адресу — від сайтів. Провайдер VPN бачить, куди ви ходите, тому я пропоную лише перевірених."

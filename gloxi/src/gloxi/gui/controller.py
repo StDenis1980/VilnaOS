@@ -36,6 +36,7 @@ from gloxi.engine import (
 from gloxi.feedback import FeedbackTalk, wants_feedback
 from gloxi.llm import ModelError, ModelUnavailable
 from gloxi.router import CloudNotAllowed, NetworkRefused, Route, Router
+from gloxi.vpn_intro import VpnIntro
 
 # Runs a callable on a worker; replaced by a synchronous runner in tests.
 Runner = Callable[[Callable[[], None]], None]
@@ -57,6 +58,7 @@ class ChatView(Protocol):
     def set_busy(self, busy: bool) -> None: ...
     def show_note(self, text: str) -> None: ...
     def open_uri(self, url: str) -> None: ...
+    def launch_app(self, app_id: str) -> None: ...
 
 
 def route_label(route: Route, masks_cloud: bool) -> str:
@@ -124,12 +126,14 @@ class ChatController:
         runner: Runner = thread_runner,
         intro: BackupIntro | None = None,
         feedback: FeedbackTalk | None = None,
+        vpn: VpnIntro | None = None,
     ) -> None:
         self.conversation = conversation
         self.feedback = feedback or FeedbackTalk()
         self.view = view
         self.runner = runner
         self.intro = intro
+        self.vpn = vpn
         self.busy = False
         conversation.on_tool = lambda outcome: view.show_note(outcome.summary())
 
@@ -140,6 +144,8 @@ class ChatController:
             return False
         if text == "/backup":
             return self.offer_intro(always=True)
+        if text == "/vpn":
+            return self.offer_vpn(always=True)
         if self.feedback.active:
             self.view.show_user_message(text)
             if text == "/cancel":
@@ -153,6 +159,9 @@ class ChatController:
         if self.intro and self.intro.active:
             self.view.show_user_message(text)
             return self._intro_step(lambda: self.intro.answer(text))
+        if self.vpn and self.vpn.active:
+            self.view.show_user_message(text)
+            return self._intro_step(lambda: self.vpn.answer(text), _("Gloxi, VPN"))
         force, text = split_command(text)
         if not text:
             return False
@@ -170,16 +179,34 @@ class ChatController:
         return True
 
     def offer_intro(self, *, always: bool = False) -> bool:
-        """The backup talk (design.md 2a): on start if due, or on /backup."""
-        if self.busy or self.intro is None:
-            if always and self.intro is None:
-                self.view.show_error(_("Backups need Herkos, and it is not running."))
-            return False
-        if not always and not self.intro.due():
-            return False
-        return self._intro_step(self.intro.start)
+        """The first-run talks: on start the one that is due, or /backup.
 
-    def _intro_step(self, step: Callable[[], Turn | None]) -> bool:
+        One talk per start: backups first (design.md 2a), the VPN (ADR 0027)
+        the next time, so a new person is not asked everything at once.
+        """
+        if self.busy:
+            return False
+        if self.intro is None:
+            if always:
+                self.view.show_error(_("Backups need Herkos, and it is not running."))
+                return False
+        elif always or self.intro.due():
+            return self._intro_step(self.intro.start)
+        return False if always else self.offer_vpn()
+
+    def offer_vpn(self, *, always: bool = False) -> bool:
+        """The VPN talk (ADR 0027): on start if due, or on /vpn."""
+        if self.busy or self.vpn is None:
+            if always and self.vpn is None:
+                self.view.show_error(
+                    _("The VPN needs Vilna and Herkos, and Herkos is not running.")
+                )
+            return False
+        if not always and not self.vpn.due():
+            return False
+        return self._intro_step(self.vpn.start, _("Gloxi, VPN"))
+
+    def _intro_step(self, step: Callable[[], Turn | None], label: str | None = None) -> bool:
         # Herkos may show its window and wait for the person: off the UI thread.
         self.busy = True
         self.view.set_busy(True)
@@ -188,9 +215,13 @@ class ChatController:
             try:
                 turn = step()
                 if turn is not None:
-                    self.view.start_answer(_("Gloxi, backups"))
+                    self.view.start_answer(label or _("Gloxi, backups"))
                     self.view.append_answer(turn.render())
                     self.view.finish_answer()
+                    if turn.open_uri:
+                        self.view.open_uri(turn.open_uri)
+                    if turn.launch:
+                        self.view.launch_app(turn.launch)
             finally:
                 self.busy = False
                 self.view.set_busy(False)

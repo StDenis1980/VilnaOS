@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 12 20:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.6: enable systemd-resolved.service (encrypted DNS to
+  Quad9) and vilna-netguard.service (the VPN kill switch, off until the
+  person turns it on), ADR 0027
+
+-------------------------------------------------------------------
 Tue Nov 10 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.5: enable vilna-home-setup.path and .service (herkos),

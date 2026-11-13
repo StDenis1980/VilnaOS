@@ -1,0 +1,18 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Mullvad's own RPM (ADR 0027), repackaged with Vilna's scriptlets.
+     OBS fetches it and checks the SHA-256; CI fetches it with
+     obs/tools/fetch_sources.py. A new version is let in only after a
+     VM check (ADR 0027, section 1). -->
+<services>
+  <service name="download_url">
+    <param name="protocol">https</param>
+    <param name="host">repository.mullvad.net</param>
+    <param name="path">/rpm/stable/x86_64/MullvadVPN-2026.5_x86_64.rpm</param>
+    <param name="filename">MullvadVPN-2026.5_x86_64.rpm</param>
+  </service>
+  <service name="verify_file">
+    <param name="file">_service:download_url:MullvadVPN-2026.5_x86_64.rpm</param>
+    <param name="verifier">sha256</param>
+    <param name="checksum">6cd0de1c42527b67870e2991f9c0a0399ed6a565f866476536a4d240b289af74</param>
+  </service>
+</services>

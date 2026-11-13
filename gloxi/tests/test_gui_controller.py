@@ -34,6 +34,9 @@ class RecordingView:
     def open_uri(self, url):
         self.events.append(("open", url))
 
+    def launch_app(self, app_id):
+        self.events.append(("launch", app_id))
+
     def answer(self):
         return "".join(e[1] for e in self.events if e[0] == "piece")
 
@@ -153,6 +156,41 @@ def test_backup_talk_in_the_window(tmp_path):
     assert controller.submit("/backup")  # but always on request
     assert view.answer().count("Shall I keep backups") == 2
     assert server.requests == []
+
+
+def test_vpn_talk_after_the_backup_talk(tmp_path):
+    from test_backup_intro import FakeHerkos
+    from test_vpn_intro import FakeHerkos as FakeVpn
+
+    from gloxi.backup_intro import BackupIntro
+    from gloxi.vpn_intro import PROTON_APP, PROTON_SIGNUP, VpnIntro
+
+    server = FakeLlamaServer()
+    view = RecordingView()
+    intro = BackupIntro(FakeHerkos(), path=tmp_path / "intro.json")
+    vpn = VpnIntro(FakeVpn(tunnels=(0, 1)), path=tmp_path / "vpn.json")
+    controller = ChatController(make_conversation(server), view, runner=sync, intro=intro, vpn=vpn)
+    assert controller.offer_intro()  # the first start: backups only
+    assert "Shall I keep backups" in view.answer()
+    assert "VPN" not in view.answer()
+    assert controller.submit("2")
+    assert controller.offer_intro()  # the next start: the VPN
+    assert ("start", "Gloxi, VPN") in view.events
+    assert controller.submit("2")  # a free Proton account
+    assert ("open", PROTON_SIGNUP) in view.events
+    assert ("launch", PROTON_APP) in view.events
+    assert controller.submit("1")  # connected
+    assert controller.submit("1")  # kill switch on
+    assert "kill switch is on" in view.answer()
+    assert not controller.offer_intro()  # nothing due any more
+    assert controller.submit("/vpn")  # but always on request
+    assert server.requests == []
+
+
+def test_vpn_talk_without_herkos():
+    controller, view, _ = make(FakeLlamaServer())
+    assert not controller.submit("/vpn")
+    assert view.kinds() == ["error"]
 
 
 def test_backup_talk_without_herkos():

@@ -45,6 +45,10 @@ class Turn:
     text: str
     choices: tuple[str, ...] = ()
     done: bool = False
+    # What the window does with this turn: open a web page, start an app
+    # (a desktop file id). The terminal prints them instead.
+    open_uri: str | None = None
+    launch: str | None = None
 
     def render(self) -> str:
         lines = [self.text]

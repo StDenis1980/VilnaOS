@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.7
+Version:        0.8
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -25,6 +25,9 @@ Source10:       87-default-Vilna-user.preset
 Source11:       x86_64_v3-transactional-update.service
 Source12:       conncheck-vilna.conf
 Source13:       50-vilna-initial-setup-stop.conf
+Source14:       50-vilna-dns.conf
+Source15:       dns-vilna.conf
+Source16:       vilna-dns.tmpfiles
 BuildRequires:  systemd-rpm-macros
 # They own /usr/etc/sudoers.d (0750) and /usr/share/polkit-1/rules.d (0555).
 # The files below go there, but the directories stay theirs: a %%dir of our
@@ -87,10 +90,14 @@ Summary:        NetworkManager defaults for Vilna
 Provides:       NetworkManager-branding
 Conflicts:      otherproviders(NetworkManager-branding)
 Requires:       NetworkManager
+# DNS-over-TLS to Quad9 (ADR 0027). On Tumbleweed systemd-resolved is its
+# own package; check this name in the OBS build of the image.
+Requires:       systemd-resolved
 
 %description -n NetworkManager-branding-Vilna
 NetworkManager defaults for Vilna: a connectivity check, so that GNOME
-notices captive portals and opens their login page.
+notices captive portals and opens their login page, and DNS through
+systemd-resolved, encrypted (DNS-over-TLS) to Quad9.
 
 %prep
 
@@ -111,6 +118,9 @@ install -D -m 0644 %{SOURCE10} %{buildroot}%{_userpresetdir}/87-default-Vilna-us
 install -D -m 0644 %{SOURCE11} %{buildroot}%{_unitdir}/x86_64_v3-transactional-update.service
 install -D -m 0644 %{SOURCE13} %{buildroot}%{_userunitdir}/gnome-session-manager@gnome-initial-setup.service.d/50-vilna-stop.conf
 install -D -m 0644 %{SOURCE12} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/conncheck-vilna.conf
+install -D -m 0644 %{SOURCE14} %{buildroot}%{_prefix}/lib/systemd/resolved.conf.d/50-vilna-dns.conf
+install -D -m 0644 %{SOURCE15} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/dns-vilna.conf
+install -D -m 0644 %{SOURCE16} %{buildroot}%{_tmpfilesdir}/vilna-dns.conf
 
 %files -n gnome-branding-Vilna
 %dir %{_datadir}/glib-2.0
@@ -141,5 +151,12 @@ install -D -m 0644 %{SOURCE12} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/
 %dir %{_prefix}/lib/NetworkManager
 %dir %{_prefix}/lib/NetworkManager/conf.d
 %{_prefix}/lib/NetworkManager/conf.d/conncheck-vilna.conf
+%{_prefix}/lib/NetworkManager/conf.d/dns-vilna.conf
+%dir %{_prefix}/lib/systemd/resolved.conf.d
+%{_prefix}/lib/systemd/resolved.conf.d/50-vilna-dns.conf
+%{_tmpfilesdir}/vilna-dns.conf
+
+%post -n NetworkManager-branding-Vilna
+%tmpfiles_create %{_tmpfilesdir}/vilna-dns.conf
 
 %changelog

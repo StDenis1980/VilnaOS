@@ -45,6 +45,9 @@ Recommends:     vilna-mcp-calendar
 # Mitos snapshots of people's homes and the system's saved states (ADR 0026).
 Recommends:     snapper
 Recommends:     transactional-update
+# vilna-netguard: the VPN kill switch (nft) and the servers of WireGuard tunnels (wg), ADR 0027.
+Requires:       nftables
+Requires:       wireguard-tools
 %{?systemd_ordering}
 
 %description
@@ -116,7 +119,7 @@ directory = "vendor"
 CARGO
 
 %build
-cargo build --manifest-path rs/Cargo.toml --release --offline --locked -p herkosd
+cargo build --manifest-path rs/Cargo.toml --release --offline --locked -p herkosd -p vilna-netguard
 %pyproject_wheel
 %sysusers_generate_pre systemd/herkos.sysusers herkos herkos.conf
 
@@ -129,6 +132,10 @@ install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-
 install -Dm0644 systemd/vilna-mcp-settings@.service %{buildroot}%{_unitdir}/vilna-mcp-settings@.service
 install -Dm0644 systemd/vilna-mcp-calendar@.service %{buildroot}%{_unitdir}/vilna-mcp-calendar@.service
 install -Dm0644 systemd/vilna-mcp-system@.service %{buildroot}%{_unitdir}/vilna-mcp-system@.service
+# The VPN kill switch and encrypted DNS (ADR 0027).
+install -Dm0644 systemd/vilna-mcp-vpn@.service %{buildroot}%{_unitdir}/vilna-mcp-vpn@.service
+install -Dm0755 rs/target/release/vilna-netguard %{buildroot}%{_bindir}/vilna-netguard
+install -Dm0644 systemd/vilna-netguard.service %{buildroot}%{_unitdir}/vilna-netguard.service
 # New homes useradd could not finish under SELinux (ADR 0026).
 install -Dm0755 systemd/vilna-home-setup %{buildroot}%{_libexecdir}/herkos/vilna-home-setup
 install -Dm0644 systemd/vilna-home-setup.service %{buildroot}%{_unitdir}/vilna-home-setup.service
@@ -158,16 +165,16 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{buildroot}%{_libexecdir}/herkos/herkosd --version
 
 %pre -f herkos.pre
-%service_add_pre herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path
+%service_add_pre herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path vilna-netguard.service
 
 %post
-%service_add_post herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path
+%service_add_post herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path vilna-netguard.service
 
 %preun
-%service_del_preun herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path
+%service_del_preun herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path vilna-netguard.service
 
 %postun
-%service_del_postun herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path
+%service_del_postun herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path vilna-netguard.service
 
 %post selinux
 # Also inside an image build (chroot): semodule works on the policy store.
@@ -202,6 +209,9 @@ fi
 %{_unitdir}/vilna-mcp-settings@.service
 %{_unitdir}/vilna-mcp-calendar@.service
 %{_unitdir}/vilna-mcp-system@.service
+%{_unitdir}/vilna-mcp-vpn@.service
+%{_bindir}/vilna-netguard
+%{_unitdir}/vilna-netguard.service
 %{_datadir}/polkit-1/rules.d/50-herkos.rules
 %{_sysusersdir}/herkos.conf
 %dir %{_sysconfdir}/herkos

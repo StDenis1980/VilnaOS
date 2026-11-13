@@ -40,6 +40,7 @@ from gloxi.router import Router  # noqa: E402
 from gloxi.service import service_socket  # noqa: E402
 from gloxi.tools import file_tools  # noqa: E402
 from gloxi.voice import session as voice_session  # noqa: E402
+from gloxi.vpn_intro import DESKTOP_IDS, LAUNCHABLE, VpnIntro, vpn_intro  # noqa: E402
 
 CSS = """
 .bubble { padding: 8px 12px; border-radius: 12px; }
@@ -102,6 +103,7 @@ class ChatWindow(Adw.ApplicationWindow):
         shell: vilna_shell.VilnaShell | None = None,
         prefs: PanelPrefs | None = None,
         service: Path | None = None,
+        vpn: VpnIntro | None = None,
     ) -> None:
         super().__init__(application=app, title="Gloxi")
         if service is not None:
@@ -114,7 +116,7 @@ class ChatWindow(Adw.ApplicationWindow):
                 print(f"gloxi: no Gloxi service at {service}: {exc}", file=sys.stderr)
             self.controller = remote
         else:
-            self.controller = ChatController(conversation, self, intro=intro)
+            self.controller = ChatController(conversation, self, intro=intro, vpn=vpn)
         self._answer_label: Gtk.Label | None = None
         # The side panel (stage A): its size and look, and the Shell that
         # keeps it at the right edge, when the Vilna extension runs.
@@ -878,6 +880,24 @@ class ChatWindow(Adw.ApplicationWindow):
         Gtk.UriLauncher.new(url).launch(self, None, None, None)
 
     @_idle
+    def launch_app(self, app_id: str) -> None:
+        # Only the providers' own VPN apps (ADR 0027): Gloxi never starts
+        # anything else on someone's say-so.
+        if app_id not in LAUNCHABLE:
+            return
+        for desktop_id in DESKTOP_IDS[app_id]:
+            info = Gio.DesktopAppInfo.new(f"{desktop_id}.desktop")
+            if info is not None:
+                break
+        else:
+            self.show_error(_("The app {app} is not installed.").format(app=app_id))
+            return
+        try:
+            info.launch([], None)
+        except GLib.Error as exc:
+            self.show_error(str(exc))
+
+    @_idle
     def set_busy(self, busy: bool) -> None:
         self._owl(lambda s: s.set_busy(busy))
         self.send_button.set_sensitive(not busy)
@@ -970,12 +990,14 @@ class GloxiApp(Adw.Application):
         self._tools = file_tools(settings.tools_enabled)
         conversation = Conversation(router, settings.system_prompt, tools=self._tools)
         self._intro = backup_intro(settings.tools_enabled)
+        self._vpn = vpn_intro(settings.tools_enabled)
         window = ChatWindow(
             self,
             conversation,
             self._intro,
             shell=vilna_shell.connect(),
             prefs=panel.load_prefs(),
+            vpn=self._vpn,
         )
         if self._herkos is not None:
             window.enable_folders(self._herkos, self._tools)
@@ -1002,6 +1024,8 @@ class GloxiApp(Adw.Application):
             self._tools.close()
         if getattr(self, "_intro", None):
             self._intro.close()
+        if getattr(self, "_vpn", None):
+            self._vpn.close()
         if getattr(self, "_model_setup", None):
             self._model_setup.stop()
         if getattr(self, "_voice", None):
