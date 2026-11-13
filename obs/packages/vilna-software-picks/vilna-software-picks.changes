@@ -5,6 +5,9 @@ Fri Nov 13 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   Flathub states them (LocalSend Apache-2.0, Inkscape GPL-2.0-or-later,
   GCompris AGPL-3.0-only, Blender GPL-3.0-only, FreeCAD LGPL-2.1-only,
   and the -only/-or-later of 13 more), checked on 2026-11-13
+- Joplin, darktable, Blender, VLC, Audacity, Podcasts, MuseScore and
+  SuperTux are not verified on Flathub: source flathub-community, why
+  says the build is unofficial (ADR 0012, addition of 2026-11-13)
 
 -------------------------------------------------------------------
 Thu Nov  5 11:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

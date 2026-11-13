@@ -11,9 +11,10 @@
 #   license   — ліцензія програми (SPDX), має бути вільною (OSI або FSF)
 #   source    — "flathub-verified" (розробник підтверджений на Flathub),
 #               "vilna" (наша програма, власне Flatpak-сховище Vilna)
-#               або "flathub-community" (збірка спільноти Flathub; лише окремим
-#               рішенням ADR, коли офіційного Flatpak немає, і `why` каже, що
-#               збірка неофіційна; зараз лише Signal, ADR 0019)
+#               або "flathub-community" (збірка спільноти Flathub без verified;
+#               лише окремим рішенням, і `why` каже, що збірка неофіційна:
+#               Signal, ADR 0019, і 8 відомих програм, доповнення ADR 0012
+#               від 2026-11-13)
 #   default   — true, якщо програма стоїть у Vilna за замовчуванням
 #               (image/packages.yaml, flatpak_defaults). Такі програми входять
 #               у добірку, щоб Gloxi і діалог Herkos знали про них, але не
@@ -198,9 +199,9 @@ why = "База знань зі зв'язаних нотаток у файлах
 id = "net.cozic.joplin_desktop"
 category = "work"
 license = "AGPL-3.0-or-later"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Нотатки в Markdown із шифрованою синхронізацією на вибір."
+why = "Нотатки в Markdown із шифрованою синхронізацією на вибір; неофіційна збірка спільноти Flathub."
 
 
 # ---------------------------------------------------------------- Спілкування
@@ -302,17 +303,17 @@ why = "Цифровий живопис і малювання на планшет
 id = "org.darktable.Darktable"
 category = "graphics"
 license = "GPL-3.0-or-later"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Обробка RAW-фотографій і каталог знімків."
+why = "Обробка RAW-фотографій і каталог знімків; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "org.blender.Blender"
 category = "graphics"
 license = "GPL-3.0-only"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "3D-моделювання, анімація і рендер."
+why = "3D-моделювання, анімація і рендер; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "org.freecad.FreeCAD"
@@ -337,9 +338,9 @@ why = "Перетворити зображення в інший формат ч
 id = "org.videolan.VLC"
 category = "media"
 license = "GPL-2.0-or-later"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Відтворює майже будь-яке відео й аудіо."
+why = "Відтворює майже будь-яке відео й аудіо; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "org.kde.kdenlive"
@@ -369,9 +370,9 @@ why = "Запис і трансляція екрана й камери."
 id = "org.audacityteam.Audacity"
 category = "media"
 license = "GPL-3.0-only"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Запис і редагування звуку."
+why = "Запис і редагування звуку; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "fr.handbrake.ghb"
@@ -393,9 +394,9 @@ why = "Програвач власної музики."
 id = "org.gnome.Podcasts"
 category = "media"
 license = "GPL-3.0-only"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Подкасти."
+why = "Подкасти; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "de.haeckerfelix.Shortwave"
@@ -409,9 +410,9 @@ why = "Інтернет-радіо."
 id = "org.musescore.MuseScore"
 category = "media"
 license = "GPL-3.0-only"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Нотний редактор."
+why = "Нотний редактор; неофіційна збірка спільноти Flathub."
 
 # ---------------------------------------------------------------- Ігри
 
@@ -427,9 +428,9 @@ why = "Картингові перегони, з друзями на одном�
 id = "org.supertuxproject.SuperTux"
 category = "games"
 license = "GPL-3.0-or-later"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Класичний платформер."
+why = "Класичний платформер; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "org.wesnoth.Wesnoth"
