@@ -90,6 +90,14 @@ impl Vpn {
                 }
                 Ok(v)
             }
+            "start_provider" => {
+                only(obj, &["provider"])?;
+                let provider = text_arg(obj, "provider", 16)?;
+                if provider != "mullvad" {
+                    return Err("'provider' must be mullvad".into());
+                }
+                self.netguard(&["provider", provider])
+            }
             other => Err(format!("unknown tool {other}")),
         }
     }
@@ -143,6 +151,14 @@ fn tools() -> Value {
             "type": "object",
             "properties": {"resolver": {"type": "string", "enum": ["quad9", "mullvad"]}},
             "required": ["resolver"],
+            "additionalProperties": false,
+         },
+         "annotations": change},
+        {"name": "start_provider", "description": "Start the service of the chosen VPN provider (mullvad) and keep it on after a reboot",
+         "inputSchema": {
+            "type": "object",
+            "properties": {"provider": {"type": "string", "enum": ["mullvad"]}},
+            "required": ["provider"],
             "additionalProperties": false,
          },
          "annotations": change},
@@ -285,9 +301,11 @@ mod tests {
             .expect("lan");
         v.call("forget_lan", &json!({"network": "192.168.1.0/24"}))
             .expect("forget");
+        v.call("start_provider", &json!({"provider": "mullvad"}))
+            .expect("provider");
         assert_eq!(
             log(&dir),
-            "on\noff\nportal 300\nallow-lan 192.168.1.0/24\nforget-lan 192.168.1.0/24\n"
+            "on\noff\nportal 300\nallow-lan 192.168.1.0/24\nforget-lan 192.168.1.0/24\nprovider mullvad\n"
         );
     }
 
@@ -317,6 +335,9 @@ mod tests {
             ("allow_lan", json!({"network": 5})),
             ("set_dns", json!({"resolver": "8.8.8.8"})),
             ("set_dns", json!({"resolver": "quad9", "x": 1})),
+            ("start_provider", json!({})),
+            ("start_provider", json!({"provider": "proton"})),
+            ("start_provider", json!({"provider": "sshd"})),
             ("flush_ruleset", json!({})),
         ] {
             assert!(v.call(name, &args).is_err(), "{name} {args}");
@@ -346,7 +367,7 @@ mod tests {
         assert_eq!(replies.len(), 4);
         assert_eq!(
             replies[1]["result"]["tools"].as_array().map(Vec::len),
-            Some(7)
+            Some(8)
         );
         assert_eq!(replies[2]["result"]["structuredContent"]["dns"], "quad9");
         assert_eq!(replies[3]["error"]["code"], -32700);

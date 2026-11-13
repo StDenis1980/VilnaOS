@@ -150,6 +150,12 @@ class VpnIntro:
         self.step = "wait"
         if pick == 3:
             self._provider = "mullvad"
+            # Mullvad's app needs its service, off until now (ADR 0027).
+            self._call(
+                "start_provider",
+                {"provider": "mullvad"},
+                _("Start the Mullvad VPN service, so its app can connect"),
+            )
             return Turn(
                 _(
                     "I am opening the Mullvad app. Enter your account number or activation "

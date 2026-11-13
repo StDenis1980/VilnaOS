@@ -1230,6 +1230,10 @@ msgid "Sign in to Proton VPN"
 msgstr ""
 
 #: src/gloxi/vpn_intro.py
+msgid "Start the Mullvad VPN service, so its app can connect"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
 msgid "The VPN is connected. Shall I turn on the kill switch? Then nothing leaves this computer outside the VPN: if the VPN drops, the internet stops until it is back. Turning it off later always asks you first."
 msgstr ""
 

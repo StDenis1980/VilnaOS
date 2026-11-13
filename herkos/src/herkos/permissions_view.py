@@ -64,6 +64,7 @@ DONE: dict[tuple[str, str], str] = {
     (VPN, "forget_lan"): "Gloxi stopped letting a local network through the VPN kill switch",
     (VPN, "open_portal"): "Gloxi opened the VPN kill switch to sign in to a Wi-Fi network",
     (VPN, "set_dns"): "Gloxi changed the encrypted DNS",
+    (VPN, "start_provider"): "Gloxi started the service of the VPN provider",
     (BACKUP, "status"): "Gloxi checked the backups",
     (BACKUP, "list_snapshots"): "Gloxi listed the backups",
     (BACKUP, "overview"): "Gloxi looked at how much space the folders take",

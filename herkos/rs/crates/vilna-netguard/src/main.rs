@@ -30,7 +30,7 @@ use vilna_netguard::ruleset::{self, PROVIDER_SERVICES, TABLE};
 use vilna_netguard::state::{Lan, State};
 
 const USAGE: &str = "usage: vilna-netguard [--state PATH] [--nft PATH] [--wg PATH] [--cgroup-root DIR] [--resolved-dir DIR] [--systemctl PATH] COMMAND\n\
-commands:\n  status\n  apply\n  watch [SECONDS]\n  on | off\n  allow-lan CIDR | forget-lan CIDR\n  portal SECONDS\n  dns quad9|mullvad";
+commands:\n  status\n  apply\n  watch [SECONDS]\n  on | off\n  allow-lan CIDR | forget-lan CIDR\n  portal SECONDS\n  dns quad9|mullvad\n  provider mullvad";
 
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(10);
 const MAX_OUTPUT: u64 = 1024 * 1024;
@@ -147,6 +147,16 @@ fn run(paths: &Paths, words: &[&str]) -> Result<String, String> {
             let resolver = Resolver::parse(name)?;
             set_resolver(paths, resolver)?;
             Ok(serde_json::json!({ "dns": resolver.name() }).to_string())
+        }
+        ["provider", "mullvad"] => {
+            // The person chose Mullvad (ADR 0027, section 2): its service,
+            // off until now, starts and comes back after a reboot. Proton
+            // needs nothing here: its app runs in the person's session.
+            run_command(
+                Command::new(&paths.systemctl).args(["enable", "--now", "mullvad-daemon.service"]),
+                None,
+            )?;
+            Ok(serde_json::json!({ "provider": "mullvad", "service": "started" }).to_string())
         }
         _ => Err(USAGE.to_owned()),
     }
@@ -355,5 +365,58 @@ fn run_command(command: &mut Command, input: Option<&str>) -> Result<String, Str
             "{name} failed: {}",
             String::from_utf8_lossy(&err).trim()
         ))
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::PermissionsExt;
+
+    /// Paths whose systemctl is a script that logs its arguments.
+    fn paths(name: &str) -> (Paths, PathBuf) {
+        let dir = std::env::temp_dir().join(format!("netguard-{}-{name}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        let systemctl = dir.join("systemctl");
+        fs::write(
+            &systemctl,
+            format!("#!/bin/sh\necho \"$@\" >> {}/log\n", dir.display()),
+        )
+        .unwrap();
+        fs::set_permissions(&systemctl, fs::Permissions::from_mode(0o755)).unwrap();
+        let p = Paths {
+            state: dir.join("state.json"),
+            nft: dir.join("nft"),
+            wg: dir.join("wg"),
+            cgroup_root: dir.join("cgroup"),
+            resolved_dir: dir.join("resolved"),
+            systemctl,
+        };
+        (p, dir)
+    }
+
+    #[test]
+    fn choosing_mullvad_starts_and_enables_its_service() {
+        let (p, dir) = paths("provider");
+        let out = run(&p, &["provider", "mullvad"]).unwrap();
+        assert!(out.contains("\"started\""));
+        let log = fs::read_to_string(dir.join("log")).unwrap();
+        assert_eq!(log, "enable --now mullvad-daemon.service\n");
+    }
+
+    #[test]
+    fn no_other_service_can_be_started() {
+        let (p, dir) = paths("other");
+        for words in [
+            &["provider", "proton"][..],
+            &["provider", "sshd"],
+            &["provider"],
+            &["provider", "mullvad", "x"],
+        ] {
+            assert!(run(&p, words).is_err(), "{words:?}");
+        }
+        assert!(!dir.join("log").exists());
     }
 }

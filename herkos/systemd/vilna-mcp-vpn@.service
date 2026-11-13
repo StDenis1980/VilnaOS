@@ -5,7 +5,7 @@
 # (R2 to make protection stronger, R3 every time to weaken it). It runs as
 # root because nftables and systemd-resolved belong to the whole computer;
 # it cannot do anything else: it is herkosd's own code (herkosd vpn-tool)
-# with seven operations, and it never sees a VPN account.
+# with eight operations, and it never sees a VPN account.
 [Unit]
 Description=VPN kill switch and DNS for uid %i, a Herkos tool
 ConditionPathExists=/run/herkos-tools/%i/vpn.sock
@@ -21,7 +21,8 @@ Restart=no
 
 # vilna-netguard writes /var/lib/vilna-netguard and
 # /etc/systemd/resolved.conf.d, changes nftables (netlink) and asks systemd
-# to reload systemd-resolved. No home folders, no network of its own.
+# to reload systemd-resolved or to start mullvad-daemon. No home folders,
+# no network of its own.
 NoNewPrivileges=yes
 ProtectSystem=strict
 ReadWritePaths=/var/lib/vilna-netguard /etc/systemd/resolved.conf.d

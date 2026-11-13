@@ -3,7 +3,8 @@
 # the kill switch of Vilna (vilna-netguard) and the encrypted DNS resolver.
 #
 # What makes protection stronger is R2: turning the kill switch on, choosing
-# between two encrypted resolvers, forgetting a local network. What weakens
+# between two encrypted resolvers, forgetting a local network, starting
+# the service of the VPN provider the person chose (Mullvad's daemon). What weakens
 # it is R3, asked every time (decision of Denys, 2026-11-04): turning the
 # kill switch off, letting a local network through, opening it for a
 # captive portal (5 minutes at most). The person's VPN account never passes
@@ -50,4 +51,9 @@ reversible = true
 [operations.set_dns]
 level = "R2"
 summary = "Choose the encrypted DNS: Quad9 or Mullvad"
+reversible = true
+
+[operations.start_provider]
+level = "R2"
+summary = "Start the service of the chosen VPN provider"
 reversible = true

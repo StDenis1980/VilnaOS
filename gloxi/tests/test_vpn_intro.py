@@ -96,6 +96,13 @@ def test_mullvad(make):
     assert "account number" in opened.text
     assert "stays off" in end.text and "Auto-connect" in end.text
     assert "killswitch_on" not in herkos.calls
+    assert herkos.calls[:2] == ["status", "start_provider"]
+
+
+def test_mullvad_service_refused(make):
+    intro, _, _ = make(deny={"start_provider"})
+    end = talk(intro, "3")[-1]
+    assert end.done and end.launch is None and "the user said no" in end.text
 
 
 def test_not_connected_yet_asks_again(make):
@@ -177,7 +184,7 @@ def test_every_operation_is_in_the_herkos_manifest():
 
     manifest = ManifestRegistry.builtin().get(VPN_TOOL)
     assert manifest is not None
-    for operation in ("status", "killswitch_on"):
+    for operation in ("status", "killswitch_on", "start_provider"):
         assert manifest.operation(operation) is not None
 
 

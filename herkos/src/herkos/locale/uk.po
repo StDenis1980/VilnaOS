@@ -520,3 +520,9 @@ msgstr "Відкрити аварійний вимикач VPN на 5 хвили
 
 msgid "Choose the encrypted DNS: Quad9 or Mullvad"
 msgstr "Обрати зашифрований DNS: Quad9 або Mullvad"
+
+msgid "Start the service of the chosen VPN provider"
+msgstr "Запустити службу обраного провайдера VPN"
+
+msgid "Gloxi started the service of the VPN provider"
+msgstr "Gloxi запустив службу провайдера VPN"
