@@ -146,6 +146,26 @@ pub trait Tools: Send + Sync {
 /// The server's description and schema of one operation, as JSON, at most.
 pub const MAX_SAID_CHARS: usize = 16_000;
 
+/// At most this many lines of a preview, each at most `MAX_PREVIEW_CHARS`.
+pub const MAX_PREVIEW_LINES: usize = 16;
+pub const MAX_PREVIEW_CHARS: usize = 400;
+
+fn short(s: &str) -> String {
+    let mut out: String = s.chars().take(MAX_PREVIEW_CHARS).collect();
+    if s.chars().nth(MAX_PREVIEW_CHARS).is_some() {
+        out.push('…');
+    }
+    out
+}
+
+fn short_value(v: &Value) -> Value {
+    match v {
+        Value::String(s) => Value::String(short(s)),
+        Value::Bool(_) | Value::Number(_) | Value::Null => v.clone(),
+        other => Value::String(short(&other.to_string())),
+    }
+}
+
 /// The description and input schema a server gave for an operation.
 fn server_said(entry: Option<&Value>) -> Value {
     let description = entry
@@ -926,6 +946,70 @@ impl Gate {
         }
     }
 
+    /// What the dialog shows besides the summary: the facts the operation's
+    /// `preview` gives about it (ADR 0012, section 5), then, for R4 and for a
+    /// changed operation, the exact arguments.
+    fn content(&self, request: &ActionRequest, op: &Operation, exact: bool) -> Option<Value> {
+        let mut out = op
+            .preview
+            .as_deref()
+            .map(|name| self.preview(request, name))
+            .unwrap_or_default();
+        if exact {
+            for (k, v) in &request.arguments {
+                out.insert(k.clone(), v.clone());
+            }
+        }
+        (exact || !out.is_empty()).then_some(Value::Object(out))
+    }
+
+    /// Runs the R0 `preview` operation with the arguments it takes (from the
+    /// server's own schema) and keeps a few short lines of what it says. It
+    /// goes to the person only, never to Gloxi. A preview that fails says so
+    /// in the dialog; the person decides without it.
+    fn preview(&self, request: &ActionRequest, name: &str) -> Map<String, Value> {
+        let takes: Option<Vec<String>> = self.tools.entry(&request.tool, name).and_then(|e| {
+            e.get("inputSchema")?
+                .get("properties")?
+                .as_object()
+                .map(|p| p.keys().cloned().collect())
+        });
+        let arguments = request
+            .arguments
+            .iter()
+            .filter(|(k, _)| takes.as_ref().is_none_or(|t| t.contains(k)))
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        let probe = ActionRequest {
+            operation: name.to_owned(),
+            arguments,
+            ..request.clone()
+        };
+        let mut out = Map::new();
+        match self.tools.execute(&probe) {
+            Ok(said) => {
+                let facts = said.get("facts").filter(|f| f.is_object()).unwrap_or(&said);
+                match facts.as_object() {
+                    Some(lines) => {
+                        for (k, v) in lines.iter().take(MAX_PREVIEW_LINES) {
+                            out.insert(short(k), short_value(v));
+                        }
+                    }
+                    None => {
+                        out.insert("preview".into(), short_value(facts));
+                    }
+                }
+            }
+            Err(e) => {
+                out.insert(
+                    "preview".into(),
+                    json!(format!("not available: {}", short(&e))),
+                );
+            }
+        }
+        out
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn ask(
         &self,
@@ -952,7 +1036,7 @@ impl Gate {
             } else {
                 choices_for(level, a.in_bounds())
             },
-            content: (level >= Level::R4 || once).then(|| Value::Object(request.arguments.clone())),
+            content: self.content(request, op, level >= Level::R4 || once),
         };
         let answer = {
             // A poisoned lock still serialises; a broken dialog is a "no".
@@ -1326,12 +1410,37 @@ pub(crate) mod tests {
 
     impl Tools for FakeTools {
         fn running(&self, tool: &str) -> bool {
-            tool == "org.vilna.mcp.files" || tool == SETTINGS || tool == SYSTEM
+            tool == "org.vilna.mcp.files" || tool == SETTINGS || tool == SYSTEM || tool == APPS
         }
         fn annotations(&self, _t: &str, _o: &str) -> Option<Map<String, Value>> {
             None
         }
+        fn entry(&self, tool: &str, operation: &str) -> Option<Value> {
+            (tool == APPS && operation == "describe").then(|| {
+                json!({"name": "describe", "inputSchema": {"type": "object", "properties":
+                    {"app_id": {"type": "string"}, "remote": {"type": "string"}}}})
+            })
+        }
         fn execute(&self, request: &ActionRequest) -> Result<Value, String> {
+            if request.tool == APPS {
+                let app = request
+                    .arguments
+                    .get("app_id")
+                    .cloned()
+                    .unwrap_or(Value::Null);
+                return match request.operation.as_str() {
+                    // Only what describe takes reaches it (no "action").
+                    "describe" if request.arguments.contains_key("action") => Err("bad".into()),
+                    "describe" if app == json!("org.example.Gone") => Err("not in flathub".into()),
+                    "describe" => Ok(json!({"app_id": app, "facts": {
+                        "App": "Kdenlive", "Verified": "yes", "Download": "120.0 MB",
+                        "Can reach": "x".repeat(1000)}})),
+                    "install" => Ok(json!({"undo_arguments":
+                        {"action": "uninstall", "app_id": app}})),
+                    "restore" => Ok(json!({"uninstalled": app})),
+                    _ => Err("boom".into()),
+                };
+            }
             if request.tool == SYSTEM {
                 // What starts next, before: 7; after a return to 1, undo goes back to 7.
                 let before = if request.operation == "restore" { 1 } else { 7 };
@@ -1962,6 +2071,109 @@ pub(crate) mod tests {
 
     const SETTINGS: &str = "org.vilna.mcp.settings";
     const SYSTEM: &str = "org.vilna.mcp.system";
+    const APPS: &str = "org.vilna.mcp.apps";
+
+    /// A gate on R3 whose dialog only records what it was asked.
+    fn recording_gate(name: &str) -> (Gate, std::sync::Arc<Mutex<Vec<Question>>>, PathBuf) {
+        let (base, docs) = gate(name, Answer::Once);
+        let mut config = base.config.clone();
+        config.max_level = Level::R4;
+        let journal = Journal::open(&config.state_dir.join(format!("{name}.jsonl"))).expect("j");
+        let grants = GrantStore::new(&config.state_dir.join(format!("{name}.json")), now);
+        let asked = std::sync::Arc::new(Mutex::new(Vec::new()));
+        struct Record(std::sync::Arc<Mutex<Vec<Question>>>);
+        impl Confirmer for Record {
+            fn ask(&self, q: &Question, _t: f64) -> Answer {
+                self.0.lock().expect("lock").push(q.clone());
+                Answer::Once
+            }
+        }
+        let g = Gate::new(
+            config,
+            Registry::builtin().expect("manifests"),
+            Box::new(FakeTools),
+            grants,
+            journal,
+            Box::new(Record(std::sync::Arc::clone(&asked))),
+        );
+        (g, asked, docs)
+    }
+
+    fn apps(operation: &str, arguments: Value) -> ActionRequest {
+        parse_request(&json!({
+            "tool": APPS, "operation": operation, "reason": "the person wants to edit video",
+            "arguments": arguments
+        }))
+        .expect("valid")
+    }
+
+    #[test]
+    fn installing_an_app_is_r3_and_the_dialog_shows_what_the_app_is() {
+        let (g, asked, _docs) = recording_gate("apps");
+        let mut s = Session::default();
+        let o = g.handle(
+            &apps("install", json!({"app_id": "org.kde.kdenlive"})),
+            &mut s,
+        );
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R3)), "{o:?}");
+        let q = asked.lock().expect("lock")[0].clone();
+        let content = q.content.expect("facts");
+        assert_eq!(content["App"], "Kdenlive");
+        assert_eq!(content["Download"], "120.0 MB");
+        // Long text is cut; R3 does not list the raw arguments.
+        assert!(
+            content["Can reach"]
+                .as_str()
+                .is_some_and(|c| c.chars().count() == 401)
+        );
+        assert!(content.get("app_id").is_none());
+        // Undo removes it again, asked again with the facts.
+        let u = g.undo(&o.action_id, &mut s);
+        assert_eq!((u.code, u.level), ("allowed", Some(Level::R3)), "{u:?}");
+        let asked = asked.lock().expect("lock");
+        assert_eq!(asked.len(), 2);
+        assert_eq!(asked[1].operation, "restore");
+        assert_eq!(
+            asked[1].content.as_ref().map(|c| c["App"].clone()),
+            Some(json!("Kdenlive"))
+        );
+    }
+
+    #[test]
+    fn an_app_asked_for_after_untrusted_content_is_r4_with_its_exact_name() {
+        let (g, asked, docs) = recording_gate("apps-taint");
+        let mut s = Session::default();
+        let read = g.handle(&files("read", &docs.join("page.html")), &mut s);
+        assert!(read.allowed && s.tainted, "{read:?}");
+        let o = g.handle(
+            &apps("install", json!({"app_id": "org.example.Gone"})),
+            &mut s,
+        );
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R4)), "{o:?}");
+        let q = asked.lock().expect("lock").last().cloned().expect("asked");
+        assert_eq!(q.operation, "install");
+        let content = q.content.expect("content");
+        assert_eq!(content["app_id"], "org.example.Gone");
+        assert_eq!(content["preview"], "not available: not in flathub");
+        assert!(!q.taint_sources.is_empty());
+    }
+
+    #[test]
+    fn gloxi_can_never_add_a_source_of_apps_or_install_a_file() {
+        let (g, asked, _docs) = recording_gate("apps-forbidden");
+        let mut s = Session::default();
+        for op in ["add_remote", "install_from_file"] {
+            let o = g.handle(
+                &apps(op, json!({"url": "https://example.org/repo"})),
+                &mut s,
+            );
+            assert_eq!((o.code, o.allowed), ("denied_forbidden", false), "{o:?}");
+        }
+        // Looking needs no dialog.
+        let o = g.handle(&apps("search", json!({"query": "video"})), &mut s);
+        assert_eq!(o.level, Some(Level::R0), "{o:?}");
+        assert!(asked.lock().expect("lock").is_empty());
+    }
 
     #[test]
     fn a_return_of_the_system_is_r4_and_undone_like_any_change() {

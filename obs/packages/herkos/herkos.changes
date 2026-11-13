@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Fri Nov 13 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Programs through Gloxi (ADR 0012): the manifests org.vilna.mcp.apps
+  (search and describe R0; install, update, removal R3; adding a source
+  of apps or installing from a file forbidden) and org.vilna.mcp.launcher
+  (open an installed app, R1), their units vilna-mcp-apps@ (as the user
+  vilna-apps) and vilna-mcp-launcher@ (as the person); the polkit rule
+  lets herkos start them. A manifest operation may name a `preview`: an
+  R0 operation herkosd runs before it asks, so the dialog shows the app,
+  its developer, verification, «Рекомендовано Vilna», size, licence and
+  permissions.
+
+-------------------------------------------------------------------
 Thu Nov 12 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The VPN kill switch of Vilna (ADR 0027): vilna-netguard and its

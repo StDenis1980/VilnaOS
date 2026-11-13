@@ -43,3 +43,25 @@ def test_duplicate_manifest():
     m = parse_manifest({"tool": "org.example.t", "operations": {"a": {"level": "R0"}}})
     with pytest.raises(ManifestError):
         ManifestRegistry([m, m])
+
+
+def test_a_preview_names_an_r0_operation_of_the_same_tool():
+    from herkos.manifest import ManifestError, ManifestRegistry, parse_manifest
+
+    base = {"tool": "t.x", "operations": {"look": {"level": "R0"}, "put": {"level": "R3"}}}
+    ok = parse_manifest(
+        {**base, "operations": {**base["operations"], "put": {"level": "R3", "preview": "look"}}},
+        "t",
+    )
+    assert ok.operations["put"].preview == "look"
+    for wrong in ("put", "gone", 3):
+        data = {
+            **base,
+            "operations": {**base["operations"], "put": {"level": "R3", "preview": wrong}},
+        }
+        with pytest.raises(ManifestError):
+            parse_manifest(data, "t")
+    apps = ManifestRegistry.builtin().get("org.vilna.mcp.apps")
+    assert apps.operations["install"].preview == "describe"
+    assert apps.operations["add_remote"].forbidden
+    assert apps.launch.module is None  # not in Herkos-lite: installing is R3
