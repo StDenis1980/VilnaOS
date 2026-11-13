@@ -53,3 +53,15 @@ def card_view(card: object) -> CardView:
         detail="" if status == "done" else _text(data.get("message")),
         warnings=warnings,
     )
+
+
+# The empty panel's starts (brief 10.4): things Gloxi can do with its own tools.
+STARTERS = (
+    N_("Tidy up Downloads"),
+    N_("What do I have today?"),
+    N_("Turn on the dark theme"),
+)
+
+
+def starter_prompts() -> list[str]:
+    return [_(s) for s in STARTERS]

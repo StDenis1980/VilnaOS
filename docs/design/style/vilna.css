@@ -86,3 +86,25 @@ button.vilna-danger:disabled { background: alpha(@vilna_red_button, 0.35); }
 .vilna-status.done { color: @vilna_green_text; }
 .vilna-status.denied { color: @vilna_muted; }
 .vilna-status.error { color: @vilna_red_text; }
+
+/* Model switcher in the input bar (brief 10.3). The tag says where the
+   words go: cloud is always marked, so the choice is never a surprise. */
+.vilna-model-switch > button { padding: 2px 10px; border-radius: 999px; font-size: 0.9em; }
+.vilna-tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.8em;
+  font-weight: 700;
+  background: alpha(@vilna_muted, 0.14);
+  color: @vilna_muted;
+}
+.vilna-tag.auto { background: alpha(@vilna_gold, 0.25); color: @vilna_orange_text; }
+.vilna-tag.cloud { background: alpha(@vilna_blue, 0.14); color: @vilna_link; }
+button.vilna-chosen { background: alpha(@vilna_muted, 0.12); }
+
+/* A quiet line across the conversation: the model was switched. */
+.vilna-system-line { color: @vilna_muted; font-size: 0.85em; margin: 4px 24px; }
+
+/* The empty panel (brief 10.4). */
+.vilna-empty { margin: 24px 12px; }
+button.vilna-starter { font-weight: 500; }

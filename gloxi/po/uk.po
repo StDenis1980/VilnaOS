@@ -676,6 +676,18 @@ msgstr "Виконано"
 msgid "Failed"
 msgstr "Не вдалося"
 
+#: src/gloxi/gui/cards.py
+msgid "Tidy up Downloads"
+msgstr "Розібрати Завантаження"
+
+#: src/gloxi/gui/cards.py
+msgid "Turn on the dark theme"
+msgstr "Увімкнути темну тему"
+
+#: src/gloxi/gui/cards.py
+msgid "What do I have today?"
+msgstr "Що в мене сьогодні?"
+
 #: src/gloxi/gui/controller.py
 msgid "Auto"
 msgstr "Авто"
@@ -726,7 +738,7 @@ msgstr "Gloxi, відгук"
 msgid "Local"
 msgstr "Локальна"
 
-#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py src/gloxi/gui/switcher.py
 msgid "On this computer"
 msgstr "На цьому комп'ютері"
 
@@ -802,6 +814,31 @@ msgstr "Зв'язок зі службою Gloxi втрачено. Спробуй
 msgid "Show or hide Gloxi"
 msgstr "Показати або сховати Gloxi"
 
+#: src/gloxi/gui/switcher.py
+msgid "In the cloud"
+msgstr "У хмарі"
+
+#: src/gloxi/gui/switcher.py
+#, python-brace-format
+msgid "Model changed to «{model}» · it answers from the next message"
+msgstr "Модель змінено на «{model}» · вона відповідає з наступного повідомлення"
+
+#: src/gloxi/gui/switcher.py
+msgid "Turned off in the settings"
+msgstr "Вимкнено в налаштуваннях"
+
+#: src/gloxi/gui/switcher.py
+msgid "cloud"
+msgstr "хмара"
+
+#: src/gloxi/gui/switcher.py
+msgid "local"
+msgstr "локально"
+
+#: src/gloxi/gui/switcher.py
+msgid "recommended"
+msgstr "рекомендовано"
+
 #: src/gloxi/gui/window.py
 msgid "1/3"
 msgstr "1/3"
@@ -847,6 +884,10 @@ msgid "Choose a folder for Gloxi"
 msgstr "Оберіть теку для Gloxi"
 
 #: src/gloxi/gui/window.py
+msgid "Ctrl + / opens this list"
+msgstr "Ctrl + / відкриває цей список"
+
+#: src/gloxi/gui/window.py
 msgid "Download"
 msgstr "Завантажити"
 
@@ -889,6 +930,10 @@ msgid "Herkos found something suspicious in how the program describes them."
 msgstr "Herkos знайшов щось підозріле в тому, як програма їх описує."
 
 #: src/gloxi/gui/window.py
+msgid "How can I help?"
+msgstr "Чим допомогти?"
+
+#: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
 msgstr "Програма запуститься, коли Herkos запуститься наступного разу."
 
@@ -899,6 +944,10 @@ msgstr "Слухаю… натисніть ще раз, щоб завершит�
 #: src/gloxi/gui/window.py
 msgid "Model"
 msgstr "Модель"
+
+#: src/gloxi/gui/window.py
+msgid "Model for the next messages"
+msgstr "Модель для наступних повідомлень"
 
 #: src/gloxi/gui/window.py
 msgid "New conversation"
@@ -923,10 +972,6 @@ msgstr "Не ввімкнено: ви відмовили у вікні Herkos."
 #: src/gloxi/gui/window.py
 msgid "Off in high contrast"
 msgstr "Вимкнено за високого контрасту"
-
-#: src/gloxi/gui/window.py
-msgid "Only the local model: turn the cloud on in the settings to choose another"
-msgstr "Лише локальна модель: щоб обрати іншу, увімкніть хмару в налаштуваннях"
 
 #: src/gloxi/gui/window.py
 msgid "Otherwise it waits in the field for you to check and send"

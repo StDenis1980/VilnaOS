@@ -92,3 +92,30 @@ def test_styles_ship_and_match_the_design_source(name):
         assert shipped == source.read_text(encoding="utf-8"), (
             f"copy docs/design/style/{name} to gloxi/src/gloxi/data/style/"
         )
+
+
+def test_switcher_groups_by_where_the_words_go():
+    from gloxi.gui.controller import ModelChoice
+    from gloxi.gui.switcher import sections, switch_note, tag
+
+    local = ModelChoice("local", "Local", "here")
+    cloud = ModelChoice("cloud", "Cloud", "there, masked")
+    auto = ModelChoice("auto", "Auto", "short here, long there")
+    got = sections([local, auto, cloud])
+    assert [(s.title, [c.mode for c in s.choices]) for s in got] == [
+        (None, ["auto"]),
+        ("On this computer", ["local"]),
+        ("In the cloud", ["cloud"]),
+    ]
+    # With the cloud off the section stays, with the reason, so it is findable.
+    off = sections([local])
+    assert off[-1].title == "In the cloud" and off[-1].choices == ()
+    assert off[-1].note == "Turned off in the settings"
+    assert [tag(m) for m in ("auto", "local", "cloud")] == ["recommended", "local", "cloud"]
+    assert "Cloud" in switch_note(cloud)
+
+
+def test_empty_panel_offers_starts():
+    from gloxi.gui.cards import starter_prompts
+
+    assert len(starter_prompts()) == 3

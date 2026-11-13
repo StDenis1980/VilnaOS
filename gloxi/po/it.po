@@ -668,6 +668,18 @@ msgstr "Fatto"
 msgid "Failed"
 msgstr "Non riuscito"
 
+#: src/gloxi/gui/cards.py
+msgid "Tidy up Downloads"
+msgstr "Riordina Scaricati"
+
+#: src/gloxi/gui/cards.py
+msgid "Turn on the dark theme"
+msgstr "Attiva il tema scuro"
+
+#: src/gloxi/gui/cards.py
+msgid "What do I have today?"
+msgstr "Cosa ho oggi?"
+
 #: src/gloxi/gui/controller.py
 msgid "Auto"
 msgstr ""
@@ -718,7 +730,7 @@ msgstr ""
 msgid "Local"
 msgstr ""
 
-#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py src/gloxi/gui/switcher.py
 msgid "On this computer"
 msgstr ""
 
@@ -794,6 +806,31 @@ msgstr "La connessione al servizio di Gloxi si è interrotta. Riprova."
 msgid "Show or hide Gloxi"
 msgstr "Mostra o nascondi Gloxi"
 
+#: src/gloxi/gui/switcher.py
+msgid "In the cloud"
+msgstr "Nel cloud"
+
+#: src/gloxi/gui/switcher.py
+#, python-brace-format
+msgid "Model changed to «{model}» · it answers from the next message"
+msgstr "Modello cambiato in «{model}» · risponde dal prossimo messaggio"
+
+#: src/gloxi/gui/switcher.py
+msgid "Turned off in the settings"
+msgstr "Disattivato nelle impostazioni"
+
+#: src/gloxi/gui/switcher.py
+msgid "cloud"
+msgstr "cloud"
+
+#: src/gloxi/gui/switcher.py
+msgid "local"
+msgstr "locale"
+
+#: src/gloxi/gui/switcher.py
+msgid "recommended"
+msgstr "consigliato"
+
 #: src/gloxi/gui/window.py
 msgid "1/3"
 msgstr "1/3"
@@ -839,6 +876,10 @@ msgid "Choose a folder for Gloxi"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Ctrl + / opens this list"
+msgstr "Ctrl + / apre questo elenco"
+
+#: src/gloxi/gui/window.py
 msgid "Download"
 msgstr ""
 
@@ -881,6 +922,10 @@ msgid "Herkos found something suspicious in how the program describes them."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "How can I help?"
+msgstr "Come posso aiutarti?"
+
+#: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
 msgstr ""
 
@@ -891,6 +936,10 @@ msgstr "Ti ascolto… premi di nuovo per finire (Esc per annullare)"
 #: src/gloxi/gui/window.py
 msgid "Model"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Model for the next messages"
+msgstr "Modello per i prossimi messaggi"
 
 #: src/gloxi/gui/window.py
 msgid "New conversation"
@@ -915,10 +964,6 @@ msgstr ""
 #: src/gloxi/gui/window.py
 msgid "Off in high contrast"
 msgstr "Disattivato con il contrasto elevato"
-
-#: src/gloxi/gui/window.py
-msgid "Only the local model: turn the cloud on in the settings to choose another"
-msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Otherwise it waits in the field for you to check and send"
