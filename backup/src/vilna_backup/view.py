@@ -263,3 +263,50 @@ def form_destination(
             raise FormError(_("This server needs a login and a password."))
         return dest, {names[0]: login, names[1]: password}
     raise FormError(_("Choose where to keep the backups."))
+
+
+# -- restoring over the person's files and on a new device ----------------------
+
+REPLACED_SHOWN = 12
+
+
+def replaced_for_reading(replaced: list[str], home: str, limit: int = REPLACED_SHOWN) -> str:
+    """The files a restore would replace, as the person knows them: inside the home folder."""
+    prefix = home.rstrip("/") + "/"
+    lines = [p.removeprefix(prefix) if p.startswith(prefix) else p for p in replaced[:limit]]
+    if len(replaced) > limit:
+        lines.append(_("…and {n} more").format(n=len(replaced) - limit))
+    return "\n".join(lines)
+
+
+def in_place_heading(replaced: int, new: int) -> str:
+    if replaced:
+        return _("Replace {n} files with their versions from the backup?").format(n=replaced)
+    if new:
+        return _("Bring back {n} files?").format(n=new)
+    return _("Your files are already as in this backup")
+
+
+def in_place_body(replaced: int, new: int) -> str:
+    parts = []
+    if new:
+        parts.append(_("{n} files that are missing now come back.").format(n=new))
+    if replaced:
+        parts.append(_("These files were changed after the backup and get their old version:"))
+    else:
+        parts.append(_("Nothing is replaced."))
+    parts.append(
+        _("Files made after the backup stay. Your passwords and keys on this computer stay.")
+    )
+    return " ".join(parts)
+
+
+def in_place_done(result: dict[str, Any]) -> str:
+    if not result.get("restored"):
+        return _("Files changed while you were reading the list; nothing was replaced. Try again.")
+    text = _("Restored: {files} files back, {replaced} replaced.").format(
+        files=result.get("files", 0), replaced=result.get("replaced", 0)
+    )
+    if result.get("keyrings"):
+        text += " " + _("Old saved passwords came back as a separate key ring.")
+    return text
