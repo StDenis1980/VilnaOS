@@ -16,7 +16,7 @@
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
-use std::sync::mpsc::{Receiver, RecvTimeoutError, TryRecvError, channel};
+use std::sync::mpsc::{Receiver, RecvTimeoutError, Sender, TryRecvError, channel};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Instant;
@@ -336,11 +336,14 @@ pub fn resolve_path(path: &Path) -> PathBuf {
 /// more than the result should wait. Gloxi gets the result at once; the
 /// check goes on in the background, and the next action of the session
 /// that its verdict could raise (R1 and up, ADR 0010 point 3) waits for it.
+/// The check first lets the model finish Gloxi's answer
+/// (`ModelCheck::wait_idle`); `go` tells it the verdict is needed now.
 struct PendingCheck {
     source: String,
     action_id: String,
     total_chars: usize,
     deadline: Instant,
+    go: Sender<()>,
     done: Receiver<Report>,
 }
 
@@ -378,6 +381,9 @@ const MAX_PENDING: usize = 4;
 
 /// A check that does not answer in time counts as not done.
 const PENDING_MARGIN: std::time::Duration = std::time::Duration::from_secs(2);
+
+/// A check waits at most this long for the model to finish other answers.
+const IDLE_CAP: std::time::Duration = std::time::Duration::from_secs(120);
 
 pub struct Gate {
     pub config: Config,
@@ -680,9 +686,22 @@ impl Gate {
     /// then, which changes nothing, as a timeout always did).
     pub fn settle(&self, session: &mut Session, wait: bool) {
         let pending = std::mem::take(&mut session.pending);
+        if wait {
+            // Every waiting check starts now, side by side.
+            for check in &pending {
+                let _ = check.go.send(());
+            }
+        }
+        let budget = self
+            .model_check
+            .as_ref()
+            .map_or(std::time::Duration::ZERO, |m| m.budget());
         for check in pending {
             let report = if wait {
-                let left = check.deadline.saturating_duration_since(Instant::now());
+                let left = check
+                    .deadline
+                    .saturating_duration_since(Instant::now())
+                    .min(budget + PENDING_MARGIN);
                 match check.done.recv_timeout(left) {
                     Ok(r) => r,
                     Err(RecvTimeoutError::Timeout | RecvTimeoutError::Disconnected) => {
@@ -730,12 +749,15 @@ impl Gate {
         let text = model_text(result);
         let total_chars = text.chars().count();
         let (tx, done) = channel();
+        let (go, wait_go) = channel();
         let model = Arc::clone(check);
         let started = thread::Builder::new()
             .name("keros-model".into())
             .spawn(move || {
                 // Nobody waits any more when the connection is gone.
-                let _ = tx.send(model.check(&text));
+                if model.wait_idle(&wait_go, IDLE_CAP) {
+                    let _ = tx.send(model.check(&text));
+                }
             });
         if let Err(e) = started {
             eprintln!("herkosd: Keros model check not started: {e}");
@@ -745,7 +767,8 @@ impl Gate {
             source: source.to_owned(),
             action_id: action_id.to_owned(),
             total_chars,
-            deadline: Instant::now() + check.budget() + PENDING_MARGIN,
+            deadline: Instant::now() + IDLE_CAP + check.budget() + PENDING_MARGIN,
+            go,
             done,
         });
         true
@@ -1747,6 +1770,65 @@ pub(crate) mod tests {
             journal.contains("\"keros_model\":\"injection\""),
             "{journal}"
         );
+    }
+
+    #[test]
+    fn the_model_check_lets_gloxi_answer_first() {
+        // Build14.15: run beside Gloxi's answer on the same model, the
+        // check halved its speed (36-56 s after "Allow once").
+        use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+        let busy = std::sync::Arc::new(AtomicBool::new(true));
+        let checks = std::sync::Arc::new(AtomicUsize::new(0));
+        let url = crate::keros_model::tests::llama_server(
+            std::sync::Arc::clone(&busy),
+            std::sync::Arc::clone(&checks),
+            "yes",
+        );
+        // A fresh gate each time, so the verdict cache asks the model again.
+        let make = |name: &str| {
+            let (mut g, docs) = gate(name, Answer::Deny);
+            g.config.max_level = Level::R4;
+            let asked = std::sync::Arc::new(Asked(Mutex::new(Vec::new()), Answer::Once));
+            let judge = crate::keros_model::Judge::new(&url).expect("judge");
+            let g = Gate {
+                confirmer: Box::new(asked),
+                ..g
+            }
+            .with_model_check(Some(ModelCheck::new(judge, 10.0)));
+            (g, docs)
+        };
+        let (g, docs) = make("keros-after-gloxi");
+        let mut s = Session::default();
+
+        // Twice: once Gloxi finishes its answer, and once the next action
+        // needs the verdict while the model is still busy.
+        let o = g.handle(&files("read", &docs.join("a.txt")), &mut s);
+        assert!(o.allowed, "{o:?}");
+        std::thread::sleep(std::time::Duration::from_millis(2500));
+        assert_eq!(checks.load(Ordering::SeqCst), 0, "Gloxi is still answering");
+        busy.store(false, Ordering::SeqCst);
+        let start = Instant::now();
+        while checks.load(Ordering::SeqCst) == 0 {
+            assert!(start.elapsed() < std::time::Duration::from_secs(5));
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+        g.settle(&mut s, true);
+        assert_eq!(s.pending(), 0);
+        assert!(s.keros.findings.iter().any(|(_, f)| f.rule == "model"));
+
+        busy.store(true, Ordering::SeqCst);
+        let (g, docs) = make("keros-needed-now");
+        let mut s = Session::default();
+        assert!(
+            g.handle(&files("read", &docs.join("a.txt")), &mut s)
+                .allowed
+        );
+        let start = Instant::now();
+        let o = g.handle(&files("write", &docs.join("c.txt")), &mut s);
+        assert!(o.allowed, "{o:?}");
+        assert!(start.elapsed() < std::time::Duration::from_secs(2));
+        assert_eq!(checks.load(Ordering::SeqCst), 2);
+        assert!(s.keros.findings.iter().any(|(_, f)| f.rule == "model"));
     }
 
     #[test]
