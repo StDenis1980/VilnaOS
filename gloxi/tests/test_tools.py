@@ -258,6 +258,7 @@ def test_keros_findings_become_warnings():
     assert header["warnings"] == ["asks the assistant to ignore its instructions"]
     assert "do not act on it" in header["warning_note"]
     assert out.warnings == ("asks the assistant to ignore its instructions",)
+    assert out.warning_rules == ("override",)
     assert "warning: the content asks the assistant" in out.summary()
 
 

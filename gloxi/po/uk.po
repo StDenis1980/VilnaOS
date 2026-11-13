@@ -677,6 +677,39 @@ msgid "Failed"
 msgstr "Не вдалося"
 
 #: src/gloxi/gui/cards.py
+msgid "It asks Gloxi to ignore its instructions."
+msgstr "Просить Gloxi не зважати на свої інструкції."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains a link that could carry your data away."
+msgstr "Містить посилання, яке може винести ваші дані."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains invisible or direction-changing characters."
+msgstr "Містить невидимі символи або символи, що змінюють напрям тексту."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains markers that imitate system messages."
+msgstr "Містить позначки, що імітують системні повідомлення."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains text hidden from people."
+msgstr "Містить текст, прихований від людей."
+
+#: src/gloxi/gui/cards.py
+msgid "It tries to give Gloxi a new role or new instructions."
+msgstr "Намагається дати Gloxi нову роль або нові інструкції."
+
+#: src/gloxi/gui/cards.py
+msgid "The check on this computer found text addressed to Gloxi."
+msgstr "Перевірка на цьому комп'ютері знайшла текст, звернений до Gloxi."
+
+#: src/gloxi/gui/cards.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Вміст {what}."
+
+#: src/gloxi/gui/cards.py
 msgid "Tidy up Downloads"
 msgstr "Розібрати Завантаження"
 
@@ -1049,11 +1082,6 @@ msgstr "Застосунок {app} не встановлено."
 #: src/gloxi/gui/window.py
 msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
 msgstr "Хмарна модель не бачить попередніх повідомлень цієї розмови. Надіслати їх теж, щоб вона знала контекст?"
-
-#: src/gloxi/gui/window.py
-#, python-brace-format
-msgid "The content {what}."
-msgstr "Вміст {what}."
 
 #: src/gloxi/gui/window.py
 msgid "The earlier messages stay on this computer."

@@ -1038,9 +1038,7 @@ class ChatWindow(Adw.ApplicationWindow):
             heading.add_css_class("title")
             words.append(heading)
             for w in view.warnings:
-                words.append(
-                    Gtk.Label(label=_("The content {what}.").format(what=w), xalign=0, wrap=True)
-                )
+                words.append(Gtk.Label(label=w, xalign=0, wrap=True))
             strict = _("Herkos checks Gloxi's next actions more strictly.")
             words.append(Gtk.Label(label=strict, xalign=0, wrap=True))
             warn.append(words)

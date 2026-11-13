@@ -14,6 +14,30 @@ from gettext import gettext as _
 
 from gloxi.i18n import N_
 
+# What Keros found, by rule id (herkos.keros and herkos-core keros.rs use the
+# same ids), as the person reads it. An unknown rule shows its English text.
+KEROS_RULES = {
+    "override": N_("It asks Gloxi to ignore its instructions."),
+    "role": N_("It tries to give Gloxi a new role or new instructions."),
+    "template": N_("It contains markers that imitate system messages."),
+    "hidden_html": N_("It contains text hidden from people."),
+    "exfil_link": N_("It contains a link that could carry your data away."),
+    "invisible": N_("It contains invisible or direction-changing characters."),
+    "model": N_("The check on this computer found text addressed to Gloxi."),
+}
+
+# What Keros found, by rule id (herkos.keros and herkos-core keros.rs use the
+# same ids), as the person reads it. An unknown rule shows its English text.
+KEROS_RULES = {
+    "override": N_("It asks Gloxi to ignore its instructions."),
+    "role": N_("It tries to give Gloxi a new role or new instructions."),
+    "template": N_("It contains markers that imitate system messages."),
+    "hidden_html": N_("It contains text hidden from people."),
+    "exfil_link": N_("It contains a link that could carry your data away."),
+    "invisible": N_("It contains invisible or direction-changing characters."),
+    "model": N_("The check on this computer found text addressed to Gloxi."),
+}
+
 STATUSES = {"done": N_("Done"), "denied": N_("Denied"), "error": N_("Failed")}
 MAX_FIELD = 300  # a card is a summary; long text stays in the answer
 
@@ -33,6 +57,24 @@ def _text(value: object) -> str:
     return text if len(text) <= MAX_FIELD else text[: MAX_FIELD - 1] + "…"
 
 
+def _warnings(descriptions: object, rules: object) -> tuple[str, ...]:
+    """Keros findings in the window's language; duplicates once, at most five."""
+    texts = descriptions if isinstance(descriptions, list) else []
+    ids = rules if isinstance(rules, list) else []
+    out: list[str] = []
+    for i, text in enumerate(texts[:20]):
+        rule = ids[i] if i < len(ids) and isinstance(ids[i], str) else ""
+        if rule in KEROS_RULES:
+            shown = _(KEROS_RULES[rule])
+        elif isinstance(text, str) and text:
+            shown = _("The content {what}.").format(what=_text(text))
+        else:
+            continue
+        if shown not in out:
+            out.append(shown)
+    return tuple(out[:5])
+
+
 def card_view(card: object) -> CardView:
     """What to show for a card; anything malformed is shown as a failure."""
     data = card if isinstance(card, dict) else {}
@@ -41,10 +83,7 @@ def card_view(card: object) -> CardView:
         status = "error"
     program, operation = _text(data.get("program")), _text(data.get("operation"))
     title = f"{program}: {operation}" if program and operation else program or operation
-    raw = data.get("warnings")
-    warnings = (
-        tuple(_text(w) for w in raw[:5] if isinstance(w, str)) if isinstance(raw, list) else ()
-    )
+    warnings = _warnings(data.get("warnings"), data.get("rules"))
     return CardView(
         status=status,
         status_label=_(STATUSES[status]),

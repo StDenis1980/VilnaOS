@@ -669,6 +669,39 @@ msgid "Failed"
 msgstr ""
 
 #: src/gloxi/gui/cards.py
+msgid "It asks Gloxi to ignore its instructions."
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "It contains a link that could carry your data away."
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "It contains invisible or direction-changing characters."
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "It contains markers that imitate system messages."
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "It contains text hidden from people."
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "It tries to give Gloxi a new role or new instructions."
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "The check on this computer found text addressed to Gloxi."
+msgstr ""
+
+#: src/gloxi/gui/cards.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr ""
+
+#: src/gloxi/gui/cards.py
 msgid "Tidy up Downloads"
 msgstr ""
 
@@ -1040,11 +1073,6 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
-msgstr ""
-
-#: src/gloxi/gui/window.py
-#, python-brace-format
-msgid "The content {what}."
 msgstr ""
 
 #: src/gloxi/gui/window.py

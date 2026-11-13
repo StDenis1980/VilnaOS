@@ -669,6 +669,39 @@ msgid "Failed"
 msgstr "Échec"
 
 #: src/gloxi/gui/cards.py
+msgid "It asks Gloxi to ignore its instructions."
+msgstr "Demande à Gloxi d'ignorer ses instructions."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains a link that could carry your data away."
+msgstr "Contient un lien qui pourrait emporter vos données."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains invisible or direction-changing characters."
+msgstr "Contient des caractères invisibles ou qui changent le sens du texte."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains markers that imitate system messages."
+msgstr "Contient des marqueurs qui imitent des messages système."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains text hidden from people."
+msgstr "Contient du texte caché aux personnes."
+
+#: src/gloxi/gui/cards.py
+msgid "It tries to give Gloxi a new role or new instructions."
+msgstr "Tente de donner à Gloxi un nouveau rôle ou de nouvelles instructions."
+
+#: src/gloxi/gui/cards.py
+msgid "The check on this computer found text addressed to Gloxi."
+msgstr "La vérification sur cet ordinateur a trouvé un texte adressé à Gloxi."
+
+#: src/gloxi/gui/cards.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Le contenu {what}."
+
+#: src/gloxi/gui/cards.py
 msgid "Tidy up Downloads"
 msgstr "Ranger Téléchargements"
 
@@ -1041,11 +1074,6 @@ msgstr ""
 #: src/gloxi/gui/window.py
 msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
 msgstr "Le modèle cloud ne voit pas les messages précédents de cette conversation. Les envoyer aussi pour qu'il connaisse le contexte ?"
-
-#: src/gloxi/gui/window.py
-#, python-brace-format
-msgid "The content {what}."
-msgstr "Le contenu {what}."
 
 #: src/gloxi/gui/window.py
 msgid "The earlier messages stay on this computer."

@@ -669,6 +669,39 @@ msgid "Failed"
 msgstr "Eșuat"
 
 #: src/gloxi/gui/cards.py
+msgid "It asks Gloxi to ignore its instructions."
+msgstr "Îi cere lui Gloxi să își ignore instrucțiunile."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains a link that could carry your data away."
+msgstr "Conține un link care ar putea scoate datele dumneavoastră."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains invisible or direction-changing characters."
+msgstr "Conține caractere invizibile sau care schimbă direcția textului."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains markers that imitate system messages."
+msgstr "Conține marcaje care imită mesaje de sistem."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains text hidden from people."
+msgstr "Conține text ascuns de oameni."
+
+#: src/gloxi/gui/cards.py
+msgid "It tries to give Gloxi a new role or new instructions."
+msgstr "Încearcă să îi dea lui Gloxi un rol nou sau instrucțiuni noi."
+
+#: src/gloxi/gui/cards.py
+msgid "The check on this computer found text addressed to Gloxi."
+msgstr "Verificarea de pe acest computer a găsit text adresat lui Gloxi."
+
+#: src/gloxi/gui/cards.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Conținutul {what}."
+
+#: src/gloxi/gui/cards.py
 msgid "Tidy up Downloads"
 msgstr "Ordonează Descărcări"
 
@@ -923,7 +956,7 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "How can I help?"
-msgstr "Cu ce te pot ajuta?"
+msgstr "Cu ce vă pot ajuta?"
 
 #: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
@@ -999,7 +1032,7 @@ msgstr "Trimite imediat textul dictat"
 
 #: src/gloxi/gui/window.py
 msgid "Send the conversation to the cloud?"
-msgstr "Trimiți conversația în cloud?"
+msgstr "Trimiteți conversația în cloud?"
 
 #: src/gloxi/gui/window.py
 msgid "Send with context"
@@ -1040,12 +1073,7 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
-msgstr "Modelul din cloud nu vede mesajele anterioare ale acestei conversații. Le trimiți și pe ele, ca să cunoască contextul?"
-
-#: src/gloxi/gui/window.py
-#, python-brace-format
-msgid "The content {what}."
-msgstr "Conținutul {what}."
+msgstr "Modelul din cloud nu vede mesajele anterioare ale acestei conversații. Le trimiteți și pe ele, ca să cunoască contextul?"
 
 #: src/gloxi/gui/window.py
 msgid "The earlier messages stay on this computer."

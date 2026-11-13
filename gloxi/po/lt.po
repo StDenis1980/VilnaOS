@@ -669,6 +669,39 @@ msgid "Failed"
 msgstr "Nepavyko"
 
 #: src/gloxi/gui/cards.py
+msgid "It asks Gloxi to ignore its instructions."
+msgstr "Prašo Gloxi nepaisyti savo nurodymų."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains a link that could carry your data away."
+msgstr "Yra nuoroda, kuri galėtų išnešti jūsų duomenis."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains invisible or direction-changing characters."
+msgstr "Yra nematomų arba teksto kryptį keičiančių simbolių."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains markers that imitate system messages."
+msgstr "Yra žymių, kurios apsimeta sistemos pranešimais."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains text hidden from people."
+msgstr "Yra nuo žmonių paslėpto teksto."
+
+#: src/gloxi/gui/cards.py
+msgid "It tries to give Gloxi a new role or new instructions."
+msgstr "Bando suteikti Gloxi naują vaidmenį ar naujus nurodymus."
+
+#: src/gloxi/gui/cards.py
+msgid "The check on this computer found text addressed to Gloxi."
+msgstr "Patikra šiame kompiuteryje rado tekstą, skirtą Gloxi."
+
+#: src/gloxi/gui/cards.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Turinys {what}."
+
+#: src/gloxi/gui/cards.py
 msgid "Tidy up Downloads"
 msgstr "Sutvarkyti Atsisiuntimus"
 
@@ -1041,11 +1074,6 @@ msgstr ""
 #: src/gloxi/gui/window.py
 msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
 msgstr "Debesies modelis nemato ankstesnių šio pokalbio žinučių. Siųsti ir jas, kad jis žinotų kontekstą?"
-
-#: src/gloxi/gui/window.py
-#, python-brace-format
-msgid "The content {what}."
-msgstr "Turinys {what}."
 
 #: src/gloxi/gui/window.py
 msgid "The earlier messages stay on this computer."

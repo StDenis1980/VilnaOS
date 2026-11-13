@@ -40,6 +40,7 @@ def test_outcome_becomes_a_json_safe_card():
         "status": "denied",
         "message": "you said no",
         "warnings": ["asks to ignore earlier instructions"],
+        "rules": [],
     }
     assert outcome("done").card()["message"] == ""
 
@@ -60,9 +61,37 @@ def test_malformed_card_is_shown_as_a_failure(card):
 
 
 def test_long_fields_and_many_warnings_are_cut():
-    view = card_view({"status": "done", "target": "a" * 1000, "warnings": ["w"] * 50})
+    many = [f"w{i}" for i in range(50)]
+    view = card_view({"status": "done", "target": "a" * 1000, "warnings": many})
     assert len(view.target) == MAX_FIELD and view.target.endswith("…")
     assert len(view.warnings) == 5
+    assert card_view({"warnings": ["same", "same"]}).warnings == ("The content same.",)
+
+
+def test_keros_findings_are_shown_in_the_window_language(monkeypatch):
+    import gettext
+
+    from gloxi.i18n import DOMAIN, LOCALE_DIR
+
+    uk = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=["uk"])
+    monkeypatch.setattr("gloxi.gui.cards._", uk.gettext)
+    card = {
+        "status": "done",
+        "warnings": ["asks the assistant to ignore its instructions", "does something new"],
+        "rules": ["override", "future_rule"],
+    }
+    shown = card_view(card).warnings
+    assert shown[0] == "Просить Gloxi не зважати на свої інструкції."
+    assert shown[1] == "Вміст does something new."  # an unknown rule: its own text
+
+
+def test_every_keros_rule_has_a_translation():
+    from herkos.keros import MODEL_FINDING, RULES
+
+    from gloxi.gui.cards import KEROS_RULES
+
+    herkos = {r.name for r in RULES} | {"invisible", MODEL_FINDING.rule}
+    assert set(KEROS_RULES) == herkos
 
 
 def test_window_with_cards_gets_a_card_terminal_gets_a_note():
