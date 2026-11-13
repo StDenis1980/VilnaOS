@@ -26,9 +26,9 @@ from pathlib import Path
 from gloxi import __version__, upgrade
 from gloxi.engine import (
     DEFAULT_MODEL,
-    LARGE_MODEL,
     LARGE_MODEL_MIN_RAM,
     MODELS,
+    START_ORDER,
     human_size,
     models_dir,
     server_binary,
@@ -106,23 +106,31 @@ class Report:
             )
         return found
 
-    @property
-    def large_fast_enough(self) -> bool | None:
-        """The speed test says the larger model is fast enough; None if not measured."""
+    def machine(self, *, with_disk: bool = False) -> upgrade.Machine:
+        return upgrade.Machine(
+            ram=self.ram,
+            gpu_memory=max((g.memory for g in self.gpus), default=None),
+            free_disk=self.free_disk if with_disk else None,
+        )
+
+    def fitting(self) -> upgrade.Offer | None:
+        """The best larger model the speed test allows here; None if not measured."""
         if self.speed is None:
             return None
-        return self.speed * upgrade.LARGE_SPEED_FACTOR >= upgrade.LARGE_MIN_SPEED
+        return upgrade.choose(self.speed, self.machine(), lambda m: False)
 
     def in_use(self) -> str | None:
-        """The model Gloxi starts: the larger one if its file is there (engine.plan)."""
-        for model in (LARGE_MODEL, DEFAULT_MODEL):
+        """The model Gloxi starts: the best one whose file is there (engine.plan)."""
+        for model in START_ORDER:
             if model.filename in self.models:
                 return model.name
         return None
 
     def notes(self) -> list[str]:
         """What Gloxi does now that the person may not expect."""
-        if LARGE_MODEL.filename not in self.models or self.large_fast_enough:
+        model = next((m for m in START_ORDER if m.filename in self.models), None)
+        tier = upgrade.tier_of(model) if model else None
+        if tier is None or upgrade.passes(tier, self.speed, self.machine()):
             return []
         return [
             _(
@@ -130,9 +138,9 @@ class Report:
                 "but the speed test has not shown that it is fast enough here. "
                 "To go back to {small}, delete {file} from {folder}."
             ).format(
-                large=LARGE_MODEL.name,
+                large=model.name,
                 small=DEFAULT_MODEL.name,
-                file=LARGE_MODEL.filename,
+                file=model.filename,
                 folder=MODELS_FOLDER_HINT,
             )
         ]
@@ -142,9 +150,10 @@ class Report:
             return _("This computer is below the minimum for the local model.")
         if self.ram is None:
             return _("Could not read the memory size; the local model may still work.")
-        if self.large_fast_enough:
+        fitting = self.fitting()
+        if fitting is not None:
             return _("This computer is fast enough for the larger model, {name}.").format(
-                name=LARGE_MODEL.name
+                name=fitting.model.name
             )
         if self.ram >= LARGE_MODEL_MIN_RAM and self.speed is None:
             return _(

@@ -10,7 +10,7 @@ from pathlib import Path
 from gloxi import check
 from gloxi.check import Gpu, Report, cpu_info, parse_devices
 from gloxi.cli import main
-from gloxi.engine import DEFAULT_MODEL, LARGE_MODEL
+from gloxi.engine import BEST_MODEL, DEFAULT_MODEL, GPU_MODEL, LARGE_MODEL
 
 GIB = 1024**3
 
@@ -156,3 +156,20 @@ def test_start_message_names_the_model():
 
     assert model_name(Path("/m") / LARGE_MODEL.filename) == LARGE_MODEL.name
     assert model_name("other.gguf") == "other.gguf"
+
+
+RTX_3060 = Gpu("Vulkan0", "NVIDIA GeForce RTX 3060", 12288 * 1024**2)
+
+
+def test_verdict_names_the_best_model_that_fits():
+    assert GPU_MODEL.name in report(speed=89.0, gpus=[RTX_3060]).verdict()
+    assert BEST_MODEL.name in report(ram=31 * GIB, speed=89.0, gpus=[RTX_3060]).verdict()
+    assert BEST_MODEL.name in report(ram=31 * GIB, speed=20.0).verdict()
+
+
+def test_the_best_model_without_a_speed_test_is_explained():
+    r = report(ram=31 * GIB, models=[DEFAULT_MODEL.filename, BEST_MODEL.filename])
+    assert r.in_use() == BEST_MODEL.name
+    (note,) = r.notes()
+    assert BEST_MODEL.filename in note
+    assert report(ram=31 * GIB, models=[BEST_MODEL.filename], speed=20.0).notes() == []
