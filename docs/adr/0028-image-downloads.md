@@ -1,6 +1,6 @@
 # 0028. Звідки завантажувати образ Vilna
 
-- Стан: Запропоновано
+- Стан: Прийнято (Denys, 2026-11-13)
 - Дата: 2026-11-13
 - Пов'язано: [ADR 0006](0006-conversational-installer.md) (ваги моделі в образі), [ADR 0018](0018-error-reports-and-feedback.md) (сервер звітів), [ADR 0024](0024-vilna-flatpak-repository.md) (сховище Flatpak на bunny.net), [`obs/README.md`](../../obs/README.md), [`obs/images/Vilna-Live/`](../../obs/images/Vilna-Live/), [roadmap](../roadmap.md), розд. 3
 
