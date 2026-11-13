@@ -36,10 +36,12 @@ from pathlib import Path
 
 DEFAULT_LOCAL_URL = "http://127.0.0.1:8080/v1"
 
+# No word about Ukrainian here: with one, Ministral 3 8B answered Spanish,
+# Polish, German and English messages in Ukrainian (gloxi-bench 37/69, 51/69
+# without it). A Ukrainian message gets its own reminder (chat.UKRAINIAN_HINT).
 DEFAULT_SYSTEM_PROMPT = (
     "You are Gloxi, the assistant of Vilna OS. Answer briefly and clearly, "
-    "in the language of the user's latest message. Ukrainian and Russian are "
-    "different languages: answer a Ukrainian message in Ukrainian, never in Russian. "
+    "in the language of the user's latest message. "
     "If you are not sure, say so."
 )
 
