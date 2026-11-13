@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Command line of Vilna Backup.
 
-For the person (R3-R4, in a terminal; later the Herkos window):
+For the person (R3-R4, in a terminal or the Backups window ``vilna-backup-gui``):
 
     vilna-backup setup PLACE          new backups at a place; shows the recovery key once
     vilna-backup recover PLACE        a new device: open old backups with the recovery key
+    vilna-backup on                   turn backups on again (after recover)
     vilna-backup restore --in-place   bring the home folder back as it was
     vilna-backup secrets on|off       system secrets in backups (separate consent)
 
@@ -113,7 +114,13 @@ def _recover(b: Backup, args: argparse.Namespace) -> int:
     typed = getpass.getpass("Ключ відновлення / Recovery key: ")
     b.recover(dest, typed, creds)
     print("Пристрій підключено до копій. / This device can now use the backups.")
-    print("Далі: `vilna-backup restore --in-place`, щоб повернути дані.")
+    print("Далі: `vilna-backup restore --in-place`, щоб повернути дані, і `vilna-backup on`.")
+    return 0
+
+
+def _on(b: Backup, args: argparse.Namespace) -> int:
+    b.turn_on()
+    _turn_on(b)
     return 0
 
 
@@ -228,7 +235,10 @@ def _restore(b: Backup, args: argparse.Namespace) -> int:
                 print(f"  ... ще {len(replaced) - 20}")
             return input("Продовжити? [так/ні] ").strip().lower() in ("так", "yes", "y", "т")
 
-        _out(args, b.restore_in_place(snapshot=args.snapshot, confirm=confirm))
+        out = b.restore_in_place(snapshot=args.snapshot, confirm=confirm)
+        for name in out.get("keyrings", []):
+            print(f"Стара ключниця повернулася поруч: {name} (відкривається старим паролем входу)")
+        _out(args, out)
         return 0
     if not args.target:
         print("vilna-backup: give --target DIR (a new folder) or --in-place", file=sys.stderr)
@@ -250,6 +260,7 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("recover", help="use existing backups on this new device")
     s.add_argument("place")
     s.set_defaults(func=_recover)
+    sub.add_parser("on", help="turn backups on again (after recover)").set_defaults(func=_on)
 
     sub.add_parser("status").set_defaults(func=_status)
     sub.add_parser("overview", help="sizes of what could be backed up").set_defaults(func=_overview)

@@ -3,11 +3,10 @@
 
     vilna-backup-gui
 
-The window is the person's own tool, as the terminal is: it may set up the
-place and the keys (R3 in design.md 5), which Gloxi cannot. What it does not
-do yet stays in the terminal: restoring over existing files, system secrets,
-recovering on a new device (``vilna-backup restore --in-place``,
-``vilna-backup secrets``, ``vilna-backup recover``).
+The window is the person's own tool, as the terminal is: it may do what
+Gloxi cannot (R3 in design.md 5): set up the place and the keys, connect a
+new device to old backups with the recovery key, restore over existing files
+after showing which ones change, and keep system secrets in backups.
 
 Every call to :class:`Backup` that may be slow (restic, sizes) runs in a
 thread; results come back to GTK through ``GLib.idle_add``.
@@ -75,13 +74,83 @@ def _radio_row(title: str, subtitle: str, group: Gtk.CheckButton | None) -> Adw.
     return row
 
 
+class PlaceGroup(Adw.PreferencesGroup):
+    """Where the backups are: a folder on an external disk or one's own server."""
+
+    def __init__(self, win: Gtk.Window, title: str, *, cloud: bool) -> None:
+        super().__init__(title=title)
+        self.win = win
+        self.folder = ""
+        leader = None
+        if cloud:
+            row = _radio_row(_("Vilna cloud"), _("In the EU · coming later"), None)
+            row.set_sensitive(False)
+            self.add(row)
+            leader = row.check
+        self.disk = _radio_row(_("External disk"), _("No folder chosen yet"), leader)
+        leader = leader or self.disk.check
+        choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
+        choose.connect("clicked", self._choose_folder)
+        self.disk.add_suffix(choose)
+        self.add(self.disk)
+        self.server = _radio_row(_("Your own server"), _("SFTP, S3 or REST"), leader)
+        self.add(self.server)
+        self.address = Adw.EntryRow(title=_("Address, e.g. sftp:me@host:/backups"))
+        self.login = Adw.EntryRow(title=_("Login (S3 and REST)"))
+        self.password = Adw.PasswordEntryRow(title=_("Password (S3 and REST)"))
+        for row in (self.address, self.login, self.password):
+            self.add(row)
+        self.disk.check.set_active(True)
+        self.server.check.connect("toggled", lambda *_a: self._sync_server())
+        self._sync_server()
+
+    def _sync_server(self) -> None:
+        on = self.server.check.get_active()
+        for row in (self.address, self.login, self.password):
+            row.set_visible(on)
+
+    def _choose_folder(self, *_a: Any) -> None:
+        dialog = Gtk.FileDialog(title=_("Folder for backups on the external disk"))
+        media = Path("/run/media") / os.environ.get("USER", "")
+        if media.is_dir():
+            dialog.set_initial_folder(Gio.File.new_for_path(str(media)))
+
+        def picked(d: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
+            try:
+                f = d.select_folder_finish(result)
+            except GLib.Error:
+                return
+            if f and f.get_path():
+                self.set_folder(f.get_path())
+
+        dialog.select_folder(self.win, None, picked)
+
+    def set_folder(self, folder: str) -> None:
+        self.folder = folder
+        self.disk.set_subtitle(folder)
+        self.disk.check.set_active(True)
+
+    def destination(self) -> tuple[Any, dict[str, str]]:
+        """The place and its login, or :class:`view.FormError` with what to fix."""
+        kind = "server" if self.server.check.get_active() else "disk"
+        return view.form_destination(
+            kind,
+            folder=self.folder,
+            address=self.address.get_text(),
+            login=self.login.get_text(),
+            password=self.password.get_text(),
+        )
+
+    def forget_password(self) -> None:
+        self.password.set_text("")
+
+
 class SetupPage(Gtk.Box):
     """What to keep, where, how often (design 10.16)."""
 
     def __init__(self, win: BackupWindow) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
         self.win = win
-        self.folder = ""
         page = Adw.PreferencesPage(vexpand=True)
         self.append(page)
 
@@ -95,26 +164,8 @@ class SetupPage(Gtk.Box):
             self.presets[preset] = row
             what.add(row)
 
-        where = Adw.PreferencesGroup(title=_("Where"))
-        page.add(where)
-        cloud = _radio_row(_("Vilna cloud"), _("In the EU · coming later"), None)
-        cloud.set_sensitive(False)
-        where.add(cloud)
-        self.disk = _radio_row(_("External disk"), _("No folder chosen yet"), cloud.check)
-        choose = Gtk.Button(label=_("Choose…"), valign=Gtk.Align.CENTER)
-        choose.connect("clicked", self._choose_folder)
-        self.disk.add_suffix(choose)
-        where.add(self.disk)
-        self.server = _radio_row(_("Your own server"), _("SFTP, S3 or REST"), cloud.check)
-        where.add(self.server)
-        self.address = Adw.EntryRow(title=_("Address, e.g. sftp:me@host:/backups"))
-        self.login = Adw.EntryRow(title=_("Login (S3 and REST)"))
-        self.password = Adw.PasswordEntryRow(title=_("Password (S3 and REST)"))
-        for row in (self.address, self.login, self.password):
-            where.add(row)
-        self.disk.check.set_active(True)
-        self.server.check.connect("toggled", lambda *_a: self._sync_server())
-        self._sync_server()
+        self.place = PlaceGroup(win, _("Where"), cloud=True)
+        page.add(self.place)
 
         often = Adw.PreferencesGroup(title=_("How often"))
         page.add(often)
@@ -123,6 +174,18 @@ class SetupPage(Gtk.Box):
             model=Gtk.StringList.new([view.schedule_title(s) for s in view.SCHEDULE_ORDER]),
         )
         often.add(self.schedule)
+
+        before = Adw.PreferencesGroup(title=_("Already have backups?"))
+        page.add(before)
+        recover = Adw.ActionRow(
+            title=_("Restore from backups made before"),
+            subtitle=_("On a new computer, with your recovery sheet"),
+        )
+        recover_button = Gtk.Button(label=_("Restore…"), valign=Gtk.Align.CENTER)
+        recover_button.connect("clicked", lambda *_a: win.show_recover())
+        recover.add_suffix(recover_button)
+        recover.set_activatable_widget(recover_button)
+        before.add(recover)
 
         note = Gtk.Label(
             label=_(
@@ -172,42 +235,12 @@ class SetupPage(Gtk.Box):
         for preset, row in self.presets.items():
             row.set_subtitle(view.preset_subtitle(preset, sizes))
 
-    def _sync_server(self) -> None:
-        on = self.server.check.get_active()
-        for row in (self.address, self.login, self.password):
-            row.set_visible(on)
-
-    def _choose_folder(self, *_a: Any) -> None:
-        dialog = Gtk.FileDialog(title=_("Folder for backups on the external disk"))
-        media = Path("/run/media") / os.environ.get("USER", "")
-        if media.is_dir():
-            dialog.set_initial_folder(Gio.File.new_for_path(str(media)))
-
-        def picked(d: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
-            try:
-                f = d.select_folder_finish(result)
-            except GLib.Error:
-                return
-            if f and f.get_path():
-                self.folder = f.get_path()
-                self.disk.set_subtitle(self.folder)
-                self.disk.check.set_active(True)
-
-        dialog.select_folder(self.win, None, picked)
-
     def chosen_preset(self) -> str:
         return next(p for p, row in self.presets.items() if row.check.get_active())
 
     def _next(self, *_a: Any) -> None:
-        kind = "server" if self.server.check.get_active() else "disk"
         try:
-            dest, creds = view.form_destination(
-                kind,
-                folder=self.folder,
-                address=self.address.get_text(),
-                login=self.login.get_text(),
-                password=self.password.get_text(),
-            )
+            dest, creds = self.place.destination()
         except view.FormError as e:
             self.show_error(str(e))
             return
@@ -228,12 +261,94 @@ class SetupPage(Gtk.Box):
             if error:
                 self.show_error(_("Could not set up the backups: {why}").format(why=error))
                 return
-            self.password.set_text("")
+            self.place.forget_password()
             self.win.show_sheet(key)
 
         _in_thread(work, done)
 
     def show_error(self, text: str) -> None:
+        self.error.set_label(text)
+        self.error.set_visible(bool(text))
+
+
+class RecoverPage(Gtk.Box):
+    """A new computer: open the old backups with the key from the recovery sheet."""
+
+    def __init__(self, win: BackupWindow) -> None:
+        super().__init__(orientation=Gtk.Orientation.VERTICAL)
+        self.win = win
+        page = Adw.PreferencesPage(vexpand=True)
+        self.append(page)
+        intro = Adw.PreferencesGroup(
+            description=_(
+                "Connect this computer to the backups you made before. "
+                "You need the place of the backups and the key from your recovery sheet. "
+                "Nothing on this computer changes until you choose what to bring back."
+            )
+        )
+        page.add(intro)
+        self.place = PlaceGroup(win, _("Where are your backups?"), cloud=False)
+        page.add(self.place)
+        key = Adw.PreferencesGroup(title=_("Recovery sheet"))
+        page.add(key)
+        self.entry = Adw.EntryRow(title=_("Type the key from your sheet"))
+        self.entry.connect("changed", lambda *_a: self._sync())
+        self.entry.connect("entry-activated", self._connect)
+        key.add(self.entry)
+
+        self.error = Gtk.Label(wrap=True, xalign=0, visible=False, margin_start=24, margin_end=24)
+        self.error.add_css_class("error")
+        self.append(self.error)
+        buttons = Gtk.Box(
+            spacing=12,
+            halign=Gtk.Align.END,
+            margin_top=12,
+            margin_bottom=18,
+            margin_start=24,
+            margin_end=24,
+        )
+        back = Gtk.Button(label=_("Back"))
+        back.connect("clicked", lambda *_a: win.show_setup())
+        self.ok = Gtk.Button(label=_("Connect"))
+        self.ok.add_css_class("suggested-action")
+        self.ok.connect("clicked", self._connect)
+        buttons.append(back)
+        buttons.append(self.ok)
+        self.append(buttons)
+
+    def show(self) -> None:
+        self.entry.set_text("")
+        self.error.set_visible(False)
+        self._sync()
+
+    def _sync(self) -> None:
+        self.ok.set_sensitive(view.key_looks_complete(self.entry.get_text()))
+
+    def _connect(self, *_a: Any) -> None:
+        if not self.ok.get_sensitive():
+            return
+        try:
+            dest, creds = self.place.destination()
+        except view.FormError as e:
+            self._error(str(e))
+            return
+        self._error("")
+        typed = self.entry.get_text()
+        backup = self.win.backup
+        self.ok.set_sensitive(False)
+
+        def done(_result: Any, error: Exception | None) -> None:
+            self._sync()
+            if error:
+                self._error(_("Could not open the backups: {why}").format(why=error))
+                return
+            self.entry.set_text("")
+            self.place.forget_password()
+            self.win.after_recover()
+
+        _in_thread(lambda: backup.recover(dest, typed, creds), done)
+
+    def _error(self, text: str) -> None:
         self.error.set_label(text)
         self.error.set_visible(bool(text))
 
@@ -358,6 +473,7 @@ class StatusPage(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
         self.win = win
         self._loading = False
+        self.enabled = False
         page = Adw.PreferencesPage(vexpand=True)
         self.append(page)
 
@@ -390,12 +506,20 @@ class StatusPage(Gtk.Box):
         )
         self.schedule.connect("notify::selected", self._schedule_changed)
         settings.add(self.schedule)
+        self.secrets = Adw.SwitchRow(
+            title=_("System secrets"),
+            subtitle=_("Saved passwords, online accounts, SSH and GPG keys"),
+        )
+        self.secrets.connect("notify::active", self._secrets_changed)
+        settings.add(self.secrets)
         self.place = Adw.ActionRow(title=_("Where"))
         settings.add(self.place)
 
         self.list = Adw.PreferencesGroup(
             title=_("Backups"),
-            description=_("Restore puts the files into a new folder; nothing is replaced."),
+            description=_(
+                "Restore into a new folder, or over your files after seeing which ones change."
+            ),
         )
         page.add(self.list)
         self.rows: list[Gtk.Widget] = []
@@ -427,7 +551,9 @@ class StatusPage(Gtk.Box):
         self.state.set_title(s.title)
         self.state.set_subtitle(s.detail)
         self.icon.set_from_icon_name("emblem-ok-symbolic" if s.ok else "dialog-warning-symbolic")
-        self.now.set_sensitive(s.percent is None and status.get("enabled", False))
+        self.enabled = bool(status.get("enabled"))
+        self.now.set_label(_("Back up now") if self.enabled else _("Turn on"))
+        self.now.set_sensitive(s.percent is None)
         self.progress.set_visible(s.percent is not None)
         if s.percent is not None:
             self.progress.set_fraction(min(max(s.percent / 100, 0), 1))
@@ -441,6 +567,7 @@ class StatusPage(Gtk.Box):
         schedule = status.get("schedule", "daily")
         if schedule in view.SCHEDULE_ORDER:
             self.schedule.set_selected(view.SCHEDULE_ORDER.index(schedule))
+        self.secrets.set_active(bool(status.get("system_secrets")))
         self._loading = False
         self.place.set_subtitle(view.place_text(status.get("destination")))
         self.win.poll(running=s.percent is not None or self.win.expecting_run())
@@ -471,6 +598,24 @@ class StatusPage(Gtk.Box):
 
     def _back_up_now(self, *_a: Any) -> None:
         self.now.set_sensitive(False)
+        backup = self.win.backup
+        if not self.enabled:
+
+            def turn_on() -> dict:
+                backup.turn_on()
+                backup.set_schedule(backup.settings.schedule)
+                return backup.start()
+
+            def on(_result: Any, error: Exception | None) -> None:
+                if error:
+                    self.win.toast(_("Could not turn on: {why}").format(why=error))
+                else:
+                    self.win.expect_run()
+                    self.win.toast(_("Backups are on. The first backup has started."))
+                self.refresh()
+
+            _in_thread(turn_on, on)
+            return
 
         def done(result: Any, error: Exception | None) -> None:
             if error:
@@ -504,7 +649,137 @@ class StatusPage(Gtk.Box):
             lambda _r, e: self.win.toast(str(e)) if e else None,
         )
 
+    def _secrets_changed(self, *_a: Any) -> None:
+        if self._loading:
+            return
+        on = self.secrets.get_active()
+
+        def save(value: bool) -> None:
+            _in_thread(
+                lambda: self.win.backup.set_paths(system_secrets=value, by_assistant=False),
+                lambda _r, e: (self.win.toast(str(e)), self.refresh()) if e else None,
+            )
+
+        if not on:
+            save(False)
+            return
+        dialog = Adw.AlertDialog(
+            heading=_("Keep system secrets in backups?"),
+            body=_(
+                "Saved passwords from the key ring, online accounts, and SSH and GPG keys "
+                "go into the backups, encrypted like everything else. Whoever has your "
+                "recovery key can open them, so keep the sheet safe."
+            ),
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("on", _("Keep them"))
+        dialog.set_response_appearance("on", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_close_response("cancel")
+
+        def answered(_d: Adw.AlertDialog, response: str) -> None:
+            if response == "on":
+                save(True)
+            else:
+                self._loading = True
+                self.secrets.set_active(False)
+                self._loading = False
+
+        dialog.connect("response", answered)
+        dialog.present(self.win)
+
     def _restore(self, _button: Gtk.Button, snap_id: str, title: str) -> None:
+        dialog = Adw.AlertDialog(
+            heading=_("Restore the backup made {title}?").format(title=title.lower()),
+            body=_(
+                "Into a new folder, nothing on this computer is replaced. "
+                "Over your files, files changed since the backup get their old version back; "
+                "you see the list first."
+            ),
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("over", _("Over my files…"))
+        dialog.add_response("folder", _("Into a new folder…"))
+        dialog.set_response_appearance("folder", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_default_response("folder")
+        dialog.set_close_response("cancel")
+
+        def answered(_d: Adw.AlertDialog, response: str) -> None:
+            if response == "folder":
+                self._restore_to_folder(snap_id, title)
+            elif response == "over":
+                self.restore_over(snap_id)
+
+        dialog.connect("response", answered)
+        dialog.present(self.win)
+
+    def restore_over(self, snap_id: str) -> None:
+        """Show which files would change, then restore over them if the person agrees."""
+        backup = self.win.backup
+        self.win.toast(_("Checking which files would change…"))
+
+        def previewed(preview: Any, error: Exception | None) -> None:
+            if error:
+                self.win.toast(_("Could not restore: {why}").format(why=error))
+                return
+            self._confirm_over(preview)
+
+        _in_thread(lambda: backup.preview_in_place(snapshot=snap_id), previewed)
+
+    def _confirm_over(self, preview: dict[str, Any]) -> None:
+        replaced, new = preview["replaced"], preview["new"]
+        home = str(self.win.backup.layout.home)
+        dialog = Adw.AlertDialog(
+            heading=view.in_place_heading(len(replaced), new),
+            body=view.in_place_body(len(replaced), new),
+        )
+        if replaced:
+            text = Gtk.Label(
+                label=view.replaced_for_reading(replaced, home),
+                xalign=0,
+                yalign=0,
+                wrap=True,
+            )
+            text.add_css_class("monospace")
+            scroll = Gtk.ScrolledWindow(
+                hscrollbar_policy=Gtk.PolicyType.NEVER,
+                propagate_natural_height=True,
+                max_content_height=220,
+            )
+            scroll.set_child(text)
+            dialog.set_extra_child(scroll)
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.set_close_response("cancel")
+        if replaced or new:
+            dialog.add_response("restore", _("Replace files") if replaced else _("Bring back"))
+            dialog.set_response_appearance(
+                "restore",
+                Adw.ResponseAppearance.DESTRUCTIVE
+                if replaced
+                else Adw.ResponseAppearance.SUGGESTED,
+            )
+        shown = set(replaced)
+
+        def answered(_d: Adw.AlertDialog, response: str) -> None:
+            if response != "restore":
+                return
+            self.win.toast(_("Restoring…"))
+            _in_thread(
+                lambda: self.win.backup.restore_in_place(
+                    snapshot=preview["snapshot"],
+                    # Only the files the person saw: if more would change now, stop.
+                    confirm=lambda now, _new: set(now) <= shown,
+                ),
+                lambda result, error: self.win.toast(
+                    _("Could not restore: {why}").format(why=error)
+                    if error
+                    else view.in_place_done(result)
+                ),
+            )
+
+        dialog.connect("response", answered)
+        dialog.present(self.win)
+
+    def _restore_to_folder(self, snap_id: str, title: str) -> None:
         dialog = Gtk.FileDialog(title=_("Where to put the restored files"))
         dialog.set_initial_folder(Gio.File.new_for_path(str(self.win.backup.layout.home)))
 
@@ -552,9 +827,11 @@ class BackupWindow(Adw.ApplicationWindow):
         self.stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.CROSSFADE)
         self.setup = SetupPage(self)
         self.sheet = SheetPage(self)
+        self.recover = RecoverPage(self)
         self.status = StatusPage(self)
         self.stack.add_named(self.setup, "setup")
         self.stack.add_named(self.sheet, "sheet")
+        self.stack.add_named(self.recover, "recover")
         self.stack.add_named(self.status, "status")
         self.toasts.set_child(self.stack)
         view_.set_content(self.toasts)
@@ -587,6 +864,31 @@ class BackupWindow(Adw.ApplicationWindow):
         self.sheet.show(recovery_key)
         self.stack.set_visible_child_name("sheet")
         self.set_title(_("Recovery sheet"))
+
+    def show_recover(self) -> None:
+        self.recover.show()
+        self.stack.set_visible_child_name("recover")
+        self.set_title(_("Restore from backups"))
+
+    def after_recover(self) -> None:
+        """Connected to the old backups: offer to bring the files back right away."""
+        self.show_status(_("This computer can now use your backups."))
+        dialog = Adw.AlertDialog(
+            heading=_("Bring your files back now?"),
+            body=_(
+                "Files from the latest backup come back into your home folder. "
+                "First you see which files would change. "
+                "Then turn backups on to keep this computer safe too."
+            ),
+        )
+        dialog.add_response("later", _("Later"))
+        dialog.add_response("restore", _("Bring them back…"))
+        dialog.set_response_appearance("restore", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_close_response("later")
+        dialog.connect(
+            "response", lambda _d, r: self.status.restore_over("latest") if r == "restore" else None
+        )
+        dialog.present(self)
 
     def show_status(self, message: str | None = None) -> None:
         self.stack.set_visible_child_name("status")

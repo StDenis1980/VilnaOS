@@ -218,8 +218,6 @@ msgstr "Налаштування"
 msgid "What to keep"
 msgstr "Що зберігати"
 
-msgid "Restore puts the files into a new folder; nothing is replaced."
-msgstr "Відновлення кладе файли в нову папку, нічого не замінюючи."
 
 msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
 msgstr "Шифруються на цьому комп'ютері. Без ключа їх ніхто не прочитає, навіть ми."
@@ -304,3 +302,126 @@ msgstr "Диск"
 
 msgid "Vilna server"
 msgstr "Сервер Vilna"
+
+msgid "Already have backups?"
+msgstr "Уже маєте копії?"
+
+msgid "Back"
+msgstr "Назад"
+
+msgid "Bring back"
+msgstr "Повернути"
+
+msgid "Bring back {n} files?"
+msgstr "Повернути файли ({n})?"
+
+msgid "Bring them back…"
+msgstr "Повернути…"
+
+msgid "Bring your files back now?"
+msgstr "Повернути ваші файли зараз?"
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "Checking which files would change…"
+msgstr "Перевіряю, які файли зміняться…"
+
+msgid "Connect"
+msgstr "Підключити"
+
+msgid "Connect this computer to the backups you made before. You need the place of the backups and the key from your recovery sheet. Nothing on this computer changes until you choose what to bring back."
+msgstr "Підключіть цей комп'ютер до копій, які ви робили раніше. Потрібні місце копій і ключ з аркуша відновлення. На комп'ютері нічого не зміниться, доки ви не виберете, що повернути."
+
+msgid "Could not open the backups: {why}"
+msgstr "Не вдалося відкрити копії: {why}"
+
+msgid "Could not turn on: {why}"
+msgstr "Не вдалося увімкнути: {why}"
+
+msgid "Files changed while you were reading the list; nothing was replaced. Try again."
+msgstr "Поки ви читали перелік, файли змінилися, тож нічого не замінено. Спробуйте ще раз."
+
+msgid "Files from the latest backup come back into your home folder. First you see which files would change. Then turn backups on to keep this computer safe too."
+msgstr "Файли з останньої копії повернуться в домашню папку. Спершу ви побачите, які файли зміняться. Потім увімкніть копії, щоб берегти і цей комп'ютер."
+
+msgid "Files made after the backup stay. Your passwords and keys on this computer stay."
+msgstr "Файли, створені після копії, лишаються. Паролі й ключі на цьому комп'ютері теж лишаються."
+
+msgid "Into a new folder, nothing on this computer is replaced. Over your files, files changed since the backup get their old version back; you see the list first."
+msgstr "У нову папку: на комп'ютері нічого не замінюється. Поверх ваших файлів: змінені після копії файли отримають стару версію; перелік ви побачите заздалегідь."
+
+msgid "Into a new folder…"
+msgstr "У нову папку…"
+
+msgid "Keep system secrets in backups?"
+msgstr "Зберігати секрети системи в копіях?"
+
+msgid "Keep them"
+msgstr "Зберігати"
+
+msgid "Nothing is replaced."
+msgstr "Нічого не замінюється."
+
+msgid "Old saved passwords came back as a separate key ring."
+msgstr "Старі збережені паролі повернулися окремою ключницею."
+
+msgid "On a new computer, with your recovery sheet"
+msgstr "На новому комп'ютері, з аркушем відновлення"
+
+msgid "Over my files…"
+msgstr "Поверх моїх файлів…"
+
+msgid "Replace files"
+msgstr "Замінити файли"
+
+msgid "Replace {n} files with their versions from the backup?"
+msgstr "Замінити файли ({n}) їхніми версіями з копії?"
+
+msgid "Restore from backups"
+msgstr "Відновлення з копій"
+
+msgid "Restore from backups made before"
+msgstr "Відновити з копій, зроблених раніше"
+
+msgid "Restore into a new folder, or over your files after seeing which ones change."
+msgstr "Відновлюйте в нову папку або поверх своїх файлів, побачивши спершу, які з них зміняться."
+
+msgid "Restore the backup made {title}?"
+msgstr "Відновити копію, зроблену {title}?"
+
+msgid "Restored: {files} files back, {replaced} replaced."
+msgstr "Відновлено. Повернуто файлів: {files}, замінено: {replaced}."
+
+msgid "Restoring…"
+msgstr "Відновлюю…"
+
+msgid "Saved passwords from the key ring, online accounts, and SSH and GPG keys go into the backups, encrypted like everything else. Whoever has your recovery key can open them, so keep the sheet safe."
+msgstr "Збережені паролі з ключниці, облікові записи, ключі SSH і GPG потраплять у копії, зашифровані, як і все інше. Хто має ваш ключ відновлення, зможе їх відкрити, тож бережіть аркуш."
+
+msgid "Saved passwords, online accounts, SSH and GPG keys"
+msgstr "Збережені паролі, облікові записи, ключі SSH і GPG"
+
+msgid "System secrets"
+msgstr "Секрети системи"
+
+msgid "These files were changed after the backup and get their old version:"
+msgstr "Ці файли змінено після копії, вони отримають стару версію:"
+
+msgid "This computer can now use your backups."
+msgstr "Тепер цей комп'ютер може користуватися вашими копіями."
+
+msgid "Turn on"
+msgstr "Увімкнути"
+
+msgid "Where are your backups?"
+msgstr "Де ваші копії?"
+
+msgid "Your files are already as in this backup"
+msgstr "Ваші файли вже такі, як у цій копії"
+
+msgid "{n} files that are missing now come back."
+msgstr "Повернуться файли, яких зараз немає: {n}."
+
+msgid "…and {n} more"
+msgstr "…і ще {n}"
