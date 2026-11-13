@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Offer the larger model only where it will be fast enough.
+"""Offer a larger model only where it will be fast enough.
 
 Decision of 2026-11-04 (ADR 0008): the speed of Ministral 3 8B depends on the
 processor and its power limit, not on the amount of RAM. On the test laptop
@@ -7,11 +7,13 @@ processor and its power limit, not on the amount of RAM. On the test laptop
 at 4.6, so a RAM threshold alone would offer it where it is slow.
 
 So every computer starts with Qwen3 4B. On computers with 16 GB or more,
-Gloxi then measures once, for about a minute, how fast Qwen3 4B answers,
-estimates the speed of Ministral 3 8B from it, and offers that model only
-if the estimate reaches ``LARGE_MIN_SPEED``. The person decides; the answer
-is remembered and the question is not repeated. Nothing about the person is
-measured or sent: the test asks the local model a fixed question.
+Gloxi then measures once, for about a minute, how fast Qwen3 4B answers.
+Decision of 2026-11-13 (ADR 0008): from that speed it estimates how fast
+each larger model would be and offers the best one (``TIERS``) that fits in
+the memory and on the disk and reaches ``LARGE_MIN_SPEED``. The person
+decides; the answer is remembered and the question is not repeated. Nothing
+about the person is measured or sent: the test asks the local model a fixed
+question.
 """
 
 from __future__ import annotations
@@ -25,7 +27,16 @@ from pathlib import Path
 import httpx
 
 from gloxi import localkey
-from gloxi.engine import DEFAULT_MODEL, LARGE_MODEL, LARGE_MODEL_MIN_RAM, Plan, verified
+from gloxi.engine import (
+    BEST_MODEL,
+    DEFAULT_MODEL,
+    GPU_MODEL,
+    LARGE_MODEL,
+    LARGE_MODEL_MIN_RAM,
+    ModelFile,
+    Plan,
+    verified,
+)
 
 # ADR 0008: below this the larger model feels too slow in a chat.
 LARGE_MIN_SPEED = 6.0  # tokens per second
@@ -41,6 +52,112 @@ WARMUP_SECONDS = 30.0
 
 TEST_PROMPT = "Describe in five sentences how a computer stores files on a disk."
 STATE_FILE = "speed-test.json"
+
+GIB = 1024**3
+# What the system and llama.cpp need beside a model file while it downloads.
+DISK_MARGIN = 2 * GIB
+
+
+@dataclass(frozen=True)
+class Tier:
+    """A larger model and what a computer needs for it."""
+
+    model: ModelFile
+    min_ram: int  # MemTotal
+    min_gpu_memory: int  # the largest graphics llama.cpp sees; 0: none needed
+    speed_factor: float  # its speed / the speed of Qwen3 4B on the same computer
+
+
+# The best first; Gloxi offers the first one this computer passes.
+# Speed factors: gloxi.upgrade.measure_speed on 2026-11-13 (i5-12600, 32 GB,
+# RTX 3060 12 GB, llama.cpp b12359 Vulkan, started as Gloxi starts it).
+TIERS = (
+    # Gemma 4 on the processor alone: 16.4 tokens/s, Qwen3 4B 16.3 there (1.0);
+    # with the card llama.cpp moves its experts to the processor by itself
+    # (--fit): 30 tokens/s against 85 for Qwen3 4B, still far above the minimum.
+    # 0.9 leaves a margin. On the processor it holds ~21 GB: "32 GB" computers
+    # report ~31 GiB, and the desktop and the programs need the rest.
+    Tier(BEST_MODEL, min_ram=28 * GIB, min_gpu_memory=0, speed_factor=0.9),
+    # Ministral 3 14B is dense, too slow on the processor: only with a card that
+    # holds it ("12 GB" cards report 11.6-12 GiB). 32.3 / 85.7 tokens/s.
+    Tier(GPU_MODEL, min_ram=LARGE_MODEL_MIN_RAM, min_gpu_memory=11 * GIB, speed_factor=0.37),
+    Tier(
+        LARGE_MODEL, min_ram=LARGE_MODEL_MIN_RAM, min_gpu_memory=0, speed_factor=LARGE_SPEED_FACTOR
+    ),
+)
+UPGRADE_MODELS = tuple(t.model for t in TIERS)
+
+
+@dataclass(frozen=True)
+class Machine:
+    """What decides which model fits; None where it could not be read."""
+
+    ram: int | None
+    gpu_memory: int | None = None
+    free_disk: int | None = None
+
+
+@dataclass(frozen=True)
+class Offer:
+    tier: Tier
+    expected: float  # tokens per second
+
+    @property
+    def model(self) -> ModelFile:
+        return self.tier.model
+
+
+def best_offer(tokens_per_second: float, machine: Machine, folder: Path) -> Offer | None:
+    """The best larger model for this computer, or None.
+
+    None also when a model at least as good is already in ``folder``.
+    """
+    return choose(tokens_per_second, machine, lambda m: verified(m, folder) is not None)
+
+
+def choose(
+    tokens_per_second: float, machine: Machine, present: Callable[[ModelFile], bool]
+) -> Offer | None:
+    if machine.ram is None:
+        return None
+    for tier in TIERS:
+        if not passes(tier, tokens_per_second, machine):
+            continue
+        if present(tier.model):
+            return None
+        if machine.free_disk is not None and machine.free_disk < tier.model.size + DISK_MARGIN:
+            continue
+        return Offer(tier, tokens_per_second * tier.speed_factor)
+    return None
+
+
+def passes(tier: Tier, tokens_per_second: float | None, machine: Machine) -> bool:
+    """The memory holds the model and the estimated speed is high enough."""
+    if machine.ram is None or machine.ram < tier.min_ram or tokens_per_second is None:
+        return False
+    if tier.min_gpu_memory and (machine.gpu_memory or 0) < tier.min_gpu_memory:
+        return False
+    return tokens_per_second * tier.speed_factor >= LARGE_MIN_SPEED
+
+
+def tier_of(model: ModelFile) -> Tier | None:
+    return next((t for t in TIERS if t.model == model), None)
+
+
+def gpu_memory() -> int | None:
+    """The memory of the largest graphics llama.cpp can use; None if unknown."""
+    from gloxi.check import list_devices  # gloxi.check imports this module
+
+    gpus = list_devices()
+    if not gpus:
+        return None
+    return max(g.memory for g in gpus)
+
+
+def this_machine(folder: Path, ram: int | None) -> Machine:
+    from gloxi.check import free_space
+
+    return Machine(ram=ram, gpu_memory=gpu_memory(), free_disk=free_space(folder))
 
 
 @dataclass(frozen=True)
@@ -133,7 +250,9 @@ def needs_test(p: Plan, ram: int | None) -> bool:
     """Run the test once, on 16 GB computers that use Qwen3 4B and have no answer yet."""
     if p.folder is None or p.model is not DEFAULT_MODEL or ram is None:
         return False
-    if ram < LARGE_MODEL_MIN_RAM or verified(LARGE_MODEL, p.folder) is not None:
+    if ram < LARGE_MODEL_MIN_RAM:
+        return False
+    if any(verified(m, p.folder) is not None for m in UPGRADE_MODELS):
         return False
     return "tokens_per_second" not in load_state(p.folder)
 
@@ -143,26 +262,26 @@ def record_result(models_folder: Path, result: SpeedResult) -> dict:
     state.update(
         model=DEFAULT_MODEL.filename,
         tokens_per_second=round(result.tokens_per_second, 2),
-        large_expected=round(result.large_expected, 2),
-        offer_large=result.large_is_fast_enough,
     )
     save_state(models_folder, state)
     return state
 
 
-def should_offer(models_folder: Path) -> bool:
-    """The test said yes and the person has not answered yet."""
+def should_offer(models_folder: Path, machine: Machine) -> Offer | None:
+    """What to offer: the test has run, the person has not answered yet and a
+    larger model fits this computer."""
     state = load_state(models_folder)
-    return (
-        bool(state.get("offer_large"))
-        and "answer" not in state
-        and verified(LARGE_MODEL, models_folder) is None
-    )
+    speed = state.get("tokens_per_second")
+    if "answer" in state or not isinstance(speed, (int, float)):
+        return None
+    return best_offer(float(speed), machine, models_folder)
 
 
-def record_answer(models_folder: Path, yes: bool) -> None:
+def record_answer(models_folder: Path, yes: bool, model: ModelFile | None = None) -> None:
     state = load_state(models_folder)
     state["answer"] = "yes" if yes else "no"
+    if model is not None:
+        state["offered"] = model.filename
     save_state(models_folder, state)
 
 
