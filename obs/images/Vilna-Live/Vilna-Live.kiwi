@@ -40,8 +40,10 @@
          enforcing. -->
     <!-- squashfscompression="zstd": the live root and the model weights
          unpack several times faster than with KIWI's default xz, for a
-         slightly larger ISO (the start of GNOME Shell and the model
-         were the slowest steps in the VM test of Build6.4). -->
+         slightly larger ISO (+190 MB). VM test of Build7.2 against
+         Build6.4 (2026-11-12): first GNOME frame 15 s instead of 35,
+         installer window 16 s instead of 46, model ready 41 s instead
+         of 299-326. -->
     <type
       image="iso"
       primary="true"
