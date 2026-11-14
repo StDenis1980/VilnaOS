@@ -77,7 +77,44 @@ LARGE_MODEL = ModelFile(
     licence="Apache-2.0",
 )
 
-MODELS = (DEFAULT_MODEL, LARGE_MODEL)
+# Decision of 2026-11-13 (ADR 0008, docs/benchmarks.md): for computers with a
+# graphics card of 12 GB. On an RTX 3060 it ran wholly on the card: 58 of 63
+# tasks, Ukrainian 27 of 27, 32 tokens per second, 2000 tokens read in 1.9 s.
+GPU_MODEL = ModelFile(
+    name="Ministral 3 14B (Q4_K_M)",
+    filename="Ministral-3-14B-Instruct-2512-Q4_K_M.gguf",
+    url=(
+        "https://huggingface.co/mistralai/Ministral-3-14B-Instruct-2512-GGUF/resolve/main/"
+        "Ministral-3-14B-Instruct-2512-Q4_K_M.gguf"
+    ),
+    sha256="824e0f3373e69b84f2cae46fdcb9bd1ebc6ab3bfc7acc125d818b7b8178cc613",
+    size=8_239_593_024,
+    source=N_("Mistral AI on Hugging Face"),
+    licence="Apache-2.0",
+)
+
+# Decision of 2026-11-13 (ADR 0008): the best of the measured models. Google's
+# own quantisation (QAT Q4_0): 63 of 69 tasks, Ukrainian 27 of 27 and 20 of 20,
+# does not repeat passwords. A mixture of experts: about 4B of its 26B
+# parameters work for each token, so it needs much memory (~21 GB on the
+# processor) but runs about as fast as Qwen3 4B: 16 tokens per second on the
+# processor alone and 30-40 with a 12 GB graphics card. Offered from ~32 GB.
+BEST_MODEL = ModelFile(
+    name="Gemma 4 26B-A4B (QAT Q4_0)",
+    filename="gemma-4-26B_q4_0-it.gguf",
+    url=(
+        "https://huggingface.co/google/gemma-4-26B-A4B-it-qat-q4_0-gguf/resolve/main/"
+        "gemma-4-26B_q4_0-it.gguf"
+    ),
+    sha256="3eca3b8f6d7baf218a7dd6bba5fb59a56ee25fe2d567b6f5f589b4f697eca51d",
+    size=14_439_363_584,
+    source=N_("Google on Hugging Face"),
+    licence="Apache-2.0",
+)
+
+MODELS = (DEFAULT_MODEL, LARGE_MODEL, GPU_MODEL, BEST_MODEL)
+# The model Gloxi starts when several are present: the best first.
+START_ORDER = (BEST_MODEL, GPU_MODEL, LARGE_MODEL, DEFAULT_MODEL)
 
 # "16 GB" computers report a little less (15.3 GiB on the test laptop), and the
 # 8B model needs ~7 GB of its own: 14 GiB keeps 8 GB machines out of the test.
@@ -322,15 +359,15 @@ def plan(
     start_server: bool = True,
     env: dict[str, str] | None = None,
 ) -> Plan:
-    """What start-up needs. The larger model is used if the person downloaded
-    it; otherwise Qwen3 4B, which is the first model offered everywhere."""
+    """What start-up needs. The best model the person downloaded is used;
+    otherwise Qwen3 4B, which is the first model offered everywhere."""
     if listening(url):
         return Plan("ready")
     binary = server_binary()
     if not start_server or binary is None or not is_local_url(url):
         return Plan("none")
     folder = models_dir(env)
-    for model in (LARGE_MODEL, DEFAULT_MODEL):
+    for model in START_ORDER:
         path = verified(model, folder)
         if path is not None:
             return Plan("start", model=model, model_path=path, binary=binary, folder=folder)

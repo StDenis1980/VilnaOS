@@ -27,8 +27,10 @@ from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
 from gloxi.engine import (
     DECIMAL_POINT,
     LARGE_MODEL,
+    LARGE_MODEL_MIN_RAM,
     Engine,
     EngineError,
+    ModelFile,
     Plan,
     download,
     human_size,
@@ -101,12 +103,12 @@ def model_consent_text(p: Plan) -> str:
     )
 
 
-def upgrade_consent_text(folder, expected: float) -> str:
+def upgrade_consent_text(folder, expected: float, model: ModelFile = LARGE_MODEL) -> str:
     return _(UPGRADE_CONSENT).format(
-        name=LARGE_MODEL.name,
-        size=human_size(LARGE_MODEL.size),
-        licence=LARGE_MODEL.licence,
-        source=_(LARGE_MODEL.source),
+        name=model.name,
+        size=human_size(model.size),
+        licence=model.licence,
+        source=_(model.source),
         speed=human_number(expected),
         folder=folder,
     )
@@ -127,10 +129,11 @@ def prepare_engine(
     engine_type: Callable[..., Engine] = Engine,
     ram: int | None | Callable[[], int | None] = total_ram,
     measure: Callable[..., SpeedResult] = measure_speed,
+    machine: Callable[..., upgrade.Machine] = upgrade.this_machine,
 ) -> Engine | None:
     """Start the bundled model if needed; download it first only after a yes.
 
-    On a 16 GB computer, once, the speed test may then offer the larger model.
+    On a 16 GB computer, once, the speed test may then offer a larger model.
 
     Raises ``NoModel`` if the model is needed and still missing afterwards.
     """
@@ -164,11 +167,12 @@ def prepare_engine(
         print(_("The model could not be started: {why}").format(why=exc), file=out)
         raise NoModel from None
     if interactive:
-        _offer_large_model(p, settings, ram() if callable(ram) else ram, read, out, fetch, measure)
+        ram_now = ram() if callable(ram) else ram
+        _offer_large_model(p, settings, ram_now, read, out, fetch, measure, machine)
     return engine
 
 
-def _offer_large_model(p, settings, ram, read, out, fetch, measure) -> None:
+def _offer_large_model(p, settings, ram, read, out, fetch, measure, machine) -> None:
     """The speed test of gloxi.upgrade and, if it says so, the question."""
     if upgrade.needs_test(p, ram):
         print(_("Checking how fast this computer runs the model (about a minute)…"), file=out)
@@ -176,21 +180,23 @@ def _offer_large_model(p, settings, ram, read, out, fetch, measure) -> None:
             upgrade.record_result(p.folder, measure(settings.local.url))
         except (httpx.HTTPError, ValueError, OSError):
             return  # try again next time; the chat must not wait for this
-    if not upgrade.should_offer(p.folder):
+    if ram is None or ram < LARGE_MODEL_MIN_RAM:
         return
-    expected = upgrade.load_state(p.folder).get("large_expected", 0.0)
-    print(upgrade_consent_text(p.folder, expected), file=out)
+    offer = upgrade.should_offer(p.folder, machine(p.folder, ram))
+    if offer is None:
+        return
+    print(upgrade_consent_text(p.folder, offer.expected, offer.model), file=out)
     try:
         answer = read(_("Download it now? [y/N] ")).strip().casefold()
     except (EOFError, KeyboardInterrupt):
         answer = ""
     yes = answer in YES | {_("yes").casefold()}
-    upgrade.record_answer(p.folder, yes)
+    upgrade.record_answer(p.folder, yes, offer.model)
     if not yes:
         print(_("Gloxi keeps the current model and will not ask again."), file=out)
         return
     try:
-        fetch(LARGE_MODEL, p.folder, progress=_percent_printer(out))
+        fetch(offer.model, p.folder, progress=_percent_printer(out))
     except (EngineError, KeyboardInterrupt) as exc:
         print("\n" + _("The model was not downloaded: {why}").format(why=exc), file=out)
         upgrade.record_answer_reset(p.folder)

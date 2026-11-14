@@ -25,6 +25,7 @@ from gloxi.cli import model_consent_text, split_command, upgrade_consent_text
 from gloxi.config import Settings
 from gloxi.engine import (
     LARGE_MODEL,
+    LARGE_MODEL_MIN_RAM,
     Engine,
     EngineError,
     Plan,
@@ -328,10 +329,13 @@ class ModelSetup:
         engine_type: Callable[..., Engine] = Engine,
         ram: Callable[[], int | None] = total_ram,
         measure: Callable[..., upgrade.SpeedResult] = upgrade.measure_speed,
+        machine: Callable[..., upgrade.Machine] = upgrade.this_machine,
     ) -> None:
         self.settings = settings
         self.ram = ram
         self.measure = measure
+        self.machine = machine
+        self._offer: upgrade.Offer | None = None
         self.view = view
         self.runner = runner
         self.planner = planner
@@ -396,7 +400,8 @@ class ModelSetup:
 
     def _offer_large_model(self) -> None:
         p = self._plan
-        if upgrade.needs_test(p, self.ram()):
+        ram = self.ram()
+        if upgrade.needs_test(p, ram):
             self.view.show_model_progress(
                 _("Checking how fast this computer runs the model (about a minute)…"), None
             )
@@ -406,14 +411,18 @@ class ModelSetup:
                 return
             finally:
                 self.view.hide_model_progress()
-        if upgrade.should_offer(p.folder):
-            expected = upgrade.load_state(p.folder).get("large_expected", 0.0)
+        if p.folder is None or ram is None or ram < LARGE_MODEL_MIN_RAM:
+            return
+        self._offer = upgrade.should_offer(p.folder, self.machine(p.folder, ram))
+        if self._offer is not None:
             self.view.ask_model_download(
-                upgrade_consent_text(p.folder, expected), self.answer_large
+                upgrade_consent_text(p.folder, self._offer.expected, self._offer.model),
+                self.answer_large,
             )
 
     def answer_large(self, yes: bool) -> None:
-        upgrade.record_answer(self._plan.folder, yes)
+        offer = self._offer
+        upgrade.record_answer(self._plan.folder, yes, offer.model if offer else None)
         if yes:
             self.runner(self._download_large)
         else:
@@ -429,7 +438,8 @@ class ModelSetup:
             self.view.show_model_progress(text, fraction)
 
         try:
-            self.fetch(LARGE_MODEL, folder, progress=progress, cancelled=self._cancel.is_set)
+            model = self._offer.model if self._offer else LARGE_MODEL
+            self.fetch(model, folder, progress=progress, cancelled=self._cancel.is_set)
         except EngineError as exc:
             upgrade.record_answer_reset(folder)
             self.view.show_error(_("The model was not downloaded: {why}").format(why=exc))
