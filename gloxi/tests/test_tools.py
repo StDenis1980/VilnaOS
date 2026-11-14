@@ -238,6 +238,22 @@ def test_denial_is_a_result_for_the_model():
     assert out.summary() == "files: write /home/u/Documents/a (denied: the user said no)"
 
 
+def test_no_answer_in_time_is_not_reported_as_a_refusal():
+    timed_out = {
+        "action_id": "a3",
+        "decision": "denied",
+        "code": "denied_timeout",
+        "level": "R2",
+        "message": "the user did not answer in time",
+    }
+    out = tools(Connector(FakeHerkos(timed_out))).call(
+        "files_write", args(path="/home/u/Documents/a", text="x", reason="r"), user_turn=1
+    )
+    data = json.loads(out.for_model)
+    assert out.status == "denied" and data["code"] == "denied_timeout"
+    assert "did not refuse" in data["note"] and "offer to ask again" in data["note"]
+
+
 def test_keros_findings_become_warnings():
     answer = {
         "decision": "allowed",
