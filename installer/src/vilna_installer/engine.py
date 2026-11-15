@@ -58,9 +58,26 @@ from vilna_mcp_installer import plan as plans
 from vilna_installer import confirm, encryption
 from vilna_installer.encryption import EncryptionError, Step
 
-# Where the live medium keeps the Vilna disk image (the package
-# vilna-osimage; image/docs/installer.md, 10.1) and the model.
-IMAGE = Path(os.environ.get("VILNA_INSTALLER_IMAGE", "/usr/share/vilna-osimage/Vilna.raw"))
+# Where the live medium keeps the Vilna disk image and the model. OBS wraps
+# the image tik-osimage-Vilna into an RPM of the same name, as it does for
+# Aeon's tik-osimage-Aeon (containment-tik-img-to-rpm), which puts it in
+# /usr/lib/tik/img/<name>.<version>.raw (image/docs/installer.md, 10.1).
+IMAGE_DIR = Path("/usr/lib/tik/img")
+IMAGE_GLOB = "tik-osimage-Vilna*.raw"
+
+
+def find_image(directory: Path = IMAGE_DIR) -> Path:
+    """The Vilna disk image on the live medium (``VILNA_INSTALLER_IMAGE`` wins).
+
+    Without one the path still names where it should be, so that the check
+    before any write says plainly what is missing.
+    """
+    if env := os.environ.get("VILNA_INSTALLER_IMAGE"):
+        return Path(env)
+    found = sorted(directory.glob(IMAGE_GLOB)) if directory.is_dir() else []
+    return found[-1] if found else directory / "tik-osimage-Vilna.raw"
+
+
 MODEL_DIR = Path("/usr/share/vilna/models")
 MODEL_LINK = "default.gguf"
 MODEL_SUM = "default.gguf.sha256"
@@ -451,7 +468,7 @@ class Engine:
         self,
         request: Request,
         *,
-        image: Path = IMAGE,
+        image: Path | None = None,
         run: Run = subprocess.run,
         machine: machines.Machine | None = None,
         progress: Progress | None = None,
@@ -462,7 +479,7 @@ class Engine:
         stage: str = "alpha",
     ) -> None:
         self.request = request
-        self.image = image
+        self.image = image or find_image()
         self.run = run
         self.machine = machine or machines.Machine()
         self.progress = progress or Progress(request.plan.with_name("progress.json"))
@@ -800,7 +817,7 @@ def main(argv: list[str] | None = None) -> int:
         description="Install the confirmed plan (run by the installer as root).",
     )
     p.add_argument("--progress", type=Path, help="progress.json (default: next to the plan)")
-    p.add_argument("--image", type=Path, default=IMAGE)
+    p.add_argument("--image", type=Path, default=None)
     p.add_argument("--demo", action="store_true", help="pretend: no root, nothing written")
     args = p.parse_args(sys.argv[1:] if argv is None else argv)
     if args.demo:

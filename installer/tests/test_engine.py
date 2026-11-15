@@ -419,3 +419,13 @@ def test_copy_blocks_keeps_the_images_subvolumes_and_snapshot(tmp_path):
     finally:
         subprocess.run(["umount", "--recursive", str(mnt)], capture_output=True)
         subprocess.run(["losetup", "--detach", src], capture_output=True)
+
+
+def test_the_image_is_found_where_obs_packages_it(tmp_path, monkeypatch):
+    monkeypatch.delenv("VILNA_INSTALLER_IMAGE", raising=False)
+    assert eng.find_image(tmp_path / "none") == tmp_path / "none/tik-osimage-Vilna.raw"
+    (tmp_path / "tik-osimage-Vilna.20261115.raw").write_bytes(b"")
+    (tmp_path / "tik-osimage-Aeon.1.raw").write_bytes(b"")
+    assert eng.find_image(tmp_path) == tmp_path / "tik-osimage-Vilna.20261115.raw"
+    monkeypatch.setenv("VILNA_INSTALLER_IMAGE", "/srv/Vilna.raw")
+    assert eng.find_image(tmp_path) == eng.Path("/srv/Vilna.raw")
