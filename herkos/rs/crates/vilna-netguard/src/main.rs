@@ -26,10 +26,11 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use vilna_netguard::dns::{OVERRIDE_FILE, Resolver};
 use vilna_netguard::endpoints::parse_wg_endpoints;
+use vilna_netguard::portal_dns;
 use vilna_netguard::ruleset::{self, PROVIDER_SERVICES, TABLE};
 use vilna_netguard::state::{Lan, State};
 
-const USAGE: &str = "usage: vilna-netguard [--state PATH] [--nft PATH] [--wg PATH] [--cgroup-root DIR] [--resolved-dir DIR] [--systemctl PATH] COMMAND\n\
+const USAGE: &str = "usage: vilna-netguard [--state PATH] [--nft PATH] [--wg PATH] [--cgroup-root DIR] [--resolved-dir DIR] [--systemctl PATH] [--ip PATH] [--resolvectl PATH] [--portal-dns FILE] COMMAND\n\
 commands:\n  status\n  apply\n  watch [SECONDS]\n  on | off\n  allow-lan CIDR | forget-lan CIDR\n  portal SECONDS\n  dns quad9|mullvad\n  provider mullvad";
 
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(10);
@@ -43,6 +44,10 @@ struct Paths {
     cgroup_root: PathBuf,
     resolved_dir: PathBuf,
     systemctl: PathBuf,
+    ip: PathBuf,
+    resolvectl: PathBuf,
+    /// The links whose DNS a portal window opened (see `portal_dns`).
+    portal_dns: PathBuf,
 }
 
 fn main() -> ExitCode {
@@ -54,6 +59,9 @@ fn main() -> ExitCode {
         cgroup_root: PathBuf::from("/sys/fs/cgroup"),
         resolved_dir: PathBuf::from("/etc/systemd/resolved.conf.d"),
         systemctl: PathBuf::from("/usr/bin/systemctl"),
+        ip: PathBuf::from("/usr/sbin/ip"),
+        resolvectl: PathBuf::from("/usr/bin/resolvectl"),
+        portal_dns: PathBuf::from("/var/lib/vilna-netguard/portal-dns"),
     };
     while args.first().is_some_and(|a| a.starts_with("--")) {
         let flag = args.remove(0);
@@ -68,6 +76,9 @@ fn main() -> ExitCode {
             "--cgroup-root" => paths.cgroup_root = value,
             "--resolved-dir" => paths.resolved_dir = value,
             "--systemctl" => paths.systemctl = value,
+            "--ip" => paths.ip = value,
+            "--resolvectl" => paths.resolvectl = value,
+            "--portal-dns" => paths.portal_dns = value,
             _ => {
                 eprintln!("unknown option {flag}\n{USAGE}");
                 return ExitCode::from(2);
@@ -98,6 +109,7 @@ fn run(paths: &Paths, words: &[&str]) -> Result<String, String> {
             v["portal_open"] = state.portal_open(now).into();
             v["applied"] = table_present(paths).into();
             v["dns"] = current_resolver(paths).name().into();
+            v["portal_dns"] = relaxed_links(paths).into_iter().collect::<Vec<_>>().into();
             // How many WireGuard servers the tunnels talk to now: 0 means no VPN is up,
             // and turning the kill switch on would leave no way out.
             v["tunnels"] = run_command(
@@ -302,15 +314,88 @@ fn watch(paths: &Paths, every: Duration) -> Result<String, String> {
     let mut last = String::new();
     loop {
         let state = load(&paths.state);
-        let next = script(paths, &state, now());
+        let now = now();
+        let next = script(paths, &state, now);
         if next != last {
             match load_script(paths, &next) {
                 Ok(()) => last = next,
                 Err(e) => eprintln!("vilna-netguard: {e}"),
             }
         }
+        if let Err(e) = sync_portal_dns(paths, &state, now) {
+            eprintln!("vilna-netguard: {e}");
+        }
         thread::sleep(every);
     }
+}
+
+fn relaxed_links(paths: &Paths) -> BTreeSet<String> {
+    fs::File::open(&paths.portal_dns)
+        .ok()
+        .and_then(|f| {
+            let mut t = String::new();
+            f.take(MAX_STATE).read_to_string(&mut t).ok().map(|_| t)
+        })
+        .map(|t| portal_dns::parse_relaxed(&t))
+        .unwrap_or_default()
+}
+
+/// During a portal window the network links take plain DNS from the
+/// network, so the login page can open; after it they are strict again.
+/// Only the service does this, every tick: a link that came up during the
+/// window is opened too, and a window that ended closes everything, even
+/// after a restart (the list is kept in a file).
+fn sync_portal_dns(paths: &Paths, state: &State, now: u64) -> Result<(), String> {
+    let relaxed = relaxed_links(paths);
+    let open = state.portal_open(now);
+    if !open && relaxed.is_empty() {
+        return Ok(());
+    }
+    let want = if open {
+        let routes: Vec<String> = ["-4", "-6"]
+            .iter()
+            .filter_map(|family| {
+                run_command(
+                    Command::new(&paths.ip).args(["-j", family, "route", "show", "default"]),
+                    None,
+                )
+                .ok()
+            })
+            .collect();
+        let routes: Vec<&str> = routes.iter().map(String::as_str).collect();
+        portal_dns::default_links(&routes)
+    } else {
+        BTreeSet::new()
+    };
+    let mut now_relaxed = relaxed.clone();
+    let mut failed = None;
+    for args in portal_dns::changes(&relaxed, &want) {
+        match run_command(Command::new(&paths.resolvectl).args(&args), None) {
+            Ok(_) if args[2] == "no" => {
+                now_relaxed.insert(args[1].clone());
+            }
+            Ok(_) => {
+                now_relaxed.remove(&args[1]);
+            }
+            // A link that went away is strict again when it comes back.
+            Err(_) if args[2] == "yes" && !link_exists(&args[1]) => {
+                now_relaxed.remove(&args[1]);
+            }
+            Err(e) => failed = Some(e),
+        }
+    }
+    if now_relaxed != relaxed {
+        write_atomic(
+            &paths.portal_dns,
+            &portal_dns::render_relaxed(&now_relaxed),
+            0o600,
+        )?;
+    }
+    failed.map_or(Ok(()), Err)
+}
+
+fn link_exists(name: &str) -> bool {
+    Path::new("/sys/class/net").join(name).exists()
 }
 
 fn run_command(command: &mut Command, input: Option<&str>) -> Result<String, String> {
@@ -393,8 +478,83 @@ mod tests {
             cgroup_root: dir.join("cgroup"),
             resolved_dir: dir.join("resolved"),
             systemctl,
+            ip: dir.join("ip"),
+            resolvectl: dir.join("resolvectl"),
+            portal_dns: dir.join("portal-dns"),
         };
         (p, dir)
+    }
+
+    fn script_file(path: &Path, body: &str) {
+        fs::write(path, format!("#!/bin/sh\n{body}\n")).unwrap();
+        fs::set_permissions(path, fs::Permissions::from_mode(0o755)).unwrap();
+    }
+
+    /// A Wi-Fi link and a Mullvad tunnel have default routes; resolvectl logs.
+    fn network(name: &str) -> (Paths, PathBuf) {
+        let (p, dir) = paths(name);
+        script_file(
+            &p.ip,
+            r#"case "$2" in -4) echo '[{"dst":"default","dev":"wlp2s0"},{"dst":"default","dev":"wg0-mullvad"}]';; *) echo '[]';; esac"#,
+        );
+        script_file(
+            &p.resolvectl,
+            &format!("echo \"$@\" >> {}/resolvectl.log", dir.display()),
+        );
+        (p, dir)
+    }
+
+    fn resolvectl_log(dir: &Path) -> String {
+        fs::read_to_string(dir.join("resolvectl.log")).unwrap_or_default()
+    }
+
+    #[test]
+    fn a_portal_window_opens_the_network_dns_and_closes_it_after() {
+        let (p, dir) = network("portal-dns");
+        let mut state = State::default();
+        state.open_portal(1000, 300).unwrap();
+        sync_portal_dns(&p, &state, 1000).unwrap();
+        assert_eq!(resolvectl_log(&dir), "dnsovertls wlp2s0 no\n");
+        assert_eq!(relaxed_links(&p).len(), 1);
+        // Nothing more while the window lasts.
+        sync_portal_dns(&p, &state, 1100).unwrap();
+        assert_eq!(resolvectl_log(&dir), "dnsovertls wlp2s0 no\n");
+        // The window ended: strict again, and the list is empty.
+        sync_portal_dns(&p, &state, 1300).unwrap();
+        assert_eq!(
+            resolvectl_log(&dir),
+            "dnsovertls wlp2s0 no\ndnsovertls wlp2s0 yes\n"
+        );
+        assert!(relaxed_links(&p).is_empty());
+    }
+
+    #[test]
+    fn without_a_window_nothing_is_touched() {
+        let (p, dir) = network("no-portal");
+        sync_portal_dns(&p, &State::default(), 1000).unwrap();
+        assert!(resolvectl_log(&dir).is_empty());
+        assert!(!p.portal_dns.exists());
+    }
+
+    #[test]
+    fn a_failed_close_is_tried_again() {
+        let (p, dir) = network("retry");
+        let mut state = State::default();
+        state.open_portal(1000, 300).unwrap();
+        sync_portal_dns(&p, &state, 1000).unwrap();
+        // resolvectl now fails, but wlp2s0 is not in this test's /sys either:
+        // fake it with a link name that exists, the loopback.
+        fs::write(&p.portal_dns, "lo\n").unwrap();
+        script_file(&p.resolvectl, "exit 1");
+        assert!(sync_portal_dns(&p, &state, 1300).is_err());
+        assert_eq!(relaxed_links(&p).len(), 1, "kept, to try again");
+        script_file(
+            &p.resolvectl,
+            &format!("echo \"$@\" >> {}/resolvectl.log", dir.display()),
+        );
+        sync_portal_dns(&p, &state, 1302).unwrap();
+        assert!(resolvectl_log(&dir).ends_with("dnsovertls lo yes\n"));
+        assert!(relaxed_links(&p).is_empty());
     }
 
     #[test]
