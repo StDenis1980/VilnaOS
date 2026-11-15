@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-software-picks
-Version:        0.3
+Version:        0.4
 Release:        0
 Summary:        «Recommended by Vilna» apps in GNOME Software
 License:        GPL-3.0-or-later

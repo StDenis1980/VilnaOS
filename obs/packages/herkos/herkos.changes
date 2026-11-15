@@ -1,4 +1,21 @@
 -------------------------------------------------------------------
+Sat Nov 14 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- A confirmation window that nobody answers in time is reported as
+  denied_timeout, not denied_user, in herkosd and Herkos-lite, so Gloxi
+  no longer says the person refused.
+- vilna-mcp-apps@: explain the harmless revokefs warnings in the journal.
+
+-------------------------------------------------------------------
+Fri Nov 13 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-mcp-apps@: installs work in the sandbox. Flatpak's download
+  repository moves from the private /var/tmp to the unit's cache, where
+  flatpak-system-helper can see it ("Path does not exist"); revokefs-fuse
+  is not tried (it needs FUSE and setuid fusermount3, which the sandbox
+  refuses); refused system calls fail with EPERM instead of a core dump.
+
+-------------------------------------------------------------------
 Fri Nov 13 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Programs through Gloxi (ADR 0012): the manifests org.vilna.mcp.apps

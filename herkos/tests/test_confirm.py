@@ -36,10 +36,11 @@ def test_dialog_answer_outside_choices_is_deny():
     assert fake("print('always')").ask(q(in_bounds=False), timeout=10) is Answer.DENY
 
 
-def test_dialog_garbage_crash_or_timeout_is_deny():
+def test_dialog_garbage_crash_or_timeout_is_a_no():
     assert fake("print('yes please')").ask(q(), timeout=10) is Answer.DENY
     assert fake("raise SystemExit(3)").ask(q(), timeout=10) is Answer.DENY
-    assert fake("import time; time.sleep(5)").ask(q(), timeout=0.5) is Answer.DENY
+    # No answer in time is its own "no": Herkos reports denied_timeout.
+    assert fake("import time; time.sleep(5)").ask(q(), timeout=0.5) is Answer.TIMED_OUT
     assert Dialog(["/nonexistent/dialog"]).ask(q(), timeout=1) is Answer.DENY
 
 

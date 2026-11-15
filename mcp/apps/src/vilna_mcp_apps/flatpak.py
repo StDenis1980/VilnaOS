@@ -12,6 +12,7 @@ programs.
 
 from __future__ import annotations
 
+import os
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -110,6 +111,8 @@ class FlatpakBackend:
             t.run(None)
         except GLib.Error as e:
             raise AppsError(f"Flatpak: {e.message}") from e
+        finally:
+            _tidy_system_cache()
 
     def _get(self, app_id: str) -> Installed:
         for i in self.installed():
@@ -143,3 +146,25 @@ class FlatpakBackend:
         ref = self._refs()[app_id].format_ref()
         self._run(lambda t: t.add_uninstall(ref))
         return was
+
+
+def _tidy_system_cache() -> None:
+    """Remove the empty mount points Flatpak leaves in its system cache.
+
+    vilna-mcp-apps@.service turns revokefs-fuse off, and Flatpak does not
+    remove the folder it made for it when it falls back to copying. Only empty
+    folders go; everything else is Flatpak's own.
+    """
+    cache = os.environ.get("FLATPAK_SYSTEM_CACHE_DIR")
+    if not cache:
+        return
+    try:
+        entries = list(Path(cache).iterdir())
+    except OSError:
+        return
+    for entry in entries:
+        try:
+            if entry.is_dir() and not entry.is_symlink():
+                entry.rmdir()
+        except OSError:
+            pass  # not empty, or gone already

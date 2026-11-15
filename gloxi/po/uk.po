@@ -484,6 +484,10 @@ msgid "."
 msgstr ","
 
 #: src/gloxi/engine.py
+msgid "Google on Hugging Face"
+msgstr "Google на Hugging Face"
+
+#: src/gloxi/engine.py
 msgid "Mistral AI on Hugging Face"
 msgstr "Mistral AI на Hugging Face"
 

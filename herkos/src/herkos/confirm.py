@@ -30,6 +30,9 @@ class Answer(Enum):
     ONCE = "once"
     SESSION = "session"
     ALWAYS = "always"
+    # No answer before the timeout: a "no", but the person did not say no, so
+    # Herkos reports it as denied_timeout. Never one of the offered choices.
+    TIMED_OUT = "timed_out"
 
 
 @dataclass(frozen=True)
@@ -230,7 +233,7 @@ class Terminal:
         ready, _unused, _none = select.select([reader], [], [], timeout)
         if not ready:
             writer.write("\n  " + _("No answer: denied.") + "\n")
-            return Answer.DENY
+            return Answer.TIMED_OUT
         key = reader.readline().strip().lower()[:1]
         answer = _KEYS.get(key, Answer.DENY)
         if answer not in question.choices:
@@ -270,8 +273,10 @@ class Dialog:
                 timeout=timeout,
                 check=False,
             )
-        except (OSError, subprocess.TimeoutExpired):
-            return Answer.DENY  # run() kills the window on timeout
+        except subprocess.TimeoutExpired:
+            return Answer.TIMED_OUT  # run() kills the window on timeout
+        except OSError:
+            return Answer.DENY
         lines = done.stdout.decode(errors="replace").strip().splitlines()
         try:
             answer = Answer(lines[-1].strip()) if lines else Answer.DENY

@@ -337,7 +337,7 @@ def facts(entry: dict) -> dict:
     if entry["remote"] == "vilna":
         verified = "a Vilna app"
     pick = f"yes ({entry['pick']})" if entry.get("pick") else "no: Vilna has not checked this app"
-    return {
+    lines = {
         "App": f"{entry['name']} ({entry['app_id']})",
         "Developer": entry["developer"] or "not given",
         "Verified": verified,
@@ -347,6 +347,12 @@ def facts(entry: dict) -> dict:
         "License": entry["license"] or "not given",
         "Can reach": "; ".join(entry.get("permissions") or []) or "only its own files",
     }
+    if entry.get("installed"):
+        # The app is already here, so the question is about removing it:
+        # what it would download or reach says nothing then (seen in a VM,
+        # 2026-11-14).
+        del lines["Download"], lines["Can reach"]
+    return lines
 
 
 class MemoryBackend:

@@ -176,6 +176,15 @@ def test_describe_gives_the_dialog_everything_adr_0012_asks_for():
     assert other["Verified"].startswith("no") and other["In Recommended by Vilna"].startswith("no")
 
 
+def test_facts_of_an_installed_app_are_about_removing_it():
+    # Before a removal the dialog showed a download size and what the app
+    # "will reach" (seen in a VM, 2026-11-14).
+    apps, _ = make(installed=[Installed("org.kde.kdenlive", "flathub", "c1")])
+    f = apps.describe("org.kde.kdenlive")["facts"]
+    assert "Download" not in f and "Can reach" not in f
+    assert f["App"].endswith("(org.kde.kdenlive)") and f["Source"] == "flathub"
+
+
 def test_permissions_ignore_the_sandbox_and_denied_entries():
     assert permissions("[Context]\nsockets=wayland;\nfilesystems=!home;xdg-download;\n") == [
         "the folder xdg-download"
@@ -260,6 +269,30 @@ def call(server, name, arguments):
     msg = {"jsonrpc": "2.0", "id": 1, "method": "tools/call"}
     msg["params"] = {"name": name, "arguments": arguments}
     return server.handle(msg)["result"]
+
+
+def test_hints_never_raise_an_operation_above_its_manifest_level():
+    # Herkos (policy.rs, level_from_annotations) treats openWorldHint and
+    # destructiveHint as R3 and anything not read-only as R2, and raises the
+    # manifest's level to that. With openWorldHint on search, Herkos asked
+    # before every search (seen in a VM, 2026-11-13).
+    import tomllib
+
+    manifest = REPO / "herkos/src/herkos/manifests/org.vilna.mcp.apps.toml"
+    if not manifest.exists():
+        pytest.skip("the Herkos manifest is not in this tree (rpm build)")
+    ops = tomllib.loads(manifest.read_text())["operations"]
+    order = ["R0", "R1", "R2", "R3", "R4"]
+    for tool in TOOLS:
+        hints = tool["annotations"]
+        if hints.get("openWorldHint") is True or hints.get("destructiveHint") is True:
+            hinted = "R3"
+        elif hints.get("readOnlyHint") is True:
+            hinted = "R0"
+        else:
+            hinted = "R2"
+        level = ops[tool["name"]]["level"]
+        assert order.index(hinted) <= order.index(level), (tool["name"], hinted, level)
 
 
 def test_server_lists_no_way_to_add_a_source_or_install_a_file():
