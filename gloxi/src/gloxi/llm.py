@@ -86,6 +86,8 @@ class ChatClient:
         payload = {"model": self.endpoint.model, "messages": list(messages), "stream": stream}
         if tools:
             payload["tools"] = list(tools)
+        if self.endpoint.slot is not None:
+            payload["id_slot"] = self.endpoint.slot
         return payload
 
     def is_available(self) -> bool:
