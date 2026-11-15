@@ -45,19 +45,19 @@ Requires:       vilna-backgrounds >= 0.1
 # (gloxi, vilna-model-default), which the live image has through vilna_base.
 Requires:       vilna-mcp-installer
 # The Herkos screen asks the TPM whether it can keep the disk key
-# (tpm2_getcap). What encrypting the disk runs (systemd-repart, cryptsetup,
-# keyutils, sdbootutil; encryption.py) comes with the engine that runs it.
+# (tpm2_getcap).
 Requires:       tpm2.0-tools
 # The install engine (vilna-installer-engine, run as root after the Herkos
 # screen): systemd-repart lays out and encrypts the disk, the rest opens,
-# grows and sets up the copied system and its boot.
+# grows and sets up the copied system; sdbootutil runs inside the new one.
 Requires:       btrfsprogs
 Requires:       cryptsetup
 Requires:       dosfstools
 Requires:       efibootmgr
 Requires:       keyutils
 Requires:       sudo
-Requires:       systemd-repart
+# In systemd-experimental on Tumbleweed; the file names it either way.
+Requires:       /usr/bin/systemd-repart
 Requires:       util-linux
 # «Screen reader» turns on Orca, as GNOME Settings does.
 Recommends:     orca
