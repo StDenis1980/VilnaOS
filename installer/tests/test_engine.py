@@ -460,12 +460,18 @@ def test_the_image_is_found_where_obs_packages_it(tmp_path, monkeypatch):
 @pytest.mark.skipif(os.geteuid() != 0, reason="needs root: a mount namespace and a keyring")
 def test_the_engine_has_mounts_and_keys_of_its_own():
     code = (
-        "import os, subprocess\n"
+        "import os, subprocess, sys\n"
         "before = os.readlink('/proc/self/ns/mnt')\n"
         "from vilna_installer import engine\n"
-        "engine.isolate()\n"
+        "try:\n"
+        "    engine.isolate()\n"
+        "except PermissionError:\n"
+        "    sys.exit(77)\n"
         "assert os.readlink('/proc/self/ns/mnt') != before\n"
         "keys = subprocess.run(['cat', '/proc/keys'], capture_output=True, text=True).stdout\n"
         "assert any(' _ses: 1' in line for line in keys.splitlines())\n"
     )
-    subprocess.run([sys.executable, "-c", code], check=True)
+    done = subprocess.run([sys.executable, "-c", code], check=False)
+    if done.returncode == 77:  # root without CAP_SYS_ADMIN, as in a build container
+        pytest.skip("no namespaces here")
+    assert done.returncode == 0
