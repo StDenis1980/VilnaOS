@@ -18,6 +18,19 @@ guide), so that updates seal the key again the same way:
 4. Slot 0 is wiped, the key file overwritten and removed, the keyring entries
    dropped.
 
+TPM2 is sealed on the **first boot** of the new system, not from the live
+system: ``systemd-pcrlock`` predicts the measurements from the event log of
+the running boot, and the live boot (shim, GRUB, an ISO) is not the one the
+new system makes, so a seal from there keeps no PCR at all (VM test,
+15.11.2026). The installer leaves the way Aeon's own first boot takes
+(``sdbootutil-enroll.service``): a TPM2 slot bound to this chip only, so
+that the first boot opens the disk by itself, slot 0 marked as the
+transient "enrollment-key", and its key as a credential that only this TPM
+can decrypt. On the first boot sdbootutil seals the key with the real
+measurements (``--wipe-slot=tpm2`` drops the chip-only slot), wipes slot 0
+and the engine's drop-in removes the credentials. Until then the disk
+opens only in this computer.
+
 Secrets never go on a command line: they reach a program on its standard
 input only (``Step.stdin`` names the secret), and the log shows the
 commands without them.
@@ -62,6 +75,18 @@ POLICY_AUTHORIZE_NV = "commandIndex: 0x192"
 ESP_SIZE = "512M"  # as the Vilna disk image (obs/images/Vilna, efipartsize)
 KEY_FILE_BYTES = 1024
 METHODS = ("tpm2", "passphrase", "none")
+# Keyring entries the engine and sdbootutil create; dropped whatever happens.
+KEYRING_ENTRIES = ("cryptenroll", "sdbootutil", "sdbootutil-recovery-pin")
+# The first boot's enrollment (sdbootutil-enroll.service, ImportCredential=).
+ENROLL_SERVICE = "sdbootutil-enroll.service"
+ENROLL_CREDENTIALS = (
+    "etc/credstore.encrypted/sdbootutil-enroll.current-pw",
+    "etc/credstore.encrypted/sdbootutil-enroll.recovery-pin",
+    "etc/credstore/sdbootutil-enroll.tpm2",
+)
+ENROLL_DROPIN = f"etc/systemd/system/{ENROLL_SERVICE}.d/50-vilna-installer.conf"
+# The slot repart puts the engine's key file in (Encrypt=key-file).
+INSTALLER_SLOT = "0"
 
 
 # --- the recovery key --------------------------------------------------------------
@@ -150,7 +175,9 @@ def repart_definitions(
         f"SizeMinBytes={ESP_SIZE}\n"
         f"SizeMaxBytes={ESP_SIZE}\n"
     )
-    root = "[Partition]\nType=root\nLabel=vilna\n"
+    # The engine grows the filesystem itself; systemd-growfs-root would fail
+    # on the read-only snapshot at the first boot.
+    root = "[Partition]\nType=root\nLabel=vilna\nGrowFileSystem=no\n"
     root += f"CopyBlocks={copy_blocks}\n" if copy_blocks else "Format=btrfs\n"
     if method != "none":
         # LUKS2 with the engine's key file in slot 0; the keys that stay come later.
@@ -172,6 +199,8 @@ class Step:
     # The name of the secret given on standard input: "recovery_key",
     # "passphrase" (from the vault) or "keyfile" (the engine's key file).
     stdin: str | None = None
+    # Or a text that is no secret, on standard input.
+    stdin_text: str | None = None
     # A file of the new system (relative to its root) and the text it gets.
     path: str | None = None
     text: str | None = None
@@ -188,7 +217,7 @@ class Step:
                 else f"{'>>' if self.append else '>'} /{self.path}"
             )
         line = shlex.join(self.argv)
-        return f"{line} < {self.stdin}" if self.stdin else line
+        return f"{line} < {self.stdin or 'text'}" if self.stdin or self.stdin_text else line
 
 
 def before_layout() -> list[Step]:
@@ -257,7 +286,9 @@ def steps(
             Step(
                 "open the system partition at boot",
                 path="etc/crypttab",
-                text=f"{MAPPER} UUID={crypt_uuid} none x-initrd.attach\n",
+                text=f"{MAPPER} UUID={crypt_uuid} none x-initrd.attach"
+                + (",tpm2-device=auto" if method == "tpm2" else "")
+                + "\n",
             )
         )
     out += [
@@ -282,21 +313,12 @@ def steps(
             )
         )
     out.append(Step("install the boot loader", (*sdb, "--no-variables", "install")))
-    if method == "none":
-        out.append(Step("build the initrd", (*sdb, "mkinitrd")))
-    else:
+    if encrypted:
         out.append(Step("add the recovery key", (*sdb, "--method=recovery-key", "enroll")))
     if method == "tpm2":
-        out += [
-            Step(
-                "which measurements the TPM checks",
-                path="etc/sysconfig/fde-tools",
-                text=f"FDE_SEAL_PCR_LIST={PCRS}\n",
-            ),
-            Step("seal the key in the TPM", (*sdb, "--method=tpm2", "enroll")),
-        ]
+        out += first_boot_tpm2(root, crypt_part=str(crypt_part), key_file=key_file)
     elif method == "passphrase":
-        out += [
+        out.append(
             Step(
                 "add the passphrase",
                 (
@@ -308,26 +330,130 @@ def steps(
                     str(crypt_part),
                 ),
                 stdin="passphrase",
-            ),
-            # Without a TPM nothing above built the initrd.
-            Step("build the initrd", (*sdb, "mkinitrd")),
-        ]
+            )
+        )
+    # crypttab and the kernel command line are final: the initrd of the new system.
+    out.append(Step("build the initrd", (*sdb, "mkinitrd")))
     out.append(Step("the installer's dracut setting goes", path=DRACUT_OVERRIDE, remove=True))
-    if encrypted:
-        out += [
+    if encrypted and method != "tpm2":
+        out.append(
             Step(
                 "remove the installer's key from slot 0",
                 (
                     "systemd-cryptenroll",
                     f"--unlock-key-file={key_file}",
-                    "--wipe-slot=0",
+                    f"--wipe-slot={INSTALLER_SLOT}",
                     str(crypt_part),
                 ),
-            ),
-            Step("forget the keys in the keyring", ("keyctl", "purge", "user", "cryptenroll")),
-            Step("forget the keys in the keyring", ("keyctl", "purge", "user", "sdbootutil")),
-        ]
+            )
+        )
     return out
+
+
+def first_boot_tpm2(root: str, *, crypt_part: str, key_file: Path | None) -> list[Step]:
+    """TPM2 for the first boot to seal (see the module's text): what the live system leaves."""
+    chroot = ("chroot", root)
+    encrypt = ("systemd-creds", "encrypt", "--with-key=tpm2", "--tpm2-pcrs=")
+    current, pin, wanted = ENROLL_CREDENTIALS
+    return [
+        Step(
+            "which measurements the TPM checks",
+            path="etc/sysconfig/fde-tools",
+            text=f"FDE_SEAL_PCR_LIST={PCRS}\n",
+        ),
+        Step(
+            "open the disk with this TPM until the first boot seals it",
+            (
+                "systemd-cryptenroll",
+                f"--unlock-key-file={key_file}",
+                "--tpm2-device=auto",
+                "--tpm2-pcrs=",
+                crypt_part,
+            ),
+        ),
+        Step(
+            "mark the installer's key as the one the first boot removes",
+            ("cryptsetup", "token", "import", "--json-file=/dev/stdin", crypt_part),
+            stdin_text=f'{{"type":"enrollment-key","keyslots":["{INSTALLER_SLOT}"]}}',
+        ),
+        Step(
+            "a place for the credentials",
+            (
+                "install",
+                "-d",
+                "-m",
+                "0700",
+                f"{root}/etc/credstore.encrypted",
+                f"{root}/etc/credstore",
+            ),
+        ),
+        Step(
+            "the installer's key, for this TPM only",
+            (*encrypt, f"--name={Path(current).name}", str(key_file), f"{root}/{current}"),
+        ),
+        # The recovery key re-authorizes the TPM policy later (sdbootutil's
+        # recovery PIN), so the person has one secret, not two.
+        Step(
+            "the recovery key as the TPM's recovery PIN, for this TPM only",
+            (*encrypt, f"--name={Path(pin).name}", "-", f"{root}/{pin}"),
+            stdin="recovery_key",
+        ),
+        Step("seal with the TPM on the first boot", path=wanted, text="1\n"),
+        Step(
+            "the credentials go once the first boot sealed the key",
+            path=ENROLL_DROPIN,
+            text=(
+                "# Written by the Vilna installer (vilna_installer.encryption).\n"
+                "[Unit]\n"
+                f"ConditionPathExists=/{current}\n"
+                "[Service]\n"
+                "ExecStartPost=/usr/bin/rm -f "
+                + " ".join(f"/{c}" for c in ENROLL_CREDENTIALS)
+                + "\n"
+            ),
+        ),
+        Step(
+            "seal with the TPM on the first boot", (*chroot, "systemctl", "enable", ENROLL_SERVICE)
+        ),
+    ]
+
+
+def forget_keys() -> list[Step]:
+    """The keyring entries of this installation, whether it worked or not."""
+    return [
+        Step("forget the keys in the keyring", ("keyctl", "purge", "user", name))
+        for name in KEYRING_ENTRIES
+    ]
+
+
+# Linux keyctl(2), x86_64 and aarch64 numbers.
+_SYS_KEYCTL = {"x86_64": 250, "aarch64": 219}
+_KEYCTL_JOIN_SESSION_KEYRING = 1
+_KEYCTL_LINK = 8
+_KEY_SPEC_SESSION_KEYRING = -3
+_KEY_SPEC_USER_KEYRING = -4
+
+
+def own_session_keyring() -> None:
+    """A session keyring of root's own, with root's user keyring in it.
+
+    Under sudo the engine inherits the live user's session keyring, which
+    root may not link or change keys in: sdbootutil then cannot set the
+    permissions and timeout of its keys and does not find ``cryptenroll``
+    (VM test, 15.11.2026). A root login has exactly this.
+    """
+    import ctypes
+    import platform
+
+    number = _SYS_KEYCTL.get(platform.machine())
+    if number is None:
+        raise EncryptionError(f"keyctl is not known on {platform.machine()}")
+    libc = ctypes.CDLL(None, use_errno=True)
+    libc.syscall.restype = ctypes.c_long
+    if libc.syscall(number, _KEYCTL_JOIN_SESSION_KEYRING, None) < 0:
+        raise EncryptionError(f"a keyring of its own: {os.strerror(ctypes.get_errno())}")
+    if libc.syscall(number, _KEYCTL_LINK, _KEY_SPEC_USER_KEYRING, _KEY_SPEC_SESSION_KEYRING) < 0:
+        raise EncryptionError(f"root's keys in it: {os.strerror(ctypes.get_errno())}")
 
 
 # --- running them -------------------------------------------------------------------
@@ -385,7 +511,7 @@ def run_steps(
             else:
                 target.write_text(step.text or "", encoding="utf-8")
             continue
-        given: bytes | None = None
+        given: bytes | None = step.stdin_text.encode("utf-8") if step.stdin_text else None
         if step.stdin == "keyfile":
             if key_file is None:
                 raise EncryptionError(f"{step.why}: there is no key file")
@@ -408,5 +534,5 @@ def run_steps(
         except (OSError, subprocess.SubprocessError) as e:
             raise EncryptionError(f"{step.why}: {e}") from e
         if done.returncode != 0:
-            err = (done.stderr or b"").decode("utf-8", "replace").strip().splitlines()[-3:]
+            err = (done.stderr or b"").decode("utf-8", "replace").strip().splitlines()[-6:]
             raise EncryptionError(f"{step.why}: {step.argv[0]} failed: {' / '.join(err)}")

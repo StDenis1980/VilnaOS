@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Sun Nov 15 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Install engine after the first VM test: a mount namespace and a
+  session keyring of its own (cr_root is not kept busy, sdbootutil finds
+  its keys under sudo), wipefs before systemd-repart (installing over an
+  earlier install), keyring entries dropped whatever happens, no
+  systemd-growfs on the read-only snapshot. TPM2 is sealed on the first
+  boot of the new system (sdbootutil-enroll.service): the live boot's
+  measurements cannot predict it. Require the TSS libraries systemd loads.
+
+-------------------------------------------------------------------
 Sun Nov 15 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The install engine (vilna-installer-engine, as root through sudo

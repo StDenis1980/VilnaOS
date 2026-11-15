@@ -10,6 +10,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 
 import pytest
 from vilna_mcp_installer import machine as machines
@@ -160,11 +161,12 @@ def test_the_whole_install_with_tpm2(setup):
     # The image fills the system partition block by block, inside LUKS2.
     defs = (engine.work / "repart.d" / "10-root.conf").read_text()
     assert f"CopyBlocks={LOOP}p2" in defs and "Encrypt=key-file" in defs
-    assert "Format=" not in defs
+    assert "Format=" not in defs and "GrowFileSystem=no" in defs
     repart = calls[system.first("systemd-repart")]
     assert repart[-1] == DISK and any(a.startswith("--key-file=") for a in repart)
     # Order: layout, open, grow, model, account, boot loader, keys, seal.
     order = [
+        system.first("wipefs", "--all", DISK),
         system.first("systemd-repart"),
         system.first("cryptsetup", "open"),
         system.first("btrfs", "resize", "max", str(engine.root)),
@@ -174,12 +176,25 @@ def test_the_whole_install_with_tpm2(setup):
         system.first("chpasswd"),
         system.first("sdbootutil", "install"),
         system.first("--method=recovery-key", "enroll"),
-        system.first("--method=tpm2", "enroll"),
-        system.first("--wipe-slot=0"),
+        # TPM2 is sealed on the first boot: here a slot for this chip only,
+        # slot 0 marked for the first boot to remove, its key for this TPM.
+        system.first("systemd-cryptenroll", "--tpm2-device=auto", "--tpm2-pcrs="),
+        system.first("cryptsetup", "token", "import"),
+        system.first("systemd-creds", "encrypt", "--name=sdbootutil-enroll.current-pw"),
+        system.first("systemd-creds", "encrypt", "--name=sdbootutil-enroll.recovery-pin"),
+        system.first("systemctl", "enable", encryption.ENROLL_SERVICE),
+        system.first("mkinitrd"),
         system.first("btrfs", "property", "set", "-ts", str(engine.root), "ro", "true"),
         system.first("sync"),
+        system.first("keyctl", "purge", "user", "sdbootutil-recovery-pin"),
     ]
     assert order == sorted(order)
+    assert not any("--method=tpm2" in a for a in calls)
+    assert not any("--wipe-slot=0" in a for a in calls)  # the first boot wipes it
+    _argv, token, _ = system.calls[system.first("cryptsetup", "token", "import")]
+    assert json.loads(token) == {"type": "enrollment-key", "keyslots": ["0"]}
+    _argv, pin, _ = system.calls[system.first("--name=sdbootutil-enroll.recovery-pin")]
+    assert pin == KEY.encode()
     # The model is checked where it was copied to.
     _argv, _input, cwd = system.calls[system.first("sha256sum")]
     assert cwd.startswith(str(engine.root)) and cwd.endswith("/models")
@@ -196,7 +211,13 @@ def test_the_whole_install_with_tpm2(setup):
         < system.first("btrfstune")
         < system.first("mount", str(engine.root))
     )
-    assert (root / "etc/crypttab").read_text().startswith("cr_root UUID=0b0e8c5a")
+    crypttab = (root / "etc/crypttab").read_text()
+    assert crypttab.startswith("cr_root UUID=0b0e8c5a")
+    assert crypttab.endswith(" none x-initrd.attach,tpm2-device=auto\n")
+    assert (root / "etc/credstore/sdbootutil-enroll.tpm2").read_text() == "1\n"
+    dropin = (root / encryption.ENROLL_DROPIN).read_text()
+    assert "ConditionPathExists=/etc/credstore.encrypted/sdbootutil-enroll.current-pw" in dropin
+    assert "ExecStartPost=/usr/bin/rm -f /etc/credstore.encrypted/" in dropin
     assert (root / "etc/sysconfig/fde-tools").read_text() == "FDE_SEAL_PCR_LIST=4,5,7,9\n"
     assert not (root / encryption.DRACUT_OVERRIDE).exists()
     assert (root / "etc/locale.conf").read_text() == "LANG=uk_UA.UTF-8\n"
@@ -244,6 +265,8 @@ def test_a_passphrase_install_adds_it_and_builds_the_initrd(setup):
     add = system.calls[system.first("luksAddKey")]
     assert add[1] == "долгий шлях".encode() and add[0][-1] == DISK + "p2"
     assert system.first("mkinitrd") > system.first("luksAddKey")
+    assert system.first("--wipe-slot=0") > system.first("mkinitrd")
+    assert "tpm2-device" not in (engine.root / "etc/crypttab").read_text()
     assert not any("--method=tpm2" in a for a in system.argvs())
 
 
@@ -299,11 +322,14 @@ def test_the_stick_vilna_runs_from_is_refused(setup):
 
 
 def test_a_failed_step_says_where_and_closes_everything(setup):
-    engine, system, progress, _ = make(setup, fail="--method=tpm2")
+    engine, system, progress, _ = make(setup, fail="--tpm2-pcrs=")
     with pytest.raises(eng.EngineError) as e:
         engine.install()
-    assert "seal the key in the TPM" in str(e.value) and e.value.touched
-    assert system.first("cryptsetup", "close") > system.first("--method=tpm2")
+    assert "open the disk with this TPM" in str(e.value) and e.value.touched
+    assert system.first("cryptsetup", "close") > system.first("--tpm2-pcrs=")
+    # The keys in root's keyring go after a failure too.
+    for name in encryption.KEYRING_ENTRIES:
+        assert system.first("keyctl", "purge", "user", name) > system.first("cryptsetup", "close")
     assert not list((engine.work / "keys").iterdir())
     assert eng.read_progress(progress.path)["disk_changed"] is True
 
@@ -429,3 +455,17 @@ def test_the_image_is_found_where_obs_packages_it(tmp_path, monkeypatch):
     assert eng.find_image(tmp_path) == tmp_path / "tik-osimage-Vilna.20261115.raw"
     monkeypatch.setenv("VILNA_INSTALLER_IMAGE", "/srv/Vilna.raw")
     assert eng.find_image(tmp_path) == eng.Path("/srv/Vilna.raw")
+
+
+@pytest.mark.skipif(os.geteuid() != 0, reason="needs root: a mount namespace and a keyring")
+def test_the_engine_has_mounts_and_keys_of_its_own():
+    code = (
+        "import os, subprocess\n"
+        "before = os.readlink('/proc/self/ns/mnt')\n"
+        "from vilna_installer import engine\n"
+        "engine.isolate()\n"
+        "assert os.readlink('/proc/self/ns/mnt') != before\n"
+        "keys = subprocess.run(['cat', '/proc/keys'], capture_output=True, text=True).stdout\n"
+        "assert any(' _ses: 1' in line for line in keys.splitlines())\n"
+    )
+    subprocess.run([sys.executable, "-c", code], check=True)

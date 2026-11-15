@@ -515,6 +515,7 @@ class Engine:
             if self.key_file is not None:
                 encryption.wipe_key_file(self.key_file)
                 self.key_file = None
+                self.forget_keys()
         self.progress.state = "done"
         self.progress.write()
 
@@ -588,7 +589,13 @@ class Engine:
             old.unlink()
         for name, text in encryption.repart_definitions(method, copy_blocks=img_root).items():
             (defs / name).write_text(text, encoding="utf-8")
-        todo = []
+        # Whatever was on the disk goes first: with the old partition table
+        # gone the kernel lets go of the old partitions, which systemd-repart
+        # otherwise finds busy (an installation over an earlier one).
+        todo = [
+            Step("forget what was on the disk", ("wipefs", "--all", "--force", self.disk)),
+            Step("wait for the disk", ("udevadm", "settle")),
+        ]
         if method != "none":
             self.key_file = encryption.make_key_file(self.work / "keys")
             todo += encryption.before_layout()
@@ -768,6 +775,13 @@ class Engine:
         self.cleanup(strict=True)
         self._cmd("write everything to the disk", "sync")
 
+    def forget_keys(self) -> None:
+        """Drop this installation's keyring entries, also after a failure (none may be there)."""
+        for step in encryption.forget_keys():
+            self.log(step.shown())
+            with contextlib.suppress(OSError, subprocess.SubprocessError):
+                self.run(list(step.argv), capture_output=True, timeout=60, check=False)
+
     def cleanup(self, strict: bool = False) -> None:
         """Unmount and close what the engine opened, last first."""
         while self._undo:
@@ -811,6 +825,27 @@ def command(*, demo: bool, progress: Path) -> list[str]:
 # --- the command ------------------------------------------------------------------
 
 
+def isolate() -> None:
+    """Before anything is touched: mounts and keys of the engine's own.
+
+    The new system's mounts must not reach the namespaces of services
+    (udevd, logind…): there they keep cr_root busy, so that it cannot be
+    closed and the live system has to restart before another try (VM test,
+    15.11.2026). And under sudo the keys must go to root's keyring
+    (``encryption.own_session_keyring``).
+    """
+    if hasattr(os, "unshare"):  # Python 3.12+
+        os.unshare(os.CLONE_NEWNS)
+    else:
+        import ctypes
+
+        libc = ctypes.CDLL(None, use_errno=True)
+        if libc.unshare(0x00020000) != 0:  # CLONE_NEWNS
+            raise OSError(ctypes.get_errno(), "a mount namespace of its own")
+    subprocess.run(["mount", "--make-rprivate", "/"], check=True, capture_output=True)
+    encryption.own_session_keyring()
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(
         prog="vilna-installer-engine",
@@ -846,6 +881,13 @@ def main(argv: list[str] | None = None) -> int:
             log_file.write(f"{time.strftime('%H:%M:%S')} {line}\n")
             log_file.flush()
 
+    try:
+        isolate()
+    except (OSError, subprocess.SubprocessError, EncryptionError) as e:
+        progress.state, progress.error = "failed", f"the engine could not set itself up: {e}"
+        progress.write()
+        print(f"vilna-installer-engine: {progress.error}", file=sys.stderr)
+        return 1
     try:
         Engine(request, image=args.image, progress=progress, log=log).install()
     except EngineError as e:

@@ -59,6 +59,12 @@ Requires:       sudo
 # In systemd-experimental on Tumbleweed; the file names it either way.
 Requires:       /usr/bin/systemd-repart
 Requires:       util-linux
+# TPM2: systemd-cryptenroll and systemd-creds load the TSS libraries
+# themselves (dlopen), so nothing pulls them in on its own.
+Requires:       libtss2-esys0
+Requires:       libtss2-mu0
+Requires:       libtss2-rc0
+Requires:       libtss2-tcti-device0
 # «Screen reader» turns on Orca, as GNOME Settings does.
 Recommends:     orca
 BuildArch:      noarch
