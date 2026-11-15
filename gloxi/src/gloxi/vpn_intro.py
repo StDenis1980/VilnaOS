@@ -154,7 +154,7 @@ class VpnIntro:
             self._call(
                 "start_provider",
                 {"provider": "mullvad"},
-                _("Start the Mullvad VPN service, so its app can connect"),
+                _("Start Mullvad VPN and keep its service on after a restart"),
             )
             return Turn(
                 _(

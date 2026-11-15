@@ -1229,7 +1229,7 @@ msgid "Sign in to Proton VPN"
 msgstr ""
 
 #: src/gloxi/vpn_intro.py
-msgid "Start the Mullvad VPN service, so its app can connect"
+msgid "Start Mullvad VPN and keep its service on after a restart"
 msgstr ""
 
 #: src/gloxi/vpn_intro.py
