@@ -120,6 +120,10 @@ pub struct Judge {
     /// The key of the shared local model (vilna-llm.service wants one,
     /// ADR 0025): without it every check is "unavailable" (Build14.9).
     key: Option<String>,
+    /// The llama-server slot the checks use: the last one, learnt from
+    /// `/slots`. Gloxi keeps its conversation in slot 0 (`[local] slot`), so
+    /// a check no longer pushes Gloxi's cached prompt out (Build14.23).
+    slot: Mutex<Option<usize>>,
 }
 
 /// The longest key accepted from a key file.
@@ -204,6 +208,7 @@ impl Judge {
             host: authority.to_owned(),
             path: format!("{base}/chat/completions"),
             key: None,
+            slot: Mutex::new(None),
         })
     }
 
@@ -215,7 +220,7 @@ impl Judge {
 
     /// `true`: the text tries to instruct the assistant.
     pub fn judge(&self, text: &str, timeout: Duration) -> Result<bool, Unavailable> {
-        let body = json!({
+        let mut body = json!({
             "model": "local",
             "messages": messages(text),
             "temperature": 0,
@@ -229,6 +234,9 @@ impl Judge {
             // Qwen3: no "thinking" (ADR 0008); other models ignore it.
             "chat_template_kwargs": {"enable_thinking": false},
         });
+        if let Some(slot) = self.slot.lock().ok().and_then(|s| *s) {
+            body["id_slot"] = json!(slot);
+        }
         let body = serde_json::to_vec(&body).unwrap_or_default();
         let response = self.send("POST", &self.path, &body, timeout)?;
         let content = response["choices"][0]["message"]["content"]
@@ -252,6 +260,10 @@ impl Judge {
         let mut busy = false;
         for slot in slots {
             busy |= slot.get("is_processing")?.as_bool()?;
+        }
+        // One slot only: it is Gloxi's too, and pinning would change nothing.
+        if let (Some(last), Ok(mut chosen)) = (slots.len().checked_sub(1), self.slot.lock()) {
+            *chosen = (last > 0).then_some(last);
         }
         Some(busy)
     }
@@ -477,12 +489,23 @@ pub(crate) mod tests {
         checks: Arc<AtomicUsize>,
         answer: &'static str,
     ) -> String {
+        llama_server_noting(busy, checks, Arc::new(Mutex::new(Vec::new())), answer)
+    }
+
+    /// `llama_server` that also keeps the body of every check it is asked.
+    pub(crate) fn llama_server_noting(
+        busy: Arc<AtomicBool>,
+        checks: Arc<AtomicUsize>,
+        bodies: Arc<Mutex<Vec<String>>>,
+        answer: &'static str,
+    ) -> String {
         let listener = TcpListener::bind("127.0.0.1:0").expect("bind");
         let port = listener.local_addr().expect("addr").port();
         std::thread::spawn(move || {
             for mut conn in listener.incoming().flatten() {
                 let busy = Arc::clone(&busy);
                 let checks = Arc::clone(&checks);
+                let bodies = Arc::clone(&bodies);
                 std::thread::spawn(move || {
                     let mut got = Vec::new();
                     let mut buf = [0u8; 65536];
@@ -507,6 +530,11 @@ pub(crate) mod tests {
                         )
                     } else {
                         checks.fetch_add(1, Ordering::SeqCst);
+                        let text = String::from_utf8_lossy(&got);
+                        let body = text.split("\r\n\r\n").nth(1).unwrap_or("").to_owned();
+                        if let Ok(mut b) = bodies.lock() {
+                            b.push(body);
+                        }
                         format!(
                             "{{\"choices\":[{{\"message\":{{\"content\":\"{{\\\"answer\\\": \\\"{answer}\\\"}}\"}}}}]}}"
                         )
@@ -549,6 +577,31 @@ pub(crate) mod tests {
         assert!(start.elapsed() < Duration::from_secs(5));
         drop(go);
         assert_eq!(checks.load(Ordering::SeqCst), 0, "waiting asks no check");
+    }
+
+    #[test]
+    fn the_check_keeps_out_of_gloxis_slot() {
+        // Build14.23: with the slot left to llama-server, turns often lost
+        // their cached prompt. Gloxi keeps slot 0; Keros asks in the last.
+        let busy = Arc::new(AtomicBool::new(false));
+        let checks = Arc::new(AtomicUsize::new(0));
+        let bodies = Arc::new(Mutex::new(Vec::new()));
+        let url = llama_server_noting(busy, checks, Arc::clone(&bodies), "no");
+        let check = ModelCheck::new(Judge::new(&url).expect("judge"), 5.0);
+        // Before the server said how many slots it has: no slot asked for.
+        assert_eq!(check.check("first text").status, "clean");
+        let (_go, wait_go) = channel::<()>();
+        assert!(check.wait_idle(&wait_go, Duration::from_secs(10)));
+        assert_eq!(check.check("second text").status, "clean");
+        let bodies = bodies.lock().expect("bodies");
+        let sent: Vec<Value> = bodies
+            .iter()
+            .map(|b| serde_json::from_str(b).expect("json"))
+            .collect();
+        assert_eq!(sent.len(), 2);
+        assert!(sent[0].get("id_slot").is_none());
+        // The fake server has two slots: the check takes slot 1.
+        assert_eq!(sent[1]["id_slot"], 1);
     }
 
     #[test]
