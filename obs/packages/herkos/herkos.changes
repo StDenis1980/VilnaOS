@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Sun Nov 15 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkosd: a question shown through herkos-agent that nobody answers in
+  time is also denied_timeout (Build14.24 still said denied_user); an
+  agent that goes away stays a plain no.
+
+-------------------------------------------------------------------
 Sat Nov 14 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - A confirmation window that nobody answers in time is reported as

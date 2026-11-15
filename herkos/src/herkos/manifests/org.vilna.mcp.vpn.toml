@@ -55,5 +55,5 @@ reversible = true
 
 [operations.start_provider]
 level = "R2"
-summary = "Start the service of the chosen VPN provider"
+summary = "Start the service of the chosen VPN provider and keep it on after a restart"
 reversible = true
