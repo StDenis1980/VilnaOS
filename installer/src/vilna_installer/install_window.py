@@ -112,7 +112,8 @@ class InstallWindow(Adw.ApplicationWindow):
             self._finished(
                 _(eng.FAILED), _(eng.FAILED_TOUCHED if touched else eng.FAILED_LEAD), ok=False
             )
-            self.error.set_label(f"{_(eng.WHAT_HAPPENED)}\n{(data or {}).get('error') or ''}")
+            error = eng.printable(str((data or {}).get("error") or ""))
+            self.error.set_label(f"{_(eng.WHAT_HAPPENED)}\n{error}")
             self.error.set_visible(True)
         return state
 

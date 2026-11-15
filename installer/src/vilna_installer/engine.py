@@ -318,6 +318,11 @@ def preflight(
 Run = Callable[..., Any]
 
 
+def printable(text: str) -> str:
+    """Control characters (a NUL from pcrlock cuts a GTK label) as spaces; lines stay."""
+    return "".join(c if c == "\n" or c.isprintable() else " " for c in text)
+
+
 def output(run: Run, *argv: str) -> str:
     try:
         done = run(list(argv), capture_output=True, text=True, timeout=120, check=False)
@@ -506,7 +511,7 @@ class Engine:
             self.progress.go("finish")
             self.finish()
         except (EngineError, EncryptionError) as e:
-            self.progress.state, self.progress.error = "failed", str(e)
+            self.progress.state, self.progress.error = "failed", printable(str(e))
             self.log(f"failed: {e}")
             self.cleanup()
             self.progress.write()
@@ -622,6 +627,14 @@ class Engine:
         esp, part = new_partitions(partitions(self.run, self.disk))
         self.esp = esp
         self.crypt_part = part["name"]
+        # repart sets the GPT attribute "grow file system" (bit 59) even with
+        # GrowFileSystem=no after CopyBlocks=, and systemd-growfs-root then
+        # fails on the read-only snapshot at the first boot (VM test,
+        # 15.11.2026). The engine grew the filesystem already.
+        number = re.search(r"(\d+)$", part["name"])
+        if number:
+            self._cmd("no growing at the first boot",
+                      "sfdisk", "--part-attrs", self.disk, number.group(1), "")  # fmt: skip
         if method != "none":
             self.crypt_uuid = (
                 part.get("uuid")

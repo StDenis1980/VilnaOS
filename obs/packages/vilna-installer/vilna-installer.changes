@@ -8,6 +8,9 @@ Sun Nov 15 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   systemd-growfs on the read-only snapshot. TPM2 is sealed on the first
   boot of the new system (sdbootutil-enroll.service): the live boot's
   measurements cannot predict it. Require the TSS libraries systemd loads.
+- sdbootutil with --disable-predictions for TPM2 (the first boot
+  predicts), the GPT "grow file system" attribute cleared with sfdisk,
+  no control characters in the error shown at step 13.
 
 -------------------------------------------------------------------
 Sun Nov 15 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

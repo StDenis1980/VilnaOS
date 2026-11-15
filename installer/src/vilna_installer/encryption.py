@@ -279,6 +279,11 @@ def steps(
         raise ValueError("an encrypted system needs crypt_part and key_file")
     chroot = ("chroot", root)
     sdb = (*chroot, "sdbootutil", "--esp-path", "/boot/efi")
+    if method == "tpm2":
+        # With tpm2-device in crypttab sdbootutil would predict the PCRs from
+        # the live boot's event log and keep none (VM test, 15.11.2026); the
+        # first boot predicts them (sdbootutil-enroll).
+        sdb = (*sdb, "--disable-predictions")
     out: list[Step] = []
     if encrypted:
         # sdbootutil reads both files to seal and to update the initrd.

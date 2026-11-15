@@ -190,6 +190,18 @@ def test_the_whole_install_with_tpm2(setup):
     ]
     assert order == sorted(order)
     assert not any("--method=tpm2" in a for a in calls)
+    # Predictions from the live boot keep no PCR: the first boot makes them.
+    sdbootutil = [a for a in calls if a[0] == "chroot" and a[2] == "sdbootutil"]
+    assert sdbootutil and all("--disable-predictions" in a for a in sdbootutil)
+    # No systemd-growfs on the read-only snapshot at the first boot.
+    assert calls[system.first("sfdisk", "--part-attrs")] == [
+        "sfdisk",
+        "--part-attrs",
+        DISK,
+        "2",
+        "",
+    ]
+    assert system.first("sfdisk") < system.first("cryptsetup", "open")
     assert not any("--wipe-slot=0" in a for a in calls)  # the first boot wipes it
     _argv, token, _ = system.calls[system.first("cryptsetup", "token", "import")]
     assert json.loads(token) == {"type": "enrollment-key", "keyslots": ["0"]}
@@ -265,6 +277,7 @@ def test_a_passphrase_install_adds_it_and_builds_the_initrd(setup):
     add = system.calls[system.first("luksAddKey")]
     assert add[1] == "долгий шлях".encode() and add[0][-1] == DISK + "p2"
     assert system.first("mkinitrd") > system.first("luksAddKey")
+    assert not any("--disable-predictions" in a for a in system.argvs())
     assert system.first("--wipe-slot=0") > system.first("mkinitrd")
     assert "tpm2-device" not in (engine.root / "etc/crypttab").read_text()
     assert not any("--method=tpm2" in a for a in system.argvs())
@@ -475,3 +488,7 @@ def test_the_engine_has_mounts_and_keys_of_its_own():
     if done.returncode == 77:  # root without CAP_SYS_ADMIN, as in a build container
         pytest.skip("no namespaces here")
     assert done.returncode == 0
+
+
+def test_an_error_shows_without_control_characters():
+    assert eng.printable("Raw: MokList\0x\nnext\tline") == "Raw: MokList x\nnext line"
