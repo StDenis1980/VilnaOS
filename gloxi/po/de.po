@@ -933,6 +933,10 @@ msgid "Send dictated text at once"
 msgstr "Diktierten Text sofort senden"
 
 #: src/gloxi/gui/window.py
+msgid "Show Gloxi and talk about a VPN"
+msgstr "Gloxi zeigen und über ein VPN sprechen"
+
+#: src/gloxi/gui/window.py
 msgid "Show Gloxi, or hide it if it is in front"
 msgstr "Gloxi anzeigen oder ausblenden, wenn es im Vordergrund ist"
 
