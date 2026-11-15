@@ -88,6 +88,92 @@ pub fn render_relaxed(links: &BTreeSet<String>) -> String {
     links.iter().map(|l| format!("{l}\n")).collect()
 }
 
+/// What NetworkManager says about the way to the internet
+/// (`nmcli -t -f CONNECTIVITY general`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Connectivity {
+    /// The internet answers.
+    Full,
+    /// The network asks for a login, or names do not resolve (with strict
+    /// DNS-over-TLS a portal usually looks like this: the check cannot even
+    /// resolve its own address).
+    Blocked,
+    /// No network, or NetworkManager does not know yet.
+    Other,
+}
+
+impl Connectivity {
+    pub fn parse(out: &str) -> Connectivity {
+        match out.trim() {
+            "full" => Connectivity::Full,
+            "portal" | "limited" => Connectivity::Blocked,
+            _ => Connectivity::Other,
+        }
+    }
+}
+
+/// The window the service opens by itself, without Herkos, when the kill
+/// switch is off and the network asks for a login (decision of Denys,
+/// 2026-11-15). With the kill switch on, only the person opens a window
+/// (Herkos, R3). One automatic window per network: it ends when the internet
+/// answers or after [`AUTO_SECONDS`], and opens again only after the internet
+/// answered or the links changed.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct AutoPortal {
+    until: Option<u64>,
+    /// The links the last window was for; `None` once the internet answered.
+    spent_on: Option<BTreeSet<String>>,
+}
+
+/// The longest automatic window, the same as a window the person opens.
+pub const AUTO_SECONDS: u64 = crate::state::MAX_PORTAL_SECONDS;
+
+/// What the service does after one look at the network.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AutoStep {
+    /// The automatic window is open now.
+    pub open: bool,
+    /// It has just opened: ask NetworkManager to check again, so that GNOME
+    /// shows the login page at once and not in five minutes.
+    pub recheck: bool,
+}
+
+impl AutoPortal {
+    pub fn step(
+        &mut self,
+        now: u64,
+        kill_switch: bool,
+        connectivity: Connectivity,
+        links: &BTreeSet<String>,
+    ) -> AutoStep {
+        if connectivity == Connectivity::Full {
+            self.until = None;
+            self.spent_on = None;
+        }
+        if self.until.is_some_and(|until| until <= now) || kill_switch {
+            self.until = None;
+        }
+        if self.spent_on.as_ref().is_some_and(|spent| spent != links) {
+            self.spent_on = None;
+        }
+        let mut recheck = false;
+        if !kill_switch
+            && connectivity == Connectivity::Blocked
+            && self.until.is_none()
+            && self.spent_on.is_none()
+            && !links.is_empty()
+        {
+            self.until = Some(now.saturating_add(AUTO_SECONDS));
+            self.spent_on = Some(links.clone());
+            recheck = true;
+        }
+        AutoStep {
+            open: self.until.is_some(),
+            recheck,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -147,5 +233,74 @@ mod tests {
         let links = set(&["enp0s3", "wlp2s0"]);
         assert_eq!(parse_relaxed(&render_relaxed(&links)), links);
         assert_eq!(parse_relaxed("wlp2s0\n-x\nwg0\n\n a b\n"), set(&["wlp2s0"]));
+    }
+
+    #[test]
+    fn connectivity_words() {
+        assert_eq!(Connectivity::parse("full\n"), Connectivity::Full);
+        assert_eq!(Connectivity::parse("portal"), Connectivity::Blocked);
+        assert_eq!(Connectivity::parse("limited"), Connectivity::Blocked);
+        for other in ["none", "unknown", "", "FULL", "garbage"] {
+            assert_eq!(Connectivity::parse(other), Connectivity::Other);
+        }
+    }
+
+    #[test]
+    fn a_login_page_opens_the_window_once_until_the_internet_answers() {
+        let wifi = set(&["wlp2s0"]);
+        let mut auto = AutoPortal::default();
+        let step = auto.step(1000, false, Connectivity::Blocked, &wifi);
+        assert!(step.open && step.recheck);
+        let step = auto.step(1002, false, Connectivity::Blocked, &wifi);
+        assert!(step.open && !step.recheck);
+        // The person logged in: the window closes at once.
+        assert!(!auto.step(1030, false, Connectivity::Full, &wifi).open);
+        // The same network asks again later (a new day at the hotel): again.
+        assert!(auto.step(5000, false, Connectivity::Blocked, &wifi).recheck);
+    }
+
+    #[test]
+    fn the_window_ends_after_five_minutes_and_does_not_reopen_by_itself() {
+        let wifi = set(&["wlp2s0"]);
+        let mut auto = AutoPortal::default();
+        auto.step(1000, false, Connectivity::Blocked, &wifi);
+        assert!(
+            auto.step(1000 + AUTO_SECONDS - 1, false, Connectivity::Blocked, &wifi)
+                .open
+        );
+        let late = auto.step(1000 + AUTO_SECONDS, false, Connectivity::Blocked, &wifi);
+        assert!(!late.open && !late.recheck);
+        assert!(!auto.step(9000, false, Connectivity::Blocked, &wifi).open);
+        // Another network (or the same one after reconnecting) may open one.
+        let cable = set(&["enp0s3"]);
+        assert!(
+            auto.step(9002, false, Connectivity::Blocked, &cable)
+                .recheck
+        );
+    }
+
+    #[test]
+    fn never_with_the_kill_switch_on() {
+        let wifi = set(&["wlp2s0"]);
+        let mut auto = AutoPortal::default();
+        assert!(!auto.step(1000, true, Connectivity::Blocked, &wifi).open);
+        auto.step(1002, false, Connectivity::Blocked, &wifi);
+        // The person turned the kill switch on during the window: it closes.
+        assert!(!auto.step(1004, true, Connectivity::Blocked, &wifi).open);
+    }
+
+    #[test]
+    fn nothing_without_a_network_link() {
+        let mut auto = AutoPortal::default();
+        assert!(
+            !auto
+                .step(1000, false, Connectivity::Blocked, &BTreeSet::new())
+                .open
+        );
+        assert!(
+            !auto
+                .step(1000, false, Connectivity::Other, &set(&["wlp2s0"]))
+                .open
+        );
     }
 }

@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Sun Nov 15 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-netguard: during a captive-portal window the network links
+  (never the tunnels) take plain DNS from the network, so the login page
+  opens; afterwards they are strict DNS-over-TLS again. With the kill
+  switch off, the service opens such a window by itself when
+  NetworkManager sees a login page (at most 5 minutes, once per network,
+  decision of Denys 2026-11-15). Requires iproute2, systemd-resolved,
+  NetworkManager.
+
+-------------------------------------------------------------------
 Sun Nov 15 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - herkosd: a question shown through herkos-agent that nobody answers in
