@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Sun Nov 15 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The install engine (vilna-installer-engine, as root through sudo
+  after the Herkos screen): systemd-repart copies the system partition
+  of the Vilna disk image block by block into LUKS2 (recovery key, TPM2
+  or a passphrase, as Aeon), the btrfs grows to the disk and gets a
+  UUID of its own, the model is copied and checked with sha256sum,
+  languages, keyboards, time zone, computer name, the account and the
+  Wi-Fi connection are set up, and sdbootutil installs the boot loader
+- Step 13 on the screen: progress.json as a progress window, then
+  «Restart»; a failure says whether the disk was already written
+- Gloxi is told when the computer has no TPM 2.0, and a change it
+  says it made without calling the function gets one more round
+
+-------------------------------------------------------------------
 Thu Nov 12 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The model wakes once GNOME Shell shows the first screen (it gets the

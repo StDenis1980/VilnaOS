@@ -126,14 +126,22 @@ def tpm_can_seal(
 # --- the layout ---------------------------------------------------------------------
 
 
-def repart_definitions(method: str, copy_files: str | None = None) -> dict[str, str]:
+def repart_definitions(
+    method: str, copy_files: str | None = None, copy_blocks: str | None = None
+) -> dict[str, str]:
     """systemd-repart definitions for «Erase the whole disk»: the ESP and the system.
 
-    ``copy_files`` is what fills the system partition (``CopyFiles=``); the
-    engine that writes the image chooses it. Encryption adds one line.
+    What fills the system partition is the engine's choice: ``copy_blocks``
+    (a partition of the Vilna disk image, with its btrfs subvolumes and
+    snapshots as they are) or ``copy_files`` (a directory). With
+    ``copy_blocks`` repart copies the filesystem instead of making one
+    (``CopyBlocks=`` and ``Format=`` exclude each other). Encryption adds
+    one line either way.
     """
     if method not in METHODS:
         raise ValueError(f"unknown encryption method {method!r}; one of {', '.join(METHODS)}")
+    if copy_files and copy_blocks:
+        raise ValueError("either copy_files or copy_blocks")
     esp = (
         "[Partition]\n"
         "Type=esp\n"
@@ -142,7 +150,8 @@ def repart_definitions(method: str, copy_files: str | None = None) -> dict[str, 
         f"SizeMinBytes={ESP_SIZE}\n"
         f"SizeMaxBytes={ESP_SIZE}\n"
     )
-    root = "[Partition]\nType=root\nLabel=vilna\nFormat=btrfs\n"
+    root = "[Partition]\nType=root\nLabel=vilna\n"
+    root += f"CopyBlocks={copy_blocks}\n" if copy_blocks else "Format=btrfs\n"
     if method != "none":
         # LUKS2 with the engine's key file in slot 0; the keys that stay come later.
         root += "Encrypt=key-file\n"
@@ -167,11 +176,17 @@ class Step:
     path: str | None = None
     text: str | None = None
     append: bool = False
+    remove: bool = False  # delete ``path`` instead of writing it
+    cwd: str | None = None  # run the command in this directory
 
     def shown(self) -> str:
         """For the log and the progress screen: never a secret, only its name."""
         if self.path:
-            return f"{'>>' if self.append else '>'} /{self.path}"
+            return (
+                f"rm /{self.path}"
+                if self.remove
+                else f"{'>>' if self.append else '>'} /{self.path}"
+            )
         line = shlex.join(self.argv)
         return f"{line} < {self.stdin}" if self.stdin else line
 
@@ -203,48 +218,74 @@ def repart_command(disk: str, definitions: Path, key_file: Path) -> Step:
     )
 
 
+# Dracut builds a host-only initrd and sometimes takes the live system's
+# kernel command line for it; tik switches that off while it installs.
+DRACUT_OVERRIDE = "etc/dracut.conf.d/99-vilna-installer.conf"
+
+
 def steps(
     method: str,
     *,
-    crypt_part: str,
-    crypt_uuid: str,
+    crypt_part: str | None = None,
+    crypt_uuid: str | None = None,
     root_uuid: str,
     root: str,
-    key_file: Path,
+    key_file: Path | None = None,
 ) -> list[Step]:
     """After the layout, with the new system mounted at ``root`` (ESP at /boot/efi).
 
+    The boot loader for every method; for an encrypted system also the keys.
     ``crypt_part`` is the LUKS2 partition, ``crypt_uuid`` its UUID and
-    ``root_uuid`` the UUID of the filesystem inside it.
+    ``root_uuid`` the UUID of the filesystem (inside it, when encrypted).
+    The engine drops any old ``root=`` from ``/etc/kernel/cmdline`` first.
     """
-    if method not in ("tpm2", "passphrase"):
-        raise ValueError("steps are only for an encrypted system")
-    for name, value in (("crypt_uuid", crypt_uuid), ("root_uuid", root_uuid)):
-        if not re.fullmatch(r"[0-9a-fA-F-]{8,64}", value):
+    if method not in METHODS:
+        raise ValueError(f"unknown encryption method {method!r}; one of {', '.join(METHODS)}")
+    encrypted = method != "none"
+    checks = [("root_uuid", root_uuid)] + ([("crypt_uuid", crypt_uuid)] if encrypted else [])
+    for name, value in checks:
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-fA-F-]{8,64}", value):
             raise ValueError(f"{name} {value!r} is not a UUID")
+    if encrypted and (not crypt_part or key_file is None):
+        raise ValueError("an encrypted system needs crypt_part and key_file")
     chroot = ("chroot", root)
     sdb = (*chroot, "sdbootutil", "--esp-path", "/boot/efi")
-    out = [
+    out: list[Step] = []
+    if encrypted:
         # sdbootutil reads both files to seal and to update the initrd.
+        out.append(
+            Step(
+                "open the system partition at boot",
+                path="etc/crypttab",
+                text=f"{MAPPER} UUID={crypt_uuid} none x-initrd.attach\n",
+            )
+        )
+    out += [
         Step(
-            "open the system partition at boot",
-            path="etc/crypttab",
-            text=f"{MAPPER} UUID={crypt_uuid} none x-initrd.attach\n",
-        ),
-        Step(
-            "the system on the opened partition",
+            "the system on the opened partition" if encrypted else "where the system is",
             path="etc/kernel/cmdline",
             text=f" root=UUID={root_uuid}",
             append=True,
         ),
         Step(
-            "the recovery key for sdbootutil",
-            ("keyctl", "padd", "user", "sdbootutil", "@u"),
-            stdin="recovery_key",
+            "an initrd without the live system's command line",
+            path=DRACUT_OVERRIDE,
+            text='hostonly_cmdline="no"\n',
         ),
-        Step("install the boot loader", (*sdb, "--no-variables", "install")),
-        Step("add the recovery key", (*sdb, "--method=recovery-key", "enroll")),
     ]
+    if encrypted:
+        out.append(
+            Step(
+                "the recovery key for sdbootutil",
+                ("keyctl", "padd", "user", "sdbootutil", "@u"),
+                stdin="recovery_key",
+            )
+        )
+    out.append(Step("install the boot loader", (*sdb, "--no-variables", "install")))
+    if method == "none":
+        out.append(Step("build the initrd", (*sdb, "mkinitrd")))
+    else:
+        out.append(Step("add the recovery key", (*sdb, "--method=recovery-key", "enroll")))
     if method == "tpm2":
         out += [
             Step(
@@ -254,7 +295,7 @@ def steps(
             ),
             Step("seal the key in the TPM", (*sdb, "--method=tpm2", "enroll")),
         ]
-    else:
+    elif method == "passphrase":
         out += [
             Step(
                 "add the passphrase",
@@ -264,21 +305,28 @@ def steps(
                     f"--key-file={key_file}",
                     "--batch-mode",
                     "--force-password",
-                    crypt_part,
+                    str(crypt_part),
                 ),
                 stdin="passphrase",
             ),
             # Without a TPM nothing above built the initrd.
             Step("build the initrd", (*sdb, "mkinitrd")),
         ]
-    out += [
-        Step(
-            "remove the installer's key from slot 0",
-            ("systemd-cryptenroll", f"--unlock-key-file={key_file}", "--wipe-slot=0", crypt_part),
-        ),
-        Step("forget the keys in the keyring", ("keyctl", "purge", "user", "cryptenroll")),
-        Step("forget the keys in the keyring", ("keyctl", "purge", "user", "sdbootutil")),
-    ]
+    out.append(Step("the installer's dracut setting goes", path=DRACUT_OVERRIDE, remove=True))
+    if encrypted:
+        out += [
+            Step(
+                "remove the installer's key from slot 0",
+                (
+                    "systemd-cryptenroll",
+                    f"--unlock-key-file={key_file}",
+                    "--wipe-slot=0",
+                    str(crypt_part),
+                ),
+            ),
+            Step("forget the keys in the keyring", ("keyctl", "purge", "user", "cryptenroll")),
+            Step("forget the keys in the keyring", ("keyctl", "purge", "user", "sdbootutil")),
+        ]
     return out
 
 
@@ -318,7 +366,7 @@ def run_steps(
     secrets_of: Callable[[str], str | None],
     *,
     root: Path,
-    key_file: Path,
+    key_file: Path | None,
     run: Callable[..., Any] = subprocess.run,
     log: Callable[[str], None] = lambda _line: None,
 ) -> None:
@@ -327,6 +375,9 @@ def run_steps(
         log(step.shown())
         if step.path:
             target = root / step.path
+            if step.remove:
+                target.unlink(missing_ok=True)
+                continue
             target.parent.mkdir(parents=True, exist_ok=True)
             if step.append:
                 old = target.read_text(encoding="utf-8") if target.exists() else ""
@@ -336,14 +387,24 @@ def run_steps(
             continue
         given: bytes | None = None
         if step.stdin == "keyfile":
+            if key_file is None:
+                raise EncryptionError(f"{step.why}: there is no key file")
             given = key_file.read_bytes()
         elif step.stdin:
             value = secrets_of(step.stdin)
             if not value:
                 raise EncryptionError(f"{step.why}: the {step.stdin} is missing")
             given = value.encode("utf-8")
+        extra = {"cwd": step.cwd} if step.cwd else {}
         try:
-            done = run(list(step.argv), input=given, capture_output=True, timeout=600, check=False)
+            done = run(
+                list(step.argv),
+                input=given,
+                capture_output=True,
+                timeout=3600,
+                check=False,
+                **extra,
+            )
         except (OSError, subprocess.SubprocessError) as e:
             raise EncryptionError(f"{step.why}: {e}") from e
         if done.returncode != 0:

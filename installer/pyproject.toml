@@ -16,6 +16,10 @@ vilna-installer-chat = "vilna_installer.chat:main"
 vilna-installer-wizard = "vilna_installer.wizard_window:main"
 vilna-installer-confirm = "vilna_installer.confirm_window:main"
 
+[project.scripts]
+# Run by the installer as root after the Herkos screen (install_window.start).
+vilna-installer-engine = "vilna_installer.engine:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8",
