@@ -47,6 +47,10 @@ pub enum Answer {
     Once,
     Session,
     Always,
+    /// The window or the terminal got no answer before the timeout. It is a
+    /// "no" like `Deny`, but the person did not say no, so Gloxi may offer to
+    /// ask again (`denied_timeout`). Never one of the offered choices.
+    TimedOut,
 }
 
 impl Answer {
@@ -56,6 +60,7 @@ impl Answer {
             Answer::Once => "once",
             Answer::Session => "session",
             Answer::Always => "always",
+            Answer::TimedOut => "timed_out",
         }
     }
 
@@ -215,7 +220,7 @@ pub struct Outcome {
     pub allowed: bool,
     pub level: Option<Level>,
     /// allowed, tool_error, denied_unknown, denied_forbidden, denied_level,
-    /// denied_user, denied_no_tool, denied_mismatch, denied_journal, denied_error.
+    /// denied_user, denied_timeout, denied_no_tool, denied_mismatch, denied_journal, denied_error.
     pub code: &'static str,
     pub message: String,
     pub result: Option<Value>,
@@ -1046,6 +1051,15 @@ impl Gate {
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
             self.confirmer.ask(&question, self.config.confirm_timeout)
         };
+        if answer == Answer::TimedOut {
+            return Ok(Outcome::new(
+                id,
+                false,
+                Some(level),
+                "denied_timeout",
+                "the user did not answer in time".into(),
+            ));
+        }
         if answer == Answer::Deny || !question.choices.contains(&answer) {
             return Ok(Outcome::new(
                 id,
@@ -1990,6 +2004,16 @@ pub(crate) mod tests {
             "resources": [file_uri(&p)], "arguments": {"path": p}}),
         )
         .expect("valid")
+    }
+
+    #[test]
+    fn no_answer_in_time_is_not_a_no_from_the_person() {
+        // The window closed after the timeout: denied, but Gloxi must not
+        // tell the person they said no (seen in a VM, 2026-11-14).
+        let (g, docs) = gate("no-answer", Answer::TimedOut);
+        let mut s = Session::default();
+        let o = g.handle(&files("read", &docs.join("a.txt")), &mut s);
+        assert_eq!((o.allowed, o.code), (false, "denied_timeout"), "{o:?}");
     }
 
     #[test]

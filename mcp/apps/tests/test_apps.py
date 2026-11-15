@@ -176,6 +176,15 @@ def test_describe_gives_the_dialog_everything_adr_0012_asks_for():
     assert other["Verified"].startswith("no") and other["In Recommended by Vilna"].startswith("no")
 
 
+def test_facts_of_an_installed_app_are_about_removing_it():
+    # Before a removal the dialog showed a download size and what the app
+    # "will reach" (seen in a VM, 2026-11-14).
+    apps, _ = make(installed=[Installed("org.kde.kdenlive", "flathub", "c1")])
+    f = apps.describe("org.kde.kdenlive")["facts"]
+    assert "Download" not in f and "Can reach" not in f
+    assert f["App"].endswith("(org.kde.kdenlive)") and f["Source"] == "flathub"
+
+
 def test_permissions_ignore_the_sandbox_and_denied_entries():
     assert permissions("[Context]\nsockets=wayland;\nfilesystems=!home;xdg-download;\n") == [
         "the folder xdg-download"

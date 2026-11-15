@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Sat Nov 14 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- A confirmation window that nobody answers in time is reported as
+  denied_timeout, not denied_user, in herkosd and Herkos-lite, so Gloxi
+  no longer says the person refused.
+- vilna-mcp-apps@: explain the harmless revokefs warnings in the journal.
+
+-------------------------------------------------------------------
 Fri Nov 13 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - vilna-mcp-apps@: installs work in the sandbox. Flatpak's download

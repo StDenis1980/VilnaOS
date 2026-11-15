@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sat Nov 14 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- When nobody answers Herkos's window in time, Gloxi says so and offers
+  to ask again, instead of saying the person refused.
+
+-------------------------------------------------------------------
 Tue Nov 10 00:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.2.0~a1 (ADR 0023): calendar (read only) and GNOME

@@ -76,7 +76,7 @@ class Outcome:
     level: Level | None
     # Machine-readable (herkos/docs/protocol.md): allowed, tool_error (allowed,
     # but the tool failed), denied_unknown, denied_forbidden, denied_level,
-    # denied_user, denied_no_tool, denied_mismatch, denied_journal, denied_error.
+    # denied_user, denied_timeout, denied_no_tool, denied_mismatch, denied_journal, denied_error.
     code: str
     message: str
     result: Any = None
@@ -470,6 +470,10 @@ class Gate:
                 answer = self.confirmer.ask(question, self.config.confirm_timeout)
             except Exception:  # a broken dialog is a "no"
                 answer = Answer.DENY
+        if answer is Answer.TIMED_OUT:
+            return Outcome(
+                action_id, False, a.level, "denied_timeout", "the user did not answer in time"
+            )
         if answer is Answer.DENY or answer not in question.choices:
             return Outcome(action_id, False, a.level, "denied_user", "the user said no")
         if answer in (Answer.SESSION, Answer.ALWAYS):

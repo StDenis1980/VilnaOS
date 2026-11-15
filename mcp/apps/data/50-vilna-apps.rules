@@ -4,7 +4,8 @@
 // update or removal; this rule is the second wall: even a broken tool may
 // only install, update and remove signed apps from Flathub and Vilna's
 // repository. It may never add or change a source of apps (configure-remote),
-// change Flatpak's configuration, install a bundle file, remove a runtime, or
+// change Flatpak's configuration, install a bundle file, remove a runtime
+// (only an app's own .Locale or .Debug goes with the app), or
 // anything outside Flatpak. People keep the rules they had: this file only
 // speaks for vilna-apps.
 //
@@ -29,6 +30,12 @@ polkit.addRule(function (action, subject) {
         var remote = action.lookup(key);
         return remote !== undefined && VILNA_APPS_REMOTES.indexOf(remote) >= 0;
     }
+    // runtime/<app id>.Locale/<arch>/<branch> or .Debug, where the app id is
+    // not a platform's (org.gnome.Platform.Locale is used by many apps).
+    function is_app_extension(ref) {
+        var m = /^runtime\/([A-Za-z0-9_.-]+)\.(Locale|Debug)\/[^\/]+\/[^\/]+$/.exec(ref || "");
+        return m !== null && !/\.(Platform|Sdk)$/.test(m[1]);
+    }
     function yes_if(ok) {
         return ok ? polkit.Result.YES : polkit.Result.NO;
     }
@@ -46,12 +53,18 @@ polkit.addRule(function (action, subject) {
         // runtime-uninstall (implied), it is the runtime's ref.
         var ref = action.lookup("ref");
         return yes_if(ref !== undefined && ref.indexOf("runtime/") !== 0);
+    case "org.freedesktop.Flatpak.runtime-uninstall":
+        // Only an app's own translations or debug symbols, which Flatpak
+        // removes together with the app (otherwise they stay behind, seen in
+        // a VM, 2026-11-14). Never a runtime itself, nor the translations of
+        // a platform or SDK that other apps use.
+        return yes_if(is_app_extension(action.lookup("ref")));
     // The system repository's housekeeping that installs and updates need.
     case "org.freedesktop.Flatpak.metadata-update":
     case "org.freedesktop.Flatpak.modify-repo":
         return polkit.Result.YES;
     default:
-        // configure-remote, configure, install-bundle, runtime-uninstall,
+        // configure-remote, configure, install-bundle,
         // override-parental-controls and every action outside Flatpak.
         return polkit.Result.NO;
     }

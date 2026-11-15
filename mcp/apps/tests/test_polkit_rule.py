@@ -72,6 +72,17 @@ def test_vilna_apps_may_install_update_and_remove_from_flathub_and_vilna():
         ["vilna-apps", F + "appstream-update", {"origin": "flathub", "arch": "x86_64"}],
         ["vilna-apps", F + "update-remote", {"remote": "vilna"}],
         ["vilna-apps", F + "metadata-update", {}],
+        # An app's own translations and debug symbols go with the app.
+        [
+            "vilna-apps",
+            F + "runtime-uninstall",
+            {"ref": "runtime/org.gnome.Characters.Locale/x86_64/stable"},
+        ],
+        [
+            "vilna-apps",
+            F + "runtime-uninstall",
+            {"ref": "runtime/org.kde.kdenlive.Debug/x86_64/stable"},
+        ],
     ]
     assert decide(cases) == ["yes"] * len(cases)
 
@@ -87,6 +98,18 @@ def test_vilna_apps_may_not_add_sources_install_files_or_go_elsewhere():
         ["vilna-apps", F + "configure", {}],
         ["vilna-apps", F + "install-bundle", {"path": "/tmp/x.flatpak"}],
         ["vilna-apps", F + "runtime-uninstall", {}],
+        ["vilna-apps", F + "runtime-uninstall", {"ref": RUNTIME}],
+        [
+            "vilna-apps",
+            F + "runtime-uninstall",
+            {"ref": "runtime/org.gnome.Platform.Locale/x86_64/49"},
+        ],
+        ["vilna-apps", F + "runtime-uninstall", {"ref": "runtime/org.kde.Sdk.Locale/x86_64/6.8"}],
+        [
+            "vilna-apps",
+            F + "runtime-uninstall",
+            {"ref": "runtime/x.Locale/x86_64/stable/../../etc"},
+        ],
         ["vilna-apps", F + "override-parental-controls", {}],
         ["vilna-apps", "org.freedesktop.systemd1.manage-units", {}],
         ["vilna-apps", "org.freedesktop.packagekit.package-install", {}],
