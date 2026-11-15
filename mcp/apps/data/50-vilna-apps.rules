@@ -57,7 +57,10 @@ polkit.addRule(function (action, subject) {
         // Only an app's own translations or debug symbols, which Flatpak
         // removes together with the app (otherwise they stay behind, seen in
         // a VM, 2026-11-14). Never a runtime itself, nor the translations of
-        // a platform or SDK that other apps use.
+        // a platform or SDK that other apps use. polkit cannot tell whether
+        // the app itself stays installed, so a broken tool could remove the
+        // translations of an installed app: the app then shows English
+        // until its next update, which is as far as this wall needs to hold.
         return yes_if(is_app_extension(action.lookup("ref")));
     // The system repository's housekeeping that installs and updates need.
     case "org.freedesktop.Flatpak.metadata-update":
