@@ -513,16 +513,29 @@ fn link_exists(name: &str) -> bool {
 
 fn run_command(command: &mut Command, input: Option<&str>) -> Result<String, String> {
     let name = command.get_program().to_string_lossy().into_owned();
-    let mut child = command
+    command
         .stdin(if input.is_some() {
             Stdio::piped()
         } else {
             Stdio::null()
         })
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("{name}: {e}"))?;
+        .stderr(Stdio::piped());
+    // A program that another thread has just written can be busy for a
+    // moment: a child forked meanwhile holds the file open until it execs
+    // (ETXTBSY, seen in the tests, whose fake tools are scripts written while
+    // other tests run). Try again a few times rather than fail the tick.
+    let mut tries = 0;
+    let mut child = loop {
+        match command.spawn() {
+            Ok(child) => break child,
+            Err(e) if e.kind() == std::io::ErrorKind::ExecutableFileBusy && tries < 10 => {
+                tries += 1;
+                thread::sleep(Duration::from_millis(20));
+            }
+            Err(e) => return Err(format!("{name}: {e}")),
+        }
+    };
     if let (Some(text), Some(mut stdin)) = (input, child.stdin.take()) {
         stdin
             .write_all(text.as_bytes())
