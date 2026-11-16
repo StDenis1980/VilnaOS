@@ -933,6 +933,10 @@ msgid "Download the language model?"
 msgstr "Завантажити мовну модель?"
 
 #: src/gloxi/gui/window.py
+msgid "Expand to a sixth (Ctrl+2)"
+msgstr "Розгорнути до 1/6 екрана (Ctrl+2)"
+
+#: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
 msgstr "Теки, з якими може працювати Gloxi"
 
@@ -1098,6 +1102,10 @@ msgstr "Останні рядки чату й поле введення"
 #: src/gloxi/gui/window.py
 msgid "Translucent"
 msgstr "Напівпрозора"
+
+#: src/gloxi/gui/window.py
+msgid "You:"
+msgstr "Ви:"
 
 #: src/gloxi/gui/window.py
 msgid "Your own size. Drag an edge of the panel to change it."

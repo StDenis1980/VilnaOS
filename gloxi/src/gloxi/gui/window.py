@@ -132,7 +132,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.owl_states = OwlStates()
         self.add_css_class("gloxi-panel")
 
-        header = Adw.HeaderBar()
+        header = self.header = Adw.HeaderBar()
         self.title = Adw.WindowTitle(title="Gloxi", subtitle=self.controller.cloud_status())
         header.set_title_widget(self.title)
         header.pack_start(self._make_owl())
@@ -178,6 +178,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.messages.add_css_class("messages")
         for side in ("top", "bottom", "start", "end"):
             getattr(self.messages, f"set_margin_{side}")(12)
+        self._lines: list[tuple] = []  # every bubble, to restyle in the minimal mode
         self.empty = self._make_empty()
         self.messages.append(self.empty)
         self.scroller = Gtk.ScrolledWindow(vexpand=True, child=self.messages)
@@ -267,6 +268,7 @@ class ChatWindow(Adw.ApplicationWindow):
         )
         view = Adw.ToolbarView(content=self.toasts)
         view.add_top_bar(header)
+        view.add_top_bar(self._make_minimal_line())
         view.add_top_bar(self.model_banner)
         view.add_top_bar(self.voice_banner)
         view.add_bottom_bar(bottom)
@@ -288,6 +290,25 @@ class ChatWindow(Adw.ApplicationWindow):
         self._show_owl()
 
     # -- the side panel: size, look, the owl ------------------------------------
+
+    def _make_minimal_line(self) -> Gtk.Widget:
+        """The minimal mode's top line (brief 10.4): the owl, its state, "expand"."""
+        line = Gtk.Box(spacing=8)
+        line.add_css_class("vilna-minimal-line")
+        line.append(self._make_owl(16))
+        self.mini_state = Gtk.Label(xalign=0, hexpand=True, ellipsize=Pango.EllipsizeMode.END)
+        self.mini_state.add_css_class("caption")
+        self.mini_state.add_css_class("dim-label")
+        line.append(self.mini_state)
+        expand = Gtk.Button(
+            icon_name="view-fullscreen-symbolic", tooltip_text=_("Expand to a sixth (Ctrl+2)")
+        )
+        expand.add_css_class("flat")
+        expand.connect("clicked", lambda *_a: self.set_panel_size("one-sixth"))
+        line.append(expand)
+        # Without a header bar the line is what moves the window.
+        self.minimal_line = Gtk.WindowHandle(child=line, visible=False)
+        return self.minimal_line
 
     def _make_empty(self) -> Gtk.Widget:
         """The empty panel (brief 10.4): the owl, a question and a few starts."""
@@ -313,14 +334,19 @@ class ChatWindow(Adw.ApplicationWindow):
         self.entry.set_text(text)
         self._on_send()
 
-    def _make_owl(self) -> Gtk.Widget:
-        self.owl_image = Gtk.Image(icon_name=APP_ID, pixel_size=24)
+    def _make_owl(self, size: int = 24) -> Gtk.Widget:
+        """The owl with its state badge; the header and the minimal line each have one."""
+        image = Gtk.Image(icon_name=APP_ID, pixel_size=size)
         badge = Gtk.Box(halign=Gtk.Align.END, valign=Gtk.Align.END)
         badge.add_css_class("owl-badge")
-        self.owl = Gtk.Overlay(child=self.owl_image, valign=Gtk.Align.CENTER)
-        self.owl.add_overlay(badge)
-        self.owl.add_css_class("owl")
-        return self.owl
+        owl = Gtk.Overlay(child=image, valign=Gtk.Align.CENTER)
+        owl.add_overlay(badge)
+        owl.add_css_class("owl")
+        if not hasattr(self, "_owls"):
+            self._owls: list[Gtk.Overlay] = []
+            self.owl, self.owl_image = owl, image
+        self._owls.append(owl)
+        return owl
 
     def _owl(self, change) -> None:
         change(self.owl_states)
@@ -328,16 +354,20 @@ class ChatWindow(Adw.ApplicationWindow):
 
     def _show_owl(self) -> None:
         state = self.owl_states.state
-        for other in OwlState:
-            self.owl.remove_css_class(other.value)
-        self.owl.add_css_class(state.value)
-        if Gtk.Settings.get_default().get_property("gtk-enable-animations"):
-            self.owl.add_css_class("animated")
-        else:
-            self.owl.remove_css_class("animated")
+        animated = Gtk.Settings.get_default().get_property("gtk-enable-animations")
         text = panel.state_text(state)
-        self.owl.set_tooltip_text(text)
-        self.owl.update_property([Gtk.AccessibleProperty.LABEL], [text])
+        for owl in self._owls:
+            for other in OwlState:
+                owl.remove_css_class(other.value)
+            owl.add_css_class(state.value)
+            if animated:
+                owl.add_css_class("animated")
+            else:
+                owl.remove_css_class("animated")
+            owl.set_tooltip_text(text)
+            owl.update_property([Gtk.AccessibleProperty.LABEL], [text])
+        # The minimal mode says the state in words too (brief 10.4, item 1).
+        self.mini_state.set_text(text)
 
     def _make_panel_popover(self) -> Gtk.Popover:
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
@@ -451,10 +481,20 @@ class ChatWindow(Adw.ApplicationWindow):
     def _apply_size(self) -> None:
         width, height = panel.panel_size(self.prefs, *self._screen())
         self.set_default_size(width, height)
-        if self.prefs.size == "compact":
+        minimal = self.prefs.size == "compact"
+        if minimal:
             self.add_css_class("compact")
         else:
             self.remove_css_class("compact")
+        # The minimal mode (brief 10.4): one line instead of the header, the
+        # last lines as «You: …», no welcome; the input stays where it is.
+        self.header.set_visible(not minimal)
+        self.minimal_line.set_visible(minimal)
+        self.empty.set_visible(not minimal and self.empty.get_next_sibling() is None)
+        for line in self._lines:
+            self._show_line(*line)
+        if hasattr(self, "_choices"):
+            self._fill_model_switch()
         if self.shell is not None:
             # The Shell keeps the window at the right edge, at the work
             # area's height; without it GNOME chooses the place.
@@ -602,7 +642,8 @@ class ChatWindow(Adw.ApplicationWindow):
         self.controller.reset()
         while (child := self.messages.get_last_child()) is not None and child is not self.empty:
             self.messages.remove(child)
-        self.empty.set_visible(True)
+        self._lines.clear()
+        self.empty.set_visible(self.prefs.size != "compact")
 
     # -- model switcher -----------------------------------------------------------
 
@@ -610,7 +651,9 @@ class ChatWindow(Adw.ApplicationWindow):
         self._choices = self.controller.choices()
         current = self.controller.current_choice()
         chosen = next((c for c in self._choices if c.mode == current), self._choices[0])
-        self.model_switch.set_label(switcher.button_label(chosen))
+        # The minimal mode is narrow: the name alone, the tag stays in the list.
+        minimal = self.prefs.size == "compact"
+        self.model_switch.set_label(chosen.label if minimal else switcher.button_label(chosen))
         self.model_switch.set_tooltip_text(chosen.detail)
         self.model_switch.set_popover(self._make_model_popover(current))
         self.title.set_subtitle(self.controller.cloud_status())
@@ -955,9 +998,28 @@ class ChatWindow(Adw.ApplicationWindow):
         label = Gtk.Label(label=text, wrap=True, xalign=0, selectable=True, max_width_chars=48)
         label.add_css_class("bubble")
         label.add_css_class(kind)
-        box.append(label)
+        # Who said it: shown only in the minimal mode, where there are no bubbles.
+        who = Gtk.Label(label=_("You:") if kind == "user" else "Gloxi:", valign=Gtk.Align.START)
+        who.add_css_class("vilna-who")
+        row = Gtk.Box(spacing=6)
+        row.append(who)
+        row.append(label)
+        box.append(row)
+        line = (box, small if caption else None, who, kind)
+        self._lines.append(line)
+        self._show_line(*line)
         self._add_message(box)
         return label
+
+    def _show_line(
+        self, box: Gtk.Box, caption: Gtk.Label | None, who: Gtk.Label, kind: str
+    ) -> None:
+        """A bubble, or in the minimal mode a plain line «You: …» (brief 10.4)."""
+        minimal = self.prefs.size == "compact"
+        box.set_halign(Gtk.Align.START if minimal or kind != "user" else Gtk.Align.END)
+        if caption is not None:
+            caption.set_visible(not minimal)
+        who.set_visible(minimal)
 
     def _add_message(self, widget: Gtk.Widget) -> None:
         self.empty.set_visible(False)
@@ -988,7 +1050,7 @@ class ChatWindow(Adw.ApplicationWindow):
     @_idle
     def finish_answer(self) -> None:
         if self._answer_label is not None and not self._answer_text:
-            self._answer_label.get_parent().set_visible(False)
+            self._answer_label.get_parent().get_parent().set_visible(False)
         if self._answer_label is not None and self._answer_text and self.voice is not None:
             self.voice.speak(self._answer_text)
         self._answer_label = None

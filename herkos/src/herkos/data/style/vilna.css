@@ -117,3 +117,9 @@ button.vilna-starter { font-weight: 500; }
   border: 1px solid alpha(@vilna_blue, 0.35);
   background: alpha(@vilna_blue, 0.06);
 }
+
+/* The minimal mode of the Gloxi panel (brief 10.4): one quiet top line,
+   the last lines without bubbles, «You: …» in front. */
+.vilna-minimal-line { padding: 4px 6px 4px 10px; }
+.vilna-who { font-weight: 700; }
+window.compact .bubble { padding: 0; background: none; border-radius: 0; }

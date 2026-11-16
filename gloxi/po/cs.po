@@ -925,6 +925,10 @@ msgid "Download the language model?"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Expand to a sixth (Ctrl+2)"
+msgstr "Rozbalit na 1/6 obrazovky (Ctrl+2)"
+
+#: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
 msgstr ""
 
@@ -1090,6 +1094,10 @@ msgstr "Poslední řádky konverzace a pole pro psaní"
 #: src/gloxi/gui/window.py
 msgid "Translucent"
 msgstr "Průsvitný"
+
+#: src/gloxi/gui/window.py
+msgid "You:"
+msgstr "Vy:"
 
 #: src/gloxi/gui/window.py
 msgid "Your own size. Drag an edge of the panel to change it."

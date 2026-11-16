@@ -925,6 +925,10 @@ msgid "Download the language model?"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Expand to a sixth (Ctrl+2)"
+msgstr "Extindeți la 1/6 din ecran (Ctrl+2)"
+
+#: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
 msgstr ""
 
@@ -1090,6 +1094,10 @@ msgstr "Ultimele rânduri ale conversației și câmpul de scriere"
 #: src/gloxi/gui/window.py
 msgid "Translucent"
 msgstr "Translucid"
+
+#: src/gloxi/gui/window.py
+msgid "You:"
+msgstr "Dumneavoastră:"
 
 #: src/gloxi/gui/window.py
 msgid "Your own size. Drag an edge of the panel to change it."
