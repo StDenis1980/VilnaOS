@@ -6,6 +6,7 @@ import os
 import socket
 import threading
 import time
+from pathlib import Path
 
 import pytest
 from fake_server import FakeLlamaServer
@@ -376,3 +377,11 @@ def test_the_wake_autostart_runs_gloxi_wake():
     desktop = Path(__file__).parents[1] / "data/autostart/io.github.stdenis1980.Gloxi-wake.desktop"
     text = desktop.read_text(encoding="utf-8")
     assert "Exec=gloxi wake\n" in text and "NoDisplay=true\n" in text
+
+
+def test_the_local_model_keeps_idle_slots_cached():
+    # Keros checks in another slot; without this flag llama-server clears
+    # Gloxi's slot on every check and the next turn reads the prompt again.
+    unit = Path(__file__).resolve().parents[1] / "systemd" / "vilna-llm.service"
+    exec_start = unit.read_text().split("ExecStart=", 1)[1].split("\nWorkingDirectory=", 1)[0]
+    assert "--no-cache-idle-slots" in exec_start
