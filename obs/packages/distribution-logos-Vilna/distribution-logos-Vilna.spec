@@ -9,7 +9,7 @@ Name:           distribution-logos-Vilna
 Version:        0.4
 Release:        0
 Summary:        Vilna logos
-License:        GPL-3.0-or-later
+License:        GPL-3.0-or-later AND CC-BY-SA-4.0
 URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        vilna-logo.svg
 Source1:        vilna-logo-symbolic.svg
@@ -20,6 +20,7 @@ Source3:        vilna-logo-dark.svg
 Source4:        vilna-logo-text.svg
 Source5:        vilna-logo-text-dark.svg
 Source6:        vilna-logo-login.svg
+Source7:        LICENSE.CC-BY-SA-4.0
 BuildRequires:  hicolor-icon-theme
 BuildArch:      noarch
 # Replaces distribution-logos-openSUSE-Aeon (openSUSE trademark guidelines).
@@ -37,7 +38,8 @@ used by the login screen until vilna-branding 0.9; vilna-logo-login is
 the logo and the word Vilna in one row for the bottom of the login
 screen. Settings → About shows the wide
 vilna-logo-text icons (logo, the word Vilna and the sign and name of the
-release, Blavet), vilna-logo-text-dark in a dark style.
+release, Blavet), vilna-logo-text-dark in a dark style; their Blavet sign is by Dmytro
+Sizmin, CC-BY-SA-4.0.
 
 %package -n hicolor-icon-theme-branding-Vilna
 Summary:        Vilna logo as the hicolor "distributor" icon
@@ -51,6 +53,7 @@ programs use for the distribution logo (replaces
 hicolor-icon-theme-branding-openSUSE).
 
 %prep
+cp %{SOURCE7} .
 
 %build
 
@@ -66,6 +69,7 @@ install -m 0644 %{SOURCE2} %{buildroot}%{_datadir}/pixmaps/distribution-logos/vi
 install -m 0644 %{SOURCE6} %{buildroot}%{_datadir}/pixmaps/distribution-logos/vilna-logo-login.svg
 
 %files
+%license LICENSE.CC-BY-SA-4.0
 %{_datadir}/icons/hicolor/scalable/apps/vilna-logo.svg
 %{_datadir}/icons/hicolor/scalable/apps/vilna-logo-dark.svg
 %{_datadir}/icons/hicolor/scalable/apps/vilna-logo-text.svg

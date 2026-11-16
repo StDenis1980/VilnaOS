@@ -10,7 +10,7 @@ Name:           plymouth-branding-Vilna
 Version:        0.1
 Release:        0
 Summary:        Vilna boot splash
-License:        GPL-3.0-or-later
+License:        GPL-3.0-or-later AND CC-BY-SA-4.0
 URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  python3
@@ -27,8 +27,9 @@ BuildArch:      noarch
 The Vilna boot splash, a Plymouth theme named "vilna": on a night-blue
 screen the brush stroke of the Vilna logo closes into a circle, the
 swallow flies out of it and Petrykivka-style stems grow in two corners;
-three gold nodes pulse while the system starts. The sign and name of
-the current release (Blavet) sit small at the bottom. It asks for the disk
+three gold nodes pulse while the system starts. The logo animation
+(60 frames) and the Blavet release sign at the bottom are by Dmytro
+Sizmin, CC-BY-SA-4.0. It asks for the disk
 password in the same style and stays still when the login screen takes
 over. It also carries plymouthd.defaults (theme vilna, no show delay,
 8 s device timeout), as every plymouth-branding package does.
@@ -48,7 +49,7 @@ install -m 0644 vilna.plymouth vilna.script build/*.png "$dest/"
 install -D -m 0644 plymouthd.defaults %{buildroot}%{_datadir}/plymouth/plymouthd.defaults
 
 %files
-%license LICENSE
+%license LICENSE LICENSE.CC-BY-SA-4.0
 %doc README.md
 %dir %{_datadir}/plymouth
 %dir %{_datadir}/plymouth/themes

@@ -36,8 +36,10 @@ LOGO_DARK = ROOT / "docs/design/logo/Vilna_logo_dark-bg.svg"
 
 # Release layer
 RELEASE_NAME = "Blavet"
-RELEASE_MARK_LIGHT = ROOT / "installer/src/vilna_installer/data/blavet-mark-light.svg"
-RELEASE_MARK_DARK = ROOT / "installer/src/vilna_installer/data/blavet-mark-dark.svg"
+# The Blavet sign by Dmytro Sizmin (CC-BY-SA-4.0, LICENSING.md), so the
+# icons drawn here are CC-BY-SA-4.0 too.
+RELEASE_MARK_LIGHT = ROOT / "docs/design/blavet/svg/blavet-mark-light-bg.svg"
+RELEASE_MARK_DARK = ROOT / "docs/design/blavet/svg/blavet-mark-dark-bg.svg"
 
 NIGHT = "#1F345C"
 CREAM = "#F2E8D5"

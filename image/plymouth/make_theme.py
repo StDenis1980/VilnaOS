@@ -18,15 +18,20 @@ masters replaces them later.
 
 Two layers can be swapped without touching the script:
 
-- the release layer (--release, default release/ next to this file):
-  mark.svg, the sign of the current release (Blavet for Vilna 1), drawn
-  small under the logo as release-mark.png. The release name itself is
-  RELEASE_NAME in vilna.script. The next release replaces both and
-  nothing else (release/README.md);
+- the release layer (--release-mark SVG): the sign of the current
+  release (Blavet for Vilna 1), drawn small at the bottom as
+  release-mark.png. The release name itself is RELEASE_NAME in
+  vilna.script. The next release replaces both and nothing else
+  (release/README.md);
 - designer frames (--frames DIR): PNG files numbered in their names
-  (logo-01.png ... logo-60.png), copied in order as logo-0.png,
-  logo-1.png ... When vilna.script finds logo-0.png it plays these
-  frames for the logo instead of drawing the circle and the swallow.
+  (vilna-logo-01.png ... vilna-logo-60.png), copied in order as
+  logo-0.png, logo-1.png ... When vilna.script finds logo-0.png it plays
+  these frames for the logo instead of drawing the circle and the swallow.
+
+Both default to what the package tarball carries next to this file
+(release/mark.svg, frames/) and, in a checkout, to Dmytro Sizmin's files
+in docs/design/ (CC-BY-SA-4.0, LICENSING.md). --no-frames keeps the
+circle and the swallow drawn here.
 
 Only the Python standard library is needed, so the RPM builds it with
 python3 and rsvg-convert.
@@ -381,6 +386,15 @@ def write(out: Path, name: str, svg: str, svg_only: bool) -> None:
     src.unlink()
 
 
+HERE = Path(__file__).resolve().parent
+REPO_MARK = HERE.parents[1] / "docs/design/blavet/svg/blavet-mark-dark-bg.svg"
+REPO_FRAMES = HERE.parents[1] / "docs/design/plymouth/logo@2x"
+
+
+def first_existing(*paths: Path) -> Path | None:
+    return next((p for p in paths if p.exists()), None)
+
+
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 MAX_FRAMES = 240  # vilna.script stops looking after this many
 RELEASE_MARK_SIZE = 256
@@ -445,13 +459,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("logo", type=Path)
     ap.add_argument("out", type=Path)
     ap.add_argument(
-        "--release",
+        "--release-mark",
         type=Path,
-        default=Path(__file__).resolve().parent / "release",
-        help="folder with mark.svg, the sign of the current release",
+        default=first_existing(HERE / "release" / "mark.svg", REPO_MARK),
+        help="the sign of the current release, for dark backgrounds (SVG)",
     )
     ap.add_argument(
-        "--frames", type=Path, help="numbered PNG frames of the logo animation"
+        "--frames",
+        type=Path,
+        default=first_existing(HERE / "frames", REPO_FRAMES),
+        help="numbered PNG frames of the logo animation",
+    )
+    ap.add_argument(
+        "--no-frames", action="store_true", help="draw the circle and the swallow"
     )
     ap.add_argument("--svg-only", action="store_true")
     args = ap.parse_args(argv)
@@ -460,20 +480,21 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     view, circle, bird = logo_paths(args.logo.read_text(encoding="utf-8"))
     args.out.mkdir(parents=True, exist_ok=True)
-    for i, frame in enumerate(circle_frames(view, circle)):
-        write(args.out, f"circle-{i}", frame, args.svg_only)
-    write(args.out, "swallow", swallow(view, bird), args.svg_only)
+    designer = bool(args.frames) and not args.no_frames
+    if designer:
+        copy_frames(args.frames, args.out)
+    else:  # the circle and the swallow drawn here
+        for i, frame in enumerate(circle_frames(view, circle)):
+            write(args.out, f"circle-{i}", frame, args.svg_only)
+        write(args.out, "swallow", swallow(view, bird), args.svg_only)
     for i, frame in enumerate(bloom_frames()):
         write(args.out, f"bloom-{i}", frame, args.svg_only)
     write(args.out, "glow", glow(), args.svg_only)
     write(args.out, "dot", dot(), args.svg_only)
     write(args.out, "entry", entry(), args.svg_only)
     write(args.out, "bullet", bullet(), args.svg_only)
-    mark = args.release / "mark.svg"
-    if mark.is_file():
-        release_mark(mark, args.out, args.svg_only)
-    if args.frames:
-        copy_frames(args.frames, args.out)
+    if args.release_mark and args.release_mark.is_file():
+        release_mark(args.release_mark, args.out, args.svg_only)
     return 0
 
 

@@ -22,7 +22,8 @@
 | --- | --- |
 | Знак випуску Blavet | `docs/design/blavet/` |
 | Стани сови Gloxi | `docs/design/owl-states/` |
-| Кадри логотипа для екрана завантаження | `docs/design/plymouth/` |
+| Кадри логотипа для екрана завантаження | `docs/design/plymouth/`; у пакеті `plymouth-branding-Vilna` |
+| Знак Blavet у логотипі «Про систему» | `obs/packages/distribution-logos-Vilna/vilna-logo-text*.svg` (малює `docs/design/logo/make_text_logo.py`) |
 | Токени руху | `docs/design/motion/` |
 | Шпалери (вектор і JPEG) | `docs/design/wallpapers/`, `obs/packages/vilna-backgrounds/*.jpg` |
 
