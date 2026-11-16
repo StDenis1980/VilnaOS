@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Builds the Gloxi Flatpak (gloxi/flatpak) and checks that it starts.
+# Builds the Gloxi Flatpak (gloxi/flatpak) and checks that it starts, then
+# builds Vilna's own Flatpak repository (ADR 0024) from it and from Tinta
+# Office's pinned release bundles (image/tinta-bundles.toml, ADR 0011) and
+# installs every app from that repository with its signature checked.
 # On a tag gloxi-v<version> it also publishes the checked bundle as a
 # GitHub release (a pre-release before 1.0); see gloxi/tools/release.py.
 name: Flatpak
@@ -8,9 +11,9 @@ on:
   push:
     branches: [main]
     tags: ["gloxi-v*"]
-    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", "mcp/settings/**", "mcp/calendar/**", ".github/workflows/flatpak.yml"]
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", "mcp/settings/**", "mcp/calendar/**", "image/tinta-bundles.toml", "tools/tinta_bundles.py", ".github/workflows/flatpak.yml"]
   pull_request:
-    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", "mcp/settings/**", "mcp/calendar/**", ".github/workflows/flatpak.yml"]
+    paths: ["gloxi/**", "privacy-gateway/**", "herkos/**", "mcp/files/**", "mcp/settings/**", "mcp/calendar/**", "image/tinta-bundles.toml", "tools/tinta_bundles.py", ".github/workflows/flatpak.yml"]
   workflow_dispatch:
 
 permissions:
@@ -131,7 +134,19 @@ jobs:
           assert r.status_code == 200
           e.stop()
           "
-      - name: A signed Vilna repository from this very bundle (ADR 0024)
+      - name: Tinta Office bundles from their releases, hashes checked (ADR 0011)
+        run: |
+          set -eu
+          mkdir -p tinta
+          # The image has no python3 of its own; the pins are read with Gloxi's.
+          flatpak run --filesystem="$PWD" --command=python3 io.github.stdenis1980.Gloxi \
+            "$PWD/tools/tinta_bundles.py" downloads > tinta/downloads.txt
+          while read -r url sha file; do
+            curl -fsSL --retry 3 -o "tinta/$file" "$url"
+            echo "$sha  tinta/$file" | sha256sum -c -
+          done < tinta/downloads.txt
+          test "$(ls tinta/*.flatpak | wc -l)" -eq "$(wc -l < tinta/downloads.txt)"
+      - name: A signed Vilna repository from these very bundles (ADR 0024)
         id: repo
         env:
           # The real signing key and address only on a release tag. Everywhere
@@ -153,6 +168,10 @@ jobs:
           mkdir -p vilna-flatpak
           if command -v ostree >/dev/null; then ostree init --mode=archive-z2 --repo=vilna-flatpak/repo; fi
           flatpak build-import-bundle --gpg-sign="$fpr" --gpg-homedir="$GNUPGHOME" vilna-flatpak/repo gloxi.flatpak
+          # Tinta Office as published, unchanged: its own ref (branch stable).
+          for bundle in tinta/*.flatpak; do
+            flatpak build-import-bundle --gpg-sign="$fpr" --gpg-homedir="$GNUPGHOME" vilna-flatpak/repo "$bundle"
+          done
           flatpak build-update-repo --gpg-sign="$fpr" --gpg-homedir="$GNUPGHOME" \
             --title=Vilna --generate-static-deltas --prune vilna-flatpak/repo
           # The tool runs on the Python inside the installed Gloxi: this image
@@ -182,6 +201,20 @@ jobs:
             = app/io.github.stdenis1980.Gloxi/x86_64/master
           flatpak remotes -d --columns=name,options | grep '^vilna' | grep -v 'no-gpg-verify'
           flatpak run --command=gloxi io.github.stdenis1980.Gloxi --version
+      - name: Tinta Office installs from that repository, signature checked, and starts
+        run: |
+          set -eu
+          flatpak run --filesystem="$PWD" --command=python3 io.github.stdenis1980.Gloxi \
+            "$PWD/tools/tinta_bundles.py" apps > tinta/apps.txt
+          ids="$(cut -d' ' -f1 tinta/apps.txt)"
+          # As first boot does (vilna-flatpak-defaults): the runtime comes from Flathub.
+          flatpak install -y --noninteractive vilna $ids
+          while read -r id cli version; do
+            test "$(flatpak info --show-origin "$id")" = vilna
+            out="$(flatpak run --command="$cli" "$id" --version)"
+            echo "$id: $out"
+            case "$out" in *"$version"*) ;; *) echo "::error::$id is not version $version"; exit 1 ;; esac
+          done < tinta/apps.txt
       - name: Keep the checked bundle for the release
         if: startsWith(github.ref, 'refs/tags/gloxi-v')
         uses: actions/upload-artifact@v4

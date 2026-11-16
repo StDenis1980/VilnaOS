@@ -4,7 +4,7 @@ Description=Install Vilna's default Flatpak apps
 Documentation=https://github.com/StDenis1980/VilnaOS/blob/main/image/docs/composition.md
 Wants=network-online.target
 After=network-online.target
-ConditionPathExists=!/var/lib/vilna/flatpak-defaults.done
+ConditionPathExists=!/var/lib/vilna/flatpak-defaults-all.done
 
 [Service]
 Type=oneshot

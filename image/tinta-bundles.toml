@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Tinta Office in Vilna (ADR 0011): the release bundles that go into Vilna's
+# own Flatpak repository (ADR 0024), next to Gloxi. Each is the `.flatpak`
+# that Tinta Office publishes on the app's GitHub release, pinned by tag and
+# SHA-256 (from the release's SHA256SUMS.txt). `cli` is the app's command line
+# tool: CI runs `<cli> --version` inside the installed Flatpak and expects the
+# tag's version. CI downloads it, checks the
+# hash, imports it into the signed repository and installs it from there.
+# First boot installs these apps from the "vilna" remote
+# (obs/packages/vilna-flatpak-defaults/flatpaks-vilna.list).
+#
+# To move to a new Tinta release: change tag, file and sha256 together, then
+# run `python3 tools/tinta_bundles.py check`. Never take a hash from anywhere
+# but the release's own SHA256SUMS.txt.
+#
+# Tinta Office is MIT OR Apache-2.0; its code is not changed here. Requests to
+# Tinta go through issues labelled from-neighbor in StDenis1980/tintaoffice-web.
+
+# Preview 3, published 2026-11-12 (tintaoffice-web#14).
+
+[[bundle]]
+id = "io.github.stdenis1980.tintatexto"
+name = "Tinta Texto"
+cli = "wordcraft-cli"
+repo = "StDenis1980/wordcraft"
+tag = "v0.15.1"
+file = "tinta-texto-0.15.1-linux-x86_64.flatpak"
+sha256 = "baf7fba10921c4dce14d19c8c101ba526ffd5fefa8c6fb6849bb96c4ddaf729f"
+
+[[bundle]]
+id = "io.github.stdenis1980.tintacalculo"
+name = "Tinta Calculo"
+cli = "gridcraft-cli"
+repo = "StDenis1980/gridcraft"
+tag = "v0.16.0"
+file = "tinta-calculo-0.16.0-linux-x86_64.flatpak"
+sha256 = "9bece10dd9cb6ad00fbdb640cdcbaa7ef7d28a1b70cefa83cbc782465ab0dfd1"
+
+[[bundle]]
+id = "io.github.stdenis1980.tintapresenta"
+name = "Tinta Presenta"
+cli = "deckcraft-cli"
+repo = "StDenis1980/deckcraft"
+tag = "v0.15.0"
+file = "tinta-presenta-0.15.0-linux-x86_64.flatpak"
+sha256 = "6b99a2938a5b83c9532a4f9817f4ca522d46e77223a788c01c88dfb6bb98c7f1"
+
+[[bundle]]
+id = "io.github.stdenis1980.tintapdf"
+name = "Tinta PDF"
+cli = "pdfcraft-cli"
+repo = "StDenis1980/pdfcraft"
+tag = "v0.18.1"
+file = "tinta-pdf-0.18.1-linux-x86_64.flatpak"
+sha256 = "542d4c7af1fff6f289d4438d5807ee5c6338b9e138c4ab9676cdf5feffde2d95"
+
+[[bundle]]
+id = "io.github.stdenis1980.ibercorreo"
+name = "Tinta Correo"
+cli = "ibercorreo-cli"
+repo = "StDenis1980/ibercorreo"
+tag = "v0.2.0"
+file = "tinta-correo-0.2.0-linux-x86_64.flatpak"
+sha256 = "d3cb71130ca3981d877e0c04f5f34b6a8f45cbbd16ee791797a6f34ae677a0f5"
