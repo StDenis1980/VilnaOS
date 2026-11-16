@@ -12,6 +12,7 @@ from vilna_mcp_apps.apps import (
     Installed,
     MemoryBackend,
     RemoteRef,
+    branch_candidates,
     facts,
     human_size,
     permissions,
@@ -379,3 +380,12 @@ def test_launcher_opens_only_installed_apps(tmp_path):
     r = call(s, "launch", {"app_id": "org.kde.kdenlive", "args": ["--evil"]})
     assert r["isError"]
     assert len(ran) == 1
+
+
+def test_branch_candidates_find_tinta_on_stable_in_the_vilna_repository():
+    # Gloxi is on master in Vilna's repository, Tinta Office's bundles on stable.
+    assert branch_candidates("vilna", None) == ["master", "stable"]
+    assert branch_candidates("flathub", None) == ["stable", "master"]
+    # The remote's own DefaultBranch comes first, without repeats.
+    assert branch_candidates("vilna", "stable") == ["stable", "master"]
+    assert branch_candidates("other", "beta") == ["beta", "stable", "master"]

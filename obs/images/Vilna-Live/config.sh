@@ -16,8 +16,11 @@ systemctl set-default graphical.target
 # RAM overlay, not a btrfs snapshot: repartitioning the disk it booted
 # from (Aeon's repart.d), updates and snapshots, btrfs maintenance, the
 # boot health check, kdump; and the first-boot Flatpak install, which
-# would download the default apps into RAM on every start.
+# would download the default apps into RAM on every start. And tik:
+# the RPM tik-osimage-Vilna pulls it in, but Vilna's own installer
+# writes the image, so tik's wizard must not start beside it.
 for unit in \
+    tik.service \
     systemd-repart.service \
     vilna-flatpak-defaults.service \
     transactional-update.timer transactional-update-cleanup.timer \

@@ -21,12 +21,8 @@ import gi
 gi.require_version("Flatpak", "1.0")
 from gi.repository import Flatpak, GLib  # noqa: E402
 
-from vilna_mcp_apps.apps import AppsError, Installed, RemoteRef  # noqa: E402
+from vilna_mcp_apps.apps import AppsError, Installed, RemoteRef, branch_candidates  # noqa: E402
 from vilna_mcp_apps.appstream import Component, read_components  # noqa: E402
-
-# Flathub publishes apps on "stable"; Vilna's repository on "master"
-# (gloxi/tools/flatpak_repo.py). A remote's own DefaultBranch wins.
-BRANCHES = {"flathub": "stable", "vilna": "master"}
 
 
 class FlatpakBackend:
@@ -52,22 +48,32 @@ class FlatpakBackend:
                 return read_components(f)
         return iter(())
 
-    def _branch(self, remote: str) -> str:
+    def _branches(self, remote: str) -> list[str]:
         try:
             own = self.inst.get_remote_by_name(remote, None).get_default_branch()
         except GLib.Error:
             own = None
-        return own or BRANCHES.get(remote, "stable")
+        return branch_candidates(remote, own)
+
+    def _fetch(self, remote: str, app_id: str):
+        """The app's ref on the first branch the remote has it on, or None."""
+        for branch in self._branches(remote):
+            try:
+                return self.inst.fetch_remote_ref_sync(
+                    remote, Flatpak.RefKind.APP, app_id, self.arch, branch, None
+                )
+            except GLib.Error:
+                continue
+        return None
 
     def _app_ref(self, remote: str, app_id: str) -> str:
-        return f"app/{app_id}/{self.arch}/{self._branch(remote)}"
+        ref = self._fetch(remote, app_id)
+        branch = ref.get_branch() if ref is not None else self._branches(remote)[0]
+        return f"app/{app_id}/{self.arch}/{branch}"
 
     def remote_ref(self, remote: str, app_id: str) -> RemoteRef | None:
-        try:
-            ref = self.inst.fetch_remote_ref_sync(
-                remote, Flatpak.RefKind.APP, app_id, self.arch, self._branch(remote), None
-            )
-        except GLib.Error:
+        ref = self._fetch(remote, app_id)
+        if ref is None:
             return None
         meta = ref.get_metadata()
         return RemoteRef(

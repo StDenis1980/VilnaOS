@@ -664,6 +664,67 @@ msgstr "адресу"
 msgid "an e-mail address"
 msgstr "адресу пошти"
 
+#: src/gloxi/gui/cards.py
+msgid "Action"
+msgstr "Дія"
+
+#: src/gloxi/gui/cards.py
+msgid "Denied"
+msgstr "Відмовлено"
+
+#: src/gloxi/gui/cards.py
+msgid "Done"
+msgstr "Виконано"
+
+#: src/gloxi/gui/cards.py
+msgid "Failed"
+msgstr "Не вдалося"
+
+#: src/gloxi/gui/cards.py
+msgid "It asks Gloxi to ignore its instructions."
+msgstr "Просить Gloxi не зважати на свої інструкції."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains a link that could carry your data away."
+msgstr "Містить посилання, яке може винести ваші дані."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains invisible or direction-changing characters."
+msgstr "Містить невидимі символи або символи, що змінюють напрям тексту."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains markers that imitate system messages."
+msgstr "Містить позначки, що імітують системні повідомлення."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains text hidden from people."
+msgstr "Містить текст, прихований від людей."
+
+#: src/gloxi/gui/cards.py
+msgid "It tries to give Gloxi a new role or new instructions."
+msgstr "Намагається дати Gloxi нову роль або нові інструкції."
+
+#: src/gloxi/gui/cards.py
+msgid "The check on this computer found text addressed to Gloxi."
+msgstr "Перевірка на цьому комп'ютері знайшла текст, звернений до Gloxi."
+
+#: src/gloxi/gui/cards.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Вміст {what}."
+
+#: src/gloxi/gui/cards.py
+msgid "Tidy up Downloads"
+msgstr "Розібрати Завантаження"
+
+#: src/gloxi/gui/cards.py
+msgid "Turn on the dark theme"
+msgstr "Увімкнути темну тему"
+
+#: src/gloxi/gui/cards.py
+msgid "What do I have today?"
+msgstr "Що в мене сьогодні?"
+
 #: src/gloxi/gui/controller.py
 msgid "Auto"
 msgstr "Авто"
@@ -714,7 +775,7 @@ msgstr "Gloxi, відгук"
 msgid "Local"
 msgstr "Локальна"
 
-#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py src/gloxi/gui/switcher.py
 msgid "On this computer"
 msgstr "На цьому комп'ютері"
 
@@ -790,6 +851,31 @@ msgstr "Зв'язок зі службою Gloxi втрачено. Спробуй
 msgid "Show or hide Gloxi"
 msgstr "Показати або сховати Gloxi"
 
+#: src/gloxi/gui/switcher.py
+msgid "In the cloud"
+msgstr "У хмарі"
+
+#: src/gloxi/gui/switcher.py
+#, python-brace-format
+msgid "Model changed to «{model}» · it answers from the next message"
+msgstr "Модель змінено на «{model}» · вона відповідає з наступного повідомлення"
+
+#: src/gloxi/gui/switcher.py
+msgid "Turned off in the settings"
+msgstr "Вимкнено в налаштуваннях"
+
+#: src/gloxi/gui/switcher.py
+msgid "cloud"
+msgstr "хмара"
+
+#: src/gloxi/gui/switcher.py
+msgid "local"
+msgstr "локально"
+
+#: src/gloxi/gui/switcher.py
+msgid "recommended"
+msgstr "рекомендовано"
+
 #: src/gloxi/gui/window.py
 msgid "1/3"
 msgstr "1/3"
@@ -835,6 +921,10 @@ msgid "Choose a folder for Gloxi"
 msgstr "Оберіть теку для Gloxi"
 
 #: src/gloxi/gui/window.py
+msgid "Ctrl + / opens this list"
+msgstr "Ctrl + / відкриває цей список"
+
+#: src/gloxi/gui/window.py
 msgid "Download"
 msgstr "Завантажити"
 
@@ -847,6 +937,10 @@ msgid "Download the language model?"
 msgstr "Завантажити мовну модель?"
 
 #: src/gloxi/gui/window.py
+msgid "Expand to a sixth (Ctrl+2)"
+msgstr "Розгорнути до 1/6 екрана (Ctrl+2)"
+
+#: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
 msgstr "Теки, з якими може працювати Gloxi"
 
@@ -857,6 +951,10 @@ msgstr "Gloxi може користуватися лише програмами,
 #: src/gloxi/gui/window.py
 msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
 msgstr "Gloxi бачить лише теки, які ви тут оберете, і кожна дія в них іде через Herkos, який спершу питає вас."
+
+#: src/gloxi/gui/window.py
+msgid "Herkos checks Gloxi's next actions more strictly."
+msgstr "Herkos суворіше перевірятиме наступні дії Gloxi."
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
@@ -873,6 +971,10 @@ msgid "Herkos found something suspicious in how the program describes them."
 msgstr "Herkos знайшов щось підозріле в тому, як програма їх описує."
 
 #: src/gloxi/gui/window.py
+msgid "How can I help?"
+msgstr "Чим допомогти?"
+
+#: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
 msgstr "Програма запуститься, коли Herkos запуститься наступного разу."
 
@@ -883,6 +985,10 @@ msgstr "Слухаю… натисніть ще раз, щоб завершит�
 #: src/gloxi/gui/window.py
 msgid "Model"
 msgstr "Модель"
+
+#: src/gloxi/gui/window.py
+msgid "Model for the next messages"
+msgstr "Модель для наступних повідомлень"
 
 #: src/gloxi/gui/window.py
 msgid "New conversation"
@@ -909,8 +1015,8 @@ msgid "Off in high contrast"
 msgstr "Вимкнено за високого контрасту"
 
 #: src/gloxi/gui/window.py
-msgid "Only the local model: turn the cloud on in the settings to choose another"
-msgstr "Лише локальна модель: щоб обрати іншу, увімкніть хмару в налаштуваннях"
+msgid "Only the new message"
+msgstr "Лише нове повідомлення"
 
 #: src/gloxi/gui/window.py
 msgid "Otherwise it waits in the field for you to check and send"
@@ -941,6 +1047,14 @@ msgid "Send dictated text at once"
 msgstr "Надсилати продиктований текст одразу"
 
 #: src/gloxi/gui/window.py
+msgid "Send the conversation to the cloud?"
+msgstr "Надіслати розмову в хмару?"
+
+#: src/gloxi/gui/window.py
+msgid "Send with context"
+msgstr "Надіслати з контекстом"
+
+#: src/gloxi/gui/window.py
 msgid "Show Gloxi and talk about a VPN"
 msgstr "Показати Gloxi й поговорити про VPN"
 
@@ -969,9 +1083,25 @@ msgid "Stop sharing this folder"
 msgstr "Більше не давати цю теку"
 
 #: src/gloxi/gui/window.py
+msgid "Suspicious content"
+msgstr "Підозрілий вміст"
+
+#: src/gloxi/gui/window.py
 #, python-brace-format
 msgid "The app {app} is not installed."
 msgstr "Застосунок {app} не встановлено."
+
+#: src/gloxi/gui/window.py
+msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
+msgstr "Хмарна модель не бачить попередніх повідомлень цієї розмови. Надіслати їх теж, щоб вона знала контекст?"
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages stay on this computer."
+msgstr "Попередні повідомлення лишаються на цьому комп'ютері."
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages will go to the cloud with the next one."
+msgstr "Попередні повідомлення підуть у хмару разом із наступним."
 
 #: src/gloxi/gui/window.py
 msgid "The last lines of the chat and the input"
@@ -980,6 +1110,10 @@ msgstr "Останні рядки чату й поле введення"
 #: src/gloxi/gui/window.py
 msgid "Translucent"
 msgstr "Напівпрозора"
+
+#: src/gloxi/gui/window.py
+msgid "You:"
+msgstr "Ви:"
 
 #: src/gloxi/gui/window.py
 msgid "Your own size. Drag an edge of the panel to change it."

@@ -11,6 +11,10 @@ Repotype: staticlinks
 Patterntype: none
 # Vilna branding wins wherever a package needs "a release" or "logos"
 Prefer: Vilna-release distribution-logos-Vilna
+# tik-osimage-Vilna requires tik (added by containment-tik-img-to-rpm),
+# and tik needs a tik-config: the generic one, not Aeon's branding.
+# Vilna-Live does not run tik (its config.sh masks tik.service).
+Prefer: tik-config-generic
 # After a KIWI build, this post-build check wraps an image named
 # tik-osimage-* into an RPM of that name (the raw disk in
 # /usr/lib/tik/img/), as openSUSE does for tik-osimage-Aeon. Vilna-Live,

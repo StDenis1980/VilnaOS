@@ -1,6 +1,6 @@
 # 0011. Офісний пакет за замовчуванням: Tinta Office
 
-- Стан: Прийнято (Denys, 2026-11-02)
+- Стан: Прийнято (Denys, 2026-11-02); доповнено 2026-11-16 (як Tinta потрапляє в образ)
 - Дата: 2026-11-02
 - Пов'язано: [склад образу](../../image/docs/composition.md) розд. 6, [`packages.yaml`](../../image/packages.yaml), [ADR 0001](0001-licensing.md), [ADR 0009](0009-languages.md)
 
@@ -46,6 +46,17 @@ Tinta Office відповів на запит Vilna документом [vilna-
 3. **Панель годинника без затримки.** Подія, яку створив Gloxi або людина в Correo, має з'явитися в панелі одразу: Correo після зміни просить Evolution Data Server оновити джерело.
 
 Відповідь Tinta (2026-11-03, злито ibercorreo#55, gridcraft#42, deckcraft#24): Correo бере облікові записи з GNOME Online Accounts (Nextcloud і WebDAV — календарі й контакти; Google і IMAP/SMTP — пошта, у Google ще календарі), секрет щоразу питає в GOA і не зберігає; власний календар Correo публікується в EDS як «Tinta Correo», а після зміни календаря облікового запису GOA Correo просить EDS оновитися. Microsoft 365 через GOA у GNOME 46 дає лише файли, тож треба перевірити на GNOME 49, як і справжній обмін з Nextcloud. Обмеження для Herkos знято: `gridcraft-cli mcp` має `--automation-read-root`, `--automation-write-root` і `--allow-commands`, а канал керування Presenta вимагає ключ (`$XDG_RUNTIME_DIR/deckcraft/control-<port>.token` або `DECKCRAFT_CONTROL_TOKEN`). Для Texto, Calculo, Presenta і PDF Gloxi використовує headless-сервер MCP з коренями читання й запису в теці, яку дозволила людина; до відкритого вікна підключається лише з ключем.
+
+## Як Tinta Office потрапляє в образ (2026-11-16)
+
+Tinta Office з Preview 3 (12.11.2026) публікує `.flatpak` усіх п'яти програм у релізах на GitHub (tintaoffice-web #14 закрито), тож образ бере саме їх, без власної збірки:
+
+1. **Закріплені бандли.** [`image/tinta-bundles.toml`](../../image/tinta-bundles.toml) називає для кожної програми реліз (тег), файл і SHA-256 з `SHA256SUMS.txt` цього релізу. Зараз це Preview 3: Texto 0.15.1, Calculo 0.16.0, Presenta 0.15.0, PDF 0.18.1, Correo 0.2.0. `tools/tinta_bundles.py check` (CI, job `licences`) перевіряє, що той самий набір є у `flatpak_defaults` (`packages.yaml`) і в списку першого запуску.
+2. **Те саме сховище, що й для Gloxi** ([ADR 0024](0024-vilna-flatpak-repository.md), пункт 7). CI завантажує бандли, звіряє SHA-256, імпортує їх без змін у підписане сховище Vilna поруч із Gloxi, встановлює всі п'ять звідти з перевіркою підпису (рантайм `org.freedesktop.Platform` 25.08 — з Flathub) і запускає `<cli> --version` кожної програми. Tinta лишається на гілці `stable`, як її зібрано; Gloxi — на `master`. Інструмент «програми» (`vilna-mcp-apps`) шукає програму на гілці сховища за замовчуванням, а тоді на іншій. Справжнє сховище збирається й викладається разом із тегом `gloxi-v…` (як і раніше, публікація — лише за згодою Denys); нова версія Tinta — це новий запис у `tinta-bundles.toml`.
+3. **Перший запуск.** `vilna-flatpak-defaults` 0.2 ставить програми з двох джерел: Flathub (`flatpaks.list`) і сховища Vilna (`flatpaks-vilna.list`, п'ять програм Tinta). Кожне джерело має свою позначку, тож якщо одне недоступне, при наступному завантаженні служба пробує лише його. Сховище Vilna додається з файлу `/usr/share/vilna/vilna.flatpakrepo`, у якому відкритий ключ підпису; доки Denys не експортував відкритий ключ у пакет, файлу в образі немає, служба пише про це в журнал, а Tinta чекає.
+4. **Типові програми.** Той самий пакет кладе `/etc/xdg/gnome-mimeapps.list`: DOCX/ODT/RTF — Texto, XLSX/ODS/CSV — Calculo, PPTX — Presenta, PDF — Tinta PDF, `mailto:`, листи, `.ics` і контакти — Correo. Вибір людини (`~/.config/mimeapps.list`) завжди важить більше.
+
+Мови (tintaoffice-web #15): ro, cs і lt є в усіх п'яти програмах з Preview 3, Calculo має регіональні формати cs-CZ, ro-RO, lt-LT і назви функцій cs/de/fr/it/pl. Лишилось: за звітом Tinta від 3.11 близько 580 рядків Texto литовською ще англійською, і всі нові переклади (ro, cs, lt, частина uk) зроблено з AI, тож до альфи їх мають перечитати носії мов. Правопис Texto для fr, ro, lt, pl, it, cs — окремий пакет словників (~16 МБ); у Vilna Texto також читає `/usr/share/hunspell`. Німецького правопису поки немає.
 
 ## Розглянуті варіанти
 

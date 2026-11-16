@@ -35,8 +35,10 @@ from gloxi.engine import (
     total_ram,
 )
 from gloxi.feedback import FeedbackTalk, wants_feedback
+from gloxi.gui.cards import card_view
 from gloxi.llm import ModelError, ModelUnavailable
 from gloxi.router import CloudNotAllowed, NetworkRefused, Route, Router
+from gloxi.tools import ToolOutcome
 from gloxi.vpn_intro import VpnIntro
 
 # Runs a callable on a worker; replaced by a synchronous runner in tests.
@@ -58,8 +60,27 @@ class ChatView(Protocol):
     def show_error(self, text: str) -> None: ...
     def set_busy(self, busy: bool) -> None: ...
     def show_note(self, text: str) -> None: ...
+    # Optional: a view without cards (the terminal) gets a note instead.
+    # def show_action(self, card: dict) -> None: ...
     def open_uri(self, url: str) -> None: ...
     def launch_app(self, app_id: str) -> None: ...
+
+
+def show_action(view: object, card: dict) -> None:
+    """An action card if the view draws cards, else the same as a short note."""
+    draw = getattr(view, "show_action", None)
+    if callable(draw):
+        draw(card)
+    else:
+        view.show_note(card_view(card).title)  # type: ignore[attr-defined]
+
+
+def show_outcome(view: object, outcome: ToolOutcome) -> None:
+    draw = getattr(view, "show_action", None)
+    if callable(draw):
+        draw(outcome.card())
+    else:
+        view.show_note(outcome.summary())  # type: ignore[attr-defined]
 
 
 def route_label(route: Route, masks_cloud: bool) -> str:
@@ -136,7 +157,7 @@ class ChatController:
         self.intro = intro
         self.vpn = vpn
         self.busy = False
-        conversation.on_tool = lambda outcome: view.show_note(outcome.summary())
+        conversation.on_tool = lambda outcome: show_outcome(view, outcome)
 
     def submit(self, raw: str) -> bool:
         """Handle one line of input. Returns False if it was ignored."""
@@ -272,12 +293,31 @@ class ChatController:
         return current_choice(self.conversation.router)
 
     def set_mode(self, mode: str) -> bool:
-        """Pick auto, local or cloud; False if the cloud is off or the mode unknown."""
+        """Pick auto, local or cloud; False if the cloud is off or the mode unknown.
+
+        Turning the cloud on in the middle of a conversation that has stayed on
+        this computer keeps what was said here until the person decides
+        (``held_back``, ``share_history``; brief 10.3): a switch alone never
+        sends earlier messages away.
+        """
+        conv = self.conversation
+        before = current_choice(conv.router)
         try:
-            self.conversation.router.set_mode(mode)
+            conv.router.set_mode(mode)
         except (CloudNotAllowed, ValueError):
             return False
+        if before == "local" and mode != "local" and conv.history and not conv.sent_to_cloud:
+            conv.hold_history_from_cloud()
         return True
+
+    def held_back(self) -> int:
+        """How many earlier messages the cloud does not get (0: nothing to decide)."""
+        return self.conversation.cloud_from
+
+    def share_history(self, share: bool) -> None:
+        """The person's answer: send the earlier messages to the cloud too, or not."""
+        if share:
+            self.conversation.share_history_with_cloud()
 
     def cloud_status(self) -> str:
         return cloud_status(self.conversation)

@@ -137,6 +137,9 @@ class ToolOutcome:
     warnings: tuple[str, ...] = ()
     # Which program: "files", or the short name of another program's tool.
     label: str = "files"
+    # The Keros rule ids of ``warnings``, in the same order: the window
+    # translates them (gloxi.gui.cards); the descriptions stay for the model.
+    warning_rules: tuple[str, ...] = ()
 
     def summary(self) -> str:
         what = f"{self.label}: {self.operation}"
@@ -151,6 +154,18 @@ class ToolOutcome:
                 what=what, warnings="; ".join(self.warnings)
             )
         return _("{what} (done)").format(what=what)
+
+    def card(self) -> dict[str, Any]:
+        """The same call as an action card in the window (``gloxi.gui.cards``): JSON-safe."""
+        return {
+            "program": self.label,
+            "operation": self.operation,
+            "target": _short(self.path) if self.path else "",
+            "status": self.status,
+            "message": "" if self.status == "done" else self.message,
+            "warnings": list(self.warnings),
+            "rules": list(self.warning_rules),
+        }
 
 
 @dataclass(frozen=True)
@@ -565,16 +580,18 @@ def _external(
 
     keros = keros if isinstance(keros, dict) else {}
     source = str(keros.get("source") or f"{tool}.{op.name}")
-    warnings = tuple(
-        str(f.get("description") or f.get("rule"))
+    found = [
+        f
         for f in keros.get("findings") or []
         if isinstance(f, dict) and (f.get("description") or f.get("rule"))
-    )
+    ]
+    warnings = tuple(str(f.get("description") or f.get("rule")) for f in found)
+    rules = tuple(str(f.get("rule") or "") for f in found)
     header: dict[str, Any] = {"status": "done", "external_data": True, "note": EXTERNAL_NOTE}
     if warnings:
         header |= {"warnings": list(warnings), "warning_note": WARNING_NOTE}
     text = _json(header) + "\n" + wrap(_json(result), source)
-    return ToolOutcome(op.name, path, "done", code, message, text, warnings)
+    return ToolOutcome(op.name, path, "done", code, message, text, warnings, warning_rules=rules)
 
 
 def _unavailable(operation: str, path: str | None, detail: str) -> ToolOutcome:

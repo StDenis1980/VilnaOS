@@ -29,6 +29,22 @@ VILNA_APP_PREFIX = "io.github.stdenis1980."
 MAX_RESULTS = 25
 MAX_QUERY_CHARS = 200
 
+# Flathub publishes apps on "stable". In Vilna's repository Gloxi is on
+# "master" (gloxi/tools/flatpak_repo.py) and Tinta Office on "stable", as its
+# release bundles are built (image/tinta-bundles.toml). A remote's own
+# DefaultBranch comes first, then the usual branch of the remote, then the
+# other one: the first branch the remote has the app on is used.
+BRANCHES = {"flathub": "stable", "vilna": "master"}
+
+
+def branch_candidates(remote: str, own: str | None) -> list[str]:
+    """Branches to look for an app on, in order, without repeats."""
+    out: list[str] = []
+    for b in (own, BRANCHES.get(remote, "stable"), "stable", "master"):
+        if b and b not in out:
+            out.append(b)
+    return out
+
 
 class AppsError(Exception):
     """An error Gloxi can act on: what was wrong, and what is allowed."""

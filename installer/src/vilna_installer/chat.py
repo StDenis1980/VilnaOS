@@ -42,7 +42,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import confirm_window, install_window, start, summary  # noqa: E402
+from vilna_installer import confirm_window, install_window, start, style, summary  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
@@ -63,7 +63,6 @@ CSS = """
 .vilna-value { opacity: 0.8; }
 .vilna-pending { opacity: 0.55; font-style: italic; }
 .vilna-current { border-left: 3px solid @accent_bg_color; padding-left: 8px; }
-.vilna-go { background-color: #F5C24A; color: #13213A; font-weight: 800; padding: 10px 22px; }
 """
 
 
@@ -596,6 +595,7 @@ class ChatApp(Adw.Application):
 
     def do_startup(self) -> None:
         Adw.Application.do_startup(self)
+        style.install()
         css = Gtk.CssProvider()
         css.load_from_string(CSS)
         display = Gdk.Display.get_default()
