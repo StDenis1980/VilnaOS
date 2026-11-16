@@ -26,9 +26,9 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
+from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_backup import view  # noqa: E402
+from vilna_backup import style, view  # noqa: E402
 from vilna_backup.i18n import _  # noqa: E402
 from vilna_backup.restic import ResticError  # noqa: E402
 from vilna_backup.service import Backup, BackupError  # noqa: E402
@@ -36,20 +36,6 @@ from vilna_backup.service import Backup, BackupError  # noqa: E402
 APP_ID = "io.github.stdenis1980.VilnaBackup"
 POLL_SECONDS = 2
 EXPECT_RUN_SECONDS = 20
-
-CSS = """
-.vilna-key {
-  font-family: monospace;
-  font-size: 20pt;
-  font-weight: bold;
-  letter-spacing: 2px;
-  padding: 18px 24px;
-  border-radius: 12px;
-  background-color: alpha(@accent_bg_color, 0.08);
-  border: 1px dashed alpha(@accent_bg_color, 0.5);
-}
-.vilna-safe { color: @success_color; font-weight: bold; }
-"""
 
 
 def _in_thread(work: Callable[[], Any], done: Callable[[Any, Exception | None], None]) -> None:
@@ -933,11 +919,7 @@ class BackupApp(Adw.Application):
 
     def do_startup(self) -> None:
         Adw.Application.do_startup(self)
-        provider = Gtk.CssProvider()
-        provider.load_from_string(CSS)  # GTK 4.12+
-        Gtk.StyleContext.add_provider_for_display(
-            Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-        )
+        style.install()
 
     def do_activate(self) -> None:
         win = self.get_active_window()

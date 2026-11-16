@@ -10,8 +10,9 @@
  * @define-color and two files.
  *
  * Preliminary design of wave 2: the designer finishes it, then only the
- * values here change. Copies live in the programs (herkos/src/herkos/data/style/);
- * a test in each program checks that its copy matches this file.
+ * values here change. Copies live in the programs (<package>/data/style/ of
+ * herkos, gloxi and vilna_backup); a test in each program checks that its
+ * copy matches this file.
  */
 
 /* Colours (docs/design/v0.1 tokens, light) */
@@ -123,3 +124,17 @@ button.vilna-starter { font-weight: 500; }
 .vilna-minimal-line { padding: 4px 6px 4px 10px; }
 .vilna-who { font-weight: 700; }
 window.compact .bubble { padding: 0; background: none; border-radius: 0; }
+
+/* «Копії»: the recovery key, written down once on paper (design.md 5),
+ * and the quiet line that says the backups are safe. */
+.vilna-key {
+  font-family: monospace;
+  font-size: 20pt;
+  font-weight: bold;
+  letter-spacing: 2px;
+  padding: 18px 24px;
+  border-radius: 12px;
+  background-color: alpha(@vilna_blue, 0.08);
+  border: 1px dashed alpha(@vilna_blue, 0.5);
+}
+.vilna-safe { color: @vilna_green_text; font-weight: bold; }
