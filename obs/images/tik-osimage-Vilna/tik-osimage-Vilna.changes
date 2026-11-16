@@ -1,0 +1,6 @@
+-------------------------------------------------------------------
+Mon Nov 16 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- First image for the installer: the Vilna system as a raw disk without
+  the model weights, wrapped into the RPM tik-osimage-Vilna by
+  containment-tik-img-to-rpm (which takes this changelog) for Vilna-Live.
