@@ -13,7 +13,7 @@ Name:           vilna-installer
 Version:        0.1.0~dev0
 Release:        0
 Summary:        Vilna OS installer, run from the live image
-License:        GPL-3.0-or-later
+License:        GPL-3.0-or-later AND CC-BY-SA-4.0
 URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  %{python_module base >= 3.11}
