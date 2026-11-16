@@ -11,7 +11,7 @@ import pytest
 from vilna_mcp_installer import plan as plans
 
 from vilna_installer import conversation as conv
-from vilna_installer import start
+from vilna_installer import start, summary
 from vilna_installer.conversation import Conversation, InstallerTools, ModelError, ModelReply
 
 
@@ -93,7 +93,6 @@ def test_the_whole_simple_path_next_to_windows(plan_path):
         [call("plan_set_user", full_name="Олена Демо", username="olena", hostname="olena-pc")],
         "Пароль введіть у захищене поле.",
         [call("plan_set_time", timezone="Europe/Kyiv", region="uk_UA.UTF-8")],
-        [call("conversation_next")],
         "Ось план: стерти весь диск, встановити Vilna з шифруванням.",
     )
     texts = start.Texts("uk")
@@ -121,8 +120,18 @@ def test_the_whole_simple_path_next_to_windows(plan_path):
         person(plan_path, c, "user")
         assert c.current().key == "time"
         assert "Europe/Kyiv" in c.question(c.current())
-        assert c.send("Київ").text == texts(conv.PRIVACY_TEXT)
-        reply = c.send("зрозуміло")
+        reply = c.send("Київ")
+        assert reply.text == texts(conv.PRIVACY_TEXT)
+        assert reply.step.key == "privacy" and reply.needs == ["crash_reports"]
+        # The answer about crash reports is consent: Gloxi has no function for it
+        # and cannot move past it; only the person's own button settles it.
+        names = [f["function"]["name"] for f in c.functions(c.current())]
+        assert names == ["conversation_goto"]
+        p = plans.load(plan_path)
+        plans.set_crash_reports(p, "ask")
+        plans.save(p, plan_path)
+        c.answered("privacy")
+        reply = c.resume()
         assert reply.step.key == "summary"
         assert reply.needs == ["confirm"]
         assert '"recovery_key"' in model.last_system  # the validator's report is in the prompt
@@ -438,3 +447,60 @@ def test_a_question_while_changing_is_not_nudged(plan_path):
         assert model.replies == [] and len(model.seen) == 2
     finally:
         tools.close()
+
+
+def test_change_on_privacy_asks_about_crash_reports_again(plan_path):
+    c, model, tools = make(plan_path, "empty")
+    try:
+        p = plans.load(plan_path)
+        plans.set_crash_reports(p, "never")
+        plans.save(p, plan_path)
+        c.refresh()
+        assert c.done(conv.BY_KEY["privacy"])
+        c.goto("privacy")
+        reply = c.resume()
+        assert reply.step.key == "privacy" and "crash_reports" in reply.needs
+        assert model.seen == []  # fixed text: the model was not asked
+        p = plans.load(plan_path)
+        plans.set_crash_reports(p, "auto")
+        plans.save(p, plan_path)
+        c.answered("privacy")
+        assert c.state.focus is None
+        assert "crash_reports" not in c.needs()
+    finally:
+        tools.close()
+
+
+def test_the_plan_panel_shows_the_answer_only_once_given():
+    _ = start.Texts("uk")
+    plan = plans.new_plan()
+    assert summary.describe(plan, _)["privacy"] is None
+    plans.set_crash_reports(plan, "ask")
+    line = summary.describe(plan, _)["privacy"]
+    assert _(conv.CRASH_ASK) in line and _(conv.CLOUD_OFF) in line
+
+
+CONSENT_TEXTS = (
+    conv.PRIVACY_TEXT,
+    conv.CLOUD_OFF,
+    conv.SECTIONS["privacy"],
+    conv.CRASH_QUESTION,
+    conv.CRASH_EXPLAIN,
+    conv.CRASH_AUTO,
+    conv.CRASH_AUTO_HINT,
+    conv.CRASH_ASK,
+    conv.CRASH_ASK_HINT,
+    conv.CRASH_NEVER,
+    conv.CRASH_NEVER_HINT,
+    conv.CRASH_WHAT,
+    conv.CRASH_NEEDED,
+    conv.CRASH_SUMMARY,
+)
+
+
+@pytest.mark.parametrize("code", [c for c in start.CODES if c != "en"])
+def test_the_crash_reports_question_is_in_every_language(code):
+    """Consent is asked in the person's language, all ten of ADR 0009 (ADR 0018 section 3)."""
+    catalog = start.catalog(code)
+    assert [t for t in CONSENT_TEXTS if t not in catalog] == []
+    assert "{answer}" in catalog[conv.CRASH_SUMMARY]

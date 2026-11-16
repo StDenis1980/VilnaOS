@@ -32,7 +32,7 @@ def walk(w, layout="replace"):
     w.mark_entered("user")
     zone, region = w.suggested_time()
     assert w.set_time(zone, region) is None
-    w.seen.add("privacy")
+    assert w.set_crash_reports("ask") is None
 
 
 def test_the_simple_path_ends_with_nothing_left_but_the_herkos_screen(tmp_path):
@@ -54,7 +54,7 @@ def test_the_simple_path_ends_with_nothing_left_but_the_herkos_screen(tmp_path):
 def test_the_wizard_says_what_is_missing_and_where(tmp_path):
     w = new_wizard(tmp_path)
     missing = {row["field"] for row in w.to_do() if row["code"] == "missing"}
-    assert missing == {"languages", "network", "disk", "encryption", "user", "time"}
+    assert missing == {"languages", "network", "disk", "encryption", "user", "time", "privacy"}
     assert w.first_open() == "languages"
     w.set_languages(["uk_UA.UTF-8"], None)
     assert w.first_open() == "network"

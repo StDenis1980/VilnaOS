@@ -54,6 +54,9 @@ class Talk:
         self.gone_to.append(key)
         return conv.BY_KEY[key]
 
+    def answered(self, key):
+        self.gone_to.append(f"answered {key}")
+
     def resume(self):
         return self._reply("What shall we do with the disk?", "disk")
 
@@ -245,3 +248,41 @@ def test_the_next_screen_opens_at_once_when_the_code_is_read(plan_path):
     app.open_wizard = opened.append
     screen._finish(assistant=False)
     assert opened == [screen]
+
+
+def cards(win):
+    out, child = [], win.list.get_first_child()
+    while child is not None:
+        if child.has_css_class("vilna-card"):
+            out.append(child)
+        child = child.get_next_sibling()
+    return out
+
+
+def buttons(widget):
+    out, stack = [], [widget]
+    while stack:
+        w = stack.pop()
+        if isinstance(w, Gtk.Button) and not isinstance(w, Gtk.Expander):
+            out.append(w)
+        child = w.get_first_child()
+        while child is not None:
+            stack.append(child)
+            child = child.get_next_sibling()
+    return out
+
+
+def test_the_person_answers_about_crash_reports_with_their_own_button(plan_path):
+    """ADR 0018 section 3: three equal buttons, none suggested; Gloxi does not answer."""
+    talk = Talk(plan_path)
+    win = window(plan_path, talk=talk)
+    assert spin(lambda: "Hello" in bubbles(win))
+    win._card("crash_reports", plans.load(plan_path))
+    (card,) = cards(win)
+    labels = [b.get_label() for b in buttons(card)]
+    assert sorted(labels) == sorted(win._(title) for title, _hint in conv.CRASH_ANSWERS.values())
+    assert not any(b.has_css_class("suggested-action") for b in buttons(card))
+    win._on_crash_answer(None, "never", card)
+    assert plans.load(plan_path)["privacy"]["crash_reports"] == "never"
+    assert cards(win) == [] and "answered privacy" in talk.gone_to
+    assert win._(conv.CRASH_NEVER) in bubbles(win)

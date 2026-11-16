@@ -1,0 +1,136 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The «Feedback about Vilna» window (uk). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Feedback about Vilna"
+msgstr "Відгук про Vilna"
+
+msgid "Feedback"
+msgstr "Відгук"
+
+msgid "Crash reports"
+msgstr "Звіти про збої"
+
+msgid "Tell us what went wrong, what surprised you or what you would like. Only the Vilna team reads it; nothing is published without your permission."
+msgstr "Розкажіть, що пішло не так, що здивувало або чого вам хочеться. Читає лише команда Vilna; без вашого дозволу нічого не публікується."
+
+msgid "What is it about?"
+msgstr "Про що це?"
+
+msgid "Something does not work"
+msgstr "Щось не працює"
+
+msgid "An idea or a wish"
+msgstr "Ідея чи побажання"
+
+msgid "Something else"
+msgstr "Інше"
+
+msgid "Your message"
+msgstr "Ваше повідомлення"
+
+msgid "Add facts about this computer"
+msgstr "Додати відомості про цей комп’ютер"
+
+msgid "You may answer me by e-mail"
+msgstr "Можна відповісти мені електронною поштою"
+
+msgid "E-mail address"
+msgstr "Адреса електронної пошти"
+
+msgid "You may publish it, without my address, after reading it"
+msgstr "Можна опублікувати, без моєї адреси, після прочитання"
+
+msgid "What will be sent"
+msgstr "Що буде надіслано"
+
+msgid "Send"
+msgstr "Надіслати"
+
+msgid "Sending…"
+msgstr "Надсилання…"
+
+msgid "Thank you! Your feedback is sent."
+msgstr "Дякуємо! Ваш відгук надіслано."
+
+msgid "Write what happened or what you suggest."
+msgstr "Напишіть, що сталося або що ви пропонуєте."
+
+msgid "This does not look like an e-mail address."
+msgstr "Це не схоже на адресу електронної пошти."
+
+msgid "The message is longer than 8000 characters."
+msgstr "Повідомлення довше за 8000 символів."
+
+msgid "The report service is not running on this computer, so nothing can be sent now. Your text stays here."
+msgstr "Служба звітів на цьому комп’ютері не працює, тож зараз нічого не надіслати. Ваш текст залишається тут."
+
+msgid "Not sent: {reason}"
+msgstr "Не надіслано: {reason}"
+
+msgid "Crash reports stay on this computer until they are sent. Each one has only what you see here: which program crashed and where in its code."
+msgstr "Звіти про збої залишаються на цьому комп’ютері, доки їх не надіслано. У кожному є лише те, що ви бачите тут: яка програма впала і де в її коді."
+
+msgid "No crash reports."
+msgstr "Звітів про збої немає."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Якщо програма впаде, надсилати нам звіт про збій?"
+
+msgid "Send automatically"
+msgstr "Надсилати автоматично"
+
+msgid "Ask me every time"
+msgstr "Питати щоразу"
+
+msgid "Never"
+msgstr "Ніколи"
+
+msgid "No answer yet: nothing is sent."
+msgstr "Відповіді ще немає: нічого не надсилається."
+
+msgid "The answer was not changed."
+msgstr "Відповідь не змінено."
+
+msgid "Not sent"
+msgstr "Не надіслано"
+
+msgid "Sent"
+msgstr "Надіслано"
+
+msgid "Not accepted by the server"
+msgstr "Сервер не прийняв"
+
+msgid "First report of this crash"
+msgstr "Перший звіт про цей збій"
+
+msgid "We already know about this crash"
+msgstr "Ми вже знаємо про цей збій"
+
+msgid "Fixed in {version}"
+msgstr "Виправлено у версії {version}"
+
+msgid "View"
+msgstr "Переглянути"
+
+msgid "Crash report"
+msgstr "Звіт про збій"
+
+msgid "Close"
+msgstr "Закрити"
+
+msgid "Do not send"
+msgstr "Не надсилати"
+
+msgid "Delete everything I sent from the server"
+msgstr "Видалити з сервера все надіслане мною"
+
+msgid "Deleted from the server: {count}"
+msgstr "Видалено з сервера: {count}"
+
+msgid "{program} crashed"
+msgstr "{program} впала"
+
+msgid "Send us a crash report? It has only which program crashed and where in its code."
+msgstr "Надіслати нам звіт про збій? У ньому лише те, яка програма впала і де в її коді."

@@ -453,7 +453,35 @@ def system_files(plan: dict[str, Any]) -> dict[str, str]:
     }
     if user.get("hostname"):
         files["etc/hostname"] = f"{user['hostname']}\n"
+    files.update(crash_report_files((plan.get("privacy") or {}).get("crash_reports")))
     return files
+
+
+def crash_report_files(answer: Any) -> dict[str, str]:
+    """The person's answer about crash reports for vilna-reportd and Tinta Office.
+
+    ADR 0018 section 3. The same three files, with the same text, as
+    ``vilna-reportd consent`` writes (``reports/client/src/consent.rs``):
+    Tinta knows only yes or no, so «ask» is «no» for it. No answer, no files:
+    then nothing is sent (the validator does not let such a plan through).
+    """
+    if answer not in plans.CRASH_REPORTS:
+        return {}
+    tinta = "true" if answer == "auto" else "false"
+    return {
+        "etc/vilna/reports.conf": (
+            '# The answer to "If a program crashes, send us a crash report?" (ADR 0018).\n'
+            "# auto: send by itself; ask: ask about each crash; never: keep on this computer.\n"
+            f"crash_reports={answer}\n"
+        ),
+        "etc/environment.d/60-vilna-reports.conf": (
+            "# Vilna's answer about crash reports, for Tinta Office (ADR 0018).\n"
+            f"TINTA_OFFICE_REPORTS={tinta}\n"
+        ),
+        "etc/xdg/tinta-office/reports.conf": (
+            f"# Vilna's answer about crash reports (ADR 0018).\nenabled={tinta}\n"
+        ),
+    }
 
 
 def _safe(value: Any, pattern: str, what: str) -> str:

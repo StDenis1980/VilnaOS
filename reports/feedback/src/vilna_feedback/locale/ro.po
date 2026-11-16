@@ -1,0 +1,136 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The «Feedback about Vilna» window (ro). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Feedback about Vilna"
+msgstr "Păreri despre Vilna"
+
+msgid "Feedback"
+msgstr "Părere"
+
+msgid "Crash reports"
+msgstr "Rapoarte despre blocări"
+
+msgid "Tell us what went wrong, what surprised you or what you would like. Only the Vilna team reads it; nothing is published without your permission."
+msgstr "Spuneți-ne ce nu a mers, ce v-a surprins sau ce v-ați dori. Doar echipa Vilna citește; nimic nu se publică fără permisiunea dumneavoastră."
+
+msgid "What is it about?"
+msgstr "Despre ce este vorba?"
+
+msgid "Something does not work"
+msgstr "Ceva nu funcționează"
+
+msgid "An idea or a wish"
+msgstr "O idee sau o dorință"
+
+msgid "Something else"
+msgstr "Altceva"
+
+msgid "Your message"
+msgstr "Mesajul dumneavoastră"
+
+msgid "Add facts about this computer"
+msgstr "Adaugă informații despre acest calculator"
+
+msgid "You may answer me by e-mail"
+msgstr "Îmi puteți răspunde prin e-mail"
+
+msgid "E-mail address"
+msgstr "Adresă de e-mail"
+
+msgid "You may publish it, without my address, after reading it"
+msgstr "Îl puteți publica, fără adresa mea, după ce îl citiți"
+
+msgid "What will be sent"
+msgstr "Ce se va trimite"
+
+msgid "Send"
+msgstr "Trimite"
+
+msgid "Sending…"
+msgstr "Se trimite…"
+
+msgid "Thank you! Your feedback is sent."
+msgstr "Mulțumim! Părerea dumneavoastră a fost trimisă."
+
+msgid "Write what happened or what you suggest."
+msgstr "Scrieți ce s-a întâmplat sau ce propuneți."
+
+msgid "This does not look like an e-mail address."
+msgstr "Aceasta nu pare o adresă de e-mail."
+
+msgid "The message is longer than 8000 characters."
+msgstr "Mesajul are mai mult de 8000 de caractere."
+
+msgid "The report service is not running on this computer, so nothing can be sent now. Your text stays here."
+msgstr "Serviciul de rapoarte nu rulează pe acest calculator, așa că acum nu se poate trimite nimic. Textul dumneavoastră rămâne aici."
+
+msgid "Not sent: {reason}"
+msgstr "Netrimis: {reason}"
+
+msgid "Crash reports stay on this computer until they are sent. Each one has only what you see here: which program crashed and where in its code."
+msgstr "Rapoartele despre blocări rămân pe acest calculator până sunt trimise. Fiecare conține doar ce vedeți aici: ce program s-a blocat și unde în codul său."
+
+msgid "No crash reports."
+msgstr "Niciun raport despre blocări."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Dacă un program se blochează, ne trimiteți un raport despre blocare?"
+
+msgid "Send automatically"
+msgstr "Trimite automat"
+
+msgid "Ask me every time"
+msgstr "Întreabă-mă de fiecare dată"
+
+msgid "Never"
+msgstr "Niciodată"
+
+msgid "No answer yet: nothing is sent."
+msgstr "Încă niciun răspuns: nu se trimite nimic."
+
+msgid "The answer was not changed."
+msgstr "Răspunsul nu a fost schimbat."
+
+msgid "Not sent"
+msgstr "Netrimis"
+
+msgid "Sent"
+msgstr "Trimis"
+
+msgid "Not accepted by the server"
+msgstr "Neacceptat de server"
+
+msgid "First report of this crash"
+msgstr "Primul raport despre această blocare"
+
+msgid "We already know about this crash"
+msgstr "Știm deja despre această blocare"
+
+msgid "Fixed in {version}"
+msgstr "Remediat în {version}"
+
+msgid "View"
+msgstr "Vezi"
+
+msgid "Crash report"
+msgstr "Raport despre blocare"
+
+msgid "Close"
+msgstr "Închide"
+
+msgid "Do not send"
+msgstr "Nu trimite"
+
+msgid "Delete everything I sent from the server"
+msgstr "Șterge de pe server tot ce am trimis"
+
+msgid "Deleted from the server: {count}"
+msgstr "Șterse de pe server: {count}"
+
+msgid "{program} crashed"
+msgstr "{program} s-a blocat"
+
+msgid "Send us a crash report? It has only which program crashed and where in its code."
+msgstr "Ne trimiteți un raport despre blocare? Conține doar ce program s-a blocat și unde în codul său."
