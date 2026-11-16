@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 16 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.9: the login screen shows the logo and the word Vilna in one row
+  (vilna-logo-login.svg from distribution-logos-Vilna 0.4).
+
+-------------------------------------------------------------------
 Thu Nov 12 20:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.8: NetworkManager-branding-Vilna sends DNS through systemd-resolved,
