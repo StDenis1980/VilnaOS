@@ -138,3 +138,9 @@ window.compact .bubble { padding: 0; background: none; border-radius: 0; }
   border: 1px dashed alpha(@vilna_blue, 0.5);
 }
 .vilna-safe { color: @vilna_green_text; font-weight: bold; }
+
+/* The installer's one main step forward (start, install): Vilna gold with
+ * night-blue text, 6.6:1. Used once per screen. */
+.vilna-go { background-color: @vilna_gold; color: @vilna_night; font-weight: 800; padding: 10px 22px; }
+.vilna-go:hover { background-color: mix(@vilna_gold, #ffffff, 0.2); }
+.vilna-go:disabled { background-color: alpha(@vilna_gold, 0.45); color: alpha(@vilna_night, 0.6); }

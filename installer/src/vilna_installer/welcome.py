@@ -39,7 +39,7 @@ gi.require_version("Adw", "1")
 gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import Adw, Gdk, GdkPixbuf, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_installer import start  # noqa: E402
+from vilna_installer import start, style  # noqa: E402
 
 APP_ID = "io.github.stdenis1980.VilnaInstaller"
 BACKGROUNDS = Path(os.environ.get("VILNA_BACKGROUNDS", "/usr/share/backgrounds/vilna"))
@@ -88,8 +88,6 @@ CSS = """
     border: 1px solid alpha(@view_fg_color, 0.14); font-weight: 700; padding: 10px 18px; }
 .vilna-lang:checked { background-color: @accent_bg_color; color: @accent_fg_color;
     border-color: transparent; }
-.vilna-go { background-color: #F5C24A; color: #13213A; font-weight: 800; padding: 10px 22px; }
-.vilna-go:hover { background-color: #F7CD66; }
 .vilna-other { font-weight: 700; border-radius: 12px; padding: 6px 16px;
     background-color: alpha(@window_bg_color, 0.62); }
 .vilna-other.chosen { background-color: @accent_bg_color; color: @accent_fg_color; }
@@ -477,6 +475,7 @@ class InstallerApp(Adw.Application):
 
         start.log("chat code loaded")
 
+        style.install()
         css = Gtk.CssProvider()
         css.load_from_string(chat.CSS)
         display = Gdk.Display.get_default()
@@ -537,6 +536,7 @@ class InstallerApp(Adw.Application):
 
     def do_startup(self) -> None:
         Adw.Application.do_startup(self)
+        style.install()
         css = Gtk.CssProvider()
         css.load_from_string(CSS)
         display = Gdk.Display.get_default()

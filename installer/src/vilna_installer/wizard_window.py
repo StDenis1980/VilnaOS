@@ -32,7 +32,7 @@ from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import machine as machines  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import chat, confirm_window, install_window, start  # noqa: E402
+from vilna_installer import chat, confirm_window, install_window, start, style  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer import wizard as wiz  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
@@ -46,8 +46,7 @@ CSS = """
 .vilna-step { padding: 8px 12px; border-radius: 10px; }
 .vilna-step-current { background-color: alpha(@accent_bg_color, 0.15); font-weight: 700; }
 .vilna-step-title { font-weight: 800; font-size: 17pt; }
-.vilna-error { color: @error_color; font-weight: 700; }
-.vilna-go { background-color: #F5C24A; color: #13213A; font-weight: 800; padding: 10px 22px; }
+.vilna-error { color: @vilna_red_text; font-weight: 700; }
 """
 
 
@@ -921,6 +920,7 @@ def _step_of(problem: dict[str, str]) -> str:
 
 
 def install_css() -> None:
+    style.install()
     css = Gtk.CssProvider()
     css.load_from_string(CSS)
     display = Gdk.Display.get_default()
