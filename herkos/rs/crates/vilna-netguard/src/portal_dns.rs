@@ -6,11 +6,13 @@
 //! knows. With strict DNS-over-TLS to Quad9 nothing resolves, so the page
 //! never opens. For the window (at most 5 minutes) the network links, never
 //! the tunnels, take plain DNS from the network (`resolvectl dnsovertls
-//! LINK no`); when the window ends they go back to strict DNS-over-TLS.
-//! NetworkManager already gives systemd-resolved the network's resolver for
-//! each link, so nothing else changes.
+//! LINK no`) and answer for every name (`resolvectl domain LINK ~.`): the
+//! global `Domains=~.` of Vilna would otherwise send every name to Quad9
+//! alone, and the login check of GNOME would hang (VM, Build15.2). When the
+//! window ends they go back to strict DNS-over-TLS and to the domains
+//! NetworkManager gave them, which the service keeps in its file.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::Value;
 
@@ -39,26 +41,91 @@ fn plain_name(name: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || b"-_.@".contains(&b))
 }
 
-/// The network links with a default route, from `ip -j route show default`
-/// (and its IPv6 twin, concatenated). Tunnels, odd names and anything past
-/// [`MAX_LINKS`] are left out. Output that is not JSON gives no links.
-pub fn default_links(json_outputs: &[&str]) -> BTreeSet<String> {
-    let mut links = BTreeSet::new();
+/// The default routes of the network links, from `ip -j route show default`
+/// (and its IPv6 twin): each link with its gateway. Tunnels, odd names and
+/// anything past [`MAX_LINKS`] are left out. Output that is not JSON gives
+/// none.
+fn default_routes(json_outputs: &[&str]) -> BTreeSet<(String, String)> {
+    let mut routes = BTreeSet::new();
     for out in json_outputs {
-        let Ok(Value::Array(routes)) = serde_json::from_str::<Value>(out) else {
+        let Ok(Value::Array(list)) = serde_json::from_str::<Value>(out) else {
             continue;
         };
-        for route in routes {
+        for route in list {
             let Some(dev) = route.get("dev").and_then(Value::as_str) else {
                 continue;
             };
-            if plain_name(dev) && !is_tunnel(dev) && links.len() < MAX_LINKS {
-                links.insert(dev.to_owned());
+            let gateway = route
+                .get("gateway")
+                .and_then(Value::as_str)
+                .filter(|g| {
+                    g.len() <= 45
+                        && g.bytes()
+                            .all(|b| b.is_ascii_hexdigit() || b == b'.' || b == b':')
+                })
+                .unwrap_or("");
+            if plain_name(dev) && !is_tunnel(dev) && routes.len() < MAX_LINKS {
+                routes.insert((dev.to_owned(), gateway.to_owned()));
             }
         }
     }
-    links
+    routes
 }
+
+/// The network links with a default route.
+pub fn default_links(json_outputs: &[&str]) -> BTreeSet<String> {
+    default_routes(json_outputs)
+        .into_iter()
+        .map(|(dev, _)| dev)
+        .collect()
+}
+
+/// Which network the laptop is on, as far as the window cares: the links
+/// with their gateways. The same Wi-Fi after a reconnect is the same
+/// network; another hotel on the same `wlan0` is not.
+pub fn network_of(json_outputs: &[&str]) -> BTreeSet<String> {
+    default_routes(json_outputs)
+        .into_iter()
+        .map(|(dev, gateway)| format!("{dev} {gateway}"))
+        .collect()
+}
+
+/// How many search or routing domains of a link are kept at most.
+pub const MAX_DOMAINS: usize = 32;
+
+/// A domain `resolvectl domain` may take: a name, or `~name` for routing
+/// only; never an option.
+fn plain_domain(domain: &str) -> bool {
+    let name = domain.strip_prefix('~').unwrap_or(domain);
+    !name.is_empty()
+        && name.len() <= 253
+        && !name.starts_with('-')
+        && name
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b"-_.".contains(&b))
+}
+
+fn domain_list<'a>(words: impl Iterator<Item = &'a str>) -> Vec<String> {
+    words
+        .filter(|d| *d != "~." && plain_domain(d))
+        .take(MAX_DOMAINS)
+        .map(str::to_owned)
+        .collect()
+}
+
+/// The domains of a link, from `resolvectl domain LINK`
+/// (`Link 3 (wlan0): hotel.test ~corp`). `~.` is left out: the window adds
+/// it and must not keep it afterwards.
+pub fn parse_domains(out: &str) -> Vec<String> {
+    match out.lines().next().and_then(|l| l.split_once("):")) {
+        Some((_, list)) => domain_list(list.split_whitespace()),
+        None => Vec::new(),
+    }
+}
+
+/// The opened links, each with the domains NetworkManager had given it
+/// (`None` when they could not be read, so they are not touched on close).
+pub type Relaxed = BTreeMap<String, Option<Vec<String>>>;
 
 /// The `resolvectl` arguments that move from `relaxed` (the links opened
 /// now) to `want` (the links that should be open): open the new ones, close
@@ -73,19 +140,31 @@ pub fn changes(relaxed: &BTreeSet<String>, want: &BTreeSet<String>) -> Vec<[Stri
     close.chain(open).collect()
 }
 
-/// The file that lists the opened links, one per line; anything odd in it
-/// is dropped, so a broken file can only close fewer links than it should.
-pub fn parse_relaxed(text: &str) -> BTreeSet<String> {
+/// The file that lists the opened links, one per line, each with a tab and
+/// its old domains (a line with no tab has none to give back). Anything odd
+/// in it is dropped, so a broken file can only close fewer links than it
+/// should.
+pub fn parse_relaxed(text: &str) -> Relaxed {
     text.lines()
-        .map(str::trim)
-        .filter(|l| plain_name(l) && !is_tunnel(l))
+        .filter_map(|line| {
+            let (name, domains) = match line.split_once('\t') {
+                Some((name, list)) => (name.trim(), Some(domain_list(list.split_whitespace()))),
+                None => (line.trim(), None),
+            };
+            (plain_name(name) && !is_tunnel(name)).then(|| (name.to_owned(), domains))
+        })
         .take(MAX_LINKS)
-        .map(str::to_owned)
         .collect()
 }
 
-pub fn render_relaxed(links: &BTreeSet<String>) -> String {
-    links.iter().map(|l| format!("{l}\n")).collect()
+pub fn render_relaxed(links: &Relaxed) -> String {
+    links
+        .iter()
+        .map(|(link, domains)| match domains {
+            Some(d) => format!("{link}\t{}\n", d.join(" ")),
+            None => format!("{link}\n"),
+        })
+        .collect()
 }
 
 /// What NetworkManager says about the way to the internet
@@ -117,11 +196,14 @@ impl Connectivity {
 /// 2026-11-15). With the kill switch on, only the person opens a window
 /// (Herkos, R3). One automatic window per network: it ends when the internet
 /// answers or after [`AUTO_SECONDS`], and opens again only after the internet
-/// answered or the links changed.
+/// answered or the laptop moved to another network. A link that drops and
+/// comes back on the same network does not count (VM, Build15.2: two
+/// reconnects kept the DNS open for 15 minutes).
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct AutoPortal {
     until: Option<u64>,
-    /// The links the last window was for; `None` once the internet answered.
+    /// The network the last window was for; `None` once the internet
+    /// answered.
     spent_on: Option<BTreeSet<String>>,
 }
 
@@ -139,12 +221,14 @@ pub struct AutoStep {
 }
 
 impl AutoPortal {
+    /// One look; `network` is [`network_of`] the default routes now, empty
+    /// while no link is up.
     pub fn step(
         &mut self,
         now: u64,
         kill_switch: bool,
         connectivity: Connectivity,
-        links: &BTreeSet<String>,
+        network: &BTreeSet<String>,
     ) -> AutoStep {
         if connectivity == Connectivity::Full {
             self.until = None;
@@ -153,7 +237,9 @@ impl AutoPortal {
         if self.until.is_some_and(|until| until <= now) || kill_switch {
             self.until = None;
         }
-        if self.spent_on.as_ref().is_some_and(|spent| spent != links) {
+        // Another network may have its own window; no network at all (a
+        // link down for a moment) changes nothing.
+        if !network.is_empty() && self.spent_on.as_ref().is_some_and(|spent| spent != network) {
             self.spent_on = None;
         }
         let mut recheck = false;
@@ -161,10 +247,10 @@ impl AutoPortal {
             && connectivity == Connectivity::Blocked
             && self.until.is_none()
             && self.spent_on.is_none()
-            && !links.is_empty()
+            && !network.is_empty()
         {
             self.until = Some(now.saturating_add(AUTO_SECONDS));
-            self.spent_on = Some(links.clone());
+            self.spent_on = Some(network.clone());
             recheck = true;
         }
         AutoStep {
@@ -230,9 +316,42 @@ mod tests {
 
     #[test]
     fn the_file_round_trips_and_drops_junk() {
-        let links = set(&["enp0s3", "wlp2s0"]);
+        let mut links = Relaxed::new();
+        links.insert("enp0s3".into(), None);
+        links.insert(
+            "wlp2s0".into(),
+            Some(vec!["hotel.test".into(), "~corp".into()]),
+        );
+        links.insert("eth1".into(), Some(Vec::new()));
         assert_eq!(parse_relaxed(&render_relaxed(&links)), links);
-        assert_eq!(parse_relaxed("wlp2s0\n-x\nwg0\n\n a b\n"), set(&["wlp2s0"]));
+        let junk = parse_relaxed("wlp2s0\n-x\nwg0\n\n a b\nenp1s0\t~. --set x ok.test\n");
+        assert_eq!(junk.len(), 2);
+        assert_eq!(junk["wlp2s0"], None);
+        assert_eq!(junk["enp1s0"], Some(vec!["x".into(), "ok.test".into()]));
+    }
+
+    #[test]
+    fn the_domains_of_a_link() {
+        assert_eq!(
+            parse_domains("Link 3 (wlan0): hotel.test ~corp ~.\n"),
+            vec!["hotel.test".to_owned(), "~corp".to_owned()]
+        );
+        assert!(parse_domains("Link 3 (wlan0):\n").is_empty());
+        assert!(parse_domains("").is_empty());
+        assert!(parse_domains("Link 3 (wlan0): --help a;b ~").is_empty());
+        let many = format!("Link 3 (wlan0):{}", " a.test".repeat(100));
+        assert_eq!(parse_domains(&many).len(), MAX_DOMAINS);
+    }
+
+    #[test]
+    fn a_network_is_its_links_with_their_gateways() {
+        let hotel = r#"[{"dst":"default","gateway":"10.0.2.2","dev":"wlan0"},{"dev":"wg0"}]"#;
+        let other = r#"[{"dst":"default","gateway":"192.168.1.1","dev":"wlan0"}]"#;
+        let odd = r#"[{"dst":"default","gateway":"1.2.3.4; rm","dev":"wlan0"}]"#;
+        assert_eq!(network_of(&[hotel]), set(&["wlan0 10.0.2.2"]));
+        assert_ne!(network_of(&[hotel]), network_of(&[other]));
+        assert_eq!(network_of(&[odd]), set(&["wlan0 "]));
+        assert_eq!(default_links(&[hotel, other]), set(&["wlan0"]));
     }
 
     #[test]
@@ -275,6 +394,40 @@ mod tests {
         let cable = set(&["enp0s3"]);
         assert!(
             auto.step(9002, false, Connectivity::Blocked, &cable)
+                .recheck
+        );
+    }
+
+    #[test]
+    fn a_reconnect_to_the_same_network_does_not_open_it_again() {
+        let hotel = set(&["wlan0 10.0.2.2"]);
+        let none = BTreeSet::new();
+        let mut auto = AutoPortal::default();
+        assert!(
+            auto.step(1000, false, Connectivity::Blocked, &hotel)
+                .recheck
+        );
+        // The Wi-Fi drops and comes back twice during the window.
+        assert!(!auto.step(1100, false, Connectivity::Other, &none).recheck);
+        assert!(
+            !auto
+                .step(1110, false, Connectivity::Blocked, &hotel)
+                .recheck
+        );
+        auto.step(1200, false, Connectivity::Other, &none);
+        auto.step(1210, false, Connectivity::Blocked, &hotel);
+        // Five minutes after it opened it ends, and stays closed.
+        assert!(
+            !auto
+                .step(1000 + AUTO_SECONDS, false, Connectivity::Blocked, &hotel)
+                .open
+        );
+        auto.step(1400, false, Connectivity::Other, &none);
+        assert!(!auto.step(1410, false, Connectivity::Blocked, &hotel).open);
+        // Another hotel on the same wlan0 has its own window.
+        let other = set(&["wlan0 192.168.1.1"]);
+        assert!(
+            auto.step(1500, false, Connectivity::Blocked, &other)
                 .recheck
         );
     }
