@@ -32,6 +32,20 @@ def test_suspicious_content_and_r4_leave_only_allow_once():
     assert shown_choices(question("R4", ("once", "always"))) == ["once"]
 
 
+def test_always_allow_only_up_to_r2():
+    assert "always" in shown_choices(question("R1"))
+    assert "always" in shown_choices(question("R2"))
+    assert shown_choices(question("R3")) == ["once", "session"]
+
+
+def test_every_level_has_a_shape_as_well_as_a_colour():
+    from herkos.dialog import RISK_ICONS, RISK_LABELS
+
+    assert set(RISK_ICONS) == set(RISK_LABELS)
+    assert len(set(RISK_ICONS.values())) == len(RISK_ICONS)
+    assert all(name.endswith("-symbolic") for name in RISK_ICONS.values())
+
+
 def test_only_r4_waits_for_the_tick():
     assert needs_acknowledgement(question("R4"))
     assert not needs_acknowledgement(question("R3"))

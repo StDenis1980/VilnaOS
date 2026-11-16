@@ -91,6 +91,17 @@ RISK_LABELS = {
     "R4": "R4 · cannot be undone",
 }  # translated when shown
 
+# A shape for each level, so the chip reads without colour (design system by
+# Dmytro Sizmin): circle, shield, undo arrow, triangle, stop sign. These are
+# standard symbolic icon names of the GNOME icon theme.
+RISK_ICONS = {
+    "R0": "media-record-symbolic",
+    "R1": "security-high-symbolic",
+    "R2": "edit-undo-symbolic",
+    "R3": "dialog-warning-symbolic",
+    "R4": "process-stop-symbolic",
+}
+
 
 def risk_level(question: dict) -> str:
     """The level as shown; anything unknown is shown as the strictest, R4."""
@@ -108,11 +119,14 @@ def shown_choices(question: dict) -> list[str]:
 
     Herkos already limits the choices by level; the window may only narrow
     them further: with suspicious content or at R4 only "Allow once" stays,
-    so a single click never grants more than this one action.
+    so a single click never grants more than this one action. "Always allow"
+    is offered only up to R2.
     """
     choices = [c for c in question.get("choices", []) if c in LABELS]
     if suspicious(question) or risk_level(question) == "R4":
         choices = [c for c in choices if c == "once"]
+    if risk_level(question) not in ("R0", "R1", "R2"):
+        choices = [c for c in choices if c != "always"]
     return choices
 
 
@@ -201,7 +215,9 @@ def main() -> int:
         title = text(_(str(question.get("summary", ""))), "title-3")
         title.set_hexpand(True)
         head.append(title)
-        chip = Gtk.Label(label=_(RISK_LABELS[level]), valign=Gtk.Align.START)
+        chip = Gtk.Box(spacing=6, valign=Gtk.Align.START)
+        chip.append(Gtk.Image.new_from_icon_name(RISK_ICONS[level]))
+        chip.append(Gtk.Label(label=_(RISK_LABELS[level])))
         chip.add_css_class("vilna-risk")
         chip.add_css_class(level.lower())
         head.append(chip)
