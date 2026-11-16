@@ -507,11 +507,15 @@ def test_the_answer_about_crash_reports_reaches_vilna_reportd_and_tinta():
     assert "etc/vilna/reports.conf" not in eng.system_files({"privacy": {"cloud": "disabled"}})
 
 
+CONSENT_RS = pathlib.Path(__file__).resolve().parents[2] / "reports/client/src/consent.rs"
+
+
+# The rpm build tests this package alone, without the rest of the monorepo;
+# the installer job in CI runs the cross-check.
+@pytest.mark.skipif(not CONSENT_RS.is_file(), reason="needs the monorepo (reports/client)")
 def test_the_engine_writes_what_vilna_reportd_writes():
     """The same files and lines as ``vilna-reportd consent`` (reports/client/src/consent.rs)."""
-    rust = (
-        pathlib.Path(__file__).resolve().parents[2] / "reports/client/src/consent.rs"
-    ).read_text(encoding="utf-8")
+    rust = CONSENT_RS.read_text(encoding="utf-8")
     for path, text in eng.crash_report_files("auto").items():
         assert f'"{path}"' in rust, path
         for line in text.splitlines():
