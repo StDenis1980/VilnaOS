@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Sun Nov 15 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: after the login page of a shared Wi-Fi network (captive portal)
+  lets the internet through, one notification per network offers to set
+  up a VPN; its button opens the VPN talk in Gloxi (gloxi-gtk --vpn).
+  Nothing is shown when a VPN is already up.
+
+-------------------------------------------------------------------
 Mon Nov  9 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.2: the Vilna login screen: blurred Сонце wallpaper

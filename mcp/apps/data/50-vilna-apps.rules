@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: Apache-2.0
+// The "programs" tool of Herkos (vilna-mcp-apps@.service, ADR 0012) runs as
+// the system user vilna-apps. Herkos asks the person before every install,
+// update or removal; this rule is the second wall: even a broken tool may
+// only install, update and remove signed apps from Flathub and Vilna's
+// repository. It may never add or change a source of apps (configure-remote),
+// change Flatpak's configuration, install a bundle file, remove a runtime
+// (only an app's own .Locale or .Debug goes with the app), or
+// anything outside Flatpak. People keep the rules they had: this file only
+// speaks for vilna-apps.
+//
+// Why every YES below looks at the details, even for actions that look
+// harmless: Flatpak's policy says that app-install implies app-update,
+// runtime-install and runtime-update, app-update implies runtime-install, and
+// app-uninstall implies runtime-uninstall (org.freedesktop.policykit.imply).
+// When a rule answers NO, polkit still asks the rules again for every action
+// that implies the asked one, with the same details, and a YES there wins.
+// So an unconditional YES for app-update let vilna-apps install a runtime
+// from any remote, and one for app-uninstall let it remove runtimes (both
+// seen in a VM, 2026-11-13).
+var VILNA_APPS_REMOTES = ["flathub", "vilna"];
+
+polkit.addRule(function (action, subject) {
+    if (subject.user !== "vilna-apps") {
+        return polkit.Result.NOT_HANDLED;
+    }
+    // flatpak-system-helper names the remote of a deploy "origin", of an
+    // appstream download "origin" too, and of a remote update "remote".
+    function from_vilna_remote(key) {
+        var remote = action.lookup(key);
+        return remote !== undefined && VILNA_APPS_REMOTES.indexOf(remote) >= 0;
+    }
+    // runtime/<app id>.Locale/<arch>/<branch> or .Debug, where the app id is
+    // not a platform's (org.gnome.Platform.Locale is used by many apps).
+    function is_app_extension(ref) {
+        var m = /^runtime\/([A-Za-z0-9_.-]+)\.(Locale|Debug)\/[^\/]+\/[^\/]+$/.exec(ref || "");
+        return m !== null && !/\.(Platform|Sdk)$/.test(m[1]);
+    }
+    function yes_if(ok) {
+        return ok ? polkit.Result.YES : polkit.Result.NO;
+    }
+    switch (action.id) {
+    case "org.freedesktop.Flatpak.app-install":
+    case "org.freedesktop.Flatpak.runtime-install":
+    case "org.freedesktop.Flatpak.app-update":
+    case "org.freedesktop.Flatpak.runtime-update":
+    case "org.freedesktop.Flatpak.appstream-update":
+        return yes_if(from_vilna_remote("origin"));
+    case "org.freedesktop.Flatpak.update-remote":
+        return yes_if(from_vilna_remote("remote"));
+    case "org.freedesktop.Flatpak.app-uninstall":
+        // "ref" is the app's ref or its name. When polkit asks this rule for
+        // runtime-uninstall (implied), it is the runtime's ref.
+        var ref = action.lookup("ref");
+        return yes_if(ref !== undefined && ref.indexOf("runtime/") !== 0);
+    case "org.freedesktop.Flatpak.runtime-uninstall":
+        // Only an app's own translations or debug symbols, which Flatpak
+        // removes together with the app (otherwise they stay behind, seen in
+        // a VM, 2026-11-14). Never a runtime itself, nor the translations of
+        // a platform or SDK that other apps use. polkit cannot tell whether
+        // the app itself stays installed, so a broken tool could remove the
+        // translations of an installed app: the app then shows English
+        // until its next update, which is as far as this wall needs to hold.
+        return yes_if(is_app_extension(action.lookup("ref")));
+    // The system repository's housekeeping that installs and updates need.
+    case "org.freedesktop.Flatpak.metadata-update":
+    case "org.freedesktop.Flatpak.modify-repo":
+        return polkit.Result.YES;
+    default:
+        // configure-remote, configure, install-bundle,
+        // override-parental-controls and every action outside Flatpak.
+        return polkit.Result.NO;
+    }
+});

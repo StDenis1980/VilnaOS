@@ -1,0 +1,28 @@
+-------------------------------------------------------------------
+Sat Nov 14 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- polkit rule: removing an app also removes its own .Locale and .Debug
+  extensions, which stayed behind. Runtimes, and the translations of a
+  platform or SDK, still cannot be removed.
+- describe: for an installed app, the confirmation window no longer
+  shows the download size and what the app can reach.
+
+-------------------------------------------------------------------
+Fri Nov 13 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- polkit rule: every YES now checks the remote (origin) or that the ref
+  is not a runtime. Flatpak's policy implies runtime-install from
+  app-update and runtime-uninstall from app-uninstall, so the unconditional
+  YES let vilna-apps install runtimes from any remote and remove runtimes.
+- search and describe no longer carry openWorldHint, which made Herkos
+  ask before every search.
+- Remove the empty mount points Flatpak leaves in its system cache.
+
+-------------------------------------------------------------------
+Fri Nov 13 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: MCP servers "programs" (vilna-mcp-apps: search,
+  describe, list, install, update, remove Flatpak apps from Flathub and
+  Vilna) and "launcher" (vilna-mcp-launcher: open an installed app),
+  ADR 0012. Started only by Herkos; the system user vilna-apps and its
+  polkit rule (install, update and remove only, no new sources).

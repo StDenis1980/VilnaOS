@@ -289,9 +289,10 @@ STEPS: tuple[Step, ...] = (
         8,
         "encryption",
         "Encrypting the new system",
-        "Recommend encryption with TPM2 and a recovery key ('tpm2'): the disk opens by itself "
-        "on this computer, and the key opens it if something changes. A passphrase typed at "
-        "every start is the other way; 'none' leaves files readable by anyone with the disk. "
+        "If hardware_describe shows a TPM 2.0 (tpm: 2), recommend encryption with TPM2 and a "
+        "recovery key ('tpm2'): the disk opens by itself on this computer, and the key opens "
+        "it if something changes. A passphrase typed at every start is the other way; "
+        "'none' leaves files readable by anyone with the disk. "
         "Save with plan_set_encryption, then explain why the recovery key must be kept safe.",
         ("plan_set_encryption",),
         ("hardware_describe",),
@@ -386,6 +387,22 @@ MOVED_ON = (
 )
 CHANGING = (
     "The person pressed «Change» on this part of the plan to change it. Ask what they want instead."
+)
+# The model often said a change was made without calling the function that
+# makes it (VM test of Build8.9, 2026-11-15): the plan on the right stayed as
+# it was. When the person is changing a step and the model answers with no
+# call and no question, the installer says so and gives it one more round.
+NOT_SAVED = (
+    "You have not changed the plan: nothing is saved without a function call. If the "
+    "person said what they want, call the function for it now. If not, ask what they want."
+)
+QUESTION_MARKS = ("?", "？", "¿")
+# The encryption step on a computer without a TPM 2.0: the model recommended
+# TPM2 anyway, and only the Herkos screen stopped it (Build8.9).
+NO_TPM = (
+    "This computer has no TPM 2.0 chip: 'tpm2' is not possible here, do not offer it. "
+    "Recommend a passphrase ('passphrase', typed at every start, with a recovery key); "
+    "'none' leaves the files readable by anyone with the disk."
 )
 AFTER_SECRET = (
     "The person has just done this in the installer window themselves; "
@@ -765,6 +782,7 @@ class Conversation:
 
     def _turn(self) -> str:
         exchange: list[dict[str, Any]] = []
+        called = nudged = False
         for _ in range(MAX_ROUNDS):
             step = self.current()
             reply = self.model.chat(
@@ -774,7 +792,14 @@ class Conversation:
                 self.functions(step),
             )
             if not reply.calls:
-                return reply.text.strip()
+                text = reply.text.strip()
+                if not called and not nudged and self._claims_without_saving(step, text):
+                    nudged = True
+                    exchange.append({"role": "assistant", "content": text})
+                    self._note = NOT_SAVED
+                    continue
+                return text
+            called = True
             exchange.append(
                 {"role": "assistant", "content": reply.text or None, "tool_calls": reply.calls}
             )
@@ -795,6 +820,14 @@ class Conversation:
                 self._note = MOVED_ON
         # Out of rounds: say what was done, the plan on the right shows the rest.
         return reply.text.strip() or self.texts(MODEL_FAILED)
+
+    def _claims_without_saving(self, step: Step, text: str) -> bool:
+        """The person is changing this step, and the model answered as if it were done."""
+        if self.state.focus != step.key:
+            return False
+        if not any(name.startswith("plan_set_") for name in step.tools):
+            return False
+        return not any(mark in text for mark in QUESTION_MARKS)
 
     def functions(self, step: Step) -> list[dict[str, Any]]:
         out = []
@@ -858,6 +891,10 @@ class Conversation:
                 data = _short_survey(data)
             text = json.dumps(data, ensure_ascii=False)[:MAX_DATA_CHARS]
             parts.append(f"{name}: " + (_external(text) if name in EXTERNAL else text))
+        if step.key == "encryption":
+            ok, hardware = self._fetched.get("hardware_describe", (False, {}))
+            if ok and isinstance(hardware, dict) and hardware.get("tpm") != 2:
+                parts.append(NO_TPM)
         if self._note:
             parts.append(self._note)
         if step.key == "time":

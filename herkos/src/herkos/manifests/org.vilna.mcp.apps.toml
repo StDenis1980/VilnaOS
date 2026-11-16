@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "programs" tool (mcp/apps, ADR 0012, sections 3-5):
+# Flatpak apps from Flathub and from Vilna's own repository.
+#
+# Looking is R0. Installing, updating and removing an app is R3, asked every
+# time or for a short session: an installed app gets its own permissions and
+# the network, so after a prompt injection it is the easiest way to bring a
+# harmful program onto the computer (ADR 0012, "Розглянуті варіанти"). If the
+# conversation holds untrusted content, the usual modifier makes it R4.
+# Before asking, Herkos runs `describe` with the same app (preview), and the
+# dialog shows its facts: developer, verified or not, in «Рекомендовано Vilna»
+# or not, download size, licence and the Flatpak permissions.
+tool = "org.vilna.mcp.apps"
+description = "Find, install, update and remove Flatpak apps"
+
+# Only the system Herkos starts it: vilna-mcp-apps@<uid>, as the system user
+# vilna-apps, whom polkit lets install, update and remove apps and nothing
+# else (mcp/apps/data/50-vilna-apps.rules). Herkos-lite has no module to run,
+# so in the Flatpak these operations are not available.
+[launch]
+program = "vilna-mcp-apps"
+args = []
+
+[operations.search]
+level = "R0"
+summary = "Look for apps on Flathub and in Vilna's repository"
+
+[operations.describe]
+level = "R0"
+summary = "See what an app is and what it may reach"
+
+[operations.list_installed]
+level = "R0"
+summary = "See the installed apps"
+
+[operations.install]
+level = "R3"
+summary = "Install an app for everybody on this computer"
+undoable = true
+preview = "describe"
+
+[operations.update]
+level = "R3"
+summary = "Update apps"
+
+[operations.uninstall]
+level = "R3"
+summary = "Remove an app (its data stays)"
+undoable = true
+preview = "describe"
+
+[operations.restore]
+level = "R3"
+summary = "Undo an install or a removal of an app"
+undoable = true
+preview = "describe"
+
+# Gloxi never adds a source of apps nor installs from a file: the person
+# does that in Software or in a terminal (ADR 0012, section 4).
+[operations.add_remote]
+level = "forbidden"
+summary = "Add a source of apps"
+
+[operations.install_from_file]
+level = "forbidden"
+summary = "Install an app from a .flatpakref or .flatpak file"

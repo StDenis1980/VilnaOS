@@ -1153,13 +1153,33 @@ class GloxiApp(Adw.Application):
             _("Show Gloxi, or hide it if it is in front"),
             None,
         )
+        # `gloxi-gtk --vpn`: the desktop action the Vilna Shell extension
+        # runs after a login page of a Wi-Fi network (ADR 0027, section 6).
+        self.add_main_option(
+            "vpn",
+            0,
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            _("Show Gloxi and talk about a VPN"),
+            None,
+        )
 
     def do_command_line(self, command_line: Gio.ApplicationCommandLine) -> int:
-        if command_line.get_options_dict().contains("toggle"):
+        options = command_line.get_options_dict()
+        if options.contains("toggle"):
             self.toggle()
+        elif options.contains("vpn"):
+            self.talk_about_vpn()
         else:
             self.activate()
         return 0
+
+    def talk_about_vpn(self) -> None:
+        """Bring Gloxi up with the VPN talk, as if the person typed /vpn."""
+        self.activate()
+        window = self.get_active_window()
+        if isinstance(window, ChatWindow):
+            window.controller.submit("/vpn")
 
     def do_activate(self) -> None:
         window = self.get_active_window()

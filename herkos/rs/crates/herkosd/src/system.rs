@@ -22,7 +22,7 @@ use std::io::{BufReader, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::mpsc::{Sender, channel};
+use std::sync::mpsc::{RecvTimeoutError, Sender, channel};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -186,7 +186,9 @@ impl Agents {
     }
 
     /// Show the question on the person's screen and wait for the answer.
-    /// No agent, a broken one, silence or an answer that was not offered: "no".
+    /// No agent, a broken one or an answer that was not offered: "no". No
+    /// answer in time: [`Answer::TimedOut`], which is a "no" too, but not the
+    /// person's (Build14.24 reported it as "the user said no").
     pub fn ask(&self, uid: u32, question: &Question, timeout: f64) -> Answer {
         let (writer, pending) = match self.links.lock() {
             Ok(links) => match links.get(&uid) {
@@ -203,19 +205,22 @@ impl Agents {
         let request = json!({"jsonrpc": "2.0", "id": id, "method": "herkos.agent.ask", "params": question.to_json()});
         let reply = if send(&writer, &request) {
             rx.recv_timeout(Duration::from_secs_f64(timeout.max(0.0)))
-                .ok()
         } else {
-            None
+            Err(RecvTimeoutError::Disconnected)
         };
         if let Ok(mut p) = pending.lock() {
             p.remove(&id);
         }
-        let Some(reply) = reply else {
-            // Take the window away: the answer no longer counts.
-            let cancel =
-                json!({"jsonrpc": "2.0", "method": "herkos.agent.cancel", "params": {"id": id}});
-            send(&writer, &cancel);
-            return Answer::Deny;
+        let reply = match reply {
+            Ok(reply) => reply,
+            Err(RecvTimeoutError::Timeout) => {
+                // Take the window away: the answer no longer counts.
+                let cancel = json!({"jsonrpc": "2.0", "method": "herkos.agent.cancel", "params": {"id": id}});
+                send(&writer, &cancel);
+                return Answer::TimedOut;
+            }
+            // The agent went away or could not be reached.
+            Err(RecvTimeoutError::Disconnected) => return Answer::Deny,
         };
         let answer = reply
             .get("result")
@@ -713,13 +718,13 @@ mod tests {
     }
 
     #[test]
-    fn silence_and_disconnects_are_no() {
+    fn silence_is_a_timeout_and_disconnects_are_no() {
         let agents = Arc::new(Agents::default());
         let mut fake = FakeAgent::start(&agents);
         let start = std::time::Instant::now();
         assert_eq!(
             agents.ask(1000, &question(vec![Answer::Once]), 0.5),
-            Answer::Deny
+            Answer::TimedOut
         );
         assert!(start.elapsed() < Duration::from_secs(3));
         let ask = fake.read();

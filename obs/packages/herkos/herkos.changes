@@ -1,4 +1,52 @@
 -------------------------------------------------------------------
+Sun Nov 15 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-netguard: during a captive-portal window the network links
+  (never the tunnels) take plain DNS from the network, so the login page
+  opens; afterwards they are strict DNS-over-TLS again. With the kill
+  switch off, the service opens such a window by itself when
+  NetworkManager sees a login page (at most 5 minutes, once per network,
+  decision of Denys 2026-11-15). Requires iproute2, systemd-resolved,
+  NetworkManager.
+
+-------------------------------------------------------------------
+Sun Nov 15 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkosd: a question shown through herkos-agent that nobody answers in
+  time is also denied_timeout (Build14.24 still said denied_user); an
+  agent that goes away stays a plain no.
+
+-------------------------------------------------------------------
+Sat Nov 14 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- A confirmation window that nobody answers in time is reported as
+  denied_timeout, not denied_user, in herkosd and Herkos-lite, so Gloxi
+  no longer says the person refused.
+- vilna-mcp-apps@: explain the harmless revokefs warnings in the journal.
+
+-------------------------------------------------------------------
+Fri Nov 13 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-mcp-apps@: installs work in the sandbox. Flatpak's download
+  repository moves from the private /var/tmp to the unit's cache, where
+  flatpak-system-helper can see it ("Path does not exist"); revokefs-fuse
+  is not tried (it needs FUSE and setuid fusermount3, which the sandbox
+  refuses); refused system calls fail with EPERM instead of a core dump.
+
+-------------------------------------------------------------------
+Fri Nov 13 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Programs through Gloxi (ADR 0012): the manifests org.vilna.mcp.apps
+  (search and describe R0; install, update, removal R3; adding a source
+  of apps or installing from a file forbidden) and org.vilna.mcp.launcher
+  (open an installed app, R1), their units vilna-mcp-apps@ (as the user
+  vilna-apps) and vilna-mcp-launcher@ (as the person); the polkit rule
+  lets herkos start them. A manifest operation may name a `preview`: an
+  R0 operation herkosd runs before it asks, so the dialog shows the app,
+  its developer, verification, «Рекомендовано Vilna», size, licence and
+  permissions.
+
+-------------------------------------------------------------------
 Thu Nov 12 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The VPN kill switch of Vilna (ADR 0027): vilna-netguard and its

@@ -98,7 +98,10 @@ def test_the_default_prompt_asks_for_the_language_of_the_message():
     from gloxi.config import DEFAULT_SYSTEM_PROMPT
 
     assert "latest message" in DEFAULT_SYSTEM_PROMPT
-    assert "never in Russian" in DEFAULT_SYSTEM_PROMPT
+    # Naming one language made a model answer every language in it (iapc,
+    # Ministral 3 8B, gloxi-bench 37/69): Ukrainian has its own reminder.
+    assert "Ukrainian" not in DEFAULT_SYSTEM_PROMPT
+    assert "Russian" not in DEFAULT_SYSTEM_PROMPT
 
 
 # -- reading the prompt in advance (Build14.6: 2.5 minutes before the first answer) --

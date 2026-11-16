@@ -5,7 +5,8 @@
 //! its wording or answer it. `herkosd` asks through a window program it starts
 //! itself for each question (the agent: `herkos-dialog`, the GTK window of
 //! Herkos-lite), on the terminal it runs in, or not at all. No answer within
-//! the timeout is a "no", and so is anything the window says that is not one
+//! the timeout is a "no" (`TimedOut`, which Herkos reports as
+//! `denied_timeout`), and so is anything the window says that is not one
 //! of the offered choices.
 //!
 //! The window protocol: the question as one JSON object on the program's
@@ -86,7 +87,7 @@ impl Confirmer for Window {
         let _ = child.kill();
         let _ = child.wait();
         let Ok(out) = out else {
-            return Answer::Deny;
+            return Answer::TimedOut;
         };
         let last = out
             .lines()
@@ -105,7 +106,7 @@ fn label(a: Answer) -> &'static str {
         Answer::Once => "[o] allow once",
         Answer::Session => "[s] allow for this session",
         Answer::Always => "[a] always allow",
-        Answer::Deny => "[n] deny",
+        Answer::Deny | Answer::TimedOut => "[n] deny",
     }
 }
 
@@ -180,7 +181,7 @@ impl Confirmer for Terminal {
         });
         let Ok(line) = rx.recv_timeout(Duration::from_secs_f64(timeout.max(0.0))) else {
             let _ = tty.write_all("\n  No answer: denied.\n".as_bytes());
-            return Answer::Deny;
+            return Answer::TimedOut;
         };
         let answer = match line.trim().to_lowercase().chars().next() {
             Some('o') => Answer::Once,
@@ -275,7 +276,7 @@ mod tests {
     fn window_times_out() {
         let w = Window::new(&script("slow", "sleep 10; echo once"));
         let start = std::time::Instant::now();
-        assert_eq!(w.ask(&question(vec![Answer::Once]), 0.5), Answer::Deny);
+        assert_eq!(w.ask(&question(vec![Answer::Once]), 0.5), Answer::TimedOut);
         assert!(start.elapsed() < Duration::from_secs(5));
     }
 

@@ -24,5 +24,6 @@
 
 pub mod dns;
 pub mod endpoints;
+pub mod portal_dns;
 pub mod ruleset;
 pub mod state;

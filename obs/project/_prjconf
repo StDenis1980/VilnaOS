@@ -11,4 +11,10 @@ Repotype: staticlinks
 Patterntype: none
 # Vilna branding wins wherever a package needs "a release" or "logos"
 Prefer: Vilna-release distribution-logos-Vilna
+# After a KIWI build, this post-build check wraps an image named
+# tik-osimage-* into an RPM of that name (the raw disk in
+# /usr/lib/tik/img/), as openSUSE does for tik-osimage-Aeon. Vilna-Live,
+# built in this same repository, takes the RPM tik-osimage-Vilna: the
+# system its installer writes (image/docs/installer.md, 8a).
+Support: containment-tik-img-to-rpm
 %endif

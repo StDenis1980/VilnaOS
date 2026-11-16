@@ -242,3 +242,17 @@ def test_other_parsers():
         {"ssid": "Home:5G", "secured": True, "signal": 90, "connected": False},
         {"ssid": "Open", "secured": False, "signal": 30, "connected": False},
     ]
+
+
+def test_tpm2_is_refused_on_a_computer_without_a_tpm(tmp_path):
+    class NoTpm(DemoMachine):
+        def hardware(self):
+            return {**super().hardware(), "tpm": None}
+
+    server = Server(Installer(tmp_path / "plan.json", NoTpm("empty")))
+    text = call(server, "plan_set_encryption", method="tpm2")
+    assert "no TPM 2.0" in text and "passphrase" in text
+    plan = tmp_path / "plan.json"
+    assert not plan.exists() or "tpm2" not in plan.read_text()
+    out = call(server, "plan_set_encryption", method="passphrase")
+    assert out["changed"]["method"] == "passphrase"

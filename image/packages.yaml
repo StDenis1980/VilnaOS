@@ -59,7 +59,7 @@ vilna:
     - {name: vilna-backup,                 license: GPL-3.0-or-later, status: obs}      # копії: вікно «Копії» і таймери, backup/
     - {name: vilna-mcp-settings,           license: Apache-2.0,       status: obs}      # ADR 0023
     - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: obs}      # ADR 0023
-    - {name: vilna-mcp-apps,               license: Apache-2.0,       status: planned}  # ADR 0012
+    - {name: vilna-mcp-apps,               license: Apache-2.0,       status: obs}      # ADR 0012; також vilna-mcp-launcher
     - {name: vilna-flatpak-defaults,       license: GPL-3.0-or-later, status: obs}      # програми з Flathub при першому запуску
     - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: obs}      # «Рекомендовано Vilna», ADR 0012; список: obs/packages/vilna-software-picks/picks.toml
     - {name: plymouth-branding-Vilna,      license: GPL-3.0-or-later, status: obs}      # екран завантаження, image/plymouth/

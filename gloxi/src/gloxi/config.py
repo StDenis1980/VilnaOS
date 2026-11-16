@@ -10,6 +10,7 @@ environment variables. The config file lives at
     model = "local"
     timeout = 120
     start_server = true          # start the bundled llama-server if nothing answers at url
+    slot = 0                     # llama-server slot that keeps the conversation cached; -1: any
 
     [cloud]                      # optional: the user's own provider and key
     url = "https://api.mistral.ai/v1"
@@ -36,16 +37,27 @@ from pathlib import Path
 
 DEFAULT_LOCAL_URL = "http://127.0.0.1:8080/v1"
 
+# No word about Ukrainian here: with one, Ministral 3 8B answered Spanish,
+# Polish, German and English messages in Ukrainian (gloxi-bench 37/69, 51/69
+# without it). A Ukrainian message gets its own reminder (chat.UKRAINIAN_HINT).
 DEFAULT_SYSTEM_PROMPT = (
     "You are Gloxi, the assistant of Vilna OS. Answer briefly and clearly, "
-    "in the language of the user's latest message. Ukrainian and Russian are "
-    "different languages: answer a Ukrainian message in Ukrainian, never in Russian. "
+    "in the language of the user's latest message. "
     "If you are not sure, say so."
 )
 
 
 class ConfigError(Exception):
     """The config file exists but cannot be used."""
+
+
+def _slot(value: object) -> int | None:
+    """A llama-server slot number; a negative one lets the server choose."""
+    try:
+        slot = int(str(value))
+    except ValueError as exc:
+        raise ConfigError(f"slot must be a whole number, got {value!r}") from exc
+    return slot if slot >= 0 else None
 
 
 @dataclass(frozen=True)
@@ -57,6 +69,11 @@ class ModelEndpoint:
     timeout: float = 120.0
     # The cloud key. A local server gets Gloxi's own key (gloxi.localkey).
     api_key: str | None = field(default=None, repr=False)
+    # llama-server only: the slot whose cache keeps this conversation
+    # (``id_slot``). Left to itself, llama-server often gave a turn an idle
+    # slot without it and read the whole prompt again: up to 61 s to choose an
+    # action (Build14.23). Keros asks in the last slot (herkosd keros_model).
+    slot: int | None = None
 
 
 ROUTER_MODES = ("auto", "local", "cloud")
@@ -109,6 +126,7 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         model=_get(env, "GLOXI_LOCAL_MODEL", local, "model", "local"),
         timeout=_number(_get(env, "GLOXI_LOCAL_TIMEOUT", local, "timeout", 120), "timeout"),
         api_key=_key_file(env.get("GLOXI_LOCAL_KEY_FILE", "")),
+        slot=_slot(_get(env, "GLOXI_LOCAL_SLOT", local, "slot", 0)),
     )
 
     cloud_endpoint = None

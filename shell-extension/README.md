@@ -11,6 +11,7 @@
 | **(г)** | Етап A бічної панелі Gloxi: вікно Gloxi стоїть біля правого краю екрана (1/6 чи 1/3 ширини на всю висоту, мала панель унизу або власний розмір людини) | Працює; перевірено в GNOME Shell 46 |
 | **(в)** | Етап B бічної панелі Gloxi: смуга праворуч заброньована як док, розгорнуті вікна й банери сповіщень зсуваються ліворуч | Каркас, вимкнено за замовчуванням |
 | **(г)** | Екран входу (GDM) у кольорах Vilna: розмите «Сонце» за діалогом, поле пароля «матове скло» | Працює; перевірено в GNOME Shell 46 без екрана |
+| **(д)** | Після сторінки входу спільної Wi-Fi (готель, кав'ярня) одне сповіщення на мережу: «Налаштувати VPN» відкриває розмову Gloxi про VPN | Логіку перевірено тестами; у GNOME ще не перевірено |
 
 Вимоги — з рішень Denys від 2 листопада 2026 (поля паролів, вікно Gloxi) і брифу дизайну ([`../docs/design/brief.md`](../docs/design/brief.md), розд. 6). Підтримувані версії GNOME Shell: 46–51 (openSUSE Aeon іде за Tumbleweed, зараз це 49–51).
 
@@ -104,6 +105,10 @@ Gloxi працює у Flatpak і не може змінювати налашту
 
 Gloxi потрібне `--talk-name=io.github.stdenis1980.VilnaShell` у маніфесті Flatpak. Інтерфейс змінює лише ці налаштування, тому писати в нього може будь-яка програма сеансу. Якщо розширення немає (звичайний Linux), Gloxi просто не бачить імені на шині й ховає перемикачі.
 
+## (д) VPN у спільній Wi-Fi
+
+[ADR 0027](../docs/adr/0027-vpn-proton-mullvad.md), розд. 6. Мережа, що просить увійти через свою сторінку, спільна з чужими людьми. Коли людина пройшла цю сторінку й інтернет запрацював, а тунелю VPN немає, Shell показує одне сповіщення для цієї мережі. Кнопка «Налаштувати VPN» запускає дію `vpn` з `io.github.stdenis1980.Gloxi.desktop` (`gloxi-gtk --vpn`), і Gloxi починає розмову про VPN. Сам Shell нічого не вмикає: вхід і з'єднання лишаються в застосунку провайдера. Сторінку входу відкриває GNOME. За суворого DNS-over-TLS їй допомагає `vilna-netguard`, бо на час входу дає мережі її DNS.
+
 ## Налаштування
 
 Схема `org.gnome.shell.extensions.vilna` ([`schemas/`](vilna@stdenis1980.github.io/schemas/)):
@@ -117,6 +122,7 @@ Gloxi потрібне `--talk-name=io.github.stdenis1980.VilnaShell` у ман�
 | `gloxi-panel-size` | `'one-sixth'` | (г) `compact`, `one-sixth`, `one-third` або `custom` |
 | `gloxi-dock` | `false` | (в) смуга під панель Gloxi |
 | `gloxi-dock-size` | `'one-sixth'` | `one-sixth` або `one-third` |
+| `vpn-offered-networks` | `[]` | (д) UUID мереж, для яких VPN уже пропонували; очистіть, щоб побачити пропозицію знову |
 
 ## Встановлення для розробки
 
@@ -145,6 +151,7 @@ gnome-extensions enable vilna@stdenis1980.github.io
 | `panel.js`, `lib/geometry.js` | (г) |
 | `dock.js`, `lib/geometry.js` | (в) і місце індикатора |
 | `dbus.js` | Сервіс D-Bus |
+| `vpnOffer.js`, `lib/wifiOffer.js` | (д): стан NetworkManager, коли пропонувати, слова 10 мовами |
 | `stylesheet.css` | Індикатор, смуга й екран входу (г) |
 
 Логіка без GNOME — у `lib/`: її перевіряють тести на node.
@@ -153,7 +160,7 @@ gnome-extensions enable vilna@stdenis1980.github.io
 
 ```sh
 cd shell-extension
-node --test tests/*.test.js     # логіка в lib/, 37 тестів
+node --test tests/*.test.js     # логіка в lib/, 43 тести
 tests/shell/run.sh              # справжній GNOME Shell без екрана
 sudo tests/shell/run.sh gdm     # екран входу (підробляє localed, тому root)
 ```

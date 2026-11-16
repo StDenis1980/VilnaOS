@@ -476,6 +476,10 @@ msgid "."
 msgstr ""
 
 #: src/gloxi/engine.py
+msgid "Google on Hugging Face"
+msgstr ""
+
+#: src/gloxi/engine.py
 msgid "Mistral AI on Hugging Face"
 msgstr ""
 
@@ -1043,6 +1047,10 @@ msgid "Send with context"
 msgstr "Envoyer avec le contexte"
 
 #: src/gloxi/gui/window.py
+msgid "Show Gloxi and talk about a VPN"
+msgstr "Afficher Gloxi et parler d’un VPN"
+
+#: src/gloxi/gui/window.py
 msgid "Show Gloxi, or hide it if it is in front"
 msgstr "Afficher Gloxi, ou le masquer s’il est au premier plan"
 
@@ -1364,7 +1372,7 @@ msgid "Sign in to Proton VPN"
 msgstr ""
 
 #: src/gloxi/vpn_intro.py
-msgid "Start the Mullvad VPN service, so its app can connect"
+msgid "Start Mullvad VPN and keep its service on after a restart"
 msgstr ""
 
 #: src/gloxi/vpn_intro.py

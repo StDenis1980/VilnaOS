@@ -4,7 +4,7 @@
 //
 // It runs in three session modes:
 //  - user: everything (password layout, Gloxi above, Gloxi at the right
-//    edge, Gloxi strip, D-Bus);
+//    edge, Gloxi strip, D-Bus, the VPN offer after a Wi-Fi login page);
 //  - unlock-dialog: kept enabled while the screen is locked, so the
 //    password field of the lock screen gets the Latin layout too;
 //  - gdm: the login screen, where only the password layout runs.
@@ -17,6 +17,7 @@ import {KeepAbove} from './keepAbove.js';
 import {PanelPlacement} from './panel.js';
 import {PasswordLayout} from './passwordLayout.js';
 import {VilnaShellService} from './dbus.js';
+import {VpnOffer} from './vpnOffer.js';
 
 export default class VilnaExtension extends Extension {
     enable() {
@@ -56,6 +57,7 @@ export default class VilnaExtension extends Extension {
             new PanelPlacement(this._settings),
             new Dock(this._settings),
             new VilnaShellService(this._settings),
+            new VpnOffer(this._settings),
         ];
         for (const part of this._userParts)
             part.enable();

@@ -11,9 +11,10 @@
 #   license   — ліцензія програми (SPDX), має бути вільною (OSI або FSF)
 #   source    — "flathub-verified" (розробник підтверджений на Flathub),
 #               "vilna" (наша програма, власне Flatpak-сховище Vilna)
-#               або "flathub-community" (збірка спільноти Flathub; лише окремим
-#               рішенням ADR, коли офіційного Flatpak немає, і `why` каже, що
-#               збірка неофіційна; зараз лише Signal, ADR 0019)
+#               або "flathub-community" (збірка спільноти Flathub без verified;
+#               лише окремим рішенням, і `why` каже, що збірка неофіційна:
+#               Signal, ADR 0019, і 8 відомих програм, доповнення ADR 0012
+#               від 2026-11-13)
 #   default   — true, якщо програма стоїть у Vilna за замовчуванням
 #               (image/packages.yaml, flatpak_defaults). Такі програми входять
 #               у добірку, щоб Gloxi і діалог Herkos знали про них, але не
@@ -165,7 +166,7 @@ why = "Справи і списки завдань, синхронізація �
 [[app]]
 id = "app.drey.Warp"
 category = "work"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Передати файл на інший комп'ютер за кодом, із шифруванням."
@@ -173,7 +174,7 @@ why = "Передати файл на інший комп'ютер за кодо
 [[app]]
 id = "org.localsend.localsend_app"
 category = "work"
-license = "MIT"
+license = "Apache-2.0"
 source = "flathub-verified"
 default = false
 why = "Обмін файлами з телефоном у тій самій мережі, без хмари."
@@ -189,7 +190,7 @@ why = "Нотатки, бази й дошки завдань, як Notion, ал�
 [[app]]
 id = "com.logseq.Logseq"
 category = "work"
-license = "AGPL-3.0-only"
+license = "AGPL-3.0-or-later"
 source = "flathub-verified"
 default = false
 why = "База знань зі зв'язаних нотаток у файлах Markdown, як Obsidian."
@@ -198,9 +199,9 @@ why = "База знань зі зв'язаних нотаток у файлах
 id = "net.cozic.joplin_desktop"
 category = "work"
 license = "AGPL-3.0-or-later"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Нотатки в Markdown із шифрованою синхронізацією на вибір."
+why = "Нотатки в Markdown із шифрованою синхронізацією на вибір; неофіційна збірка спільноти Flathub."
 
 
 # ---------------------------------------------------------------- Спілкування
@@ -225,7 +226,7 @@ why = "Чат із наскрізним шифруванням поверх по
 [[app]]
 id = "chat.simplex.simplex"
 category = "communication"
-license = "AGPL-3.0-only"
+license = "AGPL-3.0-or-later"
 source = "flathub-verified"
 default = false
 why = "Анонімний чат без жодного ідентифікатора користувача."
@@ -251,7 +252,7 @@ why = "Планетарій: зоряне небо над будь-яким мі
 [[app]]
 id = "org.kde.gcompris"
 category = "learning"
-license = "GPL-3.0-or-later"
+license = "AGPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Понад сотня навчальних ігор для дітей від 2 до 10 років."
@@ -277,7 +278,7 @@ why = "Розпізнати текст на знімку екрана чи зо�
 [[app]]
 id = "org.gimp.GIMP"
 category = "graphics"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-or-later AND LGPL-3.0-or-later"
 source = "flathub-verified"
 default = false
 why = "Редагування фотографій і растрової графіки."
@@ -285,7 +286,7 @@ why = "Редагування фотографій і растрової гра�
 [[app]]
 id = "org.inkscape.Inkscape"
 category = "graphics"
-license = "GPL-3.0-or-later"
+license = "GPL-2.0-or-later"
 source = "flathub-verified"
 default = false
 why = "Векторна графіка: логотипи, схеми, ілюстрації."
@@ -293,7 +294,7 @@ why = "Векторна графіка: логотипи, схеми, ілюст
 [[app]]
 id = "org.kde.krita"
 category = "graphics"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Цифровий живопис і малювання на планшеті."
@@ -302,22 +303,22 @@ why = "Цифровий живопис і малювання на планшет
 id = "org.darktable.Darktable"
 category = "graphics"
 license = "GPL-3.0-or-later"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Обробка RAW-фотографій і каталог знімків."
+why = "Обробка RAW-фотографій і каталог знімків; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "org.blender.Blender"
 category = "graphics"
-license = "GPL-2.0-or-later"
-source = "flathub-verified"
+license = "GPL-3.0-only"
+source = "flathub-community"
 default = false
-why = "3D-моделювання, анімація і рендер."
+why = "3D-моделювання, анімація і рендер; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "org.freecad.FreeCAD"
 category = "graphics"
-license = "LGPL-2.0-or-later"
+license = "LGPL-2.1-only"
 source = "flathub-verified"
 default = false
 why = "Креслення і 3D-моделі деталей для виготовлення."
@@ -326,7 +327,7 @@ why = "Креслення і 3D-моделі деталей для вигото�
 [[app]]
 id = "io.gitlab.adhami3310.Converter"
 category = "graphics"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Перетворити зображення в інший формат чи розмір."
@@ -337,14 +338,14 @@ why = "Перетворити зображення в інший формат ч
 id = "org.videolan.VLC"
 category = "media"
 license = "GPL-2.0-or-later"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Відтворює майже будь-яке відео й аудіо."
+why = "Відтворює майже будь-яке відео й аудіо; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "org.kde.kdenlive"
 category = "media"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Монтаж відео."
@@ -368,10 +369,10 @@ why = "Запис і трансляція екрана й камери."
 [[app]]
 id = "org.audacityteam.Audacity"
 category = "media"
-license = "GPL-3.0-or-later"
-source = "flathub-verified"
+license = "GPL-3.0-only"
+source = "flathub-community"
 default = false
-why = "Запис і редагування звуку."
+why = "Запис і редагування звуку; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "fr.handbrake.ghb"
@@ -392,10 +393,10 @@ why = "Програвач власної музики."
 [[app]]
 id = "org.gnome.Podcasts"
 category = "media"
-license = "GPL-3.0-or-later"
-source = "flathub-verified"
+license = "GPL-3.0-only"
+source = "flathub-community"
 default = false
-why = "Подкасти."
+why = "Подкасти; неофіційна збірка спільноти Flathub."
 
 [[app]]
 id = "de.haeckerfelix.Shortwave"
@@ -409,9 +410,9 @@ why = "Інтернет-радіо."
 id = "org.musescore.MuseScore"
 category = "media"
 license = "GPL-3.0-only"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Нотний редактор."
+why = "Нотний редактор; неофіційна збірка спільноти Flathub."
 
 # ---------------------------------------------------------------- Ігри
 
@@ -427,12 +428,12 @@ why = "Картингові перегони, з друзями на одном�
 id = "org.supertuxproject.SuperTux"
 category = "games"
 license = "GPL-3.0-or-later"
-source = "flathub-verified"
+source = "flathub-community"
 default = false
-why = "Класичний платформер."
+why = "Класичний платформер; неофіційна збірка спільноти Flathub."
 
 [[app]]
-id = "net.wesnoth.Wesnoth"
+id = "org.wesnoth.Wesnoth"
 category = "games"
 license = "GPL-2.0-or-later"
 source = "flathub-verified"
@@ -442,7 +443,7 @@ why = "Покрокова стратегія у фентезійному сві�
 [[app]]
 id = "com.play0ad.zeroad"
 category = "games"
-license = "GPL-2.0-or-later"
+license = "GPL-2.0-or-later AND CC-BY-SA-3.0"
 source = "flathub-verified"
 default = false
 why = "Історична стратегія в реальному часі."
@@ -477,7 +478,7 @@ why = "Вчитися робити програми для GNOME, з прикл�
 [[app]]
 id = "org.gnome.Builder"
 category = "development"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-or-later AND GPL-2.0-or-later AND LGPL-3.0-or-later AND LGPL-2.0-or-later AND MIT"
 source = "flathub-verified"
 default = false
 why = "Середовище розробки для програм GNOME і Flatpak."
@@ -493,7 +494,7 @@ why = "Контейнери Distrobox: інші Linux-дистрибутиви �
 [[app]]
 id = "com.github.marhkb.Pods"
 category = "development"
-license = "GPL-3.0-only"
+license = "GPL-3.0-or-later"
 source = "flathub-verified"
 default = false
 why = "Контейнери Podman без командного рядка."
@@ -543,7 +544,7 @@ why = "Що навантажує процесор, пам'ять, диск і в
 [[app]]
 id = "io.github.flattool.Warehouse"
 category = "system"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0-only"
 source = "flathub-verified"
 default = false
 why = "Керувати Flatpak-програмами та їхніми даними."

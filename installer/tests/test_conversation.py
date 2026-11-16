@@ -363,3 +363,78 @@ def test_the_steps_follow_installer_md():
 def test_every_new_text_is_in_ukrainian(code):
     catalog = start.catalog(code)
     assert [t for t in conv.TEXTS if t not in catalog] == []
+
+
+def test_without_a_tpm_gloxi_is_told_not_to_offer_tpm2(plan_path, monkeypatch):
+    """Build8.9: the model chose TPM2 without looking; the Herkos screen blocked it at the end."""
+    from vilna_mcp_installer.machine import DemoMachine
+
+    c, model, tools = make(plan_path, "empty", "Раджу фразу.")
+    try:
+        c.state.passed.update({"intro", "survey", "old_files", "old_encrypted"})
+        p = plans.load(plan_path)
+        p["locale"] = {"languages": ["uk_UA.UTF-8"], "keyboards": ["ua", "us"]}
+        p["network"] = {"mode": "offline"}
+        p["disk"] = {"target": "x", "layout": "replace"}
+        plans.save(p, plan_path)
+        c.refresh()
+        assert c.current().key == "encryption"
+        real = c.tools.call
+
+        def no_tpm(name, args=None):
+            ok, data = real(name, args)
+            if name == "hardware_describe":
+                data = {**data, "tpm": None}
+            return ok, data
+
+        monkeypatch.setattr(c.tools, "call", no_tpm)
+        c.send("а як шифрувати?")
+        assert conv.NO_TPM in model.last_system
+    finally:
+        tools.close()
+    assert DemoMachine("empty").hardware()["tpm"] == 2  # the demo computer itself has one
+
+
+def test_a_change_said_but_not_saved_gets_one_more_round(plan_path):
+    """Build8.9: «changed it» with no function call, and the plan stayed as it was."""
+    c, model, tools = make(
+        plan_path,
+        "windows",
+        [call("plan_set_languages", languages=["uk_UA.UTF-8"], keyboards=["ua", "us"])],
+        "Готово, я додав польську.",
+        [
+            call(
+                "plan_set_languages",
+                languages=["uk_UA.UTF-8", "pl_PL.UTF-8"],
+                keyboards=["ua", "us", "pl"],
+            )
+        ],
+        "Додав польську.",
+    )
+    try:
+        c.opening()
+        c.send("українська")
+        c.goto("languages")
+        reply = c.send("додай польську")
+        assert conv.NOT_SAVED in model.seen[2][0][0]["content"]
+        assert "pl_PL.UTF-8" in plans.load(plan_path)["locale"]["languages"]
+        assert reply.step.key != "languages" or "pl" in str(reply.plan)
+    finally:
+        tools.close()
+
+
+def test_a_question_while_changing_is_not_nudged(plan_path):
+    c, model, tools = make(
+        plan_path,
+        "windows",
+        [call("plan_set_languages", languages=["uk_UA.UTF-8"], keyboards=["ua", "us"])],
+        "Яку мову додати?",
+    )
+    try:
+        c.opening()
+        c.send("українська")
+        c.goto("languages")
+        assert c.send("хочу змінити").text == "Яку мову додати?"
+        assert model.replies == [] and len(model.seen) == 2
+    finally:
+        tools.close()
