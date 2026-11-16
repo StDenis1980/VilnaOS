@@ -134,6 +134,17 @@ else
     echo 'BTRFS_SUBVOLUME_HOME=yes' >>"$useradd_defaults"
 fi
 
+# tik-osimage-Vilna (the same config.sh) is the system the installer
+# writes to disk; Vilna-Live carries it next to its own copy of the
+# model, and the install engine copies the weights from the live system
+# and checks them against default.gguf.sha256. So this image leaves the
+# weights out (the package stays installed; rpm -V passes again once
+# the engine put them back), and the ISO has them once (~2.5 GB).
+if [ "${kiwi_iname:-}" = "tik-osimage-Vilna" ] && [ -e /usr/share/vilna/models/default.gguf ]; then
+    rm -f -- "$(readlink -f /usr/share/vilna/models/default.gguf)"
+    test -e /usr/share/vilna/models/default.gguf.sha256
+fi
+
 # Branding check (composition.md, section 4.5): no openSUSE or Aeon
 # release, logo or branding package may be left in the image. Warn for
 # now, while the *-branding-Vilna packages do not exist yet; this

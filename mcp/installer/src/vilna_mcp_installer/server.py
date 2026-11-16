@@ -299,6 +299,15 @@ class Installer:
         return out
 
     def plan_set_encryption(self, method: str) -> dict[str, Any]:
+        # The model tends to pick the recommended TPM2 without looking at the
+        # hardware (VM test of Build8.9, 2026-11-15); the Herkos screen then
+        # blocks the plan at the very end. Refuse it here, while the person is
+        # still on this step. None (no /sys/class/tpm) is a computer without one.
+        if method == "tpm2" and self.machine.hardware().get("tpm") != 2:
+            raise plans.PlanError(
+                "this computer has no TPM 2.0 chip, so 'tpm2' is not possible; "
+                "suggest 'passphrase' (typed at every start) or 'none'"
+            )
         out = self._change("set_encryption", method=method)
         if method != "none":
             out["next"] = (

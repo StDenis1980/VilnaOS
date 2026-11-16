@@ -45,9 +45,26 @@ Requires:       vilna-backgrounds >= 0.1
 # (gloxi, vilna-model-default), which the live image has through vilna_base.
 Requires:       vilna-mcp-installer
 # The Herkos screen asks the TPM whether it can keep the disk key
-# (tpm2_getcap). What encrypting the disk runs (systemd-repart, cryptsetup,
-# keyutils, sdbootutil; encryption.py) comes with the engine that runs it.
+# (tpm2_getcap).
 Requires:       tpm2.0-tools
+# The install engine (vilna-installer-engine, run as root after the Herkos
+# screen): systemd-repart lays out and encrypts the disk, the rest opens,
+# grows and sets up the copied system; sdbootutil runs inside the new one.
+Requires:       btrfsprogs
+Requires:       cryptsetup
+Requires:       dosfstools
+Requires:       efibootmgr
+Requires:       keyutils
+Requires:       sudo
+# In systemd-experimental on Tumbleweed; the file names it either way.
+Requires:       /usr/bin/systemd-repart
+Requires:       util-linux
+# TPM2: systemd-cryptenroll and systemd-creds load the TSS libraries
+# themselves (dlopen), so nothing pulls them in on its own.
+Requires:       libtss2-esys0
+Requires:       libtss2-mu0
+Requires:       libtss2-rc0
+Requires:       libtss2-tcti-device0
 # «Screen reader» turns on Orca, as GNOME Settings does.
 Recommends:     orca
 BuildArch:      noarch
@@ -59,7 +76,10 @@ every other language of the system, the screen reader, and going on with
 the Gloxi assistant or without it; then steps 1-13 as a conversation with
 Gloxi, with the installation plan beside it. Gloxi only fills the plan;
 Herkos's confirmation screen shows every change and the recovery key
-of the encrypted disk; the install engine comes next.
+of the encrypted disk; then the install engine writes the Vilna disk
+image to the disk (systemd-repart, LUKS2 with the recovery key and TPM2
+or a passphrase), copies the model and sets up the account, and the
+progress screen offers to restart.
 Without the assistant, the classic wizard goes through the same steps
 and fills the same plan with no model, including manual layout in its
 partition editor.
@@ -88,6 +108,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{appid}.desktop
 %{_bindir}/vilna-installer-chat
 %{_bindir}/vilna-installer-wizard
 %{_bindir}/vilna-installer-confirm
+%{_bindir}/vilna-installer-engine
 %{python_sitelib}/vilna_installer
 %{python_sitelib}/vilna_installer-*.dist-info
 %{_datadir}/applications/%{appid}.desktop

@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.10
+Version:        0.11
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -262,6 +262,10 @@ Requires:       libvulkan_intel
 Requires:       libvulkan_radeon
 Requires:       nautilus-extension-seahorse
 Requires:       sdbootutil-snapper
+# The first boot seals the disk key in the TPM (sdbootutil-enroll.service),
+# as the Vilna installer leaves it: the live system cannot predict the
+# new system's measurements (installer/src/vilna_installer/encryption.py).
+Requires:       sdbootutil-enroll
 Requires:       spice-vdagent
 Requires:       steam-devices
 Requires:       system-group-wheel
