@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Tinta Office opens office documents, PDF, mail, calendar files and contacts
+# in GNOME (ADR 0011, "Інтеграція з системою"). A default whose app is not
+# installed yet is skipped, so this is safe before first boot has installed
+# Tinta (vilna-flatpak-defaults). The person's own choice (Open With, Settings)
+# lives in ~/.config/mimeapps.list and always wins over this file.
+[Default Applications]
+application/vnd.openxmlformats-officedocument.wordprocessingml.document=io.github.stdenis1980.tintatexto.desktop
+application/vnd.openxmlformats-officedocument.wordprocessingml.template=io.github.stdenis1980.tintatexto.desktop
+application/vnd.ms-word.document.macroEnabled.12=io.github.stdenis1980.tintatexto.desktop
+application/msword=io.github.stdenis1980.tintatexto.desktop
+application/vnd.oasis.opendocument.text=io.github.stdenis1980.tintatexto.desktop
+application/rtf=io.github.stdenis1980.tintatexto.desktop
+text/rtf=io.github.stdenis1980.tintatexto.desktop
+application/vnd.openxmlformats-officedocument.spreadsheetml.sheet=io.github.stdenis1980.tintacalculo.desktop
+application/vnd.ms-excel.sheet.macroEnabled.12=io.github.stdenis1980.tintacalculo.desktop
+application/vnd.oasis.opendocument.spreadsheet=io.github.stdenis1980.tintacalculo.desktop
+text/csv=io.github.stdenis1980.tintacalculo.desktop
+application/vnd.openxmlformats-officedocument.presentationml.presentation=io.github.stdenis1980.tintapresenta.desktop
+application/vnd.openxmlformats-officedocument.presentationml.slideshow=io.github.stdenis1980.tintapresenta.desktop
+application/vnd.openxmlformats-officedocument.presentationml.template=io.github.stdenis1980.tintapresenta.desktop
+application/pdf=io.github.stdenis1980.tintapdf.desktop
+x-scheme-handler/mailto=io.github.stdenis1980.ibercorreo.desktop
+message/rfc822=io.github.stdenis1980.ibercorreo.desktop
+application/vnd.ms-outlook=io.github.stdenis1980.ibercorreo.desktop
+text/calendar=io.github.stdenis1980.ibercorreo.desktop
+text/vcard=io.github.stdenis1980.ibercorreo.desktop
+text/x-vcard=io.github.stdenis1980.ibercorreo.desktop
