@@ -117,11 +117,15 @@ def test_the_release_sign_exists_for_both_backgrounds():
 
 def test_designer_frames_replace_the_drawing(tmp_path, monkeypatch, animations):
     animations.set_property("gtk-enable-animations", False)
+    (tmp_path / "dark").mkdir()
     for i in range(1, 4):
         png(tmp_path / f"branch-{i:02}.png")
-    monkeypatch.setattr(branch, "frames", lambda folder=tmp_path: sorted(tmp_path.glob("*.png")))
+    for i in range(1, 3):
+        png(tmp_path / "dark" / f"branch-{i:02}.png")
+    monkeypatch.setattr(branch, "FRAMES", tmp_path)
     b = branch.Branch()
-    assert len(b._frames) == 3
+    assert len(b.frames_for(False)) == 3  # no light/: the shared frames
+    assert len(b.frames_for(True)) == 2
     win = shown(b)
     b.set_fraction(0.5)
     assert spin(lambda: b.get_mapped())

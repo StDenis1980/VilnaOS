@@ -10,9 +10,10 @@ the end of the branch.
 Two layers can be replaced without touching the window:
 
 - the drawing: until the designer's animation arrives this module draws
-  an abstract branch in code. If ``data/branch/`` holds numbered PNG
-  frames (``branch-01.png`` …), the window shows the frame for the
-  current percent instead, scaled to fit;
+  an abstract branch in code. If ``data/branch/light/`` and
+  ``data/branch/dark/`` (or ``data/branch/`` for both styles) hold
+  numbered PNG frames (``branch-01.png`` …), the window shows the frame
+  for the current percent instead, scaled to fit;
 - the release layer (``release.py``): the sign and the name of the
   current release.
 
@@ -110,8 +111,7 @@ class Branch(Gtk.DrawingArea):
         self.mark_alpha = 0.0
         self._last_time: int | None = None
         self._tick: int | None = None
-        loaded = [self._pixbuf(p) for p in frames()]
-        self._frames = [f for f in loaded if f is not None]
+        self._frame_sets: dict[bool, list[GdkPixbuf.Pixbuf]] = {}
         self._mark: dict[bool, GdkPixbuf.Pixbuf | None] = {}
         self.set_draw_func(self._draw)
 
@@ -176,10 +176,19 @@ class Branch(Gtk.DrawingArea):
                 self._mark[dark] = None
         return self._mark[dark]
 
+    def frames_for(self, dark: bool) -> list[GdkPixbuf.Pixbuf]:
+        """The designer's frames for this style, loaded once; none means draw."""
+        if dark not in self._frame_sets:
+            folder = FRAMES / ("dark" if dark else "light")
+            paths = frames(folder) or frames(FRAMES)
+            loaded = [self._pixbuf(p) for p in paths]
+            self._frame_sets[dark] = [f for f in loaded if f is not None]
+        return self._frame_sets[dark]
+
     def _draw(self, _area: Gtk.DrawingArea, cr, width: int, height: int) -> None:
         dark = Adw.StyleManager.get_default().get_dark()
-        if self._frames:
-            self._draw_frame(cr, width, height)
+        if self.frames_for(dark):
+            self._draw_frame(cr, width, height, self.frames_for(dark))
         else:
             self._draw_branch(cr, width, height, dark)
         if self.mark_alpha > 0:
@@ -190,9 +199,9 @@ class Branch(Gtk.DrawingArea):
         scale = min(width / 1000, height / 300)
         return scale, (width - 1000 * scale) / 2, (height - 300 * scale) / 2
 
-    def _draw_frame(self, cr, width: int, height: int) -> None:
-        index = round(self.shown * (len(self._frames) - 1))
-        pixbuf = self._frames[index]
+    def _draw_frame(self, cr, width: int, height: int, frames: list) -> None:
+        index = round(self.shown * (len(frames) - 1))
+        pixbuf = frames[index]
         fw, fh = pixbuf.get_width(), pixbuf.get_height()
         scale = min(width / fw, height / fh)
         cr.save()
