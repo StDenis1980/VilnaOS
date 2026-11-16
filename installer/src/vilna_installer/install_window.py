@@ -23,8 +23,9 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_installer import confirm  # noqa: E402
+from vilna_installer import confirm, release  # noqa: E402
 from vilna_installer import engine as eng  # noqa: E402
+from vilna_installer.branch import Branch  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
 POLL_MS = 500
@@ -56,12 +57,19 @@ class InstallWindow(Adw.ApplicationWindow):
         page.append(self.title)
         self.lead = Gtk.Label(label=_(eng.LEAD), xalign=0, wrap=True)
         page.append(self.lead)
+        # Decorative: the branch grows with the percent; at the end the
+        # release sign sits on it (branch.py, release.py).
+        self.branch = Branch()
+        page.append(self.branch)
+        self.release = Gtk.Label(label=f"Vilna {release.NAME}", visible=False)
+        self.release.add_css_class("dim-label")
+        page.append(self.release)
         self.bar = Gtk.ProgressBar(show_text=True)
         self.bar.update_property([Gtk.AccessibleProperty.LABEL], [_(eng.TITLE)])
         page.append(self.bar)
 
         self.rows: dict[str, Gtk.Label] = {}
-        steps = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        self.steps = steps = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         for key in eng.PHASE_KEYS:
             label = Gtk.Label(xalign=0, wrap=True)
             self.rows[key] = label
@@ -92,6 +100,7 @@ class InstallWindow(Adw.ApplicationWindow):
         phase = (data or {}).get("phase", "check")
         percent = int((data or {}).get("percent", 0))
         self.bar.set_fraction(max(0, min(100, percent)) / 100)
+        self.branch.set_fraction(max(0, min(100, percent)) / 100)
         self.bar.set_text(f"{percent} %")
         reached = False
         for key in eng.PHASE_KEYS:
@@ -125,6 +134,13 @@ class InstallWindow(Adw.ApplicationWindow):
         self.lead.set_label(lead)
         self.restart.set_visible(ok)
         self.close_button.set_visible(True)
+        if ok:
+            # «Done»: the whole branch with the release sign, no bar and no list.
+            self.branch.finish()
+            self.branch.set_vexpand(True)
+            self.release.set_visible(True)
+            self.bar.set_visible(False)
+            self.steps.set_visible(False)
         (self.restart if ok else self.close_button).grab_focus()
         if hasattr(self.lead, "announce"):  # GTK 4.14+
             self.lead.announce(f"{title}. {lead}", Gtk.AccessibleAnnouncementPriority.HIGH)

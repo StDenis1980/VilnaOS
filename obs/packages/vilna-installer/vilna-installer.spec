@@ -30,6 +30,8 @@ BuildRequires:  timezone
 BuildRequires:  vilna-mcp-installer
 Requires:       python3 >= 3.11
 Requires:       python3-gobject
+# The branch on the progress screen is drawn with cairo (branch.py).
+Requires:       python3-gobject-cairo
 Requires:       typelib(Adw) = 1
 Requires:       typelib(Gtk) = 4.0
 # The wallpaper is loaded and cropped with GdkPixbuf.
