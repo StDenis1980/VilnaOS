@@ -29,3 +29,49 @@ msgstr "Weitere Sprachen"
 
 msgid "Search for a language"
 msgstr "Sprache suchen"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Datenschutz"
+
+msgid "Cloud model off until the first login"
+msgstr "Cloud-Modell bis zur ersten Anmeldung aus"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi arbeitet direkt auf diesem Computer, und was Sie ihm sagen, bleibt hier. Ein Cloud-Modell ist jetzt aus; Sie können es nach der ersten Anmeldung wählen, und dann verbirgt das Datenschutz-Gateway Namen und Nummern, bevor etwas den Computer verlässt."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi arbeitet direkt auf diesem Computer, und was Sie ihm sagen, bleibt hier. Ein Cloud-Modell ist jetzt aus; Sie können es nach der ersten Anmeldung wählen, und dann verbirgt das Datenschutz-Gateway Namen und Nummern, bevor etwas den Computer verlässt. Eine Frage hier beantworten nur Sie, deshalb antworte ich nicht für Sie: Wählen Sie unten."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Wenn ein Programm abstürzt, uns einen Absturzbericht senden?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Ein Absturzbericht sagt, welches Programm abgestürzt ist und an welcher Stelle seines Codes. Er enthält nie Ihre Dateien, was Sie getippt haben, Ihren Namen oder die Adresse des Computers. Sie können jeden Bericht lesen und diese Antwort später in den Einstellungen ändern."
+
+msgid "Send automatically"
+msgstr "Automatisch senden"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Berichte gehen von selbst; Sie können jeden lesen."
+
+msgid "Ask me every time"
+msgstr "Jedes Mal fragen"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Nach einem Absturz fragt eine Benachrichtigung, ob der Bericht gesendet werden soll."
+
+msgid "Never"
+msgstr "Nie"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Berichte bleiben auf diesem Computer; Sie können trotzdem selbst einen senden."
+
+msgid "What is in a report"
+msgstr "Was in einem Bericht steht"
+
+msgid "Choose an answer about crash reports."
+msgstr "Wählen Sie eine Antwort zu Absturzberichten."
+
+msgid "Crash reports: {answer}"
+msgstr "Absturzberichte: {answer}"

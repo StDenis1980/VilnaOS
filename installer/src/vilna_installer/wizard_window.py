@@ -849,8 +849,32 @@ class WizardWindow(Adw.ApplicationWindow):
         return self._page(group), commit
 
     def _page_privacy(self):
-        group = _group(description=self._(wiz.PRIVACY_LEAD))
-        return self._page(group), lambda: None
+        _ = self._
+        lead = _group(description=_(wiz.PRIVACY_LEAD))
+        # ADR 0018 section 3: three equal answers, none chosen in advance.
+        crash = _group(_(conv.CRASH_QUESTION), _(conv.CRASH_EXPLAIN))
+        leader = radio_group()
+        checks: dict[str, Gtk.CheckButton] = {}
+        for answer, (title, hint) in conv.CRASH_ANSWERS.items():
+            row, checks[answer] = radio_row(_(title), _(hint), leader)
+            crash.add(row)
+        self.crash_checks = checks
+        chosen = (self.wizard.plan.get("privacy") or {}).get("crash_reports")
+        if chosen in checks:
+            checks[chosen].set_active(True)
+        what = Adw.ExpanderRow(title=_(conv.CRASH_WHAT))
+        sample = Gtk.Label(label=conv.CRASH_EXAMPLE, xalign=0, selectable=True, wrap=True)
+        sample.add_css_class("monospace")
+        for side in ("top", "bottom", "start", "end"):
+            getattr(sample, f"set_margin_{side}")(12)
+        what.add_row(sample)
+        crash.add(what)
+
+        def commit() -> str | None:
+            answer = next((a for a, check in checks.items() if check.get_active()), None)
+            return self.wizard.set_crash_reports(answer)
+
+        return self._page(lead, crash), commit
 
     def _page_summary(self):
         _ = self._

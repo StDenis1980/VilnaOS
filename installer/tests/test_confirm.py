@@ -33,6 +33,7 @@ def full_plan(path: Path, kind: str = "windows", method: str = "tpm2") -> dict:
     plans.set_user(plan, "Олена Коваль", "olena", "olena-laptop")
     plans.mark_entered(plan, "user")
     plans.set_time(plan, "Europe/Kyiv", "uk_UA.UTF-8")
+    plans.set_crash_reports(plan, "ask")
     plans.save(plan, path)
     return plans.load(path)
 

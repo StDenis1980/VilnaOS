@@ -29,3 +29,49 @@ msgstr "Alte limbi"
 
 msgid "Search for a language"
 msgstr "Caută o limbă"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Confidențialitate"
+
+msgid "Cloud model off until the first login"
+msgstr "Modelul din cloud oprit până la prima autentificare"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi lucrează direct pe acest calculator, iar ce îi spuneți rămâne aici. Un model din cloud este oprit acum; îl puteți alege după prima autentificare, iar atunci poarta de confidențialitate ascunde nume și numere înainte ca ceva să părăsească calculatorul."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi lucrează direct pe acest calculator, iar ce îi spuneți rămâne aici. Un model din cloud este oprit acum; îl puteți alege după prima autentificare, iar atunci poarta de confidențialitate ascunde nume și numere înainte ca ceva să părăsească calculatorul. O întrebare de aici este doar a dumneavoastră, așa că nu răspund în locul dumneavoastră: alegeți mai jos."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Dacă un program se blochează, ne trimiteți un raport despre blocare?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Un raport despre blocare spune ce program s-a blocat și în ce loc din codul său. Nu conține niciodată fișierele dumneavoastră, ce ați tastat, numele dumneavoastră sau adresa calculatorului. Puteți citi fiecare raport și puteți schimba acest răspuns mai târziu în Setări."
+
+msgid "Send automatically"
+msgstr "Trimite automat"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Rapoartele pleacă singure; le puteți citi pe fiecare."
+
+msgid "Ask me every time"
+msgstr "Întreabă-mă de fiecare dată"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "După o blocare, o notificare întreabă dacă să trimită raportul."
+
+msgid "Never"
+msgstr "Niciodată"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Rapoartele rămân pe acest calculator; puteți totuși trimite unul singur."
+
+msgid "What is in a report"
+msgstr "Ce conține un raport"
+
+msgid "Choose an answer about crash reports."
+msgstr "Alegeți un răspuns despre rapoartele de blocare."
+
+msgid "Crash reports: {answer}"
+msgstr "Rapoarte despre blocări: {answer}"

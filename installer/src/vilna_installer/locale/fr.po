@@ -29,3 +29,49 @@ msgstr "Autres langues"
 
 msgid "Search for a language"
 msgstr "Rechercher une langue"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Confidentialité"
+
+msgid "Cloud model off until the first login"
+msgstr "Modèle cloud désactivé jusqu'à la première connexion"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi fonctionne directement sur cet ordinateur, et ce que vous lui dites reste ici. Un modèle cloud est désactivé pour l'instant ; vous pourrez le choisir après la première connexion, et la passerelle de confidentialité masquera alors les noms et les numéros avant que quoi que ce soit ne quitte l'ordinateur."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi fonctionne directement sur cet ordinateur, et ce que vous lui dites reste ici. Un modèle cloud est désactivé pour l'instant ; vous pourrez le choisir après la première connexion, et la passerelle de confidentialité masquera alors les noms et les numéros avant que quoi que ce soit ne quitte l'ordinateur. Une question ici n'appartient qu'à vous, je n'y réponds donc pas à votre place : choisissez ci-dessous."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Si un programme plante, nous envoyer un rapport de plantage ?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Un rapport de plantage indique quel programme a planté et à quel endroit de son code. Il ne contient jamais vos fichiers, ce que vous avez tapé, votre nom ni l'adresse de l'ordinateur. Vous pouvez lire chaque rapport et changer cette réponse plus tard dans les Paramètres."
+
+msgid "Send automatically"
+msgstr "Envoyer automatiquement"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Les rapports partent d'eux-mêmes ; vous pouvez lire chacun."
+
+msgid "Ask me every time"
+msgstr "Me demander à chaque fois"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Après un plantage, une notification demande s'il faut envoyer son rapport."
+
+msgid "Never"
+msgstr "Jamais"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Les rapports restent sur cet ordinateur ; vous pouvez quand même en envoyer un vous-même."
+
+msgid "What is in a report"
+msgstr "Contenu d'un rapport"
+
+msgid "Choose an answer about crash reports."
+msgstr "Choisissez une réponse au sujet des rapports de plantage."
+
+msgid "Crash reports: {answer}"
+msgstr "Rapports de plantage : {answer}"

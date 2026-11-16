@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# vilna-reportd: crash reports of Vilna (ADR 0018 section 4). Reads
+# systemd-coredump entries from the journal, keeps reports in
+# /var/lib/vilna-reports and sends them only as the person answered in the
+# installer (/etc/vilna/reports.conf). The core dumps stay where
+# systemd-coredump put them; this service never reads them.
+[Unit]
+Description=Vilna crash reports
+Documentation=https://github.com/StDenis1980/VilnaOS/tree/main/reports/client
+After=systemd-journald.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/vilna-reportd run
+User=vilna-reports
+Group=vilna-reports
+# Reading other programs' crash entries in the journal.
+SupplementaryGroups=systemd-journal
+StateDirectory=vilna-reports
+StateDirectoryMode=0700
+# The control socket /run/vilna-reportd/control: every person may connect,
+# the service checks who did (SO_PEERCRED).
+RuntimeDirectory=vilna-reportd
+RuntimeDirectoryMode=0755
+UMask=0077
+Restart=on-failure
+RestartSec=10
+
+# Network only to reports.vilnaos.com (IONOS, IPv4 only) and to the local
+# DNS resolver. If the server moves, change the address here too, or
+# reports wait in /var/lib/vilna-reports until it is changed.
+IPAddressDeny=any
+IPAddressAllow=localhost 217.160.125.31
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+MemoryMax=128M
+TasksMax=16
+
+[Install]
+WantedBy=multi-user.target

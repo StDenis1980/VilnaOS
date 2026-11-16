@@ -29,3 +29,49 @@ msgstr "Další jazyky"
 
 msgid "Search for a language"
 msgstr "Hledat jazyk"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Soukromí"
+
+msgid "Cloud model off until the first login"
+msgstr "Cloudový model vypnutý do prvního přihlášení"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi běží přímo na tomto počítači a to, co mu řeknete, zůstává tady. Cloudový model je teď vypnutý; můžete si ho vybrat po prvním přihlášení a pak brána soukromí skryje jména a čísla dřív, než cokoli opustí počítač."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi běží přímo na tomto počítači a to, co mu řeknete, zůstává tady. Cloudový model je teď vypnutý; můžete si ho vybrat po prvním přihlášení a pak brána soukromí skryje jména a čísla dřív, než cokoli opustí počítač. Jedna otázka tady patří jen vám, proto za vás neodpovídám: vyberte níže."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Když program spadne, poslat nám hlášení o pádu?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Hlášení o pádu říká, který program spadl a na kterém místě svého kódu. Nikdy neobsahuje vaše soubory, co jste psali, vaše jméno ani adresu počítače. Každé hlášení si můžete přečíst a tuto odpověď později změnit v Nastavení."
+
+msgid "Send automatically"
+msgstr "Posílat automaticky"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Hlášení odcházejí sama; každé si můžete přečíst."
+
+msgid "Ask me every time"
+msgstr "Pokaždé se zeptat"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Po pádu se oznámení zeptá, zda hlášení poslat."
+
+msgid "Never"
+msgstr "Nikdy"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Hlášení zůstanou na tomto počítači; i tak můžete kterékoli poslat sami."
+
+msgid "What is in a report"
+msgstr "Co je v hlášení"
+
+msgid "Choose an answer about crash reports."
+msgstr "Vyberte odpověď ohledně hlášení o pádech."
+
+msgid "Crash reports: {answer}"
+msgstr "Hlášení o pádech: {answer}"
