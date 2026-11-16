@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 16 21:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.3: ship vilna.flatpakrepo with the public key of Vilna's
+  Flatpak repository, so Tinta Office installs on first boot
+
+-------------------------------------------------------------------
 Mon Nov 16 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.2: install Tinta Office (ADR 0011) from Vilna's own
