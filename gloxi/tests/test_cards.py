@@ -86,7 +86,9 @@ def test_keros_findings_are_shown_in_the_window_language(monkeypatch):
 
 
 def test_every_keros_rule_has_a_translation():
-    from herkos.keros import MODEL_FINDING, RULES
+    # Herkos is optional for Gloxi (the RPM builds without it).
+    keros = pytest.importorskip("herkos.keros")
+    MODEL_FINDING, RULES = keros.MODEL_FINDING, keros.RULES
 
     from gloxi.gui.cards import KEROS_RULES
 
