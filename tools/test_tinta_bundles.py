@@ -62,6 +62,24 @@ class RealPins(unittest.TestCase):
         self.assertTrue(apps)
         self.assertLessEqual(apps, ids)
 
+    def test_repository_file_is_the_published_one(self) -> None:
+        # Copied unchanged from https://flatpak.vilnaos.com/vilna.flatpakrepo;
+        # first boot adds the "vilna" remote from it, so a wrong URL or key
+        # would leave Tinta Office uninstalled on every computer.
+        import base64
+        import configparser
+
+        repo = configparser.ConfigParser(interpolation=None)
+        repo.optionxform = str  # keep "GPGKey", "Url"
+        repo.read(DEFAULTS / "vilna.flatpakrepo", encoding="utf-8")
+        section = repo["Flatpak Repo"]
+        self.assertEqual(section["Url"], "https://flatpak.vilnaos.com/repo/")
+        key = base64.b64decode(section["GPGKey"], validate=True)
+        # An OpenPGP public key packet, and the fingerprint's last 8 bytes
+        # (key id 25496EF9222B4D2C) in its signature.
+        self.assertEqual(key[0], 0x98)
+        self.assertIn(bytes.fromhex("25496EF9222B4D2C"), key)
+
 
 GOOD = {
     "id": "io.github.stdenis1980.tintapdf",

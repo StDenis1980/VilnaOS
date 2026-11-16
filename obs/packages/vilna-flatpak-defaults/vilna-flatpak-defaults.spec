@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-flatpak-defaults
-Version:        0.2
+Version:        0.3
 Release:        0
 Summary:        Installs Vilna's default Flatpak apps on first boot
 License:        GPL-3.0-or-later
@@ -17,9 +17,11 @@ Source2:        vilna-flatpak-defaults.service
 Source3:        flatpaks-vilna.list
 Source4:        gnome-mimeapps.list
 # vilna.flatpakrepo (ADR 0024) is not a SourceN: it carries the public key of
-# Vilna's Flatpak repository and is added once Denys exports that key. Until
-# then the package installs without it and Tinta Office waits (the service
-# says so in its log and tries again on the next boot).
+# Vilna's Flatpak repository (Vilna Flatpak, ed25519,
+# B1932C41A5D58E73F12C8A7825496EF9222B4D2C), copied unchanged from
+# https://flatpak.vilnaos.com/vilna.flatpakrepo. A build without it still
+# works: Tinta Office then waits (the service says so in its log and tries
+# again on the next boot).
 %define have_vilna_repo %(test -s %{_sourcedir}/vilna.flatpakrepo && echo 1 || echo 0)
 BuildRequires:  systemd-rpm-macros
 Requires:       flatpak
