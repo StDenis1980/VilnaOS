@@ -6,10 +6,10 @@
 #
 
 Name:           vilna-backgrounds
-Version:        0.2
+Version:        0.3
 Release:        0
 Summary:        Vilna desktop wallpapers
-License:        GPL-3.0-or-later
+License:        CC-BY-SA-4.0 AND GPL-3.0-or-later
 URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        vilna-backgrounds.xml
 Source1:        vilna-sonce-light.jpg
@@ -33,10 +33,11 @@ Source15:       vilna-login.jpg
 BuildArch:      noarch
 
 %description
-The Vilna wallpapers for GNOME: one Petrykivka element on a play of light
-and shadow, each as a light and a dark picture that GNOME switches with
-the style. Сонце, Схід, Тюльпан, Соняшник, Волошка, Мальва and Blavet
-(the wing of the kingfisher, for the first Vilna release). Сонце is the
+The Vilna wallpapers for GNOME by Dmytro Sizmin (CC-BY-SA-4.0): one
+Petrykivka element on a play of light and shadow, each as a light and a
+dark picture that GNOME switches with the style. Сонце, Схід, Тюльпан,
+Соняшник, Волошка, Мальва and Blavet (the wing of the kingfisher, for
+the first Vilna release). Сонце is the
 default (gnome-branding-Vilna). vilna-login.jpg is the background of
 the login screen, set by the Vilna GNOME Shell extension.
 
