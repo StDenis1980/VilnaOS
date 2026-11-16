@@ -6,6 +6,7 @@ import os
 import socket
 import threading
 import time
+from pathlib import Path
 
 import pytest
 from fake_server import FakeLlamaServer
@@ -388,3 +389,11 @@ def test_share_history_goes_through_the_service(running):
         r.path, {"id": 1, "method": "chat.share_history", "params": {"share": "yes"}}
     )
     assert answers[0]["error"]["code"] == "bad_params"
+
+
+def test_the_local_model_keeps_idle_slots_cached():
+    # Keros checks in another slot; without this flag llama-server clears
+    # Gloxi's slot on every check and the next turn reads the prompt again.
+    unit = Path(__file__).resolve().parents[1] / "systemd" / "vilna-llm.service"
+    exec_start = unit.read_text().split("ExecStart=", 1)[1].split("\nWorkingDirectory=", 1)[0]
+    assert "--no-cache-idle-slots" in exec_start

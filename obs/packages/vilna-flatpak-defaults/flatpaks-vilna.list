@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Flatpak apps Vilna installs from its own Flatpak repository (remote "vilna",
+# ADR 0024) on first boot, one id per line: Tinta Office (ADR 0011). Each one
+# must have a pinned bundle in image/tinta-bundles.toml (checked in CI by
+# tools/tinta_bundles.py).
+io.github.stdenis1980.tintatexto
+io.github.stdenis1980.tintacalculo
+io.github.stdenis1980.tintapresenta
+io.github.stdenis1980.tintapdf
+io.github.stdenis1980.ibercorreo

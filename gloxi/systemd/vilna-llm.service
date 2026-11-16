@@ -18,9 +18,17 @@ StateDirectoryMode=0750
 UMask=0027
 # One key for as long as the computer lives: every Gloxi reads it when it starts.
 ExecStartPre=/bin/sh -c 'test -s "$STATE_DIRECTORY/key" || (umask 0027; head -c 32 /dev/urandom | od -An -tx1 | tr -d " \\n" > "$STATE_DIRECTORY/key")'
+# Gloxi talks in slot 0 and Keros checks in the last slot (PR #152). The slots
+# share one 4096-token KV pool, and by default llama-server clears the idle
+# slots whenever another slot gets a request, so every Keros check wiped the
+# conversation and the next turn read ~2,000 tokens again (80-90 s on 4 vCPU).
+# --no-cache-idle-slots keeps them; measured on Build15.2, it does not use more
+# memory. The pool is still shared: if both slots together pass 4096 tokens,
+# llama-server purges one of them.
 ExecStart=/usr/bin/llama-server --model /usr/share/vilna/models/default.gguf \
   --host 127.0.0.1 --port 8080 --api-key-file ${STATE_DIRECTORY}/key \
-  --ctx-size 4096 --jinja --chat-template-kwargs '{"enable_thinking":false}'
+  --ctx-size 4096 --no-cache-idle-slots \
+  --jinja --chat-template-kwargs '{"enable_thinking":false}'
 WorkingDirectory=/usr/share/vilna/models
 Restart=on-failure
 RestartSec=5

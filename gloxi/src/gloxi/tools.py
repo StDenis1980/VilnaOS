@@ -217,6 +217,11 @@ class FileTools:
         self._offer: tuple[str, ...] | None = None
         # Other programs' operations Herkos lists, by function name.
         self._programs: dict[str, ProgramOperation] = {}
+        # The program functions offered last, in the order sent (``programs``),
+        # and when each was last asked for.
+        self._chosen: list[str] = []
+        self._asked: dict[str, int] = {}
+        self._queries = 0
 
     # -- offering -------------------------------------------------------------
 
@@ -267,6 +272,7 @@ class FileTools:
             }
         self._offer = tuple(n for n in OPERATIONS if n in names)
         self._programs = _program_operations(listed or [])
+        self._chosen, self._asked = [], {}
         return self._offer
 
     def set_roots(self, roots: Sequence[Path]) -> None:
@@ -310,22 +316,44 @@ class FileTools:
     def programs(self, query: str | None = None) -> list[ProgramOperation]:
         """Other programs' operations to offer now, at most ``MAX_PROGRAM_FUNCTIONS``.
 
-        When there are more, the ones whose names and descriptions share the
-        most words with the user's message are chosen; ties keep Herkos' order.
-        The chosen ones are offered in Herkos' order, not by score: the local
-        model caches the start of the request it read when Gloxi warmed up
-        (``Conversation.warm``, no message yet), and functions in another
-        order made it read them all again. Build14.13: English messages share
-        words with most descriptions, were reordered and took 70-90 s each,
-        while Ukrainian ones matched nothing and reused the cache.
+        When there are more, the set stays what it was for the previous
+        request unless the message names an operation outside it: that one
+        takes the place of the member that fits the message least (asked for
+        longest ago). The local model caches the start of the request, and the
+        functions come before the whole conversation, so any change makes it
+        read everything again: Build14.13, English messages reordered the
+        functions (70-90 s a turn); Build15.2, a set chosen anew for every
+        message cost 580-1,400 cached tokens (25-45 s) on half the turns.
+        Words most operations share ("the", "files") choose nothing.
         """
         self.offered()
-        ops = list(self._programs.values())
+        ops = self._programs
         if len(ops) <= MAX_PROGRAM_FUNCTIONS:
-            return ops
-        asked = _words(query or "")
-        ranked = sorted(enumerate(ops), key=lambda io: (-len(io[1].words() & asked), io[0]))
-        return [op for _, op in sorted(ranked[:MAX_PROGRAM_FUNCTIONS], key=lambda io: io[0])]
+            return list(ops.values())
+        order = list(ops)
+        chosen = [f for f in self._chosen if f in ops]
+        chosen += [f for f in order if f not in chosen][: MAX_PROGRAM_FUNCTIONS - len(chosen)]
+        if query:
+            self._queries += 1
+            scores = _scores(ops, _words(query))
+            for f, score in scores.items():
+                if f in chosen and score:
+                    self._asked[f] = self._queries
+            wanted = sorted(
+                (f for f, score in scores.items() if score and f not in chosen),
+                key=lambda f: (-scores[f], order.index(f)),
+            )
+            for f in wanted:
+                slot = min(
+                    range(len(chosen)),
+                    key=lambda k: (scores[chosen[k]], self._asked.get(chosen[k], 0), -k),
+                )
+                if scores[chosen[slot]] >= scores[f]:
+                    break
+                chosen[slot] = f
+                self._asked[f] = self._queries
+        self._chosen = chosen
+        return [ops[f] for f in chosen]
 
     def prompt(self) -> str:
         out = ""
@@ -467,6 +495,7 @@ class FileTools:
         self._lost = False
         self._offer = None
         self._programs = {}
+        self._chosen, self._asked = [], {}
 
     def close(self) -> None:
         self._drop()
@@ -665,6 +694,19 @@ def _slug(text: str) -> str:
 
 def _words(text: str) -> set[str]:
     return {w for w in re.findall(r"\w+", text.casefold()) if len(w) >= 3}
+
+
+def _scores(ops: dict[str, ProgramOperation], asked: set[str]) -> dict[str, int]:
+    """How many of the message's words each operation has, counting only words
+    at most half of the operations have: in any language, the common ones
+    would otherwise move the set on every message."""
+    words = {f: op.words() & asked for f, op in ops.items()}
+    seen: dict[str, int] = {}
+    for found in words.values():
+        for w in found:
+            seen[w] = seen.get(w, 0) + 1
+    rare = {w for w, n in seen.items() if n * 2 <= len(ops)}
+    return {f: len(found & rare) for f, found in words.items()}
 
 
 def _fit(result: Any) -> Any:

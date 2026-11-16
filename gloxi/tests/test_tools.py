@@ -858,24 +858,74 @@ def test_with_many_program_functions_the_ones_the_message_names_come_first():
     assert "p0_op0" in picked and last_tie not in picked
 
 
-def test_chosen_program_functions_keep_herkos_order_so_the_warm_cache_holds():
-    # Build14.13: English messages were reordered by score and the local model
-    # read all the functions again (70-90 s a turn).
+def many_programs(descriptions=None):
     from gloxi.tools import MAX_PROGRAM_FUNCTIONS
 
     many = [notes(f"op{i}") for i in range(MAX_PROGRAM_FUNCTIONS + 3)]
     for i, p in enumerate(many):
         p["tool"] = f"org.example.p{i}"
-        p["description"] = "Notes" if i % 2 else "Notes about the calendar of the day"
+        if descriptions:
+            p["description"] = descriptions(i)
+    return many
+
+
+def test_chosen_program_functions_keep_herkos_order_so_the_warm_cache_holds():
+    # Build14.13: English messages were reordered by score and the local model
+    # read all the functions again (70-90 s a turn).
+    many = many_programs(lambda i: "Notes" if i % 2 else "Notes about the calendar of the day")
     many[-1]["description"] = "Invoices from the mail of the day"
     t, _ = with_programs(*many)
     warm = list(program_functions(t))
     picked = list(program_functions(t, "show the invoices of the day in my calendar mail"))
-    assert len(picked) == MAX_PROGRAM_FUNCTIONS
-    order = [int(name.split("_")[0][1:]) for name in picked]
-    assert order == sorted(order)
-    # Whatever the message, the definitions start as warm() read them.
-    assert picked[0] == warm[0]
+    assert len(picked) == len(warm)
+    # The functions the message needs take the places of ones it does not:
+    # the rest stay where warm() read them.
+    kept = [i for i, (a, b) in enumerate(zip(warm, picked, strict=True)) if a == b]
+    assert kept[:5] == [0, 1, 2, 3, 4]
+    assert "p10_op10" in picked
+
+
+def test_a_message_that_needs_nothing_new_gets_the_same_functions():
+    # Build15.2: a set chosen anew for every message lost 580-1,400 cached
+    # tokens on half the turns (25-45 s each on four cores).
+    many = many_programs(
+        lambda i: "Events of the calendar" if i == 9 else f"Change the setting {i}"
+    )
+    t, _ = with_programs(*many)
+    warm = list(program_functions(t))
+    for text in ["Hello, what can you do?", "Show me the files in Documents", "Привіт"]:
+        assert list(program_functions(t, text)) == warm
+    calendar = list(program_functions(t, "What is on my calendar today?"))
+    assert "p9_op9" in calendar
+    # Once offered, it stays for the messages that follow.
+    for text in ["And tomorrow?", "Show me the files in Documents", "the calendar again"]:
+        assert list(program_functions(t, text)) == calendar
+
+
+def test_functions_asked_for_keep_their_places_longer_than_the_rest():
+    from gloxi.tools import MAX_PROGRAM_FUNCTIONS
+
+    many = many_programs(lambda i: f"Thing number{i}")
+    t, _ = with_programs(*many)
+    first = list(program_functions(t, "number8"))
+    assert "p8_op8" in first
+    program_functions(t, "number8")
+    second = list(program_functions(t, "number9"))
+    assert "p8_op8" in second and "p9_op9" in second
+    third = list(program_functions(t, "number10 number8"))
+    # p9 was asked for, the first eight never: one of those gives up its place.
+    assert {"p8_op8", "p9_op9", "p10_op10"} <= set(third)
+    assert len(third) == MAX_PROGRAM_FUNCTIONS
+    assert third[: MAX_PROGRAM_FUNCTIONS - 3] == second[: MAX_PROGRAM_FUNCTIONS - 3]
+
+
+def test_a_new_conversation_starts_from_the_first_functions_again():
+    many = many_programs(lambda i: f"Thing number{i}")
+    t, _ = with_programs(*many)
+    warm = list(program_functions(t))
+    assert list(program_functions(t, "number10")) != warm
+    t.reset()
+    assert list(program_functions(t)) == warm
 
 
 def test_warm_reads_the_same_functions_the_first_message_gets():

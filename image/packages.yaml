@@ -86,7 +86,8 @@ flatpak_defaults:
   - org.mozilla.firefox
   # Tinta Office (ADR 0011, рішення Denys 2026-11-02): замість LibreOffice, Thunderbird,
   # GNOME Calendar, GNOME Contacts і Papers; ті людина ставить сама з Flathub.
-  # MIT OR Apache-2.0; поки не на Flathub — з власного Flatpak-сховища Vilna
+  # MIT OR Apache-2.0; з власного Flatpak-сховища Vilna (ADR 0024): бандли релізів,
+  # закріплені в image/tinta-bundles.toml (перевіряє tools/tinta_bundles.py)
   - io.github.stdenis1980.tintatexto
   - io.github.stdenis1980.tintacalculo
   - io.github.stdenis1980.tintapresenta

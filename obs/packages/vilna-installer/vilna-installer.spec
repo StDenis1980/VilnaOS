@@ -56,8 +56,10 @@ Requires:       dosfstools
 Requires:       efibootmgr
 Requires:       keyutils
 Requires:       sudo
-# In systemd-experimental on Tumbleweed; the file names it either way.
-Requires:       /usr/bin/systemd-repart
+# systemd-repart is in udev on Tumbleweed. Not the file: OBS resolves a
+# file dependency only with a FileProvides line in the project config,
+# which openSUSE:Factory has not for this file (Vilna-Live was unresolvable).
+Requires:       udev
 Requires:       util-linux
 # TPM2: systemd-cryptenroll and systemd-creds load the TSS libraries
 # themselves (dlopen), so nothing pulls them in on its own.
