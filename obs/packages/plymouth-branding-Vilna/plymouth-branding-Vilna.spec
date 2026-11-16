@@ -27,7 +27,8 @@ BuildArch:      noarch
 The Vilna boot splash, a Plymouth theme named "vilna": on a night-blue
 screen the brush stroke of the Vilna logo closes into a circle, the
 swallow flies out of it and Petrykivka-style stems grow in two corners;
-three gold nodes pulse while the system starts. It asks for the disk
+three gold nodes pulse while the system starts. The sign and name of
+the current release (Blavet) sit small at the bottom. It asks for the disk
 password in the same style and stays still when the login screen takes
 over. It also carries plymouthd.defaults (theme vilna, no show delay,
 8 s device timeout), as every plymouth-branding package does.

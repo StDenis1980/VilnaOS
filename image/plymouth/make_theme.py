@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Make the images of the Vilna Plymouth theme.
 
-    make_theme.py LOGO OUT [--svg-only]
+    make_theme.py LOGO OUT [--release DIR] [--frames DIR] [--svg-only]
 
 LOGO is the Vilna logo for dark backgrounds (docs/design/logo/
 Vilna_logo_dark-bg.svg): one cream path for the brush circle and three
@@ -15,6 +15,18 @@ password field and the corner motifs. The motifs are abstract brush
 strokes in the manner of Petrykivka painting, not copies of any work
 (docs/design/brief.md, section 5): real Petrykivka by contracted
 masters replaces them later.
+
+Two layers can be swapped without touching the script:
+
+- the release layer (--release, default release/ next to this file):
+  mark.svg, the sign of the current release (Blavet for Vilna 1), drawn
+  small under the logo as release-mark.png. The release name itself is
+  RELEASE_NAME in vilna.script. The next release replaces both and
+  nothing else (release/README.md);
+- designer frames (--frames DIR): PNG files numbered in their names
+  (logo-01.png ... logo-60.png), copied in order as logo-0.png,
+  logo-1.png ... When vilna.script finds logo-0.png it plays these
+  frames for the logo instead of drawing the circle and the swallow.
 
 Only the Python standard library is needed, so the RPM builds it with
 python3 and rsvg-convert.
@@ -57,14 +69,17 @@ def logo_paths(svg: str) -> tuple[str, str, list[tuple[str, str]]]:
     circle = [d for fill, d in paths if fill.upper() == CIRCLE_COLOR]
     bird = [(fill, d) for fill, d in paths if fill.upper() != CIRCLE_COLOR]
     if len(circle) != 1 or not bird:
-        raise SystemExit(f"logo: expected one {CIRCLE_COLOR} circle path and the swallow")
+        raise SystemExit(
+            f"logo: expected one {CIRCLE_COLOR} circle path and the swallow"
+        )
     return view.group(1), circle[0], bird
 
 
 def bbox(d: str) -> tuple[float, float, float, float]:
     """Bounding box of the points of an absolute path (good enough for a centre)."""
     pts = [
-        (float(x), float(y)) for x, y in re.findall(r"(-?\d+(?:\.\d+)?)[ ,](-?\d+(?:\.\d+)?)", d)
+        (float(x), float(y))
+        for x, y in re.findall(r"(-?\d+(?:\.\d+)?)[ ,](-?\d+(?:\.\d+)?)", d)
     ]
     xs = [p[0] for p in pts]
     ys = [p[1] for p in pts]
@@ -140,7 +155,9 @@ def circle_frames(view: str, circle: str) -> list[str]:
 def swallow(view: str, bird: list[tuple[str, str]]) -> str:
     _, _, vw, vh = (float(v) for v in view.split())
     width = round(LOGO_HEIGHT * vw / vh)
-    body = "".join(f'<path fill="{fill}" fill-rule="evenodd" d="{d}"/>' for fill, d in bird)
+    body = "".join(
+        f'<path fill="{fill}" fill-rule="evenodd" d="{d}"/>' for fill, d in bird
+    )
     return svg_doc(view, width, LOGO_HEIGHT, body)
 
 
@@ -179,7 +196,9 @@ def entry() -> str:
 
 
 def bullet() -> str:
-    return svg_doc("0 0 24 24", 24, 24, f'<circle cx="12" cy="12" r="8" fill="{CREAM}"/>')
+    return svg_doc(
+        "0 0 24 24", 24, 24, f'<circle cx="12" cy="12" r="8" fill="{CREAM}"/>'
+    )
 
 
 # Corner motif ------------------------------------------------------------
@@ -225,7 +244,13 @@ def petal(length_: float, width: float) -> str:
 
 
 def place(
-    shape: str, x: float, y: float, angle: float, scale: float, fill: str, opacity: float = 1
+    shape: str,
+    x: float,
+    y: float,
+    angle: float,
+    scale: float,
+    fill: str,
+    opacity: float = 1,
 ) -> str:
     if scale <= 0.01:
         return ""
@@ -273,7 +298,11 @@ def flower(x: float, y: float, facing: float, u: float, size: float) -> str:
         a = facing - 95 + 190 * i / (count - 1)
         start = 0.05 * min(i, count - 1 - i)  # the middle petals open last
         grow = ease_out((u - start) / 0.6)
-        out.append(place(petal(size, size * 0.36), x, y, a, grow, ORANGE if i % 2 else GOLD, 0.95))
+        out.append(
+            place(
+                petal(size, size * 0.36), x, y, a, grow, ORANGE if i % 2 else GOLD, 0.95
+            )
+        )
     for i in range(7):
         a = facing - 75 + 150 * i / 6
         grow = ease_out((u - 0.25 - 0.04 * i) / 0.5)
@@ -282,7 +311,9 @@ def flower(x: float, y: float, facing: float, u: float, size: float) -> str:
     if core > 0:
         r = size * 0.2 * core
         out.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r:.1f}" fill="{GOLD}"/>')
-        out.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r * 0.55:.1f}" fill="{BERRY}"/>')
+        out.append(
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r * 0.55:.1f}" fill="{BERRY}"/>'
+        )
     return "".join(out)
 
 
@@ -344,8 +375,67 @@ def write(out: Path, name: str, svg: str, svg_only: bool) -> None:
     src.write_text(svg, encoding="utf-8")
     if svg_only:
         return
-    subprocess.run(["rsvg-convert", "-o", str(out / f"{name}.png"), str(src)], check=True)
+    subprocess.run(
+        ["rsvg-convert", "-o", str(out / f"{name}.png"), str(src)], check=True
+    )
     src.unlink()
+
+
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+MAX_FRAMES = 240  # vilna.script stops looking after this many
+RELEASE_MARK_SIZE = 256
+
+
+def numbered_frames(folder: Path) -> list[Path]:
+    """PNG files of FOLDER in the order of the number in their names."""
+
+    def number(path: Path) -> int:
+        found = re.findall(r"\d+", path.stem)
+        if not found:
+            raise SystemExit(f"frames: no number in {path.name}")
+        return int(found[-1])
+
+    frames = sorted(folder.glob("*.png"), key=number)
+    if not frames:
+        raise SystemExit(f"frames: no PNG files in {folder}")
+    if len(frames) > MAX_FRAMES:
+        raise SystemExit(f"frames: {len(frames)} files, at most {MAX_FRAMES}")
+    numbers = [number(f) for f in frames]
+    if len(set(numbers)) != len(numbers):
+        raise SystemExit("frames: two files have the same number")
+    for f in frames:
+        with f.open("rb") as fh:
+            if fh.read(8) != PNG_SIGNATURE:
+                raise SystemExit(f"frames: {f.name} is not a PNG file")
+    return frames
+
+
+def copy_frames(folder: Path, out: Path) -> int:
+    frames = numbered_frames(folder)
+    for i, f in enumerate(frames):
+        shutil.copyfile(f, out / f"logo-{i}.png")
+    return len(frames)
+
+
+def release_mark(svg: Path, out: Path, svg_only: bool) -> None:
+    """The release sign, square, RELEASE_MARK_SIZE px."""
+    if svg_only:
+        shutil.copyfile(svg, out / "release-mark.svg")
+        return
+    size = str(RELEASE_MARK_SIZE)
+    subprocess.run(
+        [
+            "rsvg-convert",
+            "-w",
+            size,
+            "-h",
+            size,
+            "-o",
+            str(out / "release-mark.png"),
+            str(svg),
+        ],
+        check=True,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -354,6 +444,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument("logo", type=Path)
     ap.add_argument("out", type=Path)
+    ap.add_argument(
+        "--release",
+        type=Path,
+        default=Path(__file__).resolve().parent / "release",
+        help="folder with mark.svg, the sign of the current release",
+    )
+    ap.add_argument(
+        "--frames", type=Path, help="numbered PNG frames of the logo animation"
+    )
     ap.add_argument("--svg-only", action="store_true")
     args = ap.parse_args(argv)
     if not args.svg_only and not shutil.which("rsvg-convert"):
@@ -370,6 +469,11 @@ def main(argv: list[str] | None = None) -> int:
     write(args.out, "dot", dot(), args.svg_only)
     write(args.out, "entry", entry(), args.svg_only)
     write(args.out, "bullet", bullet(), args.svg_only)
+    mark = args.release / "mark.svg"
+    if mark.is_file():
+        release_mark(mark, args.out, args.svg_only)
+    if args.frames:
+        copy_frames(args.frames, args.out)
     return 0
 
 

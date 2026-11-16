@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Nov 16 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: release layer, the Blavet sign and name small at the bottom of
+  every screen (boot, disk password, shutdown, reboot), from
+  release/mark.svg and RELEASE_NAME in vilna.script; the theme plays
+  designer frames (logo-N.png, make_theme.py --frames) for the logo
+  when they are there, instead of the circle and the swallow.
+
+-------------------------------------------------------------------
 Sun Nov  8 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.2: ship /usr/share/plymouth/plymouthd.defaults (Theme=vilna,
