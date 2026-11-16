@@ -48,5 +48,10 @@
       <default>'one-sixth'</default>
       <summary>Width of the Gloxi strip</summary>
     </key>
+    <key name="vpn-offered-networks" type="as">
+      <default>[]</default>
+      <summary>Wi-Fi networks the VPN offer was shown for</summary>
+      <description>Connection UUIDs of the shared Wi-Fi networks (those with a login page) after whose login the Shell already offered a VPN, so that it offers once per network. Clear the list to see the offer again.</description>
+    </key>
   </schema>
 </schemalist>

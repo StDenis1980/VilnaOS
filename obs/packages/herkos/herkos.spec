@@ -49,6 +49,11 @@ Recommends:     transactional-update
 # vilna-netguard: the VPN kill switch (nft) and the servers of WireGuard tunnels (wg), ADR 0027.
 Requires:       nftables
 Requires:       wireguard-tools
+# During a captive-portal window it opens the DNS of the network links (ip,
+# resolvectl) and asks NetworkManager to check again (nmcli).
+Requires:       iproute2
+Requires:       systemd-resolved
+Requires:       NetworkManager
 %{?systemd_ordering}
 
 %description
