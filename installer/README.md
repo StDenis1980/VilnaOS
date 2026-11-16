@@ -59,8 +59,30 @@ vilna-installer-chat --window --plan /tmp/plan.json --demo empty   # лише р
 vilna-installer-wizard --window --demo windows   # лише майстер
 ```
 
-Ще не зроблено: рушій встановлення, що запускає кроки шифрування й записує систему (крок 13 читає його прогрес з `progress.json` поруч із планом), перенесення файлів і відкриття старих зашифрованих томів (бета).
+## Крок 13: рушій встановлення
+
+Після «Стерти й встановити» установник у тому самому процесі запускає рушій `vilna-installer-engine` від root (`sudo -n`, у живому образі без пароля) і передає йому одним рядком JSON на stdin шлях до плану, SHA-256 підтвердженого плану й секрети з `Vault` (ключ відновлення, фразу диска, пароль облікового запису; кожен — один раз). Рушій ([`engine.py`](src/vilna_installer/engine.py), розд. 8а [`installer.md`](../image/docs/installer.md)):
+
+1. **Перевіряє** ще раз: той самий файл плану, `confirmed_by_user`, валідатор на дисках, як вони є зараз, не флешка, з якої працює Vilna, для TPM2 — чип, що втримає ключ (`tpm2_getcap`), усі потрібні секрети, образ системи на місці. Будь-яка відмова — до першого запису на диск.
+2. **Розмічає** диск через `systemd-repart`, як tik в Aeon: ESP 512 МіБ і розділ системи LUKS2 з одноразовим ключ-файлом у слоті 0, заповнений **блок за блоком** із розділу системи образу Vilna (`CopyBlocks=`). Це той самий образ, що збирає OBS і що перевірено у VM: з підтомами btrfs, знімком 1 і мітками SELinux; рушій його не перебудовує. Образ — `/usr/lib/tik/img/tik-osimage-Vilna.<версія>.raw` з пакета `tik-osimage-Vilna`, який OBS робить з образу [`obs/images/tik-osimage-Vilna`](../obs/images/tik-osimage-Vilna/) (`VILNA_INSTALLER_IMAGE` задає інший), підключається лише для читання.
+3. **Відкриває** нову систему: `cryptsetup open`, власний UUID файлової системи (`btrfstune -m`, щоб дві Vilna в одному комп'ютері не збігалися), btrfs на весь розділ, підтоми з `fstab` образу, ESP.
+4. **Копіює модель** з живої системи (`cp -a`) і перевіряє `sha256sum -c default.gguf.sha256`: в образі ваг немає, щоб ISO не ніс їх двічі.
+5. **Налаштовує** з плану: мови (`locale.conf`), розкладки (`00-keyboard.conf`; консоль і запит фрази лишаються на `us`, як захищені поля установника), часовий пояс, назву комп'ютера, обліковий запис у групі `wheel` (пароль — `chpasswd` на stdin), без питань GNOME Initial Setup, з'єднання Wi‑Fi з живого сеансу, перемаркування SELinux на першому запуску.
+6. **Завантаження й ключі** — кроки [`encryption.py`](src/vilna_installer/encryption.py): `sdbootutil install`, ключ відновлення, фраза або TPM2, initrd, стирання слота 0, запис «Vilna Boot Manager» у прошивці. TPM2 (PCR 4, 5, 7, 9) запечатує **перше завантаження** нової системи, а не живий ISO: живе завантаження (shim, GRUB) не те, що робитиме нова система, і `systemd-pcrlock` не лишає жодного PCR (перевірка у VM 15.11.2026). Рушій лишає той самий шлях, що перше завантаження Aeon (`sdbootutil-enroll.service`): слот TPM2 лише для цього чипа, щоб перше завантаження відкрило диск само; слот 0 позначений як тимчасовий (`enrollment-key`) і його ключ як облікові дані, які розшифрує лише цей TPM. На першому завантаженні sdbootutil запечатує ключ за справжніми вимірюваннями, прибирає слот лише для чипа й слот 0, а облікові дані видаляються. До того диск відкривається тільки в цьому комп'ютері.
+
+Рушій працює у власному просторі монтувань (монтування нової системи не тримають `cr_root` у службах) і з власним keyring сеансу (під sudo ключі root інакше недосяжні sdbootutil), спершу стирає старі підписи диска (`wipefs`), а записи keyring прибирає за будь-якого результату.
+7. **Завершує**: знімок знову лише для читання, усе відмонтовано й закрито, ключ-файл перезаписано й видалено.
+
+Прогрес — `progress.json` поруч із планом (`state`, `phase`, `percent`, `error`, `disk_changed`), журнал без секретів — `engine.log`. Вікно кроку 13 ([`install_window.py`](src/vilna_installer/install_window.py)) показує етапи, а наприкінці «Перезапустити» або що пішло не так і чи диск уже змінено; кнопки «Зупинити» немає. `--demo` проходить етапи без root і без запису.
+
+```
+echo '{"plan": "/run/user/1000/vilna-installer/plan.json", "plan_sha256": "…", "secrets": {…}}' \
+  | sudo vilna-installer-engine            # так його запускає установник
+vilna-installer-wizard --window --demo empty   # майстер → Herkos → прогрес у режимі --demo
+```
+
+Ще не зроблено: ручна розмітка з редактора розділів (рушій поки встановлює лише «Стерти весь диск» і чесно відмовляє до запису), Orca для нового облікового запису, перенесення файлів і старі зашифровані томи (бета).
 
 ## Пакет OBS
 
-Пакет `vilna-installer` ([`../obs/packages/vilna-installer/`](../obs/packages/vilna-installer/)): команди `vilna-installer`, `vilna-installer-chat`, `vilna-installer-wizard` і `vilna-installer-confirm`, пункт меню «Встановити Vilna» десятьма мовами (`data/`), значки `vilna-installer`. Він вимагає `vilna-mcp-installer`, `typelib(GnomeDesktop) = 4.0`, `iso-codes` і `vilna-backgrounds`. Ставиться лише в живий образ `Vilna-Live`, де установник запускається сам після автовходу ([`../obs/README.md`](../obs/README.md#живий-образ-з-установником)); у встановленій системі його немає.
+Пакет `vilna-installer` ([`../obs/packages/vilna-installer/`](../obs/packages/vilna-installer/)): команди `vilna-installer`, `vilna-installer-chat`, `vilna-installer-wizard` і `vilna-installer-confirm`, пункт меню «Встановити Vilna» десятьма мовами (`data/`), значки `vilna-installer`. Команди також `vilna-installer-engine`. Він вимагає `vilna-mcp-installer`, інструменти рушія (`systemd-repart`, `cryptsetup`, `btrfsprogs`, `dosfstools`, `keyutils`, `efibootmgr`), `typelib(GnomeDesktop) = 4.0`, `iso-codes` і `vilna-backgrounds`. Ставиться лише в живий образ `Vilna-Live`, де установник запускається сам після автовходу ([`../obs/README.md`](../obs/README.md#живий-образ-з-установником)); у встановленій системі його немає.

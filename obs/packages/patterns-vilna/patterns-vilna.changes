@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun Nov 15 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.11: require sdbootutil-enroll: the first boot seals the disk key in the TPM.
+
+-------------------------------------------------------------------
 Fri Nov 13 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.10: require vilna-mcp-apps (programs through Gloxi, ADR 0012).

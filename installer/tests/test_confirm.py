@@ -241,7 +241,8 @@ def test_secrets_reach_programs_on_standard_input_only(tmp_path):
     assert (tmp_path / "etc/kernel/cmdline").read_text() == (
         "quiet splash root=UUID=7c7c7c7c-1111-4222-8333-944455556666\n"
     )
-    assert calls[-3][0][:3] == ["systemd-cryptenroll", f"--unlock-key-file={tmp_path / 'k'}",
+    # Slot 0 goes last; the keyring entries go in the engine, whatever happens.
+    assert calls[-1][0][:3] == ["systemd-cryptenroll", f"--unlock-key-file={tmp_path / 'k'}",
                                 "--wipe-slot=0"]  # fmt: skip
 
 
@@ -256,9 +257,14 @@ def test_tpm_steps_seal_the_measurements_aeon_uses(tmp_path):
     )
     pcrs = next(s for s in todo if s.path == "etc/sysconfig/fde-tools")
     assert pcrs.text == "FDE_SEAL_PCR_LIST=4,5,7,9\n"
+    # Only the recovery key from the live system; the TPM seals on the first boot.
     enroll = [s.argv[-2:] for s in todo if "enroll" in s.argv]
-    assert enroll == [("--method=recovery-key", "enroll"), ("--method=tpm2", "enroll")]
+    assert enroll == [("--method=recovery-key", "enroll")]
     assert not any(s.stdin == "passphrase" for s in todo)
+    assert not any("--wipe-slot=0" in s.argv for s in todo)
+    assert [s.path for s in todo if s.path in encryption.ENROLL_CREDENTIALS] == [
+        "etc/credstore/sdbootutil-enroll.tpm2"
+    ]
     with pytest.raises(ValueError):
         encryption.steps("tpm2", crypt_part="/dev/sda2", crypt_uuid="$(rm -rf /)",
                          root_uuid="x", root="/mnt", key_file=Path("/run/k"))  # fmt: skip

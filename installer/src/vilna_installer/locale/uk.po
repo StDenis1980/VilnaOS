@@ -620,3 +620,54 @@ msgstr "Диски змінилися, поки цей екран був від�
 
 msgid "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its buttons."
 msgstr "Цей екран показує Herkos, а не Gloxi. Gloxi не може натиснути його кнопки."
+
+msgid "Installing Vilna"
+msgstr "Встановлення Vilna"
+
+msgid "This takes a few minutes. Do not switch the computer off and do not pull out the stick."
+msgstr "Це займе кілька хвилин. Не вимикайте комп'ютер і не виймайте флешку."
+
+msgid "Vilna is installed"
+msgstr "Vilna встановлено"
+
+msgid "Take out the stick Vilna started from, then restart the computer. Vilna starts from the disk."
+msgstr "Вийміть флешку, з якої запущено Vilna, і перезапустіть комп'ютер. Vilna запуститься з диска."
+
+msgid "The installation stopped"
+msgstr "Встановлення зупинилося"
+
+msgid "Nothing on the disk has changed yet. You can close this window and try again."
+msgstr "На диску ще нічого не змінилося. Можна закрити це вікно й спробувати знову."
+
+msgid "The disk was already partly written: Vilna will not start from it, and what was on it before is erased. Close this window and start the installation again."
+msgstr "Диск уже частково записано: Vilna з нього не запуститься, а те, що було на ньому раніше, стерто. Закрийте це вікно й почніть встановлення знову."
+
+msgid "Restart"
+msgstr "Перезапустити"
+
+msgid "Close"
+msgstr "Закрити"
+
+msgid "What went wrong (for a bug report):"
+msgstr "Що пішло не так (для звіту про помилку):"
+
+msgid "Checking the plan and the disk"
+msgstr "Перевірка плану й диска"
+
+msgid "Writing Vilna to the disk"
+msgstr "Запис Vilna на диск"
+
+msgid "Opening the new system"
+msgstr "Відкриття нової системи"
+
+msgid "Copying Gloxi's model"
+msgstr "Копіювання моделі Gloxi"
+
+msgid "Setting up languages, time and your account"
+msgstr "Налаштування мов, часу й облікового запису"
+
+msgid "Setting up start-up and encryption"
+msgstr "Налаштування запуску й шифрування"
+
+msgid "Finishing"
+msgstr "Завершення"

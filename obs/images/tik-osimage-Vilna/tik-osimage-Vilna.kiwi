@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- OBS-ExclusiveArch: x86_64 -->
+<!--
+  The Vilna OS system for the installer (image/docs/installer.md, 8a):
+  the same system as the disk image Vilna (Vilna.kiwi; config.sh and
+  disk.sh are the same files), as a raw disk that OBS wraps into the RPM
+  tik-osimage-Vilna (containment-tik-img-to-rpm, as tik-osimage-Aeon).
+  Vilna-Live carries that RPM; the install engine copies the system
+  partition of this image block by block (systemd-repart CopyBlocks=)
+  into the encrypted partition on the person's disk.
+
+  Differences from Vilna.kiwi: a raw image (OBS compresses it) of
+  the smallest size, no KIWI repartition on the first boot (the engine
+  makes the partition the size of the disk), and no model weights
+  (config.sh removes them for this image): the live system carries
+  them already and the engine copies them, so the ISO has them once.
+
+  schemaversion 7.6 on purpose: every KIWI from 9.24 on reads it, and
+  newer ones convert it themselves (btrfs_root_is_snapshot becomes
+  btrfs_root_is_snapper_snapshot in 8.3).
+-->
+<image schemaversion="7.6" name="tik-osimage-Vilna">
+  <description type="system">
+    <author>Vilna contributors</author>
+    <contact>https://github.com/StDenis1980/VilnaOS/issues</contact>
+    <specification>Vilna OS: openSUSE Aeon base with the Gloxi assistant and the Herkos permission gate</specification>
+  </description>
+  <preferences>
+    <version>0.0.1</version>
+    <packagemanager>zypper</packagemanager>
+    <bootsplash-theme>vilna</bootsplash-theme>
+    <rpm-excludedocs>false</rpm-excludedocs>
+    <rpm-check-signatures>false</rpm-check-signatures>
+    <locale>en_US</locale>
+    <timezone>UTC</timezone>
+    <type
+      image="oem"
+      filesystem="btrfs"
+      firmware="uefi"
+      bootpartition="false"
+      efipartsize="512"
+      devicepersistency="by-uuid"
+      btrfs_root_is_snapshot="true"
+      btrfs_root_is_readonly_snapshot="true"
+      btrfs_quota_groups="true"
+      kernelcmdline="quiet splash loglevel=3 rd.udev.log_level=3 security=selinux selinux=1 enforcing=1"
+    >
+      <!-- timeout 0 hides the menu (loader.conf "timeout 0", the same as
+           menu-hidden): the default snapshot boots at once, and holding
+           Space (or any key) while the computer starts shows the menu
+           with the other snapshots. Not "sdbootutil set-timeout 0": it
+           writes menu-disabled, and then no key opens the menu.
+           quiet, loglevel=3 and rd.udev.log_level=3 keep kernel and udev
+           messages off the splash; Esc on the splash shows the log. -->
+      <bootloader name="systemd_boot" timeout="0"/>
+      <systemdisk>
+        <volume name="home"/>
+        <volume name="root"/>
+        <volume name="opt"/>
+        <volume name="srv"/>
+        <volume name="boot/writable"/>
+        <volume name="usr/local"/>
+        <volume name="var" copy_on_write="false"/>
+        <!-- /etc is not a volume here: KIWI mounts a volume with a parent
+             inside the root snapshot at the wrong path (subvol=@/etc) and
+             the build fails. disk.sh makes it a subvolume instead. -->
+      </systemdisk>
+      <oemconfig>
+        <oem-resize>false</oem-resize>
+      </oemconfig>
+    </type>
+  </preferences>
+  <!-- OBS gives the image the repositories of the build repository:
+       this project's openSUSE_Tumbleweed and openSUSE Tumbleweed itself. -->
+  <repository type="rpm-md">
+    <source path="obsrepositories:/"/>
+  </repository>
+  <packages type="image">
+    <!-- Vilna OS: openSUSE Aeon (GNOME, transactional-update, snapper,
+         SELinux, flatpak, firmware) with Vilna branding, Gloxi, Herkos,
+         the MCP tools and the default Flatpak apps (composition.md,
+         sections 3 and 4). aeon_base itself cannot be used: it requires
+         Aeon-release and the Aeon logos. -->
+    <namedCollection name="vilna_base"/>
+    <!-- Boot and first boot of a disk image -->
+    <package name="kernel-default"/>
+    <package name="systemd-boot"/>
+    <package name="sdbootutil"/>
+  </packages>
+  <packages type="bootstrap">
+    <package name="filesystem"/>
+    <package name="glibc-locale-base"/>
+    <package name="ca-certificates-mozilla"/>
+    <package name="Vilna-release"/>
+  </packages>
+</image>

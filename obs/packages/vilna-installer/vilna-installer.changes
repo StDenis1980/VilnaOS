@@ -1,4 +1,33 @@
 -------------------------------------------------------------------
+Sun Nov 15 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Install engine after the first VM test: a mount namespace and a
+  session keyring of its own (cr_root is not kept busy, sdbootutil finds
+  its keys under sudo), wipefs before systemd-repart (installing over an
+  earlier install), keyring entries dropped whatever happens, no
+  systemd-growfs on the read-only snapshot. TPM2 is sealed on the first
+  boot of the new system (sdbootutil-enroll.service): the live boot's
+  measurements cannot predict it. Require the TSS libraries systemd loads.
+- sdbootutil with --disable-predictions for TPM2 (the first boot
+  predicts), the GPT "grow file system" attribute cleared with sfdisk,
+  no control characters in the error shown at step 13.
+
+-------------------------------------------------------------------
+Sun Nov 15 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The install engine (vilna-installer-engine, as root through sudo
+  after the Herkos screen): systemd-repart copies the system partition
+  of the Vilna disk image block by block into LUKS2 (recovery key, TPM2
+  or a passphrase, as Aeon), the btrfs grows to the disk and gets a
+  UUID of its own, the model is copied and checked with sha256sum,
+  languages, keyboards, time zone, computer name, the account and the
+  Wi-Fi connection are set up, and sdbootutil installs the boot loader
+- Step 13 on the screen: progress.json as a progress window, then
+  «Restart»; a failure says whether the disk was already written
+- Gloxi is told when the computer has no TPM 2.0, and a change it
+  says it made without calling the function gets one more round
+
+-------------------------------------------------------------------
 Thu Nov 12 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The model wakes once GNOME Shell shows the first screen (it gets the

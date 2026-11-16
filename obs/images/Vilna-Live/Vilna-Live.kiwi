@@ -73,6 +73,10 @@
     <!-- The same system as the disk image Vilna -->
     <namedCollection name="vilna_base"/>
     <package name="vilna-installer"/>
+    <!-- The system the installer writes to disk: the image
+         tik-osimage-Vilna (obs/images/tik-osimage-Vilna), which OBS
+         wraps into this RPM in the same "images" repository. -->
+    <package name="tik-osimage-Vilna"/>
     <!-- Boot of a live ISO -->
     <package name="kernel-default"/>
     <package name="dracut-kiwi-live"/>

@@ -32,7 +32,7 @@ from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import machine as machines  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import chat, confirm_window, start  # noqa: E402
+from vilna_installer import chat, confirm_window, install_window, start  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer import wizard as wiz  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
@@ -418,11 +418,24 @@ class WizardWindow(Adw.ApplicationWindow):
 
     def _confirm_done(self, outcome: confirm_window.confirm.Outcome) -> None:
         if outcome.confirmed:
+            # Step 13 in this same process: the secrets are still in the vault.
             self.confirmed = outcome
-            app = self.get_application()
-            if app is not None:
-                app.exit_code = EXIT_CONFIRM
-                app.quit()
+
+            def ended(ok: bool) -> None:
+                app = self.get_application()
+                if app is not None:
+                    app.exit_code = EXIT_CONFIRM if ok else EXIT_CLOSED
+                    app.quit()
+
+            install_window.start(
+                self,
+                self.wizard.plan_path,
+                outcome,
+                self.secrets,
+                texts=self._,
+                demo=bool(self.demo),
+                on_end=ended,
+            )
             return
         # Not confirmed: back to the summary, as the plan is now.
         self.go("summary", strict=False)

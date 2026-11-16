@@ -42,7 +42,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import confirm_window, start, summary  # noqa: E402
+from vilna_installer import confirm_window, install_window, start, summary  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
@@ -562,8 +562,17 @@ class ChatWindow(Adw.ApplicationWindow):
 
     def _confirm_done(self, outcome) -> None:
         if outcome.confirmed:
+            # Step 13 in this same process: the secrets are still in the vault.
             self.confirmed = outcome
-            self._finish(EXIT_CONFIRM)
+            install_window.start(
+                self,
+                self.plan_path,
+                outcome,
+                self.secrets,
+                texts=self._,
+                demo=bool(self.demo_kind),
+                on_end=lambda ok: self._finish(EXIT_CONFIRM if ok else EXIT_CLOSED),
+            )
             return
         # Back to the plan: the screen may have changed nothing; show it as it is.
         if self.conversation is not None:

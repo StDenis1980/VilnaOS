@@ -10,3 +10,9 @@ Terminal=false
 Categories=Utility;GTK;
 Keywords=assistant;AI;chat;
 StartupNotify=true
+Actions=vpn;
+
+[Desktop Action vpn]
+Name=Talk about a VPN
+Name[uk]=Поговорити про VPN
+Exec=gloxi-gtk --vpn

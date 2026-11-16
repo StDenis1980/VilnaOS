@@ -161,5 +161,14 @@ def test_the_wizard_ends_on_the_herkos_screen(plan_path, monkeypatch):
     assert kw["demo"] == "empty" and kw["stage"] == "alpha"
     # Not confirmed: the person is back on the summary, nothing ends.
     assert win.key == "summary" and app.exit_code == 1
+    # Confirmed: step 13 starts in this same process, with the same vault.
+    started = []
+    monkeypatch.setattr(
+        wizard_window.install_window, "start", lambda *a, **kw: started.append((a, kw))
+    )
     win._confirm_done(confirm.Outcome(True, "abc", "1234-5678"))
+    ((args, kw),) = started
+    assert args[1] == plan_path and args[3] is win.secrets and kw["demo"] is True
+    assert app.exit_code == 1  # still installing
+    kw["on_end"](True)
     assert app.exit_code == wizard_window.EXIT_CONFIRM
