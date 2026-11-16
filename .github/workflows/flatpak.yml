@@ -252,6 +252,13 @@ jobs:
           VERSION: ${{ steps.check.outputs.version }}
           PRERELEASE: ${{ steps.check.outputs.prerelease }}
         run: |
+          # A re-run of the whole workflow for a tag that already has its
+          # release (for example to publish the repository later) keeps that
+          # release as it is, so the jobs after this one can still run.
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "::notice::Release $GITHUB_REF_NAME already exists; kept as it is."
+            exit 0
+          fi
           sha256sum gloxi.flatpak > gloxi.flatpak.sha256
           flag=""
           if [ "$PRERELEASE" = true ]; then flag="--prerelease"; fi
