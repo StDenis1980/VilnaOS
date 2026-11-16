@@ -5,8 +5,9 @@
 
 Herkos starts this process for each question (``confirm.Dialog``), so the
 window belongs to Herkos and not to Gloxi: the model can neither change its
-text nor press its buttons through Gloxi. "Deny" is the default button;
-closing the window or the timeout also means "deny".
+text nor press its buttons through Gloxi. Enter presses the safest button
+for the level (:func:`default_choice`); closing the window or the timeout
+means "deny".
 
 Known limit of the preview: in a normal desktop session another program of
 the same user could still drive the window through accessibility (AT-SPI).
@@ -103,7 +104,7 @@ def suspicious(question: dict) -> bool:
 
 
 def shown_choices(question: dict) -> list[str]:
-    """The allow buttons, in order. "Deny" is always there and is the default.
+    """The allow buttons, in order. "Deny" is always there.
 
     Herkos already limits the choices by level; the window may only narrow
     them further: with suspicious content or at R4 only "Allow once" stays,
@@ -113,6 +114,22 @@ def shown_choices(question: dict) -> list[str]:
     if suspicious(question) or risk_level(question) == "R4":
         choices = [c for c in choices if c == "once"]
     return choices
+
+
+def default_choice(question: dict) -> str:
+    """The button Enter presses: the safest one for the level (design wave 2).
+
+    Up to R2 the change can be undone, so Enter allows it once; from R3, with
+    suspicious content or without "Allow once" Enter denies. The irreversible
+    allow button of R4 is never the default.
+    """
+    if (
+        risk_level(question) in ("R0", "R1", "R2")
+        and not suspicious(question)
+        and "once" in shown_choices(question)
+    ):
+        return "once"
+    return "deny"
 
 
 def needs_acknowledgement(question: dict) -> bool:
@@ -227,8 +244,9 @@ def main() -> int:
             warning.append(words)
             inner.append(warning)
 
-        # 6. Buttons: "Deny" is the default (Enter), the safest for every level.
+        # 6. Buttons: Enter presses the safest one for the level (default_choice).
         allow_buttons: list[Gtk.Button] = []
+        default = deny = Gtk.Button(label=_("Deny"))
         if needs_acknowledgement(question):
             ack = Gtk.CheckButton(label=_("I have read exactly what will be done"))
             ack.connect(
@@ -237,12 +255,13 @@ def main() -> int:
             )
             inner.append(ack)
         buttons = Gtk.Box(spacing=8, halign=Gtk.Align.END)
-        deny = Gtk.Button(label=_("Deny"))
         deny.connect("clicked", lambda *_: finish("deny"))
         buttons.append(deny)
         for choice in shown_choices(question):
             b = Gtk.Button(label=_(LABELS[choice]))
             b.connect("clicked", lambda _b, c=choice: finish(c))
+            if choice == default_choice(question):
+                default = b
             if level == "R4":
                 b.add_css_class("vilna-danger")
             if needs_acknowledgement(question):
@@ -252,8 +271,9 @@ def main() -> int:
         inner.append(buttons)
 
         win.set_content(box)
-        win.set_default_widget(deny)
-        deny.grab_focus()
+        default.add_css_class("suggested-action")
+        win.set_default_widget(default)
+        default.grab_focus()
         win.present()
 
     app.connect("activate", build)

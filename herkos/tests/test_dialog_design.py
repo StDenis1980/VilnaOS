@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from herkos import style
-from herkos.dialog import needs_acknowledgement, risk_level, shown_choices
+from herkos.dialog import default_choice, needs_acknowledgement, risk_level, shown_choices
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -50,3 +50,15 @@ def test_styles_ship_and_match_the_design_source(name):
 
 def test_missing_style_is_empty_not_an_error():
     assert style.stylesheet("nope.css") == ""
+
+
+def test_enter_presses_the_safest_button_for_the_level():
+    plain = {"choices": ["once", "session", "always"]}
+    assert default_choice({**plain, "level": "R1"}) == "once"
+    assert default_choice({**plain, "level": "R2"}) == "once"
+    assert default_choice({**plain, "level": "R3"}) == "deny"
+    assert default_choice({**plain, "level": "R4"}) == "deny"
+    assert default_choice({**plain, "level": "??"}) == "deny"  # shown as R4
+    tainted = {**plain, "level": "R2", "taint_sources": ["web"]}
+    assert default_choice(tainted) == "deny"
+    assert default_choice({"level": "R2", "choices": ["session"]}) == "deny"
