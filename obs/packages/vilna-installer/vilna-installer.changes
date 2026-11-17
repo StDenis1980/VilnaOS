@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Put virtio_input into the first initrd: the host-only initrd left
+  it out, and a VM with a virtio keyboard could not type the
+  passphrase or the recovery key at boot.
+
+-------------------------------------------------------------------
 Mon Nov 16 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Progress screen: a branch with leaves and cornflowers grows with the
