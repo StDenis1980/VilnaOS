@@ -21,6 +21,10 @@ description = "Find, install, update and remove Flatpak apps"
 program = "vilna-mcp-apps"
 args = []
 
+# The apps of the system are everybody's on this computer: after the person
+# says yes, polkit checks that they may change them too (an administrator at
+# the computer may, anybody else types an administrator's password, as with
+# Flatpak itself; org.vilna.herkos.policy, permissions.md 9.2).
 [operations.search]
 level = "R0"
 summary = "Look for apps on Flathub and in Vilna's repository"
@@ -35,22 +39,26 @@ summary = "See the installed apps"
 
 [operations.install]
 level = "R3"
+polkit = "org.vilna.herkos.apps.change"
 summary = "Install an app for everybody on this computer"
 undoable = true
 preview = "describe"
 
 [operations.update]
 level = "R3"
+polkit = "org.vilna.herkos.apps.change"
 summary = "Update apps"
 
 [operations.uninstall]
 level = "R3"
+polkit = "org.vilna.herkos.apps.change"
 summary = "Remove an app (its data stays)"
 undoable = true
 preview = "describe"
 
 [operations.restore]
 level = "R3"
+polkit = "org.vilna.herkos.apps.change"
 summary = "Undo an install or a removal of an app"
 undoable = true
 preview = "describe"

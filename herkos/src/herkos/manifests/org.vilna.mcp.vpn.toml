@@ -19,6 +19,9 @@ description = "The VPN kill switch and the encrypted DNS of this computer"
 program = "vilna-mcp-vpn"
 args = []
 
+# Weakening the protection is for the whole computer: after the person says
+# yes, polkit checks that they sit at it, in the session on screen
+# (org.vilna.herkos.policy, permissions.md 9.2).
 [operations.status]
 level = "R0"
 summary = "See the state of the VPN kill switch and the DNS"
@@ -30,11 +33,13 @@ reversible = true
 
 [operations.killswitch_off]
 level = "R3"
+polkit = "org.vilna.herkos.network.weaken"
 summary = "Turn off the VPN kill switch"
 reversible = true
 
 [operations.allow_lan]
 level = "R3"
+polkit = "org.vilna.herkos.network.weaken"
 summary = "Let a local network through the VPN kill switch"
 reversible = true
 
@@ -45,6 +50,7 @@ reversible = true
 
 [operations.open_portal]
 level = "R3"
+polkit = "org.vilna.herkos.network.weaken"
 summary = "Open the VPN kill switch for 5 minutes to sign in to a Wi-Fi network"
 reversible = true
 

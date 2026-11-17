@@ -258,3 +258,30 @@ def test_tpm2_is_refused_on_a_computer_without_a_tpm(tmp_path):
     assert not plan.exists() or "tpm2" not in plan.read_text()
     out = call(server, "plan_set_encryption", method="passphrase")
     assert out["changed"]["method"] == "passphrase"
+
+
+class Connected(DemoMachine):
+    """The live session is on Wi-Fi already (Build10.11 on a laptop)."""
+
+    def networks(self):
+        return [
+            {"ssid": "SkyNet", "secured": True, "signal": 100, "connected": True},
+            {"ssid": "Other", "secured": True, "signal": 40, "connected": False},
+        ]
+
+
+def test_a_network_connected_already_needs_no_password(tmp_path):
+    server = Server(Installer(tmp_path / "plan.json", Connected("empty")))
+    out = call(server, "plan_set_network", mode="wifi", ssid="skynet")  # as heard
+    assert out["changed"] == {"mode": "wifi", "wifi": "SkyNet", "secret": plans.ENTERED}
+    assert "no password" in out["next"]
+    out = call(server, "plan_set_network", mode="wifi", ssid="Other")
+    assert out["changed"]["secret"] == plans.NEEDED
+
+
+def test_without_a_latin_layout_us_is_added():
+    p = plans.new_plan()
+    plans.set_languages(p, ["uk_UA.UTF-8"], ["ua"])
+    assert p["locale"]["keyboards"] == ["ua", "us"]
+    plans.set_languages(p, ["uk_UA.UTF-8", "pl_PL.UTF-8"], ["ua", "pl"])
+    assert p["locale"]["keyboards"] == ["ua", "pl"]

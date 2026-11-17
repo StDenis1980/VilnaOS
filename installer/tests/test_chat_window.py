@@ -61,7 +61,7 @@ class Talk:
     def answered(self, key):
         self.gone_to.append(f"answered {key}")
 
-    def resume(self):
+    def resume(self, entered=None):
         return self._reply("What shall we do with the disk?", "disk")
 
     def send(self, text):
