@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 17 11:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkosd: time on a locked or blank screen no longer counts towards the
+  time to answer a question, up to 30 minutes in all; herkos-agent reports
+  the screen (herkos.agent.away, through gdbus). Before, a question asked
+  while the screen locked was refused after two minutes.
+
+-------------------------------------------------------------------
 Mon Nov 16 11:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - vilna-netguard: during a captive-portal window the network links also

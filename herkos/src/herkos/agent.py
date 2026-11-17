@@ -7,6 +7,9 @@ connects to ``/run/herkos/herkos.sock`` as the person, registers, and for
 each ``herkos.agent.ask`` request opens the same window as Herkos-lite
 (``herkos.dialog``: the question as JSON on stdin, the answer on stdout).
 ``herkos.agent.cancel`` closes the window: the time to answer is over.
+While a window is open, the agent tells ``herkosd`` when the screen locks or
+blanks and when it is back (``herkos.agent.away``): time on a locked screen
+does not count towards the time to answer (Build15.6).
 
 The agent decides nothing. ``herkosd`` checks the answer against the choices
 it offered, and anything else, or no answer, is a "no".
@@ -21,6 +24,7 @@ import socket
 import subprocess
 import sys
 import threading
+from collections.abc import Callable
 from typing import Any
 
 from herkos import PROTOCOL_VERSION
@@ -34,6 +38,25 @@ MAX_LINE = 1024 * 1024
 # account made after installation). herkos-agent.service does not restart on
 # this status, so the agent does not knock every few seconds all session.
 NOT_SERVED = 77
+# How often the screen is checked while a question waits.
+AWAY_POLL = 2.0
+SCREENSAVER = [
+    "gdbus", "call", "--session",
+    "--dest", "org.gnome.ScreenSaver",
+    "--object-path", "/org/gnome/ScreenSaver",
+    "--method", "org.gnome.ScreenSaver.GetActive",
+]  # fmt: skip
+
+
+def screen_locked() -> bool | None:
+    """True while GNOME's screen shield is up (locked or blank); None: cannot tell."""
+    try:
+        out = subprocess.run(SCREENSAVER, capture_output=True, text=True, timeout=5, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if out.returncode != 0:
+        return None
+    return "true" in out.stdout
 
 
 class NotServed(ConnectionError):
@@ -45,8 +68,18 @@ def default_window() -> list[str]:
 
 
 class Agent:
-    def __init__(self, sock: socket.socket, window: list[str]) -> None:
+    def __init__(
+        self,
+        sock: socket.socket,
+        window: list[str],
+        locked: Callable[[], bool | None] = screen_locked,
+        poll: float = AWAY_POLL,
+    ) -> None:
         self.sock = sock
+        self.locked = locked
+        self.poll = poll
+        self.away = False
+        self.stop = threading.Event()
         self.file = sock.makefile("rb")
         self.window = window
         self.write_lock = threading.Lock()
@@ -119,7 +152,28 @@ class Agent:
         if proc is not None:
             proc.kill()
 
+    def watch(self) -> None:
+        """Tell herkosd when the screen locks or comes back, while a window is open."""
+        while not self.stop.wait(self.poll):
+            with self.windows_lock:
+                waiting = bool(self.windows)
+            away = bool(waiting and self.locked())
+            if away != self.away:
+                self.away = away
+                msg = {"jsonrpc": "2.0", "method": "herkos.agent.away", "params": {"away": away}}
+                try:
+                    self.send(msg)
+                except OSError:
+                    return
+
     def serve(self) -> None:
+        threading.Thread(target=self.watch, daemon=True).start()
+        try:
+            self._serve()
+        finally:
+            self.stop.set()
+
+    def _serve(self) -> None:
         while (msg := self.read()) is not None:
             method = msg.get("method")
             params = msg.get("params") if isinstance(msg.get("params"), dict) else {}

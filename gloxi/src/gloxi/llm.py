@@ -88,6 +88,8 @@ class ChatClient:
             payload["tools"] = list(tools)
         if self.endpoint.slot is not None:
             payload["id_slot"] = self.endpoint.slot
+        if self.endpoint.repeat_penalty is not None:
+            payload["repeat_penalty"] = self.endpoint.repeat_penalty
         return payload
 
     def is_available(self) -> bool:
