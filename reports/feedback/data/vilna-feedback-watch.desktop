@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# /etc/xdg/autostart: for the answer «Ask me every time» it shows one
+# notification per new crash report. With any other answer it shows nothing.
+[Desktop Entry]
+Type=Application
+Name=Crash report notifications
+Name[uk]=Сповіщення про звіти про збої
+Exec=vilna-feedback --watch
+Icon=mail-send-symbolic
+NoDisplay=true
+Terminal=false
+X-GNOME-Autostart-enabled=true
+X-GNOME-AutoRestart=false
+OnlyShowIn=GNOME;

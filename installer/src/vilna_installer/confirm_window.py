@@ -35,17 +35,14 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_installer import confirm, encryption  # noqa: E402
+from vilna_installer import confirm, encryption, style  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
 APP_ID = "io.github.stdenis1980.VilnaInstaller.Confirm"
 
 CSS = """
-.vilna-key { font-family: monospace; font-size: 17pt; font-weight: 700;
-    letter-spacing: 1px; padding: 14px 18px; border-radius: 12px;
-    background-color: alpha(@accent_bg_color, 0.10); }
-.vilna-loss { color: @error_color; }
+.vilna-loss { color: @vilna_red_text; }
 .vilna-herkos { opacity: 0.75; }
 """
 
@@ -295,6 +292,7 @@ class ConfirmApp(Adw.Application):
 
     def do_startup(self) -> None:
         Adw.Application.do_startup(self)
+        style.install()
         css = Gtk.CssProvider()
         css.load_from_string(CSS)
         display = Gdk.Display.get_default()

@@ -32,7 +32,7 @@ from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import machine as machines  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import chat, confirm_window, install_window, start  # noqa: E402
+from vilna_installer import chat, confirm_window, install_window, start, style  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer import wizard as wiz  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
@@ -46,8 +46,7 @@ CSS = """
 .vilna-step { padding: 8px 12px; border-radius: 10px; }
 .vilna-step-current { background-color: alpha(@accent_bg_color, 0.15); font-weight: 700; }
 .vilna-step-title { font-weight: 800; font-size: 17pt; }
-.vilna-error { color: @error_color; font-weight: 700; }
-.vilna-go { background-color: #F5C24A; color: #13213A; font-weight: 800; padding: 10px 22px; }
+.vilna-error { color: @vilna_red_text; font-weight: 700; }
 """
 
 
@@ -850,8 +849,32 @@ class WizardWindow(Adw.ApplicationWindow):
         return self._page(group), commit
 
     def _page_privacy(self):
-        group = _group(description=self._(wiz.PRIVACY_LEAD))
-        return self._page(group), lambda: None
+        _ = self._
+        lead = _group(description=_(wiz.PRIVACY_LEAD))
+        # ADR 0018 section 3: three equal answers, none chosen in advance.
+        crash = _group(_(conv.CRASH_QUESTION), _(conv.CRASH_EXPLAIN))
+        leader = radio_group()
+        checks: dict[str, Gtk.CheckButton] = {}
+        for answer, (title, hint) in conv.CRASH_ANSWERS.items():
+            row, checks[answer] = radio_row(_(title), _(hint), leader)
+            crash.add(row)
+        self.crash_checks = checks
+        chosen = (self.wizard.plan.get("privacy") or {}).get("crash_reports")
+        if chosen in checks:
+            checks[chosen].set_active(True)
+        what = Adw.ExpanderRow(title=_(conv.CRASH_WHAT))
+        sample = Gtk.Label(label=conv.CRASH_EXAMPLE, xalign=0, selectable=True, wrap=True)
+        sample.add_css_class("monospace")
+        for side in ("top", "bottom", "start", "end"):
+            getattr(sample, f"set_margin_{side}")(12)
+        what.add_row(sample)
+        crash.add(what)
+
+        def commit() -> str | None:
+            answer = next((a for a, check in checks.items() if check.get_active()), None)
+            return self.wizard.set_crash_reports(answer)
+
+        return self._page(lead, crash), commit
 
     def _page_summary(self):
         _ = self._
@@ -921,6 +944,7 @@ def _step_of(problem: dict[str, str]) -> str:
 
 
 def install_css() -> None:
+    style.install()
     css = Gtk.CssProvider()
     css.load_from_string(CSS)
     display = Gdk.Display.get_default()

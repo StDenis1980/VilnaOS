@@ -14,6 +14,22 @@
 
 Комерційні продукти (хмара Guamoko, агенти, платні функції) розробляються окремо і з'єднуються з Vilna лише через відкриті інтерфейси (OpenAI-сумісний API, MCP, D-Bus), тому на них ліцензія цього репозиторію не поширюється.
 
+## Графіка під CC-BY-SA-4.0
+
+Частина графіки Vilna має третю ліцензію, **CC-BY-SA-4.0** ([текст](LICENSES/CC-BY-SA-4.0.txt)). Її автор **Дмитро Сізьмін** дав письмову згоду 16.11.2026. Хто використовує ці файли, зазначає автора «Дмитро Сізьмін» і поширює змінені версії на тих самих умовах.
+
+| Що | Де |
+| --- | --- |
+| Знак випуску Blavet | `docs/design/blavet/` |
+| Стани сови Gloxi | `docs/design/owl-states/` |
+| Кадри логотипа для екрана завантаження | `docs/design/plymouth/`; у пакеті `plymouth-branding-Vilna` |
+| Знак Blavet в установнику (копії) | `installer/src/vilna_installer/data/blavet-mark-*.svg` |
+| Знак Blavet у логотипі «Про систему» | `obs/packages/distribution-logos-Vilna/vilna-logo-text*.svg` (малює `docs/design/logo/make_text_logo.py`) |
+| Токени руху | `docs/design/motion/` |
+| Шпалери (вектор і JPEG) | `docs/design/wallpapers/`, `obs/packages/vilna-backgrounds/*.jpg` |
+
+Логотип Vilna, сова Gloxi в основі станів і шрифти до цього переліку не входять.
+
 ## Позначення у файлах
 
 Кожен файл з кодом починається з SPDX-позначки, наприклад:

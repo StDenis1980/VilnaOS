@@ -139,7 +139,7 @@ def fill(win):
     w.set_user("Олена Демо", "olena", "olena-vilna")
     w.mark_entered("user")
     w.set_time(*w.suggested_time())
-    w.seen.add("privacy")
+    assert w.set_crash_reports("ask") is None
 
 
 def test_the_wizard_ends_on_the_herkos_screen(plan_path, monkeypatch):
@@ -172,3 +172,23 @@ def test_the_wizard_ends_on_the_herkos_screen(plan_path, monkeypatch):
     assert app.exit_code == 1  # still installing
     kw["on_end"](True)
     assert app.exit_code == wizard_window.EXIT_CONFIRM
+
+
+def test_crash_reports_have_no_answer_until_the_person_gives_one(plan_path):
+    """ADR 0018 section 3: three equal answers, none chosen in advance."""
+    win = window(plan_path)
+    win.go("privacy", strict=False)
+    assert set(win.crash_checks) == {"auto", "ask", "never"}
+    assert not any(check.get_active() for check in win.crash_checks.values())
+    win.step(+1)
+    assert win.key == "privacy"
+    assert win.error.get_label() == "Оберіть відповідь про звіти про збої."
+    assert "crash_reports" not in plans.load(plan_path)["privacy"]
+    win.crash_checks["never"].set_active(True)
+    win.step(+1)
+    assert win.key == "summary"
+    assert plans.load(plan_path)["privacy"]["crash_reports"] == "never"
+    assert win.wizard.done("privacy")
+    # Back on the step, the answer given is shown.
+    win.go("privacy", strict=False)
+    assert win.crash_checks["never"].get_active()

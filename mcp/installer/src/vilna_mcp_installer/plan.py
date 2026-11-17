@@ -14,7 +14,10 @@ Three kinds of fields:
   on the Herkos screen, never through the model: the markers that a secret
   was entered (``network.secret``, ``user.password``,
   ``disk.encryption.passphrase``), ``disk.encryption.recovery_key_acknowledged``,
-  ``disk.shrink.backup_confirmed`` and ``confirmed_by_user``. A plan holds
+  ``disk.shrink.backup_confirmed``, ``confirmed_by_user`` and the answer
+  about crash reports, ``privacy.crash_reports`` (ADR 0018 section 3:
+  consent the person gives with no answer chosen in advance, so the model
+  explains and never answers for them). A plan holds
   only the marker ``"entered"``, never a password or a key. The partitions
   of a manual layout (``disk.partitions``, ``set_partitions``) come only
   from the partition editor of the classic wizard, where the person sees
@@ -58,6 +61,9 @@ MiB = 1 << 20
 MIN_EFI = 256 * MiB
 MAX_PARTITIONS = 8
 NETWORK = ("offline", "wired", "wifi")
+# "If a program crashes, send us a crash report?" (ADR 0018 section 3):
+# send by itself, ask about each crash, keep them on the computer.
+CRASH_REPORTS = ("auto", "ask", "never")
 TOP_LEVEL = (
     "version",
     "ui",
@@ -403,6 +409,21 @@ def mark_entered(plan: dict[str, Any], which: str) -> None:
     _unconfirm(plan)
 
 
+def set_crash_reports(plan: dict[str, Any], answer: str) -> dict[str, Any]:
+    """The person's answer about crash reports, from their own button.
+
+    Not in ``SETTERS``: consent is the person's (ADR 0018 section 3), so
+    Gloxi has no function for it. ``vilna-reportd`` reads the answer from
+    ``/etc/vilna/reports.conf``, which the engine writes from here.
+    """
+    if answer not in CRASH_REPORTS:
+        raise PlanError(f"the answer about crash reports must be one of {list(CRASH_REPORTS)}")
+    privacy = plan.setdefault("privacy", {"cloud": "disabled"})
+    privacy["crash_reports"] = answer
+    _unconfirm(plan)
+    return privacy
+
+
 def acknowledge_recovery_key(plan: dict[str, Any]) -> None:
     """The person said they saved the recovery key (shown by the engine, never by Gloxi)."""
     enc = plan.setdefault("disk", {}).setdefault("encryption", {"method": "tpm2"})
@@ -460,18 +481,30 @@ def validate(plan: Any, survey: dict[str, Any], *, stage: str = "alpha") -> dict
     _check_network(plan.get("network"), r)
     _check_disk(plan, survey, r, stage)
     _check_user(plan.get("user"), r)
-    privacy = plan.get("privacy")
+    _check_privacy(plan.get("privacy"), r)
+    if plan.get("confirmed_by_user") is True and r.problems:
+        r.error(
+            "confirmed_invalid", "confirmed_by_user", "a plan with problems cannot be confirmed"
+        )
+    return _result(r)
+
+
+def _check_privacy(privacy: Any, r: _Report) -> None:
     if not isinstance(privacy, dict) or privacy.get("cloud") != "disabled":
         r.error(
             "cloud_during_install",
             "privacy.cloud",
             "the cloud stays off while installing; the person chooses after the first login",
         )
-    if plan.get("confirmed_by_user") is True and r.problems:
+    answer = privacy.get("crash_reports") if isinstance(privacy, dict) else None
+    if answer is None:
+        r.missing.append("privacy")
+    elif answer not in CRASH_REPORTS:
         r.error(
-            "confirmed_invalid", "confirmed_by_user", "a plan with problems cannot be confirmed"
+            "bad_crash_reports",
+            "privacy.crash_reports",
+            f"the answer about crash reports must be one of {list(CRASH_REPORTS)}",
         )
-    return _result(r)
 
 
 def _result(r: _Report) -> dict[str, Any]:

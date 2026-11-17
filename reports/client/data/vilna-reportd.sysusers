@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# vilna-reportd runs as its own system user; it reads crash entries of the
+# journal as a member of systemd-journal (ADR 0018 section 4).
+u vilna-reports - "Vilna crash reports" /var/lib/vilna-reports /usr/sbin/nologin
+m vilna-reports systemd-journal

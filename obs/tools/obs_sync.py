@@ -53,6 +53,8 @@ class Tarball:
     folder: str  # repository folder with the code
     version: Callable[[], str]  # RPM version of the code
     extra: tuple[tuple[str, str], ...] = ()  # (repo path, path in tarball)
+    # (repo folder, folder in tarball): every tracked file under it
+    extra_folders: tuple[tuple[str, str], ...] = ()
     # Cargo.lock of Rust code: its crates go to vendor.tar.xz (OBS builds offline).
     cargo: str | None = None
 
@@ -159,7 +161,11 @@ TARBALLS: dict[str, Tarball] = {
         extra=(
             ("LICENSE", "LICENSE"),
             ("docs/design/logo/Vilna_logo_dark-bg.svg", "Vilna_logo_dark-bg.svg"),
+            # Dmytro Sizmin's graphics (CC-BY-SA-4.0, LICENSING.md)
+            ("LICENSES/CC-BY-SA-4.0.txt", "LICENSE.CC-BY-SA-4.0"),
+            ("docs/design/blavet/svg/blavet-mark-dark-bg.svg", "release/mark.svg"),
         ),
+        extra_folders=(("docs/design/plymouth/logo@2x", "frames"),),
     ),
 }
 
@@ -184,6 +190,8 @@ def make_tarball(name: str, spec: Tarball, version: str, out: Path) -> Path:
     mtime = source_date()
     files = [(rel, rel[len(spec.folder) + 1 :]) for rel in tracked_files(spec.folder)]
     files += list(spec.extra)
+    for src_dir, dst_dir in spec.extra_folders:
+        files += [(rel, f"{dst_dir}/{rel[len(src_dir) + 1 :]}") for rel in tracked_files(src_dir)]
     path = out / f"{prefix}.tar.gz"
     buf = io.BytesIO()
     with tarfile.open(fileobj=buf, mode="w", format=tarfile.PAX_FORMAT) as tar:

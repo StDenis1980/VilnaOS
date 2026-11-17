@@ -89,6 +89,7 @@ MISSING_SECTION = {
     "encryption": "encryption",
     "user": "user",
     "time": "time",
+    "privacy": "privacy",
 }
 # Problems the Herkos screen solves itself, so they never block reaching it.
 SOLVED_ON_SCREEN = frozenset({"recovery_key", "confirmed_invalid"})
@@ -190,7 +191,11 @@ def describe(plan: dict[str, Any], _: Texts) -> dict[str, str | None]:
         out["user"] = f"{user.get('full_name')} ({who}){entered}"
     if loc.get("timezone"):
         out["time"] = f"{loc['timezone']} · {(loc.get('region') or '').split('.')[0]}"
-    out["privacy"] = _(conv.CLOUD_OFF)
+    # Not decided until the person answered about crash reports (ADR 0018).
+    answer = conv.CRASH_ANSWERS.get(str((plan.get("privacy") or {}).get("crash_reports")))
+    if answer:
+        crash = _(conv.CRASH_SUMMARY).format(answer=_(answer[0]))
+        out["privacy"] = f"{_(conv.CLOUD_OFF)} · {crash}"
     return out
 
 

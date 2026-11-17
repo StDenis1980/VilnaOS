@@ -1,0 +1,136 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The «Feedback about Vilna» window (cs). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Feedback about Vilna"
+msgstr "Zpětná vazba k Vilna"
+
+msgid "Feedback"
+msgstr "Zpětná vazba"
+
+msgid "Crash reports"
+msgstr "Hlášení o pádech"
+
+msgid "Tell us what went wrong, what surprised you or what you would like. Only the Vilna team reads it; nothing is published without your permission."
+msgstr "Napište nám, co se pokazilo, co vás překvapilo nebo co byste si přáli. Čte to jen tým Vilna; bez vašeho svolení se nic nezveřejní."
+
+msgid "What is it about?"
+msgstr "Čeho se to týká?"
+
+msgid "Something does not work"
+msgstr "Něco nefunguje"
+
+msgid "An idea or a wish"
+msgstr "Nápad nebo přání"
+
+msgid "Something else"
+msgstr "Něco jiného"
+
+msgid "Your message"
+msgstr "Vaše zpráva"
+
+msgid "Add facts about this computer"
+msgstr "Přidat údaje o tomto počítači"
+
+msgid "You may answer me by e-mail"
+msgstr "Můžete mi odpovědět e-mailem"
+
+msgid "E-mail address"
+msgstr "E-mailová adresa"
+
+msgid "You may publish it, without my address, after reading it"
+msgstr "Můžete to po přečtení zveřejnit, bez mé adresy"
+
+msgid "What will be sent"
+msgstr "Co se odešle"
+
+msgid "Send"
+msgstr "Odeslat"
+
+msgid "Sending…"
+msgstr "Odesílání…"
+
+msgid "Thank you! Your feedback is sent."
+msgstr "Děkujeme! Vaše zpětná vazba byla odeslána."
+
+msgid "Write what happened or what you suggest."
+msgstr "Napište, co se stalo nebo co navrhujete."
+
+msgid "This does not look like an e-mail address."
+msgstr "Tohle nevypadá jako e-mailová adresa."
+
+msgid "The message is longer than 8000 characters."
+msgstr "Zpráva je delší než 8000 znaků."
+
+msgid "The report service is not running on this computer, so nothing can be sent now. Your text stays here."
+msgstr "Služba hlášení na tomto počítači neběží, takže teď nelze nic odeslat. Váš text tu zůstává."
+
+msgid "Not sent: {reason}"
+msgstr "Neodesláno: {reason}"
+
+msgid "Crash reports stay on this computer until they are sent. Each one has only what you see here: which program crashed and where in its code."
+msgstr "Hlášení o pádech zůstávají na tomto počítači, dokud nejsou odeslána. Každé obsahuje jen to, co vidíte zde: který program spadl a kde v jeho kódu."
+
+msgid "No crash reports."
+msgstr "Žádná hlášení o pádech."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Když program spadne, poslat nám hlášení o pádu?"
+
+msgid "Send automatically"
+msgstr "Posílat automaticky"
+
+msgid "Ask me every time"
+msgstr "Pokaždé se zeptat"
+
+msgid "Never"
+msgstr "Nikdy"
+
+msgid "No answer yet: nothing is sent."
+msgstr "Zatím bez odpovědi: nic se neposílá."
+
+msgid "The answer was not changed."
+msgstr "Odpověď nebyla změněna."
+
+msgid "Not sent"
+msgstr "Neodesláno"
+
+msgid "Sent"
+msgstr "Odesláno"
+
+msgid "Not accepted by the server"
+msgstr "Server nepřijal"
+
+msgid "First report of this crash"
+msgstr "První hlášení o tomto pádu"
+
+msgid "We already know about this crash"
+msgstr "O tomto pádu už víme"
+
+msgid "Fixed in {version}"
+msgstr "Opraveno ve verzi {version}"
+
+msgid "View"
+msgstr "Zobrazit"
+
+msgid "Crash report"
+msgstr "Hlášení o pádu"
+
+msgid "Close"
+msgstr "Zavřít"
+
+msgid "Do not send"
+msgstr "Neposílat"
+
+msgid "Delete everything I sent from the server"
+msgstr "Smazat ze serveru vše mnou odeslané"
+
+msgid "Deleted from the server: {count}"
+msgstr "Smazáno ze serveru: {count}"
+
+msgid "{program} crashed"
+msgstr "{program} spadl"
+
+msgid "Send us a crash report? It has only which program crashed and where in its code."
+msgstr "Poslat nám hlášení o pádu? Obsahuje jen to, který program spadl a kde v jeho kódu."

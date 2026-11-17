@@ -109,8 +109,39 @@ TIME_QUESTION = (
 PRIVACY_TEXT = (
     "Gloxi works right on this computer, and what you tell it stays here. A cloud model is "
     "off now; you can choose it after the first login, and then the privacy gateway hides "
-    "names and numbers before anything leaves the computer. Shall we go on?"
+    "names and numbers before anything leaves the computer. One question here is yours "
+    "alone, so I do not answer it for you: choose below."
 )
+# Crash reports (ADR 0018 section 3): one question for the whole system,
+# three equal answers and none chosen in advance. The wizard, the chat card,
+# the plan panel and the Herkos screen all use these words.
+CRASH_QUESTION = "If a program crashes, send us a crash report?"
+CRASH_EXPLAIN = (
+    "A crash report says which program crashed and where in its code. It never has your "
+    "files, what you typed, your name or the computer's address. You can read every report, "
+    "and change this answer later in Settings."
+)
+CRASH_AUTO = "Send automatically"
+CRASH_AUTO_HINT = "Reports go by themselves; you can read each one."
+CRASH_ASK = "Ask me every time"
+CRASH_ASK_HINT = "After a crash, a notification asks whether to send its report."
+CRASH_NEVER = "Never"
+CRASH_NEVER_HINT = "Reports stay on this computer; you can still send one yourself."
+CRASH_WHAT = "What is in a report"
+# A sample report, as the window shows it: facts of a program, nothing of the person.
+CRASH_EXAMPLE = (
+    "gnome-calculator 47.1 · SIGSEGV\n"
+    "#0 libgtk-4.so.1 + 0x4f2a1\n"
+    "#1 gnome-calculator + 0x1b2 (math_equation_solve)\n"
+    "Vilna Blavet 0.1 · x86_64 · 16 GB · uk"
+)
+CRASH_NEEDED = "Choose an answer about crash reports."
+CRASH_ANSWERS = {
+    "auto": (CRASH_AUTO, CRASH_AUTO_HINT),
+    "ask": (CRASH_ASK, CRASH_ASK_HINT),
+    "never": (CRASH_NEVER, CRASH_NEVER_HINT),
+}
+CRASH_SUMMARY = "Crash reports: {answer}"
 WAKING = (
     "Gloxi is waking up… The first start from the USB stick can take a few minutes. "
     "You can also go on without the assistant."
@@ -195,6 +226,17 @@ TEXTS = (
     ENCRYPT_PASS,
     NOT_ENCRYPTED,
     CLOUD_OFF,
+    CRASH_QUESTION,
+    CRASH_EXPLAIN,
+    CRASH_AUTO,
+    CRASH_AUTO_HINT,
+    CRASH_ASK,
+    CRASH_ASK_HINT,
+    CRASH_NEVER,
+    CRASH_NEVER_HINT,
+    CRASH_WHAT,
+    CRASH_NEEDED,
+    CRASH_SUMMARY,
     *SECTIONS.values(),
 )
 
@@ -318,10 +360,13 @@ STEPS: tuple[Step, ...] = (
         11,
         "privacy",
         "Privacy",
-        "Explain in two sentences: Gloxi works on this computer; a cloud model is off now and "
-        "can be chosen after the first login, and then the privacy gateway hides names and "
-        "numbers before anything leaves the computer. Then call conversation_next.",
-        ("conversation_next",),
+        "Gloxi works on this computer; a cloud model is off now and can be chosen after the "
+        "first login. The window shows the question 'If a program crashes, send us a crash "
+        "report?' with three buttons: send automatically, ask every time, never. Only the "
+        "person answers it, with a button: it is their consent. Do not recommend an answer "
+        "and never say one was chosen. If asked: a report has the program, the signal and "
+        "where in its code it crashed; never files, typed text, names or addresses; every "
+        "report can be read, and the answer changed later in Settings.",
     ),
     Step(
         12,
@@ -349,7 +394,7 @@ STEPS = tuple(
 )
 BY_KEY = {s.key: s for s in STEPS}
 # Steps with nothing to decide: done when Gloxi says the person is ready.
-EXPLAINED = frozenset({"intro", "survey", "old_files", "old_encrypted", "privacy"})
+EXPLAINED = frozenset({"intro", "survey", "old_files", "old_encrypted"})
 
 LOCAL_TOOLS = [
     {
@@ -682,6 +727,8 @@ class Conversation:
             return bool(user.get("username")) and user.get("password") == "entered"
         if key == "time":
             return bool(loc.get("timezone") and loc.get("region"))
+        if key == "privacy":
+            return (plan.get("privacy") or {}).get("crash_reports") in CRASH_ANSWERS
         if key == "summary":
             return plan.get("confirmed_by_user") is True
         return False
@@ -714,6 +761,8 @@ class Conversation:
             out.append("user_password")
         if disk.get("layout") == "manual" and not disk.get("partitions"):
             out.append("partition_editor")
+        if self.current().key == "privacy":
+            out.append("crash_reports")
         if self.current().key == "summary" and not out:
             out.append("confirm")
         return out
@@ -724,6 +773,12 @@ class Conversation:
             raise ValueError(f"unknown step {key!r}")
         self.state.focus = key
         return BY_KEY[key]
+
+    def answered(self, key: str) -> None:
+        """The person settled a step with their own control (the crash reports buttons)."""
+        self.refresh()
+        if self.state.focus == key:
+            self.state.focus = None
 
     def refresh(self) -> None:
         """Read the plan again after the window changed it (a protected field, by hand)."""
