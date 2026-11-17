@@ -75,3 +75,9 @@ msgstr "Wybierz odpowiedź dotyczącą raportów o awariach."
 
 msgid "Crash reports: {answer}"
 msgstr "Raporty o awariach: {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Przełącz na ciemny motyw"
+
+msgid "Switch to the light theme"
+msgstr "Przełącz na jasny motyw"

@@ -75,3 +75,9 @@ msgstr "Scegli una risposta sui rapporti dei crash."
 
 msgid "Crash reports: {answer}"
 msgstr "Rapporti sui crash: {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Passa al tema scuro"
+
+msgid "Switch to the light theme"
+msgstr "Passa al tema chiaro"
