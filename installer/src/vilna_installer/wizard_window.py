@@ -89,6 +89,9 @@ def radio_row(
         check.update_property([Gtk.AccessibleProperty.DESCRIPTION], [subtitle])
     row.add_prefix(check)
     row.set_activatable_widget(check)
+    # One stop per choice, on the radio button, which says its role and state:
+    # a focusable row too meant two Tab stops, and the row read neither.
+    row.set_focusable(False)
     return row, check
 
 
@@ -878,9 +881,9 @@ class WizardWindow(Adw.ApplicationWindow):
 
     def _page_vpn(self):
         _ = self._
-        lead = _group(description=_(wiz.VPN_LEAD))
-        # ADR 0027 section 2: four choices, none chosen in advance.
-        group = _group(_(wiz.VPN_QUESTION), _(wiz.VPN_EXPLAIN))
+        # ADR 0027 section 2: four choices, none chosen in advance. The lead is
+        # in the group's description, which the screen reader reads with it.
+        group = _group(_(wiz.VPN_QUESTION), f"{_(wiz.VPN_LEAD)} {_(wiz.VPN_EXPLAIN)}")
         leader = radio_group()
         checks: dict[str, Gtk.CheckButton] = {}
         for choice, (title, hint) in wiz.VPN_ANSWERS.items():
@@ -896,7 +899,7 @@ class WizardWindow(Adw.ApplicationWindow):
             choice = next((c for c, check in checks.items() if check.get_active()), None)
             return self.wizard.set_vpn(choice)
 
-        return self._page(lead, group, unseen), commit
+        return self._page(group, unseen), commit
 
     def _page_summary(self):
         _ = self._

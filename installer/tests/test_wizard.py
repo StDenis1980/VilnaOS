@@ -92,6 +92,18 @@ def test_the_vpn_step_waits_for_the_persons_own_choice(tmp_path):
     assert w.set_vpn("nordvpn")  # the plan refuses it
 
 
+def test_the_herkos_screen_shows_the_vpn_choice_only_when_there_is_one(tmp_path):
+    w = new_wizard(tmp_path)
+    walk(w)
+    _ = start.Texts("uk")
+    s = summary.summarize(w.plan, w.report(), w.survey(), _)
+    assert s.lines[-1].key == "vpn" and s.lines[-1].text == _(wiz.VPN_PROTON)
+    plan = w.plan
+    del plan["privacy"]["vpn"]
+    s = summary.summarize(plan, plans.validate(plan, w.survey()), w.survey(), _)
+    assert all(line.key != "vpn" for line in s.lines)
+
+
 @pytest.mark.parametrize("code", [c for c in start.CODES if c != "en"])
 def test_the_vpn_step_is_in_every_language(code):
     """ADR 0027 row 5: the step in all ten languages of ADR 0009."""

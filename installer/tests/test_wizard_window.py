@@ -206,6 +206,12 @@ def test_the_vpn_step_has_no_choice_until_the_person_makes_one(plan_path):
     assert win.key == "vpn"
     assert win.error.get_label() == "Оберіть відповідь про VPN."
     assert "vpn" not in plans.load(plan_path)["privacy"]
+    # One keyboard stop per choice, on the radio button (Orca, VM test 17.11).
+    for check in win.vpn_checks.values():
+        assert (
+            check.get_focusable()
+            and not check.get_parent().get_ancestor(Adw.ActionRow).get_focusable()
+        )
     win.vpn_checks["mullvad"].set_active(True)
     win.step(+1)
     assert win.key == "summary"
