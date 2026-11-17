@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.11
+Version:        0.12
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -51,6 +51,28 @@ Requires:       vilna-mcp-calendar
 Requires:       vilna-mcp-apps
 Requires:       vilna-flatpak-defaults
 Requires:       gnome-shell-extension-vilna
+# Translations of the GNOME desktop. openSUSE puts them in *-lang
+# packages that only supplement the program, and the image installs
+# required packages alone (KIWI onlyRequired, zypp solver.onlyRequires):
+# in the VM test of Build15.6 GNOME Initial Setup, the search and the
+# rest of the Shell stayed in English after the person chose Українська.
+# Firefox and the other Flatpak apps get theirs from Flathub
+# (vilna-flatpak-defaults sets the ten languages of ADR 0009).
+Requires:       gnome-shell-lang
+Requires:       mutter-lang
+Requires:       gnome-initial-setup-lang
+Requires:       gnome-control-center-lang
+Requires:       gnome-settings-daemon-lang
+Requires:       gnome-session-lang
+Requires:       gnome-desktop-lang
+Requires:       gdm-lang
+Requires:       nautilus-lang
+Requires:       gnome-software-lang
+Requires:       gnome-console-lang
+Requires:       gtk4-lang
+Requires:       gtk3-lang
+Requires:       libadwaita-lang
+Requires:       glib2-lang
 Requires:       vilna-software-picks
 # VPN (ADR 0027): Proton VPN, offered first (openSUSE's package), and
 # Mullvad (Mullvad's RPM with our scriptlets, obs/packages/mullvad-vpn).

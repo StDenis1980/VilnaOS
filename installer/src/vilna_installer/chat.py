@@ -42,7 +42,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import confirm_window, install_window, start, summary  # noqa: E402
+from vilna_installer import confirm_window, install_window, start, style, summary  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
@@ -63,7 +63,6 @@ CSS = """
 .vilna-value { opacity: 0.8; }
 .vilna-pending { opacity: 0.55; font-style: italic; }
 .vilna-current { border-left: 3px solid @accent_bg_color; padding-left: 8px; }
-.vilna-go { background-color: #F5C24A; color: #13213A; font-weight: 800; padding: 10px 22px; }
 """
 
 
@@ -233,15 +232,12 @@ class ChatWindow(Adw.ApplicationWindow):
             texts.append(head)
             texts.append(value)
             row.append(texts)
-            if key != "privacy":
-                change = Gtk.Button(label=_(conv.CHANGE), valign=Gtk.Align.CENTER)
-                change.add_css_class("flat")
-                change.update_property(
-                    [Gtk.AccessibleProperty.LABEL], [f"{_(conv.CHANGE)}: {_(name)}"]
-                )
-                change.connect("clicked", self._on_change, key)
-                change.set_visible(talks)  # «Change» talks to Gloxi
-                row.append(change)
+            change = Gtk.Button(label=_(conv.CHANGE), valign=Gtk.Align.CENTER)
+            change.add_css_class("flat")
+            change.update_property([Gtk.AccessibleProperty.LABEL], [f"{_(conv.CHANGE)}: {_(name)}"])
+            change.connect("clicked", self._on_change, key)
+            change.set_visible(talks)  # «Change» talks to Gloxi
+            row.append(change)
             panel.append(row)
             self.rows[key] = (row, value)
         panel.append(Gtk.Box(vexpand=True))
@@ -392,6 +388,9 @@ class ChatWindow(Adw.ApplicationWindow):
         if need == "partition_editor":
             self._editor_card()
             return
+        if need == "crash_reports":
+            self._crash_card(plan)
+            return
         self.cards.add(need)
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, halign=Gtk.Align.START)
         card.add_css_class("vilna-card")
@@ -427,6 +426,61 @@ class ChatWindow(Adw.ApplicationWindow):
         first.connect("activate", lambda *_a: button.emit("clicked"))
         self.list.append(card)
         GLib.idle_add(_once(first.grab_focus))
+
+    def _crash_card(self, plan: dict[str, Any]) -> None:
+        """Crash reports: the person's own answer, three equal buttons (ADR 0018 section 3).
+
+        Gloxi has no function for it; the answer goes into the plan from here.
+        """
+        _ = self._
+        self.cards.add("crash_reports")
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, halign=Gtk.Align.START)
+        card.add_css_class("vilna-card")
+        heading = Gtk.Label(label=_(conv.CRASH_QUESTION), xalign=0, wrap=True)
+        heading.add_css_class("vilna-section")
+        card.append(heading)
+        about = Gtk.Label(label=_(conv.CRASH_EXPLAIN), xalign=0, wrap=True, max_width_chars=60)
+        card.append(about)
+        chosen = (plan.get("privacy") or {}).get("crash_reports")
+        first = None
+        for answer, (title, hint) in conv.CRASH_ANSWERS.items():
+            row = Gtk.Box(spacing=12)
+            # The same look for all three: no answer is suggested.
+            button = Gtk.Button(label=_(title), width_request=200)
+            button.update_property([Gtk.AccessibleProperty.DESCRIPTION], [_(hint)])
+            if answer == chosen:
+                button.update_property([Gtk.AccessibleProperty.LABEL], [f"{_(title)} ✓"])
+                button.set_label(f"{_(title)} ✓")
+            button.connect("clicked", self._on_crash_answer, answer, card)
+            note = Gtk.Label(label=_(hint), xalign=0, wrap=True, max_width_chars=44)
+            note.add_css_class("dim-label")
+            row.append(button)
+            row.append(note)
+            card.append(row)
+            first = first or button
+        what = Gtk.Expander(label=_(conv.CRASH_WHAT))
+        sample = Gtk.Label(label=conv.CRASH_EXAMPLE, xalign=0, selectable=True)
+        sample.add_css_class("monospace")
+        what.set_child(sample)
+        card.append(what)
+        self.list.append(card)
+        if first is not None:
+            GLib.idle_add(_once(first.grab_focus))
+
+    def _on_crash_answer(self, _button, answer: str, card) -> None:
+        if self.busy:
+            return
+        plan = plans.load(self.plan_path)
+        plans.set_crash_reports(plan, answer)
+        plans.save(plan, self.plan_path)
+        # What the person chose shows in the chat like a message of theirs.
+        self._bubble(self._(conv.CRASH_ANSWERS[answer][0]), True)
+        self.list.remove(card)
+        self.cards.discard("crash_reports")
+        self.last_change = None
+        if self.conversation is not None:
+            self.conversation.answered("privacy")
+        self._turn(None)
 
     def _editor_card(self) -> None:
         """Manual layout: the partition editor of the classic wizard, opened from the chat."""
@@ -596,6 +650,7 @@ class ChatApp(Adw.Application):
 
     def do_startup(self) -> None:
         Adw.Application.do_startup(self)
+        style.install()
         css = Gtk.CssProvider()
         css.load_from_string(CSS)
         display = Gdk.Display.get_default()

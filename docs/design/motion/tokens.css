@@ -1,0 +1,29 @@
+:root{ /* Vilna tokens v0.1, темна тема */
+  --bg:#0E1A2E;
+  --surface:#16243D;
+  --surface-2:#1D2E4C;
+  --text:#EEF1F7;
+  --muted:#9AA6BF;
+  --link:#5B8CFF;
+  --blue:#2D6BFF;
+  --orange-t:#F0963A;
+  --green-t:#3FD283;
+  --red-t:#FF7A7E;
+  --red-btn:#D7263D;
+}
+.light{
+  --bg:#F7F4EE;
+  --surface:#FFFFFF;
+  --surface-2:#F1ECE2;
+  --text:#13213A;
+  --muted:#55607A;
+  --link:#2457D6;
+  --blue:#2D6BFF;
+  --orange-t:#B85A12;
+  --green-t:#177A43;
+  --red-t:#C2182F;
+  --red-btn:#C2182F;
+}
+/* motion — P5, затверджено 13.11.2026 */
+:root{--motion-ease:cubic-bezier(.22,1,.36,1);--motion-ease-in:cubic-bezier(.4,0,1,1);--motion-ease-brush:cubic-bezier(.65,0,.35,1);--motion-exit-factor:.7;--motion-micro:150ms;--motion-panel:280ms;--motion-dialog:450ms}
+@media (prefers-reduced-motion:reduce){:root{--motion-micro:0ms;--motion-panel:100ms;--motion-dialog:100ms}}

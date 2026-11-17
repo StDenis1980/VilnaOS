@@ -1,0 +1,136 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The «Feedback about Vilna» window (pl). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Feedback about Vilna"
+msgstr "Opinia o Vilna"
+
+msgid "Feedback"
+msgstr "Opinia"
+
+msgid "Crash reports"
+msgstr "Raporty o awariach"
+
+msgid "Tell us what went wrong, what surprised you or what you would like. Only the Vilna team reads it; nothing is published without your permission."
+msgstr "Napisz, co poszło nie tak, co Cię zaskoczyło lub czego byś chciał. Czyta to tylko zespół Vilna; bez Twojej zgody nic nie zostanie opublikowane."
+
+msgid "What is it about?"
+msgstr "Czego to dotyczy?"
+
+msgid "Something does not work"
+msgstr "Coś nie działa"
+
+msgid "An idea or a wish"
+msgstr "Pomysł lub życzenie"
+
+msgid "Something else"
+msgstr "Coś innego"
+
+msgid "Your message"
+msgstr "Twoja wiadomość"
+
+msgid "Add facts about this computer"
+msgstr "Dodaj informacje o tym komputerze"
+
+msgid "You may answer me by e-mail"
+msgstr "Możecie mi odpowiedzieć e-mailem"
+
+msgid "E-mail address"
+msgstr "Adres e-mail"
+
+msgid "You may publish it, without my address, after reading it"
+msgstr "Możecie to opublikować, bez mojego adresu, po przeczytaniu"
+
+msgid "What will be sent"
+msgstr "Co zostanie wysłane"
+
+msgid "Send"
+msgstr "Wyślij"
+
+msgid "Sending…"
+msgstr "Wysyłanie…"
+
+msgid "Thank you! Your feedback is sent."
+msgstr "Dziękujemy! Twoja opinia została wysłana."
+
+msgid "Write what happened or what you suggest."
+msgstr "Napisz, co się stało lub co proponujesz."
+
+msgid "This does not look like an e-mail address."
+msgstr "To nie wygląda na adres e-mail."
+
+msgid "The message is longer than 8000 characters."
+msgstr "Wiadomość jest dłuższa niż 8000 znaków."
+
+msgid "The report service is not running on this computer, so nothing can be sent now. Your text stays here."
+msgstr "Usługa raportów nie działa na tym komputerze, więc teraz nic nie można wysłać. Twój tekst zostaje tutaj."
+
+msgid "Not sent: {reason}"
+msgstr "Nie wysłano: {reason}"
+
+msgid "Crash reports stay on this computer until they are sent. Each one has only what you see here: which program crashed and where in its code."
+msgstr "Raporty o awariach zostają na tym komputerze, dopóki nie zostaną wysłane. Każdy zawiera tylko to, co widzisz tutaj: który program uległ awarii i w którym miejscu kodu."
+
+msgid "No crash reports."
+msgstr "Brak raportów o awariach."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Jeśli program ulegnie awarii, wysłać nam raport o awarii?"
+
+msgid "Send automatically"
+msgstr "Wysyłaj automatycznie"
+
+msgid "Ask me every time"
+msgstr "Pytaj za każdym razem"
+
+msgid "Never"
+msgstr "Nigdy"
+
+msgid "No answer yet: nothing is sent."
+msgstr "Brak odpowiedzi: nic nie jest wysyłane."
+
+msgid "The answer was not changed."
+msgstr "Odpowiedź nie została zmieniona."
+
+msgid "Not sent"
+msgstr "Nie wysłano"
+
+msgid "Sent"
+msgstr "Wysłano"
+
+msgid "Not accepted by the server"
+msgstr "Serwer nie przyjął"
+
+msgid "First report of this crash"
+msgstr "Pierwszy raport o tej awarii"
+
+msgid "We already know about this crash"
+msgstr "Już wiemy o tej awarii"
+
+msgid "Fixed in {version}"
+msgstr "Naprawiono w {version}"
+
+msgid "View"
+msgstr "Pokaż"
+
+msgid "Crash report"
+msgstr "Raport o awarii"
+
+msgid "Close"
+msgstr "Zamknij"
+
+msgid "Do not send"
+msgstr "Nie wysyłaj"
+
+msgid "Delete everything I sent from the server"
+msgstr "Usuń z serwera wszystkie moje zgłoszenia"
+
+msgid "Deleted from the server: {count}"
+msgstr "Usunięto z serwera: {count}"
+
+msgid "{program} crashed"
+msgstr "{program} uległ awarii"
+
+msgid "Send us a crash report? It has only which program crashed and where in its code."
+msgstr "Wysłać nam raport o awarii? Zawiera tylko to, który program uległ awarii i w którym miejscu kodu."

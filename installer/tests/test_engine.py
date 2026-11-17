@@ -8,6 +8,7 @@ files of the Vilna image into a directory.
 
 import json
 import os
+import pathlib
 import shutil
 import subprocess
 import sys
@@ -112,6 +113,7 @@ def setup(tmp_path):
     plans.set_user(plan, "Олена Демо", "olena", "olena-pc")
     plans.mark_entered(plan, "user")
     plans.set_time(plan, "Europe/Kyiv", "uk_UA.UTF-8")
+    plans.set_crash_reports(plan, "auto")
     plans.acknowledge_recovery_key(plan)
     plan["confirmed_by_user"] = True
     path = tmp_path / "vilna-installer" / "plan.json"
@@ -492,3 +494,32 @@ def test_the_engine_has_mounts_and_keys_of_its_own():
 
 def test_an_error_shows_without_control_characters():
     assert eng.printable("Raw: MokList\0x\nnext\tline") == "Raw: MokList x\nnext line"
+
+
+def test_the_answer_about_crash_reports_reaches_vilna_reportd_and_tinta():
+    """ADR 0018 section 3: «ask» is «no» for Tinta, which knows only yes or no."""
+    for answer, tinta in (("auto", "true"), ("ask", "false"), ("never", "false")):
+        files = eng.system_files({"privacy": {"cloud": "disabled", "crash_reports": answer}})
+        assert f"crash_reports={answer}\n" in files["etc/vilna/reports.conf"]
+        assert f"TINTA_OFFICE_REPORTS={tinta}\n" in files["etc/environment.d/60-vilna-reports.conf"]
+        assert f"enabled={tinta}\n" in files["etc/xdg/tinta-office/reports.conf"]
+    # No answer, no files: nothing is ever sent then.
+    assert "etc/vilna/reports.conf" not in eng.system_files({"privacy": {"cloud": "disabled"}})
+
+
+CONSENT_RS = pathlib.Path(__file__).resolve().parents[2] / "reports/client/src/consent.rs"
+
+
+# The rpm build tests this package alone, without the rest of the monorepo;
+# the installer job in CI runs the cross-check.
+@pytest.mark.skipif(not CONSENT_RS.is_file(), reason="needs the monorepo (reports/client)")
+def test_the_engine_writes_what_vilna_reportd_writes():
+    """The same files and lines as ``vilna-reportd consent`` (reports/client/src/consent.rs)."""
+    rust = CONSENT_RS.read_text(encoding="utf-8")
+    for path, text in eng.crash_report_files("auto").items():
+        assert f'"{path}"' in rust, path
+        for line in text.splitlines():
+            if line.startswith("#"):
+                assert line.replace('"', '\\"') in rust, line
+            else:
+                assert line.split("=")[0] + "=" in rust, line

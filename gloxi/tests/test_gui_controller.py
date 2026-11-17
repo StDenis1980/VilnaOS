@@ -340,3 +340,39 @@ def test_a_new_conversation_has_the_model_read_the_prompt_in_advance():
     assert conv.history == []
     warm = server.requests[-1]
     assert warm["max_tokens"] == 1 and warm["messages"] == [conv.messages()[0]]
+
+
+def _cloud_texts(server):
+    return [m["content"] for m in server.requests[-1]["messages"] if m["role"] != "system"]
+
+
+def test_switch_to_cloud_keeps_earlier_messages_until_the_person_decides():
+    cloud = FakeLlamaServer("хмара")
+    ctl, _view, conv = make(
+        FakeLlamaServer("тут"), cloud=cloud, policy=RouterPolicy(cloud_allowed=True)
+    )
+    ctl.set_mode("local")
+    assert ctl.submit("перше питання")
+    assert ctl.held_back() == 0
+    assert ctl.set_mode("cloud")
+    assert ctl.held_back() == 2  # the question and the answer stay here
+    assert ctl.submit("друге питання")
+    assert _cloud_texts(cloud) == ["друге питання"]
+    ctl.share_history(True)
+    assert ctl.held_back() == 0
+    assert ctl.submit("третє питання")
+    assert "перше питання" in _cloud_texts(cloud)
+
+
+def test_no_question_when_nothing_stayed_local():
+    ctl, _view, conv = make(
+        FakeLlamaServer("тут"), cloud=FakeLlamaServer(), policy=RouterPolicy(cloud_allowed=True)
+    )
+    ctl.set_mode("local")
+    assert ctl.set_mode("cloud") and ctl.held_back() == 0  # empty conversation
+    assert ctl.submit("в хмару")
+    ctl.set_mode("local")
+    assert ctl.submit("тут")
+    assert ctl.set_mode("cloud") and ctl.held_back() == 0  # the cloud has seen it already
+    conv.reset()
+    assert conv.cloud_from == 0 and not conv.sent_to_cloud

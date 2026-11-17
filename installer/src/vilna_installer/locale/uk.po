@@ -165,8 +165,8 @@ msgstr "Як вас звати? З імені я запропоную ім'я д
 msgid "I suggest the time zone {timezone} and the date and number formats of {region}. Is that right? If not, name your city or country."
 msgstr "Пропоную часовий пояс {timezone} і формати дат і чисел за мовою «{region}». Так? Якщо ні, назвіть своє місто або країну."
 
-msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. Shall we go on?"
-msgstr "Gloxi працює просто на цьому комп'ютері, і те, що ви йому кажете, лишається тут. Хмарна модель зараз вимкнена; її можна обрати після першого входу, і тоді шлюз приватності приховає імена й номери, перш ніж щось вийде за межі комп'ютера. Продовжимо?"
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi працює просто на цьому комп'ютері, і те, що ви йому кажете, лишається тут. Хмарна модель зараз вимкнена; її можна обрати після першого входу, і тоді шлюз приватності приховає імена й номери, перш ніж щось вийде за межі комп'ютера. Одне питання тут лише ваше, тож я не відповідаю за вас: оберіть нижче."
 
 # The classic wizard without the assistant (wizard.py).
 
@@ -671,3 +671,37 @@ msgstr "Налаштування запуску й шифрування"
 
 msgid "Finishing"
 msgstr "Завершення"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "If a program crashes, send us a crash report?"
+msgstr "Якщо програма впаде, надсилати нам звіт про збій?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Звіт про збій каже, яка програма впала і в якому місці свого коду. У ньому ніколи немає ваших файлів, того, що ви набирали, вашого імені чи адреси комп'ютера. Кожен звіт можна прочитати, а цю відповідь змінити пізніше в Налаштуваннях."
+
+msgid "Send automatically"
+msgstr "Надсилати автоматично"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Звіти йдуть самі; кожен можна прочитати."
+
+msgid "Ask me every time"
+msgstr "Питати щоразу"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Після збою сповіщення спитає, чи надіслати звіт."
+
+msgid "Never"
+msgstr "Ніколи"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Звіти лишаються на цьому комп'ютері; будь-який можна надіслати самому."
+
+msgid "What is in a report"
+msgstr "Що є в звіті"
+
+msgid "Choose an answer about crash reports."
+msgstr "Оберіть відповідь про звіти про збої."
+
+msgid "Crash reports: {answer}"
+msgstr "Звіти про збої: {answer}"

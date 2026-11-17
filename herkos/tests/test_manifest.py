@@ -45,6 +45,36 @@ def test_duplicate_manifest():
         ManifestRegistry([m, m])
 
 
+def test_a_polkit_action_is_herkos_s_own_and_only_for_r3_and_r4():
+    from herkos.manifest import ManifestError, ManifestRegistry, parse_manifest
+
+    def op(**kw):
+        return {"tool": "t.x", "operations": {"put": kw}}
+
+    ok = parse_manifest(op(level="R3", polkit="org.vilna.herkos.apps.change"), "t")
+    assert ok.operations["put"].polkit == "org.vilna.herkos.apps.change"
+    for wrong in (
+        op(level="R2", polkit="org.vilna.herkos.apps.change"),
+        op(level="R3", polkit="org.freedesktop.systemd1.manage-units"),
+        op(level="R3", polkit="org.vilna.herkos."),
+        op(level="R3", polkit="org.vilna.herkos.Apps"),
+        op(level="R3", polkit="org.vilna.herkos..x"),
+        op(level="R4", polkit=3),
+        op(level="forbidden", polkit="org.vilna.herkos.x"),
+    ):
+        with pytest.raises(ManifestError):
+            parse_manifest(wrong, "t")
+    r = ManifestRegistry.builtin()
+    assert r.get("org.vilna.mcp.apps").operations["install"].polkit == (
+        "org.vilna.herkos.apps.change"
+    )
+    assert r.get("org.vilna.mcp.system").operations["rollback"].polkit == (
+        "org.vilna.herkos.system.rollback"
+    )
+    assert r.get("org.vilna.mcp.vpn").operations["killswitch_on"].polkit is None
+    assert r.get("org.vilna.mcp.files").operations["delete"].polkit is None
+
+
 def test_a_preview_names_an_r0_operation_of_the_same_tool():
     from herkos.manifest import ManifestError, ManifestRegistry, parse_manifest
 

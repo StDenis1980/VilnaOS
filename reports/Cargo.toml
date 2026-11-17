@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Crash reports and feedback (ADR 0018). The server is reports.vilnaos.com;
-# the device-side collector vilna-reportd joins this workspace as `client/`.
+# the device-side collector vilna-reportd is `client/`.
 [workspace]
 resolver = "3"
-members = ["protocol", "server"]
+members = ["protocol", "server", "client"]
 
 [workspace.package]
 version = "0.1.0"

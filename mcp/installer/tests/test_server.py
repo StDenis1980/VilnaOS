@@ -69,7 +69,8 @@ def test_a_conversation_fills_the_plan(server, tmp_path):
     assert "protected field" in out["next"]
     call(server, "plan_set_time", timezone="Europe/Kyiv", region="uk_UA.UTF-8")
     report = call(server, "plan_validate")
-    assert report["missing"] == []
+    # Only the person answers about crash reports, with their own button.
+    assert report["missing"] == ["privacy"]
     assert {p["code"] for p in report["problems"]} == {
         "wifi_password",
         "user_password",
@@ -79,6 +80,7 @@ def test_a_conversation_fills_the_plan(server, tmp_path):
     p = plans.load(tmp_path / "plan.json")
     plans.mark_entered(p, "network")
     plans.mark_entered(p, "user")
+    plans.set_crash_reports(p, "never")
     plans.acknowledge_recovery_key(p)
     plans.save(p, tmp_path / "plan.json")
     report = call(server, "plan_validate")

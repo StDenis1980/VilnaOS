@@ -20,11 +20,19 @@ secondary-color='#0D1830'
 [org.gnome.desktop.screensaver]
 picture-uri='file:///usr/share/backgrounds/vilna/vilna-sonce-dark.jpg'
 
+# The screen goes dark (and locks) after 15 minutes without input, not
+# GNOME's 5: in the VM test of Build15.6 it went dark in the first
+# session while the person was still reading, and a Herkos confirmation
+# waiting on screen was lost. Settings ▸ Power changes it as before.
+[org.gnome.desktop.session]
+idle-delay=uint32 900
+
 # The login screen is always dark (GNOME Shell's gdm mode): the logo for
-# dark backgrounds (distribution-logos-Vilna). Its background comes from
-# the Vilna GNOME Shell extension.
+# dark backgrounds and the word Vilna in one row, 40 px high, at the
+# bottom (distribution-logos-Vilna 0.4). Its background comes from the
+# Vilna GNOME Shell extension.
 [org.gnome.login-screen]
-logo='/usr/share/pixmaps/distribution-logos/vilna-logo-dark-bg.svg'
+logo='/usr/share/pixmaps/distribution-logos/vilna-logo-login.svg'
 
 # The Vilna GNOME Shell extension, for everyone and for the login screen
 # (GDM reads the same defaults): Latin layout in password fields, Gloxi

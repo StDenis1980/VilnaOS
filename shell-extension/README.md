@@ -87,7 +87,7 @@ GNOME Shell малює екран входу завжди темним (режи
 
 - **Тло** — `vilna-login.jpg` з пакета `vilna-backgrounds`: темне «Сонце», розмите й притемнене, щоб білий текст посередині мав контраст щонайменше 6,9:1. Під ним — нічний колір `#0E1A2E`, якщо картинки немає.
 - **Поле пароля** — темне напівпрозоре скло з кремовою рамкою, у фокусі рамка синя `#2D6BFF`.
-- **Знак** — остаточний логотип для темного тла внизу екрана: ключ `org.gnome.login-screen logo` у `gnome-branding-Vilna`, файл `/usr/share/pixmaps/distribution-logos/vilna-logo-dark-bg.svg` з `distribution-logos-Vilna`.
+- **Знак** — логотип для темного тла і слово Vilna в один рядок внизу екрана, 40 px заввишки: ключ `org.gnome.login-screen logo` у `vilna-branding`, файл `/usr/share/pixmaps/distribution-logos/vilna-logo-login.svg` з `distribution-logos-Vilna`.
 
 Це лише правила в `stylesheet.css` для вузла `#lockDialogGroup` і класу `.login-dialog`, без зміни `gnome-shell-theme.gresource`: оновлення GNOME Shell їх не зітре. Після входу людини на екрані блокування цей вузол закриває її власна розмита шпалера, як і раніше.
 

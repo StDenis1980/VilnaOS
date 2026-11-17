@@ -24,6 +24,7 @@ def complete(kind="empty", *, method="tpm2"):
     plans.set_user(p, "Олена Демо", "olena", "olena-laptop")
     plans.set_time(p, "Europe/Kyiv", "uk_UA.UTF-8")
     plans.mark_entered(p, "user")
+    plans.set_crash_reports(p, "ask")
     if method != "none":
         plans.acknowledge_recovery_key(p)
     return p, s
@@ -35,7 +36,15 @@ def codes(report):
 
 def test_a_new_plan_misses_every_step():
     report = plans.validate(plans.new_plan(), surveyed())
-    assert report["missing"] == ["languages", "time", "network", "disk", "encryption", "user"]
+    assert report["missing"] == [
+        "languages",
+        "time",
+        "network",
+        "disk",
+        "encryption",
+        "user",
+        "privacy",
+    ]
     assert not report["valid"]
 
 
@@ -406,3 +415,23 @@ def test_choosing_the_disk_again_keeps_the_editor_s_work_only_for_the_same_disk(
 
 def test_gloxi_cannot_choose_partitions():
     assert "set_partitions" not in plans.SETTERS
+
+
+def test_crash_reports_need_the_persons_own_answer():
+    """ADR 0018 section 3: no answer chosen in advance, and Gloxi cannot give it."""
+    assert "crash_reports" not in plans.new_plan()["privacy"]
+    p, s = complete()
+    del p["privacy"]["crash_reports"]
+    report = plans.validate(p, s)
+    assert report["missing"] == ["privacy"] and not report["valid"]
+    for answer in plans.CRASH_REPORTS:
+        plans.set_crash_reports(p, answer)
+        assert plans.validate(p, s)["valid"]
+    with pytest.raises(plans.PlanError):
+        plans.set_crash_reports(p, "yes")
+    p["privacy"]["crash_reports"] = "always"
+    assert "bad_crash_reports" in codes(plans.validate(p, s))
+    assert all("crash" not in name for name in plans.SETTERS)
+    p["confirmed_by_user"] = True
+    plans.set_crash_reports(p, "never")
+    assert p["confirmed_by_user"] is False

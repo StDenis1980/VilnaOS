@@ -289,3 +289,16 @@ fn forget_needs_real_ids() {
         .is_err()
     );
 }
+
+#[test]
+fn a_stored_report_goes_back_on_the_wire_unchanged() {
+    for extra in [
+        serde_json::json!({}),
+        serde_json::json!({"program": {"name": "org.gnome.Nautilus"}, "kind": "signal", "signal": "SIGSEGV",
+            "frames": [{"module": "libgtk-4.so.1", "build_id": "0a1b2c3d4e5f6071", "offset": "0x4f2a1"}]}),
+    ] {
+        let crash = Crash::from_wire(crash_json(extra)).unwrap();
+        let wire: CrashWire = serde_json::from_value(crash.to_wire()).unwrap();
+        assert_eq!(Crash::from_wire(wire).unwrap(), crash);
+    }
+}

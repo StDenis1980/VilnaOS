@@ -24,6 +24,10 @@ jobs:
           python3 tools/test_software_picks.py
       - name: The memory check tool (image/docs/low-memory-check.md)
         run: python3 image/tools/test_memcheck.py
+      - name: Tinta Office bundles are pinned and in the image (ADR 0011)
+        run: |
+          python3 tools/tinta_bundles.py check
+          python3 tools/test_tinta_bundles.py
 
   gloxi:
     runs-on: ubuntu-latest
@@ -110,6 +114,24 @@ jobs:
       - run: cargo test --locked
       - name: Deploy script parses
         run: sh -n deploy/install.sh
+
+  feedback:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: reports/feedback
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
 
   privacy-gateway:
     runs-on: ubuntu-latest

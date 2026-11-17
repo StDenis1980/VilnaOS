@@ -2,15 +2,18 @@
 [Unit]
 Description=Install Vilna's default Flatpak apps
 Documentation=https://github.com/StDenis1980/VilnaOS/blob/main/image/docs/composition.md
-Wants=network-online.target
-After=network-online.target
-ConditionPathExists=!/var/lib/vilna/flatpak-defaults.done
+ConditionPathExists=!/var/lib/vilna/flatpak-defaults-all.done
+# No After=network-online.target and not Type=oneshot: either would hold the
+# boot until the network is up or the downloads are done (1 min 20 s in the
+# Build15.6 VM). The script waits for the network itself, in the background.
 
 [Service]
-Type=oneshot
+Type=exec
 ExecStart=/usr/libexec/vilna-flatpak-defaults
-# Big downloads on a slow line
-TimeoutStartSec=1h
+# 75: offline, or a remote not reachable yet. Not a failure: try again later.
+SuccessExitStatus=75
+RestartForceExitStatus=75
+RestartSec=15min
 Nice=10
 IOSchedulingClass=idle
 

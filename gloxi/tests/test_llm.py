@@ -93,3 +93,30 @@ def test_the_local_conversation_keeps_its_slot():
     assert load_settings(none, env={"GLOXI_LOCAL_SLOT": "-1"}).local.slot is None
     with pytest.raises(ConfigError, match="slot"):
         load_settings(none, env={"GLOXI_LOCAL_SLOT": "two"})
+
+
+def test_the_local_model_is_kept_from_repeating_itself():
+    # Build15.6: a long answer repeated one sentence over and over; the
+    # llama-server default penalty is 1, off.
+    from pathlib import Path
+
+    import pytest
+
+    from gloxi.config import ConfigError, load_settings
+
+    none = Path("/nonexistent/gloxi.toml")
+    settings = load_settings(none, env={})
+    assert settings.local.repeat_penalty == 1.1
+    server = FakeLlamaServer("ok")
+    with ChatClient(settings.local, transport=server.transport()) as client:
+        list(client.stream_events(MESSAGES))
+    assert server.requests[0]["repeat_penalty"] == 1.1
+
+    off = load_settings(none, env={"GLOXI_LOCAL_REPEAT_PENALTY": "1"})
+    assert off.local.repeat_penalty is None
+    with ChatClient(ENDPOINT, transport=server.transport()) as client:
+        client.complete(MESSAGES)
+    assert "repeat_penalty" not in server.requests[-1]
+    for bad in ("x", "nan", "5"):
+        with pytest.raises(ConfigError):
+            load_settings(none, env={"GLOXI_LOCAL_REPEAT_PENALTY": bad})

@@ -29,3 +29,49 @@ msgstr "Kitos kalbos"
 
 msgid "Search for a language"
 msgstr "Ieškoti kalbos"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Privatumas"
+
+msgid "Cloud model off until the first login"
+msgstr "Debesijos modelis išjungtas iki pirmojo prisijungimo"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi veikia tiesiog šiame kompiuteryje, ir tai, ką jam sakote, lieka čia. Debesijos modelis dabar išjungtas; jį galėsite pasirinkti po pirmojo prisijungimo, ir tada privatumo šliuzas paslėps vardus ir numerius, prieš bet kam paliekant kompiuterį."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi veikia tiesiog šiame kompiuteryje, ir tai, ką jam sakote, lieka čia. Debesijos modelis dabar išjungtas; jį galėsite pasirinkti po pirmojo prisijungimo, ir tada privatumo šliuzas paslėps vardus ir numerius, prieš bet kam paliekant kompiuterį. Vienas klausimas čia yra tik jūsų, todėl už jus neatsakau: pasirinkite žemiau."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Jei programa užstrigs, siųsti mums strigties ataskaitą?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Strigties ataskaitoje nurodyta, kuri programa užstrigo ir kurioje jos kodo vietoje. Joje niekada nėra jūsų failų, to, ką rašėte, jūsų vardo ar kompiuterio adreso. Kiekvieną ataskaitą galite perskaityti, o šį atsakymą vėliau pakeisti Nustatymuose."
+
+msgid "Send automatically"
+msgstr "Siųsti automatiškai"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Ataskaitos išsiunčiamos pačios; kiekvieną galite perskaityti."
+
+msgid "Ask me every time"
+msgstr "Klausti kaskart"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Po strigties pranešimas paklaus, ar siųsti ataskaitą."
+
+msgid "Never"
+msgstr "Niekada"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Ataskaitos lieka šiame kompiuteryje; bet kurią vis tiek galite išsiųsti patys."
+
+msgid "What is in a report"
+msgstr "Kas yra ataskaitoje"
+
+msgid "Choose an answer about crash reports."
+msgstr "Pasirinkite atsakymą dėl strigčių ataskaitų."
+
+msgid "Crash reports: {answer}"
+msgstr "Strigčių ataskaitos: {answer}"

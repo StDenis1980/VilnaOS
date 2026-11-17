@@ -78,7 +78,7 @@
 | Пакет | Що робить |
 | --- | --- |
 | `herkos` | Сервіс шлюзу дозволів (systemd-юніт, окремий системний користувач `herkos`), Keros, Mitos |
-| `herkos-polkit` | Дії `org.vilna.herkos.*` і правила `/etc/polkit-1/rules.d/`, що забороняють користувачу `gloxi` прямі системні дії (розд. 9.2 permissions.md) |
+| `herkos-polkit` | Увійшов у пакет `herkos`: дії `org.vilna.herkos.*` (`org.vilna.herkos.policy`), правило `50-herkos-actions.rules` (адміністратор біля комп'ютера ставить програми без пароля) і `40-herkos-gloxi.rules`, яке не дає користувачам Gloxi (`gloxi-<uid>`, `vilna-llm`) жодної дії polkit (розд. 9.2 permissions.md) |
 | `herkos-selinux` | Модуль SELinux: домени `herkos_t` і `gloxi_t`, що Gloxi може говорити лише з сокетом Herkos |
 | `herkos-dialog` | Діалог підтвердження в сеансі GNOME (окремий процес, приймає лише реальне введення) |
 | `herkos-manifests` | Маніфести програм із Flatpak, якими Gloxi користується через Herkos, і їхні юніти `vilna-mcp-ext-*@` ([`../../herkos/catalogue/`](../../herkos/catalogue/README.md): спершу п'ять програм Tinta Office). Пізніше — D-Bus-інтерфейси GNOME |
@@ -170,7 +170,7 @@
 
 ## 6. Програми за замовчуванням (Flatpak)
 
-Встановлюються під час першого запуску з Flathub (Tinta Office — з власного Flatpak-сховища Vilna, поки його немає на Flathub). Список — пропозиція для обговорення. LibreOffice, Thunderbird, Papers та інші програми людина може поставити сама з Flathub (через «Програмне забезпечення» або попросивши Gloxi).
+Встановлюються під час першого запуску з Flathub, а Tinta Office — з власного підписаного Flatpak-сховища Vilna ([ADR 0024](../../docs/adr/0024-vilna-flatpak-repository.md)), куди CI кладе закріплені бандли з релізів Tinta ([`../tinta-bundles.toml`](../tinta-bundles.toml); як саме — [ADR 0011](../../docs/adr/0011-default-office-suite.md), розділ «Як Tinta Office потрапляє в образ»). Пакет `vilna-flatpak-defaults` також робить Tinta Office типовою програмою для документів, PDF, пошти, календарних файлів і контактів. Список — пропозиція для обговорення. LibreOffice, Thunderbird, Papers та інші програми людина може поставити сама з Flathub (через «Програмне забезпечення» або попросивши Gloxi).
 
 **Менеджер програм** — GNOME Software («Програмне забезпечення») з Flathub, як в Aeon. Vilna додає в нього добірку **«Рекомендовано Vilna»** (пакет `vilna-software-picks`) і дає змогу ставити програми через Gloxi: Gloxi пропонує програму, Herkos показує діалог підтвердження (дія R3), `vilna-mcp-apps` її встановлює. Критерії добірки й рівні дозволів — у [ADR 0012](../../docs/adr/0012-recommended-apps-and-install-via-gloxi.md); у дорожній карті це окремий крок наприкінці етапу 2.
 

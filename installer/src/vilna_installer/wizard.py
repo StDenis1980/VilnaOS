@@ -163,6 +163,7 @@ PROBLEM_TEXT = {
     "reserved_username": TAKEN_USERNAME,
     "bad_username": BAD_USERNAME,
     "bad_hostname": BAD_HOSTNAME,
+    "bad_crash_reports": conv.CRASH_NEEDED,
 }
 # Settled on the Herkos screen that follows (alpha item 17), not in the wizard.
 LATER_SCREEN = frozenset({"recovery_key", "confirmed_invalid"})
@@ -588,6 +589,12 @@ class Wizard:
     def set_time(self, timezone: str, region: str) -> str | None:
         return self._change(plans.set_time, timezone, region)
 
+    def set_crash_reports(self, answer: str | None) -> str | None:
+        """The person's own answer (ADR 0018): none is chosen for them."""
+        if answer is None:
+            return conv.CRASH_NEEDED
+        return self._change(plans.set_crash_reports, answer)
+
     def mark_entered(self, which: str) -> None:
         plan = self.plan
         plans.mark_entered(plan, which)
@@ -630,7 +637,7 @@ class Wizard:
         if key == "time":
             return bool(loc.get("timezone") and loc.get("region"))
         if key == "privacy":
-            return key in self.seen
+            return (plan.get("privacy") or {}).get("crash_reports") in plans.CRASH_REPORTS
         return not self.to_do()
 
     def first_open(self) -> str:

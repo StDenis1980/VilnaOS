@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "vilna-reportd"
+description = "Vilna's crash report collector: reads systemd-coredump, keeps reports on the device and sends them only as the person chose (ADR 0018)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "vilna-reportd"
+path = "src/main.rs"
+
+[dependencies]
+vilna-reports-protocol.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+# Random report ids (no device id, ADR 0018 section 2).
+getrandom = "0.3"
+# Who is on the other end of the control socket (SO_PEERCRED), without unsafe.
+rustix = { version = "1", default-features = false, features = ["std", "net"] }
+
+[lints]
+workspace = true

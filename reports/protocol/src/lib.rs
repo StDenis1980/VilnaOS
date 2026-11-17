@@ -416,6 +416,26 @@ impl Crash {
         hex16(&key)
     }
 
+    /// The report as a device sends it (`POST /v1/crash`): the stored form
+    /// keeps the program's name, version and packaging apart, the wire puts
+    /// them under `program`. `Crash::from_wire` of this gives the same report.
+    pub fn to_wire(&self) -> serde_json::Value {
+        let mut v = serde_json::to_value(self).unwrap_or_default();
+        if let Some(obj) = v.as_object_mut() {
+            let packaging = obj.remove("packaging");
+            let version = obj.remove("version");
+            obj.insert(
+                "program".into(),
+                serde_json::json!({
+                    "name": self.program,
+                    "version": version,
+                    "packaging": packaging,
+                }),
+            );
+        }
+        v
+    }
+
     /// A one-line title for the issue: `gloxi: KeyError in gloxi/chat.py!run`.
     pub fn title(&self) -> String {
         let what = self

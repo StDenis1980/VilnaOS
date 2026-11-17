@@ -1,0 +1,7 @@
+[Flatpak Repo]
+Title=Vilna
+Url=https://flatpak.vilnaos.com/repo/
+Homepage=https://vilnaos.com/gloxi/
+Comment=Apps made by Vilna OS
+Description=Gloxi and other apps of Vilna OS for any Linux with Flatpak
+GPGKey=mDMEavJFKhYJKwYBBAHaRw8BAQdAj7CQtnL+wIMdVZU/Y4h2v+K4nn1WBcjLECv9IsPJvLS0DVZpbG5hIEZsYXRwYWuIkAQTFgoAOBYhBLGTLEGl1Y5z8SyKeCVJbvkiK00sBQJq8kUqAhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJECVJbvkiK00sRBwA/jC0e0CXwmTEmtopPTC/Mph2RmlFeNySNQUqRMYG6lqBAP9rJvIx/GvKo7GUHFp3mHO5nvj4l0RIEaWdvkAc0UJ3AA==

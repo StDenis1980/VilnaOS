@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- /usr/share/polkit-1/actions: «Feedback about Vilna» changes the answer about
+     crash reports with `pkexec /usr/bin/vilna-reportd consent auto|ask|never`.
+     The answer is the whole computer's, so an administrator gives it (ADR 0018). -->
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+  "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>Vilna</vendor>
+  <vendor_url>https://vilnaos.com</vendor_url>
+  <action id="io.github.stdenis1980.vilna-reportd.consent">
+    <description>Change the answer about crash reports</description>
+    <description xml:lang="uk">Змінити відповідь про звіти про збої</description>
+    <message>Authentication is required to change whether crash reports are sent</message>
+    <message xml:lang="uk">Щоб змінити, чи надсилати звіти про збої, потрібне підтвердження адміністратора</message>
+    <icon_name>mail-send-symbolic</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/vilna-reportd</annotate>
+  </action>
+</policyconfig>
