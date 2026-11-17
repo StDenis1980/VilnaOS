@@ -76,6 +76,12 @@ msgstr "Alegeți un răspuns despre rapoartele de blocare."
 msgid "Crash reports: {answer}"
 msgstr "Rapoarte despre blocări: {answer}"
 
+msgid "Switch to the dark theme"
+msgstr "Treci la tema întunecată"
+
+msgid "Switch to the light theme"
+msgstr "Treci la tema luminoasă"
+
 msgid "VPN"
 msgstr "VPN"
 

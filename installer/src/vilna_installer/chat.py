@@ -187,6 +187,7 @@ class ChatWindow(Adw.ApplicationWindow):
         without = Gtk.Button(label=_(start.WITHOUT))
         without.connect("clicked", lambda *_a: self._without())
         header.pack_end(without)
+        header.pack_start(style.theme_button(_))
 
         # The chat
         self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
