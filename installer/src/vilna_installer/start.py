@@ -281,6 +281,31 @@ def follow_time_zone(
     return True
 
 
+# The live session has only the «us» layout. Chosen on the first screen,
+# Ukrainian could not be typed until the language step of the conversation
+# was over (KLX, Build10.11, 2026-11-17): the layout of the chosen language
+# goes first in the session's input sources at once, «us» stays.
+INPUT_SOURCES_SCHEMA = "org.gnome.desktop.input-sources"
+
+
+def session_input_sources(
+    current: list[tuple[str, str]], language: str
+) -> list[tuple[str, str]] | None:
+    """The session's input sources with the language's layout first; None: nothing to change."""
+    from vilna_mcp_installer.machine import KEYBOARD_OF
+
+    layout = KEYBOARD_OF.get(language)
+    if layout is None:
+        return None
+    wanted = ("xkb", layout)
+    if current and current[0] == wanted:
+        return None
+    rest = [source for source in current if source != wanted]
+    if not any(source[0] == "xkb" for source in rest) and layout != "us":
+        rest.append(("xkb", "us"))
+    return [wanted, *rest]
+
+
 def log(event: str, out: Callable[[str], object] | None = None) -> None:
     """One line on stderr (the session journal) with the seconds since boot.
 

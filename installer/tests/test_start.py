@@ -263,3 +263,22 @@ def test_no_timedatectl_is_no_crash(tmp_path, monkeypatch):
         raise FileNotFoundError(cmd[0])
 
     assert not start.follow_time_zone({"locale": {"timezone": "UTC"}}, missing, zoneinfo=tmp_path)
+
+
+def test_the_chosen_languages_layout_comes_first_and_us_stays():
+    assert start.session_input_sources([("xkb", "us")], "uk") == [("xkb", "ua"), ("xkb", "us")]
+    assert start.session_input_sources([], "uk") == [("xkb", "ua"), ("xkb", "us")]
+    assert start.session_input_sources([("xkb", "us"), ("xkb", "ua")], "uk") == [
+        ("xkb", "ua"),
+        ("xkb", "us"),
+    ]
+
+
+def test_nothing_changes_when_the_layout_is_already_first_or_unknown():
+    assert start.session_input_sources([("xkb", "us")], "en") is None
+    assert start.session_input_sources([("xkb", "ua"), ("xkb", "us")], "uk") is None
+    assert start.session_input_sources([("xkb", "us")], "eo") is None
+
+
+def test_english_alone_needs_no_second_layout():
+    assert start.session_input_sources([], "en") == [("xkb", "us")]
