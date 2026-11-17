@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Nov 17 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.4: the theme places everything again when the screen changes
+  size after the splash has started (the firmware framebuffer first,
+  then the graphics driver's own mode). Before, the logo kept the
+  places worked out for the first, larger screen and showed shifted
+  to the bottom right and cut off (installer boot in QEMU, Build15.6).
+  The password field, its prompt and messages are placed again too.
+
+-------------------------------------------------------------------
 Mon Nov 16 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.3: release layer, the Blavet sign and name small at the bottom of
