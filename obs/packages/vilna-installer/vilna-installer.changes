@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Nov 17 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Gloxi in the installer: the system prompt and the functions stay the
+  same for the whole conversation, and the step, the plan and the disk
+  data come as installer notes at the end, only when they change; the
+  history is cut back seldom. llama-server now reads only the new part
+  of the prompt: on KLX every turn read 1,100-1,250 tokens again
+  (43-56 s, S7 on Vilna-Live Build10.11).
+
+-------------------------------------------------------------------
 Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Put virtio_input into the first initrd: the host-only initrd left
