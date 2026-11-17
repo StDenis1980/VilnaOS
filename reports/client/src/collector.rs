@@ -355,6 +355,22 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn the_installer_conversation_goes_only_when_given_and_scrubbed() {
+        let (c, fake) = collector("conversation", None);
+        let (_, preview) = c
+            .feedback_body(&json!({"text": "x",
+                "conversation": "[network] gloxi: Wi-Fi SkyNet; router 192.168.1.1"}))
+            .unwrap();
+        assert_eq!(
+            preview["conversation"],
+            json!("[network] gloxi: Wi-Fi SkyNet; router <ip>")
+        );
+        c.feedback(1000, &json!({"text": "x"}), 5).unwrap();
+        let posted = fake.posted.lock().unwrap().clone();
+        assert!(posted[0].1.get("conversation").is_none());
+    }
+
+    #[test]
     fn forget_asks_the_server_for_this_persons_ids_only() {
         let (c, fake) = collector("forget", None);
         c.spool

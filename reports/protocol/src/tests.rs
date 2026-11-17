@@ -302,3 +302,21 @@ fn a_stored_report_goes_back_on_the_wire_unchanged() {
         assert_eq!(Crash::from_wire(wire).unwrap(), crash);
     }
 }
+
+#[test]
+fn the_installer_conversation_keeps_its_end_and_is_scrubbed() {
+    let start = "старт ".repeat(4000);
+    let end = "[disk] gloxi: Стерти цей диск? Пишіть на olena@example.com";
+    let f = feedback(serde_json::json!({ "conversation": format!("{start}{end}") })).unwrap();
+    let kept = f.conversation.unwrap();
+    assert!(kept.chars().count() <= MAX_CONVERSATION_CHARS);
+    assert!(kept.ends_with("Стерти цей диск? Пишіть на <email>"));
+    assert!(!kept.contains("olena@"));
+    let none = feedback(serde_json::json!({ "conversation": "   " })).unwrap();
+    assert_eq!(none.conversation, None);
+    // Without the field nothing changes: old devices and stored rows read the same.
+    let old = feedback(serde_json::json!({})).unwrap();
+    assert_eq!(old.conversation, None);
+    let stored = serde_json::to_value(&old).unwrap();
+    assert!(stored.get("conversation").is_none());
+}
