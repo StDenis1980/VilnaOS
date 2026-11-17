@@ -484,6 +484,24 @@ def crash_report_files(answer: Any) -> dict[str, str]:
     }
 
 
+# Gloxi's state of the VPN talk in the new account (gloxi/src/gloxi/vpn_intro.py).
+VPN_STATE = ".local/state/gloxi/vpn-intro.json"
+
+
+def vpn_state(choice: Any, now: float) -> str | None:
+    """The person's VPN choice from the wizard, for Gloxi's first start (ADR 0027 section 2).
+
+    A provider: Gloxi opens its app (or Proton's sign-up page) on the first
+    start instead of asking again. «Skip»: Gloxi does not ask; /vpn still
+    works. No choice (the conversation): no file, so Gloxi asks itself.
+    """
+    if choice == "skip":
+        return json.dumps({"status": "declined", "time": int(now)})
+    if choice in plans.VPN_CHOICES:
+        return json.dumps({"status": "chosen", "choice": choice})
+    return None
+
+
 def _safe(value: Any, pattern: str, what: str) -> str:
     if not isinstance(value, str) or not re.fullmatch(pattern, value):
         raise EngineError(f"the plan's {what} {value!r} is not allowed")
@@ -755,6 +773,8 @@ class Engine:
         if not isinstance(full, str) or any(c in full for c in ":\n\r,"):
             raise EngineError("the full name has a character an account cannot hold")
         self._username = name
+        vpn = vpn_state((plan.get("privacy") or {}).get("vpn"), time.time())
+        owned = [f"/home/{name}/.config"] + ([f"/home/{name}/.local"] if vpn else [])
         self._steps([
             Step("create the account",
                  ("chroot", str(self.root), "useradd", "--create-home", "--groups", GROUPS,
@@ -764,8 +784,10 @@ class Engine:
             # Everything gnome-initial-setup asks is in the plan already.
             Step("skip the first-start questions",
                  path=f"home/{name}/.config/gnome-initial-setup-done", text="yes"),
+            *([Step("keep the VPN choice for Gloxi", path=f"home/{name}/{VPN_STATE}",
+                    text=vpn)] if vpn else []),
             Step("the account owns its settings",
-                 ("chroot", str(self.root), "chown", "-R", f"{name}:", f"/home/{name}/.config")),
+                 ("chroot", str(self.root), "chown", "-R", f"{name}:", *owned)),
             # Files written here have no SELinux label yet; the image does the same.
             Step("label the files on the first start", path="etc/selinux/.autorelabel", text=""),
         ])  # fmt: skip

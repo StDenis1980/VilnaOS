@@ -81,3 +81,45 @@ msgstr "Treci la tema întunecată"
 
 msgid "Switch to the light theme"
 msgstr "Treci la tema luminoasă"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "Conexiunea dumneavoastră este deja protejată: Vilna criptează DNS, astfel încât rețeaua în care vă aflați nu vede ce site-uri căutați."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Doriți și mai multă protecție cu un VPN?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "Un VPN ascunde traficul dumneavoastră de rețeaua în care vă aflați (o cafenea, un hotel) și adresa dumneavoastră de site-uri. Furnizorul VPN vede unde mergeți, de aceea propunem doar furnizori verificați."
+
+msgid "Sign in to Proton VPN"
+msgstr "Autentificare în Proton VPN"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "După prima autentificare, Gloxi deschide aplicația Proton VPN, iar dumneavoastră vă autentificați acolo."
+
+msgid "Create a free Proton account"
+msgstr "Creați un cont Proton gratuit"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 țări, 1 dispozitiv odată. După prima autentificare, Gloxi deschide pagina de înregistrare Proton, apoi aplicația."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Am un număr de cont sau un cod Mullvad"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Pentru cea mai mare anonimitate: fără e-mail, doar un număr de cont. După prima autentificare, Gloxi deschide aplicația Mullvad."
+
+msgid "Skip"
+msgstr "Omiteți"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "Puteți porni un VPN mai târziu: cereți-i lui Gloxi sau tastați /vpn în fereastra sa."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Vă autentificați doar în aplicația furnizorului însuși: Vilna și Gloxi nu văd niciodată parola, numărul de cont sau codul dumneavoastră."
+
+msgid "Choose an answer about the VPN."
+msgstr "Alegeți un răspuns despre VPN."

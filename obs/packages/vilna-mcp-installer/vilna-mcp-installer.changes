@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 17 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- privacy.vpn: the person's VPN choice from the classic wizard
+  (set_vpn, not a Gloxi setter); optional, checked when present
+
+-------------------------------------------------------------------
 Sun Nov 15 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - plan_set_encryption refuses tpm2 on a computer without a TPM 2.0
