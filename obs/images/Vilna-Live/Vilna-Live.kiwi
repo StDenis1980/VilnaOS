@@ -55,13 +55,17 @@
       publisher="Vilna"
       kernelcmdline="quiet splash loglevel=3 rd.udev.log_level=3 systemd.show_status=false rd.systemd.show_status=false security=selinux selinux=1 enforcing=0"
     >
-      <!-- The menu stays hidden for 3 seconds: Esc (or any arrow key)
-           shows it, with KIWI's failsafe entry. No console attribute:
-           console="gfxterm" made KIWI write "terminal_input gfxterm"
-           too, and grub printed "terminal `gfxterm' isn't found" on
-           every boot (VM test of 2026-11-09); KIWI's default is gfxterm
-           out, console in. -->
-      <bootloader name="grub2" timeout="3" timeout_style="hidden"/>
+      <!-- A visible text menu for 5 seconds, drawn and read on the
+           firmware console: arrows pick the entry (KIWI's failsafe one
+           too), E edits the kernel line, Enter boots. The hidden menu
+           with KIWI's graphical terminal left only "Please press 't' to
+           show the boot menu on this console" on a real UEFI laptop
+           (KLX, Ventoy, Build10.11), and E did nothing (2026-11-17).
+           Both consoles are named: without input_console KIWI uses
+           output_console for input too, and console="gfxterm" once wrote
+           "terminal_input gfxterm", which grub rejects (VM test of
+           2026-11-09). -->
+      <bootloader name="grub2" timeout="5" timeout_style="menu" output_console="console" input_console="console"/>
     </type>
   </preferences>
   <!-- OBS gives the image the repositories of the build repository:
