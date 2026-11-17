@@ -538,3 +538,38 @@ def test_after_the_wifi_password_gloxi_knows_it_is_entered(plan_path):
         assert "the Wi-Fi password" in model.last_system  # on every later turn too
     finally:
         tools.close()
+
+
+def test_a_network_connected_already_is_kept_without_a_question(plan_path):
+    """Build10.11: Wi-Fi was on in the live session, and Gloxi asked for its password."""
+    from vilna_mcp_installer.machine import DemoMachine
+
+    class Connected(DemoMachine):
+        def networks(self):
+            return [{"ssid": "SkyNet", "secured": True, "signal": 100, "connected": True}]
+
+    model = Script(
+        [call("plan_set_languages", languages=["uk_UA.UTF-8"], keyboards=["ua"])],
+        "На диску нічого немає. Що з ним зробимо?",
+    )
+    c = Conversation(plan_path, InProcessTools(plan_path, Connected("empty")), model)
+    c.opening()
+    reply = c.send("українська")
+    assert reply.step.key == "survey" and reply.needs == []
+    assert reply.text.startswith(start.Texts("uk")(conv.KEPT_NETWORK) + "\n\n")
+    plan = plans.load(plan_path)
+    assert plan["network"] == {"mode": "wifi", "wifi": "SkyNet", "secret": "entered"}
+    assert plan["locale"]["keyboards"] == ["ua", "us"]  # passwords need a Latin layout
+
+
+def test_ukrainian_typed_in_the_english_layout_is_read_for_the_model(plan_path):
+    assert conv.wrong_layout("ghjljd;e'vj") == "продовжуємо"
+    assert conv.wrong_layout("ghbdsn") == "привіт"
+    for fine in ("go forward", "skynet", "don't", "Cafe Guest", "так", "it's fine, ok."):
+        assert conv.wrong_layout(fine) is None, fine
+    c, model, tools = make(plan_path, "empty", "Продовжуємо.")
+    try:
+        c.send("ghjljd;e'vj")
+        assert "«продовжуємо»" in model.seen[-1][0][-1]["content"]
+    finally:
+        tools.close()

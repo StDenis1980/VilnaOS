@@ -723,3 +723,6 @@ msgstr "Введіть пароль облікового запису в зах�
 
 msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
 msgstr "Введіть парольну фразу диска в захищене поле нижче, двічі. Я її не бачу."
+
+msgid "This computer is already connected to the network, so I keep that connection; you can change it in the plan."
+msgstr "Комп'ютер уже підключено до мережі, тож я лишаю це підключення; змінити його можна в плані."

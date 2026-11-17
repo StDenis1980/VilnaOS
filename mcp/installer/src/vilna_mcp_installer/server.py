@@ -276,9 +276,22 @@ class Installer:
             if not self._networks:
                 self.network_scan()
             known = {n["ssid"]: n for n in self._networks}
+            # People type names as they hear them: "skynet" for "SkyNet".
+            by_case = {str(s).casefold(): s for s in known}
+            ssid = ssid if ssid in known else by_case.get(str(ssid or "").casefold(), ssid)
             if ssid not in known:
                 raise plans.PlanError(f"no Wi-Fi network {ssid!r} nearby; networks: {list(known)}")
             secured = bool(known[ssid]["secured"])
+            if secured and known[ssid].get("connected"):
+                # Connected already: NetworkManager keeps its password, and the
+                # engine copies that connection to the new system.
+                out = self._change("set_network", mode=mode, ssid=ssid, secured=True)
+                plan = plans.load(self.plan_path)
+                plans.mark_entered(plan, "network")
+                plans.save(plan, self.plan_path)
+                out["changed"] = plan["network"]
+                out["next"] = "This computer is connected to it already: no password is needed."
+                return out
         out = self._change("set_network", mode=mode, ssid=ssid, secured=secured)
         if out["changed"].get("secret") == plans.NEEDED:
             out["next"] = (

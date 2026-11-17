@@ -202,10 +202,15 @@ TYPE_SECRET = {
     "user_password": TYPE_PASSWORD,
     "passphrase": TYPE_PASSPHRASE,
 }
+KEPT_NETWORK = (
+    "This computer is already connected to the network, so I keep that connection; "
+    "you can change it in the plan."
+)
 SAVED = {"network": CONNECTED, "user": PASSWORD_SAVED, "passphrase": PASSPHRASE_SAVED}
 TEXTS = (
     INTRO,
     CONNECTED,
+    KEPT_NETWORK,
     PASSWORD_SAVED,
     TYPE_WIFI,
     TYPE_PASSWORD,
@@ -819,7 +824,16 @@ class Conversation:
     def send(self, text: str) -> Reply:
         self.refresh()
         self._fetched.clear()
-        self.history.append({"role": "user", "content": text})
+        content = text
+        mistyped = wrong_layout(text)
+        if mistyped:
+            # Seen on Build10.11: «продовжуй» typed in the English layout, read as
+            # the name of a Wi-Fi network.
+            content += (
+                f"\n\n(The installer: this looks typed in the wrong keyboard layout; in "
+                f"the Ukrainian layout it reads «{mistyped}».)"
+            )
+        self.history.append({"role": "user", "content": content})
         return self._answer()
 
     def resume(self, entered: str | None = None) -> Reply:
@@ -840,6 +854,23 @@ class Conversation:
         if said and not reply.failed:
             reply.text = "\n\n".join([*said, reply.text])
         return reply
+
+    def _keep_connection(self) -> bool:
+        """The live session is on a network already: keep it, nothing to ask or type."""
+        ok, scan = self.tools.call("network_scan")
+        if not ok or not isinstance(scan, dict):
+            return False
+        wifi = next((n for n in scan.get("wifi") or [] if n.get("connected")), None)
+        if wifi is not None:
+            args = {"mode": "wifi", "ssid": wifi["ssid"]}
+        elif scan.get("wired"):
+            args = {"mode": "wired"}
+        else:
+            return False
+        ok, _ = self.tools.call("plan_set_network", args)
+        if ok:
+            self.refresh()
+        return ok and self.done(BY_KEY["network"])
 
     def _entered(self) -> list[str]:
         """The secrets the person already typed, from the plan's markers."""
@@ -875,12 +906,14 @@ class Conversation:
         return None
 
     def _answer(self) -> Reply:
+        self._said = []
         try:
             answer = self._turn()
         except (ModelError, ToolsError):
             return self._reply(self.texts(MODEL_FAILED), failed=True)
         finally:
             self._note = ""
+        answer = "\n\n".join([*self._said, answer])
         self.history.append({"role": "assistant", "content": answer})
         return self._reply(answer)
 
@@ -919,6 +952,9 @@ class Conversation:
                 # the installer's note to it (seen on Build10.11).
                 return self.texts(TYPE_SECRET[new[0]])
             after = self.current()
+            if after.key == "network" and step.key != "network" and self._keep_connection():
+                self._said.append(self.texts(KEPT_NETWORK))
+                after = self.current()
             if after.key != step.key:
                 # A new step: its fixed question if it has one, or the model asks it.
                 question = self.question(after)
@@ -1034,6 +1070,38 @@ class Conversation:
 
     def _reply(self, text: str, *, failed: bool = False) -> Reply:
         return Reply(text, self.current(), self.plan, self.needs(), failed)
+
+
+# The same keys in the English (us) and the Ukrainian (ua) layouts.
+_US = "qwertyuiop[]asdfghjkl;'zxcvbnm,.`QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>~"
+_UA = "йцукенгшщзхїфівапролджєячсмитьбю'ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ'"
+_TO_UA = str.maketrans(_US, _UA)
+
+
+def wrong_layout(text: str) -> str | None:
+    """Ukrainian typed with the English layout on, read in the Ukrainian one; None if not.
+
+    Only for unmistakable cases: punctuation keys inside a word («ghjljd;e'vj») or a word
+    of four letters or more without a vowel («ghbdsn»), which English rarely has."""
+    if any("\u0400" <= ch <= "\u04ff" for ch in text):
+        return None
+    words = text.split()
+    signs = 0
+    for word in words:
+        core = word.strip(".,!?")
+        inner = core[1:-1]
+        keys = any(ch in ';[]{}<>"' for ch in core[1:]) or any(ch in ":," for ch in inner)
+        if (
+            keys
+            and sum(ch.isalpha() for ch in core) >= 3
+            or len(core) >= 4
+            and core.isalpha()
+            and not any(ch in "aeiouyAEIOUY" for ch in core)
+        ):
+            signs += 1
+    if not signs:
+        return None
+    return text.translate(_TO_UA)
 
 
 def _external(text: str) -> str:
