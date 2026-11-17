@@ -75,3 +75,9 @@ msgstr "Choisissez une réponse au sujet des rapports de plantage."
 
 msgid "Crash reports: {answer}"
 msgstr "Rapports de plantage : {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Passer au thème sombre"
+
+msgid "Switch to the light theme"
+msgstr "Passer au thème clair"

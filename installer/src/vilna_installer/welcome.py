@@ -148,16 +148,11 @@ class Welcome(Adw.ApplicationWindow):
         self.own_name, self.translated_name = language_names()
         self.others: list[tuple[str, str]] | None = None
         self.set_default_size(1280, 800)
-        dark = Adw.StyleManager.get_default().get_dark()
-        variant = "dark" if dark else "light"
-
         overlay = Gtk.Overlay()
-        backdrop = Gtk.Box(hexpand=True, vexpand=True)
-        texture = _wallpaper(BACKGROUNDS / f"vilna-blavet-{variant}.jpg")
-        if texture is not None:
-            backdrop = Gtk.Picture.new_for_paintable(texture)
-            backdrop.set_content_fit(Gtk.ContentFit.COVER)
-        overlay.set_child(backdrop)
+        # The wallpaper and the release sign follow the theme (_show_theme).
+        self.backdrop = Gtk.Picture(hexpand=True, vexpand=True)
+        self.backdrop.set_content_fit(Gtk.ContentFit.COVER)
+        overlay.set_child(self.backdrop)
         veil = Gtk.Box(hexpand=True, vexpand=True)
         veil.add_css_class("vilna-veil")
         overlay.add_overlay(veil)
@@ -168,7 +163,7 @@ class Welcome(Adw.ApplicationWindow):
             halign=Gtk.Align.CENTER,
             valign=Gtk.Align.CENTER,
         )
-        mark = Gtk.Image.new_from_file(_data(f"blavet-mark-{variant}.svg"))
+        self.mark = mark = Gtk.Image()
         mark.set_pixel_size(104)
         center.append(mark)
         self.title = Gtk.Label()
@@ -177,7 +172,7 @@ class Welcome(Adw.ApplicationWindow):
 
         chip = Gtk.Box(spacing=8, halign=Gtk.Align.CENTER)
         chip.add_css_class("vilna-chip")
-        small = Gtk.Image.new_from_file(_data(f"blavet-mark-{variant}.svg"))
+        self.small_mark = small = Gtk.Image()
         small.set_pixel_size(26)
         chip.append(small)
         self.chip = Gtk.Label()
@@ -234,6 +229,20 @@ class Welcome(Adw.ApplicationWindow):
         self.reader.add_css_class("vilna-glass")
         self.reader.connect("toggled", self._on_reader)
         overlay.add_overlay(self.reader)
+
+        # Light or dark theme, on every screen of the installer (style.py).
+        self.theme = style.theme_button(lambda text: self.texts(text))
+        self.theme.set_halign(Gtk.Align.END)
+        self.theme.set_valign(Gtk.Align.START)
+        self.theme.set_margin_top(24)
+        self.theme.set_margin_end(24)
+        self.theme.add_css_class("circular")
+        self.theme.add_css_class("vilna-glass")
+        overlay.add_overlay(self.theme)
+        manager = Adw.StyleManager.get_default()
+        handler = manager.connect("notify::dark", lambda *_a: self._show_theme())
+        self.connect("destroy", lambda *_a: manager.disconnect(handler))
+        self._show_theme()
 
         go = Gtk.Box(spacing=10, halign=Gtk.Align.END, valign=Gtk.Align.END)
         go.set_margin_end(24)
@@ -401,6 +410,12 @@ class Welcome(Adw.ApplicationWindow):
         self.texts = start.Texts(code)
         self._relabel()
 
+    def _show_theme(self) -> None:
+        variant = "dark" if Adw.StyleManager.get_default().get_dark() else "light"
+        self.backdrop.set_paintable(_wallpaper(BACKGROUNDS / f"vilna-blavet-{variant}.jpg"))
+        for image in (self.mark, self.small_mark):
+            image.set_from_file(_data(f"blavet-mark-{variant}.svg"))
+
     def _relabel(self) -> None:
         _ = self.texts
         self.set_title(_(start.TITLE))
@@ -408,6 +423,7 @@ class Welcome(Adw.ApplicationWindow):
         self.chip.set_label(_(start.RELEASE_CHIP))
         self.lead.set_label(_(start.LEAD))
         self.reader_label.set_label(_(start.SCREEN_READER))
+        self.theme.relabel()
         self.without.set_label(_(start.WITHOUT))
         self.with_gloxi.set_label(_(start.WITH_GLOXI))
         if self.locale is None:
