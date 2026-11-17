@@ -6,6 +6,10 @@ ConditionPathExists=!/var/lib/vilna/flatpak-defaults-all.done
 # No After=network-online.target and not Type=oneshot: either would hold the
 # boot until the network is up or the downloads are done (1 min 20 s in the
 # Build15.6 VM). The script waits for the network itself, in the background.
+# After NetworkManager has started, though: nm-online -x gives up at once
+# while it is not running yet, and the first try said "offline" 0.2 s
+# before NetworkManager came up (V2 VM test, Build10.19).
+After=NetworkManager.service
 
 [Service]
 Type=exec
@@ -13,7 +17,12 @@ ExecStart=/usr/libexec/vilna-flatpak-defaults
 # 75: offline, or a remote not reachable yet. Not a failure: try again later.
 SuccessExitStatus=75
 RestartForceExitStatus=75
-RestartSec=15min
+# Soon at first, then less often: 30 s growing to 15 min over 6 tries. On
+# first boot the network is often not up yet when this starts, and a flat
+# 15 min left Tinta Office missing for 16 minutes (V2 VM test, Build10.19).
+RestartSec=30s
+RestartSteps=6
+RestartMaxDelaySec=15min
 Nice=10
 IOSchedulingClass=idle
 

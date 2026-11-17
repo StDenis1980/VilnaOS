@@ -11,7 +11,7 @@
 #   0  - done, or the Vilna repository file is not in this build yet (Tinta
 #        waits for a package update; the next boot tries again);
 #   75 - offline or a remote failed: not an error, the service runs the
-#        script again 15 minutes later.
+#        script again, 30 seconds later at first, then up to every 15 minutes.
 set -uo pipefail
 
 SHARE=${VILNA_FLATPAK_SHARE:-/usr/share/vilna}
