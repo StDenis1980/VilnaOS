@@ -75,3 +75,45 @@ msgstr "Scegli una risposta sui rapporti dei crash."
 
 msgid "Crash reports: {answer}"
 msgstr "Rapporti sui crash: {answer}"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "La tua connessione è già protetta: Vilna cifra il DNS, quindi la rete in cui ti trovi non vede quali siti cerchi."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Vuoi una protezione ancora maggiore con una VPN?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "Una VPN nasconde il tuo traffico alla rete in cui ti trovi (un bar, un hotel) e il tuo indirizzo ai siti web. Il fornitore della VPN vede dove vai, perciò proponiamo solo fornitori collaudati."
+
+msgid "Sign in to Proton VPN"
+msgstr "Accedi a Proton VPN"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "Dopo il primo accesso Gloxi apre l'app Proton VPN, e tu accedi lì."
+
+msgid "Create a free Proton account"
+msgstr "Crea un account Proton gratuito"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 paesi, 1 dispositivo alla volta. Dopo il primo accesso Gloxi apre la pagina di registrazione di Proton, poi l'app."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Ho un numero di account o un codice Mullvad"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Per il massimo anonimato: niente email, solo un numero di account. Dopo il primo accesso Gloxi apre l'app Mullvad."
+
+msgid "Skip"
+msgstr "Salta"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "Puoi attivare una VPN più tardi: chiedi a Gloxi o digita /vpn nella sua finestra."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Accedi solo nell'app del fornitore stesso: Vilna e Gloxi non vedono mai la tua password, il numero di account o il codice."
+
+msgid "Choose an answer about the VPN."
+msgstr "Scegli una risposta sulla VPN."

@@ -33,6 +33,7 @@ def walk(w, layout="replace"):
     zone, region = w.suggested_time()
     assert w.set_time(zone, region) is None
     assert w.set_crash_reports("ask") is None
+    assert w.set_vpn("proton") is None
 
 
 def test_the_simple_path_ends_with_nothing_left_but_the_herkos_screen(tmp_path):
@@ -54,10 +55,55 @@ def test_the_simple_path_ends_with_nothing_left_but_the_herkos_screen(tmp_path):
 def test_the_wizard_says_what_is_missing_and_where(tmp_path):
     w = new_wizard(tmp_path)
     missing = {row["field"] for row in w.to_do() if row["code"] == "missing"}
-    assert missing == {"languages", "network", "disk", "encryption", "user", "time", "privacy"}
+    assert missing == {
+        "languages",
+        "network",
+        "disk",
+        "encryption",
+        "user",
+        "time",
+        "privacy",
+        "vpn",
+    }
     assert w.first_open() == "languages"
     w.set_languages(["uk_UA.UTF-8"], None)
     assert w.first_open() == "network"
+
+
+def test_the_vpn_step_waits_for_the_persons_own_choice(tmp_path):
+    """ADR 0027 section 2: four choices, none in advance; the plan keeps only the choice."""
+    w = new_wizard(tmp_path)
+    walk(w)
+    plan = w.plan
+    del plan["privacy"]["vpn"]
+    plans.save(plan, w.plan_path)
+    assert not w.done("vpn") and w.first_open() == "vpn"
+    assert [r["field"] for r in w.to_do()] == ["vpn"]
+    # The plan itself may go without it: after the conversation Gloxi asks.
+    assert plans.validate(w.plan, w.survey())["missing"] == []
+    assert w.set_vpn(None) == wiz.VPN_NEEDED
+    assert set(wiz.VPN_ANSWERS) == set(plans.VPN_CHOICES)
+    _ = start.Texts("uk")
+    assert wiz.vpn_text(w.plan, _) is None
+    for choice in plans.VPN_CHOICES:
+        assert w.set_vpn(choice) is None and w.done("vpn") and w.to_do() == []
+    assert wiz.vpn_text(w.plan, _) == _(wiz.VPN_SKIP)
+    assert wiz.section_title("vpn") == wiz.VPN_TITLE
+    assert w.set_vpn("nordvpn")  # the plan refuses it
+
+
+@pytest.mark.parametrize("code", [c for c in start.CODES if c != "en"])
+def test_the_vpn_step_is_in_every_language(code):
+    """ADR 0027 row 5: the step in all ten languages of ADR 0009."""
+    catalog = start.catalog(code)
+    assert [t for t in wiz.VPN_TEXTS if t not in catalog] == []
+    assert "5" in catalog[wiz.VPN_SIGNUP_HINT] and "/vpn" in catalog[wiz.VPN_SKIP_HINT]
+
+
+def test_the_vpn_step_promises_no_anonymity():
+    """ADR 0027 section 2: the provider sees where you go; the step says so."""
+    assert "provider sees where you go" in wiz.VPN_EXPLAIN
+    assert "anonym" not in wiz.VPN_EXPLAIN.lower()
 
 
 def test_secrets_are_markers_only(tmp_path):

@@ -32,7 +32,17 @@ MiB = plans.MiB
 EFI_SIZE = 512 * MiB
 
 # Steps of the wizard, in order: the parts of the plan, then the summary.
-STEPS = ("languages", "network", "disk", "encryption", "user", "time", "privacy", "summary")
+STEPS = (
+    "languages",
+    "network",
+    "disk",
+    "encryption",
+    "user",
+    "time",
+    "privacy",
+    "vpn",
+    "summary",
+)
 
 # Texts (msgids of locale/*.po). New ones are in uk only for now; the
 # translation thread adds the other eight.
@@ -121,6 +131,55 @@ BAD_HOSTNAME = "A computer name has only small Latin letters, digits and «-»."
 CHOOSE_DISK = "Choose a disk."
 CHOOSE = "Choose one of the options."
 WIFI_NOT_CONNECTED = "Connect to the Wi-Fi network first, or choose another way."
+# The VPN step (ADR 0027 section 2): DNS is encrypted already, so the step
+# offers more protection and never promises anonymity. Only the classic
+# wizard has it; after the conversation Gloxi asks on the first start. In all
+# ten languages, like the crash reports question.
+VPN_TITLE = "VPN"
+VPN_LEAD = (
+    "Your connection is already protected: Vilna encrypts DNS, so the network you are on "
+    "does not see which sites you look up."
+)
+VPN_QUESTION = "Do you want even more protection with a VPN?"
+VPN_EXPLAIN = (
+    "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your "
+    "address from websites. The VPN provider sees where you go, so we only suggest proven "
+    "ones."
+)
+VPN_PROTON = "Sign in to Proton VPN"
+VPN_PROTON_HINT = "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+VPN_SIGNUP = "Create a free Proton account"
+VPN_SIGNUP_HINT = (
+    "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up "
+    "page, then the app."
+)
+VPN_MULLVAD = "I have a Mullvad account number or code"
+VPN_MULLVAD_HINT = (
+    "For the most anonymity: no email, only an account number. After the first login Gloxi "
+    "opens the Mullvad app."
+)
+VPN_SKIP = "Skip"
+VPN_SKIP_HINT = "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+VPN_NOT_SEEN = (
+    "You sign in only in the provider's own app: Vilna and Gloxi never see your password, "
+    "account number or code."
+)
+VPN_NEEDED = "Choose an answer about the VPN."
+VPN_ANSWERS = {
+    "proton": (VPN_PROTON, VPN_PROTON_HINT),
+    "proton_signup": (VPN_SIGNUP, VPN_SIGNUP_HINT),
+    "mullvad": (VPN_MULLVAD, VPN_MULLVAD_HINT),
+    "skip": (VPN_SKIP, VPN_SKIP_HINT),
+}
+VPN_TEXTS = (
+    VPN_TITLE,
+    VPN_LEAD,
+    VPN_QUESTION,
+    VPN_EXPLAIN,
+    *(t for pair in VPN_ANSWERS.values() for t in pair),
+    VPN_NOT_SEEN,
+    VPN_NEEDED,
+)
 
 USE_TEXT = {
     None: NOT_USED,
@@ -164,6 +223,7 @@ PROBLEM_TEXT = {
     "bad_username": BAD_USERNAME,
     "bad_hostname": BAD_HOSTNAME,
     "bad_crash_reports": conv.CRASH_NEEDED,
+    "bad_vpn": VPN_NEEDED,
 }
 # Settled on the Herkos screen that follows (alpha item 17), not in the wizard.
 LATER_SCREEN = frozenset({"recovery_key", "confirmed_invalid"})
@@ -234,10 +294,11 @@ TEXTS = (
     CHOOSE_DISK,
     CHOOSE,
     WIFI_NOT_CONNECTED,
+    *VPN_TEXTS,
     *(
         t
         for t in PROBLEM_TEXT.values()
-        if t not in (TAKEN_USERNAME, BAD_USERNAME, BAD_HOSTNAME, BITLOCKER_KEY)
+        if t not in (TAKEN_USERNAME, BAD_USERNAME, BAD_HOSTNAME, BITLOCKER_KEY, VPN_NEEDED)
     ),
     BITLOCKER_KEY,
     BAD_USERNAME,
@@ -595,6 +656,12 @@ class Wizard:
             return conv.CRASH_NEEDED
         return self._change(plans.set_crash_reports, answer)
 
+    def set_vpn(self, choice: str | None) -> str | None:
+        """The person's own choice of a VPN (ADR 0027 section 2): none is chosen for them."""
+        if choice is None:
+            return VPN_NEEDED
+        return self._change(plans.set_vpn, choice)
+
     def mark_entered(self, which: str) -> None:
         plan = self.plan
         plans.mark_entered(plan, which)
@@ -610,6 +677,10 @@ class Wizard:
         report = report or self.report()
         rows = [p for p in report["problems"] if p["code"] not in LATER_SCREEN]
         rows += [{"code": "missing", "field": m, "message": m} for m in report["missing"]]
+        # The plan may go without it (Gloxi then asks on the first start), but the
+        # wizard has the step, so it waits for the person's answer like the rest.
+        if not self.done("vpn") and not any(r.get("field") == "privacy.vpn" for r in rows):
+            rows.append({"code": "missing", "field": "vpn", "message": "vpn"})
         return rows
 
     def done(self, key: str) -> bool:
@@ -638,6 +709,8 @@ class Wizard:
             return bool(loc.get("timezone") and loc.get("region"))
         if key == "privacy":
             return (plan.get("privacy") or {}).get("crash_reports") in plans.CRASH_REPORTS
+        if key == "vpn":
+            return (plan.get("privacy") or {}).get("vpn") in plans.VPN_CHOICES
         return not self.to_do()
 
     def first_open(self) -> str:
@@ -645,7 +718,15 @@ class Wizard:
 
 
 def section_title(key: str) -> str:
+    if key == "vpn":
+        return VPN_TITLE
     return SUMMARY if key == "summary" else conv.SECTIONS[key]
+
+
+def vpn_text(plan: dict[str, Any], _: start.Texts) -> str | None:
+    """The VPN choice in words for the summary; None when not chosen yet."""
+    answer = VPN_ANSWERS.get(str((plan.get("privacy") or {}).get("vpn")))
+    return _(answer[0]) if answer else None
 
 
 def machine_for(demo: str | None) -> machines.Machine:

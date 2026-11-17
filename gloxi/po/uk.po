@@ -1408,5 +1408,9 @@ msgid "Yes, recommended"
 msgstr "Так, рекомендовано"
 
 #: src/gloxi/vpn_intro.py
+msgid "You chose this while installing Vilna."
+msgstr "Ви обрали це під час встановлення Vilna."
+
+#: src/gloxi/vpn_intro.py
 msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up. Do you want even more protection with a VPN? It also hides the rest of your traffic from that network (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones."
 msgstr "Ваше з’єднання вже захищене: Vilna шифрує DNS, тож мережа, у якій ви є, не бачить, які сайти ви шукаєте. Хочете ще більше захисту з VPN? Він приховує від цієї мережі (кав’ярня, готель) і решту трафіку, а вашу адресу — від сайтів. Провайдер VPN бачить, куди ви ходите, тому я пропоную лише перевірених."

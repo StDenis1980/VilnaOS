@@ -301,8 +301,11 @@ def repl(
             print(_(UNMASKED_WARNING), file=out)
     else:
         print(_("Cloud: off. Everything stays on this computer."), file=out)
-    # One first-run talk per start: backups first, the VPN the next time.
-    if intro and intro.due():
+    # One first-run talk per start: backups first, the VPN the next time;
+    # a VPN chosen in the installer wizard first (gui/controller.py).
+    if vpn and vpn.chosen():
+        run_intro(vpn, read, out, open_url)
+    elif intro and intro.due():
         run_intro(intro, read, out)
     elif vpn and vpn.due():
         run_intro(vpn, read, out, open_url)

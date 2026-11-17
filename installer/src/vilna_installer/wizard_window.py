@@ -876,6 +876,28 @@ class WizardWindow(Adw.ApplicationWindow):
 
         return self._page(lead, crash), commit
 
+    def _page_vpn(self):
+        _ = self._
+        lead = _group(description=_(wiz.VPN_LEAD))
+        # ADR 0027 section 2: four choices, none chosen in advance.
+        group = _group(_(wiz.VPN_QUESTION), _(wiz.VPN_EXPLAIN))
+        leader = radio_group()
+        checks: dict[str, Gtk.CheckButton] = {}
+        for choice, (title, hint) in wiz.VPN_ANSWERS.items():
+            row, checks[choice] = radio_row(_(title), _(hint), leader)
+            group.add(row)
+        self.vpn_checks = checks
+        chosen = (self.wizard.plan.get("privacy") or {}).get("vpn")
+        if chosen in checks:
+            checks[chosen].set_active(True)
+        unseen = _group(description=_(wiz.VPN_NOT_SEEN))
+
+        def commit() -> str | None:
+            choice = next((c for c, check in checks.items() if check.get_active()), None)
+            return self.wizard.set_vpn(choice)
+
+        return self._page(lead, group, unseen), commit
+
     def _page_summary(self):
         _ = self._
         report = self.wizard.report()
@@ -885,6 +907,12 @@ class WizardWindow(Adw.ApplicationWindow):
             row = plain_row(title=_(title), subtitle=lines.get(key) or _(conv.NOT_DECIDED))
             row.add_css_class("property")
             plan_group.add(row)
+        row = plain_row(
+            title=_(wiz.VPN_TITLE),
+            subtitle=wiz.vpn_text(self.wizard.plan, _) or _(conv.NOT_DECIDED),
+        )
+        row.add_css_class("property")
+        plan_group.add(row)
         changes = _group(_(wiz.DISK_CHANGES))
         for change in report["changes"]:
             icon = {"erase": "dialog-warning-symbolic", "create": "list-add-symbolic"}.get(
@@ -937,6 +965,7 @@ def _step_of(problem: dict[str, str]) -> str:
         ("locale.region", "time"),
         ("locale", "languages"),
         ("migrate", "disk"),
+        ("privacy.vpn", "vpn"),
     ):
         if field.startswith(prefix):
             return key
