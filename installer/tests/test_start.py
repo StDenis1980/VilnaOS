@@ -82,9 +82,14 @@ def test_plan_starts_unconfirmed_and_rejects_unknown_languages(tmp_path):
 
 
 def test_the_blavet_marks_ship_with_the_package():
+    """Copies of Dmytro Sizmin's Blavet sign (docs/design/blavet, CC-BY-SA-4.0)."""
+    design = SRC.parents[2] / "docs" / "design" / "blavet" / "svg"
     for variant in ("light", "dark"):
         svg = (SRC / "data" / f"blavet-mark-{variant}.svg").read_text()
-        assert svg.startswith("<svg") and "c2pa" not in svg
+        assert "<svg" in svg and "c2pa" not in svg.lower()
+        source = design / f"blavet-mark-{variant}-bg.svg"
+        if source.is_file():  # in a checkout, not in the package tarball
+            assert svg == source.read_text(), f"copy {source.name} again"
 
 
 SUPPORTED_SAMPLE = """\

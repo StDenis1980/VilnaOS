@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Nov 16 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Progress screen: a branch with leaves and cornflowers grows with the
+  percent (branch.py, drawn with cairo: requires python3-gobject-cairo);
+  when Vilna is installed the Blavet sign sits at its end and the bar
+  and the list of steps give way to «Restart». Designer frames in
+  data/branch/ replace the drawing; reduced animation jumps.
+- The Blavet sign on the first screen and on «Done» is now Dmytro
+  Sizmin's final sign (CC-BY-SA-4.0).
+
+-------------------------------------------------------------------
 Mon Nov 16 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Require udev for systemd-repart: OBS does not resolve the file

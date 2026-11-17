@@ -13,10 +13,21 @@
 # screen (plymouth quit --retain-splash).
 #
 # Images come from make_theme.py; this file only places and moves them.
+# When make_theme.py got designer frames (logo-0.png, logo-1.png ...),
+# they play for the logo instead of the circle and the swallow.
+
+# Release layer: the sign (release-mark.png from release/mark.svg) and
+# the name of the current release, small at the bottom of every screen:
+# boot, disk password, shutdown, reboot. The next release changes this
+# line and release/mark.svg, nothing else (release/README.md).
+RELEASE_NAME = "Blavet";
 
 FPS = 50;              # Plymouth calls the refresh function 50 times a second
 CIRCLE_FRAMES = 30;    # make_theme.py CIRCLE_FRAMES
 BLOOM_FRAMES = 24;     # make_theme.py BLOOM_FRAMES
+MAX_LOGO_FRAMES = 240; # make_theme.py MAX_FRAMES
+LOGO_START = 0.2;      # designer frames: when they start (s)
+LOGO_SECONDS = 1.6;    # designer frames: how long they play (s)
 
 # Night blue of the palette, a little darker at the bottom.
 Window.SetBackgroundTopColor(0.122, 0.204, 0.361);
@@ -45,18 +56,36 @@ fun ease_out(v) {
 # Logo -----------------------------------------------------------------
 
 logo.h = Math.Int(screen.base * 0.34);
-first = Image("circle-0.png");
+first = Image("logo-0.png");
+designer = 0;
+if (first) designer = 1;
+else first = Image("circle-0.png");
 logo.w = Math.Int(first.GetWidth() * logo.h / first.GetHeight());
 logo.x = screen.x + Math.Int((screen.w - logo.w) / 2);
 logo.y = screen.y + Math.Int(screen.h * 0.46 - logo.h / 2);
 
-for (i = 0; i < CIRCLE_FRAMES; i++)
-    circle.frames[i] = Image("circle-" + i + ".png").Scale(logo.w, logo.h);
+if (designer) {
+    # As many frames as make_theme.py copied; the last one stays.
+    frames.count = 0;
+    for (i = 0; i < MAX_LOGO_FRAMES; i++) {
+        img = Image("logo-" + i + ".png");
+        if (!img) break;
+        frames.image[i] = img.Scale(logo.w, logo.h);
+        frames.count = i + 1;
+    }
+    circle.frames = frames.image;
+    CIRCLE_FRAMES = frames.count;
+}
+else {
+    for (i = 0; i < CIRCLE_FRAMES; i++)
+        circle.frames[i] = Image("circle-" + i + ".png").Scale(logo.w, logo.h);
+}
 circle.sprite = Sprite();
 circle.sprite.SetPosition(logo.x, logo.y, 10);
 circle.shown = -1;
 
-bird.sprite = Sprite(Image("swallow.png").Scale(logo.w, logo.h));
+bird.sprite = Sprite();
+if (!designer) bird.sprite.SetImage(Image("swallow.png").Scale(logo.w, logo.h));
 bird.sprite.SetPosition(logo.x, logo.y, 11);
 bird.sprite.SetOpacity(0);
 
@@ -92,6 +121,27 @@ for (i = 0; i < 3; i++) {
     dots.sprite[i].SetOpacity(0);
 }
 
+# Release layer ----------------------------------------------------------
+
+release.size = Math.Int(Math.Max(24, screen.base * 0.045));
+release.mark = Sprite();
+release.name = Sprite();
+release.image = Image("release-mark.png");
+if (release.image) {
+    release.mark.SetImage(release.image.Scale(release.size, release.size));
+    release.name.SetImage(Image.Text(RELEASE_NAME, 0.949, 0.910, 0.835, 1,
+                                     "Sans " + Math.Int(Math.Max(11, screen.base * 0.017))));
+    release.gap = Math.Int(release.size * 0.3);
+    release.w = release.size + release.gap + release.name.GetImage().GetWidth();
+    release.x = screen.x + Math.Int((screen.w - release.w) / 2);
+    release.y = screen.y + Math.Int(screen.h * 0.84 - release.size / 2);
+    release.mark.SetPosition(release.x, release.y, 5);
+    release.name.SetPosition(release.x + release.size + release.gap,
+                             release.y + Math.Int((release.size - release.name.GetImage().GetHeight()) / 2), 5);
+}
+release.mark.SetOpacity(0);
+release.name.SetOpacity(0);
+
 # State ------------------------------------------------------------------
 
 tick = 0;
@@ -103,18 +153,21 @@ fun show_frame(t) {
     # Glow
     glow.sprite.SetOpacity(clamp01(t / 0.4));
 
-    # Brush circle
-    f = Math.Int(clamp01((t - 0.2) / 1.2) * (CIRCLE_FRAMES - 1));
+    # Brush circle, or the designer frames of the whole logo
+    if (designer) f = Math.Int(clamp01((t - LOGO_START) / LOGO_SECONDS) * (CIRCLE_FRAMES - 1));
+    else f = Math.Int(clamp01((t - 0.2) / 1.2) * (CIRCLE_FRAMES - 1));
     if (f != circle.shown) {
         circle.sprite.SetImage(circle.frames[f]);
         global.circle.shown = f;
     }
 
     # Swallow: from inside the circle, up and to the right, into place
-    b = ease_out((t - 1.1) / 0.9);
-    bird.sprite.SetX(logo.x - Math.Int((1 - b) * logo.w * 0.28));
-    bird.sprite.SetY(logo.y + Math.Int((1 - b) * logo.h * 0.16));
-    bird.sprite.SetOpacity(clamp01((t - 1.1) / 0.35));
+    if (!designer) {
+        b = ease_out((t - 1.1) / 0.9);
+        bird.sprite.SetX(logo.x - Math.Int((1 - b) * logo.w * 0.28));
+        bird.sprite.SetY(logo.y + Math.Int((1 - b) * logo.h * 0.16));
+        bird.sprite.SetOpacity(clamp01((t - 1.1) / 0.35));
+    }
 
     # Corner motifs
     g = Math.Int(clamp01((t - 1.5) / 1.5) * (BLOOM_FRAMES - 1));
@@ -126,6 +179,10 @@ fun show_frame(t) {
     fade = clamp01((t - 1.5) / 0.5) * 0.9;
     bloom.bl.SetOpacity(fade);
     bloom.tr.SetOpacity(fade);
+
+    # Release sign and name come with the corner motifs
+    release.mark.SetOpacity(clamp01((t - 1.8) / 0.5) * 0.9);
+    release.name.SetOpacity(clamp01((t - 1.8) / 0.5) * 0.75);
 
     # Nodes pulse one after another, unless a prompt is shown
     on = clamp01((t - 2.4) / 0.4);

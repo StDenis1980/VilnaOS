@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Mon Nov 16 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: release layer, the Blavet sign and name small at the bottom of
+  every screen (boot, disk password, shutdown, reboot), from
+  release/mark.svg and RELEASE_NAME in vilna.script; the theme plays
+  designer frames (logo-N.png, make_theme.py --frames) for the logo
+  when they are there, instead of the circle and the swallow.
+- The logo animation is now Dmytro Sizmin's 60 frames (2x) and the
+  release sign his Blavet mark (CC-BY-SA-4.0, LICENSE.CC-BY-SA-4.0);
+  the tarball carries them as frames/ and release/mark.svg. The theme
+  grows from ~1.2 MB to ~4.4 MB in the initrd.
+
+-------------------------------------------------------------------
 Sun Nov  8 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.2: ship /usr/share/plymouth/plymouthd.defaults (Theme=vilna,
