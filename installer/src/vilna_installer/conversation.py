@@ -38,6 +38,7 @@ import os
 import subprocess
 import sys
 import threading
+import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable
@@ -50,7 +51,9 @@ from vilna_installer import start
 # The local model as vilna-llm.service serves it (ADR 0025).
 MODEL_URL = os.environ.get("VILNA_INSTALLER_MODEL_URL", "http://127.0.0.1:8080/v1")
 MODEL_KEY_FILE = Path(os.environ.get("VILNA_INSTALLER_MODEL_KEY_FILE", "/var/lib/vilna-llm/key"))
-MODEL_TIMEOUT = 120.0
+# A 4B model on four CPU threads under memory pressure took up to 2 minutes per
+# answer on a laptop with 8 GB (Build10.11); 120 s cut two turns off.
+MODEL_TIMEOUT = float(os.environ.get("VILNA_INSTALLER_MODEL_TIMEOUT", "300"))
 # In the live image vilna-llm.service starts only after login, reading about
 # 2.5 GB of weights from the USB stick, and makes its key on start: the
 # conversation waits for it this long before offering to go on without it.
@@ -100,6 +103,26 @@ NETWORK_QUESTION = (
 DISK_QUESTION = (
     "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; "
     "the other way is your own layout in the partition editor."
+)
+DISK_EMPTY_QUESTION = (
+    "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; "
+    "the other way is your own layout in the partition editor. Use the whole disk?"
+)
+DISK_ERASE_QUESTION = (
+    "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it "
+    "completely and installing Vilna: everything on it will be lost. The other way is your "
+    "own layout in the partition editor. Erase this disk?"
+)
+FILES = "files"
+ENCRYPT_TPM_QUESTION = (
+    "Shall I encrypt the new system? I suggest encryption with a recovery key: on this "
+    "computer the disk opens by itself, and the key opens it if something changes. You can "
+    "also type a passphrase at every start, or not encrypt the disk."
+)
+ENCRYPT_PASS_QUESTION = (
+    "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open "
+    "with a passphrase you type at every start. Without encryption, anyone with the disk "
+    "can read your files."
 )
 KEEP_KEY = (
     "Keep the recovery key safe: without it nobody, not even you, can open the disk if "
@@ -193,11 +216,43 @@ SECTIONS = {
     "time": "Time and region",
     "privacy": "Privacy",
 }
+# Said when a protected field is done, so the model's last word in the
+# conversation is not its own request for that secret.
+CONNECTED = "Connected to Wi-Fi."
+PASSWORD_SAVED = "The password is saved."
+PASSPHRASE_SAVED = "The passphrase is saved."
+TYPE_WIFI = "Type the Wi-Fi password into the protected field below. I do not see it."
+TYPE_PASSWORD = (
+    "Type the password for your account into the protected field below, twice. I do not see it."
+)
+TYPE_PASSPHRASE = "Type the disk passphrase into the protected field below, twice. I do not see it."
+TYPE_SECRET = {
+    "wifi_password": TYPE_WIFI,
+    "user_password": TYPE_PASSWORD,
+    "passphrase": TYPE_PASSPHRASE,
+}
+KEPT_NETWORK = (
+    "This computer is already connected to the network, so I keep that connection; "
+    "you can change it in the plan."
+)
+SAVED = {"network": CONNECTED, "user": PASSWORD_SAVED, "passphrase": PASSPHRASE_SAVED}
 TEXTS = (
     INTRO,
+    CONNECTED,
+    KEPT_NETWORK,
+    PASSWORD_SAVED,
+    TYPE_WIFI,
+    TYPE_PASSWORD,
+    TYPE_PASSPHRASE,
+    PASSPHRASE_SAVED,
     FIRST_QUESTION,
     NETWORK_QUESTION,
     DISK_QUESTION,
+    DISK_EMPTY_QUESTION,
+    DISK_ERASE_QUESTION,
+    FILES,
+    ENCRYPT_TPM_QUESTION,
+    ENCRYPT_PASS_QUESTION,
     KEEP_KEY,
     USER_QUESTION,
     TIME_QUESTION,
@@ -474,6 +529,12 @@ AFTER_SECRET = (
     "The person has just done this in the installer window themselves; "
     "do not ask for it again. Go on with the current step."
 )
+# Named for the model when the plan holds the marker "entered" for them.
+ENTERED_NAMES = {
+    "network": "the Wi-Fi password (the computer is connected)",
+    "user": "the account password",
+    "passphrase": "the disk passphrase",
+}
 
 
 # --- the installer's MCP server ------------------------------------------------------
@@ -650,7 +711,6 @@ def wait_ready(
     sleep: Callable[[float], None] | None = None,
 ) -> bool:
     """Wait until the model answers; False after ``timeout``, a failed service or ``stopped``."""
-    import time
 
     pause = sleep or time.sleep
     waited = 0.0
@@ -698,6 +758,7 @@ class Conversation:
         self.tools = tools
         self.model = model
         self.progress = progress or plan_path.with_name("progress.json")
+        self.log_path = plan_path.with_name("conversation.jsonl")
         self.history: list[dict[str, Any]] = []
         self.state = _State()
         self._fetched: dict[str, tuple[bool, Any]] = {}  # this turn's reads
@@ -822,19 +883,67 @@ class Conversation:
     def send(self, text: str) -> Reply:
         self.refresh()
         self._fetched.clear()
-        self.history.append({"role": "user", "content": text})
+        content = text
+        mistyped = wrong_layout(text)
+        if mistyped:
+            # Seen on Build10.11: «продовжуй» typed in the English layout, read as
+            # the name of a Wi-Fi network.
+            content += (
+                f"\n\n(The installer: this looks typed in the wrong keyboard layout; in "
+                f"the Ukrainian layout it reads «{mistyped}».)"
+            )
+        self.history.append({"role": "user", "content": content})
+        self._log("person", text, self.current().key)
         return self._answer(fresh=True)
 
-    def resume(self) -> Reply:
-        """Go on without a new message: after a protected field, or «Change» in the plan."""
+    def resume(self, entered: str | None = None) -> Reply:
+        """Go on without a new message: after a protected field (``entered`` names it:
+        network, user, passphrase), or «Change» in the plan."""
         self.refresh()
         self._fetched.clear()
+        said = []
+        if entered in SAVED:
+            said.append(self.texts(SAVED[entered]))
+            self.history.append({"role": "assistant", "content": said[0]})
         question = self.question(self.current())
         if question:
             self.history.append({"role": "assistant", "content": question})
-            return self._reply(question)
-        self._note = CHANGING if self.state.focus else AFTER_SECRET
-        return self._answer(fresh=False)
+            return self._reply("\n\n".join([*said, question]))
+        self._note = CHANGING if self.state.focus and not entered else AFTER_SECRET
+        reply = self._answer(fresh=False)
+        if said and not reply.failed:
+            reply.text = "\n\n".join([*said, reply.text])
+        return reply
+
+    def _keep_connection(self) -> bool:
+        """The live session is on a network already: keep it, nothing to ask or type."""
+        ok, scan = self.tools.call("network_scan")
+        if not ok or not isinstance(scan, dict):
+            return False
+        wifi = next((n for n in scan.get("wifi") or [] if n.get("connected")), None)
+        if wifi is not None:
+            args = {"mode": "wifi", "ssid": wifi["ssid"]}
+        elif scan.get("wired"):
+            args = {"mode": "wired"}
+        else:
+            return False
+        ok, _ = self.tools.call("plan_set_network", args)
+        if ok:
+            self.refresh()
+        return ok and self.done(BY_KEY["network"])
+
+    def _entered(self) -> list[str]:
+        """The secrets the person already typed, from the plan's markers."""
+        plan = self.plan
+        out = []
+        if (plan.get("network") or {}).get("secret") == "entered":
+            out.append("network")
+        if (plan.get("user") or {}).get("password") == "entered":
+            out.append("user")
+        enc = (plan.get("disk") or {}).get("encryption") or {}
+        if enc.get("passphrase") == "entered":
+            out.append("passphrase")
+        return out
 
     def question(self, step: Step) -> str | None:
         """The step's first question as fixed text, or None when only the model can ask it."""
@@ -844,7 +953,11 @@ class Conversation:
         if key == "network":
             return self.texts(NETWORK_QUESTION)
         if key == "disk":
-            return self.texts(DISK_QUESTION)
+            return self._disk_question()
+        if key == "encryption":
+            ok, hw = self.tools.call("hardware_describe")
+            tpm = ok and isinstance(hw, dict) and hw.get("tpm") == 2
+            return self.texts(ENCRYPT_TPM_QUESTION if tpm else ENCRYPT_PASS_QUESTION)
         if key == "user":
             return self.texts(USER_QUESTION)
         if key == "time":
@@ -856,13 +969,33 @@ class Conversation:
             return self.texts(PRIVACY_TEXT)
         return None
 
+    def _disk_question(self) -> str:
+        """With one disk to choose, say what it holds, so «ok» is an answer to that."""
+        if self.state.survey is None:
+            ok, data = self.tools.call("disks_survey")
+            if ok and isinstance(data, dict):
+                self.state.survey = data
+        disks = [d for d in (self.state.survey or {}).get("disks", []) if not d.get("boot_medium")]
+        if len(disks) != 1:
+            return self.texts(DISK_QUESTION)
+        disk = disks[0]
+        size = round(disk.get("size", 0) / (1 << 30))
+        systems = [str(s) for s in disk.get("systems") or []]
+        holds = any(p.get("holds_data") for p in disk.get("partitions", []))
+        if not systems and not holds:
+            return self.texts(DISK_EMPTY_QUESTION).format(size=size)
+        what = ", ".join(systems) if systems else self.texts(FILES)
+        return self.texts(DISK_ERASE_QUESTION).format(size=size, what=what)
+
     def _answer(self, *, fresh: bool) -> Reply:
+        self._said = []
         try:
             answer = self._turn(fresh)
         except (ModelError, ToolsError):
             return self._reply(self.texts(MODEL_FAILED), failed=True)
         finally:
             self._note = ""
+        answer = "\n\n".join([*self._said, answer])
         self.history.append({"role": "assistant", "content": answer})
         return self._reply(answer)
 
@@ -885,6 +1018,7 @@ class Conversation:
         exchange: list[dict[str, Any]] = []
         called = nudged = False
         note = ""
+        asked = set(self.needs()) & set(TYPE_SECRET)
         for _ in range(MAX_ROUNDS):
             step = self.current()
             if note:
@@ -913,7 +1047,15 @@ class Conversation:
                 exchange.append(
                     {"role": "tool", "tool_call_id": call.get("id", ""), "content": result}
                 )
+            new = [n for n in self.needs() if n in TYPE_SECRET and n not in asked]
+            if new:
+                # A protected field opens: fixed words, never the model retelling
+                # the installer's note to it (seen on Build10.11).
+                return self.texts(TYPE_SECRET[new[0]])
             after = self.current()
+            if after.key == "network" and step.key != "network" and self._keep_connection():
+                self._said.append(self.texts(KEPT_NETWORK))
+                after = self.current()
             if after.key != step.key:
                 # A new step: its fixed question if it has one, or the model asks it.
                 question = self.question(after)
@@ -1040,6 +1182,12 @@ class Conversation:
             ok, hardware = self._fetched.get("hardware_describe", (False, {}))
             if ok and isinstance(hardware, dict) and hardware.get("tpm") != 2:
                 parts.append(NO_TPM)
+        entered = self._entered()
+        if entered:
+            parts.append(
+                "Already typed by the person into protected fields, so never ask for it "
+                "again: " + "; ".join(ENTERED_NAMES[k] for k in entered) + "."
+            )
         if step.key == "time":
             parts.append("Suggested: " + json.dumps(self._suggested_time()))
         if step.key == "install":
@@ -1060,7 +1208,98 @@ class Conversation:
             return "not started yet"
 
     def _reply(self, text: str, *, failed: bool = False) -> Reply:
-        return Reply(text, self.current(), self.plan, self.needs(), failed)
+        reply = Reply(text, self.current(), self.plan, self.needs(), failed)
+        self._log("gloxi", text, reply.step.key)
+        return reply
+
+    def _log(self, who: str, text: str, step: str) -> None:
+        """The conversation for a problem report, next to the plan; secrets never are in
+        it (they go into protected fields), and it stays on this computer."""
+        line = json.dumps(
+            {"time": round(time.time(), 1), "step": step, "who": who, "text": text},
+            ensure_ascii=False,
+        )
+        try:
+            fd = os.open(self.log_path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+            with os.fdopen(fd, "a", encoding="utf-8") as f:
+                f.write(line + "\n")
+        except OSError:
+            pass
+
+
+# The same keys in the English (us) and the Ukrainian (ua) layouts.
+_US = "qwertyuiop[]asdfghjkl;'zxcvbnm,.`QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>~"
+_UA = "йцукенгшщзхїфівапролджєячсмитьбю'ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ'"
+_TO_UA = str.maketrans(_US, _UA)
+# Short answers and words of this conversation, to know them in the wrong layout.
+_UA_WORDS = frozenset(
+    [
+        "так",
+        "ні",
+        "ок",
+        "окей",
+        "добре",
+        "гаразд",
+        "далі",
+        "давай",
+        "згоден",
+        "згодна",
+        "все",
+        "привіт",
+        "дякую",
+        "крок",
+        "диск",
+        "мережа",
+        "пароль",
+        "без",
+    ]
+)
+_UA_STEMS = (
+    "наступ",
+    "продовж",
+    "україн",
+    "англій",
+    "польськ",
+    "шифру",
+    "стер",
+    "зрозум",
+    "зберег",
+    "встанов",
+    "підключ",
+    "мереж",
+    "розділ",
+    "редактор",
+)
+
+
+def wrong_layout(text: str) -> str | None:
+    """Ukrainian typed with the English layout on, read in the Ukrainian one; None if not.
+
+    Only for unmistakable cases: punctuation keys inside a word («ghjljd;e'vj») or a word
+    of four letters or more without a vowel («ghbdsn»), which English rarely has."""
+    if any("\u0400" <= ch <= "\u04ff" for ch in text):
+        return None
+    words = text.split()
+    read = text.translate(_TO_UA)
+    # Or a word people say in this conversation («ycnegybq rhjr», «jr»).
+    signs = sum(
+        1 for w in read.lower().split() if w.strip(".,!?") in _UA_WORDS or w.startswith(_UA_STEMS)
+    )
+    for word in words:
+        core = word.strip(".,!?")
+        inner = core[1:-1]
+        keys = any(ch in ';[]{}<>"' for ch in core[1:]) or any(ch in ":," for ch in inner)
+        if (
+            keys
+            and sum(ch.isalpha() for ch in core) >= 3
+            or len(core) >= 4
+            and core.isalpha()
+            and not any(ch in "aeiouyAEIOUY" for ch in core)
+        ):
+            signs += 1
+    if not signs:
+        return None
+    return read
 
 
 def _without_notes(content: str) -> str:
