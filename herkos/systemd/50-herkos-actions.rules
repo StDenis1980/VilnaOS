@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Who may carry out Herkos's own actions (org.vilna.herkos.policy) without
+// a password, after they said yes in Herkos's window (permissions.md 9.2).
+//
+// Apps for everybody: an administrator (group wheel, 49-vilna.rules) at the
+// computer, in the session on screen, may, as with Flatpak itself; anybody
+// else gets polkit's window and needs an administrator's password. Without
+// this rule an administrator would type their password for every app,
+// although Flatpak does not ask them.
+//
+// Nothing else is said here: a return of the whole system asks for the
+// password every time, and weakening the VPN is for whoever sits at the
+// computer, as the policy's defaults say.
+polkit.addRule(function (action, subject) {
+    if (action.id === "org.vilna.herkos.apps.change" &&
+        subject.active && subject.local && subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+    }
+    return polkit.Result.NOT_HANDLED;
+});
