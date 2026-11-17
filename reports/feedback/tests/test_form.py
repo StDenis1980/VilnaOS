@@ -92,3 +92,43 @@ def test_state_dir_follows_xdg(monkeypatch, tmp_path):
     monkeypatch.setenv("XDG_STATE_HOME", "relative")
     assert form.state_dir().name == "vilna-feedback"
     assert form.state_dir().is_absolute()
+
+
+def write_log(path, entries):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(json.dumps(e, ensure_ascii=False) for e in entries) + "\n")
+
+
+def test_the_installer_conversation_is_read_as_plain_lines(tmp_path):
+    path = form.conversation_path({"XDG_RUNTIME_DIR": str(tmp_path)})
+    assert path == tmp_path / "vilna-installer" / "conversation.jsonl"
+    assert form.read_conversation(path) == ""  # no installation in this session
+    write_log(
+        path,
+        [
+            {"time": 1.0, "step": "network", "who": "gloxi", "text": "Яка мережа?"},
+            {"time": 2.0, "step": "network", "who": "person", "text": "SkyNet\n  будь ласка"},
+            {"time": 3.0, "step": "disk", "who": "gloxi", "text": "  "},
+        ],
+    )
+    with path.open("a") as f:
+        f.write("{broken\n[1, 2]\n")
+    assert form.read_conversation(path) == (
+        "[network] gloxi: Яка мережа?\n[network] person: SkyNet будь ласка"
+    )
+
+
+def test_a_long_conversation_keeps_its_end(tmp_path):
+    path = tmp_path / "conversation.jsonl"
+    write_log(path, [{"step": "disk", "who": "gloxi", "text": f"рядок {i}"} for i in range(3000)])
+    text = form.read_conversation(path)
+    assert len(text) <= form.MAX_CONVERSATION
+    assert text.endswith("[disk] gloxi: рядок 2999")
+
+
+def test_the_conversation_goes_only_when_the_person_chose_it():
+    f = form.Form(text="Установник завис", conversation="[disk] gloxi: Стерти?")
+    assert "conversation" not in f.body()
+    f.add_conversation = True
+    assert f.body()["conversation"] == "[disk] gloxi: Стерти?"
+    assert "conversation" not in form.Form(text="x", add_conversation=True).body()

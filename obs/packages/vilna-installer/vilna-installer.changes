@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Tue Nov 17 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Tue Nov 17 17:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The live session takes the plan's time zone as soon as the plan has
   one (timedatectl set-timezone): the top bar showed UTC time on a
@@ -7,6 +7,16 @@ Tue Nov 17 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
 - The first screen puts the chosen language's keyboard layout first in
   the live session (us stays second): Ukrainian could not be typed
   until the conversation's language step was over.
+
+-------------------------------------------------------------------
+Tue Nov 17 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Gloxi in the installer: the system prompt and the functions stay the
+  same for the whole conversation, and the step, the plan and the disk
+  data come as installer notes at the end, only when they change; the
+  history is cut back seldom. llama-server now reads only the new part
+  of the prompt: on KLX every turn read 1,100-1,250 tokens again
+  (43-56 s, S7 on Vilna-Live Build10.11).
 
 -------------------------------------------------------------------
 Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

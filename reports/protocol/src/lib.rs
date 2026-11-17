@@ -21,6 +21,9 @@ pub const MAX_BODY_BYTES: usize = 64 * 1024;
 pub const MAX_FRAMES: usize = 64;
 pub const MAX_TEXT_CHARS: usize = 8000;
 pub const MAX_SYSTEM_CHARS: usize = 4000;
+/// The installer's conversation with Gloxi, only with the person's consent;
+/// a longer one keeps its end, where the problem usually is.
+pub const MAX_CONVERSATION_CHARS: usize = 16000;
 pub const MAX_CRASH_IDS: usize = 10;
 pub const MAX_FORGET_IDS: usize = 100;
 /// Frames that make up the signature: deeper frames differ between callers.
@@ -91,6 +94,12 @@ static LINE_NUMBERS: LazyLock<Option<Regex>> = LazyLock::new(|| re(r":\d+(:\d+)?
 /// The first `max` characters of `text`, cut at a character boundary.
 pub fn truncate(text: &str, max: usize) -> String {
     text.chars().take(max).collect()
+}
+
+/// The last `max` characters of `text`.
+pub fn tail(text: &str, max: usize) -> String {
+    let count = text.chars().count();
+    text.chars().skip(count.saturating_sub(max)).collect()
 }
 
 fn replace(pattern: &LazyLock<Option<Regex>>, text: &str, with: &str) -> Option<String> {
@@ -496,6 +505,9 @@ pub struct FeedbackWire {
     pub text: String,
     pub text_en: Option<String>,
     pub system: Option<String>,
+    /// The installer's conversation with Gloxi as plain lines, added only
+    /// when the person chose to after reading it.
+    pub conversation: Option<String>,
     #[serde(default)]
     pub crash_ids: Vec<String>,
     #[serde(default)]
@@ -521,6 +533,8 @@ pub struct Feedback {
     pub text_en: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub system: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub conversation: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub crash_ids: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -600,6 +614,15 @@ impl Feedback {
             text: scrub(w.text.trim(), MAX_TEXT_CHARS),
             text_en: optional_text(w.text_en, MAX_TEXT_CHARS),
             system: optional_text(w.system, MAX_SYSTEM_CHARS),
+            conversation: w
+                .conversation
+                .map(|t| {
+                    scrub(
+                        &tail(t.trim(), MAX_CONVERSATION_CHARS),
+                        MAX_CONVERSATION_CHARS,
+                    )
+                })
+                .filter(|t| !t.is_empty()),
             crash_ids,
             locale: checked(w.locale, &LOCALE),
             program: checked(w.program, &PROGRAM),

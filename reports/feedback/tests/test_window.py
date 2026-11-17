@@ -70,6 +70,13 @@ def answering(fake):
     return fake
 
 
+@pytest.fixture(autouse=True)
+def runtime_dir(tmp_path, monkeypatch):
+    """No installer conversation unless a test writes one."""
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path / "run"))
+    return tmp_path / "run"
+
+
 def make(reportd, code="uk"):
     app = Adw.Application()
     app.register(None)
@@ -182,3 +189,40 @@ def test_notifications_only_for_ask_and_once(answering, reportd, tmp_path):
     assert shown == ["crash-r1"]
     app._notify(("auto", [{"id": "r3", "state": "waiting"}]))
     assert shown == ["crash-r1"]
+
+
+def test_without_an_installation_there_is_no_conversation_choice(answering, reportd):
+    win = make(reportd)
+    assert win.conversation == ""
+    assert not win.conversation_group.get_visible()
+    assert not win.add_conversation.get_active()
+
+
+def test_the_conversation_is_read_before_it_is_added(answering, reportd, runtime_dir):
+    log = runtime_dir / "vilna-installer" / "conversation.jsonl"
+    log.parent.mkdir(parents=True)
+    log.write_text(
+        '{"time": 1, "step": "network", "who": "person", "text": "SkyNet"}\n', encoding="utf-8"
+    )
+    win = make(reportd)
+    assert spin(lambda: bool(win.system))
+    assert win.conversation == "[network] person: SkyNet"
+    assert win.conversation_group.get_visible()
+    # Turning it on shows the conversation first; nothing is added yet.
+    win.add_conversation.set_active(True)
+    assert not win.add_conversation.get_active()
+    assert win.conversation_dialog is not None
+    win._on_conversation_answer(win.conversation_dialog, "no")
+    assert not win.add_conversation.get_active()
+    win.text.get_buffer().set_text("Установник питав пароль двічі")
+    win._on_send()
+    assert spin(lambda: answering.sent)
+    assert "conversation" not in answering.sent[-1]
+    # «Add» in the dialog adds it, and it goes with the feedback.
+    win.add_conversation.set_active(True)
+    win._on_conversation_answer(win.conversation_dialog, "add")
+    assert win.add_conversation.get_active()
+    win.text.get_buffer().set_text("Ще раз")
+    win._on_send()
+    assert spin(lambda: len(answering.sent) == 2)
+    assert answering.sent[-1]["conversation"] == "[network] person: SkyNet"

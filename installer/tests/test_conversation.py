@@ -41,8 +41,17 @@ class Script:
 
     @property
     def last_system(self):
-        """Every system message of the last request: the stable one and the plan's."""
-        return "\n\n".join(m["content"] for m in self.seen[-1][0] if m["role"] == "system")
+        """The system prompt and every installer note in the last request."""
+        return told(self.seen[-1][0])
+
+
+def told(messages):
+    out = [messages[0]["content"]]
+    for m in messages[1:]:
+        content = m.get("content") or ""
+        if content.startswith(conv.NOTES_START):
+            out.append(content.split(conv.NOTES_END)[0])
+    return "\n\n".join(out)
 
 
 @pytest.fixture
@@ -173,19 +182,98 @@ def test_change_in_the_plan_asks_the_step_question_again(plan_path):
         tools.close()
 
 
-def test_each_step_offers_only_its_own_functions(plan_path):
+def test_each_step_allows_only_its_own_functions(plan_path):
     c, model, tools = make(
         plan_path, "empty", [call("plan_set_disk", target="x", layout="replace")], "Добре."
     )
     try:
         c.opening()
         c.send("уся моя мова")
-        names = model.seen[0][1]
-        assert names == ["plan_set_languages", "keyboard_list", "conversation_goto"]
+        assert "Functions for this step: plan_set_languages, keyboard_list, conversation_goto." in (
+            model.last_system
+        )
         tool_result = model.seen[1][0][-1]
         assert tool_result["role"] == "tool"
         assert "not available in this step" in tool_result["content"]
         assert "disk" not in plans.load(plan_path)
+    finally:
+        tools.close()
+
+
+def prefix(a, b):
+    """How many messages two requests share from the start."""
+    n = 0
+    for x, y in zip(a, b, strict=False):
+        if x != y:
+            break
+        n += 1
+    return n
+
+
+def test_each_request_starts_as_the_last_one_so_the_cache_holds(plan_path):
+    """S7 on KLX (2026-11-17): every turn read 1,100-1,250 tokens again, 43-56 s.
+
+    The system prompt and the functions are the same at every step, and each
+    request repeats the previous one before adding to it: llama-server reads
+    only what is new.
+    """
+    c, model, tools = make(
+        plan_path,
+        "empty",
+        [call("plan_set_languages", languages=["uk_UA.UTF-8"], keyboards=["ua", "us"])],
+        [call("plan_set_network", mode="offline")],
+        "На диску нічого немає. Що зробимо з ним?",
+        "Стерти весь диск і встановити Vilna.",
+        "Тоді стираю?",
+    )
+    try:
+        c.opening()
+        c.send("українська")
+        c.send("без мережі")
+        c.send("а що на диску?")
+        c.send("що порадиш?")
+        c.send("гаразд")
+        requests = [messages for messages, _ in model.seen]
+        assert len({json.dumps(names) for _, names in model.seen}) == 1
+        assert len({r[0]["content"] for r in requests}) == 1
+        for before, after in zip(requests, requests[1:], strict=False):
+            # Everything sent before is sent again, up to the function calls
+            # of a finished turn (only the answer of a turn is kept).
+            calls = next((i for i, m in enumerate(before) if m.get("tool_calls")), len(before))
+            assert prefix(before, after) >= calls
+        # Nothing changed between the last two turns: no new notes.
+        assert conv.NOTES_START not in requests[-1][-1]["content"]
+        assert requests[-1][-1]["content"] == "гаразд"
+    finally:
+        tools.close()
+
+
+def test_the_notes_end_with_the_language_to_answer_in(plan_path):
+    """S7 on KLX: Gloxi answered in English after the English notes."""
+    c, model, tools = make(plan_path, "empty", "Якими мовами ви пишете?")
+    try:
+        c.opening()
+        c.send("привіт")
+        notes = model.seen[-1][0][-1]["content"].split(conv.NOTES_END)[0]
+        assert notes.rstrip().endswith("Reply in Ukrainian.")
+    finally:
+        tools.close()
+
+
+def test_a_long_conversation_is_cut_back_seldom(plan_path):
+    c, model, tools = make(plan_path, "empty", *["Яку мову?"] * 30)
+    try:
+        c.opening()
+        for i in range(30):
+            c.send(f"питання {i}")
+        lengths = [len(messages) - 1 for messages, _ in model.seen]
+        cuts = sum(1 for a, b in zip(lengths, lengths[1:], strict=False) if b < a)
+        assert max(lengths) <= conv.HISTORY_MAX + 1
+        assert cuts <= 30 // ((conv.HISTORY_MAX - conv.HISTORY) // 2) + 1
+        # After a cut the model is told the step and the plan again.
+        last = model.seen[-1][0]
+        assert "Step 2 of 13" in told(last)
+        assert sum((m.get("content") or "").startswith(conv.NOTES_START) for m in last) == 1
     finally:
         tools.close()
 
@@ -426,7 +514,7 @@ def test_a_change_said_but_not_saved_gets_one_more_round(plan_path):
         c.send("українська")
         c.goto("languages")
         reply = c.send("додай польську")
-        assert conv.NOT_SAVED in model.seen[2][0][0]["content"]
+        assert conv.NOT_SAVED in told(model.seen[2][0])
         assert "pl_PL.UTF-8" in plans.load(plan_path)["locale"]["languages"]
         assert reply.step.key != "languages" or "pl" in str(reply.plan)
     finally:
@@ -534,8 +622,9 @@ def test_after_the_wifi_password_gloxi_knows_it_is_entered(plan_path):
         assert reply.text.startswith(texts(conv.CONNECTED) + "\n\n")
         messages = model.seen[-1][0]
         # The model's last word is no longer its own request for the password,
-        # and the prompt names what the person already typed.
-        assert messages[-1] == {"role": "assistant", "content": texts(conv.CONNECTED)}
+        # and the installer's notes after it name what the person already typed.
+        assert messages[-2] == {"role": "assistant", "content": texts(conv.CONNECTED)}
+        assert messages[-1]["content"].startswith(conv.NOTES_START)
         assert "never ask for it again: the Wi-Fi password" in model.last_system
         c.send("а пароль?")
         assert "the Wi-Fi password" in model.last_system  # on every later turn too
