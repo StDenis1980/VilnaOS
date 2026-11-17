@@ -75,3 +75,9 @@ msgstr "Pasirinkite atsakymą dėl strigčių ataskaitų."
 
 msgid "Crash reports: {answer}"
 msgstr "Strigčių ataskaitos: {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Perjungti į tamsią temą"
+
+msgid "Switch to the light theme"
+msgstr "Perjungti į šviesią temą"

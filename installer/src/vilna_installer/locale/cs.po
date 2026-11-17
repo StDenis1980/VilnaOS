@@ -75,3 +75,9 @@ msgstr "Vyberte odpověď ohledně hlášení o pádech."
 
 msgid "Crash reports: {answer}"
 msgstr "Hlášení o pádech: {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Přepnout na tmavý motiv"
+
+msgid "Switch to the light theme"
+msgstr "Přepnout na světlý motiv"

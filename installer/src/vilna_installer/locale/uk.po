@@ -741,3 +741,9 @@ msgstr "Зашифрувати нову систему? Раджу шифрув�
 
 msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
 msgstr "Зашифрувати нову систему? На цьому комп'ютері немає чипа TPM, тож диск відкриватиметься парольною фразою, яку ви вводите під час кожного запуску. Без шифрування будь-хто з цим диском зможе прочитати ваші файли."
+
+msgid "Switch to the dark theme"
+msgstr "Увімкнути темну тему"
+
+msgid "Switch to the light theme"
+msgstr "Увімкнути світлу тему"

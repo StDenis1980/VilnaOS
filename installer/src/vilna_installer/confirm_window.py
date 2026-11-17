@@ -183,6 +183,7 @@ class ConfirmWindow(Adw.ApplicationWindow):
 
         header = Adw.HeaderBar()
         header.set_title_widget(Adw.WindowTitle(title=_(confirm.TITLE), subtitle=_(confirm.HERKOS)))
+        header.pack_start(style.theme_button(_))
         view = Adw.ToolbarView()
         view.add_top_bar(header)
         view.set_content(scroll)

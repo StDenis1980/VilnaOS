@@ -281,6 +281,7 @@ class WizardWindow(Adw.ApplicationWindow):
 
         header = Adw.HeaderBar()
         header.set_title_widget(Gtk.Label(label=_(start.TITLE)))
+        header.pack_start(style.theme_button(_))
 
         self.steps = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
         self.steps.add_css_class("navigation-sidebar")

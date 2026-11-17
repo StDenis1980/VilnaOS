@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Tue Nov 17 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- A theme button (sun / moon) on every installer screen: the first
+  screen, the conversation, the wizard, the Herkos screen and the
+  progress window. It switches between the night blue and the cream
+  theme; the choice holds in every installer window for the rest of
+  the installation (a file in the runtime directory).
+- Until the button is pressed the theme follows the clock: light from
+  07:00 to 19:59, night blue the rest of the day, checked every
+  minute. On the live image the clock is in UTC until the plan has a
+  time zone.
+
+-------------------------------------------------------------------
 Tue Nov 17 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The installer's windows are night blue (#0E1A2E ground), as in the
