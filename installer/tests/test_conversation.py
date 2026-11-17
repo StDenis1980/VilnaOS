@@ -504,3 +504,37 @@ def test_the_crash_reports_question_is_in_every_language(code):
     catalog = start.catalog(code)
     assert [t for t in CONSENT_TEXTS if t not in catalog] == []
     assert "{answer}" in catalog[conv.CRASH_SUMMARY]
+
+
+def test_after_the_wifi_password_gloxi_knows_it_is_entered(plan_path):
+    """Build10.11 on a laptop: the card closed, and Gloxi asked for the password again."""
+    c, model, tools = make(
+        plan_path,
+        "windows",
+        [call("plan_set_languages", languages=["uk_UA.UTF-8"], keyboards=["ua", "us"])],
+        [call("plan_set_network", mode="wifi", ssid="DemoHome")],
+        "Введіть пароль Wi-Fi у захищене поле.",
+        "На диску 512 ГБ є Windows. Що зробимо з диском?",
+        "Можна стерти весь диск.",
+    )
+    texts = start.Texts("uk")
+    try:
+        c.opening()
+        c.send("українська")
+        assert c.send("DemoHome").needs == ["wifi_password"]
+        assert "Already typed" not in model.last_system
+        plan = plans.load(plan_path)
+        plans.mark_entered(plan, "network")
+        plans.save(plan, plan_path)
+        reply = c.resume("network")
+        assert reply.step.key == "survey"
+        assert reply.text.startswith(texts(conv.CONNECTED) + "\n\n")
+        messages = model.seen[-1][0]
+        # The model's last word is no longer its own request for the password,
+        # and the prompt names what the person already typed.
+        assert messages[-1] == {"role": "assistant", "content": texts(conv.CONNECTED)}
+        assert "never ask for it again: the Wi-Fi password" in model.last_system
+        c.send("а пароль?")
+        assert "the Wi-Fi password" in model.last_system  # on every later turn too
+    finally:
+        tools.close()

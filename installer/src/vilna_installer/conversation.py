@@ -187,8 +187,17 @@ SECTIONS = {
     "time": "Time and region",
     "privacy": "Privacy",
 }
+# Said when a protected field is done, so the model's last word in the
+# conversation is not its own request for that secret.
+CONNECTED = "Connected to Wi-Fi."
+PASSWORD_SAVED = "The password is saved."
+PASSPHRASE_SAVED = "The passphrase is saved."
+SAVED = {"network": CONNECTED, "user": PASSWORD_SAVED, "passphrase": PASSPHRASE_SAVED}
 TEXTS = (
     INTRO,
+    CONNECTED,
+    PASSWORD_SAVED,
+    PASSPHRASE_SAVED,
     FIRST_QUESTION,
     NETWORK_QUESTION,
     DISK_QUESTION,
@@ -453,6 +462,12 @@ AFTER_SECRET = (
     "The person has just done this in the installer window themselves; "
     "do not ask for it again. Go on with the current step."
 )
+# Named for the model when the plan holds the marker "entered" for them.
+ENTERED_NAMES = {
+    "network": "the Wi-Fi password (the computer is connected)",
+    "user": "the account password",
+    "passphrase": "the disk passphrase",
+}
 
 
 # --- the installer's MCP server ------------------------------------------------------
@@ -794,16 +809,37 @@ class Conversation:
         self.history.append({"role": "user", "content": text})
         return self._answer()
 
-    def resume(self) -> Reply:
-        """Go on without a new message: after a protected field, or «Change» in the plan."""
+    def resume(self, entered: str | None = None) -> Reply:
+        """Go on without a new message: after a protected field (``entered`` names it:
+        network, user, passphrase), or «Change» in the plan."""
         self.refresh()
         self._fetched.clear()
+        said = []
+        if entered in SAVED:
+            said.append(self.texts(SAVED[entered]))
+            self.history.append({"role": "assistant", "content": said[0]})
         question = self.question(self.current())
         if question:
             self.history.append({"role": "assistant", "content": question})
-            return self._reply(question)
-        self._note = CHANGING if self.state.focus else AFTER_SECRET
-        return self._answer()
+            return self._reply("\n\n".join([*said, question]))
+        self._note = CHANGING if self.state.focus and not entered else AFTER_SECRET
+        reply = self._answer()
+        if said and not reply.failed:
+            reply.text = "\n\n".join([*said, reply.text])
+        return reply
+
+    def _entered(self) -> list[str]:
+        """The secrets the person already typed, from the plan's markers."""
+        plan = self.plan
+        out = []
+        if (plan.get("network") or {}).get("secret") == "entered":
+            out.append("network")
+        if (plan.get("user") or {}).get("password") == "entered":
+            out.append("user")
+        enc = (plan.get("disk") or {}).get("encryption") or {}
+        if enc.get("passphrase") == "entered":
+            out.append("passphrase")
+        return out
 
     def question(self, step: Step) -> str | None:
         """The step's first question as fixed text, or None when only the model can ask it."""
@@ -950,6 +986,12 @@ class Conversation:
             ok, hardware = self._fetched.get("hardware_describe", (False, {}))
             if ok and isinstance(hardware, dict) and hardware.get("tpm") != 2:
                 parts.append(NO_TPM)
+        entered = self._entered()
+        if entered:
+            parts.append(
+                "Already typed by the person into protected fields, so never ask for it "
+                "again: " + "; ".join(ENTERED_NAMES[k] for k in entered) + "."
+            )
         if self._note:
             parts.append(self._note)
         if step.key == "time":

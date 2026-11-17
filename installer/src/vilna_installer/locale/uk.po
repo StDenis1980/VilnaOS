@@ -705,3 +705,12 @@ msgstr "Оберіть відповідь про звіти про збої."
 
 msgid "Crash reports: {answer}"
 msgstr "Звіти про збої: {answer}"
+
+msgid "Connected to Wi-Fi."
+msgstr "Wi-Fi підключено."
+
+msgid "The password is saved."
+msgstr "Пароль збережено."
+
+msgid "The passphrase is saved."
+msgstr "Парольну фразу збережено."
