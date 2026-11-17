@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import socket
 import threading
+import time
 from collections.abc import Callable
 from pathlib import Path
 
@@ -68,3 +69,44 @@ def test_herkos_goes_away_after_registering(tmp_path: Path) -> None:
 
 def test_no_socket(tmp_path: Path) -> None:
     assert agent.main(["--socket", str(tmp_path / "missing.sock")]) == 1
+
+
+def test_herkosd_hears_when_the_screen_locks_while_a_window_is_open() -> None:
+    # Build15.6: the screen locked while Herkos asked, and the action was
+    # refused after two minutes; herkosd now stops the clock while away.
+    ours, theirs = socket.socketpair()
+    screen = {"locked": True}
+    checks = []
+
+    def locked() -> bool:
+        checks.append(1)
+        return screen["locked"]
+
+    a = agent.Agent(theirs, ["true"], locked=locked, poll=0.02)
+    lines = ours.makefile("rb")
+    watcher = threading.Thread(target=a.watch, daemon=True)
+    watcher.start()
+    try:
+        # No window open: the screen is not even checked.
+        time.sleep(0.2)
+        assert checks == []
+        with a.windows_lock:
+            a.windows["ask-1"] = None  # type: ignore[assignment]
+        assert json.loads(lines.readline()) == {
+            "jsonrpc": "2.0",
+            "method": "herkos.agent.away",
+            "params": {"away": True},
+        }
+        screen["locked"] = False
+        assert json.loads(lines.readline())["params"] == {"away": False}
+        screen["locked"] = True
+        assert json.loads(lines.readline())["params"] == {"away": True}
+        # The window closes: back in use as far as herkosd is concerned.
+        with a.windows_lock:
+            a.windows.clear()
+        assert json.loads(lines.readline())["params"] == {"away": False}
+    finally:
+        a.stop.set()
+        watcher.join(2)
+        ours.close()
+        theirs.close()

@@ -11,6 +11,7 @@ environment variables. The config file lives at
     timeout = 120
     start_server = true          # start the bundled llama-server if nothing answers at url
     slot = 0                     # llama-server slot that keeps the conversation cached; -1: any
+    repeat_penalty = 1.1         # llama-server: penalise repeated words; 1: off
 
     [cloud]                      # optional: the user's own provider and key
     url = "https://api.mistral.ai/v1"
@@ -60,6 +61,14 @@ def _slot(value: object) -> int | None:
     return slot if slot >= 0 else None
 
 
+def _penalty(value: object) -> float | None:
+    """A llama-server repeat penalty: 1 or less sends none (the server's default, off)."""
+    penalty = _number(value, "repeat_penalty")
+    if penalty != penalty or penalty > 2:  # NaN, or so high that answers stop making sense
+        raise ConfigError(f"repeat_penalty must be between 1 and 2, got {value!r}")
+    return penalty if penalty > 1 else None
+
+
 @dataclass(frozen=True)
 class ModelEndpoint:
     """An OpenAI-compatible chat endpoint."""
@@ -74,6 +83,9 @@ class ModelEndpoint:
     # slot without it and read the whole prompt again: up to 61 s to choose an
     # action (Build14.23). Keros asks in the last slot (herkosd keros_model).
     slot: int | None = None
+    # llama-server only (``repeat_penalty``). Its default is 1, off, and on
+    # long answers the 4B model looped, repeating one sentence (Build15.6).
+    repeat_penalty: float | None = None
 
 
 ROUTER_MODES = ("auto", "local", "cloud")
@@ -127,6 +139,9 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         timeout=_number(_get(env, "GLOXI_LOCAL_TIMEOUT", local, "timeout", 120), "timeout"),
         api_key=_key_file(env.get("GLOXI_LOCAL_KEY_FILE", "")),
         slot=_slot(_get(env, "GLOXI_LOCAL_SLOT", local, "slot", 0)),
+        repeat_penalty=_penalty(
+            _get(env, "GLOXI_LOCAL_REPEAT_PENALTY", local, "repeat_penalty", 1.1)
+        ),
     )
 
     cloud_endpoint = None

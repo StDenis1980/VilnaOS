@@ -70,6 +70,9 @@ each person.
 Summary:        Confirmation windows of the Herkos permission gate
 License:        GPL-3.0-or-later
 Requires:       python3-gobject
+# gdbus: the agent asks GNOME whether the screen is locked while a question
+# waits (herkos.agent.away).
+Requires:       glib2-tools
 Requires:       typelib(Adw) = 1
 Requires:       typelib(Gtk) = 4.0
 # /usr/share/icons/hicolor/{scalable,symbolic}/apps for the Permissions icons.
