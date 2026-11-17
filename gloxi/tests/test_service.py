@@ -385,3 +385,10 @@ def test_the_local_model_keeps_idle_slots_cached():
     unit = Path(__file__).resolve().parents[1] / "systemd" / "vilna-llm.service"
     exec_start = unit.read_text().split("ExecStart=", 1)[1].split("\nWorkingDirectory=", 1)[0]
     assert "--no-cache-idle-slots" in exec_start
+
+
+def test_the_local_model_keeps_its_weights_in_memory():
+    # On 8 GB the browser pushed the weights out and the first answer took
+    # 17 s instead of 6.5 s (image/docs/low-memory-check.md).
+    unit = Path(__file__).resolve().parents[1] / "systemd" / "vilna-llm.service"
+    assert "\nMemoryLow=5G\n" in unit.read_text()
