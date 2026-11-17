@@ -81,6 +81,18 @@
          tik-osimage-Vilna (obs/images/tik-osimage-Vilna), which OBS
          wraps into this RPM in the same "images" repository. -->
     <package name="tik-osimage-Vilna"/>
+    <!-- A browser in the live session: for a Wi-Fi network with a login
+         page and for reading help while installing. The installed
+         system takes Firefox from Flathub on first boot
+         (vilna-flatpak-defaults), but in the live image a Flatpak lands
+         in the RAM overlay (+1.7 GB on KLX, 2026-11-17), while an RPM
+         stays in the squashfs and is read from the stick. Live image
+         only, decision of Denys of 2026-11-17. The two translation
+         packages cover the ten languages (ADR 0009): uk, ro and lt are
+         in -other. -->
+    <package name="MozillaFirefox"/>
+    <package name="MozillaFirefox-translations-common"/>
+    <package name="MozillaFirefox-translations-other"/>
     <!-- Boot of a live ISO -->
     <package name="kernel-default"/>
     <package name="dracut-kiwi-live"/>
