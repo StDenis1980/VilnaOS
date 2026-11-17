@@ -33,12 +33,6 @@ LOGO_SECONDS = 1.6;    # designer frames: how long they play (s)
 Window.SetBackgroundTopColor(0.122, 0.204, 0.361);
 Window.SetBackgroundBottomColor(0.071, 0.125, 0.235);
 
-screen.x = Window.GetX();
-screen.y = Window.GetY();
-screen.w = Window.GetWidth();
-screen.h = Window.GetHeight();
-screen.base = Math.Min(screen.w, screen.h);
-
 mode = Plymouth.GetMode();
 animate = (mode == "boot" || mode == "resume");
 
@@ -53,100 +47,168 @@ fun ease_out(v) {
     return 1 - (1 - v) * (1 - v) * (1 - v);
 }
 
-# Logo -----------------------------------------------------------------
+# Sprites ------------------------------------------------------------------
+#
+# Made once; layout() gives them images and places. The screen can change
+# size after the splash has started: at boot the firmware framebuffer
+# (simpledrm, efifb) shows first and the graphics driver may then set
+# another mode. So every size and place below comes from layout(), which
+# runs again whenever the window size changes (check_screen()).
 
-logo.h = Math.Int(screen.base * 0.34);
 first = Image("logo-0.png");
 designer = 0;
 if (first) designer = 1;
 else first = Image("circle-0.png");
-logo.w = Math.Int(first.GetWidth() * logo.h / first.GetHeight());
-logo.x = screen.x + Math.Int((screen.w - logo.w) / 2);
-logo.y = screen.y + Math.Int(screen.h * 0.46 - logo.h / 2);
+logo.aspect = first.GetWidth() / first.GetHeight();
 
 if (designer) {
-    # As many frames as make_theme.py copied; the last one stays.
     frames.count = 0;
     for (i = 0; i < MAX_LOGO_FRAMES; i++) {
-        img = Image("logo-" + i + ".png");
-        if (!img) break;
-        frames.image[i] = img.Scale(logo.w, logo.h);
+        if (!Image("logo-" + i + ".png")) break;
         frames.count = i + 1;
     }
-    circle.frames = frames.image;
     CIRCLE_FRAMES = frames.count;
 }
-else {
-    for (i = 0; i < CIRCLE_FRAMES; i++)
-        circle.frames[i] = Image("circle-" + i + ".png").Scale(logo.w, logo.h);
-}
+
 circle.sprite = Sprite();
-circle.sprite.SetPosition(logo.x, logo.y, 10);
-circle.shown = -1;
-
+circle.sprite.SetZ(10);
 bird.sprite = Sprite();
-if (!designer) bird.sprite.SetImage(Image("swallow.png").Scale(logo.w, logo.h));
-bird.sprite.SetPosition(logo.x, logo.y, 11);
+bird.sprite.SetZ(11);
 bird.sprite.SetOpacity(0);
-
-glow.size = Math.Int(logo.h * 2.4);
-glow.sprite = Sprite(Image("glow.png").Scale(glow.size, glow.size));
-glow.sprite.SetPosition(logo.x + Math.Int((logo.w - glow.size) / 2),
-                        logo.y + Math.Int((logo.h - glow.size) / 2), 1);
+glow.sprite = Sprite();
+glow.sprite.SetZ(1);
 glow.sprite.SetOpacity(0);
-
-# Corner motifs ----------------------------------------------------------
-
-bloom.size = Math.Int(Math.Min(screen.h * 0.42, screen.w * 0.28));
-for (i = 0; i < BLOOM_FRAMES; i++) {
-    bloom.left[i] = Image("bloom-" + i + ".png").Scale(bloom.size, bloom.size);
-    bloom.right[i] = bloom.left[i].Rotate(Math.Pi);
-}
 bloom.bl = Sprite();
-bloom.bl.SetPosition(screen.x, screen.y + screen.h - bloom.size, 2);
+bloom.bl.SetZ(2);
 bloom.tr = Sprite();
-bloom.tr.SetPosition(screen.x + screen.w - bloom.size, screen.y, 2);
-bloom.shown = -1;
-
-# Progress nodes ---------------------------------------------------------
-
-dots.size = Math.Int(Math.Max(18, screen.base * 0.024));
-dots.gap = Math.Int(dots.size * 1.7);
-dots.y = logo.y + logo.h + Math.Int(logo.h * 0.22);
-dot_image = Image("dot.png").Scale(dots.size, dots.size);
+bloom.tr.SetZ(2);
 for (i = 0; i < 3; i++) {
-    dots.sprite[i] = Sprite(dot_image);
-    dots.sprite[i].SetPosition(screen.x + Math.Int(screen.w / 2 - dots.size / 2 + (i - 1) * dots.gap),
-                               dots.y, 12);
+    dots.sprite[i] = Sprite();
+    dots.sprite[i].SetZ(12);
     dots.sprite[i].SetOpacity(0);
 }
-
-# Release layer ----------------------------------------------------------
-
-release.size = Math.Int(Math.Max(24, screen.base * 0.045));
-release.mark = Sprite();
-release.name = Sprite();
 release.image = Image("release-mark.png");
-if (release.image) {
-    release.mark.SetImage(release.image.Scale(release.size, release.size));
-    release.name.SetImage(Image.Text(RELEASE_NAME, 0.949, 0.910, 0.835, 1,
-                                     "Sans " + Math.Int(Math.Max(11, screen.base * 0.017))));
-    release.gap = Math.Int(release.size * 0.3);
-    release.w = release.size + release.gap + release.name.GetImage().GetWidth();
-    release.x = screen.x + Math.Int((screen.w - release.w) / 2);
-    release.y = screen.y + Math.Int(screen.h * 0.84 - release.size / 2);
-    release.mark.SetPosition(release.x, release.y, 5);
-    release.name.SetPosition(release.x + release.size + release.gap,
-                             release.y + Math.Int((release.size - release.name.GetImage().GetHeight()) / 2), 5);
-}
+release.mark = Sprite();
+release.mark.SetZ(5);
 release.mark.SetOpacity(0);
+release.name = Sprite();
+release.name.SetZ(5);
 release.name.SetOpacity(0);
+prompt.sprite = Sprite();
+prompt.sprite.SetZ(20);
+entry.image = Image("entry.png");
+entry.sprite = Sprite();
+entry.sprite.SetZ(20);
+entry.sprite.SetOpacity(0);
+answer.sprite = Sprite();
+answer.sprite.SetZ(21);
+bullets.count = 0;
+message.sprite = Sprite();
+message.sprite.SetZ(20);
+
+# Layout -------------------------------------------------------------------
+
+fun layout() {
+    global.screen.x = Window.GetX();
+    global.screen.y = Window.GetY();
+    global.screen.w = Window.GetWidth();
+    global.screen.h = Window.GetHeight();
+    global.screen.base = Math.Min(screen.w, screen.h);
+
+    # Logo
+    global.logo.h = Math.Int(screen.base * 0.34);
+    global.logo.w = Math.Int(logo.h * logo.aspect);
+    global.logo.x = screen.x + Math.Int((screen.w - logo.w) / 2);
+    global.logo.y = screen.y + Math.Int(screen.h * 0.46 - logo.h / 2);
+    # Designer frames, or the brush circle; the last frame stays.
+    for (i = 0; i < CIRCLE_FRAMES; i++) {
+        if (designer) img = Image("logo-" + i + ".png");
+        else img = Image("circle-" + i + ".png");
+        global.circle.frames[i] = img.Scale(logo.w, logo.h);
+    }
+    circle.sprite.SetPosition(logo.x, logo.y, 10);
+    global.circle.shown = -1;
+    if (!designer) bird.sprite.SetImage(Image("swallow.png").Scale(logo.w, logo.h));
+    bird.sprite.SetPosition(logo.x, logo.y, 11);
+
+    global.glow.size = Math.Int(logo.h * 2.4);
+    glow.sprite.SetImage(Image("glow.png").Scale(glow.size, glow.size));
+    glow.sprite.SetPosition(logo.x + Math.Int((logo.w - glow.size) / 2),
+                            logo.y + Math.Int((logo.h - glow.size) / 2), 1);
+
+    # Corner motifs
+    global.bloom.size = Math.Int(Math.Min(screen.h * 0.42, screen.w * 0.28));
+    for (i = 0; i < BLOOM_FRAMES; i++) {
+        global.bloom.left[i] = Image("bloom-" + i + ".png").Scale(bloom.size, bloom.size);
+        global.bloom.right[i] = bloom.left[i].Rotate(Math.Pi);
+    }
+    bloom.bl.SetPosition(screen.x, screen.y + screen.h - bloom.size, 2);
+    bloom.tr.SetPosition(screen.x + screen.w - bloom.size, screen.y, 2);
+    global.bloom.shown = -1;
+
+    # Progress nodes
+    global.dots.size = Math.Int(Math.Max(18, screen.base * 0.024));
+    global.dots.gap = Math.Int(dots.size * 1.7);
+    global.dots.y = logo.y + logo.h + Math.Int(logo.h * 0.22);
+    dot_image = Image("dot.png").Scale(dots.size, dots.size);
+    for (i = 0; i < 3; i++) {
+        dots.sprite[i].SetImage(dot_image);
+        dots.sprite[i].SetPosition(screen.x + Math.Int(screen.w / 2 - dots.size / 2 + (i - 1) * dots.gap),
+                                   dots.y, 12);
+    }
+
+    # Release layer
+    if (release.image) {
+        global.release.size = Math.Int(Math.Max(24, screen.base * 0.045));
+        release.mark.SetImage(release.image.Scale(release.size, release.size));
+        name = Image.Text(RELEASE_NAME, 0.949, 0.910, 0.835, 1,
+                          "Sans " + Math.Int(Math.Max(11, screen.base * 0.017)));
+        release.name.SetImage(name);
+        gap = Math.Int(release.size * 0.3);
+        w = release.size + gap + name.GetWidth();
+        x = screen.x + Math.Int((screen.w - w) / 2);
+        y = screen.y + Math.Int(screen.h * 0.84 - release.size / 2);
+        release.mark.SetPosition(x, y, 5);
+        release.name.SetPosition(x + release.size + gap,
+                                 y + Math.Int((release.size - name.GetHeight()) / 2), 5);
+    }
+
+    # Password field
+    global.entry.w = Math.Int(Math.Min(screen.w * 0.8, logo.h * 1.6));
+    global.entry.h = Math.Int(entry.w * entry.image.GetHeight() / entry.image.GetWidth());
+    entry.sprite.SetImage(entry.image.Scale(entry.w, entry.h));
+    global.entry.x = screen.x + Math.Int((screen.w - entry.w) / 2);
+    global.entry.y = logo.y + logo.h + Math.Int(logo.h * 0.24);
+    entry.sprite.SetPosition(entry.x, entry.y, 20);
+    global.bullet.size = Math.Int(entry.h * 0.3);
+    global.bullet.image = Image("bullet.png").Scale(bullet.size, bullet.size);
+    for (i = 0; bullets.sprite[i]; i++)
+        bullets.sprite[i].SetImage(bullet.image);
+    global.font = "Sans " + Math.Int(Math.Max(12, screen.base * 0.018));
+}
+
+fun check_screen() {
+    if (Window.GetWidth() != screen.w || Window.GetHeight() != screen.h ||
+        Window.GetX() != screen.x || Window.GetY() != screen.y) {
+        layout();
+        # Prompt and message texts are placed again from what they last said.
+        if (asking) {
+            if (asked.password) display_password(asked.text, asked.count);
+            else display_question(asked.text, asked.value);
+        }
+        if (message.shown) show_message(message.text);
+    }
+}
+
+layout();
 
 # State ------------------------------------------------------------------
 
 tick = 0;
 if (!animate) tick = 4 * FPS;   # shutdown, reboot, updates: no intro
 asking = 0;                     # a password or question is on screen
+asked.password = 0;
+message.shown = 0;
 quitting = 0;
 
 fun show_frame(t) {
@@ -198,29 +260,13 @@ fun show_frame(t) {
 
 fun refresh() {
     if (quitting) return;
+    check_screen();
     global.tick = tick + 1;
     show_frame(tick / FPS);
 }
 Plymouth.SetRefreshFunction(refresh);
 
 # Password and questions (encrypted disk) --------------------------------
-
-prompt.sprite = Sprite();
-prompt.sprite.SetZ(20);
-entry.image = Image("entry.png");
-entry.w = Math.Int(Math.Min(screen.w * 0.8, logo.h * 1.6));
-entry.h = Math.Int(entry.w * entry.image.GetHeight() / entry.image.GetWidth());
-entry.sprite = Sprite(entry.image.Scale(entry.w, entry.h));
-entry.x = screen.x + Math.Int((screen.w - entry.w) / 2);
-entry.y = logo.y + logo.h + Math.Int(logo.h * 0.24);
-entry.sprite.SetPosition(entry.x, entry.y, 20);
-entry.sprite.SetOpacity(0);
-bullet.size = Math.Int(entry.h * 0.3);
-bullet.image = Image("bullet.png").Scale(bullet.size, bullet.size);
-answer.sprite = Sprite();
-bullets.count = 0;
-answer.sprite.SetZ(21);
-font = "Sans " + Math.Int(Math.Max(12, screen.base * 0.018));
 
 fun text_image(text, alpha) {
     return Image.Text(text, 0.949, 0.910, 0.835, alpha, font);
@@ -242,6 +288,9 @@ fun show_prompt(text) {
 }
 
 fun display_password(text, count) {
+    global.asked.password = 1;
+    global.asked.text = text;
+    global.asked.count = count;
     show_prompt(text);
     answer.sprite.SetOpacity(0);
     hide_bullets();
@@ -258,6 +307,9 @@ fun display_password(text, count) {
 Plymouth.SetDisplayPasswordFunction(display_password);
 
 fun display_question(text, value) {
+    global.asked.password = 0;
+    global.asked.text = text;
+    global.asked.value = value;
     show_prompt(text);
     hide_bullets();
     img = text_image(value, 1);
@@ -279,10 +331,9 @@ Plymouth.SetDisplayNormalFunction(display_normal);
 
 # Messages (for example from systemd) -------------------------------------
 
-message.sprite = Sprite();
-message.sprite.SetZ(20);
-
 fun show_message(text) {
+    global.message.shown = 1;
+    global.message.text = text;
     img = text_image(text, 0.75);
     message.sprite.SetImage(img);
     message.sprite.SetPosition(screen.x + Math.Int((screen.w - img.GetWidth()) / 2),
@@ -292,6 +343,7 @@ fun show_message(text) {
 Plymouth.SetMessageFunction(show_message);
 
 fun hide_message(text) {
+    global.message.shown = 0;
     message.sprite.SetOpacity(0);
 }
 Plymouth.SetHideMessageFunction(hide_message);
