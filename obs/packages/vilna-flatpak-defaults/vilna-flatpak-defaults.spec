@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-flatpak-defaults
-Version:        0.3
+Version:        0.4
 Release:        0
 Summary:        Installs Vilna's default Flatpak apps on first boot
 License:        GPL-3.0-or-later
