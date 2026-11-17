@@ -13,10 +13,16 @@ wizard call it after «Check and confirm the plan»; the installer stays in
 the same process, so the passwords in its ``Vault`` are still there for the
 engine.
 
-Known limit, as for every Herkos window (herkos/dialog.py): another program
-of the same user could still drive the window through accessibility
-(AT-SPI). In the live image no such program runs, and Gloxi has no tool for
-it; the system Herkos closes this later (permissions.md 5.2).
+Every program of the same user can reach this window through accessibility
+(AT-SPI), which Orca needs (docs/adr/0029-herkos-real-input.md). So:
+
+- «Install» counts only a real press on it, from the keyboard or the
+  pointer (``real_input``); a «click» sent over AT-SPI does nothing.
+- The recovery key is drawn (``KeyView``), not a label: accessibility
+  software gets only its name, not the letters. «Read the key aloud» says
+  it through speech-dispatcher (``speech``), again only on a real press.
+- The last group is typed back into a password field, which does not give
+  its text to accessibility software either.
 """
 
 from __future__ import annotations
@@ -35,7 +41,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_installer import confirm, encryption, style  # noqa: E402
+from vilna_installer import confirm, encryption, real_input, speech, style  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
@@ -54,6 +60,33 @@ ICONS = {
     "manual": "drive-harddisk-symbolic",
     "keep": "emblem-ok-symbolic",
 }
+
+
+class KeyView(Gtk.Widget):
+    """The recovery key, drawn: accessibility software sees only ``name``.
+
+    A Gtk.Label would give its text to every program on the accessibility
+    bus (AT-SPI Text); a plain widget that draws a Pango layout has no text
+    there, only the accessible name set here.
+    """
+
+    def __init__(self, text: str, name: str) -> None:
+        super().__init__(accessible_role=Gtk.AccessibleRole.IMG)
+        self._text = text
+        self.add_css_class("vilna-key")
+        self.set_halign(Gtk.Align.START)
+        self.update_property([Gtk.AccessibleProperty.LABEL], [name])
+
+    def _layout(self):
+        return self.create_pango_layout(self._text)
+
+    def do_measure(self, orientation, _for_size):
+        width, height = self._layout().get_pixel_size()
+        size = width if orientation == Gtk.Orientation.HORIZONTAL else height
+        return size, size, -1, -1
+
+    def do_snapshot(self, snapshot) -> None:
+        snapshot.append_layout(self._layout(), self.get_color())
 
 
 def _row(title: str, subtitle: str | None = None, icon: str | None = None) -> Adw.ActionRow:
@@ -82,6 +115,9 @@ class ConfirmWindow(Adw.ApplicationWindow):
         self.finish = finish
         self.shown_at = time.monotonic()
         self.key_ok = False
+        self.gate = real_input.RealInput()
+        self.voice = speech.Voice()
+        real_input.watch_window(self, self.gate)
         _ = confirm.texts_for(confirm.plans.load(plan_path))
         self._ = _
         checked = confirm.check(plan_path, machine, _, stage=stage, tpm=tpm)
@@ -171,6 +207,7 @@ class ConfirmWindow(Adw.ApplicationWindow):
         self.install.add_css_class("pill")
         self.install.add_css_class("destructive-action" if s.erases else "suggested-action")
         self.install.connect("clicked", self._on_install)
+        real_input.guard(self.install, self.gate)
         self.install.set_visible(s.ready)
         self.waiting = Gtk.Label(label=_(confirm.WAIT), visible=s.ready)
         self.waiting.add_css_class("dim-label")
@@ -199,15 +236,16 @@ class ConfirmWindow(Adw.ApplicationWindow):
         # Two lines of four groups: readable and easy to copy by hand.
         parts = encryption.groups(self.key)
         shown = "  ".join(parts[:4]) + "\n" + "  ".join(parts[4:])
-        key = Gtk.Label(label=shown, xalign=0, halign=Gtk.Align.START)
-        key.add_css_class("vilna-key")
-        key.update_property(
-            [Gtk.AccessibleProperty.LABEL],
-            [_(confirm.KEY_SPOKEN).format(key=encryption.spoken(self.key))],
-        )
-        box.append(key)
+        box.append(KeyView(shown, _(confirm.KEY_HIDDEN)))
+        self.aloud: Gtk.Button | None = None
+        if self.voice.available():
+            self.aloud = Gtk.Button(label=_(confirm.KEY_ALOUD), halign=Gtk.Align.START)
+            self.aloud.connect("clicked", self._on_aloud)
+            real_input.guard(self.aloud, self.gate)
+            box.append(self.aloud)
         box.append(Gtk.Label(label=_(confirm.KEY_TYPE), xalign=0, wrap=True))
-        self.entry = Gtk.Entry(max_length=24, width_chars=14, halign=Gtk.Align.START)
+        # A password field: its text does not go to accessibility software.
+        self.entry = Gtk.PasswordEntry(show_peek_icon=True, width_chars=14, halign=Gtk.Align.START)
         self.entry.add_css_class("monospace")
         self.entry.update_property([Gtk.AccessibleProperty.LABEL], [_(confirm.KEY_FIELD)])
         self.entry.connect("changed", self._on_key)
@@ -216,6 +254,18 @@ class ConfirmWindow(Adw.ApplicationWindow):
         box.append(self.key_note)
         group.add(box)
         return group
+
+    def _on_aloud(self, button: Gtk.Button) -> None:
+        if not self.gate.allows(button):
+            self._not_real()
+            return
+        spoken = self._(confirm.KEY_SPOKEN).format(key=encryption.spoken(self.key))
+        self.voice.say(spoken, self._.code)
+
+    def _not_real(self) -> None:
+        """A press that came from a program, not from the person: say what to do."""
+        self.waiting.set_label(self._(confirm.NOT_REAL))
+        self.waiting.set_visible(True)
 
     def _focus_first(self) -> bool:
         (self.entry or self.back).grab_focus()
@@ -255,6 +305,9 @@ class ConfirmWindow(Adw.ApplicationWindow):
         self.install.set_sensitive(self.ready())
 
     def _on_install(self, *_args) -> None:
+        if not self.gate.allows(self.install):
+            self._not_real()
+            return
         if not self.ready():
             return
         try:
@@ -272,10 +325,12 @@ class ConfirmWindow(Adw.ApplicationWindow):
             self.install.set_visible(False)
             return
         key = self.key if self.encrypted else None
+        self.voice.close()
         self.finish(confirm.Outcome(True, digest, key))
 
     def _go_back(self) -> None:
         # The key goes back too: shown once, it stays the same if the person returns.
+        self.voice.close()
         self.finish(confirm.Outcome(False, recovery_key=self.key if self.encrypted else None))
 
     def _on_close(self, *_args) -> bool:

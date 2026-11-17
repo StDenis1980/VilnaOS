@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkos-agent: the allow buttons of the permission window count only
+  a real press, from the keyboard or the pointer; an AT-SPI «click» on
+  them no longer allows anything (docs/adr/0029).
+
+-------------------------------------------------------------------
 Tue Nov 17 11:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - herkosd: time on a locked or blank screen no longer counts towards the

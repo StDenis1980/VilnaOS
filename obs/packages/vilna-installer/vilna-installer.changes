@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Herkos screen (docs/adr/0029): «Install» counts only a real press,
+  from the keyboard or the pointer, not an AT-SPI «click»; the recovery
+  key is drawn, not given to accessibility software, and «Read the key
+  aloud» says it through speech-dispatcher (recommends python3-speechd);
+  the last group is typed into a password field.
+
+-------------------------------------------------------------------
 Mon Nov 16 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Progress screen: a branch with leaves and cornflowers grows with the

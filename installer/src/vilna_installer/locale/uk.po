@@ -705,3 +705,12 @@ msgstr "Оберіть відповідь про звіти про збої."
 
 msgid "Crash reports: {answer}"
 msgstr "Звіти про збої: {answer}"
+
+msgid "Recovery key. It is only drawn on the screen, so that other programs cannot read it. Press «Read the key aloud» to hear it."
+msgstr "Ключ відновлення. Його лише намальовано на екрані, щоб інші програми не могли його прочитати. Натисніть «Прочитати ключ уголос», щоб його почути."
+
+msgid "Read the key aloud"
+msgstr "Прочитати ключ уголос"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Натисніть кнопку самі, клавіатурою або мишею: Herkos не приймає натискань від інших програм."
