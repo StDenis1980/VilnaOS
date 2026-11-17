@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!--
+  Herkos's own polkit actions (permissions.md 9.2). Gloxi asks Herkos for an
+  action; Herkos's window shows the person what and why; for what changes the
+  whole computer, herkosd then asks polkit with one of these actions whether
+  this person may (pkcheck, about the person's session agent). A password, if
+  the defaults or the rules want one, is asked by the desktop's own polkit
+  window: Herkos never sees it.
+
+  The owner annotation lets the user herkos (not root) ask polkit about
+  another user's process for these actions only.
+
+  Which operation names which action: the field "polkit" of the operations
+  in herkos/src/herkos/manifests/*.toml. Who may without a password:
+  50-herkos-actions.rules.
+-->
+<policyconfig>
+  <vendor>Vilna OS</vendor>
+  <vendor_url>https://github.com/StDenis1980/VilnaOS</vendor_url>
+
+  <!-- Install, update and remove apps for everybody (org.vilna.mcp.apps,
+       R3). As with Flatpak itself: an administrator at the computer may
+       (50-herkos-actions.rules), anybody else needs an administrator's
+       password. -->
+  <action id="org.vilna.herkos.apps.change">
+    <description>Change the apps of this computer through Gloxi</description>
+    <description xml:lang="uk">Змінити програми цього комп'ютера через Gloxi</description>
+    <description xml:lang="es">Cambiar las aplicaciones de este ordenador mediante Gloxi</description>
+    <description xml:lang="pl">Zmienić aplikacje tego komputera przez Gloxi</description>
+    <description xml:lang="de">Die Apps dieses Computers über Gloxi ändern</description>
+    <description xml:lang="fr">Modifier les applications de cet ordinateur via Gloxi</description>
+    <description xml:lang="it">Modificare le app di questo computer tramite Gloxi</description>
+    <description xml:lang="ro">Modificarea aplicațiilor acestui calculator prin Gloxi</description>
+    <description xml:lang="cs">Změnit aplikace tohoto počítače přes Gloxi</description>
+    <description xml:lang="lt">Keisti šio kompiuterio programas per Gloxi</description>
+    <message>Gloxi asked to install, update or remove an app for everybody on this computer. An administrator's password is needed.</message>
+    <message xml:lang="uk">Gloxi просить встановити, оновити або видалити програму для всіх на цьому комп'ютері. Потрібен пароль адміністратора.</message>
+    <message xml:lang="es">Gloxi pide instalar, actualizar o quitar una aplicación para todos en este ordenador. Se necesita la contraseña de un administrador.</message>
+    <message xml:lang="pl">Gloxi prosi o zainstalowanie, aktualizację lub usunięcie aplikacji dla wszystkich na tym komputerze. Potrzebne jest hasło administratora.</message>
+    <message xml:lang="de">Gloxi möchte eine App für alle auf diesem Computer installieren, aktualisieren oder entfernen. Das Passwort eines Administrators ist nötig.</message>
+    <message xml:lang="fr">Gloxi demande d'installer, de mettre à jour ou de supprimer une application pour tous sur cet ordinateur. Le mot de passe d'un administrateur est nécessaire.</message>
+    <message xml:lang="it">Gloxi chiede di installare, aggiornare o rimuovere un'app per tutti su questo computer. Serve la password di un amministratore.</message>
+    <message xml:lang="ro">Gloxi cere să instaleze, să actualizeze sau să elimine o aplicație pentru toți pe acest calculator. Este nevoie de parola unui administrator.</message>
+    <message xml:lang="cs">Gloxi žádá o instalaci, aktualizaci nebo odebrání aplikace pro všechny na tomto počítači. Je potřeba heslo správce.</message>
+    <message xml:lang="lt">Gloxi prašo įdiegti, atnaujinti arba pašalinti programą visiems šio kompiuterio naudotojams. Reikia administratoriaus slaptažodžio.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.owner">unix-user:herkos</annotate>
+  </action>
+
+  <!-- Return the whole system to a saved state, or undo that
+       (org.vilna.mcp.system, R4): an administrator's password every time. -->
+  <action id="org.vilna.herkos.system.rollback">
+    <description>Return the whole system to a saved state through Gloxi</description>
+    <description xml:lang="uk">Повернути всю систему до збереженого стану через Gloxi</description>
+    <description xml:lang="es">Devolver todo el sistema a un estado guardado mediante Gloxi</description>
+    <description xml:lang="pl">Przywrócić cały system do zapisanego stanu przez Gloxi</description>
+    <description xml:lang="de">Das ganze System über Gloxi auf einen gespeicherten Stand zurücksetzen</description>
+    <description xml:lang="fr">Ramener tout le système à un état enregistré via Gloxi</description>
+    <description xml:lang="it">Riportare l'intero sistema a uno stato salvato tramite Gloxi</description>
+    <description xml:lang="ro">Readucerea întregului sistem la o stare salvată prin Gloxi</description>
+    <description xml:lang="cs">Vrátit celý systém do uloženého stavu přes Gloxi</description>
+    <description xml:lang="lt">Grąžinti visą sistemą į išsaugotą būseną per Gloxi</description>
+    <message>Gloxi asked to return the whole system to a saved state after a restart. An administrator's password is needed.</message>
+    <message xml:lang="uk">Gloxi просить повернути всю систему до збереженого стану після перезапуску. Потрібен пароль адміністратора.</message>
+    <message xml:lang="es">Gloxi pide devolver todo el sistema a un estado guardado tras reiniciar. Se necesita la contraseña de un administrador.</message>
+    <message xml:lang="pl">Gloxi prosi o przywrócenie całego systemu do zapisanego stanu po ponownym uruchomieniu. Potrzebne jest hasło administratora.</message>
+    <message xml:lang="de">Gloxi möchte das ganze System nach einem Neustart auf einen gespeicherten Stand zurücksetzen. Das Passwort eines Administrators ist nötig.</message>
+    <message xml:lang="fr">Gloxi demande de ramener tout le système à un état enregistré après un redémarrage. Le mot de passe d'un administrateur est nécessaire.</message>
+    <message xml:lang="it">Gloxi chiede di riportare l'intero sistema a uno stato salvato dopo un riavvio. Serve la password di un amministratore.</message>
+    <message xml:lang="ro">Gloxi cere readucerea întregului sistem la o stare salvată după o repornire. Este nevoie de parola unui administrator.</message>
+    <message xml:lang="cs">Gloxi žádá o vrácení celého systému do uloženého stavu po restartu. Je potřeba heslo správce.</message>
+    <message xml:lang="lt">Gloxi prašo po paleidimo iš naujo grąžinti visą sistemą į išsaugotą būseną. Reikia administratoriaus slaptažodžio.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.owner">unix-user:herkos</annotate>
+  </action>
+
+  <!-- Weaken the VPN kill switch for everybody (org.vilna.mcp.vpn, R3):
+       turn it off, let a local network through, open it for a Wi-Fi sign-in.
+       Like NetworkManager's own network control: whoever sits at the
+       computer may, nobody from elsewhere. -->
+  <action id="org.vilna.herkos.network.weaken">
+    <description>Weaken the VPN protection of this computer through Gloxi</description>
+    <description xml:lang="uk">Послабити захист VPN цього комп'ютера через Gloxi</description>
+    <description xml:lang="es">Debilitar la protección VPN de este ordenador mediante Gloxi</description>
+    <description xml:lang="pl">Osłabić ochronę VPN tego komputera przez Gloxi</description>
+    <description xml:lang="de">Den VPN-Schutz dieses Computers über Gloxi lockern</description>
+    <description xml:lang="fr">Affaiblir la protection VPN de cet ordinateur via Gloxi</description>
+    <description xml:lang="it">Ridurre la protezione VPN di questo computer tramite Gloxi</description>
+    <description xml:lang="ro">Slăbirea protecției VPN a acestui calculator prin Gloxi</description>
+    <description xml:lang="cs">Oslabit ochranu VPN tohoto počítače přes Gloxi</description>
+    <description xml:lang="lt">Susilpninti šio kompiuterio VPN apsaugą per Gloxi</description>
+    <message>Gloxi asked to weaken the VPN protection for everybody on this computer.</message>
+    <message xml:lang="uk">Gloxi просить послабити захист VPN для всіх на цьому комп'ютері.</message>
+    <message xml:lang="es">Gloxi pide debilitar la protección VPN para todos en este ordenador.</message>
+    <message xml:lang="pl">Gloxi prosi o osłabienie ochrony VPN dla wszystkich na tym komputerze.</message>
+    <message xml:lang="de">Gloxi möchte den VPN-Schutz für alle auf diesem Computer lockern.</message>
+    <message xml:lang="fr">Gloxi demande d'affaiblir la protection VPN pour tous sur cet ordinateur.</message>
+    <message xml:lang="it">Gloxi chiede di ridurre la protezione VPN per tutti su questo computer.</message>
+    <message xml:lang="ro">Gloxi cere slăbirea protecției VPN pentru toți pe acest calculator.</message>
+    <message xml:lang="cs">Gloxi žádá o oslabení ochrany VPN pro všechny na tomto počítači.</message>
+    <message xml:lang="lt">Gloxi prašo susilpninti VPN apsaugą visiems šio kompiuterio naudotojams.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.owner">unix-user:herkos</annotate>
+  </action>
+</policyconfig>

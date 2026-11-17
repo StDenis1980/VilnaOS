@@ -1,11 +1,48 @@
 -------------------------------------------------------------------
-Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Tue Nov 17 19:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Herkos screen (docs/adr/0029): «Install» counts only a real press,
   from the keyboard or the pointer, not an AT-SPI «click»; the recovery
   key is drawn, not given to accessibility software, and «Read the key
   aloud» says it through speech-dispatcher (recommends python3-speechd);
   the last group is typed into a password field.
+
+-------------------------------------------------------------------
+Tue Nov 17 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The installer's windows are night blue (#0E1A2E ground), as in the
+  designer's installer screens, instead of libadwaita's white: they
+  prefer the dark theme and redefine its surfaces
+  (data/style/installer-dark.css). A system set to light explicitly
+  gets warm cream surfaces with night blue text
+  (installer-light.css). Herkos, Gloxi and «Копії» are unchanged.
+
+-------------------------------------------------------------------
+Tue Nov 17 17:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The live session takes the plan's time zone as soon as the plan has
+  one (timedatectl set-timezone): the top bar showed UTC time on a
+  real laptop.
+- The first screen puts the chosen language's keyboard layout first in
+  the live session (us stays second): Ukrainian could not be typed
+  until the conversation's language step was over.
+
+-------------------------------------------------------------------
+Tue Nov 17 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Gloxi in the installer: the system prompt and the functions stay the
+  same for the whole conversation, and the step, the plan and the disk
+  data come as installer notes at the end, only when they change; the
+  history is cut back seldom. llama-server now reads only the new part
+  of the prompt: on KLX every turn read 1,100-1,250 tokens again
+  (43-56 s, S7 on Vilna-Live Build10.11).
+
+-------------------------------------------------------------------
+Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Put virtio_input into the first initrd: the host-only initrd left
+  it out, and a VM with a virtio keyboard could not type the
+  passphrase or the recovery key at boot.
 
 -------------------------------------------------------------------
 Mon Nov 16 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

@@ -33,6 +33,7 @@ use toml::Table;
 use crate::config::{Config, Owner};
 use crate::gate::{Answer, Confirmer, Gate, Question, Session, Tools};
 use crate::passwd::{self, Account};
+use crate::polkit::Pkcheck;
 use crate::rpc;
 use crate::snapshots::{Snapper, Snapshots};
 
@@ -149,6 +150,8 @@ struct Link {
     pending: Arc<Mutex<HashMap<String, Sender<Value>>>>,
     /// The agent said the screen is locked or blank.
     away: Arc<AtomicBool>,
+    /// Its process, from the socket: the subject polkit judges (polkit.rs).
+    pid: Option<i32>,
 }
 
 /// The registered session agents, one per person (the latest wins: a new
@@ -184,6 +187,7 @@ impl Agents {
         writer: Arc<Mutex<UnixStream>>,
         pending: Arc<Mutex<HashMap<String, Sender<Value>>>>,
         away: Arc<AtomicBool>,
+        pid: Option<i32>,
     ) -> u64 {
         let serial = self.next.fetch_add(1, Ordering::Relaxed);
         if let Ok(mut links) = self.links.lock() {
@@ -194,10 +198,33 @@ impl Agents {
                     writer,
                     pending,
                     away,
+                    pid,
                 },
             );
         }
         serial
+    }
+
+    /// The process of the person's session agent, while it is connected.
+    pub fn pid(&self, uid: u32) -> Option<i32> {
+        self.links.lock().ok()?.get(&uid)?.pid
+    }
+
+    #[cfg(test)]
+    pub fn register_pid_for_tests(&self, uid: u32, pid: i32) -> u64 {
+        let (a, _b) = UnixStream::pair().expect("pair");
+        self.register(
+            uid,
+            Arc::new(Mutex::new(a)),
+            Arc::default(),
+            Arc::default(),
+            Some(pid),
+        )
+    }
+
+    #[cfg(test)]
+    pub fn unregister_for_tests(&self, uid: u32, serial: u64) {
+        self.unregister(uid, serial);
     }
 
     fn unregister(&self, uid: u32, serial: u64) {
@@ -321,6 +348,8 @@ pub struct System {
     /// Where snapper keeps its configs: a person with `mitos-<uid>` there
     /// gets Mitos snapshots of their home (ADR 0026).
     pub snapper_configs: PathBuf,
+    /// `pkcheck`: polkit for what changes the whole computer (polkit.rs).
+    pub pkcheck: PathBuf,
 }
 
 impl System {
@@ -338,6 +367,7 @@ impl System {
             tools,
             gates: Mutex::new(HashMap::new()),
             snapper_configs: PathBuf::from(SNAPPER_CONFIGS),
+            pkcheck: PathBuf::from("pkcheck"),
         }
     }
 
@@ -370,7 +400,15 @@ impl System {
             .as_ref()
             .map(|s| s.subvolume().display().to_string());
         let gate = crate::build_gate_from(config, tools, Box::new(confirmer))?;
-        let gate = Arc::new(gate.with_snapshots(snapshots));
+        let authority = Pkcheck {
+            program: self.pkcheck.clone(),
+            uid,
+            agents: Arc::clone(&self.agents),
+        };
+        let gate = Arc::new(
+            gate.with_snapshots(snapshots)
+                .with_authority(Some(Box::new(authority))),
+        );
         let start = json!({
             "server": concat!("herkosd/", env!("CARGO_PKG_VERSION")),
             "mode": "system",
@@ -436,6 +474,9 @@ fn agent_loop(stream: UnixStream, uid: u32, agents: &Agents, person: &PersonMeth
     let Ok(w) = stream.try_clone() else {
         return;
     };
+    let pid = rustix::net::sockopt::socket_peercred(&stream)
+        .ok()
+        .map(|c| c.pid.as_raw_nonzero().get());
     let writer = Arc::new(Mutex::new(w));
     let pending: Arc<Mutex<HashMap<String, Sender<Value>>>> = Arc::default();
     let away = Arc::new(AtomicBool::new(false));
@@ -511,6 +552,7 @@ fn agent_loop(stream: UnixStream, uid: u32, agents: &Agents, person: &PersonMeth
                         Arc::clone(&writer),
                         Arc::clone(&pending),
                         Arc::clone(&away),
+                        pid,
                     ));
                 }
                 rpc::result(&id, json!({"registered": true}))

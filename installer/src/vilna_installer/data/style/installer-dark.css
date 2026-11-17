@@ -1,0 +1,27 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * The installer's own surfaces in the dark theme: night blue, as in Dmytro
+ * Sizmin's installer screens (P3 and P4) and docs/design/brief.md, section 2
+ * (dark theme ground #0E1A2E). Only the installer loads this file: Herkos,
+ * Gloxi and «Копії» keep libadwaita's surfaces. The installer prefers the
+ * dark theme (style.install), so this is what people see on the live image.
+ */
+@define-color window_bg_color #0E1A2E;
+@define-color window_fg_color #EEF2F8;
+@define-color view_bg_color #12213B;
+@define-color view_fg_color #EEF2F8;
+@define-color headerbar_bg_color #0E1A2E;
+@define-color headerbar_fg_color #EEF2F8;
+@define-color headerbar_backdrop_color #0E1A2E;
+@define-color sidebar_bg_color #16294A;
+@define-color sidebar_fg_color #EEF2F8;
+@define-color sidebar_backdrop_color #13233F;
+@define-color card_bg_color #1A2E52;
+@define-color card_fg_color #EEF2F8;
+@define-color dialog_bg_color #16294A;
+@define-color dialog_fg_color #EEF2F8;
+@define-color popover_bg_color #1A2E52;
+@define-color popover_fg_color #EEF2F8;
+@define-color accent_bg_color #2D6BFF;
+@define-color accent_fg_color #FFFFFF;
+@define-color accent_color #5B8CFF;

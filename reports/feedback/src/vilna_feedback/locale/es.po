@@ -42,6 +42,24 @@ msgstr "Dirección de correo electrónico"
 msgid "You may publish it, without my address, after reading it"
 msgstr "Pueden publicarlo, sin mi dirección, después de leerlo"
 
+msgid "Add my conversation with Gloxi from the installation"
+msgstr "Añadir mi conversación con Gloxi durante la instalación"
+
+msgid "It may have your name, the computer's name or a Wi-Fi network. You read it before it is added."
+msgstr "Puede contener su nombre, el del ordenador o una red wifi. La leerá antes de que se añada."
+
+msgid "Conversation with Gloxi"
+msgstr "Conversación con Gloxi"
+
+msgid "Read"
+msgstr "Leer"
+
+msgid "Add"
+msgstr "Añadir"
+
+msgid "Do not add"
+msgstr "No añadir"
+
 msgid "What will be sent"
 msgstr "Qué se enviará"
 

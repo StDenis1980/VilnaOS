@@ -39,3 +39,25 @@ def test_window_styles_take_vilna_colours_not_raw_hex():
 
     for css in (chat.CSS, confirm_window.CSS, welcome.CSS, wizard_window.CSS):
         assert "#F5C24A" not in css and "@error_color" not in css
+
+
+@pytest.mark.parametrize("dark", (True, False))
+def test_installer_surfaces_replace_libadwaita_white_and_grey(dark):
+    css = style.stylesheet(style.SURFACE_FILES[dark])
+    for name in ("window_bg_color", "view_bg_color", "card_bg_color", "headerbar_bg_color"):
+        assert f"@define-color {name} " in css
+    # Night blue ground of the dark theme, warm cream of the light one (brief, section 2).
+    assert ("#0E1A2E" if dark else "#F7F1E6") in css
+
+
+def test_installer_prefers_the_night_blue_theme():
+    gi = pytest.importorskip("gi")
+    gi.require_version("Gtk", "4.0")
+    gi.require_version("Adw", "1")
+    from gi.repository import Adw, Gtk
+
+    if not Gtk.init_check():
+        pytest.skip("no display")
+    Adw.init()
+    style.install()
+    assert Adw.StyleManager.get_default().get_color_scheme() == Adw.ColorScheme.PREFER_DARK

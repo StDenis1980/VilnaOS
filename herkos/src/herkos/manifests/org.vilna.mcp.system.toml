@@ -18,16 +18,20 @@ description = "Saved states of the system, and a return to one of them"
 program = "vilna-mcp-system"
 args = []
 
+# After the person says yes, polkit asks for an administrator's password,
+# every time (org.vilna.herkos.policy, permissions.md 9.2).
 [operations.list_snapshots]
 level = "R0"
 summary = "See the saved states of the system"
 
 [operations.rollback]
 level = "R4"
+polkit = "org.vilna.herkos.system.rollback"
 summary = "Return the whole system to a saved state, after a restart"
 undoable = true
 
 [operations.restore]
 level = "R4"
+polkit = "org.vilna.herkos.system.rollback"
 summary = "Undo a return of the system to a saved state"
 undoable = true

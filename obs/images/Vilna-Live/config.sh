@@ -233,12 +233,15 @@ export default class VilnaLiveExtension extends Extension {
 }
 JS
 
+# Firefox (RPM, live image only) is in the dock; the build fails if its
+# desktop file has another name.
+test -e /usr/share/applications/firefox.desktop
 cat >/usr/share/glib-2.0/schemas/40_Vilna-Live.gschema.override <<'GSCHEMA'
 # Vilna live image only (obs/images/Vilna-Live/config.sh); wins over
 # 30_Vilna.gschema.override.
 [org.gnome.shell]
 enabled-extensions=['vilna@stdenis1980.github.io', 'vilna-live@stdenis1980.github.io']
-favorite-apps=['io.github.stdenis1980.VilnaInstaller.desktop', 'io.github.stdenis1980.Gloxi.desktop', 'org.gnome.Nautilus.desktop']
+favorite-apps=['io.github.stdenis1980.VilnaInstaller.desktop', 'io.github.stdenis1980.Gloxi.desktop', 'firefox.desktop', 'org.gnome.Nautilus.desktop']
 
 [org.gnome.desktop.screensaver]
 lock-enabled=false

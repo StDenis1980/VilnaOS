@@ -332,3 +332,20 @@ def test_repart_makes_luks2_with_the_key_file(tmp_path):
         f.seek(root["start"] * 512)
         assert f.read(6) == b"LUKS\xba\xbe"
     disk.unlink()
+
+
+def test_the_first_initrd_can_read_a_virtio_keyboard():
+    # Without it the passphrase prompt in a VM took no keys (17.11.2026).
+    todo = encryption.steps(
+        "passphrase",
+        crypt_part="/dev/vda2",
+        crypt_uuid="0b0e8c5a-1111-4222-8333-944455556666",
+        root_uuid="7c7c7c7c-1111-4222-8333-944455556666",
+        root="/mnt",
+        key_file=Path("/run/k"),
+    )
+    dracut = [s for s in todo if s.path == encryption.DRACUT_OVERRIDE]
+    assert dracut[0].text.splitlines() == ['hostonly_cmdline="no"', 'add_drivers+=" virtio_input "']
+    assert dracut[-1].remove
+    build = next(i for i, s in enumerate(todo) if "mkinitrd" in s.argv)
+    assert todo.index(dracut[0]) < build < todo.index(dracut[-1])

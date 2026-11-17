@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,9 @@ MAX_TEXT = 8000
 # The same shape the server accepts (reports/protocol/src/lib.rs, EMAIL).
 EMAIL_RE = re.compile(r"^[^\s@<>]{1,64}@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$")
 KINDS = ("bug", "idea", "other")
+# reports/protocol/src/lib.rs, MAX_CONVERSATION_CHARS: the end is kept.
+MAX_CONVERSATION = 16000
+MAX_CONVERSATION_FILE = 4 << 20
 
 
 @dataclass
@@ -31,6 +35,8 @@ class Form:
     system: str = ""
     reply: bool = False
     contact: str = ""
+    add_conversation: bool = False
+    conversation: str = ""
     may_publish: bool = False
     locale: str = "en"
 
@@ -58,6 +64,8 @@ class Form:
             body["system"] = self.system
         if self.reply and self.contact.strip():
             body["contact"] = self.contact.strip()
+        if self.add_conversation and self.conversation.strip():
+            body["conversation"] = self.conversation.strip()
         return body
 
 
@@ -77,6 +85,47 @@ def status_text(report: dict[str, Any], _: t.Texts) -> str:
     elif status == "new":
         parts.append(_(t.STATUS_NEW))
     return " · ".join(parts)
+
+
+# --- The installer's conversation with Gloxi ------------------------------------------
+
+
+def conversation_path(environ: dict[str, str] | None = None) -> Path:
+    """Where the installer keeps it: next to its plan (installer/.../start.py)."""
+    env = os.environ if environ is None else environ
+    base = env.get("XDG_RUNTIME_DIR") or tempfile.gettempdir()
+    return Path(base) / "vilna-installer" / "conversation.jsonl"
+
+
+def read_conversation(path: Path) -> str:
+    """The conversation as plain lines, «[step] who: text», its end if it is long.
+
+    The installer writes one JSON object a line (time, step, who, text), with
+    passwords never in it: they go into protected fields. It may still have a
+    name, the computer's name or a Wi-Fi network, so it is only ever added
+    after the person read it and chose to.
+    """
+    try:
+        with path.open("rb") as f:
+            f.seek(0, os.SEEK_END)
+            f.seek(max(0, f.tell() - MAX_CONVERSATION_FILE))
+            raw = f.read().decode("utf-8", errors="replace")
+    except OSError:
+        return ""
+    lines = []
+    for line in raw.splitlines():
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(entry, dict) or not str(entry.get("text") or "").strip():
+            continue
+        who = str(entry.get("who") or "?")
+        step = str(entry.get("step") or "")
+        text = " ".join(str(entry["text"]).split())
+        lines.append(f"[{step}] {who}: {text}" if step else f"{who}: {text}")
+    joined = "\n".join(lines)
+    return joined[-MAX_CONVERSATION:]
 
 
 # --- «Ask me every time»: one notification per waiting report -------------------
