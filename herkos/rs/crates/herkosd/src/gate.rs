@@ -33,6 +33,7 @@ use crate::grants::{Duration, GrantStore, grant_listing, grant_record};
 use crate::keros_model::ModelCheck;
 use crate::mitos::{Journal, JournalError, digest, read_records};
 use crate::pins::PinStore;
+use crate::polkit::{Authority, Verdict};
 use crate::programs::ProgramStore;
 use crate::rpc::new_action_id;
 use crate::snapshots::{Snapshots, in_snapshots, within};
@@ -427,6 +428,9 @@ pub struct Gate {
     pub programs: ProgramStore,
     /// Snapshots of the person's home, where the system has them (ADR 0026).
     snapshots: Option<Box<dyn Snapshots>>,
+    /// polkit, for operations that name an `org.vilna.herkos.*` action. Only
+    /// the system Herkos has it; without it such operations are refused.
+    authority: Option<Box<dyn Authority>>,
 }
 
 fn decision_record(o: &Outcome) -> Value {
@@ -467,6 +471,7 @@ impl Gate {
             ask_lock: Mutex::new(()),
             model_check: None,
             snapshots: None,
+            authority: None,
         }
     }
 
@@ -611,6 +616,11 @@ impl Gate {
     }
 
     #[must_use]
+    pub fn with_authority(mut self, authority: Option<Box<dyn Authority>>) -> Gate {
+        self.authority = authority;
+        self
+    }
+
     pub fn with_snapshots(mut self, snapshots: Option<Box<dyn Snapshots>>) -> Gate {
         self.snapshots = snapshots;
         self
@@ -917,19 +927,69 @@ impl Gate {
                 .map_err(|_| JournalError("permissions lock poisoned".into()))?
                 .find(&request.tool, &request.operation, &a.roots, level)
         };
-        if let Some(g) = found {
+        let outcome = if let Some(g) = found {
             let msg = format!("permission {} ({})", g.id, g.duration.name());
-            return Ok(Outcome::new(id, true, a.level, "allowed", msg).with_snapshot(snapshot));
-        }
-        let outcome = self
-            .ask(id, request, session, &a, &op, level, changed.is_some())?
-            .with_snapshot(snapshot);
+            Outcome::new(id, true, a.level, "allowed", msg).with_snapshot(snapshot)
+        } else {
+            self.ask(id, request, session, &a, &op, level, changed.is_some())?
+                .with_snapshot(snapshot)
+        };
+        // What changes the whole computer: polkit decides too (permissions.md 9.2).
+        let outcome = match (&op.polkit, outcome.allowed) {
+            (Some(action), true) => self.authorize(action, &op, outcome),
+            _ => outcome,
+        };
         if let (true, Some(fp)) = (outcome.allowed, &changed) {
             self.pins
                 .pin(&request.tool, &request.operation, fp)
                 .map_err(JournalError)?;
         }
         Ok(outcome)
+    }
+
+    /// After the person's yes, polkit's: Herkos's window said what and why,
+    /// polkit says whether this person may (an administrator, at the
+    /// computer), asking for a password in the desktop's own window when its
+    /// policy says so. Herkos never sees the password.
+    fn authorize(&self, action: &str, op: &Operation, outcome: Outcome) -> Outcome {
+        let Some(authority) = &self.authority else {
+            let why = format!("{action} needs polkit, which only the system Herkos asks");
+            return Outcome {
+                allowed: false,
+                code: "denied_error",
+                message: why,
+                ..outcome
+            };
+        };
+        let details = [
+            ("operation", op.name.as_str()),
+            ("summary", op.summary.as_str()),
+        ];
+        let verdict = {
+            let _one = self
+                .ask_lock
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            authority.check(action, &details, self.config.confirm_timeout)
+        };
+        let (code, message) = match verdict {
+            Verdict::Yes => {
+                let message = format!("{}; polkit: {action}", outcome.message);
+                return Outcome { message, ..outcome };
+            }
+            Verdict::No(why) => ("denied_user", format!("polkit ({action}): {why}")),
+            Verdict::TimedOut => (
+                "denied_timeout",
+                format!("polkit ({action}): the user did not answer in time"),
+            ),
+            Verdict::Error(why) => ("denied_error", format!("polkit ({action}): {why}")),
+        };
+        Outcome {
+            allowed: false,
+            code,
+            message,
+            ..outcome
+        }
     }
 
     /// The operation's new fingerprint if it changed since it was trusted.
@@ -2119,8 +2179,131 @@ pub(crate) mod tests {
             grants,
             journal,
             Box::new(Record(std::sync::Arc::clone(&asked))),
-        );
+        )
+        .with_authority(Some(Box::new(Polkit::says(Verdict::Yes))));
         (g, asked, docs)
+    }
+
+    /// polkit as the gate sees it: one verdict, and the actions it was asked about.
+    pub(crate) struct Polkit {
+        verdict: Verdict,
+        pub asked: std::sync::Arc<Mutex<Vec<String>>>,
+    }
+
+    impl Polkit {
+        pub(crate) fn says(verdict: Verdict) -> Polkit {
+            Polkit {
+                verdict,
+                asked: std::sync::Arc::default(),
+            }
+        }
+    }
+
+    impl Authority for Polkit {
+        fn check(&self, action: &str, details: &[(&str, &str)], _timeout: f64) -> Verdict {
+            let op = details.iter().find(|(k, _)| *k == "operation").map(|d| d.1);
+            self.asked
+                .lock()
+                .expect("lock")
+                .push(format!("{action} {}", op.unwrap_or("?")));
+            self.verdict.clone()
+        }
+    }
+
+    #[test]
+    fn what_changes_the_whole_computer_needs_polkit_after_the_person_s_yes() {
+        let install = || apps("install", json!({"app_id": "org.kde.kdenlive"}));
+        // polkit says yes: carried out, asked about the action of the manifest.
+        let (g, asked, _docs) = recording_gate("polkit-yes");
+        let yes = Polkit::says(Verdict::Yes);
+        let polkit_asked = std::sync::Arc::clone(&yes.asked);
+        let g = g.with_authority(Some(Box::new(yes)));
+        let mut s = Session::default();
+        let o = g.handle(&install(), &mut s);
+        assert_eq!((o.code, o.allowed), ("allowed", true), "{o:?}");
+        assert!(o.result.is_some(), "{o:?}");
+        assert_eq!(asked.lock().expect("lock").len(), 1);
+        assert_eq!(
+            *polkit_asked.lock().expect("lock"),
+            ["org.vilna.herkos.apps.change install"]
+        );
+        // The person's own things never ask polkit.
+        let search = g.handle(&apps("search", json!({"query": "video"})), &mut s);
+        assert!(search.allowed, "{search:?}");
+        assert_eq!(polkit_asked.lock().expect("lock").len(), 1);
+
+        // polkit says no, nobody answers it, or it cannot be asked: nothing is done.
+        for (name, verdict, code) in [
+            (
+                "polkit-no",
+                Verdict::No("not authorized".into()),
+                "denied_user",
+            ),
+            ("polkit-late", Verdict::TimedOut, "denied_timeout"),
+            (
+                "polkit-gone",
+                Verdict::Error("no agent".into()),
+                "denied_error",
+            ),
+        ] {
+            let (g, asked, _docs) = recording_gate(name);
+            let g = g.with_authority(Some(Box::new(Polkit::says(verdict))));
+            let mut s = Session::default();
+            let o = g.handle(&install(), &mut s);
+            assert_eq!((o.code, o.allowed), (code, false), "{name}: {o:?}");
+            assert!(o.result.is_none() && o.message.contains("polkit"), "{o:?}");
+            // Herkos asked first: what and why, then polkit: who.
+            assert_eq!(asked.lock().expect("lock").len(), 1, "{name}");
+            let journal = std::fs::read_to_string(g.config.state_dir.join(format!("{name}.jsonl")))
+                .expect("journal");
+            assert!(
+                journal.contains(code) && !journal.contains("\"result\""),
+                "{journal}"
+            );
+        }
+
+        // A person who said no is never shown polkit's window.
+        let (g, _asked, _docs) = recording_gate("polkit-person-no");
+        let never = Polkit::says(Verdict::Yes);
+        let never_asked = std::sync::Arc::clone(&never.asked);
+        let mut g = g.with_authority(Some(Box::new(never)));
+        g.confirmer = Box::new(DenyAll);
+        let o = g.handle(&install(), &mut Session::default());
+        assert_eq!(o.code, "denied_user", "{o:?}");
+        assert!(never_asked.lock().expect("lock").is_empty());
+
+        // Without polkit (Herkos-lite's place), such an operation is refused.
+        let (g, _asked, _docs) = recording_gate("polkit-none");
+        let g = g.with_authority(None);
+        let o = g.handle(&install(), &mut Session::default());
+        assert_eq!((o.code, o.allowed), ("denied_error", false), "{o:?}");
+    }
+
+    #[test]
+    fn a_session_permission_skips_herkos_s_window_but_never_polkit() {
+        let (g, _asked, _docs) = recording_gate("polkit-session");
+        let polkit = Polkit::says(Verdict::Yes);
+        let polkit_asked = std::sync::Arc::clone(&polkit.asked);
+        let mut g = g.with_authority(Some(Box::new(polkit)));
+        struct SaysSession;
+        impl Confirmer for SaysSession {
+            fn ask(&self, _q: &Question, _t: f64) -> Answer {
+                Answer::Session
+            }
+        }
+        g.confirmer = Box::new(SaysSession);
+        let mut s = Session::default();
+        for _ in 0..2 {
+            let o = g.handle(&apps("update", json!({})), &mut s);
+            assert!(o.allowed, "{o:?}");
+        }
+        assert_eq!(
+            *polkit_asked.lock().expect("lock"),
+            [
+                "org.vilna.herkos.apps.change update",
+                "org.vilna.herkos.apps.change update"
+            ]
+        );
     }
 
     fn apps(operation: &str, arguments: Value) -> ActionRequest {
@@ -2221,7 +2404,8 @@ pub(crate) mod tests {
             grants,
             journal,
             Box::new(Record(std::sync::Arc::clone(&asked))),
-        );
+        )
+        .with_authority(Some(Box::new(Polkit::says(Verdict::Yes))));
         let mut s = Session::default();
         let back = parse_request(&json!({
             "tool": SYSTEM, "operation": "rollback", "reason": "the update broke the sound",

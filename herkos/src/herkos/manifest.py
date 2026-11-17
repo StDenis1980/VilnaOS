@@ -67,7 +67,13 @@ _OPERATION_KEYS = {
     "command_arg",
     "command_key",
     "preview",
+    "polkit",
 }
+# Herkos's own polkit actions (org.vilna.herkos.policy, permissions.md 9.2).
+POLKIT_PREFIX = "org.vilna.herkos."
+_POLKIT_ACTION = re.compile(
+    r"org\.vilna\.herkos\.[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)*"
+)
 # The program's own commands, run through one generic operation such as
 # "execute" (ADR 0017, step 7): an id ("text.insert") or a group ("home.*").
 _COMMAND = re.compile(r"[A-Za-z0-9_-]{1,64}(\.[A-Za-z0-9_-]{1,64}){0,7}")
@@ -110,6 +116,10 @@ class Operation:
     # arguments before it asks, to show the person what the action is about
     # (ADR 0012, section 5). Herkos-lite has no such dialog yet: it only checks it.
     preview: str | None = None
+    # The polkit action the person must also be authorized for after their
+    # "yes": what changes the whole computer (permissions.md 9.2). Only for
+    # R3-R4, which only the system Herkos carries out; Herkos-lite only checks it.
+    polkit: str | None = None
 
     @property
     def forbidden(self) -> bool:
@@ -226,6 +236,13 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
         preview = op.get("preview")
         if preview is not None and (not isinstance(preview, str) or not _NAME.fullmatch(preview)):
             raise ManifestError(f"{where}: 'preview' must be an argument name")
+        polkit = op.get("polkit")
+        if polkit is not None and (
+            not isinstance(polkit, str) or len(polkit) > 128 or not _POLKIT_ACTION.fullmatch(polkit)
+        ):
+            raise ManifestError(f"{where}: 'polkit' must name an action {POLKIT_PREFIX}*")
+        if polkit is not None and (level is None or level < Level.R3):
+            raise ManifestError(f"{where}: 'polkit' goes only with R3 or R4")
         if command_key is not None and command_arg is None:
             raise ManifestError(f"{where}: 'command_key' goes only with 'command_arg'")
         if command_arg is not None and "commands" not in data:
@@ -238,6 +255,7 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
             command_arg=command_arg,
             command_key=command_key,
             preview=preview,
+            polkit=polkit,
             **flags,
         )
     for op in operations.values():

@@ -18,6 +18,7 @@ mod mcp;
 mod mitos;
 mod passwd;
 mod pins;
+mod polkit;
 mod programs;
 mod rpc;
 mod snapshots;
@@ -40,7 +41,7 @@ use serde_json::Value;
 /// A longer message closes the connection (protocol.md).
 const MAX_LINE: usize = 1024 * 1024;
 
-const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd mitos-setup [--system-config PATH] [--passwd PATH]\n       herkosd system-tool UID\n       herkosd vpn-tool UID\n       herkosd ext-unit MANIFEST.toml\n       herkosd ext-exec PROGRAM ARGS-FILE\n       herkosd --version";
+const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH] [--pkcheck-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd mitos-setup [--system-config PATH] [--passwd PATH]\n       herkosd system-tool UID\n       herkosd vpn-tool UID\n       herkosd ext-unit MANIFEST.toml\n       herkosd ext-exec PROGRAM ARGS-FILE\n       herkosd --version";
 
 fn default_socket() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")
@@ -352,6 +353,7 @@ fn run_system(args: &[String]) -> Result<(), String> {
         .filter(|p| p.is_absolute())
         .unwrap_or_else(|| PathBuf::from("/run/herkos-tools"));
     let mut start = PathBuf::from("systemctl");
+    let mut pkcheck = PathBuf::from("pkcheck");
     let mut rest = args.iter();
     while let Some(a) = rest.next() {
         match a.as_str() {
@@ -363,6 +365,8 @@ fn run_system(args: &[String]) -> Result<(), String> {
             "--tools-dir" => tools_dir = absolute(a, rest.next())?,
             // A stand-in for systemctl (tests).
             "--start-command" => start = absolute(a, rest.next())?,
+            // A stand-in for pkcheck (tests).
+            "--pkcheck-command" => pkcheck = absolute(a, rest.next())?,
             _ => return Err(format!("unknown argument {a}\n{USAGE}")),
         }
     }
@@ -384,7 +388,9 @@ fn run_system(args: &[String]) -> Result<(), String> {
     };
     let tools: Box<system::ToolsFor> =
         Box::new(move |config, person| units.tools_for(config, person));
-    let sys = Arc::new(system::System::new(people, config_path, state, tools));
+    let mut sys = system::System::new(people, config_path, state, tools);
+    sys.pkcheck = pkcheck;
+    let sys = Arc::new(sys);
     eprintln!(
         "herkosd: system service for {} people",
         sys.config.people.len()

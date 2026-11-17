@@ -30,7 +30,8 @@ BuildRequires:  python-rpm-macros
 BuildRequires:  sysuser-tools
 BuildRequires:  systemd-rpm-macros
 %sysusers_requires
-# 50-herkos.rules: herkosd may start only its tool units.
+# 50-herkos.rules: herkosd may start only its tool units. herkosd asks
+# polkit (pkcheck) about Herkos's own actions, org.vilna.herkos.policy.
 Requires:       polkit
 # vilna-home-setup: restorecon, pgrep.
 Requires:       policycoreutils
@@ -153,6 +154,11 @@ install -Dm0755 systemd/vilna-home-setup %{buildroot}%{_libexecdir}/herkos/vilna
 install -Dm0644 systemd/vilna-home-setup.service %{buildroot}%{_unitdir}/vilna-home-setup.service
 install -Dm0644 systemd/vilna-home-setup.path %{buildroot}%{_unitdir}/vilna-home-setup.path
 install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos.rules
+# Herkos's own polkit actions for what changes the whole computer, who may
+# carry them out, and nothing from polkit for Gloxi (permissions.md 9.2).
+install -Dm0644 systemd/org.vilna.herkos.policy %{buildroot}%{_datadir}/polkit-1/actions/org.vilna.herkos.policy
+install -Dm0644 systemd/50-herkos-actions.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos-actions.rules
+install -Dm0644 systemd/40-herkos-gloxi.rules %{buildroot}%{_datadir}/polkit-1/rules.d/40-herkos-gloxi.rules
 install -Dm0644 systemd/herkos.sysusers %{buildroot}%{_sysusersdir}/herkos.conf
 install -Dm0644 selinux/herkos.cil %{buildroot}%{_datadir}/selinux/packages/herkos/herkos.cil
 install -Dm0644 systemd/system.toml %{buildroot}%{_sysconfdir}/herkos/system.toml
@@ -227,6 +233,9 @@ fi
 %{_bindir}/vilna-netguard
 %{_unitdir}/vilna-netguard.service
 %{_datadir}/polkit-1/rules.d/50-herkos.rules
+%{_datadir}/polkit-1/rules.d/50-herkos-actions.rules
+%{_datadir}/polkit-1/rules.d/40-herkos-gloxi.rules
+%{_datadir}/polkit-1/actions/org.vilna.herkos.policy
 %{_sysusersdir}/herkos.conf
 %dir %{_sysconfdir}/herkos
 %config(noreplace) %{_sysconfdir}/herkos/system.toml

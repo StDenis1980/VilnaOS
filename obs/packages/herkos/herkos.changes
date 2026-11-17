@@ -1,4 +1,20 @@
 -------------------------------------------------------------------
+Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- polkit for what changes the whole computer (permissions.md 9.2): after
+  the person says yes in Herkos's window, herkosd asks polkit (pkcheck,
+  about the person's session agent) with Herkos's own actions in
+  org.vilna.herkos.policy: org.vilna.herkos.apps.change (install, update
+  and remove apps; an administrator at the computer may, anybody else
+  needs an administrator's password, as with Flatpak),
+  org.vilna.herkos.system.rollback (an administrator's password every
+  time) and org.vilna.herkos.network.weaken (weaken the VPN kill switch;
+  whoever sits at the computer). Manifests name the action in the new
+  operation field "polkit". New rules: 50-herkos-actions.rules,
+  40-herkos-gloxi.rules (Gloxi's users gloxi-<uid> and vilna-llm get
+  nothing from polkit).
+
+-------------------------------------------------------------------
 Tue Nov 17 11:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - herkosd: time on a locked or blank screen no longer counts towards the
