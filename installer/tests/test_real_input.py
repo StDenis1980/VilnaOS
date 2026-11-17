@@ -3,6 +3,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from vilna_installer import real_input, speech
 from vilna_installer.real_input import FOCUS_SECONDS, PRESS_SECONDS, RealInput
 
@@ -88,9 +90,10 @@ def test_a_pointer_press_anywhere_lets_the_focus_follow_it():
 
 def test_the_installer_has_the_same_gate_as_herkos():
     """One file, two packages: real_input.py is copied, never changed in one place only."""
-    here = Path(real_input.__file__).read_bytes()
     herkos = Path(__file__).parents[2] / "herkos" / "src" / "herkos" / "real_input.py"
-    assert here == herkos.read_bytes()
+    if not herkos.is_file():  # the RPM build has only the installer's sources
+        pytest.skip("not in the repository")
+    assert Path(real_input.__file__).read_bytes() == herkos.read_bytes()
 
 
 class FakeClient:
