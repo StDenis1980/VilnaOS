@@ -17,6 +17,11 @@ STAMP=${VILNA_FLATPAK_STAMP:-$STATE/flatpak-defaults-all.done}
 # Before Tinta Office (package 0.1) one stamp covered Flathub alone.
 OLD_STAMP=$STATE/flatpak-defaults.done
 FLATPAK=${VILNA_FLATPAK_BIN:-flatpak}
+# Translations Flatpak installs with each app and runtime (their .Locale
+# extensions): the ten languages of ADR 0009. Without this Flatpak takes
+# only the system language of this first boot, en_US, and Firefox stayed
+# in English after the person chose Українська (VM test of Build15.6).
+LANGUAGES=${VILNA_FLATPAK_LANGUAGES:-uk;en;es;pl;de;fr;it;ro;cs;lt}
 
 read_list() {
     sed -e 's/#.*//' -e 's/[[:space:]]//g' "$1" | grep -v '^$' || true
@@ -37,6 +42,7 @@ install_from() {
             echo "$remote: no repository file in this build, ${apps[*]} wait for it"
             return 1
         fi
+        "$FLATPAK" config --system --set languages "$LANGUAGES" || return 1
         "$FLATPAK" remote-add --system --if-not-exists "$remote" "$repofile" || return 1
         "$FLATPAK" install --system --noninteractive --or-update "$remote" "${apps[@]}" || return 1
     else

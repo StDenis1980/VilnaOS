@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 17 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.4: before installing, set Flatpak's languages to the ten
+  of ADR 0009 (uk, en, es, pl, de, fr, it, ro, cs, lt), so Firefox and
+  the other apps come with their translations; before, Flatpak took
+  only en_US, the language of the first boot (VM test of Build15.6).
+
+-------------------------------------------------------------------
 Mon Nov 16 21:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.3: ship vilna.flatpakrepo with the public key of Vilna's
