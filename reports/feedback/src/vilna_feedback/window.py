@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """«Feedback about Vilna»: the window and the crash notifications (ADR 0018 section 5).
 
-Two pages. **Feedback**: what it is about, the text, and three choices the
+Two pages. **Feedback**: what it is about, the text, and the choices the
 person makes (facts about this computer, an e-mail address for an answer,
-permission to publish); «What will be sent» shows the exact request before
-«Send». **Crash reports**: the answer about crash reports, each report of
+permission to publish, and on the live system the installer's conversation
+with Gloxi, added only after the person read it); «What will be sent» shows
+the exact request before «Send». **Crash reports**: the answer about crash reports, each report of
 this person and of the system with «View», «Send» and «Do not send», and
 «Delete everything I sent from the server» (GDPR).
 
@@ -137,6 +138,7 @@ class FeedbackWindow(Adw.ApplicationWindow):
             row.connect("notify::active", lambda *_a: self._changed())
         self.email.connect("changed", lambda *_a: self._changed())
         page.add(choices)
+        page.add(self._conversation_group())
 
         sent = Adw.PreferencesGroup()
         self.preview = Adw.ExpanderRow(title=_(t.PREVIEW))
@@ -162,6 +164,56 @@ class FeedbackWindow(Adw.ApplicationWindow):
             check.connect("toggled", lambda *_a: self._changed())
         return page
 
+    def _conversation_group(self) -> Adw.PreferencesGroup:
+        """The installer's conversation with Gloxi, when this session has one.
+
+        Off at first. Turning it on first shows the whole conversation; only
+        «Add» there adds it (it may have a name or a Wi-Fi network).
+        """
+        _ = self._
+        self.conversation = form.read_conversation(form.conversation_path())
+        self.conversation_read = False
+        self.conversation_dialog: Adw.AlertDialog | None = None
+        self.conversation_group = group = Adw.PreferencesGroup(visible=bool(self.conversation))
+        self.add_conversation = Adw.SwitchRow(
+            title=_(t.ADD_CONVERSATION), subtitle=_(t.CONVERSATION_HINT)
+        )
+        read = Gtk.Button(label=_(t.READ), valign=Gtk.Align.CENTER)
+        read.add_css_class("flat")
+        read.connect("clicked", lambda *_a: self.show_conversation())
+        self.add_conversation.add_suffix(read)
+        self.add_conversation.connect("notify::active", self._on_add_conversation)
+        group.add(self.add_conversation)
+        return group
+
+    def _on_add_conversation(self, *_args: Any) -> None:
+        if self.add_conversation.get_active() and not self.conversation_read:
+            self.add_conversation.set_active(False)  # not before the person read it
+            self.show_conversation()
+            return
+        self._changed()
+
+    def show_conversation(self) -> None:
+        _ = self._
+        dialog = Adw.AlertDialog(heading=_(t.CONVERSATION), body=_(t.CONVERSATION_HINT))
+        view = Gtk.TextView(
+            editable=False, cursor_visible=False, monospace=True, wrap_mode=Gtk.WrapMode.WORD_CHAR
+        )
+        view.get_buffer().set_text(self.conversation)
+        view.update_property([Gtk.AccessibleProperty.LABEL], [_(t.CONVERSATION)])
+        dialog.set_extra_child(Gtk.ScrolledWindow(child=view, min_content_height=320))
+        dialog.add_response("no", _(t.DO_NOT_ADD))
+        dialog.add_response("add", _(t.ADD))
+        dialog.set_close_response("no")
+        dialog.connect("response", self._on_conversation_answer)
+        self.conversation_dialog = dialog
+        dialog.present(self)
+
+    def _on_conversation_answer(self, _dialog: Any, response: str) -> None:
+        if response == "add":
+            self.conversation_read = True
+        self.add_conversation.set_active(response == "add")
+
     def _got_system(self, result: Any) -> None:
         if isinstance(result, str) and result:
             self.system = result
@@ -181,6 +233,8 @@ class FeedbackWindow(Adw.ApplicationWindow):
             reply=self.reply.get_active(),
             contact=self.email.get_text(),
             may_publish=self.publish.get_active(),
+            add_conversation=self.add_conversation.get_active(),
+            conversation=self.conversation,
             locale=self._.code,
         )
 

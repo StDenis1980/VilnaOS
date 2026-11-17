@@ -42,6 +42,24 @@ msgstr "Адреса електронної пошти"
 msgid "You may publish it, without my address, after reading it"
 msgstr "Можна опублікувати, без моєї адреси, після прочитання"
 
+msgid "Add my conversation with Gloxi from the installation"
+msgstr "Додати мою розмову з Gloxi під час встановлення"
+
+msgid "It may have your name, the computer's name or a Wi-Fi network. You read it before it is added."
+msgstr "У ній може бути ваше ім'я, назва комп'ютера чи мережі Wi-Fi. Перш ніж її додати, ви її прочитаєте."
+
+msgid "Conversation with Gloxi"
+msgstr "Розмова з Gloxi"
+
+msgid "Read"
+msgstr "Прочитати"
+
+msgid "Add"
+msgstr "Додати"
+
+msgid "Do not add"
+msgstr "Не додавати"
+
 msgid "What will be sent"
 msgstr "Що буде надіслано"
 
