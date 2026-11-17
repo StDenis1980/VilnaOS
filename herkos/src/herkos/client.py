@@ -25,7 +25,9 @@ from typing import Any
 from herkos import PROTOCOL_VERSION
 from herkos.config import socket_path
 
-DEFAULT_TIMEOUT = 300.0  # the user may take a while to answer
+# The user may take a while to answer: herkosd waits up to confirm_timeout
+# (at most an hour), and while the screen is locked up to half an hour.
+DEFAULT_TIMEOUT = 3700.0
 
 
 class HerkosUnavailable(Exception):
