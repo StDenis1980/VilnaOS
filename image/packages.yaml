@@ -45,7 +45,7 @@ vilna:
     - {name: Vilna-release,                license: GPL-3.0-or-later, status: obs}
     # Herkos
     - {name: herkos,                       license: GPL-3.0-or-later, status: obs}
-    - {name: herkos-polkit,                license: GPL-3.0-or-later, status: planned}
+    # herkos-polkit: its actions and rules come in herkos itself (org.vilna.herkos.policy)
     - {name: herkos-selinux,               license: GPL-3.0-or-later, status: planned}
     - {name: herkos-dialog,                license: GPL-3.0-or-later, status: planned}
     - {name: herkos-manifests,             license: GPL-3.0-or-later, status: obs}

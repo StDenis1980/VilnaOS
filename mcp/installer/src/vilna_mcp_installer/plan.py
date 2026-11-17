@@ -195,12 +195,22 @@ def _unconfirm(plan: dict[str, Any]) -> None:
     plan["confirmed_by_user"] = False
 
 
+# Keyboard layouts without Latin letters.
+NON_LATIN = frozenset(
+    {"ua", "ru", "by", "bg", "mk", "rs", "gr", "il", "ara", "ir", "th", "kz", "ge", "am"}
+)
+
+
 def set_languages(
     plan: dict[str, Any], languages: list[str], keyboards: list[str], **_: Any
 ) -> dict[str, Any]:
     """Languages of the system (locales; the first is the main one) and keyboard layouts."""
     langs = _strings(languages, "languages", LOCALE_RE)
     kbds = _strings(keyboards, "keyboards", KEYBOARD_RE)
+    # Passwords are typed in a Latin layout (the protected fields switch to it),
+    # so without one 'us' is added, whatever the model sent.
+    if all(k.split("(")[0] in NON_LATIN for k in kbds):
+        kbds.append("us")
     loc = plan.setdefault("locale", {})
     loc["languages"], loc["keyboards"] = langs, kbds
     loc.setdefault("region", langs[0])

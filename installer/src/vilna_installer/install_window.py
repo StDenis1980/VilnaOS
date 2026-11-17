@@ -23,7 +23,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_installer import confirm, release  # noqa: E402
+from vilna_installer import confirm, release, style  # noqa: E402
 from vilna_installer import engine as eng  # noqa: E402
 from vilna_installer.branch import Branch  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
@@ -89,7 +89,16 @@ class InstallWindow(Adw.ApplicationWindow):
         buttons.append(self.close_button)
         buttons.append(self.restart)
         page.append(buttons)
-        self.set_content(page)
+        # The theme button stays in the corner while the installation runs.
+        overlay = Gtk.Overlay(child=page)
+        theme = style.theme_button(_)
+        theme.set_halign(Gtk.Align.END)
+        theme.set_valign(Gtk.Align.START)
+        theme.set_margin_top(12)
+        theme.set_margin_end(12)
+        theme.add_css_class("flat")
+        overlay.add_overlay(theme)
+        self.set_content(overlay)
         self.show_state(None)
 
     # what the engine wrote

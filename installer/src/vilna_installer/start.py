@@ -252,6 +252,60 @@ MODEL_WAKE_COMMAND = (
 )
 
 
+# The live image starts in UTC, and the top bar showed UTC time on a real
+# laptop although its clock was right (KLX, Build10.11, 2026-11-17). Once
+# the plan has a time zone, the live session takes it too; the installed
+# system gets it from the plan either way (engine.py).
+TIME_ZONE_COMMAND = ("timedatectl", "--no-ask-password", "set-timezone")
+TIME_ZONE_RE = r"[A-Za-z0-9_+-]+(/[A-Za-z0-9_+-]+)*"
+ZONEINFO = Path("/usr/share/zoneinfo")
+_live_zone: dict[str, str] = {}
+
+
+def follow_time_zone(
+    plan: dict[str, Any],
+    run: Callable[..., object] = subprocess.run,
+    zoneinfo: Path = ZONEINFO,
+) -> bool:
+    """Set the live session's time zone to the plan's; True when it was asked to change."""
+    zone = (plan.get("locale") or {}).get("timezone") if isinstance(plan, dict) else None
+    if not isinstance(zone, str) or not re.fullmatch(TIME_ZONE_RE, zone):
+        return False
+    if zone == _live_zone.get("zone") or not (zoneinfo / zone).is_file():
+        return False
+    try:
+        run([*TIME_ZONE_COMMAND, zone], check=False, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    _live_zone["zone"] = zone
+    return True
+
+
+# The live session has only the «us» layout. Chosen on the first screen,
+# Ukrainian could not be typed until the language step of the conversation
+# was over (KLX, Build10.11, 2026-11-17): the layout of the chosen language
+# goes first in the session's input sources at once, «us» stays.
+INPUT_SOURCES_SCHEMA = "org.gnome.desktop.input-sources"
+
+
+def session_input_sources(
+    current: list[tuple[str, str]], language: str
+) -> list[tuple[str, str]] | None:
+    """The session's input sources with the language's layout first; None: nothing to change."""
+    from vilna_mcp_installer.machine import KEYBOARD_OF
+
+    layout = KEYBOARD_OF.get(language)
+    if layout is None:
+        return None
+    wanted = ("xkb", layout)
+    if current and current[0] == wanted:
+        return None
+    rest = [source for source in current if source != wanted]
+    if not any(source[0] == "xkb" for source in rest) and layout != "us":
+        rest.append(("xkb", "us"))
+    return [wanted, *rest]
+
+
 def log(event: str, out: Callable[[str], object] | None = None) -> None:
     """One line on stderr (the session journal) with the seconds since boot.
 

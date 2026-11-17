@@ -192,9 +192,17 @@ Keros не вважається достатнім захистом сам по 
 
 ### 9.2. polkit
 
-- Herkos оголошує власні дії polkit (`org.vilna.herkos.*`) для системних операцій рівня R3–R4.
+- Herkos оголошує власні дії polkit (`org.vilna.herkos.*`, [`../systemd/org.vilna.herkos.policy`](../systemd/org.vilna.herkos.policy)) для операцій R3–R4, що змінюють увесь комп'ютер, а не лише речі самої людини. Операція в маніфесті називає свою дію полем `polkit` ([`protocol.md`](protocol.md), розд. 5). Після «так» у вікні Herkos системний `herkosd` питає polkit (`pkcheck`) про процес агента сеансу людини, тож polkit бачить її сеанс: чи вона сидить за комп'ютером і чи вона адміністратор. Власник цих дій — користувач `herkos` (анотація `org.freedesktop.policykit.owner`), тому `herkosd` може питати polkit про чужий процес лише для них. Ні дозвіл на сеанс, ні «завжди» не скасовують перевірку polkit: вона буває щоразу.
+
+  | Дія | Операції | Хто може |
+  | --- | --- | --- |
+  | `org.vilna.herkos.apps.change` | «програми»: `install`, `update`, `uninstall`, `restore` (R3) | Адміністратор (група `wheel`) за комп'ютером — без пароля, як у самому Flatpak (`50-herkos-actions.rules`); будь-хто інший — з паролем адміністратора |
+  | `org.vilna.herkos.system.rollback` | «система»: `rollback`, `restore` (R4) | Лише з паролем адміністратора, щоразу |
+  | `org.vilna.herkos.network.weaken` | «VPN»: `killswitch_off`, `allow_lan`, `open_portal` (R3) | Той, хто сидить за комп'ютером (активний місцевий сеанс), як керування мережею в NetworkManager |
+
+  Ніхто з іншого місця (SSH, неактивний сеанс) цих дій не отримає (`allow_any` і `allow_inactive` — `no`). Якщо polkit каже «ні», людина закрила його вікно або агента сеансу немає, дія не виконується (`denied_user`, `denied_timeout` або `denied_error`, з причиною в повідомленні). Herkos-lite polkit не питає: операцію з полем `polkit` він не виконує.
 - Для системних змін Herkos не обходить polkit, а викликає звичайні системні сервіси (PackageKit, NetworkManager, systemd), які самі запитують polkit. Автентифікацію адміністратора виконує стандартний агент polkit робочого середовища: Herkos не бачить і не зберігає пароль.
-- Правила polkit Vilna (`/etc/polkit-1/rules.d/`) забороняють користувачу Gloxi будь-які дії напряму, тож навіть скомпрометований Gloxi не може звернутися до системних сервісів в обхід Herkos.
+- Правило polkit Vilna `40-herkos-gloxi.rules` забороняє користувачам Gloxi (`gloxi-<uid>`, [ADR 0025](../../docs/adr/0025-gloxi-system-service.md)) і моделі (`vilna-llm`) будь-які дії polkit напряму, тож навіть скомпрометований Gloxi не може звернутися до systemd, NetworkManager, Flatpak чи PackageKit в обхід Herkos. Номер 40 — щоб це правило спрацювало раніше за будь-яке інше, що сказало б «так».
 - Якщо дія потребує і підтвердження Herkos, і автентифікації polkit, користувач бачить спершу діалог Herkos (що і навіщо), потім діалог polkit (хто ви). Об'єднати їх в один діалог — відкрите питання.
 
 ### 9.3. Flatpak portals

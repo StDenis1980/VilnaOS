@@ -187,6 +187,7 @@ class ChatWindow(Adw.ApplicationWindow):
         without = Gtk.Button(label=_(start.WITHOUT))
         without.connect("clicked", lambda *_a: self._without())
         header.pack_end(without)
+        header.pack_start(style.theme_button(_))
 
         # The chat
         self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -547,7 +548,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.list.remove(card)
         self.cards.discard(need)
         self.last_change = None
-        self._turn(None)
+        self._turn(None, entered=which[need])
         return False
 
     # the conversation
@@ -570,7 +571,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self._bubble(text, True)
         self._turn(text)
 
-    def _turn(self, text: str | None) -> None:
+    def _turn(self, text: str | None, entered: str | None = None) -> None:
         """A message from the person, or None: go on after a protected field or «Change»."""
         if self.conversation is None:
             return
@@ -579,8 +580,12 @@ class ChatWindow(Adw.ApplicationWindow):
         self.send.set_sensitive(False)
         conversation = self.conversation
 
+        live = not self.demo_kind
+
         def work() -> None:
-            reply = conversation.send(text) if text is not None else conversation.resume()
+            reply = conversation.send(text) if text is not None else conversation.resume(entered)
+            if live:
+                start.follow_time_zone(reply.plan)
             GLib.idle_add(self._turn_done, reply)
 
         threading.Thread(target=work, daemon=True).start()

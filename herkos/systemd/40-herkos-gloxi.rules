@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Gloxi gets nothing from polkit, whatever it asks (permissions.md 9.2,
+// ADR 0025): every person's Gloxi runs as its own system user gloxi-<uid>,
+// and the shared local model as vilna-llm. What Gloxi does, it asks Herkos
+// for, and Herkos asks the person. So even a Gloxi taken over by a prompt
+// injection cannot reach systemd, NetworkManager, Flatpak, PackageKit or
+// any other system service around Herkos.
+//
+// Why 40: polkit runs the rules in the order of their file names, and the
+// first answer wins. This comes before any rule of Vilna, of openSUSE or of
+// a package that would say yes.
+polkit.addRule(function (action, subject) {
+    if (subject.user === "vilna-llm" || /^gloxi-[0-9]+$/.test(subject.user)) {
+        return polkit.Result.NO;
+    }
+    return polkit.Result.NOT_HANDLED;
+});

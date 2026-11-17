@@ -510,3 +510,29 @@ async fn no_ip_address_or_contact_outlives_its_row_in_the_database_file() {
         "secure_delete leaves no copy of a forgotten contact"
     );
 }
+
+#[tokio::test]
+async fn the_installer_conversation_is_kept_and_shown_to_us() {
+    let s = server();
+    let fb = json!({
+        "schema": 1, "id": ID3, "kind": "bug", "channel": "window", "locale": "uk",
+        "text": "Установник стер не той диск",
+        "conversation": "[disk] person: <ok>\n[disk] gloxi: Стерти цей диск?"
+    });
+    let (status, _) = s.post("/v1/feedback", fb).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let (_, list) = s.admin("GET", "/admin/v1/feedback", None).await;
+    let talk = list[0]["conversation"].as_str().unwrap();
+    assert!(talk.ends_with("Стерти цей диск?"));
+
+    use base64::Engine;
+    let basic = base64::engine::general_purpose::STANDARD.encode(format!("denys:{KEY}"));
+    let req = Request::get("/admin")
+        .header(header::AUTHORIZATION, format!("Basic {basic}"))
+        .body(Body::empty())
+        .unwrap();
+    let (_, _, page) = s.send(req).await;
+    let page = page.as_str().unwrap();
+    assert!(page.contains("installer conversation"));
+    assert!(page.contains("[disk] person: &lt;ok&gt;"));
+}
