@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 17 21:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.6: when offline or a remote fails, try again after 30 s,
+  then less often up to every 15 minutes (RestartSteps); on first boot
+  the network was not up yet and Tinta Office arrived only after 16
+  minutes (V2 VM test of Build10.19)
+
+-------------------------------------------------------------------
 Tue Nov 17 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.5: before installing, set Flatpak's languages to the ten

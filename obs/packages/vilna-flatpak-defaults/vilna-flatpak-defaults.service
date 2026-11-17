@@ -13,7 +13,12 @@ ExecStart=/usr/libexec/vilna-flatpak-defaults
 # 75: offline, or a remote not reachable yet. Not a failure: try again later.
 SuccessExitStatus=75
 RestartForceExitStatus=75
-RestartSec=15min
+# Soon at first, then less often: 30 s growing to 15 min over 6 tries. On
+# first boot the network is often not up yet when this starts, and a flat
+# 15 min left Tinta Office missing for 16 minutes (V2 VM test, Build10.19).
+RestartSec=30s
+RestartSteps=6
+RestartMaxDelaySec=15min
 Nice=10
 IOSchedulingClass=idle
 
