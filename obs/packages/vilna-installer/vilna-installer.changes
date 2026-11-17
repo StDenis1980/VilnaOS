@@ -1,11 +1,48 @@
 -------------------------------------------------------------------
-Tue Nov 17 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Tue Nov 17 19:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Classic wizard: a VPN step after Privacy (ADR 0027 section 2): sign
   in to Proton VPN, create a free Proton account, Mullvad, or skip; none
   chosen in advance, in all ten languages. The choice goes to the new
   account for Gloxi (~/.local/state/gloxi/vpn-intro.json); no account
   or password is ever asked here.
+
+-------------------------------------------------------------------
+Tue Nov 17 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The installer's windows are night blue (#0E1A2E ground), as in the
+  designer's installer screens, instead of libadwaita's white: they
+  prefer the dark theme and redefine its surfaces
+  (data/style/installer-dark.css). A system set to light explicitly
+  gets warm cream surfaces with night blue text
+  (installer-light.css). Herkos, Gloxi and «Копії» are unchanged.
+
+-------------------------------------------------------------------
+Tue Nov 17 17:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The live session takes the plan's time zone as soon as the plan has
+  one (timedatectl set-timezone): the top bar showed UTC time on a
+  real laptop.
+- The first screen puts the chosen language's keyboard layout first in
+  the live session (us stays second): Ukrainian could not be typed
+  until the conversation's language step was over.
+
+-------------------------------------------------------------------
+Tue Nov 17 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Gloxi in the installer: the system prompt and the functions stay the
+  same for the whole conversation, and the step, the plan and the disk
+  data come as installer notes at the end, only when they change; the
+  history is cut back seldom. llama-server now reads only the new part
+  of the prompt: on KLX every turn read 1,100-1,250 tokens again
+  (43-56 s, S7 on Vilna-Live Build10.11).
+
+-------------------------------------------------------------------
+Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Put virtio_input into the first initrd: the host-only initrd left
+  it out, and a VM with a virtio keyboard could not type the
+  passphrase or the recovery key at boot.
 
 -------------------------------------------------------------------
 Mon Nov 16 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

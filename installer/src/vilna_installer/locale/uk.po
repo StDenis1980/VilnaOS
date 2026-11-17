@@ -706,6 +706,42 @@ msgstr "Оберіть відповідь про звіти про збої."
 msgid "Crash reports: {answer}"
 msgstr "Звіти про збої: {answer}"
 
+msgid "Connected to Wi-Fi."
+msgstr "Wi-Fi підключено."
+
+msgid "The password is saved."
+msgstr "Пароль збережено."
+
+msgid "The passphrase is saved."
+msgstr "Парольну фразу збережено."
+
+msgid "Type the Wi-Fi password into the protected field below. I do not see it."
+msgstr "Введіть пароль Wi-Fi у захищене поле нижче. Я його не бачу."
+
+msgid "Type the password for your account into the protected field below, twice. I do not see it."
+msgstr "Введіть пароль облікового запису в захищене поле нижче, двічі. Я його не бачу."
+
+msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
+msgstr "Введіть парольну фразу диска в захищене поле нижче, двічі. Я її не бачу."
+
+msgid "This computer is already connected to the network, so I keep that connection; you can change it in the plan."
+msgstr "Комп'ютер уже підключено до мережі, тож я лишаю це підключення; змінити його можна в плані."
+
+msgid "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; the other way is your own layout in the partition editor. Use the whole disk?"
+msgstr "Диск для Vilna має {size} ГБ і порожній. Раджу віддати його Vilna повністю; інший спосіб — власна розмітка в редакторі розділів. Використати весь диск?"
+
+msgid "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it completely and installing Vilna: everything on it will be lost. The other way is your own layout in the partition editor. Erase this disk?"
+msgstr "Диск для Vilna має {size} ГБ, і на ньому є {what}. Раджу стерти його повністю й встановити Vilna: усе, що на ньому, буде втрачено. Інший спосіб — власна розмітка в редакторі розділів. Стерти цей диск?"
+
+msgid "files"
+msgstr "файли"
+
+msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. You can also type a passphrase at every start, or not encrypt the disk."
+msgstr "Зашифрувати нову систему? Раджу шифрування з ключем відновлення: на цьому комп'ютері диск відкриватиметься сам, а ключ відкриє його, якщо щось зміниться. Можна також вводити парольну фразу під час кожного запуску або не шифрувати диск."
+
+msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
+msgstr "Зашифрувати нову систему? На цьому комп'ютері немає чипа TPM, тож диск відкриватиметься парольною фразою, яку ви вводите під час кожного запуску. Без шифрування будь-хто з цим диском зможе прочитати ваші файли."
+
 msgid "VPN"
 msgstr "VPN"
 

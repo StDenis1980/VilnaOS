@@ -226,6 +226,20 @@ class FirstBoot(unittest.TestCase):
         self.assertNotIn("tinta", " ".join(c for c in calls if " flathub " in c))
         self.assertTrue((self.state / "flatpak-defaults-all.done").exists())
 
+    def test_languages_set_before_each_install(self) -> None:
+        (self.share / "vilna.flatpakrepo").write_text("[Flatpak Repo]\n")
+        self.assertEqual(self.run_script().returncode, 0)
+        calls = self.calls()
+        lang = "config --system --set languages uk;en;es;pl;de;fr;it;ro;cs;lt"
+        self.assertIn(lang, calls)
+        for remote in ("flathub", "vilna"):
+            install = next(
+                i
+                for i, c in enumerate(calls)
+                if c.startswith(f"install --system --noninteractive --or-update {remote} ")
+            )
+            self.assertIn(lang, calls[:install])
+
     def test_a_failed_remote_is_tried_again(self) -> None:
         (self.share / "vilna.flatpakrepo").write_text("[Flatpak Repo]\n")
         self.fail.write_text("--or-update vilna")

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 17 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.12: require the translations of the GNOME desktop (the *-lang
+  packages of the Shell, Initial Setup, Settings, Files, Software, GTK
+  and libadwaita): in the VM test of Build15.6 they were missing and
+  GNOME stayed in English after choosing Українська.
+
+-------------------------------------------------------------------
 Sun Nov 15 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.11: require sdbootutil-enroll: the first boot seals the disk key in the TPM.

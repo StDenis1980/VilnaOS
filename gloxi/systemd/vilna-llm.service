@@ -30,6 +30,14 @@ ExecStart=/usr/bin/llama-server --model /usr/share/vilna/models/default.gguf \
   --ctx-size 4096 --no-cache-idle-slots \
   --jinja --chat-template-kwargs '{"enable_thinking":false}'
 WorkingDirectory=/usr/share/vilna/models
+# Keep the weights in memory when programs need it (image/docs/low-memory-check.md).
+# On 8 GB with Firefox open the kernel dropped the mapped weights and Gloxi read
+# them back from disk: the first word took 17 s with 10 tabs. With MemoryLow=5G
+# (Qwen3 4B takes ~4.7 GB PSS) it took 6.5 s, Firefox still held 30 tabs and
+# nothing was OOM-killed (VM, 8 GB, Build15.6, 17.11.2026). The protection is
+# soft: the kernel still takes this memory when nothing else is left, and it
+# does not change whom the OOM killer picks.
+MemoryLow=5G
 Restart=on-failure
 RestartSec=5
 

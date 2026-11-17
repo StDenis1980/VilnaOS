@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from vilna_mcp_installer import plan as plans
-from vilna_mcp_installer.machine import DemoMachine
+from vilna_mcp_installer.machine import DemoMachine, Machine
 
 from vilna_installer import conversation as conv
 from vilna_installer import start, summary
@@ -283,3 +283,21 @@ def test_the_herkos_screen_speaks_of_the_bitlocker_key_too(tmp_path):
     s = summary.summarize(w.plan, w.report(), w.survey(), start.Texts("uk"))
     assert s.ready
     assert any("BitLocker" in t for t in s.warnings)
+
+
+def test_a_synthetic_computer_never_changes_this_machines_clock(tmp_path, monkeypatch):
+    followed = []
+    monkeypatch.setattr(start, "follow_time_zone", lambda plan, *a, **kw: followed.append(plan))
+    w = new_wizard(tmp_path)
+    zone, region = w.suggested_time()
+    assert w.set_time(zone, region) is None
+    assert followed == []
+
+
+def test_on_the_live_system_the_clock_takes_the_chosen_zone(tmp_path, monkeypatch):
+    followed = []
+    monkeypatch.setattr(start, "follow_time_zone", lambda plan, *a, **kw: followed.append(plan))
+    w = new_wizard(tmp_path)
+    w.machine = Machine()
+    assert w.set_time("Europe/Kyiv", "uk_UA.UTF-8") is None
+    assert followed[-1]["locale"]["timezone"] == "Europe/Kyiv"

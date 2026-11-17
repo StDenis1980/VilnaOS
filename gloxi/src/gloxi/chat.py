@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Callable, Iterator
+from datetime import date
 
 from gloxi.llm import Message, ModelError, ToolCall
 from gloxi.router import Route, Router, Target
@@ -18,6 +19,19 @@ MAX_TOOL_ROUNDS = 4
 # Letters Russian has and Ukrainian does not.
 _RUSSIAN_ONLY = frozenset("ыэъёЫЭЪЁ")
 UKRAINIAN_HINT = "(Answer in Ukrainian, not in Russian.)"
+# English names whatever the locale: the prompt to the model is in English.
+_WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+
+
+def today_line(day: date) -> str:
+    """The sentence that tells the model the date.
+
+    A small local model knows only the year it was trained in and answered
+    "2023-10-12" for today (Build15.6). The date only, not the time: the
+    system prompt is the start of every request the model caches, so it may
+    change once a day, not every minute.
+    """
+    return f"Today is {_WEEKDAYS[day.weekday()]}, {day.isoformat()}."
 
 
 def is_ukrainian(text: str) -> bool:
@@ -42,9 +56,11 @@ class Conversation:
         *,
         max_turns: int = DEFAULT_MAX_TURNS,
         tools: FileTools | None = None,
+        today: Callable[[], date] = date.today,
     ) -> None:
         self.router = router
         self.system_prompt = system_prompt
+        self.today = today
         self.max_turns = max_turns
         self.tools = tools
         # Called after each tool call, from the thread that runs ask().
@@ -68,11 +84,15 @@ class Conversation:
         if self.tools:
             self.tools.reset()
 
+    def system(self) -> str:
+        """The system prompt with today's date."""
+        return f"{self.system_prompt}\n\n{today_line(self.today())}"
+
     def messages(self, target: str = "local") -> list[Message]:
         # One turn is a user message and the assistant's answer.
         history = self.history[self.cloud_from :] if target == "cloud" else self.history
         tail = history[-2 * self.max_turns :]
-        return [{"role": "system", "content": self.system_prompt}, *tail]
+        return [{"role": "system", "content": self.system()}, *tail]
 
     def hold_history_from_cloud(self) -> int:
         """Keep what was said so far on this computer; returns how many messages."""
@@ -99,7 +119,7 @@ class Conversation:
             return False
         with self._model_lock:
             tools = self.tools if self.tools and self.tools.available() else None
-            system = self.system_prompt + (tools.prompt() if tools else "")
+            system = self.system() + (tools.prompt() if tools else "")
             try:
                 prefill(
                     [{"role": "system", "content": system}], tools.definitions() if tools else None
@@ -140,7 +160,7 @@ class Conversation:
         if tools and not tools.available():
             tools = None
         if tools:
-            request[0] = {"role": "system", "content": self.system_prompt + tools.prompt()}
+            request[0] = {"role": "system", "content": request[0]["content"] + tools.prompt()}
 
         parts: list[str] = []
         for round_ in range(MAX_TOOL_ROUNDS + 1):
