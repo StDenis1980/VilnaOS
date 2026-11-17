@@ -41,9 +41,20 @@ def spin(until, seconds=5.0):
     return until()
 
 
+_APP = []
+
+
+def application():
+    """One application for the whole module: a second one cannot register."""
+    if not _APP:
+        app = Adw.Application()
+        app.register(None)
+        _APP.append(app)
+    return _APP[0]
+
+
 def screen(path, kind="windows", tpm=True):
-    app = Adw.Application()
-    app.register(None)
+    app = application()
     got = []
     key = encryption.recovery_key()
     win = confirm_window.ConfirmWindow(
@@ -75,11 +86,82 @@ def test_the_install_button_waits_for_the_key_the_tick_and_the_time(tmp_path):
     assert not win.install.get_sensitive()
     assert win.key_note.get_label() == win._(confirm.KEY_WRONG)
     win.entry.set_text(encryption.groups(key)[7].upper())
+    win.gate.pointer_pressed(win.install)  # what a real mouse press tells the gate
     win.install.emit("clicked")
     assert got == [confirm.Outcome(True, confirm.sha256(path), key)]
     plan = plans.load(path)
     assert plan["confirmed_by_user"] is True
     assert plan["disk"]["encryption"]["recovery_key_acknowledged"] is True
+
+
+def test_a_press_without_real_input_installs_nothing(tmp_path):
+    """An AT-SPI «click» emits ``clicked`` with no key or pointer event: ADR 0029."""
+    path = tmp_path / "plan.json"
+    full_plan(path)
+    win, got, key = screen(path)
+    win.entry.set_text(encryption.groups(key)[7])
+    win.understand.set_active(True)
+    assert spin(win.install.get_sensitive, confirm.ARM_SECONDS + 2)
+    win.install.emit("clicked")
+    win.install.activate()  # what GTK does for the AT-SPI action
+    spin(lambda: got, 1.0)
+    assert got == []
+    assert plans.load(path)["confirmed_by_user"] is False
+    assert win.waiting.get_visible() and win.waiting.get_label() == win._(confirm.NOT_REAL)
+
+
+def test_the_key_is_not_given_to_accessibility_software(tmp_path):
+    path = tmp_path / "plan.json"
+    full_plan(path)
+    win, _got, key = screen(path)
+    found, labels = [], []
+
+    def walk(w):
+        if isinstance(w, confirm_window.KeyView):
+            found.append(w)
+        if isinstance(w, Gtk.Label):
+            labels.append(w.get_label())
+        child = w.get_first_child()
+        while child is not None:
+            walk(child)
+            child = child.get_next_sibling()
+
+    walk(win)
+    assert len(found) == 1
+    assert found[0].get_accessible_role() == Gtk.AccessibleRole.IMG
+    letters = encryption.normalize(key)
+    assert not any(g in "".join(labels) for g in encryption.groups(key))
+    assert letters not in "".join(labels)
+    assert isinstance(win.entry, Gtk.PasswordEntry)
+
+
+def test_the_key_is_read_aloud_only_on_a_real_press(tmp_path):
+    path = tmp_path / "plan.json"
+    full_plan(path)
+    said = []
+
+    class Client:
+        def set_language(self, code):
+            said.append(("language", code))
+
+        def set_rate(self, _rate):
+            pass
+
+        def speak(self, text):
+            said.append(text)
+
+        def close(self):
+            pass
+
+    win, _got, key = screen(path)
+    win.voice = confirm_window.speech.Voice(Client)
+    if win.aloud is None:  # no python3-speechd here: the button is not shown
+        return
+    win.aloud.emit("clicked")
+    assert said == []
+    win.gate.pointer_pressed(win.aloud)
+    win.aloud.emit("clicked")
+    assert said[-1].endswith(encryption.spoken(key))
 
 
 def test_a_plan_that_cannot_be_installed_shows_only_back(tmp_path):

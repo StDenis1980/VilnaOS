@@ -8,6 +8,13 @@ Tue Nov 17 23:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   test of Build10.19)
 
 -------------------------------------------------------------------
+- Herkos screen (docs/adr/0029): «Install» counts only a real press,
+  from the keyboard or the pointer, not an AT-SPI «click»; the recovery
+  key is drawn, not given to accessibility software, and «Read the key
+  aloud» says it through speech-dispatcher (recommends python3-speechd);
+  the last group is typed into a password field.
+
+-------------------------------------------------------------------
 Tue Nov 17 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Classic wizard: a VPN step after Privacy (ADR 0027 section 2): sign
