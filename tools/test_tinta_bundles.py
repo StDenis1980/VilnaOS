@@ -172,6 +172,10 @@ class FirstBoot(unittest.TestCase):
         )
         self.fake.chmod(self.fake.stat().st_mode | stat.S_IXUSR)
         self.fail = t / "fail"
+        self.online = t / "nm-online"  # fake: online unless the file "offline" exists
+        self.online.write_text(f'#!/bin/sh\n[ ! -e "{t}/offline" ]\n')
+        self.online.chmod(self.online.stat().st_mode | stat.S_IXUSR)
+        self.offline = t / "offline"
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -182,6 +186,7 @@ class FirstBoot(unittest.TestCase):
             VILNA_FLATPAK_SHARE=str(self.share),
             VILNA_FLATPAK_STATE=str(self.state),
             VILNA_FLATPAK_BIN=str(self.fake),
+            VILNA_FLATPAK_NM_ONLINE=str(self.online),
             LOG=str(self.log),
             FAIL=str(self.fail),
         )
@@ -193,8 +198,9 @@ class FirstBoot(unittest.TestCase):
         return self.log.read_text().splitlines() if self.log.exists() else []
 
     def test_without_vilna_repository_file_tinta_waits(self) -> None:
+        # Not a failure: the next boot (a package update) brings the file.
         r = self.run_script()
-        self.assertEqual(r.returncode, 1)
+        self.assertEqual(r.returncode, 0)
         self.assertIn("vilna: no repository file", r.stdout)
         self.assertTrue((self.state / "flatpak-defaults-flathub.done").exists())
         self.assertFalse((self.state / "flatpak-defaults-all.done").exists())
@@ -223,12 +229,25 @@ class FirstBoot(unittest.TestCase):
     def test_a_failed_remote_is_tried_again(self) -> None:
         (self.share / "vilna.flatpakrepo").write_text("[Flatpak Repo]\n")
         self.fail.write_text("--or-update vilna")
-        self.assertEqual(self.run_script().returncode, 1)
+        self.assertEqual(self.run_script().returncode, 75)
         self.assertFalse((self.state / "flatpak-defaults-vilna.done").exists())
         self.fail.unlink()
         self.log.unlink()
         self.assertEqual(self.run_script().returncode, 0)
         self.assertTrue(all(" flathub" not in c for c in self.calls()))
+        self.assertTrue((self.state / "flatpak-defaults-all.done").exists())
+
+    def test_offline_is_not_a_failure(self) -> None:
+        # Build15.6 VM: offline it must neither fail the unit nor call flatpak;
+        # 75 makes systemd try again later (SuccessExitStatus, RestartForceExitStatus).
+        (self.share / "vilna.flatpakrepo").write_text("[Flatpak Repo]\n")
+        self.offline.touch()
+        r = self.run_script()
+        self.assertEqual(r.returncode, 75)
+        self.assertIn("offline", r.stdout)
+        self.assertEqual(self.calls(), [])
+        self.offline.unlink()
+        self.assertEqual(self.run_script().returncode, 0)
         self.assertTrue((self.state / "flatpak-defaults-all.done").exists())
 
     def test_old_stamp_means_flathub_was_done(self) -> None:
@@ -239,6 +258,26 @@ class FirstBoot(unittest.TestCase):
         self.assertEqual(self.run_script().returncode, 0)
         self.assertTrue(all("flathub" not in c for c in self.calls()))
         self.assertTrue(any(c.startswith("install") and " vilna " in c for c in self.calls()))
+
+
+class Unit(unittest.TestCase):
+    """The service must not hold the boot (Build15.6 VM: 1 min 20 s)."""
+
+    def test_does_not_hold_the_boot(self) -> None:
+        import configparser
+
+        unit = configparser.ConfigParser(interpolation=None, strict=False)
+        unit.optionxform = str
+        unit.read(DEFAULTS / "vilna-flatpak-defaults.service", encoding="utf-8")
+        self.assertNotEqual(unit["Service"].get("Type"), "oneshot")
+        self.assertNotIn("network-online.target", unit["Unit"].get("After", ""))
+        self.assertNotIn("network-online.target", unit["Unit"].get("Wants", ""))
+
+    def test_tempfail_is_retried_not_failed(self) -> None:
+        text = (DEFAULTS / "vilna-flatpak-defaults.service").read_text(encoding="utf-8")
+        self.assertIn("SuccessExitStatus=75", text)
+        self.assertIn("RestartForceExitStatus=75", text)
+        self.assertIn("TEMPFAIL=75", SCRIPT.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
