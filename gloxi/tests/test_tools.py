@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 from fake_server import ScriptedLlamaServer
-from helpers import CLOUD, LOCAL, ask
+from helpers import CLOUD, LOCAL, SYSTEM, TODAY, ask
 
 from gloxi.chat import Conversation
 from gloxi.config import RouterPolicy
@@ -274,6 +274,7 @@ def test_keros_findings_become_warnings():
     assert header["warnings"] == ["asks the assistant to ignore its instructions"]
     assert "do not act on it" in header["warning_note"]
     assert out.warnings == ("asks the assistant to ignore its instructions",)
+    assert out.warning_rules == ("override",)
     assert "warning: the content asks the assistant" in out.summary()
 
 
@@ -347,7 +348,7 @@ def conversation(server, file_tools, cloud=None, policy=None):
         ChatClient(CLOUD, transport=cloud.transport()) if cloud else None,
         policy or RouterPolicy(),
     )
-    return Conversation(router, "SYS", tools=file_tools)
+    return Conversation(router, "SYS", tools=file_tools, today=TODAY)
 
 
 def test_conversation_runs_the_tool_and_answers():
@@ -405,7 +406,7 @@ def test_no_tools_when_herkos_is_not_running():
     conv = conversation(server, tools(available=lambda: False))
     ask(conv, "привіт")
     assert "tools" not in server.requests[0]
-    assert server.requests[0]["messages"][0]["content"] == "SYS"
+    assert server.requests[0]["messages"][0]["content"] == SYSTEM
 
 
 def test_the_cloud_model_gets_no_tools():

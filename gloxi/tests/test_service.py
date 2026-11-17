@@ -379,6 +379,18 @@ def test_the_wake_autostart_runs_gloxi_wake():
     assert "Exec=gloxi wake\n" in text and "NoDisplay=true\n" in text
 
 
+def test_share_history_goes_through_the_service(running):
+    r = running()
+    remote, _view = r.client()
+    assert remote.held_back() == 0
+    remote.share_history(True)  # nothing held back: harmless
+    assert remote.held_back() == 0
+    answers = raw_exchange(
+        r.path, {"id": 1, "method": "chat.share_history", "params": {"share": "yes"}}
+    )
+    assert answers[0]["error"]["code"] == "bad_params"
+
+
 def test_the_local_model_keeps_idle_slots_cached():
     # Keros checks in another slot; without this flag llama-server clears
     # Gloxi's slot on every check and the next turn reads the prompt again.

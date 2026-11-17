@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import pytest
 from fake_server import FakeLlamaServer
-from helpers import ask, make_conversation
+from helpers import SYSTEM, ask, make_conversation
 
 from gloxi.chat import UKRAINIAN_HINT
 from gloxi.llm import ModelError
@@ -14,7 +14,7 @@ def test_history_is_sent_on_next_turn():
     ask(conv, "друге")
     sent = server.requests[-1]["messages"]
     assert [m["role"] for m in sent] == ["system", "user", "assistant", "user"]
-    assert sent[0]["content"] == "SYS"
+    assert sent[0]["content"] == SYSTEM
     assert sent[1]["content"] == "перше"
     assert sent[-1]["content"] == f"друге\n\n{UKRAINIAN_HINT}"
 
@@ -33,14 +33,14 @@ def test_history_is_trimmed_to_max_turns():
         ask(conv, f"q{i}")
     sent = server.requests[-1]["messages"]
     # system + 2 previous turns + the new question
-    assert [m["content"] for m in sent] == ["SYS", "q2", "ok", "q3", "ok", "q4"]
+    assert [m["content"] for m in sent] == [SYSTEM, "q2", "ok", "q3", "ok", "q4"]
 
 
 def test_reset_clears_history():
     conv = make_conversation(FakeLlamaServer())
     ask(conv, "привіт")
     conv.reset()
-    assert conv.messages() == [{"role": "system", "content": "SYS"}]
+    assert conv.messages() == [{"role": "system", "content": SYSTEM}]
 
 
 # -- the answer language (Build14.6: a Ukrainian question got a Russian answer) ----
@@ -73,7 +73,7 @@ def test_a_ukrainian_message_reminds_the_local_model_of_the_language():
     sent = server.requests[-1]["messages"]
     # At the end of this request only: the cached start and the history stay as they were.
     assert sent[-1]["content"] == f"Покажи файли в Документах\n\n{UKRAINIAN_HINT}"
-    assert sent[0]["content"] == "SYS"
+    assert sent[0]["content"] == SYSTEM
     assert conv.history[0]["content"] == "Покажи файли в Документах"
 
 
@@ -114,7 +114,7 @@ def test_warm_has_the_model_read_the_start_of_the_first_request():
     warm = server.requests[0]
     assert warm["stream"] is False
     assert warm["max_tokens"] == 1 and warm["cache_prompt"] is True
-    assert warm["messages"] == [{"role": "system", "content": "SYS"}]
+    assert warm["messages"] == [{"role": "system", "content": SYSTEM}]
     ask(conv, "привіт")
     assert server.requests[1]["messages"][0] == warm["messages"][0]
 
@@ -136,3 +136,21 @@ def test_warm_does_not_wake_the_cloud():
     conv = make_conversation(local, cloud=cloud, policy=policy)
     assert conv.warm() is False
     assert local.requests == [] and cloud.requests == []
+
+
+def test_the_model_is_told_todays_date():
+    # Build15.6: asked for the date, the local model answered "2023-10-12".
+    from datetime import date
+
+    from gloxi.chat import today_line
+
+    assert today_line(date(2026, 11, 17)) == "Today is Tuesday, 2026-11-17."
+    days = iter([date(2026, 11, 17), date(2026, 11, 18)])
+    local = FakeLlamaServer(reply="ok")
+    conv = make_conversation(local)
+    conv.today = lambda: next(days)
+    ask(conv, "What day is it?")
+    ask(conv, "And now?")
+    first, second = (r["messages"][0]["content"] for r in local.requests)
+    assert first.endswith("Today is Tuesday, 2026-11-17.")
+    assert second.endswith("Today is Wednesday, 2026-11-18.")
