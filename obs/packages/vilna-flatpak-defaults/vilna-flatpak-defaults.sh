@@ -4,11 +4,14 @@
 #   flathub - Firefox, the GNOME basics, KeePassXC (flatpaks.list);
 #   vilna   - Vilna's own signed repository (ADR 0024): Tinta Office
 #             (flatpaks-vilna.list, ADR 0011). Its runtime comes from Flathub.
-# Run once by vilna-flatpak-defaults.service. Each remote that succeeds gets
-# its own stamp and is not tried again; when both are done the final stamp
-# stops the service for good. On a failure (no network, a remote down, the
-# Vilna repository file not in this build yet) it exits non-zero and the
-# service tries the rest again on the next boot.
+# Run by vilna-flatpak-defaults.service, in the background (it must not hold
+# the boot). Each remote that succeeds gets its own stamp and is not tried
+# again; when both are done the final stamp stops the service for good.
+# Exit codes:
+#   0  - done, or the Vilna repository file is not in this build yet (Tinta
+#        waits for a package update; the next boot tries again);
+#   75 - offline or a remote failed: not an error, the service runs the
+#        script again 15 minutes later.
 set -uo pipefail
 
 SHARE=${VILNA_FLATPAK_SHARE:-/usr/share/vilna}
@@ -17,6 +20,13 @@ STAMP=${VILNA_FLATPAK_STAMP:-$STATE/flatpak-defaults-all.done}
 # Before Tinta Office (package 0.1) one stamp covered Flathub alone.
 OLD_STAMP=$STATE/flatpak-defaults.done
 FLATPAK=${VILNA_FLATPAK_BIN:-flatpak}
+# Translations Flatpak installs with each app and runtime (their .Locale
+# extensions): the ten languages of ADR 0009. Without this Flatpak takes
+# only the system language of this first boot, en_US, and Firefox stayed
+# in English after the person chose Українська (VM test of Build15.6).
+LANGUAGES=${VILNA_FLATPAK_LANGUAGES:-uk;en;es;pl;de;fr;it;ro;cs;lt}
+NM_ONLINE=${VILNA_FLATPAK_NM_ONLINE:-nm-online}
+TEMPFAIL=75
 
 read_list() {
     sed -e 's/#.*//' -e 's/[[:space:]]//g' "$1" | grep -v '^$' || true
@@ -35,8 +45,9 @@ install_from() {
     if [ "${#apps[@]}" -gt 0 ]; then
         if [ -z "$repofile" ]; then
             echo "$remote: no repository file in this build, ${apps[*]} wait for it"
-            return 1
+            return 2
         fi
+        "$FLATPAK" config --system --set languages "$LANGUAGES" || return 1
         "$FLATPAK" remote-add --system --if-not-exists "$remote" "$repofile" || return 1
         "$FLATPAK" install --system --noninteractive --or-update "$remote" "${apps[@]}" || return 1
     else
@@ -49,16 +60,32 @@ if [ -e "$OLD_STAMP" ] && [ ! -e "$STATE/flatpak-defaults-flathub.done" ]; then
     touch "$STATE/flatpak-defaults-flathub.done"
 fi
 
+# Wait for the network here, not in the unit (see the .service). nm-online
+# returns at once when NetworkManager is not running; then flatpak decides.
+if command -v "$NM_ONLINE" >/dev/null 2>&1 && ! "$NM_ONLINE" -q -x -t 300; then
+    echo "offline, trying again later"
+    exit "$TEMPFAIL"
+fi
+
 failed=0
+waiting=0
 install_from flathub https://dl.flathub.org/repo/flathub.flatpakrepo \
     "$SHARE/flatpaks.list" || failed=1
 
 vilna_repo=""
 [ -r "$SHARE/vilna.flatpakrepo" ] && vilna_repo="$SHARE/vilna.flatpakrepo"
-install_from vilna "$vilna_repo" "$SHARE/flatpaks-vilna.list" || failed=1
+install_from vilna "$vilna_repo" "$SHARE/flatpaks-vilna.list"
+case $? in
+    0) ;;
+    2) waiting=1 ;;
+    *) failed=1 ;;
+esac
 
 if [ "$failed" -ne 0 ]; then
-    exit 1
+    exit "$TEMPFAIL"
+fi
+if [ "$waiting" -ne 0 ]; then
+    exit 0
 fi
 mkdir -p "$(dirname "$STAMP")"
 touch "$STAMP"
