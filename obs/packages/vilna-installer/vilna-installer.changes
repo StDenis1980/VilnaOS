@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Tue Nov 17 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Classic wizard: a VPN step after Privacy (ADR 0027 section 2): sign
+  in to Proton VPN, create a free Proton account, Mullvad, or skip; none
+  chosen in advance, in all ten languages. The choice goes to the new
+  account for Gloxi (~/.local/state/gloxi/vpn-intro.json); no account
+  or password is ever asked here.
+- Radio choices in the wizard (network, privacy, VPN) are one keyboard
+  stop each, on the radio button, so Orca says its state.
+- The Herkos screen shows the VPN choice when the wizard has one.
+
+-------------------------------------------------------------------
 Tue Nov 17 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - A theme button (sun / moon) on every installer screen: the first

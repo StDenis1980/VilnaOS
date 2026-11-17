@@ -204,10 +204,15 @@ class ChatController:
         """The first-run talks: on start the one that is due, or /backup.
 
         One talk per start: backups first (design.md 2a), the VPN (ADR 0027)
-        the next time, so a new person is not asked everything at once.
+        the next time, so a new person is not asked everything at once. A
+        VPN the person chose in the installer wizard comes first: that
+        question is answered, and installer.md step 14 puts the first-start
+        steps before backups.
         """
         if self.busy:
             return False
+        if not always and self.vpn is not None and self.vpn.chosen():
+            return self.offer_vpn()
         if self.intro is None:
             if always:
                 self.view.show_error(_("Backups need Herkos, and it is not running."))

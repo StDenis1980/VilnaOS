@@ -89,6 +89,9 @@ def radio_row(
         check.update_property([Gtk.AccessibleProperty.DESCRIPTION], [subtitle])
     row.add_prefix(check)
     row.set_activatable_widget(check)
+    # One stop per choice, on the radio button, which says its role and state:
+    # a focusable row too meant two Tab stops, and the row read neither.
+    row.set_focusable(False)
     return row, check
 
 
@@ -877,6 +880,28 @@ class WizardWindow(Adw.ApplicationWindow):
 
         return self._page(lead, crash), commit
 
+    def _page_vpn(self):
+        _ = self._
+        # ADR 0027 section 2: four choices, none chosen in advance. The lead is
+        # in the group's description, which the screen reader reads with it.
+        group = _group(_(wiz.VPN_QUESTION), f"{_(wiz.VPN_LEAD)} {_(wiz.VPN_EXPLAIN)}")
+        leader = radio_group()
+        checks: dict[str, Gtk.CheckButton] = {}
+        for choice, (title, hint) in wiz.VPN_ANSWERS.items():
+            row, checks[choice] = radio_row(_(title), _(hint), leader)
+            group.add(row)
+        self.vpn_checks = checks
+        chosen = (self.wizard.plan.get("privacy") or {}).get("vpn")
+        if chosen in checks:
+            checks[chosen].set_active(True)
+        unseen = _group(description=_(wiz.VPN_NOT_SEEN))
+
+        def commit() -> str | None:
+            choice = next((c for c, check in checks.items() if check.get_active()), None)
+            return self.wizard.set_vpn(choice)
+
+        return self._page(group, unseen), commit
+
     def _page_summary(self):
         _ = self._
         report = self.wizard.report()
@@ -886,6 +911,12 @@ class WizardWindow(Adw.ApplicationWindow):
             row = plain_row(title=_(title), subtitle=lines.get(key) or _(conv.NOT_DECIDED))
             row.add_css_class("property")
             plan_group.add(row)
+        row = plain_row(
+            title=_(wiz.VPN_TITLE),
+            subtitle=wiz.vpn_text(self.wizard.plan, _) or _(conv.NOT_DECIDED),
+        )
+        row.add_css_class("property")
+        plan_group.add(row)
         changes = _group(_(wiz.DISK_CHANGES))
         for change in report["changes"]:
             icon = {"erase": "dialog-warning-symbolic", "create": "list-add-symbolic"}.get(
@@ -938,6 +969,7 @@ def _step_of(problem: dict[str, str]) -> str:
         ("locale.region", "time"),
         ("locale", "languages"),
         ("migrate", "disk"),
+        ("privacy.vpn", "vpn"),
     ):
         if field.startswith(prefix):
             return key

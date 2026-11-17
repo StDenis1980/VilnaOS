@@ -11,6 +11,11 @@ switch of Vilna (Herkos tool ``org.vilna.mcp.vpn``, R2).
 Like the backup talk it is a fixed script, not the model: the choices must
 be the same for everyone. If the person says "later", Gloxi asks once more
 after a week, then never again; they can always ask with ``/vpn``.
+
+The classic installer wizard asks the same question (ADR 0027 section 2) and
+leaves the answer in this talk's state: ``{"status": "chosen", "choice": …}``
+for a provider, so the first start goes straight to it instead of asking
+again, and ``declined`` for «Skip».
 """
 
 from __future__ import annotations
@@ -19,7 +24,7 @@ import json
 import os
 import time
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from gettext import gettext as _
 from pathlib import Path
 from typing import Any
@@ -41,6 +46,8 @@ DESKTOP_IDS = {
 }
 PROTON_SIGNUP = "https://protonvpn.com/free-vpn"
 LAUNCHABLE = frozenset(DESKTOP_IDS)
+# What the installer wizard may have chosen, in the order of the four choices.
+CHOSEN = ("proton", "proton_signup", "mullvad")
 
 
 def state_path() -> Path:
@@ -76,10 +83,16 @@ class VpnIntro:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(json.dumps(data), encoding="utf-8")
 
+    def chosen(self) -> str | None:
+        """The provider the person chose in the installer wizard, not carried out yet."""
+        st = self._state()
+        choice = st.get("choice")
+        return choice if st.get("status") == "chosen" and choice in CHOSEN else None
+
     def due(self) -> bool:
         """Ask now? The first time, and once more a week after "later"."""
         st = self._state()
-        if not st:
+        if not st or self.chosen():
             return True
         if st.get("status") == "later":
             return self.clock() - float(st.get("time", 0)) >= REMIND_AFTER
@@ -107,6 +120,17 @@ class VpnIntro:
             self._provider = "connected"
             return self._ask_killswitch()
         self.step = "choose"
+        choice = self.chosen()
+        if choice:
+            # Asked already in the installer: go straight to the provider.
+            try:
+                turn = self._on_choose(str(CHOSEN.index(choice) + 1))
+            except IntroStopped as e:
+                return self._stop(str(e))
+            self._last = replace(
+                turn, text=_("You chose this while installing Vilna.") + " " + turn.text
+            )
+            return self._last
         self._last = Turn(
             _(
                 "Your connection is already protected: Vilna encrypts DNS, so the network "

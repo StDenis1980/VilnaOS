@@ -315,6 +315,10 @@ def summarize(
     """
     described = describe(plan, _)
     lines = [Line(key, _(title), described.get(key)) for key, title in conv.SECTIONS.items()]
+    # Only the classic wizard asks about a VPN (ADR 0027 section 2): shown when chosen.
+    vpn = wiz.vpn_text(plan, _)
+    if vpn:
+        lines.append(Line("vpn", _(wiz.VPN_TITLE), vpn))
     changes = [change_text(c, plan, survey, _) for c in report.get("changes", [])]
     order = {"erase": 0, "shrink": 1, "use": 2, "create": 3, "manual": 3, "keep": 4}
     changes.sort(key=lambda c: order.get(c.action, 5))

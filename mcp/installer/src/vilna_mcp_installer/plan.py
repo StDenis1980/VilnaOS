@@ -17,7 +17,9 @@ Three kinds of fields:
   ``disk.shrink.backup_confirmed``, ``confirmed_by_user`` and the answer
   about crash reports, ``privacy.crash_reports`` (ADR 0018 section 3:
   consent the person gives with no answer chosen in advance, so the model
-  explains and never answers for them). A plan holds
+  explains and never answers for them), and the person's choice of a VPN,
+  ``privacy.vpn`` (ADR 0027 section 2), which only the classic wizard asks:
+  after the conversation Gloxi asks it on the first start. A plan holds
   only the marker ``"entered"``, never a password or a key. The partitions
   of a manual layout (``disk.partitions``, ``set_partitions``) come only
   from the partition editor of the classic wizard, where the person sees
@@ -64,6 +66,10 @@ NETWORK = ("offline", "wired", "wifi")
 # "If a program crashes, send us a crash report?" (ADR 0018 section 3):
 # send by itself, ask about each crash, keep them on the computer.
 CRASH_REPORTS = ("auto", "ask", "never")
+# "Do you want even more protection with a VPN?" (ADR 0027 section 2): sign in
+# to Proton VPN, create a free Proton account, Mullvad, or skip. Gloxi carries
+# the choice out on the first start; the person signs in in the provider's app.
+VPN_CHOICES = ("proton", "proton_signup", "mullvad", "skip")
 TOP_LEVEL = (
     "version",
     "ui",
@@ -434,6 +440,21 @@ def set_crash_reports(plan: dict[str, Any], answer: str) -> dict[str, Any]:
     return privacy
 
 
+def set_vpn(plan: dict[str, Any], choice: str) -> dict[str, Any]:
+    """The person's choice of a VPN, from their own button in the classic wizard.
+
+    Not in ``SETTERS``: which provider, if any, is the person's choice (ADR
+    0027 section 2). The plan holds only the choice, never an account: the
+    person signs in in the provider's own app after the first login.
+    """
+    if choice not in VPN_CHOICES:
+        raise PlanError(f"the choice of a VPN must be one of {list(VPN_CHOICES)}")
+    privacy = plan.setdefault("privacy", {"cloud": "disabled"})
+    privacy["vpn"] = choice
+    _unconfirm(plan)
+    return privacy
+
+
 def acknowledge_recovery_key(plan: dict[str, Any]) -> None:
     """The person said they saved the recovery key (shown by the engine, never by Gloxi)."""
     enc = plan.setdefault("disk", {}).setdefault("encryption", {"method": "tpm2"})
@@ -514,6 +535,14 @@ def _check_privacy(privacy: Any, r: _Report) -> None:
             "bad_crash_reports",
             "privacy.crash_reports",
             f"the answer about crash reports must be one of {list(CRASH_REPORTS)}",
+        )
+    # Optional: after the conversation Gloxi asks on the first start instead.
+    vpn = privacy.get("vpn") if isinstance(privacy, dict) else None
+    if vpn is not None and vpn not in VPN_CHOICES:
+        r.error(
+            "bad_vpn",
+            "privacy.vpn",
+            f"the choice of a VPN must be one of {list(VPN_CHOICES)}",
         )
 
 
