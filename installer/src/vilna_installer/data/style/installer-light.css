@@ -1,0 +1,27 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * The installer's own surfaces in the light theme: warm cream instead of
+ * libadwaita's white, night blue text (docs/design/brief.md, section 2:
+ * cream #F2E8D5 is the warm ground of the light theme), as in the light
+ * variants of Dmytro Sizmin's installer screens. Only the installer loads it,
+ * and only when the system asks for light explicitly (it prefers dark).
+ */
+@define-color window_bg_color #F7F1E6;
+@define-color window_fg_color #1F345C;
+@define-color view_bg_color #FBF7EF;
+@define-color view_fg_color #1F345C;
+@define-color headerbar_bg_color #F2E8D5;
+@define-color headerbar_fg_color #1F345C;
+@define-color headerbar_backdrop_color #F7F1E6;
+@define-color sidebar_bg_color #F2E8D5;
+@define-color sidebar_fg_color #1F345C;
+@define-color sidebar_backdrop_color #F7F1E6;
+@define-color card_bg_color #FFFDF8;
+@define-color card_fg_color #1F345C;
+@define-color dialog_bg_color #FBF7EF;
+@define-color dialog_fg_color #1F345C;
+@define-color popover_bg_color #FFFDF8;
+@define-color popover_fg_color #1F345C;
+@define-color accent_bg_color #2D6BFF;
+@define-color accent_fg_color #FFFFFF;
+@define-color accent_color #1F5BE6;

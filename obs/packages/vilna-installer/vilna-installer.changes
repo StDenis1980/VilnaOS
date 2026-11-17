@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Nov 17 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The installer's windows are night blue (#0E1A2E ground), as in the
+  designer's installer screens, instead of libadwaita's white: they
+  prefer the dark theme and redefine its surfaces
+  (data/style/installer-dark.css). A system set to light explicitly
+  gets warm cream surfaces with night blue text
+  (installer-light.css). Herkos, Gloxi and «Копії» are unchanged.
+
+-------------------------------------------------------------------
 Tue Nov 17 17:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The live session takes the plan's time zone as soon as the plan has
