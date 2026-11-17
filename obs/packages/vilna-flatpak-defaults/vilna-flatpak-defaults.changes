@@ -7,6 +7,8 @@ Tue Nov 17 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
 - Offline or a remote down is no longer a failed unit: exit 75, and
   systemd runs the script again 15 minutes later; a build without
   vilna.flatpakrepo exits 0 and Tinta Office waits for the next boot
+- vilna.flatpakrepo is now Source5: a build without it fails (the
+  Build15.6 image had no repository file, so Tinta never installed)
 
 -------------------------------------------------------------------
 Mon Nov 16 21:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
