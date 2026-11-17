@@ -219,3 +219,47 @@ def test_a_log_line_says_the_seconds_since_boot():
     assert event == "chat window presented"
     assert prefix.startswith("vilna-installer: ") and prefix.endswith(" s")
     assert float(prefix.removeprefix("vilna-installer: ").removesuffix(" s")) >= 0
+
+
+def test_the_live_clock_follows_the_plans_time_zone(tmp_path, monkeypatch):
+    monkeypatch.setattr(start, "_live_zone", {})
+    (tmp_path / "Europe").mkdir()
+    (tmp_path / "Europe" / "Kyiv").write_text("TZif")
+    calls = []
+    plan = {"locale": {"timezone": "Europe/Kyiv"}}
+    run = lambda cmd, **kw: calls.append((cmd, kw))  # noqa: E731
+    assert start.follow_time_zone(plan, run, zoneinfo=tmp_path)
+    [(cmd, kw)] = calls
+    assert cmd == ["timedatectl", "--no-ask-password", "set-timezone", "Europe/Kyiv"]
+    assert kw["check"] is False
+    # The same zone again: no second call on every turn of the conversation.
+    assert not start.follow_time_zone(plan, run, zoneinfo=tmp_path)
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize(
+    "plan",
+    [
+        {},
+        {"locale": {}},
+        {"locale": {"timezone": "Mars/Olympus"}},
+        {"locale": {"timezone": "../../etc/passwd"}},
+        {"locale": {"timezone": 3}},
+        "not a plan",
+    ],
+)
+def test_no_zone_or_an_unknown_one_leaves_the_clock(tmp_path, monkeypatch, plan):
+    monkeypatch.setattr(start, "_live_zone", {})
+    calls = []
+    assert not start.follow_time_zone(plan, lambda cmd, **kw: calls.append(cmd), zoneinfo=tmp_path)
+    assert calls == []
+
+
+def test_no_timedatectl_is_no_crash(tmp_path, monkeypatch):
+    monkeypatch.setattr(start, "_live_zone", {})
+    (tmp_path / "UTC").write_text("TZif")
+
+    def missing(cmd, **kw):
+        raise FileNotFoundError(cmd[0])
+
+    assert not start.follow_time_zone({"locale": {"timezone": "UTC"}}, missing, zoneinfo=tmp_path)

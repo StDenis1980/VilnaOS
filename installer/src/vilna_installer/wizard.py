@@ -556,6 +556,8 @@ class Wizard:
         except plans.PlanError as e:
             return str(e)
         plans.save(plan, self.plan_path)
+        if not isinstance(self.machine, machines.DemoMachine):
+            start.follow_time_zone(plan)
         return None
 
     def set_languages(self, locales: list[str], extra_keyboard: str | None) -> str | None:
