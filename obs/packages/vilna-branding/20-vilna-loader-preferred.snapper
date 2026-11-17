@@ -3,7 +3,8 @@
 #
 # Snapper plugin: after a rollback, the boot entry the person chose must win.
 #
-# systemd-boot 262 starts LoaderEntryPreferred before LoaderEntryDefault.
+# systemd-boot (261.4 on the ESP already) starts LoaderEntryPreferred before
+# LoaderEntryDefault.
 # sdbootutil from November 2026 writes Preferred (and drops Default), but a
 # rollback runs the sdbootutil of the snapshot it returns to (snapper plugin
 # 10-sdbootutil), and an older one writes only Default. Preferred then still
@@ -12,7 +13,10 @@
 #
 # So: when both variables are set and differ, Preferred is stale; remove it
 # and Default decides. When only one is set, it was written by this rollback
-# and is left alone. Runs after 10-sdbootutil (plugins run in name order).
+# and is left alone. Snapper calls set-default-snapshot-post (where
+# 10-sdbootutil writes the variables) before rollback-post, so this runs
+# after it. Snapper takes plugins from the running system: a snapshot
+# without this file still rolls back wrongly, so it must be in the image.
 # health-checker is not affected: it uses systemd-boot's boot counting.
 
 set -u
@@ -38,9 +42,10 @@ fi
 # efivarfs marks variables immutable; lift it only for this one.
 chattr -i "$PREFERRED" 2>/dev/null
 if rm -f "$PREFERRED"; then
-    echo "vilna: removed a stale LoaderEntryPreferred, LoaderEntryDefault starts next"
+    # Snapper drops a plugin's output, so the journal gets it.
+    logger -t vilna-loader-preferred "removed a stale LoaderEntryPreferred, LoaderEntryDefault starts next"
 else
-    echo "vilna: could not remove LoaderEntryPreferred; the rollback may not start" >&2
+    logger -p user.err -t vilna-loader-preferred "could not remove LoaderEntryPreferred; the rollback may not start"
 fi
 # Never fail the rollback itself.
 exit 0
