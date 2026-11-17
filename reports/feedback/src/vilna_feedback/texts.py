@@ -30,6 +30,14 @@ ADD_SYSTEM = "Add facts about this computer"
 REPLY = "You may answer me by e-mail"
 EMAIL = "E-mail address"
 PUBLISH = "You may publish it, without my address, after reading it"
+ADD_CONVERSATION = "Add my conversation with Gloxi from the installation"
+CONVERSATION_HINT = (
+    "It may have your name, the computer's name or a Wi-Fi network. You read it before it is added."
+)
+CONVERSATION = "Conversation with Gloxi"
+READ = "Read"
+ADD = "Add"
+DO_NOT_ADD = "Do not add"
 PREVIEW = "What will be sent"
 SEND = "Send"
 SENDING = "Sending…"
@@ -87,6 +95,12 @@ TEXTS = (
     REPLY,
     EMAIL,
     PUBLISH,
+    ADD_CONVERSATION,
+    CONVERSATION_HINT,
+    CONVERSATION,
+    READ,
+    ADD,
+    DO_NOT_ADD,
     PREVIEW,
     SEND,
     SENDING,

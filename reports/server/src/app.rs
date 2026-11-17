@@ -812,10 +812,14 @@ async fn admin_page(State(state): State<Shared>, headers: HeaderMap) -> Response
     }
     html.push_str("</table><h1>Feedback</h1><table><tr><th>Received<th>Kind<th>Channel<th>Text<th>Reply to<th>Publish</tr>");
     for f in &feedback {
-        let text = match &f.feedback.text_en {
+        let mut text = match &f.feedback.text_en {
             Some(en) => format!("{}\n\n— en: {}", f.feedback.text, en),
             None => f.feedback.text.clone(),
         };
+        if let Some(talk) = &f.feedback.conversation {
+            text.push_str("\n\n— installer conversation:\n");
+            text.push_str(talk);
+        }
         html.push_str(&format!(
             "<tr><td>{}<br><code>{}</code><td>{:?}<td>{:?}<td><pre>{}</pre><td>{}<td>{}</tr>",
             esc(&when(f.received)),

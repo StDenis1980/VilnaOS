@@ -42,6 +42,24 @@ msgstr "El. pašto adresas"
 msgid "You may publish it, without my address, after reading it"
 msgstr "Perskaitę galite paskelbti, be mano adreso"
 
+msgid "Add my conversation with Gloxi from the installation"
+msgstr "Pridėti mano pokalbį su Gloxi diegimo metu"
+
+msgid "It may have your name, the computer's name or a Wi-Fi network. You read it before it is added."
+msgstr "Jame gali būti jūsų vardas, kompiuterio ar Wi-Fi tinklo pavadinimas. Prieš pridedant jį perskaitysite."
+
+msgid "Conversation with Gloxi"
+msgstr "Pokalbis su Gloxi"
+
+msgid "Read"
+msgstr "Skaityti"
+
+msgid "Add"
+msgstr "Pridėti"
+
+msgid "Do not add"
+msgstr "Nepridėti"
+
 msgid "What will be sent"
 msgstr "Kas bus išsiųsta"
 
