@@ -87,7 +87,6 @@ def test_the_whole_simple_path_next_to_windows(plan_path):
         [call("conversation_next")],
         "Зашифрований том BitLocker теж буде стерто.",
         [call("conversation_next")],
-        "Раджу шифрування з TPM2.",
         [call("plan_set_encryption", method="tpm2")],
         [call("plan_set_user", full_name="Олена Демо", username="olena", hostname="olena-pc")],
         [call("plan_set_time", timezone="Europe/Kyiv", region="uk_UA.UTF-8")],
@@ -162,8 +161,11 @@ def test_change_in_the_plan_asks_the_step_question_again(plan_path):
         assert reply.step.key == "network"
         assert reply.text == start.Texts("uk")(conv.NETWORK_QUESTION)
         assert len(model.seen) == 3  # the model was not asked
-        # Without a fixed question the model is told why the step is back.
+        # The demo computer has a TPM 2.0: encryption with a recovery key first.
         c.goto("encryption")
+        assert c.resume().text == start.Texts("uk")(conv.ENCRYPT_TPM_QUESTION)
+        # Without a fixed question the model is told why the step is back.
+        c.goto("survey")
         assert c.resume().text == "Як зашифрувати новий диск?"
         assert conv.CHANGING in model.last_system
     finally:
@@ -573,3 +575,30 @@ def test_ukrainian_typed_in_the_english_layout_is_read_for_the_model(plan_path):
         assert "«продовжуємо»" in model.seen[-1][0][-1]["content"]
     finally:
         tools.close()
+
+
+@pytest.mark.parametrize(
+    ("demo", "words"),
+    [
+        ("empty", ["512", "порожній", "Використати весь диск?"]),
+        ("windows", ["512", "Windows", "Стерти цей диск?"]),
+    ],
+)
+def test_the_disk_question_says_what_is_on_the_disk(plan_path, demo, words):
+    """Build10.11: «ok» to «erase the whole disk» erased a disk Gloxi had not described."""
+    c, model, tools = make(plan_path, demo)
+    try:
+        c.goto("disk")
+        text = c.resume().text
+        for word in words:
+            assert word in text, text
+        assert model.seen == []
+    finally:
+        tools.close()
+
+
+def test_short_answers_in_the_wrong_layout_are_read():
+    assert conv.wrong_layout("jr") == "ок"
+    assert conv.wrong_layout("ycnegybq rhjr").endswith("крок")
+    for fine in ("ok", "yes", "next", "go forward"):
+        assert conv.wrong_layout(fine) is None, fine

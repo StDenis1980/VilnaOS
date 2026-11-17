@@ -95,6 +95,26 @@ DISK_QUESTION = (
     "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; "
     "the other way is your own layout in the partition editor."
 )
+DISK_EMPTY_QUESTION = (
+    "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; "
+    "the other way is your own layout in the partition editor. Use the whole disk?"
+)
+DISK_ERASE_QUESTION = (
+    "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it "
+    "completely and installing Vilna: everything on it will be lost. The other way is your "
+    "own layout in the partition editor. Erase this disk?"
+)
+FILES = "files"
+ENCRYPT_TPM_QUESTION = (
+    "Shall I encrypt the new system? I suggest encryption with a recovery key: on this "
+    "computer the disk opens by itself, and the key opens it if something changes. You can "
+    "also type a passphrase at every start, or not encrypt the disk."
+)
+ENCRYPT_PASS_QUESTION = (
+    "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open "
+    "with a passphrase you type at every start. Without encryption, anyone with the disk "
+    "can read your files."
+)
 KEEP_KEY = (
     "Keep the recovery key safe: without it nobody, not even you, can open the disk if "
     "something in this computer changes."
@@ -219,6 +239,11 @@ TEXTS = (
     FIRST_QUESTION,
     NETWORK_QUESTION,
     DISK_QUESTION,
+    DISK_EMPTY_QUESTION,
+    DISK_ERASE_QUESTION,
+    FILES,
+    ENCRYPT_TPM_QUESTION,
+    ENCRYPT_PASS_QUESTION,
     KEEP_KEY,
     USER_QUESTION,
     TIME_QUESTION,
@@ -893,7 +918,11 @@ class Conversation:
         if key == "network":
             return self.texts(NETWORK_QUESTION)
         if key == "disk":
-            return self.texts(DISK_QUESTION)
+            return self._disk_question()
+        if key == "encryption":
+            ok, hw = self.tools.call("hardware_describe")
+            tpm = ok and isinstance(hw, dict) and hw.get("tpm") == 2
+            return self.texts(ENCRYPT_TPM_QUESTION if tpm else ENCRYPT_PASS_QUESTION)
         if key == "user":
             return self.texts(USER_QUESTION)
         if key == "time":
@@ -904,6 +933,24 @@ class Conversation:
         if key == "privacy":
             return self.texts(PRIVACY_TEXT)
         return None
+
+    def _disk_question(self) -> str:
+        """With one disk to choose, say what it holds, so «ok» is an answer to that."""
+        if self.state.survey is None:
+            ok, data = self.tools.call("disks_survey")
+            if ok and isinstance(data, dict):
+                self.state.survey = data
+        disks = [d for d in (self.state.survey or {}).get("disks", []) if not d.get("boot_medium")]
+        if len(disks) != 1:
+            return self.texts(DISK_QUESTION)
+        disk = disks[0]
+        size = round(disk.get("size", 0) / (1 << 30))
+        systems = [str(s) for s in disk.get("systems") or []]
+        holds = any(p.get("holds_data") for p in disk.get("partitions", []))
+        if not systems and not holds:
+            return self.texts(DISK_EMPTY_QUESTION).format(size=size)
+        what = ", ".join(systems) if systems else self.texts(FILES)
+        return self.texts(DISK_ERASE_QUESTION).format(size=size, what=what)
 
     def _answer(self) -> Reply:
         self._said = []
@@ -1076,6 +1123,45 @@ class Conversation:
 _US = "qwertyuiop[]asdfghjkl;'zxcvbnm,.`QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>~"
 _UA = "йцукенгшщзхїфівапролджєячсмитьбю'ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ'"
 _TO_UA = str.maketrans(_US, _UA)
+# Short answers and words of this conversation, to know them in the wrong layout.
+_UA_WORDS = frozenset(
+    [
+        "так",
+        "ні",
+        "ок",
+        "окей",
+        "добре",
+        "гаразд",
+        "далі",
+        "давай",
+        "згоден",
+        "згодна",
+        "все",
+        "привіт",
+        "дякую",
+        "крок",
+        "диск",
+        "мережа",
+        "пароль",
+        "без",
+    ]
+)
+_UA_STEMS = (
+    "наступ",
+    "продовж",
+    "україн",
+    "англій",
+    "польськ",
+    "шифру",
+    "стер",
+    "зрозум",
+    "зберег",
+    "встанов",
+    "підключ",
+    "мереж",
+    "розділ",
+    "редактор",
+)
 
 
 def wrong_layout(text: str) -> str | None:
@@ -1086,7 +1172,11 @@ def wrong_layout(text: str) -> str | None:
     if any("\u0400" <= ch <= "\u04ff" for ch in text):
         return None
     words = text.split()
-    signs = 0
+    read = text.translate(_TO_UA)
+    # Or a word people say in this conversation («ycnegybq rhjr», «jr»).
+    signs = sum(
+        1 for w in read.lower().split() if w.strip(".,!?") in _UA_WORDS or w.startswith(_UA_STEMS)
+    )
     for word in words:
         core = word.strip(".,!?")
         inner = core[1:-1]
@@ -1101,7 +1191,7 @@ def wrong_layout(text: str) -> str | None:
             signs += 1
     if not signs:
         return None
-    return text.translate(_TO_UA)
+    return read
 
 
 def _external(text: str) -> str:
