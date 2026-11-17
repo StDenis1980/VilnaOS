@@ -60,8 +60,7 @@ MODEL_TIMEOUT = float(os.environ.get("VILNA_INSTALLER_MODEL_TIMEOUT", "300"))
 MODEL_WAIT = float(os.environ.get("VILNA_INSTALLER_MODEL_WAIT", "300"))
 MODEL_POLL = 3.0
 MODEL_UNIT = "vilna-llm.service"
-HISTORY = 8  # messages of the conversation that go to the model, at least
-HISTORY_STEP = 4  # the window moves by this many, so its start stays put between moves
+HISTORY = 8  # messages of the conversation that go to the model
 MAX_ROUNDS = 4  # model ↔ function rounds in one turn
 MAX_DATA_CHARS = 2500  # of fetched data in the prompt (small context)
 
@@ -651,13 +650,7 @@ class LocalModel:
         return True
 
     def chat(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> ModelReply:
-        # cache_prompt: llama-server reuses what the last request started with.
-        body: dict[str, Any] = {
-            "model": self.model,
-            "messages": messages,
-            "temperature": 0.3,
-            "cache_prompt": True,
-        }
+        body: dict[str, Any] = {"model": self.model, "messages": messages, "temperature": 0.3}
         if tools:
             body["tools"] = tools
         out = self._request("/chat/completions", body)
@@ -981,14 +974,9 @@ class Conversation:
         asked = set(self.needs()) & set(TYPE_SECRET)
         for _ in range(MAX_ROUNDS):
             step = self.current()
-            # What stays the same within a step comes first and what changes every
-            # turn (the plan, notes) last, so llama-server's prompt cache reuses the
-            # rules, the functions and the conversation instead of reading ~1200
-            # tokens anew each turn (40-80 s on a laptop CPU).
             reply = self.model.chat(
                 [{"role": "system", "content": self.system_prompt(step)}]
-                + self._window()
-                + [{"role": "system", "content": self.state_prompt()}]
+                + self.history[-HISTORY:]
                 + exchange,
                 self.functions(step),
             )
@@ -1082,29 +1070,11 @@ class Conversation:
         text = json.dumps(result, ensure_ascii=False)
         return _external(text) if name in EXTERNAL else text
 
-    def _window(self) -> list[dict[str, Any]]:
-        """The last messages; the start moves in jumps so the prompt cache holds."""
-        start = max(0, len(self.history) - HISTORY)
-        start -= start % HISTORY_STEP
-        return self.history[start:]
-
-    def state_prompt(self) -> str:
-        """What changes every turn: the plan, what was typed, the installer's note."""
-        parts = ["Plan now: " + json.dumps(_compact(self.plan), ensure_ascii=False)]
-        entered = self._entered()
-        if entered:
-            parts.append(
-                "Already typed by the person into protected fields, so never ask for it "
-                "again: " + "; ".join(ENTERED_NAMES[k] for k in entered) + "."
-            )
-        if self._note:
-            parts.append(self._note)
-        return "\n\n".join(parts)
-
     def system_prompt(self, step: Step) -> str:
         parts = [
             RULES.format(language=self.reply_language),
             f"Step {step.number} of 13: {step.title}. {step.goal}",
+            "Plan now: " + json.dumps(_compact(self.plan), ensure_ascii=False),
         ]
         for name in step.fetch:
             if name not in self._fetched:
@@ -1122,6 +1092,14 @@ class Conversation:
             ok, hardware = self._fetched.get("hardware_describe", (False, {}))
             if ok and isinstance(hardware, dict) and hardware.get("tpm") != 2:
                 parts.append(NO_TPM)
+        entered = self._entered()
+        if entered:
+            parts.append(
+                "Already typed by the person into protected fields, so never ask for it "
+                "again: " + "; ".join(ENTERED_NAMES[k] for k in entered) + "."
+            )
+        if self._note:
+            parts.append(self._note)
         if step.key == "time":
             parts.append("Suggested: " + json.dumps(self._suggested_time()))
         if step.key == "install":
