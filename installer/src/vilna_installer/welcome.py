@@ -437,11 +437,39 @@ class Welcome(Adw.ApplicationWindow):
         start.write_plan(plan, self.plan_path)
         print(json.dumps(plan, ensure_ascii=False))
         app = self.get_application()
+        if isinstance(app, InstallerApp) and not app.demo:
+            follow_keyboard(self.language)
         if isinstance(app, InstallerApp):
             if assistant:
                 self._when_loaded(lambda: app.open_chat(self))
             else:
                 self._when_loaded(lambda: app.open_wizard(self))
+
+
+KEYBOARD_SECOND_WRITE_MS = 500
+
+
+def follow_keyboard(language: str) -> None:
+    """The chosen language's layout in the live session at once, before the conversation."""
+    source = Gio.SettingsSchemaSource.get_default()
+    if source is None or source.lookup(start.INPUT_SOURCES_SCHEMA, True) is None:
+        return
+    settings = Gio.Settings.new(start.INPUT_SOURCES_SCHEMA)
+    current = [tuple(s) for s in settings.get_value("sources").unpack()]
+    sources = start.session_input_sources(current, language)
+    if sources is None:
+        return
+    # GNOME Shell keeps the layout in use when the list grows, so «us» would
+    # stay active: the chosen layout alone first, which the shell switches
+    # to, then the whole list a moment later, with it still in front.
+    settings.set_value("sources", GLib.Variant("a(ss)", sources[:1]))
+
+    def all_sources() -> bool:
+        settings.set_value("sources", GLib.Variant("a(ss)", sources))
+        start.log(f"keyboard layouts: {', '.join(name for _kind, name in sources)}")
+        return False
+
+    GLib.timeout_add(KEYBOARD_SECOND_WRITE_MS, all_sources)
 
 
 def _once_mapped(welcome: Gtk.Window):

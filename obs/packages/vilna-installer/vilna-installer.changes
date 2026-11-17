@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Nov 17 17:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The live session takes the plan's time zone as soon as the plan has
+  one (timedatectl set-timezone): the top bar showed UTC time on a
+  real laptop.
+- The first screen puts the chosen language's keyboard layout first in
+  the live session (us stays second): Ukrainian could not be typed
+  until the conversation's language step was over.
+
+-------------------------------------------------------------------
 Tue Nov 17 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Gloxi in the installer: the system prompt and the functions stay the

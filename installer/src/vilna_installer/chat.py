@@ -579,8 +579,12 @@ class ChatWindow(Adw.ApplicationWindow):
         self.send.set_sensitive(False)
         conversation = self.conversation
 
+        live = not self.demo_kind
+
         def work() -> None:
             reply = conversation.send(text) if text is not None else conversation.resume(entered)
+            if live:
+                start.follow_time_zone(reply.plan)
             GLib.idle_add(self._turn_done, reply)
 
         threading.Thread(target=work, daemon=True).start()

@@ -10,6 +10,10 @@ import time
 
 import pytest
 
+# The first screen writes GNOME settings (keyboard layouts, the screen
+# reader): in memory, never in the settings of whoever runs the tests.
+os.environ["GSETTINGS_BACKEND"] = "memory"
+
 gi = pytest.importorskip("gi")
 try:
     gi.require_version("Gtk", "4.0")
@@ -286,3 +290,19 @@ def test_the_person_answers_about_crash_reports_with_their_own_button(plan_path)
     assert plans.load(plan_path)["privacy"]["crash_reports"] == "never"
     assert cards(win) == [] and "answered privacy" in talk.gone_to
     assert win._(conv.CRASH_NEVER) in bubbles(win)
+
+
+@pytest.mark.parametrize(("demo", "expected"), [(None, ["uk"]), ("empty", [])])
+def test_the_chosen_languages_keyboard_is_set_only_on_a_real_computer(
+    plan_path, monkeypatch, demo, expected
+):
+    from vilna_installer import welcome as first
+
+    followed = []
+    monkeypatch.setattr(first, "follow_keyboard", followed.append)
+    app = first.InstallerApp(plan_path, True, "uk", demo)
+    app.register(None)
+    screen = first.Welcome(app, plan_path, "uk")
+    app.open_chat = lambda _w: None
+    screen._finish(assistant=True)
+    assert followed == expected
