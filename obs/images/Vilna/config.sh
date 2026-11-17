@@ -94,6 +94,47 @@ WantedBy=multi-user.target
 UNIT
 systemctl enable vilna-boot-entries.service
 
+# The computer's name. Without /etc/hostname the system is called
+# «linux» (VM test of Build15.6): that is what Settings, the terminal
+# prompt and the local network show. GNOME Initial Setup does not ask
+# for it, so on the first boot the computer gets «vilna-» and four
+# characters of its machine id, different on every computer. A name
+# someone already chose (the Vilna installer writes /etc/hostname from
+# its plan, Settings or hostnamectl afterwards) is left alone.
+cat >/usr/libexec/vilna/hostname <<'SCRIPT'
+#!/bin/sh
+set -eu
+current=$(tr -d '[:space:]' 2>/dev/null </etc/hostname || true)
+case "$current" in
+    ""|linux|localhost|localhost.localdomain) ;;
+    *) exit 0 ;;
+esac
+id=$(tr -dc '0-9a-f' 2>/dev/null </etc/machine-id | cut -c1-4)
+[ -n "$id" ] || exit 0
+name="vilna-$id"
+printf '%s\n' "$name" >/etc/hostname
+# SELinux: hostname_etc_t, as /etc/hostname has on any other system.
+restorecon /etc/hostname 2>/dev/null || true
+hostname "$name"
+SCRIPT
+chmod 0755 /usr/libexec/vilna/hostname
+cat >/usr/lib/systemd/system/vilna-hostname.service <<'UNIT'
+[Unit]
+Description=Give the computer a Vilna name instead of «linux»
+DefaultDependencies=no
+After=local-fs.target systemd-machine-id-commit.service
+Before=systemd-hostnamed.service NetworkManager.service display-manager.service sysinit.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/vilna/hostname
+
+[Install]
+WantedBy=sysinit.target
+UNIT
+systemctl enable vilna-hostname.service
+
 # Trust the package signing keys shipped in /usr/lib/rpm/gnupg/keys:
 # Vilna's (Vilna-release) and openSUSE's (openSUSE-build-key), so zypper,
 # also inside transactional-update which never asks, accepts the vilna

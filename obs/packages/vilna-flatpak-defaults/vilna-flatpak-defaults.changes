@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 17 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.5: before installing, set Flatpak's languages to the ten
+  of ADR 0009 (uk, en, es, pl, de, fr, it, ro, cs, lt), so Firefox and
+  the other apps come with their translations; before, Flatpak took
+  only en_US, the language of the first boot (VM test of Build15.6).
+
+-------------------------------------------------------------------
 Tue Nov 17 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.4: do not hold the boot (1 min 20 s in a VM): the service
