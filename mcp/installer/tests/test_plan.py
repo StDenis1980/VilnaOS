@@ -435,3 +435,20 @@ def test_crash_reports_need_the_persons_own_answer():
     p["confirmed_by_user"] = True
     plans.set_crash_reports(p, "never")
     assert p["confirmed_by_user"] is False
+
+
+def test_the_vpn_is_the_persons_choice_and_may_wait_for_the_first_start():
+    """ADR 0027 section 2: the wizard asks; without an answer Gloxi asks after installing."""
+    p, s = complete()
+    assert "vpn" not in p["privacy"] and plans.validate(p, s)["valid"]
+    for choice in plans.VPN_CHOICES:
+        plans.set_vpn(p, choice)
+        assert p["privacy"]["vpn"] == choice and plans.validate(p, s)["valid"]
+    with pytest.raises(plans.PlanError):
+        plans.set_vpn(p, "nordvpn")
+    p["privacy"]["vpn"] = "nordvpn"
+    assert "bad_vpn" in codes(plans.validate(p, s))
+    assert all("vpn" not in name for name in plans.SETTERS)
+    p["confirmed_by_user"] = True
+    plans.set_vpn(p, "skip")
+    assert p["confirmed_by_user"] is False

@@ -187,6 +187,29 @@ def test_vpn_talk_after_the_backup_talk(tmp_path):
     assert server.requests == []
 
 
+def test_a_vpn_chosen_in_the_installer_comes_before_the_backup_talk(tmp_path):
+    from test_backup_intro import FakeHerkos
+    from test_vpn_intro import FakeHerkos as FakeVpn
+
+    from gloxi.backup_intro import BackupIntro
+    from gloxi.vpn_intro import MULLVAD_APP, VpnIntro
+
+    server = FakeLlamaServer()
+    view = RecordingView()
+    intro = BackupIntro(FakeHerkos(), path=tmp_path / "intro.json")
+    vpn = VpnIntro(FakeVpn(tunnels=(0, 1)), path=tmp_path / "vpn.json")
+    vpn.path.write_text('{"status": "chosen", "choice": "mullvad"}')
+    controller = ChatController(make_conversation(server), view, runner=sync, intro=intro, vpn=vpn)
+    assert controller.offer_intro()  # the first start: the VPN chosen while installing
+    assert ("launch", MULLVAD_APP) in view.events
+    assert "Shall I keep backups" not in view.answer()
+    assert controller.submit("1")  # connected
+    assert controller.submit("2")  # no kill switch
+    assert controller.offer_intro()  # the next start: backups
+    assert "Shall I keep backups" in view.answer()
+    assert server.requests == []
+
+
 def test_vpn_talk_without_herkos():
     controller, view, _ = make(FakeLlamaServer())
     assert not controller.submit("/vpn")

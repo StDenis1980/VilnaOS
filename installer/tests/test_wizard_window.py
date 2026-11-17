@@ -140,6 +140,7 @@ def fill(win):
     w.mark_entered("user")
     w.set_time(*w.suggested_time())
     assert w.set_crash_reports("ask") is None
+    assert w.set_vpn("skip") is None
 
 
 def test_the_wizard_ends_on_the_herkos_screen(plan_path, monkeypatch):
@@ -186,9 +187,34 @@ def test_crash_reports_have_no_answer_until_the_person_gives_one(plan_path):
     assert "crash_reports" not in plans.load(plan_path)["privacy"]
     win.crash_checks["never"].set_active(True)
     win.step(+1)
-    assert win.key == "summary"
+    assert win.key == "vpn"
     assert plans.load(plan_path)["privacy"]["crash_reports"] == "never"
     assert win.wizard.done("privacy")
     # Back on the step, the answer given is shown.
     win.go("privacy", strict=False)
     assert win.crash_checks["never"].get_active()
+
+
+def test_the_vpn_step_has_no_choice_until_the_person_makes_one(plan_path):
+    """ADR 0027 section 2: Proton, a free Proton account, Mullvad or skip; none in advance."""
+    win = window(plan_path)
+    win.go("vpn", strict=False)
+    assert win.title.get_label() == "VPN"
+    assert list(win.vpn_checks) == ["proton", "proton_signup", "mullvad", "skip"]
+    assert not any(check.get_active() for check in win.vpn_checks.values())
+    win.step(+1)
+    assert win.key == "vpn"
+    assert win.error.get_label() == "Оберіть відповідь про VPN."
+    assert "vpn" not in plans.load(plan_path)["privacy"]
+    # One keyboard stop per choice, on the radio button (Orca, VM test 17.11).
+    for check in win.vpn_checks.values():
+        assert (
+            check.get_focusable()
+            and not check.get_parent().get_ancestor(Adw.ActionRow).get_focusable()
+        )
+    win.vpn_checks["mullvad"].set_active(True)
+    win.step(+1)
+    assert win.key == "summary"
+    assert plans.load(plan_path)["privacy"]["vpn"] == "mullvad"
+    win.go("vpn", strict=False)
+    assert win.vpn_checks["mullvad"].get_active()

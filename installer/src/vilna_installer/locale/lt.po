@@ -81,3 +81,45 @@ msgstr "Perjungti į tamsią temą"
 
 msgid "Switch to the light theme"
 msgstr "Perjungti į šviesią temą"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "Jūsų ryšys jau apsaugotas: Vilna šifruoja DNS, todėl tinklas, kuriame esate, nemato, kokių svetainių ieškote."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Ar norite dar daugiau apsaugos su VPN?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "VPN slepia jūsų srautą nuo tinklo, kuriame esate (kavinė, viešbutis), o jūsų adresą – nuo svetainių. VPN teikėjas mato, kur lankotės, todėl siūlome tik patikrintus."
+
+msgid "Sign in to Proton VPN"
+msgstr "Prisijungti prie Proton VPN"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "Po pirmojo prisijungimo Gloxi atvers Proton VPN programą, ir jūs prisijungsite joje."
+
+msgid "Create a free Proton account"
+msgstr "Sukurti nemokamą Proton paskyrą"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 šalys, 1 įrenginys vienu metu. Po pirmojo prisijungimo Gloxi atvers Proton registracijos puslapį, o paskui programą."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Turiu Mullvad paskyros numerį arba kodą"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Didžiausiam anonimiškumui: be el. pašto, tik paskyros numeris. Po pirmojo prisijungimo Gloxi atvers Mullvad programą."
+
+msgid "Skip"
+msgstr "Praleisti"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "VPN galite įjungti vėliau: paprašykite Gloxi arba jo lange įveskite /vpn."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Prisijungiate tik paties teikėjo programoje: Vilna ir Gloxi niekada nemato jūsų slaptažodžio, paskyros numerio ar kodo."
+
+msgid "Choose an answer about the VPN."
+msgstr "Pasirinkite atsakymą dėl VPN."

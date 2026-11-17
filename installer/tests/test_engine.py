@@ -248,6 +248,9 @@ def test_the_whole_install_with_tpm2(setup):
     assert (root / "etc/hostname").read_text() == "olena-pc\n"
     assert str((root / "etc/localtime").readlink()) == "../usr/share/zoneinfo/Europe/Kyiv"
     assert (root / "home/olena/.config/gnome-initial-setup-done").exists()
+    # No VPN choice in this plan (the conversation): Gloxi asks on the first start.
+    assert not (root / "home/olena" / eng.VPN_STATE).exists()
+    assert ["chroot", str(root), "chown", "-R", "olena:", "/home/olena/.config"] in calls
     assert (root / "etc/selinux/.autorelabel").exists()
     # Subvolumes of the image's fstab, not / and /etc.
     mounts = [a for a in calls if a[0] == "mount" and a[1:2] == ["-o"]]
@@ -291,6 +294,32 @@ def test_a_passphrase_install_adds_it_and_builds_the_initrd(setup):
     assert system.first("--wipe-slot=0") > system.first("mkinitrd")
     assert "tpm2-device" not in (engine.root / "etc/crypttab").read_text()
     assert not any("--method=tpm2" in a for a in system.argvs())
+
+
+@pytest.mark.parametrize("choice", ["proton", "mullvad"])
+def test_the_vpn_choice_of_the_wizard_waits_for_gloxi_in_the_new_account(setup, choice):
+    """ADR 0027 section 2: Gloxi opens the provider's app on the first start."""
+    tmp_path, path, *_ = setup
+    plan = plans.load(path)
+    plans.set_vpn(plan, choice)
+    plan["confirmed_by_user"] = True
+    plans.save(plan, path)
+    engine, system, *_ = make(setup)
+    engine.install()
+    state = engine.root / "home/olena" / eng.VPN_STATE
+    assert json.loads(state.read_text()) == {"status": "chosen", "choice": choice}
+    chown = ["chroot", str(engine.root), "chown", "-R", "olena:"]
+    assert chown + ["/home/olena/.config", "/home/olena/.local"] in system.argvs()
+    assert system.first("useradd") < system.first("chown", "-R")
+
+
+def test_the_vpn_state_for_gloxi():
+    assert eng.vpn_state("skip", 1000.5) == '{"status": "declined", "time": 1000}'
+    assert json.loads(eng.vpn_state("proton_signup", 0)) == {
+        "status": "chosen",
+        "choice": "proton_signup",
+    }
+    assert eng.vpn_state(None, 0) is None and eng.vpn_state("nordvpn", 0) is None
 
 
 def test_without_encryption_no_luks_and_no_keys(setup):

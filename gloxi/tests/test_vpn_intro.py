@@ -198,3 +198,54 @@ def test_terminal(make):
     assert "Gloxi: Your connection is already protected" in text
     assert opened == [PROTON_SIGNUP]
     assert PROTON_APP in text
+
+
+@pytest.mark.parametrize(
+    ("choice", "launch", "uri", "first_call"),
+    [
+        ("proton", PROTON_APP, None, None),
+        ("proton_signup", PROTON_APP, PROTON_SIGNUP, None),
+        ("mullvad", MULLVAD_APP, None, "start_provider"),
+    ],
+)
+def test_the_choice_of_the_installer_wizard_goes_straight_to_the_provider(
+    make, choice, launch, uri, first_call
+):
+    """ADR 0027 section 2: the wizard asked already, so the first start does not ask again."""
+    intro, herkos, _ = make(tunnels=(0, 1))
+    intro.path.write_text(json.dumps({"status": "chosen", "choice": choice}))
+    assert intro.chosen() == choice and intro.due()
+    first = intro.start()
+    assert first.text.startswith("You chose this while installing Vilna.")
+    assert first.launch == launch and first.open_uri == uri
+    assert first.choices and "already protected" not in first.text
+    assert herkos.calls == ["status"] + ([first_call] if first_call else [])
+    assert intro.chosen() == choice  # not carried out until the talk ends
+    connected = intro.answer("1")
+    assert "kill switch" in connected.text
+    end = intro.answer("1")
+    assert end.done and herkos.enabled
+    assert intro.chosen() is None and not intro.due()
+
+
+def test_skip_in_the_installer_wizard_means_no_question(make):
+    intro, _, clock = make()
+    intro.path.write_text(json.dumps({"status": "declined", "time": clock.now}))
+    assert intro.chosen() is None and not intro.due()
+    clock.now += 10 * REMIND_AFTER
+    assert not intro.due()  # /vpn still works
+
+
+def test_an_unknown_choice_is_asked_about_as_usual(make):
+    intro, _, _ = make()
+    intro.path.write_text(json.dumps({"status": "chosen", "choice": "nordvpn"}))
+    assert intro.chosen() is None
+    assert "already protected" in intro.start().text
+
+
+def test_a_refused_provider_service_from_the_wizard_choice_stops_kindly(make):
+    intro, _, _ = make(deny=("start_provider",))
+    intro.path.write_text(json.dumps({"status": "chosen", "choice": "mullvad"}))
+    turn = intro.start()
+    assert turn.done and "/vpn" in turn.text
+    assert intro.chosen() is None  # saved as "later": one reminder in a week
