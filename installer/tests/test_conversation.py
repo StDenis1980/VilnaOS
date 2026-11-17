@@ -81,7 +81,6 @@ def test_the_whole_simple_path_next_to_windows(plan_path):
             )
         ],
         [call("plan_set_network", mode="wifi", ssid="DemoHome")],
-        "Введіть пароль у захищене поле.",
         "На диску 512 ГБ є Windows із BitLocker. Що зробимо з диском?",
         [call("plan_set_disk", target="nvme-Demo_SSD_512_0002", layout="replace")],
         "Усе на диску буде стерто, зокрема Windows.",
@@ -91,7 +90,6 @@ def test_the_whole_simple_path_next_to_windows(plan_path):
         "Раджу шифрування з TPM2.",
         [call("plan_set_encryption", method="tpm2")],
         [call("plan_set_user", full_name="Олена Демо", username="olena", hostname="olena-pc")],
-        "Пароль введіть у захищене поле.",
         [call("plan_set_time", timezone="Europe/Kyiv", region="uk_UA.UTF-8")],
         "Ось план: стерти весь диск, встановити Vilna з шифруванням.",
     )
@@ -513,7 +511,6 @@ def test_after_the_wifi_password_gloxi_knows_it_is_entered(plan_path):
         "windows",
         [call("plan_set_languages", languages=["uk_UA.UTF-8"], keyboards=["ua", "us"])],
         [call("plan_set_network", mode="wifi", ssid="DemoHome")],
-        "Введіть пароль Wi-Fi у захищене поле.",
         "На диску 512 ГБ є Windows. Що зробимо з диском?",
         "Можна стерти весь диск.",
     )
@@ -521,7 +518,10 @@ def test_after_the_wifi_password_gloxi_knows_it_is_entered(plan_path):
     try:
         c.opening()
         c.send("українська")
-        assert c.send("DemoHome").needs == ["wifi_password"]
+        reply = c.send("DemoHome")
+        assert reply.needs == ["wifi_password"]
+        # Fixed words, not the model retelling the installer's note to it.
+        assert reply.text == texts(conv.TYPE_WIFI)
         assert "Already typed" not in model.last_system
         plan = plans.load(plan_path)
         plans.mark_entered(plan, "network")

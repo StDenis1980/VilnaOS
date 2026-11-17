@@ -192,11 +192,24 @@ SECTIONS = {
 CONNECTED = "Connected to Wi-Fi."
 PASSWORD_SAVED = "The password is saved."
 PASSPHRASE_SAVED = "The passphrase is saved."
+TYPE_WIFI = "Type the Wi-Fi password into the protected field below. I do not see it."
+TYPE_PASSWORD = (
+    "Type the password for your account into the protected field below, twice. I do not see it."
+)
+TYPE_PASSPHRASE = "Type the disk passphrase into the protected field below, twice. I do not see it."
+TYPE_SECRET = {
+    "wifi_password": TYPE_WIFI,
+    "user_password": TYPE_PASSWORD,
+    "passphrase": TYPE_PASSPHRASE,
+}
 SAVED = {"network": CONNECTED, "user": PASSWORD_SAVED, "passphrase": PASSPHRASE_SAVED}
 TEXTS = (
     INTRO,
     CONNECTED,
     PASSWORD_SAVED,
+    TYPE_WIFI,
+    TYPE_PASSWORD,
+    TYPE_PASSPHRASE,
     PASSPHRASE_SAVED,
     FIRST_QUESTION,
     NETWORK_QUESTION,
@@ -874,6 +887,7 @@ class Conversation:
     def _turn(self) -> str:
         exchange: list[dict[str, Any]] = []
         called = nudged = False
+        asked = set(self.needs()) & set(TYPE_SECRET)
         for _ in range(MAX_ROUNDS):
             step = self.current()
             reply = self.model.chat(
@@ -899,6 +913,11 @@ class Conversation:
                 exchange.append(
                     {"role": "tool", "tool_call_id": call.get("id", ""), "content": result}
                 )
+            new = [n for n in self.needs() if n in TYPE_SECRET and n not in asked]
+            if new:
+                # A protected field opens: fixed words, never the model retelling
+                # the installer's note to it (seen on Build10.11).
+                return self.texts(TYPE_SECRET[new[0]])
             after = self.current()
             if after.key != step.key:
                 # A new step: its fixed question if it has one, or the model asks it.

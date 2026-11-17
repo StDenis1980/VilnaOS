@@ -714,3 +714,12 @@ msgstr "Пароль збережено."
 
 msgid "The passphrase is saved."
 msgstr "Парольну фразу збережено."
+
+msgid "Type the Wi-Fi password into the protected field below. I do not see it."
+msgstr "Введіть пароль Wi-Fi у захищене поле нижче. Я його не бачу."
+
+msgid "Type the password for your account into the protected field below, twice. I do not see it."
+msgstr "Введіть пароль облікового запису в захищене поле нижче, двічі. Я його не бачу."
+
+msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
+msgstr "Введіть парольну фразу диска в захищене поле нижче, двічі. Я її не бачу."
