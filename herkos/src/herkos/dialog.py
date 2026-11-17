@@ -9,9 +9,10 @@ text nor press its buttons through Gloxi. Enter presses the safest button
 for the level (:func:`default_choice`); closing the window or the timeout
 means "deny".
 
-Known limit of the preview: in a normal desktop session another program of
-the same user could still drive the window through accessibility (AT-SPI).
-The system Herkos in Vilna closes this (permissions.md 5.2).
+Every program of the same user can reach the window through accessibility
+(AT-SPI), which Orca needs. So the allow buttons count only a real press,
+from the keyboard or the pointer (``real_input``, docs/adr/0029); an AT-SPI
+«click» on them does nothing. "Deny" needs no such care.
 """
 
 from __future__ import annotations
@@ -75,6 +76,11 @@ def application_id(env) -> str:
     flatpak = env.get("FLATPAK_ID")
     return f"{flatpak}.HerkosDialog" if flatpak else DIALOG_ID
 
+
+NOT_REAL = (
+    "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses "
+    "from other programs."
+)
 
 LABELS = {
     "once": "Allow once",
@@ -166,7 +172,7 @@ def main() -> int:
     gi.require_version("Adw", "1")
     from gi.repository import Adw, Gtk, Pango
 
-    from herkos import style
+    from herkos import real_input, style
 
     answer = ["deny"]
     from gi.repository import Gio
@@ -200,6 +206,8 @@ def main() -> int:
         win = Adw.Window(application=app, title=_("Herkos: permission"), modal=True)
         win.set_default_size(480, -1)
         win.connect("close-request", lambda *_: finish("deny") or False)
+        gate = real_input.RealInput()
+        real_input.watch_window(win, gate)
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         box.add_css_class("vilna-sheet")
@@ -262,6 +270,16 @@ def main() -> int:
 
         # 6. Buttons: Enter presses the safest one for the level (default_choice).
         allow_buttons: list[Gtk.Button] = []
+        not_real = text(_(NOT_REAL), "dim-label")
+        not_real.set_visible(False)
+
+        def allow(button: Gtk.Button, choice: str) -> None:
+            # A press sent by a program over AT-SPI is not the person's answer.
+            if gate.allows(button):
+                finish(choice)
+            else:
+                not_real.set_visible(True)
+
         default = deny = Gtk.Button(label=_("Deny"))
         if needs_acknowledgement(question):
             ack = Gtk.CheckButton(label=_("I have read exactly what will be done"))
@@ -275,7 +293,8 @@ def main() -> int:
         buttons.append(deny)
         for choice in shown_choices(question):
             b = Gtk.Button(label=_(LABELS[choice]))
-            b.connect("clicked", lambda _b, c=choice: finish(c))
+            b.connect("clicked", lambda b, c=choice: allow(b, c))
+            real_input.guard(b, gate)
             if choice == default_choice(question):
                 default = b
             if level == "R4":
@@ -284,6 +303,7 @@ def main() -> int:
                 b.set_sensitive(False)
             allow_buttons.append(b)
             buttons.append(b)
+        inner.append(not_real)
         inner.append(buttons)
 
         win.set_content(box)

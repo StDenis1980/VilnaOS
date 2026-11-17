@@ -71,6 +71,9 @@ Requires:       libtss2-rc0
 Requires:       libtss2-tcti-device0
 # «Screen reader» turns on Orca, as GNOME Settings does.
 Recommends:     orca
+# The Herkos screen reads the recovery key aloud through speech-dispatcher
+# instead of giving it to accessibility software (docs/adr/0029).
+Recommends:     python3-speechd
 BuildArch:      noarch
 
 %description

@@ -682,3 +682,6 @@ msgstr "теки {path}"
 
 msgid "{what} (read only)"
 msgstr "{what} (лише читання)"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Натисніть кнопку самі, клавіатурою або мишею: Herkos не приймає натискань від інших програм."

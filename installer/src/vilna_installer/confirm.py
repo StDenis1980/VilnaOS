@@ -17,6 +17,10 @@ changes shown, and only by real input. So:
 - When something is erased, the person ticks that they understand; the
   install button wakes up only after ``ARM_SECONDS``, so a double click on
   «Check and confirm» cannot press it.
+- The install button counts only a real press, from the keyboard or the
+  pointer (``real_input``), not one sent over accessibility (AT-SPI); the key
+  is drawn on the screen and not given to accessibility software, and is
+  read aloud only on a real press (``speech``). docs/adr/0029.
 - Only then it sets ``confirmed_by_user`` and answers on its standard output
   with one JSON line: ``{"answer": "confirmed", "plan_sha256": …,
   "recovery_key": …}`` (or ``{"answer": "back"}``). The installer keeps the
@@ -69,6 +73,12 @@ KEY_FIELD = "The last group of the recovery key"
 KEY_WRONG = "That is not the last group. Look at the key again."
 KEY_OK = "Right. The key is saved."
 KEY_SPOKEN = "Recovery key, letter by letter: {key}"
+# The key is drawn, not given to accessibility software (ADR 0029).
+KEY_HIDDEN = (
+    "Recovery key. It is only drawn on the screen, so that other programs cannot read it. "
+    "Press «Read the key aloud» to hear it."
+)
+KEY_ALOUD = "Read the key aloud"
 UNDERSTAND = "I understand that everything on {disk} is erased"
 UNDERSTAND_NO_DISK = "I understand that the partitions marked above are erased"
 BACK = "Back to the plan"
@@ -77,6 +87,10 @@ INSTALL_KEEP = "Install"
 WAIT = "Read the changes first…"
 CHANGED = "The disks changed while this screen was open. Go back and choose the disk again."
 FROM_HERKOS = "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its buttons."
+NOT_REAL = (
+    "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses "
+    "from other programs."
+)
 
 TEXTS = (
     HERKOS,
@@ -94,6 +108,8 @@ TEXTS = (
     KEY_WRONG,
     KEY_OK,
     KEY_SPOKEN,
+    KEY_HIDDEN,
+    KEY_ALOUD,
     UNDERSTAND,
     UNDERSTAND_NO_DISK,
     BACK,
@@ -102,6 +118,7 @@ TEXTS = (
     WAIT,
     CHANGED,
     FROM_HERKOS,
+    NOT_REAL,
 )
 
 
