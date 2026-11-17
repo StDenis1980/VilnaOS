@@ -5,6 +5,8 @@ Tue Nov 17 21:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   then less often up to every 15 minutes (RestartSteps); on first boot
   the network was not up yet and Tinta Office arrived only after 16
   minutes (V2 VM test of Build10.19)
+- Start after NetworkManager.service: nm-online -x gave up at once
+  because NetworkManager was not running yet (0.2 s too early)
 
 -------------------------------------------------------------------
 Tue Nov 17 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

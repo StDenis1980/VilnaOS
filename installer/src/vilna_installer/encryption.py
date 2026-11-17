@@ -362,7 +362,11 @@ def steps(
 def first_boot_tpm2(root: str, *, crypt_part: str, key_file: Path | None) -> list[Step]:
     """TPM2 for the first boot to seal (see the module's text): what the live system leaves."""
     chroot = ("chroot", root)
-    encrypt = ("systemd-creds", "encrypt", "--with-key=tpm2", "--tpm2-pcrs=")
+    # The new system's own systemd-creds, not the live one: a credential from
+    # a newer systemd is "Unknown encryption format" to an older one, and the
+    # first boot kept the installer's key (V2 VM test of Build10.19: live
+    # systemd 262.2, installed 261.4). The chroot has /dev, so the TPM too.
+    encrypt = (*chroot, "systemd-creds", "encrypt", "--with-key=tpm2", "--tpm2-pcrs=")
     current, pin, wanted = ENROLL_CREDENTIALS
     return [
         Step(
@@ -398,13 +402,14 @@ def first_boot_tpm2(root: str, *, crypt_part: str, key_file: Path | None) -> lis
         ),
         Step(
             "the installer's key, for this TPM only",
-            (*encrypt, f"--name={Path(current).name}", str(key_file), f"{root}/{current}"),
+            (*encrypt, f"--name={Path(current).name}", "-", f"/{current}"),
+            stdin="keyfile",
         ),
         # The recovery key re-authorizes the TPM policy later (sdbootutil's
         # recovery PIN), so the person has one secret, not two.
         Step(
             "the recovery key as the TPM's recovery PIN, for this TPM only",
-            (*encrypt, f"--name={Path(pin).name}", "-", f"{root}/{pin}"),
+            (*encrypt, f"--name={Path(pin).name}", "-", f"/{pin}"),
             stdin="recovery_key",
         ),
         Step("seal with the TPM on the first boot", path=wanted, text="1\n"),

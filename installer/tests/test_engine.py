@@ -209,6 +209,14 @@ def test_the_whole_install_with_tpm2(setup):
     assert json.loads(token) == {"type": "enrollment-key", "keyslots": ["0"]}
     _argv, pin, _ = system.calls[system.first("--name=sdbootutil-enroll.recovery-pin")]
     assert pin == KEY.encode()
+    # The credentials are made by the new system's systemd-creds (a newer live
+    # one wrote a format the installed one could not read), paths inside it.
+    creds = [a for a in calls if "systemd-creds" in a]
+    assert len(creds) == 2
+    assert all(a[:3] == ["chroot", str(engine.root), "systemd-creds"] for a in creds)
+    assert all(a[-2] == "-" and a[-1].startswith("/etc/credstore.encrypted/") for a in creds)
+    _argv, current, _ = system.calls[system.first("--name=sdbootutil-enroll.current-pw")]
+    assert current  # the key file, on standard input
     # The model is checked where it was copied to.
     _argv, _input, cwd = system.calls[system.first("sha256sum")]
     assert cwd.startswith(str(engine.root)) and cwd.endswith("/models")

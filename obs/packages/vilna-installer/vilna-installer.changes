@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Nov 17 23:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The TPM2 credentials for the first boot are encrypted by the new
+  system's systemd-creds (in a chroot), not the live one: a newer live
+  systemd (262.2) wrote a format the installed one (261.4) could not
+  read, so the first boot left the installer's key in slot 0 (V2 VM
+  test of Build10.19)
+
+-------------------------------------------------------------------
 Tue Nov 17 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - A theme button (sun / moon) on every installer screen: the first

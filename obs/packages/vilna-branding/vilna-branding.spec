@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.10
+Version:        0.11
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -28,6 +28,7 @@ Source13:       50-vilna-initial-setup-stop.conf
 Source14:       50-vilna-dns.conf
 Source15:       dns-vilna.conf
 Source16:       vilna-dns.tmpfiles
+Source17:       20-vilna-loader-preferred.snapper
 BuildRequires:  systemd-rpm-macros
 # They own /usr/etc/sudoers.d (0750) and /usr/share/polkit-1/rules.d (0555).
 # The files below go there, but the directories stay theirs: a %%dir of our
@@ -56,6 +57,8 @@ Requires:       sound-theme-freedesktop
 Requires:       sudo
 Requires:       system-group-wheel
 Requires:       transactional-update
+# chattr, for the snapper plugin that fixes rollbacks on systemd-boot
+Requires:       /usr/bin/chattr
 
 %description -n gnome-branding-Vilna
 GNOME defaults for Vilna: light style, the Сонце wallpaper, the Vilna
@@ -121,6 +124,7 @@ install -D -m 0644 %{SOURCE12} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/
 install -D -m 0644 %{SOURCE14} %{buildroot}%{_prefix}/lib/systemd/resolved.conf.d/50-vilna-dns.conf
 install -D -m 0644 %{SOURCE15} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/dns-vilna.conf
 install -D -m 0644 %{SOURCE16} %{buildroot}%{_tmpfilesdir}/vilna-dns.conf
+install -D -m 0755 %{SOURCE17} %{buildroot}%{_prefix}/lib/snapper/plugins/20-vilna-loader-preferred.snapper
 
 %files -n gnome-branding-Vilna
 %dir %{_datadir}/glib-2.0
@@ -130,6 +134,9 @@ install -D -m 0644 %{SOURCE16} %{buildroot}%{_tmpfilesdir}/vilna-dns.conf
 %{_datadir}/polkit-1/rules.d/49-vilna.rules
 %dir %{_prefix}/etc/transactional-update.conf.d
 %{_prefix}/etc/transactional-update.conf.d/50-vilna-desktop.conf
+%dir %{_prefix}/lib/snapper
+%dir %{_prefix}/lib/snapper/plugins
+%{_prefix}/lib/snapper/plugins/20-vilna-loader-preferred.snapper
 %dir %{_prefix}/lib/systemd/logind.conf.d
 %{_prefix}/lib/systemd/logind.conf.d/zzz-vilna.conf
 %dir %{_datadir}/gnome-initial-setup

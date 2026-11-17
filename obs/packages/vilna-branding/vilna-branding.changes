@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Nov 17 23:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.11: snapper plugin 20-vilna-loader-preferred: after a rollback,
+  remove a stale LoaderEntryPreferred EFI variable so the chosen
+  snapshot starts. An older sdbootutil in the target snapshot writes
+  only LoaderEntryDefault, and systemd-boot 262 prefers Preferred, so a
+  rollback did nothing after a restart (V2 VM test of Build10.19).
+
+-------------------------------------------------------------------
 Tue Nov 17 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.10: the screen goes dark after 15 minutes without input instead of

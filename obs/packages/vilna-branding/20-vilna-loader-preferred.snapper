@@ -1,0 +1,46 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Snapper plugin: after a rollback, the boot entry the person chose must win.
+#
+# systemd-boot 262 starts LoaderEntryPreferred before LoaderEntryDefault.
+# sdbootutil from November 2026 writes Preferred (and drops Default), but a
+# rollback runs the sdbootutil of the snapshot it returns to (snapper plugin
+# 10-sdbootutil), and an older one writes only Default. Preferred then still
+# names the snapshot we left, and the rollback does nothing after a restart:
+# VM test of milestone V2, Build10.19, image/docs/update-rollback.md (S4, S5).
+#
+# So: when both variables are set and differ, Preferred is stale; remove it
+# and Default decides. When only one is set, it was written by this rollback
+# and is left alone. Runs after 10-sdbootutil (plugins run in name order).
+# health-checker is not affected: it uses systemd-boot's boot counting.
+
+set -u
+
+case ${1:-} in
+    rollback-post) ;;
+    *) exit 0 ;;
+esac
+
+VARS=${VILNA_EFIVARS:-/sys/firmware/efi/efivars}
+GUID=4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
+PREFERRED=$VARS/LoaderEntryPreferred-$GUID
+DEFAULT=$VARS/LoaderEntryDefault-$GUID
+
+[ -e "$PREFERRED" ] && [ -e "$DEFAULT" ] || exit 0
+
+# The first 4 bytes of an efivarfs file are the attributes; the rest is
+# the entry id (UTF-16LE).
+if cmp -s <(tail -c +5 "$PREFERRED") <(tail -c +5 "$DEFAULT"); then
+    exit 0
+fi
+
+# efivarfs marks variables immutable; lift it only for this one.
+chattr -i "$PREFERRED" 2>/dev/null
+if rm -f "$PREFERRED"; then
+    echo "vilna: removed a stale LoaderEntryPreferred, LoaderEntryDefault starts next"
+else
+    echo "vilna: could not remove LoaderEntryPreferred; the rollback may not start" >&2
+fi
+# Never fail the rollback itself.
+exit 0
