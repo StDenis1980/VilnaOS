@@ -950,6 +950,9 @@ class Conversation:
             parts.append(note)
         if not parts:
             return None
+        # The notes are English and come right before the answer; a small
+        # model then drifted into English (S7 on KLX, 2026-11-17).
+        parts.append(f"Reply in {self.reply_language}.")
         text = f"{NOTES_START}\n" + "\n\n".join(parts) + f"\n{NOTES_END}"
         return text, (context if context != known else "")
 

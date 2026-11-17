@@ -248,6 +248,18 @@ def test_each_request_starts_as_the_last_one_so_the_cache_holds(plan_path):
         tools.close()
 
 
+def test_the_notes_end_with_the_language_to_answer_in(plan_path):
+    """S7 on KLX: Gloxi answered in English after the English notes."""
+    c, model, tools = make(plan_path, "empty", "Якими мовами ви пишете?")
+    try:
+        c.opening()
+        c.send("привіт")
+        notes = model.seen[-1][0][-1]["content"].split(conv.NOTES_END)[0]
+        assert notes.rstrip().endswith("Reply in Ukrainian.")
+    finally:
+        tools.close()
+
+
 def test_a_long_conversation_is_cut_back_seldom(plan_path):
     c, model, tools = make(plan_path, "empty", *["Яку мову?"] * 30)
     try:
