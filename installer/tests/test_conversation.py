@@ -41,7 +41,8 @@ class Script:
 
     @property
     def last_system(self):
-        return self.seen[-1][0][0]["content"]
+        """Every system message of the last request: the stable one and the plan's."""
+        return "\n\n".join(m["content"] for m in self.seen[-1][0] if m["role"] == "system")
 
 
 @pytest.fixture
@@ -425,7 +426,7 @@ def test_a_change_said_but_not_saved_gets_one_more_round(plan_path):
         c.send("українська")
         c.goto("languages")
         reply = c.send("додай польську")
-        assert conv.NOT_SAVED in model.seen[2][0][0]["content"]
+        assert conv.NOT_SAVED in model.seen[2][0][-2]["content"]  # the changing part
         assert "pl_PL.UTF-8" in plans.load(plan_path)["locale"]["languages"]
         assert reply.step.key != "languages" or "pl" in str(reply.plan)
     finally:
@@ -534,7 +535,7 @@ def test_after_the_wifi_password_gloxi_knows_it_is_entered(plan_path):
         messages = model.seen[-1][0]
         # The model's last word is no longer its own request for the password,
         # and the prompt names what the person already typed.
-        assert messages[-1] == {"role": "assistant", "content": texts(conv.CONNECTED)}
+        assert messages[-2] == {"role": "assistant", "content": texts(conv.CONNECTED)}
         assert "never ask for it again: the Wi-Fi password" in model.last_system
         c.send("а пароль?")
         assert "the Wi-Fi password" in model.last_system  # on every later turn too
@@ -572,7 +573,7 @@ def test_ukrainian_typed_in_the_english_layout_is_read_for_the_model(plan_path):
     c, model, tools = make(plan_path, "empty", "Продовжуємо.")
     try:
         c.send("ghjljd;e'vj")
-        assert "«продовжуємо»" in model.seen[-1][0][-1]["content"]
+        assert "«продовжуємо»" in model.seen[-1][0][-2]["content"]  # before the plan
     finally:
         tools.close()
 
@@ -602,3 +603,41 @@ def test_short_answers_in_the_wrong_layout_are_read():
     assert conv.wrong_layout("ycnegybq rhjr").endswith("крок")
     for fine in ("ok", "yes", "next", "go forward"):
         assert conv.wrong_layout(fine) is None, fine
+
+
+def test_what_changes_every_turn_comes_last_for_the_prompt_cache(plan_path):
+    """Build10.11: every turn read ~1200 tokens anew (40-80 s); llama-server reuses a
+    prompt's unchanged start, so the plan and the notes go after the conversation."""
+    c, model, tools = make(plan_path, "empty", "Добре.", "Гаразд.")
+    try:
+        c.send("привіт")
+        c.send("ще раз")
+        first, second = (m for m, _ in model.seen)
+        assert first[0]["role"] == "system" and "Plan now" not in first[0]["content"]
+        assert second[-1]["role"] == "system" and second[-1]["content"].startswith("Plan now")
+        # The second request starts with the whole first one but its last message.
+        assert second[: len(first) - 1] == first[:-1]
+    finally:
+        tools.close()
+
+
+def test_the_history_window_moves_in_jumps():
+    c = Conversation.__new__(Conversation)
+    c.history = [{"role": "user", "content": str(i)} for i in range(13)]
+    window = c._window()
+    assert window[0]["content"] == "4" and len(window) == 9
+    c.history.append({"role": "assistant", "content": "13"})
+    assert c._window()[0]["content"] == "4"  # the same start: the cache still holds
+
+
+def test_the_conversation_is_kept_for_a_problem_report(plan_path):
+    c, model, tools = make(plan_path, "empty", "Добре.")
+    try:
+        c.opening()
+        c.send("українська")
+        lines = [json.loads(x) for x in c.log_path.read_text().splitlines()]
+        assert [x["who"] for x in lines] == ["gloxi", "person", "gloxi"]
+        assert lines[1]["text"] == "українська" and lines[1]["step"] == "languages"
+        assert c.log_path.stat().st_mode & 0o777 == 0o600
+    finally:
+        tools.close()

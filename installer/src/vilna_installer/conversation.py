@@ -38,6 +38,7 @@ import os
 import subprocess
 import sys
 import threading
+import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable
@@ -50,14 +51,17 @@ from vilna_installer import start
 # The local model as vilna-llm.service serves it (ADR 0025).
 MODEL_URL = os.environ.get("VILNA_INSTALLER_MODEL_URL", "http://127.0.0.1:8080/v1")
 MODEL_KEY_FILE = Path(os.environ.get("VILNA_INSTALLER_MODEL_KEY_FILE", "/var/lib/vilna-llm/key"))
-MODEL_TIMEOUT = 120.0
+# A 4B model on four CPU threads under memory pressure took up to 2 minutes per
+# answer on a laptop with 8 GB (Build10.11); 120 s cut two turns off.
+MODEL_TIMEOUT = float(os.environ.get("VILNA_INSTALLER_MODEL_TIMEOUT", "300"))
 # In the live image vilna-llm.service starts only after login, reading about
 # 2.5 GB of weights from the USB stick, and makes its key on start: the
 # conversation waits for it this long before offering to go on without it.
 MODEL_WAIT = float(os.environ.get("VILNA_INSTALLER_MODEL_WAIT", "300"))
 MODEL_POLL = 3.0
 MODEL_UNIT = "vilna-llm.service"
-HISTORY = 8  # messages of the conversation that go to the model
+HISTORY = 8  # messages of the conversation that go to the model, at least
+HISTORY_STEP = 4  # the window moves by this many, so its start stays put between moves
 MAX_ROUNDS = 4  # model ↔ function rounds in one turn
 MAX_DATA_CHARS = 2500  # of fetched data in the prompt (small context)
 
@@ -647,7 +651,13 @@ class LocalModel:
         return True
 
     def chat(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> ModelReply:
-        body: dict[str, Any] = {"model": self.model, "messages": messages, "temperature": 0.3}
+        # cache_prompt: llama-server reuses what the last request started with.
+        body: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": 0.3,
+            "cache_prompt": True,
+        }
         if tools:
             body["tools"] = tools
         out = self._request("/chat/completions", body)
@@ -679,7 +689,6 @@ def wait_ready(
     sleep: Callable[[float], None] | None = None,
 ) -> bool:
     """Wait until the model answers; False after ``timeout``, a failed service or ``stopped``."""
-    import time
 
     pause = sleep or time.sleep
     waited = 0.0
@@ -727,6 +736,7 @@ class Conversation:
         self.tools = tools
         self.model = model
         self.progress = progress or plan_path.with_name("progress.json")
+        self.log_path = plan_path.with_name("conversation.jsonl")
         self.history: list[dict[str, Any]] = []
         self.state = _State()
         self._fetched: dict[str, tuple[bool, Any]] = {}  # this turn's reads
@@ -859,6 +869,7 @@ class Conversation:
                 f"the Ukrainian layout it reads «{mistyped}».)"
             )
         self.history.append({"role": "user", "content": content})
+        self._log("person", text, self.current().key)
         return self._answer()
 
     def resume(self, entered: str | None = None) -> Reply:
@@ -970,9 +981,14 @@ class Conversation:
         asked = set(self.needs()) & set(TYPE_SECRET)
         for _ in range(MAX_ROUNDS):
             step = self.current()
+            # What stays the same within a step comes first and what changes every
+            # turn (the plan, notes) last, so llama-server's prompt cache reuses the
+            # rules, the functions and the conversation instead of reading ~1200
+            # tokens anew each turn (40-80 s on a laptop CPU).
             reply = self.model.chat(
                 [{"role": "system", "content": self.system_prompt(step)}]
-                + self.history[-HISTORY:]
+                + self._window()
+                + [{"role": "system", "content": self.state_prompt()}]
                 + exchange,
                 self.functions(step),
             )
@@ -1066,11 +1082,29 @@ class Conversation:
         text = json.dumps(result, ensure_ascii=False)
         return _external(text) if name in EXTERNAL else text
 
+    def _window(self) -> list[dict[str, Any]]:
+        """The last messages; the start moves in jumps so the prompt cache holds."""
+        start = max(0, len(self.history) - HISTORY)
+        start -= start % HISTORY_STEP
+        return self.history[start:]
+
+    def state_prompt(self) -> str:
+        """What changes every turn: the plan, what was typed, the installer's note."""
+        parts = ["Plan now: " + json.dumps(_compact(self.plan), ensure_ascii=False)]
+        entered = self._entered()
+        if entered:
+            parts.append(
+                "Already typed by the person into protected fields, so never ask for it "
+                "again: " + "; ".join(ENTERED_NAMES[k] for k in entered) + "."
+            )
+        if self._note:
+            parts.append(self._note)
+        return "\n\n".join(parts)
+
     def system_prompt(self, step: Step) -> str:
         parts = [
             RULES.format(language=self.reply_language),
             f"Step {step.number} of 13: {step.title}. {step.goal}",
-            "Plan now: " + json.dumps(_compact(self.plan), ensure_ascii=False),
         ]
         for name in step.fetch:
             if name not in self._fetched:
@@ -1088,14 +1122,6 @@ class Conversation:
             ok, hardware = self._fetched.get("hardware_describe", (False, {}))
             if ok and isinstance(hardware, dict) and hardware.get("tpm") != 2:
                 parts.append(NO_TPM)
-        entered = self._entered()
-        if entered:
-            parts.append(
-                "Already typed by the person into protected fields, so never ask for it "
-                "again: " + "; ".join(ENTERED_NAMES[k] for k in entered) + "."
-            )
-        if self._note:
-            parts.append(self._note)
         if step.key == "time":
             parts.append("Suggested: " + json.dumps(self._suggested_time()))
         if step.key == "install":
@@ -1116,7 +1142,23 @@ class Conversation:
             return "not started yet"
 
     def _reply(self, text: str, *, failed: bool = False) -> Reply:
-        return Reply(text, self.current(), self.plan, self.needs(), failed)
+        reply = Reply(text, self.current(), self.plan, self.needs(), failed)
+        self._log("gloxi", text, reply.step.key)
+        return reply
+
+    def _log(self, who: str, text: str, step: str) -> None:
+        """The conversation for a problem report, next to the plan; secrets never are in
+        it (they go into protected fields), and it stays on this computer."""
+        line = json.dumps(
+            {"time": round(time.time(), 1), "step": step, "who": who, "text": text},
+            ensure_ascii=False,
+        )
+        try:
+            fd = os.open(self.log_path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+            with os.fdopen(fd, "a", encoding="utf-8") as f:
+                f.write(line + "\n")
+        except OSError:
+            pass
 
 
 # The same keys in the English (us) and the Ukrainian (ua) layouts.
