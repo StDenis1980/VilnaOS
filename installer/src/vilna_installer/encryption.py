@@ -249,7 +249,11 @@ def repart_command(disk: str, definitions: Path, key_file: Path) -> Step:
 
 # Dracut builds a host-only initrd and sometimes takes the live system's
 # kernel command line for it; tik switches that off while it installs.
+# Host-only also leaves out virtio_input, so in a VM with a virtio keyboard
+# nobody could type the passphrase or the recovery key at boot (VM test,
+# 17.11.2026). Later initrds are built on the installed system itself.
 DRACUT_OVERRIDE = "etc/dracut.conf.d/99-vilna-installer.conf"
+DRACUT_SETTINGS = 'hostonly_cmdline="no"\nadd_drivers+=" virtio_input "\n'
 
 
 def steps(
@@ -306,7 +310,7 @@ def steps(
         Step(
             "an initrd without the live system's command line",
             path=DRACUT_OVERRIDE,
-            text='hostonly_cmdline="no"\n',
+            text=DRACUT_SETTINGS,
         ),
     ]
     if encrypted:
