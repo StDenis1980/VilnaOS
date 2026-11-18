@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.12
+Version:        0.13
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -29,6 +29,9 @@ Source14:       50-vilna-dns.conf
 Source15:       dns-vilna.conf
 Source16:       vilna-dns.tmpfiles
 Source17:       20-vilna-loader-preferred.snapper
+Source18:       vilna-health-last-working
+Source19:       50-vilna-last-working.conf
+Source20:       50-vilna-after-bless-boot.conf
 BuildRequires:  systemd-rpm-macros
 # They own /usr/etc/sudoers.d (0750) and /usr/share/polkit-1/rules.d (0555).
 # The files below go there, but the directories stay theirs: a %%dir of our
@@ -59,6 +62,7 @@ Requires:       system-group-wheel
 Requires:       transactional-update
 # chattr, for the snapper plugin that fixes rollbacks on systemd-boot
 Requires:       /usr/bin/chattr
+Requires:       jq
 
 %description -n gnome-branding-Vilna
 GNOME defaults for Vilna: light style, the Сонце wallpaper, the Vilna
@@ -125,6 +129,9 @@ install -D -m 0644 %{SOURCE14} %{buildroot}%{_prefix}/lib/systemd/resolved.conf.
 install -D -m 0644 %{SOURCE15} %{buildroot}%{_prefix}/lib/NetworkManager/conf.d/dns-vilna.conf
 install -D -m 0644 %{SOURCE16} %{buildroot}%{_tmpfilesdir}/vilna-dns.conf
 install -D -m 0755 %{SOURCE17} %{buildroot}%{_prefix}/lib/snapper/plugins/20-vilna-loader-preferred.snapper
+install -D -m 0755 %{SOURCE18} %{buildroot}%{_libexecdir}/vilna/health-last-working
+install -D -m 0644 %{SOURCE19} %{buildroot}%{_unitdir}/health-checker.service.d/50-vilna-last-working.conf
+install -D -m 0644 %{SOURCE20} %{buildroot}%{_unitdir}/sdbootutil-update-predictions.service.d/50-vilna-after-bless-boot.conf
 
 %files -n gnome-branding-Vilna
 %dir %{_datadir}/glib-2.0
@@ -137,6 +144,12 @@ install -D -m 0755 %{SOURCE17} %{buildroot}%{_prefix}/lib/snapper/plugins/20-vil
 %dir %{_prefix}/lib/snapper
 %dir %{_prefix}/lib/snapper/plugins
 %{_prefix}/lib/snapper/plugins/20-vilna-loader-preferred.snapper
+%dir %{_libexecdir}/vilna
+%{_libexecdir}/vilna/health-last-working
+%dir %{_unitdir}/health-checker.service.d
+%{_unitdir}/health-checker.service.d/50-vilna-last-working.conf
+%dir %{_unitdir}/sdbootutil-update-predictions.service.d
+%{_unitdir}/sdbootutil-update-predictions.service.d/50-vilna-after-bless-boot.conf
 %dir %{_prefix}/lib/systemd/logind.conf.d
 %{_prefix}/lib/systemd/logind.conf.d/zzz-vilna.conf
 %dir %{_datadir}/gnome-initial-setup

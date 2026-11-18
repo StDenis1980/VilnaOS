@@ -239,6 +239,7 @@ def test_the_whole_install_with_tpm2(setup):
     assert (root / "etc/credstore/sdbootutil-enroll.tpm2").read_text() == "1\n"
     dropin = (root / encryption.ENROLL_DROPIN).read_text()
     assert "ConditionPathExists=/etc/credstore.encrypted/sdbootutil-enroll.current-pw" in dropin
+    assert "RequiresMountsFor=/boot/efi\n" in dropin
     assert "ExecStartPost=/usr/bin/rm -f /etc/credstore.encrypted/" in dropin
     assert (root / "etc/sysconfig/fde-tools").read_text() == "FDE_SEAL_PCR_LIST=4,5,7,9\n"
     assert not (root / encryption.DRACUT_OVERRIDE).exists()

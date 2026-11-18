@@ -447,6 +447,10 @@ def first_boot_tpm2(
                 "# Written by the Vilna installer (vilna_installer.encryption).\n"
                 "[Unit]\n"
                 f"ConditionPathExists=/{current}\n"
+                # sdbootutil reads and writes the ESP; without this it ran
+                # 0.2 s before /boot/efi was mounted, failed and kept the
+                # enrollment key (VM test of milestone V2, Build12.2).
+                "RequiresMountsFor=/boot/efi\n"
                 "[Service]\n"
                 "ExecStartPost=/usr/bin/rm -f "
                 + " ".join(f"/{c}" for c in (*ENROLL_CREDENTIALS, ENROLL_PIN_CREDENTIAL))

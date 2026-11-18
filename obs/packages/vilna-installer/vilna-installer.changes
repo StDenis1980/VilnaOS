@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 18 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- sdbootutil-enroll waits for /boot/efi (RequiresMountsFor= in the
+  installer's drop-in): it once started 0.2 s before the ESP was
+  mounted, failed and kept the enrollment key in slot 0 (V2 VM test
+  of Build12.2)
+
+-------------------------------------------------------------------
 Tue Nov 17 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The TPM2 credentials for the first boot are encrypted by the new
