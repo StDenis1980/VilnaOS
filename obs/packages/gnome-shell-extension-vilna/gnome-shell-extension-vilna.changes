@@ -10,6 +10,9 @@ Wed Nov 18 14:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   its own gjs process; only the zone codes are kept). Every 10 minutes,
   not while locked, and on a metered connection only after the person
   agrees. New keys weather-alerts, alerts-metered and alert-zones.
+  Words not in the person's language are translated by Gloxi on this
+  computer (gloxid text.translate) and shown above the unchanged
+  original; words already in that language are shown as they are.
 
 -------------------------------------------------------------------
 Wed Nov 18 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

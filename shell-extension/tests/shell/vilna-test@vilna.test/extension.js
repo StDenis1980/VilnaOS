@@ -491,6 +491,7 @@ async function widgets() {
         ['Orange warning: Wind · until T', 'Orange test warning. Test zone', 'Test Service · issued T',
             'Yellow warning: Fog · until T', 'Yellow Fog Warning issued for Spain - Área de prueba',
             'EUMETNET – MeteoAlarm · issued T']);
+    check('warnings: words already in the person\u2019s language, Gloxi not asked', gloxiRequests.length, 0);
     // The first refresh came before passwordFields() turned the extension
     // off and on, which took its notification away; the warning was
     // remembered, so it did not come again.
@@ -513,6 +514,26 @@ async function widgets() {
     check('warnings: one notification, for the orange one only',
         await waitFor(() => warningNotes().length > 0, 10000) ? warningNotes() : [warningNotes(), notified()],
         [['Orange warning: Wind', 2]]);
+    // A person reading Ukrainian: the service gave no Ukrainian words, so
+    // Gloxi translates them and the translation stands above the original.
+    const alerts = theWidgets()?.weatherAlerts;
+    alerts._languages = ['uk_UA.UTF-8', 'uk'];
+    alerts._caps.clear();
+    alerts.update();
+    check('warnings: Gloxi\u2019s translation above the unchanged original',
+        await waitFor(() => alertTexts().length === 8, 10000)
+            ? alertTexts().map(s => s.replace(/(\b[A-Z][a-z]{2} )?\d{1,2}:\d{2}/g, 'T'))
+            : [alertTexts(), alerts.status],
+        ['Orange warning: Wind · until T', '[uk] Orange test warning. Test zone', 'Orange test warning. Test zone',
+            'Test Service · issued T · translated by Gloxi',
+            'Yellow warning: Fog · until T', '[uk] Yellow Fog Warning issued for Spain - Área de prueba',
+            'Yellow Fog Warning issued for Spain - Área de prueba',
+            'EUMETNET – MeteoAlarm · issued T · translated by Gloxi']);
+    check('warnings: Gloxi was asked for Ukrainian, once per text',
+        gloxiRequests.map(r => [r.method, r.params.language]), [['text.translate', 'uk'], ['text.translate', 'uk']]);
+    alerts.update();
+    await sleep(1000);
+    check('warnings: a translation is kept, not asked for again', gloxiRequests.length, 2);
     settings.set_boolean('weather-alerts', false);
     check('warnings: off by the setting', await waitFor(() => !widget('vilnaWeatherAlerts')?.visible, 3000), true);
     settings.set_boolean('weather-alerts', true);
@@ -602,12 +623,45 @@ async function run() {
     await skyMotion();
 }
 
+// A stand-in for gloxid's text.translate (gloxi/docs/service-protocol.md)
+// on GLOXI_SERVICE_SOCKET: it answers "[uk] " + the text and keeps the
+// requests, so the checks see what the weather card asked.
+const gloxiRequests = [];
+function fakeGloxid() {
+    const path = GLib.getenv('GLOXI_SERVICE_SOCKET');
+    if (!path)
+        return;
+    const service = new Gio.SocketService();
+    service.add_address(Gio.UnixSocketAddress.new(path), Gio.SocketType.STREAM, Gio.SocketProtocol.DEFAULT, null);
+    service.connect('incoming', (_s, conn) => {
+        const input = new Gio.DataInputStream({base_stream: conn.get_input_stream()});
+        input.read_line_async(GLib.PRIORITY_DEFAULT, null, (_i, result) => {
+            try {
+                const [line] = input.read_line_finish_utf8(result);
+                const request = JSON.parse(line);
+                gloxiRequests.push(request);
+                // An event first, as a busy gloxid may send: it is not the answer.
+                const lines = [{event: 'busy', busy: false},
+                    {id: request.id, result: {text: `[${request.params.language}] ${request.params.text}`}}];
+                conn.get_output_stream().write_all(new TextEncoder().encode(
+                    lines.map(l => `${JSON.stringify(l)}\n`).join('')), null);
+            } catch (e) {
+                console.warn(`vilna fake gloxid: ${e.message}`);
+            }
+        });
+        return true;
+    });
+    service.start();
+    globalThis.__vilnaFakeGloxid = service;
+}
+
 export default class VilnaTest extends Extension {
     enable() {
         // Enabled again whenever the Vilna extension is; run only once.
         if (globalThis.__vilnaTestRan)
             return;
         globalThis.__vilnaTestRan = true;
+        fakeGloxid();
         run().catch(e => check('no exception', `${e}\n${e.stack}`, null)).finally(flush);
     }
 

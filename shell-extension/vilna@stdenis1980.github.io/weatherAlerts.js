@@ -11,6 +11,13 @@
 // On a metered connection nothing is downloaded until the person agrees
 // (the band asks; alerts-metered in the preferences). Nothing is fetched
 // while the screen is locked.
+//
+// Words in another language: when the service gave no text in the
+// person's language, Gloxi translates it on this computer (gloxid's
+// text.translate, local model only) and the translation stands above the
+// unchanged original (Denys, 18.11.2026; MeteoAlarm terms). Words already
+// in the person's language are shown as they are, without Gloxi. Without
+// gloxid (outside Vilna) or its model, only the original is shown.
 
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -23,15 +30,22 @@ import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 
 import {
     REFRESH_MINUTES, SITE_URL, alertLabel, alertText, alertsFor, feedUrl, parseCap, parseFeed, toNotify,
+    translationTarget,
 } from './lib/alerts.js';
 
 Gio._promisify(Gio.Subprocess.prototype, 'communicate_utf8_async');
+Gio._promisify(Gio.SocketClient.prototype, 'connect_async');
+Gio._promisify(Gio.OutputStream.prototype, 'write_bytes_async');
+Gio._promisify(Gio.DataInputStream.prototype, 'read_line_async', 'read_line_finish_utf8');
 
 // Shown at most; the worst first.
 const MAX_SHOWN = 2;
 // Remembered notified warnings, so that each comes once across restarts.
 const MAX_NOTIFIED = 300;
 const RETRY_MINUTES = 5;
+// A translation by the local model takes seconds; a slow computer busy with
+// a conversation may take longer. Past this the original stands alone.
+const TRANSLATE_SECONDS = 120;
 // Tests only: files read instead of the network (headless Shell test).
 const TEST_FEED = GLib.getenv('VILNA_TEST_ALERTS_FILE');
 const TEST_CAP = GLib.getenv('VILNA_TEST_CAP_FILE');
@@ -47,6 +61,20 @@ function readText(path) {
 }
 
 const near = (a, b) => Math.abs(a - b) < 1e-4;
+
+// Where gloxid listens (gloxi/docs/service-protocol.md).
+function gloxiSocket() {
+    return GLib.getenv('GLOXI_SERVICE_SOCKET') ||
+        GLib.build_filenamev(['/run/gloxi', String(new Gio.Credentials().get_unix_user()), 'gloxi.sock']);
+}
+
+// A warning's words and their language: the service's own, or the feed's
+// English title when its text could not be fetched.
+function wordsOf(alert) {
+    if (alert.original?.headline)
+        return {text: alert.original.headline, language: alert.original.language};
+    return {text: alert.event || alert.title, language: 'en'};
+}
 
 // Long warnings wrap instead of being cut: every word of the service
 // stays visible (MeteoAlarm terms).
@@ -69,6 +97,7 @@ export class WeatherAlerts {
         this._languages = GLib.get_language_names();
         this._timer = 0;
         this._caps = new Map();
+        this._translations = new Map();
         this._zonesRunning = null;
         this._session = new Soup.Session({user_agent: 'Vilna desktop widgets', timeout: 30});
         this._cancellable = new Gio.Cancellable();
@@ -190,7 +219,17 @@ export class WeatherAlerts {
                 alert.original = await this._original(alert);
             if (this._cancellable.is_cancelled())
                 return;
+            // The original at once; the translation, if any, when Gloxi has it.
             this._show(alerts, false);
+            let translated = false;
+            for (const alert of alerts) {
+                alert.translation = await this._translation(alert);
+                translated ||= Boolean(alert.translation);
+            }
+            if (this._cancellable.is_cancelled())
+                return;
+            if (translated)
+                this._show(alerts, false);
             this._notify(alerts);
             this._status = `${alerts.length} of ${warnings.length}`;
         } catch (e) {
@@ -228,6 +267,71 @@ export class WeatherAlerts {
             this._caps.clear();
         this._caps.set(alert.id, original);
         return original;
+    }
+
+    // The warning's words in the person's language by Gloxi, or null: when
+    // they already are in it (Gloxi is not asked), or Gloxi cannot.
+    async _translation(alert) {
+        const words = wordsOf(alert);
+        const target = translationTarget({headline: words.text, language: words.language}, this._languages);
+        if (!target)
+            return null;
+        const key = `${target}\n${words.text}`;
+        if (this._translations.has(key))
+            return this._translations.get(key);
+        let text = null;
+        try {
+            text = await this._askGloxi(words.text, target);
+        } catch (e) {
+            if (this._cancellable.is_cancelled())
+                throw e;
+            // Not cached: gloxid or its model may be back on the next look.
+            console.log(`Vilna widgets: no translation of a warning: ${e.message}`);
+            return null;
+        }
+        if (this._translations.size > 100)
+            this._translations.clear();
+        this._translations.set(key, text);
+        return text;
+    }
+
+    // One text.translate request to gloxid. This connection is not a
+    // window, so the Gloxi window keeps its events.
+    async _askGloxi(text, language) {
+        const cancellable = new Gio.Cancellable();
+        const parent = this._cancellable.connect(() => cancellable.cancel());
+        const timer = GLib.timeout_add_seconds(GLib.PRIORITY_LOW, TRANSLATE_SECONDS, () => {
+            cancellable.cancel();
+            return GLib.SOURCE_REMOVE;
+        });
+        let conn = null;
+        try {
+            const client = new Gio.SocketClient();
+            conn = await client.connect_async(Gio.UnixSocketAddress.new(gloxiSocket()), cancellable);
+            const request = JSON.stringify({id: 1, method: 'text.translate', params: {text, language}});
+            await conn.get_output_stream().write_bytes_async(new GLib.Bytes(new TextEncoder().encode(`${request}\n`)),
+                GLib.PRIORITY_LOW, cancellable);
+            const input = new Gio.DataInputStream({base_stream: conn.get_input_stream()});
+            for (let i = 0; i < 1000; i++) {
+                const [line] = await input.read_line_async(GLib.PRIORITY_LOW, cancellable);
+                if (line === null)
+                    throw new Error('gloxid closed the connection');
+                const answer = JSON.parse(line);
+                if (answer?.id !== 1)
+                    continue; // an event, not our answer
+                if (answer.error)
+                    throw new Error(`${answer.error.code}: ${answer.error.message}`);
+                const out = answer.result?.text;
+                if (typeof out !== 'string' || !out.trim())
+                    throw new Error('an empty translation');
+                return out.trim().slice(0, 2000);
+            }
+            throw new Error('no answer from gloxid');
+        } finally {
+            GLib.source_remove(timer);
+            this._cancellable.disconnect(parent);
+            conn?.close(null);
+        }
     }
 
     // The zones of the place, found once per place on this computer by
@@ -279,13 +383,20 @@ export class WeatherAlerts {
             const when = alert.onset && alert.onset > now ? t.from.replace('%s', this._clock(alert.onset))
                 : t.until.replace('%s', this._clock(alert.expires));
             box.add_child(wrap(new St.Label({text: `${alertLabel(alert, t)} · ${when}`, style_class: 'vilna-alert-title'})));
-            // The service's own words, unchanged (MeteoAlarm terms).
-            const original = alert.original?.headline || alert.event || alert.title;
-            const words = new St.Label({text: original, style_class: 'vilna-alert-original'});
-            box.add_child(wrap(words));
+            // Gloxi's translation first, then the service's own words,
+            // unchanged (MeteoAlarm terms).
+            if (alert.translation) {
+                box.add_child(wrap(new St.Label({text: alert.translation,
+                    style_class: 'vilna-alert-translation'})));
+            }
+            box.add_child(wrap(new St.Label({text: wordsOf(alert).text,
+                style_class: alert.translation ? 'vilna-alert-original vilna-alert-original-under'
+                    : 'vilna-alert-original'})));
             const sender = alert.original?.sender || 'EUMETNET – MeteoAlarm';
-            box.add_child(wrap(new St.Label({text: t.issued.replace('%s', sender).replace('%s', this._clock(alert.sent ?? now)),
-                style_class: 'vilna-alert-source'})));
+            let source = t.issued.replace('%s', sender).replace('%s', this._clock(alert.sent ?? now));
+            if (alert.translation)
+                source += ` · ${t.translated}`;
+            box.add_child(wrap(new St.Label({text: source, style_class: 'vilna-alert-source'})));
             const band = new St.Button({child: box, x_expand: true,
                 style_class: `vilna-alert vilna-alert-${alert.colour}`});
             band.connect('clicked', () => this._open(alert.zoneUrl ?? SITE_URL));
@@ -318,13 +429,16 @@ export class WeatherAlerts {
         if (!fresh.length)
             return;
         for (const alert of fresh) {
-            const original = alert.original?.headline || alert.event || alert.title;
+            const original = wordsOf(alert).text;
             const sender = alert.original?.sender || 'EUMETNET – MeteoAlarm';
+            const words = alert.translation
+                ? `${alert.translation}\n${original}\n${sender} · ${this._text.translated}`
+                : `${original}\n${sender}`;
             const source = this._source();
             const notification = new MessageTray.Notification({
                 source,
                 title: alertLabel(alert, this._text),
-                body: `${original}\n${sender}`,
+                body: words,
                 urgency: alert.level >= 4 ? MessageTray.Urgency.CRITICAL : MessageTray.Urgency.HIGH,
             });
             notification.connect('activated', () => this._open(alert.zoneUrl ?? SITE_URL));

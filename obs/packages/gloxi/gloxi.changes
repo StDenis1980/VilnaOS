@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Nov 18 14:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- gloxid: text.translate puts a short text into one of the ten Vilna
+  languages with the model on this computer only (never the cloud, no
+  history, not the conversation's slot). The weather warnings of the
+  Vilna Shell extension use it. A connection becomes the window with
+  its first other request, so translating does not take the Gloxi
+  window's events away.
+
+-------------------------------------------------------------------
 Wed Nov 18 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - gloxi-gtk --ask TEXT: bring Gloxi up and send the question, as if

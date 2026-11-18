@@ -328,8 +328,15 @@
   font-size: 9.5pt;
 }
 
-.vilna-alert-original {
+.vilna-alert-original,
+.vilna-alert-translation {
   font-size: 9pt;
+}
+
+/* Under Gloxi's translation the original stays whole, a little quieter. */
+.vilna-alert-original-under {
+  font-size: 8pt;
+  font-style: italic;
 }
 
 .vilna-alert-source {

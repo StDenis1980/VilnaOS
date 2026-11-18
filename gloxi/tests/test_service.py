@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """gloxid and the window's RemoteController over a real Unix socket (ADR 0025)."""
 
+import dataclasses
 import json
 import os
 import socket
@@ -19,7 +20,9 @@ from gloxi.service import EventView, Service, bind, inherited_listener, service_
 
 
 class Running:
-    def __init__(self, tmp_path, local=None, *, owner_uid=None, allow_root=True, **kwargs):
+    def __init__(
+        self, tmp_path, local=None, *, owner_uid=None, allow_root=True, translator=None, **kwargs
+    ):
         self.path = tmp_path / "gloxi.sock"
         self.view = EventView()
         conv = make_conversation(local or FakeLlamaServer("Привіт, я Gloxi."), **kwargs)
@@ -31,6 +34,7 @@ class Running:
             owner_uid=os.getuid() if owner_uid is None else owner_uid,
             environ=self.environ,
             allow_root=allow_root,
+            translator=translator,
         )
         self.listener = bind(self.path)
         self.stop = threading.Event()
@@ -404,3 +408,86 @@ def test_the_local_model_keeps_its_weights_in_memory():
     # 17 s instead of 6.5 s (image/docs/low-memory-check.md).
     unit = Path(__file__).resolve().parents[1] / "systemd" / "vilna-llm.service"
     assert "\nMemoryLow=5G\n" in unit.read_text()
+
+
+# -- text.translate (the weather warnings of the Shell extension) -------------------
+
+
+def fake_translator(model):
+    from helpers import LOCAL
+
+    from gloxi.llm import ChatClient
+    from gloxi.translate import translate
+
+    client = ChatClient(dataclasses.replace(LOCAL, slot=None), transport=model.transport())
+    return lambda text, language: translate(client, text, language)
+
+
+def test_translate_asks_the_local_model_alone(running):
+    model = FakeLlamaServer("Помаранчеве попередження: сильний вітер.")
+    r = running(translator=fake_translator(model))
+    [answer] = raw_exchange(
+        r.path,
+        {
+            "id": 1,
+            "method": "text.translate",
+            "params": {"text": "Orange warning: strong wind.", "language": "uk"},
+        },
+    )
+    assert answer["result"] == {
+        "text": "Помаранчеве попередження: сильний вітер.",
+        "language": "uk",
+    }
+    [request] = model.requests
+    assert "Ukrainian" in request["messages"][0]["content"]
+    assert request["messages"][1] == {"role": "user", "content": "Orange warning: strong wind."}
+    assert "tools" not in request and "id_slot" not in request
+    # Not part of the conversation.
+    assert r.controller.conversation.history == []
+
+
+def test_a_translation_does_not_take_the_window_away(running):
+    r = running(translator=fake_translator(FakeLlamaServer("Переклад.")))
+    remote, view = r.client()
+    [answer] = raw_exchange(
+        r.path, {"id": 1, "method": "text.translate", "params": {"text": "Fog.", "language": "uk"}}
+    )
+    assert answer["result"]["text"] == "Переклад."
+    assert ("note", "Gloxi is open in another window.") not in view.events
+    assert remote.submit("ти тут?")
+    assert wait_for(lambda: ("finish",) in view.events)
+
+
+def test_translate_refuses_bad_requests_and_says_when_there_is_no_model(running):
+    r = running(translator=fake_translator(FakeLlamaServer("x", status=503)))
+    answers = raw_exchange(
+        r.path,
+        {"id": 1, "method": "text.translate", "params": {"text": "", "language": "uk"}},
+        {"id": 2, "method": "text.translate", "params": {"text": "Fog.", "language": "ru"}},
+        {"id": 3, "method": "text.translate", "params": {"text": "x" * 5000, "language": "uk"}},
+        {"id": 4, "method": "text.translate", "params": {"text": "Fog.", "language": "uk"}},
+    )
+    assert [a["error"]["code"] for a in answers] == [
+        "bad_params",
+        "bad_params",
+        "bad_params",
+        "unavailable",
+    ]
+    without = running(translator=None)
+    [answer] = raw_exchange(
+        without.path,
+        {"id": 1, "method": "text.translate", "params": {"text": "Fog.", "language": "uk"}},
+    )
+    assert answer["error"]["code"] == "unavailable"
+
+
+def test_a_translation_drops_thinking_and_refuses_an_empty_answer():
+    from gloxi.llm import ModelError
+    from gloxi.translate import translate
+
+    think = fake_translator(FakeLlamaServer("<think>hmm</think>\n Туман. "))
+    assert think("Fog.", "uk") == "Туман."
+    with pytest.raises(ModelError):
+        fake_translator(FakeLlamaServer("<think>hmm</think>"))("Fog.", "uk")
+    with pytest.raises(ValueError):
+        translate(None, "Fog.", "xx")

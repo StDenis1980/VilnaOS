@@ -256,7 +256,7 @@ export function zonesAt(geojson, lat, lon) {
 // The words, in the ten languages of Vilna (as lib/widgets.js). Our own
 // short labels; the warning's original text is shown beside them.
 const ALERT_KEYS = ['levels', 'hazards', 'until', 'from', 'issued', 'meteredPaused', 'meteredAsk', 'title', 'show',
-    'metered', 'meteredHint', 'source', 'zone', 'zoneNone', 'open'];
+    'metered', 'meteredHint', 'source', 'zone', 'zoneNone', 'open', 'translated'];
 
 const ALERT_TEXT = {
     en: [['Yellow warning', 'Orange warning', 'Red warning'],
@@ -265,7 +265,7 @@ const ALERT_TEXT = {
         'until %s', 'from %s', '%s · issued %s', 'Metered connection: warnings paused', 'Download warnings',
         'Weather warnings', 'Show weather warnings', 'Download on metered connections',
         'The country’s warnings, up to 0.5 MB every 10 minutes; zone boundaries, about 30 MB once per place.',
-        'Warnings: EUMETNET – MeteoAlarm', 'Warning zone: %s', 'Warning zone not found yet', 'Open meteoalarm.org'],
+        'Warnings: EUMETNET – MeteoAlarm', 'Warning zone: %s', 'Warning zone not found yet', 'Open meteoalarm.org', 'translated by Gloxi'],
     uk: [['Жовте попередження', 'Помаранчеве попередження', 'Червоне попередження'],
         ['Вітер', 'Сніг і ожеледь', 'Грози', 'Туман', 'Спека', 'Холод', 'Явища на узбережжі', 'Лісові пожежі', 'Лавини',
             'Дощ', 'Повінь', 'Дощ і повінь', 'Небезпека на морі', 'Посуха', 'Погода'],
@@ -273,7 +273,7 @@ const ALERT_TEXT = {
         'Попередження про погоду', 'Показувати попередження про погоду', 'Завантажувати на лімітному з’єднанні',
         'Попередження країни — до 0,5 МБ раз на 10 хвилин; межі зон — близько 30 МБ один раз для місця.',
         'Попередження: EUMETNET – MeteoAlarm', 'Зона попереджень: %s', 'Зону попереджень ще не визначено',
-        'Відкрити meteoalarm.org'],
+        'Відкрити meteoalarm.org', 'переклад Gloxi'],
     es: [['Aviso amarillo', 'Aviso naranja', 'Aviso rojo'],
         ['Viento', 'Nieve y hielo', 'Tormentas', 'Niebla', 'Calor', 'Frío', 'Fenómenos costeros', 'Incendios forestales',
             'Aludes', 'Lluvia', 'Inundaciones', 'Lluvia e inundaciones', 'Peligro en el mar', 'Sequía', 'Tiempo'],
@@ -281,7 +281,7 @@ const ALERT_TEXT = {
         'Avisos meteorológicos', 'Mostrar avisos meteorológicos', 'Descargar con conexión medida',
         'Avisos del país: hasta 0,5 MB cada 10 minutos; límites de las zonas: unos 30 MB una vez por lugar.',
         'Avisos: EUMETNET – MeteoAlarm', 'Zona de avisos: %s', 'Aún no se ha encontrado la zona de avisos',
-        'Abrir meteoalarm.org'],
+        'Abrir meteoalarm.org', 'traducido por Gloxi'],
     pl: [['Żółte ostrzeżenie', 'Pomarańczowe ostrzeżenie', 'Czerwone ostrzeżenie'],
         ['Wiatr', 'Śnieg i lód', 'Burze', 'Mgła', 'Upał', 'Mróz', 'Zjawiska na wybrzeżu', 'Pożary lasów', 'Lawiny',
             'Deszcz', 'Powódź', 'Deszcz i powódź', 'Zagrożenie na morzu', 'Susza', 'Pogoda'],
@@ -289,14 +289,14 @@ const ALERT_TEXT = {
         'Ostrzeżenia pogodowe', 'Pokazuj ostrzeżenia pogodowe', 'Pobieraj przy połączeniu taryfowym',
         'Ostrzeżenia kraju: do 0,5 MB co 10 minut; granice stref: około 30 MB raz na miejsce.',
         'Ostrzeżenia: EUMETNET – MeteoAlarm', 'Strefa ostrzeżeń: %s', 'Nie znaleziono jeszcze strefy ostrzeżeń',
-        'Otwórz meteoalarm.org'],
+        'Otwórz meteoalarm.org', 'przetłumaczył Gloxi'],
     de: [['Gelbe Warnung', 'Orange Warnung', 'Rote Warnung'],
         ['Wind', 'Schnee und Eis', 'Gewitter', 'Nebel', 'Hitze', 'Kälte', 'Küstenereignis', 'Waldbrand', 'Lawinen',
             'Regen', 'Hochwasser', 'Regen und Hochwasser', 'Gefahr auf See', 'Dürre', 'Wetter'],
         'bis %s', 'ab %s', '%s · ausgegeben %s', 'Getaktete Verbindung: Warnungen pausiert', 'Warnungen laden',
         'Wetterwarnungen', 'Wetterwarnungen anzeigen', 'Bei getakteter Verbindung laden',
         'Warnungen des Landes: bis 0,5 MB alle 10 Minuten; Zonengrenzen: etwa 30 MB einmal pro Ort.',
-        'Warnungen: EUMETNET – MeteoAlarm', 'Warnzone: %s', 'Warnzone noch nicht gefunden', 'meteoalarm.org öffnen'],
+        'Warnungen: EUMETNET – MeteoAlarm', 'Warnzone: %s', 'Warnzone noch nicht gefunden', 'meteoalarm.org öffnen', 'übersetzt von Gloxi'],
     fr: [['Vigilance jaune', 'Vigilance orange', 'Vigilance rouge'],
         ['Vent', 'Neige et verglas', 'Orages', 'Brouillard', 'Canicule', 'Grand froid', 'Phénomène côtier',
             'Feux de forêt', 'Avalanches', 'Pluie', 'Inondations', 'Pluie et inondations', 'Danger en mer', 'Sécheresse',
@@ -306,7 +306,7 @@ const ALERT_TEXT = {
         'Télécharger sur une connexion limitée',
         'Vigilances du pays : jusqu’à 0,5 Mo toutes les 10 minutes ; limites des zones : environ 30 Mo une fois par lieu.',
         'Vigilances : EUMETNET – MeteoAlarm', 'Zone de vigilance : %s', 'Zone de vigilance pas encore trouvée',
-        'Ouvrir meteoalarm.org'],
+        'Ouvrir meteoalarm.org', 'traduit par Gloxi'],
     it: [['Allerta gialla', 'Allerta arancione', 'Allerta rossa'],
         ['Vento', 'Neve e ghiaccio', 'Temporali', 'Nebbia', 'Caldo', 'Freddo', 'Fenomeni costieri', 'Incendi boschivi',
             'Valanghe', 'Pioggia', 'Alluvioni', 'Pioggia e alluvioni', 'Pericolo in mare', 'Siccità', 'Meteo'],
@@ -314,7 +314,7 @@ const ALERT_TEXT = {
         'Allerte meteo', 'Mostra le allerte meteo', 'Scarica con connessione a consumo',
         'Allerte del paese: fino a 0,5 MB ogni 10 minuti; confini delle zone: circa 30 MB una volta per luogo.',
         'Allerte: EUMETNET – MeteoAlarm', 'Zona di allerta: %s', 'Zona di allerta non ancora trovata',
-        'Apri meteoalarm.org'],
+        'Apri meteoalarm.org', 'tradotto da Gloxi'],
     ro: [['Cod galben', 'Cod portocaliu', 'Cod roșu'],
         ['Vânt', 'Zăpadă și polei', 'Furtuni', 'Ceață', 'Caniculă', 'Ger', 'Fenomene pe coastă', 'Incendii de pădure',
             'Avalanșe', 'Ploaie', 'Inundații', 'Ploaie și inundații', 'Pericol pe mare', 'Secetă', 'Vreme'],
@@ -322,7 +322,7 @@ const ALERT_TEXT = {
         'Descarcă avertizările', 'Avertizări meteo', 'Arată avertizările meteo', 'Descarcă pe conexiune contorizată',
         'Avertizările țării: până la 0,5 MB la 10 minute; limitele zonelor: circa 30 MB o dată pentru fiecare loc.',
         'Avertizări: EUMETNET – MeteoAlarm', 'Zona de avertizare: %s', 'Zona de avertizare nu a fost găsită încă',
-        'Deschide meteoalarm.org'],
+        'Deschide meteoalarm.org', 'tradus de Gloxi'],
     cs: [['Žlutá výstraha', 'Oranžová výstraha', 'Červená výstraha'],
         ['Vítr', 'Sníh a led', 'Bouřky', 'Mlha', 'Vedro', 'Mráz', 'Jevy na pobřeží', 'Lesní požáry', 'Laviny',
             'Déšť', 'Povodně', 'Déšť a povodně', 'Nebezpečí na moři', 'Sucho', 'Počasí'],
@@ -330,14 +330,14 @@ const ALERT_TEXT = {
         'Výstrahy před počasím', 'Zobrazovat výstrahy před počasím', 'Stahovat při měřeném připojení',
         'Výstrahy země: až 0,5 MB každých 10 minut; hranice oblastí: asi 30 MB jednou pro místo.',
         'Výstrahy: EUMETNET – MeteoAlarm', 'Výstražná oblast: %s', 'Výstražná oblast zatím nenalezena',
-        'Otevřít meteoalarm.org'],
+        'Otevřít meteoalarm.org', 'přeložil Gloxi'],
     lt: [['Geltonas įspėjimas', 'Oranžinis įspėjimas', 'Raudonas įspėjimas'],
         ['Vėjas', 'Sniegas ir plikledis', 'Perkūnija', 'Rūkas', 'Karštis', 'Šaltis', 'Reiškiniai pakrantėje',
             'Miškų gaisrai', 'Lavinos', 'Lietus', 'Potvyniai', 'Lietus ir potvyniai', 'Pavojus jūroje', 'Sausra', 'Orai'],
         'iki %s', 'nuo %s', '%s · paskelbta %s', 'Ribotas ryšys: įspėjimai sustabdyti', 'Atsisiųsti įspėjimus',
         'Įspėjimai apie orus', 'Rodyti įspėjimus apie orus', 'Atsisiųsti ribotu ryšiu',
         'Šalies įspėjimai – iki 0,5 MB kas 10 minučių; zonų ribos – apie 30 MB vieną kartą vietai.',
-        'Įspėjimai: EUMETNET – MeteoAlarm', 'Įspėjimų zona: %s', 'Įspėjimų zona dar nerasta', 'Atidaryti meteoalarm.org'],
+        'Įspėjimai: EUMETNET – MeteoAlarm', 'Įspėjimų zona: %s', 'Įspėjimų zona dar nerasta', 'Atidaryti meteoalarm.org', 'išvertė Gloxi'],
 };
 
 export const ALERT_LANGUAGES = Object.keys(ALERT_TEXT);
@@ -358,6 +358,25 @@ export function alertText(languageNames) {
 export function checkAlertTables() {
     return ALERT_LANGUAGES.filter(code => ALERT_TEXT[code].length !== ALERT_KEYS.length ||
         ALERT_TEXT[code][0].length !== 3 || ALERT_TEXT[code][1].length !== HAZARDS.length + 1);
+}
+
+// The language Gloxi should put a warning's words into, or null when they
+// already are in the person's language (they are then shown as they are and
+// Gloxi is not asked; Denys, 18.11.2026). The person's language is the one
+// our labels use (alertText): the first of theirs that Vilna speaks.
+export function translationTarget(original, languageNames) {
+    if (!original?.headline)
+        return null;
+    let target = 'en';
+    for (const name of languageNames ?? []) {
+        const c = String(name).split(/[_.@-]/)[0].toLowerCase();
+        if (ALERT_TEXT[c]) {
+            target = c;
+            break;
+        }
+    }
+    const language = String(original.language ?? '').slice(0, 2).toLowerCase();
+    return language === target ? null : target;
 }
 
 // Our short label for a warning: "Orange warning: Wind".

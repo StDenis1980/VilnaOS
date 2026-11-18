@@ -44,6 +44,8 @@ export VILNA_TEST_WEATHER_FILE=$here/weather.json TZ=Europe/Madrid
 # (alerts.atom, alert-cap.xml, geocodes.json) instead of MeteoAlarm.
 export VILNA_TEST_ALERTS_FILE=$here/alerts.atom VILNA_TEST_CAP_FILE=$here/alert-cap.xml \
     VILNA_TEST_GEOCODES_FILE=$here/geocodes.json
+# Gloxi's translations of warnings: the helper answers in place of gloxid.
+export GLOXI_SERVICE_SOCKET=$work/gloxi.sock
 dbus-run-session -- bash -c '
     set -u
     export XDG_RUNTIME_DIR=$(mktemp -d)

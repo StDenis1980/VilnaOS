@@ -5,7 +5,8 @@ import fs from 'node:fs';
 
 import {
     ALERT_LANGUAGES, COUNTRY_FEEDS, DISCLAIMER, HAZARDS, MAX_FEED_BYTES, REFRESH_MINUTES, alertLabel, alertText,
-    alertsFor, checkAlertTables, feedUrl, inRing, latestGeocodes, parseCap, parseFeed, parsePolygon, toNotify, zonesAt,
+    alertsFor, checkAlertTables, feedUrl, inRing, latestGeocodes, parseCap, parseFeed, parsePolygon, toNotify, translationTarget,
+    zonesAt,
 } from '../vilna@stdenis1980.github.io/lib/alerts.js';
 
 const FEED = fs.readFileSync(new URL('./shell/alerts.atom', import.meta.url), 'utf8');
@@ -110,4 +111,17 @@ test('labels in all ten languages', () => {
     assert.equal(alertLabel({level: 4, hazard: 'nonsense'}, uk), 'Червоне попередження: Погода');
     assert.equal(alertText(['ja']).title, 'Weather warnings');
     assert.equal(HAZARDS.length + 1, uk.hazards.length);
+});
+
+test('Gloxi translates only words that are not in the person’s language', () => {
+    const es = {headline: 'Aviso naranja por viento', language: 'es-ES'};
+    assert.equal(translationTarget(es, ['uk_UA.UTF-8', 'uk_UA', 'uk', 'C']), 'uk');
+    assert.equal(translationTarget(es, ['es_ES.UTF-8', 'es', 'C']), null);
+    assert.equal(translationTarget({headline: 'Orange warning', language: 'en-GB'}, ['en_GB.UTF-8', 'C']), null);
+    // A language Vilna does not speak: our labels are English, so is the translation.
+    assert.equal(translationTarget(es, ['ja_JP.UTF-8', 'C']), 'en');
+    assert.equal(translationTarget({headline: '', language: 'es'}, ['uk']), null);
+    assert.equal(translationTarget(null, ['uk']), null);
+    for (const code of ALERT_LANGUAGES)
+        assert.match(alertText([code]).translated, /Gloxi/);
 });
