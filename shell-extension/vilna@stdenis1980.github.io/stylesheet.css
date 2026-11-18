@@ -271,3 +271,67 @@
 .vilna-widget.vilna-sky-ink-light .vilna-widget-line {
   color: rgba(242, 232, 213, 0.82);
 }
+
+/* Weather warnings on the weather card (weatherAlerts.js): a band in the
+   colour of the warning, the national service's own words under our
+   label. Yellow is deepened to amber so that dark text reads on it. */
+.vilna-alerts {
+  spacing: 6px;
+  margin-top: 6px;
+}
+
+.vilna-alert {
+  padding: 8px 12px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.vilna-alert-yellow {
+  background-color: #f5c24a; /* gold */
+  color: #13213a;
+}
+
+.vilna-alert-orange {
+  background-color: #e8772e;
+  color: #13213a;
+}
+
+.vilna-alert-red {
+  background-color: #c0392b;
+  color: #ffffff;
+}
+
+.vilna-alert-paused {
+  background-color: rgba(19, 33, 58, 0.12);
+  color: #13213a;
+  font-size: 9pt;
+}
+
+.vilna-dark .vilna-alert-paused,
+.vilna-sky-ink-light .vilna-alert-paused {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #f2e8d5;
+}
+
+/* On a light sky the ink is dark whatever the style. */
+.vilna-widget.vilna-sky-ink-dark .vilna-alert-paused {
+  background-color: rgba(19, 33, 58, 0.12);
+  color: #13213a;
+}
+
+.vilna-alert:hover {
+  border: 1px solid rgba(19, 33, 58, 0.4);
+}
+
+.vilna-alert-title {
+  font-weight: bold;
+  font-size: 9.5pt;
+}
+
+.vilna-alert-original {
+  font-size: 9pt;
+}
+
+.vilna-alert-source {
+  font-size: 8pt;
+}

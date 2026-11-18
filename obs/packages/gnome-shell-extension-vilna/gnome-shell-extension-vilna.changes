@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Wed Nov 18 14:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.7: MeteoAlarm weather warnings on the weather card
+  (weatherAlerts.js, lib/alerts.js): up to two bands in the level's
+  colour for warnings in force or due within a day, with the national
+  service's own words, its name and the time of issue, and a
+  notification once for orange and red. The whole country's feed is
+  fetched and the zone found on this computer (alertZones.js, run as
+  its own gjs process; only the zone codes are kept). Every 10 minutes,
+  not while locked, and on a metered connection only after the person
+  agrees. New keys weather-alerts, alerts-metered and alert-zones.
+
+-------------------------------------------------------------------
 Wed Nov 18 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.6: desktop widgets on the wallpaper, under every window: clock,

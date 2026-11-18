@@ -1,10 +1,10 @@
 {
   "uuid": "vilna@stdenis1980.github.io",
   "name": "Vilna",
-  "description": "Vilna desktop integration: a Latin keyboard layout in password fields, Gloxi above other windows, a strip of the screen for the Gloxi panel, the Vilna login screen, a VPN offer after the login page of a shared Wi-Fi, the Vilna colours of the dock, Vilna window motion and desktop widgets.",
+  "description": "Vilna desktop integration: a Latin keyboard layout in password fields, Gloxi above other windows, a strip of the screen for the Gloxi panel, the Vilna login screen, a VPN offer after the login page of a shared Wi-Fi, the Vilna colours of the dock, Vilna window motion and desktop widgets with MeteoAlarm weather warnings.",
   "shell-version": ["46", "47", "48", "49", "50", "51"],
   "session-modes": ["user", "unlock-dialog", "gdm"],
   "settings-schema": "org.gnome.shell.extensions.vilna",
   "url": "https://github.com/StDenis1980/VilnaOS",
-  "version-name": "0.6"
+  "version-name": "0.7"
 }

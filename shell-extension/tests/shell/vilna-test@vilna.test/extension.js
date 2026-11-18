@@ -357,8 +357,9 @@ async function windows() {
     settings.set_boolean('gloxi-dock', false);
 }
 
-const theSky = () => Main.extensionManager.lookup(UUID)?.stateObj?._userParts
-    ?.find(p => p.constructor.name === 'Widgets')?.sky ?? null;
+const theWidgets = () => Main.extensionManager.lookup(UUID)?.stateObj?._userParts
+    ?.find(p => p.constructor.name === 'Widgets') ?? null;
+const theSky = () => theWidgets()?.sky ?? null;
 
 // The live sky moves only when it can be seen and animations are on.
 // windows() leaves the other window maximised, over the widgets.
@@ -472,12 +473,49 @@ async function widgets() {
     check('widgets: the clock shows the time', /^\d{1,2}:\d{2}$/.test(time ?? ''), true);
     const weatherText = () => texts(widget('vilnaWeatherWidget'));
     check('widgets: weather for the capital by default (Madrid)',
-        await waitFor(() => weatherText()[2]?.startsWith('Madrid · '), 5000) ? weatherText().slice(1) : weatherText(),
+        await waitFor(() => weatherText()[2]?.startsWith('Madrid · '), 5000) ? weatherText().slice(1, 3) : weatherText(),
         ['18°', 'Madrid · Clear · ↑21° ↓11°']);
     const sky = theSky();
     check('sky: a clear day behind the weather, with dark text',
         [sky?.kind, sky?.actor.visible, widget('vilnaWeatherWidget')?.get_last_child().has_style_class_name('vilna-sky-ink-dark')],
         ['clear', true, true]);
+    const alertTexts = () => texts(widget('vilnaWeatherAlerts'));
+    check('warnings: the zone is found on this computer', await waitFor(() =>
+        settings.get_value('alert-zones').deepUnpack()[2].join() === 'ES219', 15000)
+        ? settings.get_value('alert-zones').deepUnpack()[2]
+        : [settings.get_value('alert-zones').deepUnpack(), theWidgets()?.weatherAlerts?.status], ['ES219']);
+    check('warnings: orange wind in the zone and yellow fog around it, the original words and the service',
+        await waitFor(() => alertTexts().length === 6, 10000)
+            ? alertTexts().map(s => s.replace(/(\b[A-Z][a-z]{2} )?\d{1,2}:\d{2}/g, 'T'))
+            : alertTexts(),
+        ['Orange warning: Wind · until T', 'Orange test warning. Test zone', 'Test Service · issued T',
+            'Yellow warning: Fog · until T', 'Yellow Fog Warning issued for Spain - Área de prueba',
+            'EUMETNET – MeteoAlarm · issued T']);
+    // The first refresh came before passwordFields() turned the extension
+    // off and on, which took its notification away; the warning was
+    // remembered, so it did not come again.
+    const stateFile = GLib.build_filenamev([GLib.get_user_state_dir(), 'vilna', 'alerts-notified.json']);
+    const notified = () => {
+        try {
+            return new TextDecoder().decode(GLib.file_get_contents(stateFile)[1]);
+        } catch {
+            return '';
+        }
+    };
+    const warningNotes = () => Main.messageTray.getSources().flatMap(s => s.notifications ?? [])
+        .filter(n => /warning:/.test(n.title)).map(n => [n.title, n.urgency]);
+    check('warnings: remembered, so it comes once', [notified(), warningNotes()], ['["test.orange.wind"]', []]);
+    // Forget it and start the widgets again: the orange one comes, the
+    // yellow one does not.
+    GLib.unlink(stateFile);
+    settings.set_boolean('widgets', false);
+    settings.set_boolean('widgets', true);
+    check('warnings: one notification, for the orange one only',
+        await waitFor(() => warningNotes().length > 0, 10000) ? warningNotes() : [warningNotes(), notified()],
+        [['Orange warning: Wind', 2]]);
+    settings.set_boolean('weather-alerts', false);
+    check('warnings: off by the setting', await waitFor(() => !widget('vilnaWeatherAlerts')?.visible, 3000), true);
+    settings.set_boolean('weather-alerts', true);
     check('sky: the icon gives way to the sky', widget('vilnaWeatherWidget')?.get_last_child()
         .get_children().flatMap(c => c.get_children?.() ?? []).some(c => c instanceof St.Icon && c.visible), false);
     settings.set_value('weather-location', new GLib.Variant('(sdd)', ['València', 39.47, -0.38]));

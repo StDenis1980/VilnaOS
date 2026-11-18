@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Synthetic test CAP message in the shape of MeteoAlarm's, written for the Vilna tests. -->
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <identifier>test.orange.wind</identifier>
+  <info>
+    <language>es-ES</language>
+    <event>Aviso de prueba</event>
+    <senderName>Servicio de prueba</senderName>
+    <headline>Aviso naranja de prueba. Zona de prueba</headline>
+    <description>Rachas de prueba.</description>
+  </info>
+  <info>
+    <language>en-GB</language>
+    <event>Test warning</event>
+    <senderName>Test Service</senderName>
+    <headline>Orange test warning. Test zone</headline>
+    <description>Test gusts.</description>
+  </info>
+</alert>
