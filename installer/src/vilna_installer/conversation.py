@@ -116,8 +116,9 @@ DISK_ERASE_QUESTION = (
 FILES = "files"
 ENCRYPT_TPM_QUESTION = (
     "Shall I encrypt the new system? I suggest encryption with a recovery key: on this "
-    "computer the disk opens by itself, and the key opens it if something changes. You can "
-    "also type a passphrase at every start, or not encrypt the disk."
+    "computer the disk opens by itself, and the key opens it if something changes. For "
+    "more protection if the computer is stolen, the disk can also ask for a PIN at every "
+    "start. You can also type a passphrase at every start, or not encrypt the disk."
 )
 ENCRYPT_PASS_QUESTION = (
     "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open "
@@ -204,6 +205,9 @@ WIRED = "Cable"
 ERASE_ALL = "Erase the whole disk"
 MANUAL = "Manual layout"
 ENCRYPT_TPM = "Encrypted, with a recovery key"
+ENCRYPT_TPM_PIN = "Encrypted, with a PIN at every start"
+PIN = "Start PIN (6 to 20 digits)"
+BAD_PIN = "The PIN is 6 to 20 digits, nothing else."
 ENCRYPT_PASS = "Encrypted with a passphrase"
 NOT_ENCRYPTED = "Not encrypted"
 CLOUD_OFF = "Cloud model off until the first login"
@@ -221,21 +225,31 @@ SECTIONS = {
 CONNECTED = "Connected to Wi-Fi."
 PASSWORD_SAVED = "The password is saved."
 PASSPHRASE_SAVED = "The passphrase is saved."
+PIN_SAVED = "The PIN is saved."
 TYPE_WIFI = "Type the Wi-Fi password into the protected field below. I do not see it."
 TYPE_PASSWORD = (
     "Type the password for your account into the protected field below, twice. I do not see it."
 )
 TYPE_PASSPHRASE = "Type the disk passphrase into the protected field below, twice. I do not see it."
+TYPE_PIN = (
+    "Type the start PIN, 6 to 20 digits, into the protected field below, twice. I do not see it."
+)
 TYPE_SECRET = {
     "wifi_password": TYPE_WIFI,
     "user_password": TYPE_PASSWORD,
     "passphrase": TYPE_PASSPHRASE,
+    "pin": TYPE_PIN,
 }
 KEPT_NETWORK = (
     "This computer is already connected to the network, so I keep that connection; "
     "you can change it in the plan."
 )
-SAVED = {"network": CONNECTED, "user": PASSWORD_SAVED, "passphrase": PASSPHRASE_SAVED}
+SAVED = {
+    "network": CONNECTED,
+    "user": PASSWORD_SAVED,
+    "passphrase": PASSPHRASE_SAVED,
+    "pin": PIN_SAVED,
+}
 TEXTS = (
     INTRO,
     CONNECTED,
@@ -245,6 +259,8 @@ TEXTS = (
     TYPE_PASSWORD,
     TYPE_PASSPHRASE,
     PASSPHRASE_SAVED,
+    TYPE_PIN,
+    PIN_SAVED,
     FIRST_QUESTION,
     NETWORK_QUESTION,
     DISK_QUESTION,
@@ -285,6 +301,9 @@ TEXTS = (
     MANUAL,
     ENCRYPT_TPM,
     ENCRYPT_PASS,
+    ENCRYPT_TPM_PIN,
+    PIN,
+    BAD_PIN,
     NOT_ENCRYPTED,
     CLOUD_OFF,
     CRASH_QUESTION,
@@ -405,7 +424,10 @@ STEPS: tuple[Step, ...] = (
         "Encrypting the new system",
         "If hardware_describe shows a TPM 2.0 (tpm: 2), recommend encryption with TPM2 and a "
         "recovery key ('tpm2'): the disk opens by itself on this computer, and the key opens "
-        "it if something changes. A passphrase typed at every start is the other way; "
+        "it if something changes. 'tpm2-pin' is the same plus a PIN of 6 to 20 digits at "
+        "every start: offer it to a person who carries the computer around or worries about "
+        "theft, since a stolen computer then does not even reach the login screen. A "
+        "passphrase typed at every start is the other way; "
         "'none' leaves files readable by anyone with the disk. "
         "Save with plan_set_encryption, then explain why the recovery key must be kept safe.",
         ("plan_set_encryption",),
@@ -517,11 +539,13 @@ NOT_SAVED = (
     "You have not changed the plan: nothing is saved without a function call. If the "
     "person said what they want, call the function for it now. If not, ask what they want."
 )
+ENCRYPTED_METHODS = ("tpm2", "tpm2-pin", "passphrase")
 QUESTION_MARKS = ("?", "？", "¿")
 # The encryption step on a computer without a TPM 2.0: the model recommended
 # TPM2 anyway, and only the Herkos screen stopped it (Build8.9).
 NO_TPM = (
-    "This computer has no TPM 2.0 chip: 'tpm2' is not possible here, do not offer it. "
+    "This computer has no TPM 2.0 chip: 'tpm2' and 'tpm2-pin' are not possible here, do not "
+    "offer them. "
     "Recommend a passphrase ('passphrase', typed at every start, with a recovery key); "
     "'none' leaves the files readable by anyone with the disk."
 )
@@ -534,6 +558,7 @@ ENTERED_NAMES = {
     "network": "the Wi-Fi password (the computer is connected)",
     "user": "the account password",
     "passphrase": "the disk passphrase",
+    "pin": "the start PIN",
 }
 
 
@@ -812,8 +837,10 @@ class Conversation:
         if key == "disk":
             return bool(disk.get("target") and disk.get("layout"))
         if key == "encryption":
-            return enc.get("method") in ("tpm2", "none") or (
-                enc.get("method") == "passphrase" and enc.get("passphrase") == "entered"
+            return (
+                enc.get("method") in ("tpm2", "none")
+                or (enc.get("method") == "passphrase" and enc.get("passphrase") == "entered")
+                or (enc.get("method") == "tpm2-pin" and enc.get("pin") == "entered")
             )
         if key == "user":
             return bool(user.get("username")) and user.get("password") == "entered"
@@ -827,7 +854,7 @@ class Conversation:
 
     def _encrypted(self) -> bool:
         enc = (self.plan.get("disk") or {}).get("encryption") or {}
-        return enc.get("method") in ("tpm2", "passphrase")
+        return enc.get("method") in ENCRYPTED_METHODS
 
     def _applies(self, key: str) -> bool:
         """Old files (6) and old encrypted data (7) only when the chosen disk has them."""
@@ -849,6 +876,8 @@ class Conversation:
         disk = plan.get("disk") or {}
         if (disk.get("encryption") or {}).get("passphrase") == "needed":
             out.append("passphrase")
+        if (disk.get("encryption") or {}).get("pin") == "needed":
+            out.append("pin")
         if (plan.get("user") or {}).get("password") == "needed":
             out.append("user_password")
         if disk.get("layout") == "manual" and not disk.get("partitions"):
@@ -898,7 +927,7 @@ class Conversation:
 
     def resume(self, entered: str | None = None) -> Reply:
         """Go on without a new message: after a protected field (``entered`` names it:
-        network, user, passphrase), or «Change» in the plan."""
+        network, user, passphrase, pin), or «Change» in the plan."""
         self.refresh()
         self._fetched.clear()
         said = []
@@ -943,6 +972,8 @@ class Conversation:
         enc = (plan.get("disk") or {}).get("encryption") or {}
         if enc.get("passphrase") == "entered":
             out.append("passphrase")
+        if enc.get("pin") == "entered":
+            out.append("pin")
         return out
 
     def question(self, step: Step) -> str | None:

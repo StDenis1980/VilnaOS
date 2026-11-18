@@ -425,3 +425,87 @@ msgstr "Повернуться файли, яких зараз немає: {n}."
 
 msgid "…and {n} more"
 msgstr "…і ще {n}"
+
+msgid "Add a device"
+msgstr "Додати пристрій"
+
+msgid "Added {when}"
+msgstr "Підключено {when}"
+
+msgid "Block"
+msgstr "Заблокувати"
+
+msgid "Block «{name}»?"
+msgstr "Заблокувати «{name}»?"
+
+msgid "Block…"
+msgstr "Заблокувати…"
+
+msgid "Cannot list the devices"
+msgstr "Не вдалося прочитати перелік пристроїв"
+
+msgid "Code for a new device"
+msgstr "Код для нового пристрою"
+
+msgid "Could not block: {why}"
+msgstr "Не вдалося заблокувати: {why}"
+
+msgid "Could not make a code: {why}"
+msgstr "Не вдалося створити код: {why}"
+
+msgid "Delete the old copy yourself: {place}"
+msgstr "Видаліть стару копію самі: {place}"
+
+msgid "Done"
+msgstr "Готово"
+
+msgid "Each device has its own key. Block a lost or stolen one."
+msgstr "Кожен пристрій має власний ключ. Заблокуйте втрачений чи вкрадений."
+
+msgid "It can no longer open or add to the backups, and forgets its key the next time it tries. Files on it stay as they are. If it was stolen, the backups also get a new key and you get a new recovery sheet."
+msgstr "Він більше не зможе ні відкрити копії, ні додати до них нові, а під час наступної спроби забуде свій ключ. Файли на ньому лишаться як є. Якщо його вкрали, копії ще й отримають новий ключ, а ви — новий аркуш відновлення."
+
+msgid "It was stolen"
+msgstr "Його вкрали"
+
+msgid "Key from your sheet, or a code from your other device"
+msgstr "Ключ з аркуша або код з іншого вашого пристрою"
+
+msgid "Moving the backups under a new key…"
+msgstr "Переносимо копії під новий ключ…"
+
+msgid "My devices"
+msgstr "Мої пристрої"
+
+msgid "On a computer that already makes backups, open Backups and choose «Add a device»: it shows a code valid for 15 minutes."
+msgstr "На комп'ютері, який уже робить копії, відкрийте «Копії» й виберіть «Додати пристрій»: він покаже код, дійсний 15 хвилин."
+
+msgid "On the new computer, open Backups, choose «Restore from backups made before» and type this code there. It works once, until {when}. Do not tell it to anyone."
+msgstr "На новому комп'ютері відкрийте «Копії», виберіть «Відновити з копій, зроблених раніше» і введіть там цей код. Він спрацює один раз, до {when}. Нікому його не кажіть."
+
+msgid "Opens the backups if every device is lost"
+msgstr "Відкриє копії, якщо втрачено всі пристрої"
+
+msgid "Protect"
+msgstr "Захистити"
+
+msgid "Protect the backups after the theft?"
+msgstr "Захистити копії після крадіжки?"
+
+msgid "The backups were not moved: {why}"
+msgstr "Копії не перенесено: {why}"
+
+msgid "The stolen device may know the key of the backups. Vilna moves every backup under a new key and deletes the old copy; this can take a while. Then you write down a new recovery sheet, and your other devices connect again with a code."
+msgstr "Вкрадений пристрій міг знати ключ копій. Vilna перенесе всі копії під новий ключ і видалить стару копію; це може тривати довго. Потім ви запишете новий аркуш відновлення, а інші ваші пристрої підключите знову кодом."
+
+msgid "This device · added {when}"
+msgstr "Цей пристрій · підключено {when}"
+
+msgid "Valid until {when}"
+msgstr "Дійсний до {when}"
+
+msgid "Withdraw the code"
+msgstr "Скасувати код"
+
+msgid "«{name}» is blocked."
+msgstr "«{name}» заблоковано."

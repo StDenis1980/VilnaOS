@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from vilna_backup import i18n, view
+from vilna_backup import i18n, keys, view
 from vilna_backup.settings import Destination
 
 
@@ -183,3 +183,22 @@ def test_in_place_texts():
     assert "nothing was replaced" in view.in_place_done({"restored": False})
     done = view.in_place_done({"restored": True, "files": 4, "replaced": 1, "keyrings": ["x"]})
     assert "4 files back, 1 replaced" in done and "key ring" in done
+
+
+def test_device_rows_this_device_first_and_the_sheet_last():
+    now = 1_763_400_000.0
+    found = [
+        {"id": "aaaa1111", "kind": "recovery", "name": "recovery sheet", "added": now},
+        {"id": "bbbb2222", "kind": "device", "name": "Ноутбук", "added": now, "this_device": False},
+        {"id": "cccc3333", "kind": "device", "name": "ПК", "added": now, "this_device": True},
+    ]
+    rows = view.device_rows(found, now)
+    assert [r[0] for r in rows] == ["cccc3333", "bbbb2222", "aaaa1111"]
+    assert [r[3] for r in rows] == [False, True, False]  # only other devices can be blocked
+
+
+def test_a_code_is_not_a_recovery_key():
+    code, key = keys.new_pairing_code(), keys.new_recovery_key()
+    assert view.code_looks_complete(code) and not view.key_looks_complete(code)
+    assert view.key_looks_complete(key) and not view.code_looks_complete(key)
+    assert view.code_for_reading("ABCD-EFGH-JKMN-PQRS") == "ABCD  EFGH  JKMN  PQRS"

@@ -13,7 +13,8 @@ Three kinds of fields:
 - **Only the person** sets them, in the installer's own protected fields or
   on the Herkos screen, never through the model: the markers that a secret
   was entered (``network.secret``, ``user.password``,
-  ``disk.encryption.passphrase``), ``disk.encryption.recovery_key_acknowledged``,
+  ``disk.encryption.passphrase``, ``disk.encryption.pin``),
+  ``disk.encryption.recovery_key_acknowledged``,
   ``disk.shrink.backup_confirmed``, ``confirmed_by_user`` and the answer
   about crash reports, ``privacy.crash_reports`` (ADR 0018 section 3:
   consent the person gives with no answer chosen in advance, so the model
@@ -55,7 +56,13 @@ LAYOUTS = ("replace", "alongside", "free_space", "manual")
 # installer.md, section 8: the alpha takes the simple path only. Next to
 # Windows, shrinking and moving files come in the beta, after testers.
 STAGE_LAYOUTS = {"alpha": ("replace", "manual"), "beta": LAYOUTS}
-ENCRYPTION = ("tpm2", "passphrase", "none")
+# tpm2: the disk opens by itself on this computer; tpm2-pin: the TPM also
+# wants a short PIN at every start (devices.md: a stolen laptop then does not
+# open up to its login screen); passphrase: typed at every start.
+ENCRYPTION = ("tpm2", "tpm2-pin", "passphrase", "none")
+TPM_METHODS = ("tpm2", "tpm2-pin")
+# Digits only: the PIN is typed before the keyboard layout is loaded.
+PIN_RE = re.compile(r"^[0-9]{6,20}$")
 # What a partition of a manual layout is for: the EFI system partition, the
 # system itself (the image is written on it), the home folders, swap.
 USES = ("efi", "system", "home", "swap")
@@ -294,18 +301,20 @@ def set_disk(
 
 
 def set_encryption(plan: dict[str, Any], method: str, **_: Any) -> dict[str, Any]:
-    """TPM2 with a recovery key (recommended), a passphrase, or no encryption."""
+    """TPM2 with a recovery key (recommended), TPM2 with a PIN, a passphrase, or none."""
     if method not in ENCRYPTION:
         raise PlanError(f"'method' must be one of {list(ENCRYPTION)}")
     disk = plan.setdefault("disk", {})
     old = disk.get("encryption") or {}
     enc: dict[str, Any] = {"method": method}
     if method != "none" and old.get("method") == method:
-        for key in ("recovery_key_acknowledged", "passphrase"):
+        for key in ("recovery_key_acknowledged", "passphrase", "pin"):
             if key in old:
                 enc[key] = old[key]
     if method == "passphrase" and enc.get("passphrase") != ENTERED:
         enc["passphrase"] = NEEDED
+    if method == "tpm2-pin" and enc.get("pin") != ENTERED:
+        enc["pin"] = NEEDED
     disk["encryption"] = enc
     _unconfirm(plan)
     return enc
@@ -410,6 +419,7 @@ SECRET_FIELDS = {
     "network": ("network", "secret"),
     "user": ("user", "password"),
     "passphrase": ("disk", "encryption", "passphrase"),
+    "pin": ("disk", "encryption", "pin"),
 }
 
 
@@ -556,7 +566,7 @@ def _result(r: _Report) -> dict[str, Any]:
     }
 
 
-SECRET_KEYS = ("secret", "password", "passphrase", "key", "recovery_key", "psk")
+SECRET_KEYS = ("secret", "password", "passphrase", "pin", "key", "recovery_key", "psk")
 
 
 def _check_secrets(node: Any, r: _Report, path: str) -> None:
@@ -713,6 +723,12 @@ def _check_encryption(enc: Any, r: _Report) -> None:
             "passphrase",
             "disk.encryption.passphrase",
             "the disk passphrase is not entered yet; the person types it in the protected field",
+        )
+    if enc["method"] == "tpm2-pin" and enc.get("pin") != ENTERED:
+        r.error(
+            "pin",
+            "disk.encryption.pin",
+            "the start PIN is not entered yet; the person types it in the protected field",
         )
 
 

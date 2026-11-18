@@ -74,7 +74,10 @@ PCRS = "4,5,7,9"
 POLICY_AUTHORIZE_NV = "commandIndex: 0x192"
 ESP_SIZE = "512M"  # as the Vilna disk image (obs/images/Vilna, efipartsize)
 KEY_FILE_BYTES = 1024
-METHODS = ("tpm2", "passphrase", "none")
+METHODS = ("tpm2", "tpm2-pin", "passphrase", "none")
+ENCRYPTED = ("tpm2", "tpm2-pin", "passphrase")
+# The disk opens with the TPM: by itself (tpm2), or with a PIN at every start.
+WITH_TPM = ("tpm2", "tpm2-pin")
 # Keyring entries the engine and sdbootutil create; dropped whatever happens.
 KEYRING_ENTRIES = ("cryptenroll", "sdbootutil", "sdbootutil-recovery-pin")
 # The first boot's enrollment (sdbootutil-enroll.service, ImportCredential=).
@@ -84,6 +87,9 @@ ENROLL_CREDENTIALS = (
     "etc/credstore.encrypted/sdbootutil-enroll.recovery-pin",
     "etc/credstore/sdbootutil-enroll.tpm2",
 )
+# tpm2-pin: the PIN itself, which sdbootutil-enroll reads instead of ".tpm2"
+# and enrolls with `sdbootutil enroll --method=tpm2+pin`.
+ENROLL_PIN_CREDENTIAL = "etc/credstore.encrypted/sdbootutil-enroll.tpm2+pin"
 ENROLL_DROPIN = f"etc/systemd/system/{ENROLL_SERVICE}.d/50-vilna-installer.conf"
 # The slot repart puts the engine's key file in (Encrypt=key-file).
 INSTALLER_SLOT = "0"
@@ -283,7 +289,7 @@ def steps(
         raise ValueError("an encrypted system needs crypt_part and key_file")
     chroot = ("chroot", root)
     sdb = (*chroot, "sdbootutil", "--esp-path", "/boot/efi")
-    if method == "tpm2":
+    if method in WITH_TPM:
         # With tpm2-device in crypttab sdbootutil would predict the PCRs from
         # the live boot's event log and keep none (VM test, 15.11.2026); the
         # first boot predicts them (sdbootutil-enroll).
@@ -296,7 +302,7 @@ def steps(
                 "open the system partition at boot",
                 path="etc/crypttab",
                 text=f"{MAPPER} UUID={crypt_uuid} none x-initrd.attach"
-                + (",tpm2-device=auto" if method == "tpm2" else "")
+                + (",tpm2-device=auto" if method in WITH_TPM else "")
                 + "\n",
             )
         )
@@ -324,8 +330,10 @@ def steps(
     out.append(Step("install the boot loader", (*sdb, "--no-variables", "install")))
     if encrypted:
         out.append(Step("add the recovery key", (*sdb, "--method=recovery-key", "enroll")))
-    if method == "tpm2":
-        out += first_boot_tpm2(root, crypt_part=str(crypt_part), key_file=key_file)
+    if method in WITH_TPM:
+        out += first_boot_tpm2(
+            root, crypt_part=str(crypt_part), key_file=key_file, with_pin=method == "tpm2-pin"
+        )
     elif method == "passphrase":
         out.append(
             Step(
@@ -344,7 +352,7 @@ def steps(
     # crypttab and the kernel command line are final: the initrd of the new system.
     out.append(Step("build the initrd", (*sdb, "mkinitrd")))
     out.append(Step("the installer's dracut setting goes", path=DRACUT_OVERRIDE, remove=True))
-    if encrypted and method != "tpm2":
+    if encrypted and method not in WITH_TPM:
         out.append(
             Step(
                 "remove the installer's key from slot 0",
@@ -359,8 +367,14 @@ def steps(
     return out
 
 
-def first_boot_tpm2(root: str, *, crypt_part: str, key_file: Path | None) -> list[Step]:
-    """TPM2 for the first boot to seal (see the module's text): what the live system leaves."""
+def first_boot_tpm2(
+    root: str, *, crypt_part: str, key_file: Path | None, with_pin: bool = False
+) -> list[Step]:
+    """TPM2 for the first boot to seal (see the module's text): what the live system leaves.
+
+    With ``with_pin`` the first boot seals with TPM2 and the person's PIN
+    (``--method=tpm2+pin``): the disk then asks for it at every start.
+    """
     chroot = ("chroot", root)
     # The new system's own systemd-creds, not the live one: a credential from
     # a newer systemd is "Unknown encryption format" to an older one, and the
@@ -412,7 +426,20 @@ def first_boot_tpm2(root: str, *, crypt_part: str, key_file: Path | None) -> lis
             (*encrypt, f"--name={Path(pin).name}", "-", f"/{pin}"),
             stdin="recovery_key",
         ),
-        Step("seal with the TPM on the first boot", path=wanted, text="1\n"),
+        (
+            Step(
+                "the start PIN, for this TPM only",
+                (
+                    *encrypt,
+                    f"--name={Path(ENROLL_PIN_CREDENTIAL).name}",
+                    "-",
+                    f"/{ENROLL_PIN_CREDENTIAL}",
+                ),
+                stdin="pin",
+            )
+            if with_pin
+            else Step("seal with the TPM on the first boot", path=wanted, text="1\n")
+        ),
         Step(
             "the credentials go once the first boot sealed the key",
             path=ENROLL_DROPIN,
@@ -422,7 +449,7 @@ def first_boot_tpm2(root: str, *, crypt_part: str, key_file: Path | None) -> lis
                 f"ConditionPathExists=/{current}\n"
                 "[Service]\n"
                 "ExecStartPost=/usr/bin/rm -f "
-                + " ".join(f"/{c}" for c in ENROLL_CREDENTIALS)
+                + " ".join(f"/{c}" for c in (*ENROLL_CREDENTIALS, ENROLL_PIN_CREDENTIAL))
                 + "\n"
             ),
         ),

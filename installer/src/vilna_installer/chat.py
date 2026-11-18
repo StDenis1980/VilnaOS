@@ -400,6 +400,8 @@ class ChatWindow(Adw.ApplicationWindow):
             title = _(conv.WIFI_PASSWORD).format(name=(plan.get("network") or {}).get("wifi"))
         elif need == "user_password":
             title = _(conv.PASSWORD).format(name=user.get("username", ""))
+        elif need == "pin":
+            title = _(conv.PIN)
         else:
             title = _(conv.PASSPHRASE)
         heading = Gtk.Label(label=title, xalign=0)
@@ -526,7 +528,11 @@ class ChatWindow(Adw.ApplicationWindow):
 
             threading.Thread(target=work, daemon=True).start()
             return
-        if len(value) < MIN_PASSWORD:
+        if need == "pin":
+            if not plans.PIN_RE.match(value):
+                note.set_label(_(conv.BAD_PIN))
+                return
+        elif len(value) < MIN_PASSWORD:
             note.set_label(_(conv.SHORT))
             return
         if second is not None and second.get_text() != value:
@@ -540,7 +546,12 @@ class ChatWindow(Adw.ApplicationWindow):
             note.set_label(_(conv.CONNECT_FAILED))
             button.set_sensitive(True)
             return False
-        which = {"wifi_password": "network", "user_password": "user", "passphrase": "passphrase"}
+        which = {
+            "wifi_password": "network",
+            "user_password": "user",
+            "passphrase": "passphrase",
+            "pin": "pin",
+        }
         self.secrets.put(which[need], value)
         plan = plans.load(self.plan_path)
         plans.mark_entered(plan, which[need])
