@@ -66,7 +66,7 @@ export default class VilnaExtension extends Extension {
             new ColorSchemeClass(),
             new WindowMotion(this._settings),
             new Wobble(this._settings),
-            new Widgets(this._settings, () => this.openPreferences()),
+            new Widgets(this._settings, () => this.openPreferences(), this.dir),
         ];
         for (const part of this._userParts)
             part.enable();

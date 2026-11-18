@@ -6,7 +6,7 @@
 
 - Unix-сокет, потоковий. У Vilna `/run/gloxi/<uid>/gloxi.sock`: його тримає systemd (`gloxi@<uid>.socket`) і передає `gloxid` як stdin. Для розробки — `gloxid --socket <шлях>`, а вікно бере шлях зі змінної `GLOXI_SERVICE_SOCKET`.
 - `gloxid` дивиться, хто під'єднався (`SO_PEERCRED`), і відповідає лише людині, якій належить (`--owner-uid`), або root. Решті він не відповідає зовсім і закриває з'єднання.
-- Вікно водночас одне: нове з'єднання забирає події собі, а старе отримує `{"event":"replaced"}` і закривається.
+- Вікно водночас одне: з'єднання стає вікном зі своїм першим запитом (для вікна це `hello`), забирає події собі, а старе вікно отримує `{"event":"replaced"}` і закривається. З'єднання, яке шле лише `text.translate`, вікном не стає й вікна Gloxi не чіпає.
 - Кожне повідомлення — один об'єкт JSON в UTF-8 в одному рядку. Рядок, довший за 1 МіБ, закриває з'єднання.
 
 ## Запити вікна
@@ -22,10 +22,11 @@
 | `chat.set_mode` | `mode`: `auto`, `local` або `cloud` | `ok`, `state` |
 | `chat.offer_intro` | `always`: `true` — розмова про копії на прохання людини (`/backup`) | `started` |
 | `chat.report_problem` | — | `started` |
+| `text.translate` | `text` (до 4000 символів), `language`: `uk`, `en`, `es`, `pl`, `de`, `fr`, `it`, `ro`, `cs` або `lt` | `text`, `language`: переклад моделлю на цьому комп'ютері, ніколи хмарою; без історії, системного промпту Gloxi й функцій ([`translate.py`](../src/gloxi/translate.py)). Нею розширення Vilna перекладає погодні попередження MeteoAlarm, коли служба не дала тексту мовою людини |
 
 `state`: `busy`, `cloud_status` (рядок для заголовка), `current` (вибраний режим), `choices` — `[{"mode", "label", "detail"}]` для перемикача моделі.
 
-Коди помилок: `bad_json`, `bad_request`, `bad_params`, `unknown_method`.
+Коди помилок: `bad_json`, `bad_request`, `bad_params`, `unknown_method`, `unavailable` (моделі на цьому комп'ютері немає або вона не відповіла).
 
 Рядки в результатах і подіях уже перекладено мовою з `hello`.
 

@@ -18,6 +18,7 @@ import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/ex
 import {
     geocodeUrl, homeCountry, languageOf, parseGeocode, roundForPrivacy, weatherPlace, widgetText,
 } from './lib/widgets.js';
+import {DISCLAIMER, SITE_URL, alertText} from './lib/alerts.js';
 
 const APP_ID = 'org.gnome.Shell.Extensions';
 
@@ -169,5 +170,35 @@ export default class VilnaPreferences extends ExtensionPreferences {
         });
 
         page.add(where);
+
+        // Weather warnings (weatherAlerts.js, lib/alerts.js). MeteoAlarm's
+        // terms ask for the source, a link and their disclaimer, word for word.
+        const a = alertText(GLib.get_language_names());
+        const alerts = new Adw.PreferencesGroup({title: a.title, description: a.meteredHint});
+        settings.bind('weather', alerts, 'sensitive', Gio.SettingsBindFlags.GET);
+        const show = new Adw.SwitchRow({title: a.show});
+        settings.bind('weather-alerts', show, 'active', Gio.SettingsBindFlags.DEFAULT);
+        alerts.add(show);
+        const metered = new Adw.SwitchRow({title: a.metered});
+        settings.bind('alerts-metered', metered, 'active', Gio.SettingsBindFlags.DEFAULT);
+        alerts.add(metered);
+        const zone = new Adw.ActionRow({title: ''});
+        zone.add_css_class('property');
+        const showZone = () => {
+            const [, , codes] = settings.get_value('alert-zones').deepUnpack();
+            zone.title = codes.length ? a.zone.replace('%s', codes.join(', ')) : a.zoneNone;
+        };
+        const zoneId = settings.connect('changed::alert-zones', showZone);
+        window.connect('close-request', () => {
+            settings.disconnect(zoneId);
+            return false;
+        });
+        showZone();
+        alerts.add(zone);
+        const source = new Adw.ActionRow({title: a.source, subtitle: DISCLAIMER, activatable: true});
+        source.add_suffix(new Gtk.Image({icon_name: 'adw-external-link-symbolic'}));
+        source.connect('activated', () => Gio.AppInfo.launch_default_for_uri(SITE_URL, null));
+        alerts.add(source);
+        page.add(alerts);
     }
 }

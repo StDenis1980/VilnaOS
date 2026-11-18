@@ -29,6 +29,7 @@ import {
 } from './lib/widgets.js';
 import {skyColours} from './lib/weatherSky.js';
 import {Sky} from './sky.js';
+import {WeatherAlerts} from './weatherAlerts.js';
 
 const GLOXI = 'io.github.stdenis1980.Gloxi.desktop';
 const BACKUP = 'io.github.stdenis1980.VilnaBackup.desktop';
@@ -61,9 +62,11 @@ function readText(path) {
 }
 
 export class Widgets {
-    constructor(settings, openPreferences) {
+    // dir: the extension's directory, for alertZones.js.
+    constructor(settings, openPreferences, dir) {
         this._settings = settings;
         this._openPreferences = openPreferences;
+        this._dir = dir;
         this._root = null;
     }
 
@@ -95,6 +98,7 @@ export class Widgets {
             this._show();
         this._weatherCard.visible = this._settings.get_boolean('weather');
         this._refreshWeather();
+        this._alerts.update();
     }
 
     _show() {
@@ -157,6 +161,9 @@ export class Widgets {
         const weatherButton = new St.Button({child: row, x_expand: true, style_class: 'vilna-widget-plain'});
         weatherButton.connect('clicked', () => this._openPreferences?.());
         this._weatherContent.add_child(weatherButton);
+        // Warnings below the forecast (weatherAlerts.js).
+        this._alerts = new WeatherAlerts(this._settings, this._dir, () => this.currentPlace(), () => this._country());
+        this._weatherContent.add_child(this._alerts.actor);
         this._root.add_child(this._weatherCard);
 
         // Копії.
@@ -233,6 +240,8 @@ export class Widgets {
             this._backupMonitor.cancel();
         }
         this._backupMonitor = null;
+        this._alerts.destroy();
+        this._alerts = null;
         this._sky.destroy();
         this._sky = null;
         this._root.destroy();
@@ -306,14 +315,22 @@ export class Widgets {
     // The place: the person's choice, else the capital of the system's country.
     currentPlace() {
         const [name, lat, lon] = this._settings.get_value('weather-location').deepUnpack();
+        return weatherPlace([name, lat, lon], this._country());
+    }
+
+    _country() {
         const region = new Gio.Settings({schema_id: 'org.gnome.system.locale'}).get_string('region');
-        const country = homeCountry({
+        return homeCountry({
             zone: GLib.TimeZone.new_local().get_identifier(),
             zoneTab: readText('/usr/share/zoneinfo/zone.tab'),
             region,
             lang: GLib.getenv('LANG'),
         });
-        return weatherPlace([name, lat, lon], country);
+    }
+
+    // For the headless test.
+    get weatherAlerts() {
+        return this._alerts;
     }
 
     async _refreshWeather() {

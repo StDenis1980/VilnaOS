@@ -43,6 +43,10 @@ SESSION_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
 # At most this much of the kept conversation goes back to a window in hello.
 HISTORY_BYTES = 256 * 1024
 MODES = ("auto", "local", "cloud")
+# Requests that other parts of the desktop make (the Shell extension's weather
+# warnings): a connection that makes only these is not a window, so it does
+# not take the events away from the Gloxi window that is open.
+NOT_A_WINDOW = frozenset({"text.translate"})
 
 
 def service_socket(env: dict[str, str] | None = None) -> Path:
@@ -185,8 +189,12 @@ class Service:
         owner_uid: int,
         environ: dict[str, str] | None = None,
         allow_root: bool = True,
+        translator: Callable[[str, str], str] | None = None,
     ) -> None:
         self.controller = controller
+        # (text, language) -> text, by the model on this computer only
+        # (gloxi.translate); None when there is none.
+        self.translator = translator
         self.view = view
         self.owner_uid = owner_uid
         self.allow_root = allow_root
@@ -203,6 +211,7 @@ class Service:
             "chat.share_history": self._share_history,
             "chat.offer_intro": self._offer_intro,
             "chat.report_problem": lambda _p: {"started": self.controller.report_problem()},
+            "text.translate": self._translate,
         }
 
     # -- requests ------------------------------------------------------------------
@@ -296,6 +305,24 @@ class Service:
             raise RequestError("bad_params", "always must be true or false")
         return {"started": self.controller.offer_intro(always=always)}
 
+    def _translate(self, params: dict) -> dict:
+        from gloxi.llm import ModelError
+        from gloxi.translate import LANGUAGES, MAX_TEXT
+
+        text, language = params.get("text"), params.get("language")
+        if not isinstance(text, str) or not text.strip():
+            raise RequestError("bad_params", "text must be a non-empty string")
+        if len(text) > MAX_TEXT:
+            raise RequestError("bad_params", f"text must be at most {MAX_TEXT} characters")
+        if language not in LANGUAGES:
+            raise RequestError("bad_params", f"language must be one of {', '.join(LANGUAGES)}")
+        if self.translator is None:
+            raise RequestError("unavailable", "no model on this computer")
+        try:
+            return {"text": self.translator(text, language), "language": language}
+        except ModelError as exc:
+            raise RequestError("unavailable", str(exc)) from exc
+
     def handle(self, request: Any) -> dict | None:
         """One request in, one response out (None for a request without id)."""
         if not isinstance(request, dict):
@@ -331,19 +358,25 @@ class Service:
         with conn:
             if not self.allowed(peer_uid(conn)):
                 return  # anybody else gets no answer at all
-            old = self.view.attach(conn)
-            if old is not None:
-                try:
-                    old.sendall(_line({"event": "replaced"}))
-                    old.shutdown(socket.SHUT_RDWR)
-                except OSError:
-                    pass
             try:
                 self._read(conn)
             finally:
                 self.view.detach(conn)
 
+    def _attach(self, conn: socket.socket) -> None:
+        """``conn`` becomes the window; the one before it is told and closed."""
+        old = self.view.attach(conn)
+        if old is not None and old is not conn:
+            try:
+                old.sendall(_line({"event": "replaced"}))
+                old.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+
     def _read(self, conn: socket.socket) -> None:
+        # A connection becomes the window with its first request that is
+        # not in NOT_A_WINDOW (for the window itself, its hello).
+        window = False
         buf = b""
         while True:
             try:
@@ -362,6 +395,10 @@ class Service:
                 except ValueError:
                     response = {"id": None, "error": {"code": "bad_json", "message": "not JSON"}}
                 else:
+                    method = request.get("method") if isinstance(request, dict) else None
+                    if not window and method not in NOT_A_WINDOW:
+                        self._attach(conn)
+                        window = True
                     response = self.handle(request)
                 if response is not None:
                     self.view.reply(conn, response)
@@ -437,12 +474,21 @@ def build_controller(view: EventView, owner_uid: int | None = None):
     home = owner_home(owner_uid) if owner_uid is not None else None
     tools = file_tools(settings.tools_enabled, owner_home=home)
     conversation = Conversation(router, settings.system_prompt, tools=tools)
-    return ChatController(
+    controller = ChatController(
         conversation,
         view,
         intro=backup_intro(settings.tools_enabled),
         vpn=vpn_intro(settings.tools_enabled),
     )
+    return controller, local_translator(local)
+
+
+def local_translator(local) -> Callable[[str, str], str]:
+    """Translations by the model on this computer, never the cloud (gloxi.translate)."""
+    from gloxi.translate import translate, translator_client
+
+    client = translator_client(local)
+    return lambda text, language: translate(client, text, language)
 
 
 def inherited_listener() -> socket.socket | None:
@@ -500,11 +546,11 @@ def main(argv: list[str] | None = None) -> int:
         listener = bind(args.socket or service_socket())
     view = EventView()
     try:
-        controller = build_controller(view, args.owner_uid)
+        controller, translator = build_controller(view, args.owner_uid)
     except ConfigError as exc:
         print(f"gloxid: {exc}", file=sys.stderr)
         return 78  # EX_CONFIG: systemd does not restart in a loop
-    service = Service(controller, view, owner_uid=args.owner_uid)
+    service = Service(controller, view, owner_uid=args.owner_uid, translator=translator)
     # The window that started gloxid is about to be used: have the model read
     # the prompt and the functions while the person types.
     controller.warm()

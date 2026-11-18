@@ -357,8 +357,9 @@ async function windows() {
     settings.set_boolean('gloxi-dock', false);
 }
 
-const theSky = () => Main.extensionManager.lookup(UUID)?.stateObj?._userParts
-    ?.find(p => p.constructor.name === 'Widgets')?.sky ?? null;
+const theWidgets = () => Main.extensionManager.lookup(UUID)?.stateObj?._userParts
+    ?.find(p => p.constructor.name === 'Widgets') ?? null;
+const theSky = () => theWidgets()?.sky ?? null;
 
 // The live sky moves only when it can be seen and animations are on.
 // windows() leaves the other window maximised, over the widgets.
@@ -472,12 +473,70 @@ async function widgets() {
     check('widgets: the clock shows the time', /^\d{1,2}:\d{2}$/.test(time ?? ''), true);
     const weatherText = () => texts(widget('vilnaWeatherWidget'));
     check('widgets: weather for the capital by default (Madrid)',
-        await waitFor(() => weatherText()[2]?.startsWith('Madrid · '), 5000) ? weatherText().slice(1) : weatherText(),
+        await waitFor(() => weatherText()[2]?.startsWith('Madrid · '), 5000) ? weatherText().slice(1, 3) : weatherText(),
         ['18°', 'Madrid · Clear · ↑21° ↓11°']);
     const sky = theSky();
     check('sky: a clear day behind the weather, with dark text',
         [sky?.kind, sky?.actor.visible, widget('vilnaWeatherWidget')?.get_last_child().has_style_class_name('vilna-sky-ink-dark')],
         ['clear', true, true]);
+    const alertTexts = () => texts(widget('vilnaWeatherAlerts'));
+    check('warnings: the zone is found on this computer', await waitFor(() =>
+        settings.get_value('alert-zones').deepUnpack()[2].join() === 'ES219', 15000)
+        ? settings.get_value('alert-zones').deepUnpack()[2]
+        : [settings.get_value('alert-zones').deepUnpack(), theWidgets()?.weatherAlerts?.status], ['ES219']);
+    check('warnings: orange wind in the zone and yellow fog around it, the original words and the service',
+        await waitFor(() => alertTexts().length === 6, 10000)
+            ? alertTexts().map(s => s.replace(/(\b[A-Z][a-z]{2} )?\d{1,2}:\d{2}/g, 'T'))
+            : alertTexts(),
+        ['Orange warning: Wind · until T', 'Orange test warning. Test zone', 'Test Service · issued T',
+            'Yellow warning: Fog · until T', 'Yellow Fog Warning issued for Spain - Área de prueba',
+            'EUMETNET – MeteoAlarm · issued T']);
+    check('warnings: words already in the person\u2019s language, Gloxi not asked', gloxiRequests.length, 0);
+    // The first refresh came before passwordFields() turned the extension
+    // off and on, which took its notification away; the warning was
+    // remembered, so it did not come again.
+    const stateFile = GLib.build_filenamev([GLib.get_user_state_dir(), 'vilna', 'alerts-notified.json']);
+    const notified = () => {
+        try {
+            return new TextDecoder().decode(GLib.file_get_contents(stateFile)[1]);
+        } catch {
+            return '';
+        }
+    };
+    const warningNotes = () => Main.messageTray.getSources().flatMap(s => s.notifications ?? [])
+        .filter(n => /warning:/.test(n.title)).map(n => [n.title, n.urgency]);
+    check('warnings: remembered, so it comes once', [notified(), warningNotes()], ['["test.orange.wind"]', []]);
+    // Forget it and start the widgets again: the orange one comes, the
+    // yellow one does not.
+    GLib.unlink(stateFile);
+    settings.set_boolean('widgets', false);
+    settings.set_boolean('widgets', true);
+    check('warnings: one notification, for the orange one only',
+        await waitFor(() => warningNotes().length > 0, 10000) ? warningNotes() : [warningNotes(), notified()],
+        [['Orange warning: Wind', 2]]);
+    // A person reading Ukrainian: the service gave no Ukrainian words, so
+    // Gloxi translates them and the translation stands above the original.
+    const alerts = theWidgets()?.weatherAlerts;
+    alerts._languages = ['uk_UA.UTF-8', 'uk'];
+    alerts._caps.clear();
+    alerts.update();
+    check('warnings: Gloxi\u2019s translation above the unchanged original',
+        await waitFor(() => alertTexts().length === 8, 10000)
+            ? alertTexts().map(s => s.replace(/(\b[A-Z][a-z]{2} )?\d{1,2}:\d{2}/g, 'T'))
+            : [alertTexts(), alerts.status],
+        ['Orange warning: Wind · until T', '[uk] Orange test warning. Test zone', 'Orange test warning. Test zone',
+            'Test Service · issued T · translated by Gloxi',
+            'Yellow warning: Fog · until T', '[uk] Yellow Fog Warning issued for Spain - Área de prueba',
+            'Yellow Fog Warning issued for Spain - Área de prueba',
+            'EUMETNET – MeteoAlarm · issued T · translated by Gloxi']);
+    check('warnings: Gloxi was asked for Ukrainian, once per text',
+        gloxiRequests.map(r => [r.method, r.params.language]), [['text.translate', 'uk'], ['text.translate', 'uk']]);
+    alerts.update();
+    await sleep(1000);
+    check('warnings: a translation is kept, not asked for again', gloxiRequests.length, 2);
+    settings.set_boolean('weather-alerts', false);
+    check('warnings: off by the setting', await waitFor(() => !widget('vilnaWeatherAlerts')?.visible, 3000), true);
+    settings.set_boolean('weather-alerts', true);
     check('sky: the icon gives way to the sky', widget('vilnaWeatherWidget')?.get_last_child()
         .get_children().flatMap(c => c.get_children?.() ?? []).some(c => c instanceof St.Icon && c.visible), false);
     settings.set_value('weather-location', new GLib.Variant('(sdd)', ['València', 39.47, -0.38]));
@@ -564,12 +623,45 @@ async function run() {
     await skyMotion();
 }
 
+// A stand-in for gloxid's text.translate (gloxi/docs/service-protocol.md)
+// on GLOXI_SERVICE_SOCKET: it answers "[uk] " + the text and keeps the
+// requests, so the checks see what the weather card asked.
+const gloxiRequests = [];
+function fakeGloxid() {
+    const path = GLib.getenv('GLOXI_SERVICE_SOCKET');
+    if (!path)
+        return;
+    const service = new Gio.SocketService();
+    service.add_address(Gio.UnixSocketAddress.new(path), Gio.SocketType.STREAM, Gio.SocketProtocol.DEFAULT, null);
+    service.connect('incoming', (_s, conn) => {
+        const input = new Gio.DataInputStream({base_stream: conn.get_input_stream()});
+        input.read_line_async(GLib.PRIORITY_DEFAULT, null, (_i, result) => {
+            try {
+                const [line] = input.read_line_finish_utf8(result);
+                const request = JSON.parse(line);
+                gloxiRequests.push(request);
+                // An event first, as a busy gloxid may send: it is not the answer.
+                const lines = [{event: 'busy', busy: false},
+                    {id: request.id, result: {text: `[${request.params.language}] ${request.params.text}`}}];
+                conn.get_output_stream().write_all(new TextEncoder().encode(
+                    lines.map(l => `${JSON.stringify(l)}\n`).join('')), null);
+            } catch (e) {
+                console.warn(`vilna fake gloxid: ${e.message}`);
+            }
+        });
+        return true;
+    });
+    service.start();
+    globalThis.__vilnaFakeGloxid = service;
+}
+
 export default class VilnaTest extends Extension {
     enable() {
         // Enabled again whenever the Vilna extension is; run only once.
         if (globalThis.__vilnaTestRan)
             return;
         globalThis.__vilnaTestRan = true;
+        fakeGloxid();
         run().catch(e => check('no exception', `${e}\n${e.stack}`, null)).finally(flush);
     }
 

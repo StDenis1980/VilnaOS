@@ -84,5 +84,20 @@
       <summary>Place for the weather</summary>
       <description>Name, latitude and longitude of a place the person chose. Empty: the capital of the system's country, so that no location of the person is sent.</description>
     </key>
+    <key name="weather-alerts" type="b">
+      <default>true</default>
+      <summary>Weather warnings</summary>
+      <description>MeteoAlarm's warnings for the weather place on the weather card, and a notification for each orange or red one. The whole country's warnings are downloaded and matched on this computer.</description>
+    </key>
+    <key name="alerts-metered" type="b">
+      <default>false</default>
+      <summary>Download warnings on a metered connection</summary>
+      <description>Off: on a metered connection the warnings pause and the card asks first. The country's warnings are up to 0.5 MB every 10 minutes; the zone boundaries about 30 MB once per place.</description>
+    </key>
+    <key name="alert-zones" type="(ddas)">
+      <default>(0.0, 0.0, @as [])</default>
+      <summary>Warning zones of the weather place</summary>
+      <description>Latitude and longitude of the weather place and the MeteoAlarm zones (EMMA_ID) it lies in, found on this computer. Cleared or stale: found again.</description>
+    </key>
   </schema>
 </schemalist>
