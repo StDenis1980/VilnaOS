@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.11
+Version:        0.12
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later

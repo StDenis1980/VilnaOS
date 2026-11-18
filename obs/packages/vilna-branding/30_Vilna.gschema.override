@@ -36,10 +36,39 @@ logo='/usr/share/pixmaps/distribution-logos/vilna-logo-login.svg'
 
 # The Vilna GNOME Shell extension, for everyone and for the login screen
 # (GDM reads the same defaults): Latin layout in password fields, Gloxi
-# above other windows, the login screen background.
+# above other windows, the login screen background, the dock's colours.
+# Dash to Dock is the dock (docs/design/desktop/README.md); it runs only
+# in the person's session, not on the login screen.
 [org.gnome.shell]
-enabled-extensions=['vilna@stdenis1980.github.io']
+enabled-extensions=['vilna@stdenis1980.github.io', 'dash-to-dock@micxgx.gmail.com']
 favorite-apps=['io.github.stdenis1980.Gloxi.desktop', 'org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop']
+
+# The dock (Dash to Dock, gnome-shell-extension-dash-to-dock): at the
+# bottom, 48 px icons, Gloxi first (favorite-apps above). It stays on an
+# empty desktop and slides away when the focused app's window covers it.
+# Its look comes from the Vilna extension's stylesheet, so upstream's
+# theme and colour options stay off. A click shows the app, a second
+# click minimises it, with several windows the previews open. The
+# session starts on the desktop, not in the overview.
+[org.gnome.shell.extensions.dash-to-dock]
+dock-position='BOTTOM'
+dock-fixed=false
+intellihide=true
+intellihide-mode='FOCUS_APPLICATION_WINDOWS'
+dash-max-icon-size=48
+apply-custom-theme=false
+custom-background-color=false
+transparency-mode='DEFAULT'
+running-indicator-style='DOTS'
+running-indicator-dominant-color=false
+unity-backlit-items=false
+click-action='focus-minimize-or-previews'
+show-trash=true
+show-mounts=true
+show-mounts-only-mounted=true
+show-apps-at-top=false
+disable-overview-on-startup=true
+animation-time=0.28
 
 [org.gnome.software]
 install-bundles-system-wide=false

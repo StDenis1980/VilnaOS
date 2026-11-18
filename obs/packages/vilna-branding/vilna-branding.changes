@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 18 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.12: the dock. Dash to Dock is enabled for everyone and set up
+  in 30_Vilna.gschema.override: at the bottom, 48 px icons, hides
+  when the focused window covers it, dots for running apps, the
+  Vilna extension's colours, the session starts on the desktop.
+
+-------------------------------------------------------------------
 Tue Nov 17 23:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.11: snapper plugin 20-vilna-loader-preferred: after a rollback,

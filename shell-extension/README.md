@@ -109,6 +109,10 @@ Gloxi потрібне `--talk-name=io.github.stdenis1980.VilnaShell` у ман�
 
 [ADR 0027](../docs/adr/0027-vpn-proton-mullvad.md), розд. 6. Мережа, що просить увійти через свою сторінку, спільна з чужими людьми. Коли людина пройшла цю сторінку й інтернет запрацював, а тунелю VPN немає, Shell показує одне сповіщення для цієї мережі. Кнопка «Налаштувати VPN» запускає дію `vpn` з `io.github.stdenis1980.Gloxi.desktop` (`gloxi-gtk --vpn`), і Gloxi починає розмову про VPN. Сам Shell нічого не вмикає: вхід і з'єднання лишаються в застосунку провайдера. Сторінку входу відкриває GNOME. За суворого DNS-over-TLS їй допомагає `vilna-netguard`, бо на час входу дає мережі її DNS.
 
+## (е) Кольори доку Vilna
+
+Док стільниці — Dash to Dock ([`docs/design/desktop/`](../docs/design/desktop/README.md)); його вмикає й налаштовує `vilna-branding`, а вигляд дає це розширення. У GNOME Shell 46 розширення має одну таблицю стилів на будь-який стиль, тому `colorScheme.js` ставить на `Main.uiGroup` клас `vilna-light` або `vilna-dark` за ключем `org.gnome.desktop.interface color-scheme` (темний лише за `prefer-dark`, бо Vilna світла за замовчуванням) і стежить за перемиканням у «Налаштування ▸ Вигляд». `stylesheet.css` за цим класом малює док: кремове скло на світлому, нічне синє скло на темному, кути 24 px, крапки запущених програм іржаві на світлому й золоті на темному, підписи над значками пігулками. Власну тему Dash to Dock вимкнено (`apply-custom-theme=false`). На екрані входу класу немає: док там не працює.
+
 ## Налаштування
 
 Схема `org.gnome.shell.extensions.vilna` ([`schemas/`](vilna@stdenis1980.github.io/schemas/)):
@@ -152,7 +156,8 @@ gnome-extensions enable vilna@stdenis1980.github.io
 | `dock.js`, `lib/geometry.js` | (в) і місце індикатора |
 | `dbus.js` | Сервіс D-Bus |
 | `vpnOffer.js`, `lib/wifiOffer.js` | (д): стан NetworkManager, коли пропонувати, слова 10 мовами |
-| `stylesheet.css` | Індикатор, смуга й екран входу (г) |
+| `colorScheme.js`, `lib/colorScheme.js` | (е): клас світлого чи темного стилю на `Main.uiGroup` |
+| `stylesheet.css` | Індикатор, смуга, екран входу (г) і кольори доку (е) |
 
 Логіка без GNOME — у `lib/`: її перевіряють тести на node.
 
@@ -160,11 +165,11 @@ gnome-extensions enable vilna@stdenis1980.github.io
 
 ```sh
 cd shell-extension
-node --test tests/*.test.js     # логіка в lib/, 43 тести
+node --test tests/*.test.js     # логіка в lib/, 45 тестів
 tests/shell/run.sh              # справжній GNOME Shell без екрана
 sudo tests/shell/run.sh gdm     # екран входу (підробляє localed, тому root)
 ```
 
-`tests/shell/run.sh` запускає GNOME Shell (46 або новіший) з `--headless`, допоміжне розширення `tests/shell/vilna-test@vilna.test` і три GTK-вікна (Gloxi, діалог Herkos, стороннє вікно з полем пароля). Воно перевіряє: поля паролів GNOME Shell і GTK, «Пароль»/«Повторіть пароль», ручне перемикання в полі, польську розкладку, вимкнення розширення посеред поля, режим блокування екрана, «поверх усіх» для Gloxi і Herkos, вікно Gloxi біля правого краю (усі розміри, D-Bus, вимкнення), смугу (робоча область, розгорнуте вікно, банери, 1/6 і 1/3, згортання й закриття Gloxi), ім'я на D-Bus у сеансі й відсутність його на екрані входу, тло екрана входу (г). Потрібні `gnome-shell`, `gjs`, typelib GTK 4, `dbus-run-session` і системна шина D-Bus. У CI це окреме завдання `shell-extension` на Ubuntu 24.04 (GNOME Shell 46).
+`tests/shell/run.sh` запускає GNOME Shell (46 або новіший) з `--headless`, допоміжне розширення `tests/shell/vilna-test@vilna.test` і три GTK-вікна (Gloxi, діалог Herkos, стороннє вікно з полем пароля). Воно перевіряє: поля паролів GNOME Shell і GTK, «Пароль»/«Повторіть пароль», ручне перемикання в полі, польську розкладку, вимкнення розширення посеред поля, режим блокування екрана, «поверх усіх» для Gloxi і Herkos, вікно Gloxi біля правого краю (усі розміри, D-Bus, вимкнення), смугу (робоча область, розгорнуте вікно, банери, 1/6 і 1/3, згортання й закриття Gloxi), ім'я на D-Bus у сеансі й відсутність його на екрані входу, тло екрана входу (г), кольори доку за світлим і темним стилем на підставному доку з іменами Dash to Dock (е) і відсутність класу стилю на екрані входу. Потрібні `gnome-shell`, `gjs`, typelib GTK 4, `dbus-run-session` і системна шина D-Bus. У CI це окреме завдання `shell-extension` на Ubuntu 24.04 (GNOME Shell 46).
 
 Що перевірити руками на пристрої з Aeon (GNOME 49+): справжній екран входу GDM і блокування, Wi-Fi і зашифрована флешка, Firefox, клацання по індикатору у звичайному вікні.

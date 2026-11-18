@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.12
+Version:        0.13
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -51,6 +51,8 @@ Requires:       vilna-mcp-calendar
 Requires:       vilna-mcp-apps
 Requires:       vilna-flatpak-defaults
 Requires:       gnome-shell-extension-vilna
+# The dock (docs/design/desktop/README.md), set up in vilna-branding.
+Requires:       gnome-shell-extension-dash-to-dock
 # Translations of the GNOME desktop. openSUSE puts them in *-lang
 # packages that only supplement the program, and the image installs
 # required packages alone (KIWI onlyRequired, zypp solver.onlyRequires):
