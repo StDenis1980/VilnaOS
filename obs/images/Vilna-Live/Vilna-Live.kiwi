@@ -91,6 +91,12 @@
          packages cover the ten languages (ADR 0009): uk, ro and lt are
          in -other. -->
     <package name="MozillaFirefox"/>
+    <!-- MozillaFirefox needs some MozillaFirefox-branding and both the
+         openSUSE and the upstream one provide it: without a choice OBS
+         leaves the image "unresolvable" (2026-11-18). The openSUSE one
+         is what openSUSE's own images take, so the Factory image rules
+         allow it; live session only. -->
+    <package name="MozillaFirefox-branding-openSUSE"/>
     <package name="MozillaFirefox-translations-common"/>
     <package name="MozillaFirefox-translations-other"/>
     <!-- Boot of a live ISO -->
