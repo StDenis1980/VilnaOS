@@ -13,6 +13,6 @@
   <service name="verify_file">
     <param name="file">_service:download_url:dash-to-dock-110.tar.gz</param>
     <param name="verifier">sha256</param>
-    <param name="checksum">0000000000000000000000000000000000000000000000000000000000000000</param>
+    <param name="checksum">0aa29bfea9dd9c3622e63b8eeabb9d30afa96b64337132eeb1b7add4c90f5473</param>
   </service>
 </services>
