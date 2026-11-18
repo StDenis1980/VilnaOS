@@ -7,6 +7,9 @@ Wed Nov 18 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   The Shell keeps its own bookkeeping; only the ease parameters of
   normal windows change. New key window-motion: vilna, reduced
   (100 ms fades only) or gnome.
+- Rubber windows: a dragged window bends a little (own spring grid
+  on a Clutter.DeformEffect) and springs back when let go. Key
+  window-wobble, on by default, only with the vilna motion.
 
 -------------------------------------------------------------------
 Wed Nov 18 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

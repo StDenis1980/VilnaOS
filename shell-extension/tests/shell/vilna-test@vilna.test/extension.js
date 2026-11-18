@@ -268,6 +268,36 @@ async function windows() {
     global.display.emit('grab-op-end', findWindow(OTHER), Meta.GrabOp.MOVING);
     await sleep(400);
     check('motion: set down after the drag', [otherActor.scale_x, otherActor.pivot_point.x], [1, 0]);
+    // Rubber window: the far side lags while the window is dragged and
+    // springs back afterwards. GNOME Shell turns animations off on
+    // software rendering, as here; turn them on for this part only.
+    const softwareOnly = !St.Settings.get().enable_animations;
+    if (softwareOnly)
+        St.Settings.get().uninhibit_animations();
+    const wobble = () => otherActor.get_effect('vilna-wobble');
+    const other0 = findWindow(OTHER).get_frame_rect();
+    global.display.emit('grab-op-begin', findWindow(OTHER), Meta.GrabOp.MOVING);
+    check('rubber: effect on while dragged', Boolean(wobble()), true);
+    findWindow(OTHER).move_frame(true, other0.x + 160, other0.y + 40);
+    await sleep(30);
+    const bend = wobble()?.jelly.at(1, 1) ?? [0, 0];
+    check('rubber: the window bends with the drag', Math.hypot(...bend) > 2, true);
+    global.display.emit('grab-op-end', findWindow(OTHER), Meta.GrabOp.MOVING);
+    check('rubber: effect gone once settled', await waitFor(() => !wobble(), 3000), true);
+    findWindow(OTHER).move_frame(true, other0.x, other0.y);
+    settings.set_boolean('window-wobble', false);
+    global.display.emit('grab-op-begin', findWindow(OTHER), Meta.GrabOp.MOVING);
+    check('rubber: off by the setting', Boolean(wobble()), false);
+    global.display.emit('grab-op-end', findWindow(OTHER), Meta.GrabOp.MOVING);
+    settings.set_boolean('window-wobble', true);
+    if (softwareOnly) {
+        St.Settings.get().inhibit_animations();
+        global.display.emit('grab-op-begin', findWindow(OTHER), Meta.GrabOp.MOVING);
+        check('rubber: none with animations off', Boolean(wobble()), false);
+        global.display.emit('grab-op-end', findWindow(OTHER), Meta.GrabOp.MOVING);
+    }
+    await sleep(400);
+
     settings.set_string('window-motion', 'reduced');
     findWindow(OTHER).minimize();
     await sleep(600);
