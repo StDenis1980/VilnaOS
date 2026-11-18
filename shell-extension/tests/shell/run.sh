@@ -37,6 +37,9 @@ fi
 
 export HOME=$work/home GSETTINGS_BACKEND=keyfile VILNA_TEST_OUT=$work/result.txt
 export VILNA_TEST_MODE=$mode VILNA_TEST_HERE=$here
+# Widgets: the weather comes from this file instead of Open-Meteo, and the
+# clock is in Madrid, so the default place is that capital.
+export VILNA_TEST_WEATHER_FILE=$here/weather.json TZ=Europe/Madrid
 dbus-run-session -- bash -c '
     set -u
     export XDG_RUNTIME_DIR=$(mktemp -d)
