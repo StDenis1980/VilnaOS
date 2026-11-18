@@ -78,7 +78,7 @@ Live-ISO (завантаження з USB)
 | 5 | Що робити з диском | Варіанти, зрозумілі людині: **замінити все** / **поставити поруч із Windows** / **використати вільне місце** / **розмітка вручну** (відкриває звичайний редактор розділів) | Схема розмітки |
 | 6 | Старі файли | Зберегти ваші файли? Gloxi показує розміри папок і пропонує: перенести в нову систему / залишити на диску / скопіювати на зовнішній диск перед стиранням | Список папок для перенесення, куди |
 | 7 | Старі зашифровані дані | Якщо знайдено зашифрований том: «Щоб забрати файли, потрібен пароль або ключ відновлення. Введіть його в захищене поле — я його не побачу». Том відкривається лише для читання | Том, папки для перенесення |
-| 8 | Шифрування нової системи | Рекомендовано: шифрування з TPM2 (як в Aeon) + ключ відновлення. Gloxi пояснює, навіщо зберегти ключ, і просить підтвердити, що його збережено | Шифрування, підтвердження ключа відновлення |
+| 8 | Шифрування нової системи | Рекомендовано: шифрування з TPM2 (як в Aeon) + ключ відновлення. На вибір — TPM2 + PIN запуску (6–20 цифр, рішення Denys 18.11.2026: вкрадений ноутбук не доходить навіть до екрана входу; PIN вводиться в захищене поле, Gloxi його не бачить). Gloxi пояснює, навіщо зберегти ключ, і просить підтвердити, що його збережено | Шифрування, підтвердження ключа відновлення |
 | 9 | Обліковий запис | Ім'я, назва комп'ютера; пароль — захищене поле | Користувач |
 | 10 | Час і регіон | Часовий пояс (за мережею або вибором), формат дат | Часовий пояс, регіон |
 | 11 | Приватність | Пояснення шлюзу приватності; хмарна модель вимкнена до першого входу, вибір — потім | Налаштування хмари: вимкнено |
@@ -107,7 +107,7 @@ disk:
   shrink: {partition: <PARTUUID>, to: 300GiB, bitlocker: suspended, checked: true, backup_confirmed: true}
   # partitions: лише для layout: manual, з редактора розділів класичного майстра:
   # [{use: efi, partition: <PARTUUID>, format: false}, {use: system, size: 100GiB}]
-  encryption: {method: tpm2, recovery_key_acknowledged: true}  # tpm2 | passphrase (+ passphrase: entered) | none
+  encryption: {method: tpm2, recovery_key_acknowledged: true}  # tpm2 | tpm2-pin (+ pin: entered) | passphrase (+ passphrase: entered) | none
 migrate:
   - {source: <PARTUUID>, unlock: bitlocker, secret: entered, folders: [Documents, Pictures], size: 38GiB}
 user: {full_name: "…", username: "…", hostname: "…", password: entered}
@@ -178,7 +178,7 @@ confirmed_by_user: false                            # ставить лише е
 1. Рушій створює випадковий ключ-файл (1 КіБ, у `/run`, лише для root) і кладе його в keyring ядра як `cryptenroll`.
 2. `systemd-repart` розмічає диск: ESP 512 МіБ і розділ системи LUKS2 з цим ключ-файлом у слоті 0 (`Encrypt=key-file`). Перевірено на файлі-образі: LUKS2, aes-xts-plain64.
 3. У змонтованій новій системі: `/etc/crypttab` (`cr_root … x-initrd.attach`), `root=UUID=…` у `/etc/kernel/cmdline`, `sdbootutil install`, ключ відновлення (той, що людина бачила на екрані Herkos) через keyring як `sdbootutil` і `sdbootutil --method=recovery-key enroll`.
-4. **TPM2**: `FDE_SEAL_PCR_LIST=4,5,7,9` (завантажувач, таблиця розділів, стан Secure Boot, initrd; не 0–3, бо прошивка й підключене залізо змінюються надто часто) і `sdbootutil --method=tpm2 enroll`. **Фраза**: `cryptsetup luksAddKey` з фразою на stdin і `sdbootutil mkinitrd`.
+4. **TPM2**: `FDE_SEAL_PCR_LIST=4,5,7,9` (завантажувач, таблиця розділів, стан Secure Boot, initrd; не 0–3, бо прошивка й підключене залізо змінюються надто часто) і `sdbootutil --method=tpm2 enroll`. **TPM2 + PIN**: те саме, але перше завантаження запечатує ключ через `sdbootutil enroll --method=tpm2+pin`: PIN лежить до того в обліковому даному `sdbootutil-enroll.tpm2+pin`, зашифрованому для цього TPM (`systemd-creds --with-key=tpm2`), і стирається разом з іншими. Лише цифри, бо PIN вводять до того, як завантажено розкладку клавіатури. **Фраза**: `cryptsetup luksAddKey` з фразою на stdin і `sdbootutil mkinitrd`.
 5. Слот 0 стирається (`systemd-cryptenroll --wipe-slot=0`), ключ-файл перезаписується й видаляється, записи keyring — теж.
 
 Секрети йдуть програмам лише на stdin, ніколи в командному рядку чи журналі. TPM2 вибір можливий, лише якщо чип має `TPM2_PolicyAuthorizeNV` (TPM 2.0 від ревізії 1.38, як перевіряє tik); інакше екран Herkos просить вибрати фразу. Ці кроки запускає рушій установника (`vilna-installer-engine`, [`installer/README.md`](../../installer/README.md#крок-13-рушій-встановлення)), а розділ системи заповнюється блок за блоком із готового образу Vilna (`CopyBlocks=`), як `systemd-repart --image` у tik (розд. 10, питання 1).

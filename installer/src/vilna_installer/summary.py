@@ -70,6 +70,7 @@ PROBLEMS = {
     "wifi_password": "The Wi-Fi password is not entered yet.",
     "user_password": "The account password is not entered yet.",
     "passphrase": "The disk passphrase is not entered yet.",
+    "pin": "The start PIN is not entered yet.",
     "not_enough_space": "There is not enough free space for Vilna on the disk.",
     "no_tpm": (
         "This computer has no TPM 2.0 chip that can keep the disk key. Choose encryption "
@@ -179,9 +180,10 @@ def describe(plan: dict[str, Any], _: Texts) -> dict[str, str | None]:
         what = _(conv.ERASE_ALL) if disk["layout"] == "replace" else _(conv.MANUAL)
         out["disk"] = f"{what} · {disk.get('target')}"
     method = enc.get("method")
-    if method in ("tpm2", "passphrase", "none"):
+    if method in ("tpm2", "tpm2-pin", "passphrase", "none"):
         out["encryption"] = {
             "tpm2": _(conv.ENCRYPT_TPM),
+            "tpm2-pin": _(conv.ENCRYPT_TPM_PIN),
             "passphrase": _(conv.ENCRYPT_PASS),
             "none": _(conv.NOT_ENCRYPTED),
         }[method]
@@ -241,7 +243,7 @@ def change_text(
     known = _partition_in(survey, change.get("partition"))
     change = {**{k: v for k, v in known.items() if k in ("encrypted", "fstype", "kind")}, **change}
     disk = plan.get("disk") or {}
-    encrypted = ((disk.get("encryption") or {}).get("method")) in ("tpm2", "passphrase")
+    encrypted = ((disk.get("encryption") or {}).get("method")) in conv.ENCRYPTED_METHODS
     if action == "erase":
         if change.get("use"):
             text = _(ERASE_FOR).format(use=_use(change["use"], _), what=_partition(change, _))

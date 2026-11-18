@@ -111,6 +111,25 @@ def test_a_passphrase_is_entered_like_a_password():
     assert plans.validate(p, s)["valid"]
 
 
+def test_a_start_pin_is_entered_in_the_protected_field_and_never_kept():
+    p, s = complete(method="tpm2-pin")
+    assert p["disk"]["encryption"]["pin"] == plans.NEEDED
+    assert "pin" in codes(plans.validate(p, s))
+    plans.mark_entered(p, "pin")
+    assert plans.validate(p, s)["valid"]
+    # Choosing tpm2-pin again keeps the marker; the PIN itself is never in a plan.
+    plans.set_encryption(p, "tpm2-pin")
+    assert p["disk"]["encryption"]["pin"] == plans.ENTERED
+    p["disk"]["encryption"]["pin"] = "123456"
+    assert "secret_in_plan" in codes(plans.validate(p, s))
+
+
+def test_pins_are_digits_only():
+    assert plans.PIN_RE.match("123456") and plans.PIN_RE.match("1" * 20)
+    for bad in ("12345", "1" * 21, "12345a", "пін1234", "123 456"):
+        assert not plans.PIN_RE.match(bad)
+
+
 def test_no_encryption_is_allowed_with_a_warning():
     p, s = complete(method="none")
     report = plans.validate(p, s)

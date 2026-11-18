@@ -218,3 +218,37 @@ def test_the_vpn_step_has_no_choice_until_the_person_makes_one(plan_path):
     assert plans.load(plan_path)["privacy"]["vpn"] == "mullvad"
     win.go("vpn", strict=False)
     assert win.vpn_checks["mullvad"].get_active()
+
+
+def _all(widget, kind):
+    out = [widget] if isinstance(widget, kind) else []
+    child = widget.get_first_child()
+    while child is not None:
+        out += _all(child, kind)
+        child = child.get_next_sibling()
+    return out
+
+
+def test_tpm_with_a_pin_keeps_the_pin_in_the_vault_only(plan_path):
+    win = window(plan_path)
+    win.wizard.tpm = lambda: True
+    win.go("encryption", strict=False)
+    checks = [c for c in _all(win, Gtk.CheckButton) if c.get_parent() is not None]
+    labels = [c.get_ancestor(Adw.ActionRow).get_title() for c in checks]
+    pin = checks[labels.index("Зашифровано, з PIN під час кожного запуску")]
+    pin.set_active(True)
+    rows = [r for r in _all(win, Adw.PasswordEntryRow) if r.get_visible()]
+    assert [r.get_title() for r in rows] == ["PIN запуску (від 6 до 20 цифр)", "Повторіть пароль"]
+    rows[0].set_text("12ab")
+    rows[1].set_text("12ab")
+    win.step(+1)
+    assert win.key == "encryption"
+    assert win.error.get_label() == "PIN — це від 6 до 20 цифр, нічого іншого."
+    rows[0].set_text("246810")
+    rows[1].set_text("246810")
+    win.step(+1)
+    assert win.key != "encryption"
+    enc = plans.load(plan_path)["disk"]["encryption"]
+    assert enc == {"method": "tpm2-pin", "pin": "entered"}
+    assert "246810" not in plan_path.read_text()
+    assert win.secrets.take("pin") == "246810"

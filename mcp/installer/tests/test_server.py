@@ -256,8 +256,17 @@ def test_tpm2_is_refused_on_a_computer_without_a_tpm(tmp_path):
     assert "no TPM 2.0" in text and "passphrase" in text
     plan = tmp_path / "plan.json"
     assert not plan.exists() or "tpm2" not in plan.read_text()
+    text = call(server, "plan_set_encryption", method="tpm2-pin")
+    assert "no TPM 2.0" in text and "tpm2-pin" in text
     out = call(server, "plan_set_encryption", method="passphrase")
     assert out["changed"]["method"] == "passphrase"
+
+
+def test_tpm2_pin_tells_gloxi_the_person_types_the_pin(tmp_path):
+    server = Server(Installer(tmp_path / "plan.json", DemoMachine("empty")))
+    out = call(server, "plan_set_encryption", method="tpm2-pin")
+    assert out["changed"]["pin"] == "needed"
+    assert "protected field" in out["next"] and "recovery key" in out["next"]
 
 
 class Connected(DemoMachine):

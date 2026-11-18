@@ -95,6 +95,10 @@ TPM_HINT = (
 )
 NO_TPM = "This computer has no TPM 2.0 chip, so this way is not available."
 PASSPHRASE_HINT = "You type the passphrase every time the computer starts."
+PIN_HINT = (
+    "Like the first way, plus a PIN of 6 to 20 digits at every start: a stolen computer "
+    "does not even reach the login screen."
+)
 NONE_HINT = "Anyone who has the disk can read your files."
 KEY_NEXT = "The next screen shows the recovery key; keep it safe."
 FULL_NAME = "Your name"
@@ -194,6 +198,7 @@ PROBLEM_TEXT = {
     "wifi_password": "Type the Wi-Fi password and connect.",
     "user_password": "Type the password for the account.",
     "passphrase": "Type the passphrase for the disk.",
+    "pin": "Type the start PIN for the disk.",
     "disks_changed": "The disks changed (a disk added or removed?). Choose the disk again.",
     "no_target": "The chosen disk is not in the computer now. Choose the disk again.",
     "boot_medium": "This is the USB stick Vilna is running from. Choose another disk.",
@@ -272,6 +277,7 @@ TEXTS = (
     TPM_HINT,
     NO_TPM,
     PASSPHRASE_HINT,
+    PIN_HINT,
     NONE_HINT,
     KEY_NEXT,
     FULL_NAME,
@@ -702,8 +708,10 @@ class Wizard:
                 return False
             return disk["layout"] != "manual" or bool(disk.get("partitions"))
         if key == "encryption":
-            return enc.get("method") in ("tpm2", "none") or (
-                enc.get("method") == "passphrase" and enc.get("passphrase") == plans.ENTERED
+            return (
+                enc.get("method") in ("tpm2", "none")
+                or (enc.get("method") == "passphrase" and enc.get("passphrase") == plans.ENTERED)
+                or (enc.get("method") == "tpm2-pin" and enc.get("pin") == plans.ENTERED)
             )
         if key == "user":
             return bool(user.get("username")) and user.get("password") == plans.ENTERED

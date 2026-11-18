@@ -729,26 +729,36 @@ class WizardWindow(Adw.ApplicationWindow):
         tpm_row, tpm = radio_row(
             _(conv.ENCRYPT_TPM), _(wiz.TPM_HINT) if tpm_ok else _(wiz.NO_TPM), leader
         )
+        pin_row, pin = radio_row(
+            _(conv.ENCRYPT_TPM_PIN), _(wiz.PIN_HINT) if tpm_ok else _(wiz.NO_TPM), leader
+        )
         tpm_row.set_sensitive(tpm_ok)
+        pin_row.set_sensitive(tpm_ok)
+        pin_first, pin_second = password_rows(_(conv.PIN), _(conv.REPEAT))
         pass_row, passphrase = radio_row(_(conv.ENCRYPT_PASS), _(wiz.PASSPHRASE_HINT), leader)
         none_row, none = radio_row(_(conv.NOT_ENCRYPTED), _(wiz.NONE_HINT), leader)
         first, second = password_rows(_(conv.PASSPHRASE), _(conv.REPEAT))
-        for row in (tpm_row, pass_row, first, second, none_row):
+        for row in (tpm_row, pin_row, pin_first, pin_second, pass_row, first, second, none_row):
             group.add(row)
         note = _group(description=_(wiz.KEY_NEXT))
         method = enc.get("method") or ("tpm2" if tpm_ok else "passphrase")
-        {"tpm2": tpm, "passphrase": passphrase, "none": none}[method].set_active(True)
+        checks = {"tpm2": tpm, "tpm2-pin": pin, "passphrase": passphrase, "none": none}
+        checks.get(method, tpm).set_active(True)
+
+        def had(secret: str, method: str) -> bool:
+            return enc.get("method") == method and enc.get(secret) == plans.ENTERED
 
         def update(*_args: Any) -> None:
-            show = passphrase.get_active()
-            entered = enc.get("method") == "passphrase" and enc.get("passphrase") == plans.ENTERED
-            first.set_visible(show)
-            second.set_visible(show)
-            if entered:
+            for active, rows in ((passphrase, (first, second)), (pin, (pin_first, pin_second))):
+                for row in rows:
+                    row.set_visible(active.get_active())
+            if had("passphrase", "passphrase"):
                 first.set_title(f"{_(conv.PASSPHRASE)} · {_(conv.ENTERED_TEXT)}")
+            if had("pin", "tpm2-pin"):
+                pin_first.set_title(f"{_(conv.PIN)} · {_(conv.ENTERED_TEXT)}")
             note.set_visible(not none.get_active())
 
-        for check in (tpm, passphrase, none):
+        for check in checks.values():
             check.connect("toggled", update)
         update()
 
@@ -757,19 +767,24 @@ class WizardWindow(Adw.ApplicationWindow):
                 return self.wizard.set_encryption("none")
             if tpm.get_active():
                 return self.wizard.set_encryption("tpm2")
-            value = first.get_text()
-            had = enc.get("method") == "passphrase" and enc.get("passphrase") == plans.ENTERED
-            if not value and had:
-                return self.wizard.set_encryption("passphrase")
-            if len(value) < chat.MIN_PASSWORD:
+            if pin.get_active():
+                method, secret, a, b = "tpm2-pin", "pin", pin_first, pin_second
+            else:
+                method, secret, a, b = "passphrase", "passphrase", first, second
+            value = a.get_text()
+            if not value and had(secret, method):
+                return self.wizard.set_encryption(method)
+            if secret == "pin" and not plans.PIN_RE.match(value):
+                return conv.BAD_PIN
+            if secret == "passphrase" and len(value) < chat.MIN_PASSWORD:
                 return conv.SHORT
-            if second.get_text() != value:
+            if b.get_text() != value:
                 return conv.MISMATCH
-            error = self.wizard.set_encryption("passphrase")
+            error = self.wizard.set_encryption(method)
             if error:
                 return error
-            self.secrets.put("passphrase", value)
-            self.wizard.mark_entered("passphrase")
+            self.secrets.put(secret, value)
+            self.wizard.mark_entered(secret)
             return None
 
         return self._page(group, note), commit

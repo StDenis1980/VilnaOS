@@ -12,8 +12,8 @@ once.
 from __future__ import annotations
 
 # Which secrets there are: the Wi-Fi password, the account password, the
-# disk passphrase, and the recovery key of the encrypted disk.
-NAMES = ("network", "user", "passphrase", "recovery_key")
+# disk passphrase or start PIN, and the recovery key of the encrypted disk.
+NAMES = ("network", "user", "passphrase", "pin", "recovery_key")
 
 
 class Vault:
