@@ -147,6 +147,9 @@ TARBALLS: dict[str, Tarball] = {
     "vilna-mcp-calendar": Tarball(
         "mcp/calendar", pyproject_version("mcp/calendar"), extra=(("mcp/LICENSE", "LICENSE"),)
     ),
+    "vilna-mcp-mail": Tarball(
+        "mcp/mail", pyproject_version("mcp/mail"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
     "python-vilna-privacy-gateway": Tarball(
         "privacy-gateway", pyproject_version("privacy-gateway")
     ),

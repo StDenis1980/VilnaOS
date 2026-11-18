@@ -306,6 +306,26 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run pytest
 
+  mcp-mail:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: mcp/mail
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      # Against a real IMAP server too: Dovecot (the test skips without it).
+      - run: (sudo apt-get update -qq && sudo apt-get install -y -qq dovecot-imapd && sudo systemctl stop dovecot) || true
+      - run: uv run pytest
+
   shell-extension:
     runs-on: ubuntu-24.04
     defaults:

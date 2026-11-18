@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "mail" MCP server (mcp/mail, ADR 0030): the person's
+# mail accounts from GNOME Online Accounts, over IMAP and SMTP.
+#
+# Reading is R1 and every read taints the conversation: a message is someone
+# else's words, the commonest way a prompt injection arrives (permissions.md
+# 6, 10). A draft is R2: it stays in the person's own Drafts and restore
+# takes it away again. Sending is R4 (permissions.md 4): asked every time,
+# never for the session or for good, with the whole message shown, because
+# the server builds what it sends from exactly those arguments. Nothing can
+# delete, move or forward mail here.
+tool = "org.vilna.mcp.mail"
+description = "The person's mail: read, write drafts, send"
+
+# Only the system Herkos starts it: vilna-mcp-mail@<uid>, as the person, with
+# the network (it talks to the mail servers). Herkos-lite has no module to
+# run: in the Flatpak, with no gate isolated from Gloxi, there is no mail.
+[launch]
+program = "vilna-mcp-mail"
+args = []
+
+[operations.list_accounts]
+level = "R0"
+summary = "List the mail accounts"
+
+[operations.list_folders]
+level = "R0"
+summary = "List the mail folders"
+
+[operations.list_messages]
+level = "R1"
+summary = "List messages in a folder"
+returns_external = true
+
+[operations.search_messages]
+level = "R1"
+summary = "Search the mail"
+returns_external = true
+
+[operations.read_message]
+level = "R1"
+summary = "Read a message"
+returns_external = true
+
+[operations.save_draft]
+level = "R2"
+summary = "Save a message as a draft without sending it"
+undoable = true
+
+[operations.send]
+level = "R4"
+summary = "Send a message"
+egress = true
+
+# Undoing save_draft. Removing the draft cannot itself be undone, so the
+# usual modifier makes it R3 (permissions.md 4.2), and it only removes a
+# draft whose message id save_draft made.
+[operations.restore]
+level = "R2"
+summary = "Remove a draft Gloxi saved"

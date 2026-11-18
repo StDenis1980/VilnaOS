@@ -27,6 +27,7 @@ dev = [
     "vilna-mcp-backup",
     "vilna-mcp-settings",
     "vilna-mcp-calendar",
+    "vilna-mcp-mail",
     "vilna-backup",
 ]
 
@@ -35,6 +36,7 @@ vilna-mcp-files = { path = "../mcp/files", editable = true }
 vilna-mcp-backup = { path = "../mcp/backup", editable = true }
 vilna-mcp-settings = { path = "../mcp/settings", editable = true }
 vilna-mcp-calendar = { path = "../mcp/calendar", editable = true }
+vilna-mcp-mail = { path = "../mcp/mail", editable = true }
 vilna-backup = { path = "../backup", editable = true }
 
 [build-system]

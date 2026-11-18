@@ -30,6 +30,7 @@ def used_messages() -> set[str]:
         "org.vilna.mcp.backup",
         "org.vilna.mcp.settings",
         "org.vilna.mcp.calendar",
+        "org.vilna.mcp.mail",
         "org.vilna.mcp.system",
         "org.vilna.mcp.vpn",
         "org.vilna.mcp.apps",
