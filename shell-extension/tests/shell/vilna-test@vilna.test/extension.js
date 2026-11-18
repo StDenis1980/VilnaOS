@@ -37,6 +37,21 @@ function flush() {
         GLib.file_set_contents(out, `${lines.join('\n')}\nEND\n`);
 }
 
+// Every ease on a window actor, by WM class: what the window motion module
+// handed to Clutter (Shell's own path ends in the same prototype method).
+const eases = {};
+function spyEases() {
+    const ease = Clutter.Actor.prototype.ease;
+    Clutter.Actor.prototype.ease = function (params) {
+        const cls = this instanceof Meta.WindowActor ? this.meta_window?.get_wm_class() : null;
+        if (cls)
+            (eases[cls] ??= []).push([params.duration, params.mode]);
+        return ease.call(this, params);
+    };
+}
+const lastEase = cls => eases[cls]?.at(-1) ?? null;
+const Mode = Clutter.AnimationMode;
+
 async function waitFor(predicate, ms = 5000) {
     for (let t = 0; t < ms && !predicate(); t += 100)
         await sleep(100);
@@ -213,6 +228,8 @@ async function windows() {
     if (!ready)
         return;
     await sleep(500);
+    check('motion: Gloxi opens in 280 ms', eases[GLOXI]?.[0] ?? null, [280, Mode.EASE_OUT_QUINT]);
+    check('motion: other window opens in 280 ms', eases[OTHER]?.[0] ?? null, [280, Mode.EASE_OUT_QUINT]);
 
     // GTK password field (Wayland text-input): each window holds one
     // focused field, a password one in OTHER and a plain one in Gloxi.
@@ -242,6 +259,33 @@ async function windows() {
     await sleep(300);
     check('setting on again: Gloxi above', findWindow(GLOXI).is_above(), true);
 
+    // The other window: a drag lift, then each motion style.
+    const otherActor = findWindow(OTHER).get_compositor_private();
+    global.display.emit('grab-op-begin', findWindow(OTHER), Meta.GrabOp.MOVING);
+    check('motion: drag lifts the window', lastEase(OTHER), [150, Mode.EASE_OUT_QUAD]);
+    await sleep(400);
+    check('motion: lifted by 1%', otherActor.scale_x, 1.01);
+    global.display.emit('grab-op-end', findWindow(OTHER), Meta.GrabOp.MOVING);
+    await sleep(400);
+    check('motion: set down after the drag', [otherActor.scale_x, otherActor.pivot_point.x], [1, 0]);
+    settings.set_string('window-motion', 'reduced');
+    findWindow(OTHER).minimize();
+    await sleep(600);
+    check('motion: reduced minimise is a 100 ms fade', lastEase(OTHER), [100, Mode.EASE_OUT_QUAD]);
+    findWindow(OTHER).unminimize();
+    await sleep(600);
+    check('motion: reduced unminimise settles', [lastEase(OTHER), otherActor.opacity, otherActor.scale_x],
+        [[100, Mode.EASE_OUT_QUAD], 255, 1]);
+    settings.set_string('window-motion', 'gnome');
+    findWindow(OTHER).minimize();
+    await sleep(800);
+    check('motion: gnome style keeps the Shell\'s 400 ms', lastEase(OTHER), [400, Mode.EASE_OUT_EXPO]);
+    findWindow(OTHER).unminimize();
+    await sleep(800);
+    settings.set_string('window-motion', 'vilna');
+    findWindow(GLOXI).activate(global.get_current_time());
+    await sleep(300);
+
     check('D-Bus name owned in the user session', await nameOwned('io.github.stdenis1980.VilnaShell'), true);
     await panelPlacement(settings);
 
@@ -268,12 +312,17 @@ async function windows() {
     check('strip: one third', dockPanel(), [1280, top, 640, mh - top]);
     findWindow(GLOXI).minimize();
     await sleep(800);
+    check('motion: minimise in 450 ms', lastEase(GLOXI), [450, Mode.EASE_IN_OUT_CUBIC]);
     check('strip: released while Gloxi is minimised', dockPanel(), null);
     findWindow(GLOXI).unminimize();
     await sleep(800);
+    check('motion: unminimise in 450 ms', lastEase(GLOXI), [450, Mode.EASE_IN_OUT_CUBIC]);
+    check('motion: shown window settled', [findWindow(GLOXI).get_compositor_private()?.opacity,
+        findWindow(GLOXI).get_compositor_private()?.scale_x], [255, 1]);
     check('strip: back when Gloxi is shown', Boolean(dockPanel()), true);
     findWindow(GLOXI).delete(global.get_current_time());
     await sleep(1500);
+    check('motion: close in 196 ms', lastEase(GLOXI), [196, Mode.EASE_IN_CUBIC]);
     check('strip: released when Gloxi closes', [dockPanel(), workArea()[2]], [null, mw]);
     settings.set_boolean('gloxi-dock', false);
 }
@@ -339,6 +388,7 @@ async function loginBackground() {
 }
 
 async function run() {
+    spyEases();
     const ok = await waitFor(() => Main.extensionManager.lookup(UUID)?.state === ENABLED, 10000);
     check('extension enabled', ok, true);
     check('no extension error', Main.extensionManager.lookup(UUID)?.error ?? '', '');
