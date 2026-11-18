@@ -11,7 +11,7 @@
 Name:           vilna-mcp-calendar
 Version:        0.1.0~dev0
 Release:        0
-Summary:        Herkos's tool for reading the calendars of GNOME
+Summary:        Herkos's tool for the calendars of GNOME
 License:        Apache-2.0
 URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        %{name}-%{version}.tar.gz
@@ -34,7 +34,9 @@ BuildArch:      noarch
 %description
 The MCP server "calendar" of Vilna OS (ADR 0023) reads the calendars GNOME
 Calendar and GNOME Online Accounts show, through Evolution Data Server. It
-works out "today", "this week" and the like itself, and writes nothing.
+works out "today", "this week" and the like itself. It also adds, changes and
+deletes single events without guests, and keeps each event as it was, so
+Herkos can undo the change.
 Only Herkos starts it (vilna-mcp-calendar@.service in the herkos package),
 as the person.
 

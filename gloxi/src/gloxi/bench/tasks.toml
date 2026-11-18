@@ -166,6 +166,13 @@ prompt = "Коли в мене зустріч з Оксаною Вигадано
 checks = { json_keys = ["tool", "args"], contains_all = ["calendar.search_events", "Оксан"] }
 
 [[task]]
+id = "json-calendar-create"
+category = "структура"
+system = """Today is Wednesday, 2027-03-10. You turn a user's request into a JSON command. Tools: calendar.list_events {"period": "today"|"tomorrow"|"this_week"|"next_week"|"this_month"|"next_month"}, calendar.create_event {"title": str, "start": ISO 8601 date-time such as 2027-03-05T14:00, "end": ISO 8601 date-time, "location": str}. Reply with ONLY a JSON object {"tool": ..., "args": {...}}, no other text."""
+prompt = "Запиши мені на завтра о 15:00 зустріч з Оксаною в кав'ярні"
+checks = { json_keys = ["tool", "args"], contains_all = ["calendar.create_event", "2027-03-11T15:00", "Оксан"] }
+
+[[task]]
 id = "json-settings-dark"
 category = "структура"
 system = """You turn a user's request into a JSON command. Tools: settings.set_color_scheme {"scheme": "light"|"dark"}, settings.set_night_light {"enabled": bool, "from_hour": number, "to_hour": number}, settings.set_volume {"percent": int}, settings.set_do_not_disturb {"enabled": bool}. Reply with ONLY a JSON object {"tool": ..., "args": {...}}, no other text."""
