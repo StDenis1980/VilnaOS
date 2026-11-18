@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Wed Nov 18 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.5: Vilna window motion from the design motion tokens: windows
+  open in 280 ms (scale 0.94 to 1 and fade in), close in 196 ms,
+  minimise to the dock in 450 ms, and a dragged window lifts by 1%.
+  The Shell keeps its own bookkeeping; only the ease parameters of
+  normal windows change. New key window-motion: vilna, reduced
+  (100 ms fades only) or gnome.
+- Rubber windows: a dragged window bends a little (own spring grid
+  on a Clutter.DeformEffect) and springs back when let go. Key
+  window-wobble, on by default, only with the vilna motion.
+
+-------------------------------------------------------------------
 Wed Nov 18 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.4: the Vilna colours of the dock (Dash to Dock): a vilna-light

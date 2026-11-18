@@ -13,6 +13,12 @@
     <value nick="custom" value="3"/>
   </enum>
 
+  <enum id="org.gnome.shell.extensions.vilna.WindowMotion">
+    <value nick="vilna" value="0"/>
+    <value nick="reduced" value="1"/>
+    <value nick="gnome" value="2"/>
+  </enum>
+
   <schema id="org.gnome.shell.extensions.vilna" path="/org/gnome/shell/extensions/vilna/">
     <key name="password-latin-layout" type="b">
       <default>true</default>
@@ -52,6 +58,16 @@
       <default>[]</default>
       <summary>Wi-Fi networks the VPN offer was shown for</summary>
       <description>Connection UUIDs of the shared Wi-Fi networks (those with a login page) after whose login the Shell already offered a VPN, so that it offers once per network. Clear the list to see the offer again.</description>
+    </key>
+    <key name="window-motion" enum="org.gnome.shell.extensions.vilna.WindowMotion">
+      <default>'vilna'</default>
+      <summary>How windows move</summary>
+      <description>vilna: windows open from slightly smaller with a fade (280 ms), close faster than they open, go to their dock icon and back (450 ms) and lift a little while dragged. reduced: no movement, only a short fade (100 ms). gnome: GNOME's own animations. With animations turned off in Settings nothing moves in any case.</description>
+    </key>
+    <key name="window-wobble" type="b">
+      <default>true</default>
+      <summary>Rubber windows while dragging</summary>
+      <description>A dragged window bends a little and springs back when let go. Only with the vilna window motion and with animations on.</description>
     </key>
   </schema>
 </schemalist>
