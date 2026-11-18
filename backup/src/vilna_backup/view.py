@@ -229,6 +229,53 @@ def key_looks_complete(typed: str) -> bool:
     return True
 
 
+def code_looks_complete(typed: str) -> bool:
+    """A one-time code from another device (devices.md 4a), not a recovery key."""
+    try:
+        keys.normalise_pairing_code(typed)
+    except keys.KeysError:
+        return False
+    return True
+
+
+def code_for_reading(code: str) -> str:
+    return "  ".join(code.split("-"))
+
+
+def device_rows(devices: list[dict[str, Any]], now: float | None = None) -> list[tuple]:
+    """(id, title, subtitle, can_block) for «My devices»: this one first, the sheet last."""
+    order = {"device": 0, "pairing": 1, "recovery": 2}
+    rows = []
+    for d in sorted(devices, key=lambda d: (not d.get("this_device"), order.get(d["kind"], 3))):
+        added = when(d.get("added"), now)
+        if d["kind"] == "recovery":
+            rows.append(
+                (
+                    d["id"],
+                    _("Recovery sheet"),
+                    _("Opens the backups if every device is lost"),
+                    False,
+                )
+            )
+        elif d["kind"] == "pairing":
+            until = when(d.get("valid_until"), now)
+            rows.append(
+                (
+                    d["id"],
+                    _("Code for a new device"),
+                    _("Valid until {when}").format(when=until),
+                    False,
+                )
+            )
+        elif d.get("this_device"):
+            rows.append(
+                (d["id"], d["name"], _("This device · added {when}").format(when=added), False)
+            )
+        else:
+            rows.append((d["id"], d["name"], _("Added {when}").format(when=added), True))
+    return rows
+
+
 class FormError(Exception):
     """The "where" part of the form is not filled in right; the message is for people."""
 
