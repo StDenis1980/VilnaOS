@@ -1047,6 +1047,10 @@ msgid "Send with context"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Show Gloxi and ask it a question"
+msgstr ""
+
+#: src/gloxi/gui/window.py
 msgid "Show Gloxi and talk about a VPN"
 msgstr ""
 
@@ -1076,6 +1080,10 @@ msgstr ""
 
 #: src/gloxi/gui/window.py
 msgid "Suspicious content"
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "TEXT"
 msgstr ""
 
 #: src/gloxi/gui/window.py

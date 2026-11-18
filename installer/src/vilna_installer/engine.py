@@ -214,6 +214,10 @@ def read_progress(path: Path) -> dict[str, Any] | None:
 # --- the request from the installer window ------------------------------------------
 
 
+# What the installer window may hand the engine (vault.Vault), each once.
+SECRET_NAMES = ("recovery_key", "passphrase", "pin", "user")
+
+
 @dataclass
 class Request:
     """One JSON line on the engine's standard input, from the installer process."""
@@ -239,9 +243,7 @@ class Request:
         given = data.get("secrets") or {}
         if not isinstance(given, dict):
             raise EngineError("the secrets are not an object")
-        secrets = {
-            k: v for k, v in given.items() if k in ("recovery_key", "passphrase", "user") and v
-        }
+        secrets = {k: v for k, v in given.items() if k in SECRET_NAMES and v}
         if not all(isinstance(v, str) for v in secrets.values()):
             raise EngineError("a secret is not text")
         owner = data.get("owner")
@@ -254,7 +256,7 @@ class Request:
 def request_line(plan: Path, plan_sha256: str, vault: Any, owner: int | None) -> str:
     """What the installer window sends; the vault hands each secret over once."""
     secrets = {}
-    for name in ("recovery_key", "passphrase", "user"):
+    for name in SECRET_NAMES:
         value = vault.take(name)
         if value:
             secrets[name] = value
@@ -297,12 +299,14 @@ def preflight(
     elif target.get("boot_medium"):
         out.append("the chosen disk is the one Vilna runs from")
     method = (disk.get("encryption") or {}).get("method", "none")
-    if method == "tpm2" and tpm is False:
+    if method in plans.TPM_METHODS and tpm is False:
         out.append("this computer has no TPM 2.0 that can keep the key; choose a passphrase")
-    if method in ("tpm2", "passphrase") and not secrets.get("recovery_key"):
+    if method in encryption.ENCRYPTED and not secrets.get("recovery_key"):
         out.append("the recovery key shown on the Herkos screen is missing")
     if method == "passphrase" and not secrets.get("passphrase"):
         out.append("the disk passphrase is missing")
+    if method == "tpm2-pin" and not plans.PIN_RE.match(secrets.get("pin", "")):
+        out.append("the start PIN is missing or is not 6 to 20 digits")
     if (plan.get("user") or {}).get("password") == plans.ENTERED and not secrets.get("user"):
         out.append("the account password is missing")
     if "\n" in secrets.get("user", "") or "\n" in secrets.get("passphrase", ""):
@@ -584,7 +588,7 @@ class Engine:
         except machines.MachineError as e:
             raise EngineError(f"the disks cannot be read: {e}") from e
         method = ((plan.get("disk") or {}).get("encryption") or {}).get("method")
-        tpm = self.tpm() if method == "tpm2" else None
+        tpm = self.tpm() if method in plans.TPM_METHODS else None
         problems = preflight(
             plan,
             survey,

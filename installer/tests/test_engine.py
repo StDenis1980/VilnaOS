@@ -373,6 +373,37 @@ def test_the_stick_vilna_runs_from_is_refused(setup):
     assert "the one Vilna runs from" in " ".join(problems)
 
 
+def test_a_tpm2_pin_plan_needs_a_pin_of_digits(setup):
+    plan = plans.new_plan()
+    plan["disk"] = {"target": "x", "layout": "replace", "encryption": {"method": "tpm2-pin"}}
+    survey = machines.survey(Machine().disks())
+
+    def problems(**secrets):
+        out = eng.preflight(plan, survey, digest="a", expected="a", tpm=True,
+                            secrets={"recovery_key": "k", **secrets}, image=setup[3])  # fmt: skip
+        return " ".join(out)
+
+    assert "start PIN" in problems()
+    assert "start PIN" in problems(pin="12ab56")
+    assert "start PIN" not in problems(pin="246810")
+    out = eng.preflight(plan, survey, digest="a", expected="a", tpm=False,
+                        secrets={"pin": "246810"}, image=setup[3])  # fmt: skip
+    assert "no TPM 2.0" in " ".join(out)
+
+
+def test_the_window_hands_the_pin_to_the_engine_once():
+    taken = []
+
+    class Vault:
+        def take(self, name):
+            taken.append(name)
+            return "246810" if name == "pin" else None
+
+    line = eng.request_line(pathlib.Path("/run/plan.json"), "a" * 64, Vault(), None)
+    assert "pin" in taken
+    assert eng.Request.parse(line).secrets == {"pin": "246810"}
+
+
 def test_a_failed_step_says_where_and_closes_everything(setup):
     engine, system, progress, _ = make(setup, fail="--tpm2-pcrs=")
     with pytest.raises(eng.EngineError) as e:

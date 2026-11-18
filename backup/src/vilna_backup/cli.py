@@ -8,6 +8,11 @@ For the person (R3-R4, in a terminal or the Backups window ``vilna-backup-gui``)
     vilna-backup on                   turn backups on again (after recover)
     vilna-backup restore --in-place   bring the home folder back as it was
     vilna-backup secrets on|off       system secrets in backups (separate consent)
+    vilna-backup devices              devices with access to the backups
+    vilna-backup devices add          a one-time code for a new device (15 minutes)
+    vilna-backup join PLACE           on the new device: type that code
+    vilna-backup devices block ID [--stolen]   the device can no longer open the backups
+    vilna-backup protect              after theft: new master key, new recovery sheet
 
 For Gloxi through Herkos and the MCP server ``mcp/backup`` (R0-R2), with ``--json``:
 
@@ -26,12 +31,13 @@ PLACE is an absolute folder (a USB disk), ``sftp:user@host:/path``,
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import getpass
 import json
 import sys
 from typing import Any
 
-from vilna_backup import __version__, keys
+from vilna_backup import __version__, devices, keys
 from vilna_backup.restic import ResticError
 from vilna_backup.service import Backup, BackupError
 from vilna_backup.settings import PRESETS, SCHEDULES, SettingsError, parse_destination
@@ -247,6 +253,87 @@ def _restore(b: Backup, args: argparse.Namespace) -> int:
     return 0
 
 
+def _person_only(args: argparse.Namespace) -> bool:
+    """Adding, blocking and protecting are for the person, never for Gloxi (R3-R4)."""
+    if args.json or not sys.stdin.isatty():
+        print("vilna-backup: the person does this in a terminal or the window", file=sys.stderr)
+        return False
+    return True
+
+
+def _devices(b: Backup, args: argparse.Namespace) -> int:
+    action = args.action or "list"
+    if action != "list" and not _person_only(args):
+        return 1
+    if action == "list":
+        found = devices.list_devices(b)
+        lines = []
+        for d in found:
+            mark = "  ← цей пристрій / this device" if d["this_device"] else ""
+            lines.append(f"{d['id']}  {d['kind']:<9} {d['name']}{mark}")
+        _out(args, found, "\n".join(lines))
+        return 0
+    if action == "add":
+        out = devices.start_pairing(b)
+        until = dt.datetime.fromtimestamp(out["valid_until"]).strftime("%H:%M")
+        _out(
+            args,
+            out,
+            "Введіть цей код на новому пристрої (`vilna-backup join МІСЦЕ`) до "
+            f"{until}. Нікому його не диктуйте. / Type this code on the new device "
+            f"before {until}:\n\n    {out['code']}\n",
+        )
+        return 0
+    if action == "cancel":
+        _out(args, {"withdrawn": devices.cancel_pairing(b)})
+        return 0
+    if not args.id:
+        print("vilna-backup: give the device id from `vilna-backup devices`", file=sys.stderr)
+        return 2
+    out = devices.block(b, args.id, stolen=args.stolen)
+    text = f"Пристрій «{out['name']}» заблоковано. / Blocked."
+    if out.get("next") == "protect":
+        text += (
+            "\nВкрадений пристрій міг знати головний ключ сховища. Запустіть "
+            "`vilna-backup protect`. / Now run `vilna-backup protect`."
+        )
+    _out(args, out, text)
+    return 0
+
+
+def _join(b: Backup, args: argparse.Namespace) -> int:
+    if not _person_only(args):
+        return 1
+    dest = parse_destination(args.place)
+    creds = _ask_credentials(dest.kind)
+    code = getpass.getpass("Код з іншого пристрою / Code from your other device: ")
+    devices.join(b, dest, code, name=args.name, credentials=creds)
+    print("Пристрій підключено до копій. / This device can now use the backups.")
+    print("Далі: `vilna-backup set ...` і `vilna-backup on`.")
+    return 0
+
+
+def _protect(b: Backup, args: argparse.Namespace) -> int:
+    if not _person_only(args):
+        return 1
+    if not args.yes:
+        print(
+            "Буде створено нове сховище з новим ключем, усі копії перенесено, старе видалено.\n"
+            "Інші ваші пристрої треба буде підключити знову кодом. Потрібен новий аркуш.\n"
+            "A new repository with a new key; other devices join again. Continue? [так/yes]",
+        )
+        if input("> ").strip().lower() not in ("так", "yes", "y"):
+            return 1
+    out = devices.protect(b)
+    print(f"\nКопії перенесено: {out['place']}")
+    if out.get("delete_old"):
+        print(f"Видаліть старе сховище самі / Delete the old one yourself: {out['delete_old']}")
+    print("\nНовий ключ відновлення / New recovery key — запишіть на новий аркуш:\n")
+    print(f"    {out['recovery_key']}\n")
+    print("Старий аркуш більше не потрібен. Підтвердіть новий: `vilna-backup confirm`.")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="vilna-backup", description="Encrypted backups of Vilna")
     p.add_argument("--version", action="version", version=f"vilna-backup {__version__}")
@@ -261,6 +348,18 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("place")
     s.set_defaults(func=_recover)
     sub.add_parser("on", help="turn backups on again (after recover)").set_defaults(func=_on)
+    s = sub.add_parser("devices", help="devices with access; add, block")
+    s.add_argument("action", nargs="?", choices=["list", "add", "cancel", "block"])
+    s.add_argument("id", nargs="?", help="for block: the device id")
+    s.add_argument("--stolen", action="store_true", help="for block: the device was stolen")
+    s.set_defaults(func=_devices)
+    s = sub.add_parser("join", help="on a new device: use a code from a trusted one")
+    s.add_argument("place")
+    s.add_argument("--name", help="what to call this device")
+    s.set_defaults(func=_join)
+    s = sub.add_parser("protect", help="after theft: a new key for all backups")
+    s.add_argument("--yes", action="store_true", help=argparse.SUPPRESS)
+    s.set_defaults(func=_protect)
 
     sub.add_parser("status").set_defaults(func=_status)
     sub.add_parser("overview", help="sizes of what could be backed up").set_defaults(func=_overview)

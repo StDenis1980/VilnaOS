@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Manifest for the "calendar" MCP server (mcp/calendar, Gloxi 0.2, ADR 0023).
-# Read only: viewing the calendar is R1 (permissions.md, section 4), and an
-# event is someone else's words, so every read taints the conversation
-# (permissions.md 6). Writing to the calendar comes with the calendar server
-# that writes (roadmap, section 4).
+# Manifest for the "calendar" MCP server (mcp/calendar, Gloxi 0.2, ADR 0023;
+# writing: item 27 of the alpha plan). Viewing the calendar is R1
+# (permissions.md, section 4), and an event is someone else's words, so every
+# read taints the conversation (permissions.md 6). Creating or changing an
+# event is R2, deleting one R3, like a file. Each change returns a token for
+# the event as it was (undo_arguments), so Mitos can undo it through `restore`.
+# Only single events without guests are written: a change to a meeting with
+# other people would send them a message (R4), and the server refuses it.
 tool = "org.vilna.mcp.calendar"
-description = "The person's calendars (read only)"
+description = "The person's calendars"
 
 # How Herkos starts the server (ADR 0017): the program on PATH (the system
 # Herkos: its unit vilna-mcp-calendar@<uid>), the Python module for Herkos-lite.
@@ -27,3 +30,23 @@ returns_external = true
 level = "R1"
 summary = "Search the calendar"
 returns_external = true
+
+[operations.create_event]
+level = "R2"
+summary = "Add an event to the calendar"
+undoable = true
+
+[operations.update_event]
+level = "R2"
+summary = "Change an event in the calendar"
+undoable = true
+
+[operations.delete_event]
+level = "R3"
+summary = "Delete an event from the calendar"
+undoable = true
+
+[operations.restore]
+level = "R2"
+summary = "Undo an earlier change to the calendar"
+undoable = true

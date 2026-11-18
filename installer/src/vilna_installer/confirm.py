@@ -135,7 +135,7 @@ def machine_for(demo: str | None) -> machines.Machine:
 
 def encrypted(plan: dict[str, Any]) -> bool:
     enc = (plan.get("disk") or {}).get("encryption") or {}
-    return enc.get("method") in ("tpm2", "passphrase")
+    return enc.get("method") in plans.ENCRYPTION and enc.get("method") != "none"
 
 
 @dataclass
@@ -165,7 +165,7 @@ def check(
     report = plans.validate(plan, survey, stage=stage)
     extra = []
     method = ((plan.get("disk") or {}).get("encryption") or {}).get("method")
-    if method == "tpm2" and tpm is False:
+    if method in plans.TPM_METHODS and tpm is False:
         extra.append({"code": "no_tpm", "field": "disk.encryption.method"})
     return Check(
         plan, survey, report, summary.summarize(plan, report, survey, texts, extra_problems=extra)

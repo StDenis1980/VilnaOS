@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Wed Nov 18 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.6: desktop widgets on the wallpaper, under every window: clock,
+  Gloxi (suggestions ask it with gloxi-gtk --ask), today's events from
+  the GNOME calendar server, the weather from Open-Meteo and the state
+  of Копії. The weather is for the capital of the system's country
+  unless the person picks a town (search sends only the typed text) or,
+  after agreeing, their location rounded to about 10 km (prefs.js).
+  New keys widgets, weather and weather-location.
+  A live sky behind the weather card (sky.js, lib/weatherSky.js):
+  a Vilna gradient and light motion for ten states, including wind
+  (gusts from 50 km/h) and heat (feels like 35 °C or more), still
+  under a window, in the overview and with animations off.
+
+-------------------------------------------------------------------
 Wed Nov 18 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.5: Vilna window motion from the design motion tokens: windows

@@ -1047,6 +1047,10 @@ msgid "Send with context"
 msgstr "Enviar con contexto"
 
 #: src/gloxi/gui/window.py
+msgid "Show Gloxi and ask it a question"
+msgstr "Mostrar Gloxi y hacerle una pregunta"
+
+#: src/gloxi/gui/window.py
 msgid "Show Gloxi and talk about a VPN"
 msgstr "Mostrar Gloxi y hablar de una VPN"
 
@@ -1077,6 +1081,10 @@ msgstr ""
 #: src/gloxi/gui/window.py
 msgid "Suspicious content"
 msgstr "Contenido sospechoso"
+
+#: src/gloxi/gui/window.py
+msgid "TEXT"
+msgstr "TEXTO"
 
 #: src/gloxi/gui/window.py
 #, python-brace-format

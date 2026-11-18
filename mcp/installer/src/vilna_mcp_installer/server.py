@@ -139,7 +139,8 @@ TOOLS = [
     ),
     _tool(
         "plan_set_encryption",
-        "Encrypt the new system: tpm2 (recommended, with a recovery key), passphrase, or none",
+        "Encrypt the new system: tpm2 (recommended, with a recovery key), tpm2-pin (the "
+        "same, plus a PIN of 6 or more digits at every start), passphrase, or none",
         {"method": {"type": "string", "enum": list(plans.ENCRYPTION)}},
         ["method"],
         **_PLAN,
@@ -316,9 +317,9 @@ class Installer:
         # hardware (VM test of Build8.9, 2026-11-15); the Herkos screen then
         # blocks the plan at the very end. Refuse it here, while the person is
         # still on this step. None (no /sys/class/tpm) is a computer without one.
-        if method == "tpm2" and self.machine.hardware().get("tpm") != 2:
+        if method in plans.TPM_METHODS and self.machine.hardware().get("tpm") != 2:
             raise plans.PlanError(
-                "this computer has no TPM 2.0 chip, so 'tpm2' is not possible; "
+                f"this computer has no TPM 2.0 chip, so '{method}' is not possible; "
                 "suggest 'passphrase' (typed at every start) or 'none'"
             )
         out = self._change("set_encryption", method=method)
@@ -326,6 +327,11 @@ class Installer:
             out["next"] = (
                 "The recovery key is shown to the person before installing, on the "
                 "confirmation screen; explain why to keep it somewhere safe."
+            )
+        if method == "tpm2-pin":
+            out["next"] = (
+                "The person types the PIN (6 to 20 digits) twice into the protected field "
+                "below the chat; never ask for it in the chat. " + out["next"]
             )
         return out
 

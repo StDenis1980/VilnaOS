@@ -271,6 +271,29 @@ def test_tpm_steps_seal_the_measurements_aeon_uses(tmp_path):
                          root_uuid="x", root="/mnt", key_file=Path("/run/k"))  # fmt: skip
 
 
+def test_tpm_with_a_pin_seals_with_the_pin_on_the_first_boot():
+    todo = encryption.steps(
+        "tpm2-pin",
+        crypt_part="/dev/sda2",
+        crypt_uuid="0b0e8c5a-1111-4222-8333-944455556666",
+        root_uuid="7c7c7c7c-1111-4222-8333-944455556666",
+        root="/mnt",
+        key_file=Path("/run/k"),
+    )
+    crypttab = next(s for s in todo if s.path == "etc/crypttab")
+    assert "tpm2-device=auto" in crypttab.text
+    # The PIN goes only through stdin, encrypted for this TPM, under the name
+    # sdbootutil-enroll reads instead of ".tpm2".
+    pin = [s for s in todo if s.stdin == "pin"]
+    assert len(pin) == 1 and "--with-key=tpm2" in pin[0].argv
+    assert pin[0].argv[-1] == "/" + encryption.ENROLL_PIN_CREDENTIAL
+    assert "sdbootutil-enroll.tpm2+pin" in encryption.ENROLL_PIN_CREDENTIAL
+    assert not any(s.path == "etc/credstore/sdbootutil-enroll.tpm2" for s in todo)
+    assert not any("--wipe-slot=0" in s.argv for s in todo)
+    dropin = next(s for s in todo if s.path == encryption.ENROLL_DROPIN)
+    assert encryption.ENROLL_PIN_CREDENTIAL in dropin.text
+
+
 def test_a_failing_step_stops_without_its_secret_in_the_error(tmp_path):
     def run(argv, input=None, **_):
         return subprocess.CompletedProcess(argv, 1, b"", b"No key available with this passphrase.")

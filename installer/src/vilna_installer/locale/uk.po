@@ -745,8 +745,8 @@ msgstr "Диск для Vilna має {size} ГБ, і на ньому є {what}. 
 msgid "files"
 msgstr "файли"
 
-msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. You can also type a passphrase at every start, or not encrypt the disk."
-msgstr "Зашифрувати нову систему? Раджу шифрування з ключем відновлення: на цьому комп'ютері диск відкриватиметься сам, а ключ відкриє його, якщо щось зміниться. Можна також вводити парольну фразу під час кожного запуску або не шифрувати диск."
+msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. For more protection if the computer is stolen, the disk can also ask for a PIN at every start. You can also type a passphrase at every start, or not encrypt the disk."
+msgstr "Зашифрувати нову систему? Раджу шифрування з ключем відновлення: на цьому комп'ютері диск відкриватиметься сам, а ключ відкриє його, якщо щось зміниться. Щоб краще захиститися на випадок крадіжки, диск може ще й питати PIN під час кожного запуску. Можна також вводити парольну фразу під час кожного запуску або не шифрувати диск."
 
 msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
 msgstr "Зашифрувати нову систему? На цьому комп'ютері немає чипа TPM, тож диск відкриватиметься парольною фразою, яку ви вводите під час кожного запуску. Без шифрування будь-хто з цим диском зможе прочитати ваші файли."
@@ -798,3 +798,27 @@ msgstr "Ви входите лише в застосунку самого про
 
 msgid "Choose an answer about the VPN."
 msgstr "Оберіть відповідь про VPN."
+
+msgid "Encrypted, with a PIN at every start"
+msgstr "Зашифровано, з PIN під час кожного запуску"
+
+msgid "Start PIN (6 to 20 digits)"
+msgstr "PIN запуску (від 6 до 20 цифр)"
+
+msgid "The PIN is 6 to 20 digits, nothing else."
+msgstr "PIN — це від 6 до 20 цифр, нічого іншого."
+
+msgid "The PIN is saved."
+msgstr "PIN збережено."
+
+msgid "Type the start PIN, 6 to 20 digits, into the protected field below, twice. I do not see it."
+msgstr "Введіть PIN запуску, від 6 до 20 цифр, у захищене поле нижче, двічі. Я його не бачу."
+
+msgid "Like the first way, plus a PIN of 6 to 20 digits at every start: a stolen computer does not even reach the login screen."
+msgstr "Як перший спосіб, а ще PIN з 6–20 цифр під час кожного запуску: вкрадений комп'ютер не дійде навіть до екрана входу."
+
+msgid "Type the start PIN for the disk."
+msgstr "Введіть PIN запуску для диска."
+
+msgid "The start PIN is not entered yet."
+msgstr "PIN запуску ще не введено."

@@ -28,7 +28,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_backup import style, view  # noqa: E402
+from vilna_backup import devices, keys, style, view  # noqa: E402
 from vilna_backup.i18n import _  # noqa: E402
 from vilna_backup.restic import ResticError  # noqa: E402
 from vilna_backup.service import Backup, BackupError  # noqa: E402
@@ -42,7 +42,7 @@ def _in_thread(work: Callable[[], Any], done: Callable[[Any, Exception | None], 
     def run() -> None:
         try:
             result, error = work(), None
-        except (BackupError, ResticError, OSError, ValueError) as e:
+        except (BackupError, ResticError, keys.KeysError, OSError, ValueError) as e:
             result, error = None, e
         GLib.idle_add(lambda: done(result, error) and False)
 
@@ -277,10 +277,16 @@ class RecoverPage(Gtk.Box):
         page.add(self.place)
         key = Adw.PreferencesGroup(title=_("Recovery sheet"))
         page.add(key)
-        self.entry = Adw.EntryRow(title=_("Type the key from your sheet"))
+        self.entry = Adw.EntryRow(title=_("Key from your sheet, or a code from your other device"))
         self.entry.connect("changed", lambda *_a: self._sync())
         self.entry.connect("entry-activated", self._connect)
         key.add(self.entry)
+        key.set_description(
+            _(
+                "On a computer that already makes backups, open Backups and choose "
+                "«Add a device»: it shows a code valid for 15 minutes."
+            )
+        )
 
         self.error = Gtk.Label(wrap=True, xalign=0, visible=False, margin_start=24, margin_end=24)
         self.error.add_css_class("error")
@@ -308,7 +314,8 @@ class RecoverPage(Gtk.Box):
         self._sync()
 
     def _sync(self) -> None:
-        self.ok.set_sensitive(view.key_looks_complete(self.entry.get_text()))
+        typed = self.entry.get_text()
+        self.ok.set_sensitive(view.key_looks_complete(typed) or view.code_looks_complete(typed))
 
     def _connect(self, *_a: Any) -> None:
         if not self.ok.get_sensitive():
@@ -332,7 +339,10 @@ class RecoverPage(Gtk.Box):
             self.place.forget_password()
             self.win.after_recover()
 
-        _in_thread(lambda: backup.recover(dest, typed, creds), done)
+        if view.code_looks_complete(typed):
+            _in_thread(lambda: devices.join(backup, dest, typed, credentials=creds), done)
+        else:
+            _in_thread(lambda: backup.recover(dest, typed, creds), done)
 
     def _error(self, text: str) -> None:
         self.error.set_label(text)
@@ -501,6 +511,17 @@ class StatusPage(Gtk.Box):
         self.place = Adw.ActionRow(title=_("Where"))
         settings.add(self.place)
 
+        self.devices = Adw.PreferencesGroup(
+            title=_("My devices"),
+            description=_("Each device has its own key. Block a lost or stolen one."),
+        )
+        add = Gtk.Button(label=_("Add a device"), valign=Gtk.Align.CENTER)
+        add.add_css_class("flat")
+        add.connect("clicked", self._add_device)
+        self.devices.set_header_suffix(add)
+        page.add(self.devices)
+        self.device_rows: list[Gtk.Widget] = []
+
         self.list = Adw.PreferencesGroup(
             title=_("Backups"),
             description=_(
@@ -527,6 +548,7 @@ class StatusPage(Gtk.Box):
     def refresh(self) -> None:
         _in_thread(self.win.backup.status, self._got_status)
         _in_thread(self.win.backup.snapshots, self._got_snapshots)
+        _in_thread(lambda: devices.list_devices(self.win.backup), self._got_devices)
 
     def _got_status(self, status: Any, error: Exception | None) -> None:
         if error or not status:
@@ -579,6 +601,141 @@ class StatusPage(Gtk.Box):
             row.add_suffix(restore)
             self.list.add(row)
             self.rows.append(row)
+
+    def _got_devices(self, found: Any, error: Exception | None) -> None:
+        for row in self.device_rows:
+            self.devices.remove(row)
+        self.device_rows = []
+        if error:
+            rows = [("", _("Cannot list the devices"), str(error), False)]
+        else:
+            rows = view.device_rows(found or [])
+        for key_id, title, detail, can_block in rows:
+            row = Adw.ActionRow(title=GLib.markup_escape_text(title), subtitle=detail)
+            if can_block:
+                block = Gtk.Button(label=_("Block…"), valign=Gtk.Align.CENTER)
+                block.connect("clicked", self._block, key_id, title)
+                row.add_suffix(block)
+            self.devices.add(row)
+            self.device_rows.append(row)
+
+    # -- devices (devices.md 4a; the person's own window, R3-R4) --------------
+
+    def _add_device(self, *_a: Any) -> None:
+        def done(out: Any, error: Exception | None) -> None:
+            self.refresh()
+            if error:
+                self.win.toast(_("Could not make a code: {why}").format(why=error))
+                return
+            until = view.when(out["valid_until"])
+            dialog = Adw.AlertDialog(
+                heading=_("Code for a new device"),
+                body=_(
+                    "On the new computer, open Backups, choose «Restore from backups made before» "
+                    "and type this code there. It works once, until {when}. "
+                    "Do not tell it to anyone."
+                ).format(when=until),
+            )
+            code = Gtk.Label(selectable=False, margin_top=6)
+            code.set_markup(
+                '<span font_family="monospace" size="x-large" weight="bold">'
+                f"{GLib.markup_escape_text(view.code_for_reading(out['code']))}</span>"
+            )
+            code.add_css_class("vilna-key")
+            dialog.set_extra_child(code)
+            dialog.add_response("cancel", _("Withdraw the code"))
+            dialog.add_response("done", _("Done"))
+            dialog.set_response_appearance("cancel", Adw.ResponseAppearance.DESTRUCTIVE)
+            dialog.set_default_response("done")
+            dialog.set_close_response("done")
+
+            def answered(_d: Adw.AlertDialog, response: str) -> None:
+                if response == "cancel":
+                    _in_thread(
+                        lambda: devices.cancel_pairing(self.win.backup),
+                        lambda _r, _e: self.refresh(),
+                    )
+                else:
+                    self.refresh()
+
+            dialog.connect("response", answered)
+            dialog.present(self.win)
+
+        _in_thread(lambda: devices.start_pairing(self.win.backup), done)
+
+    def _block(self, _button: Gtk.Button, key_id: str, name: str) -> None:
+        dialog = Adw.AlertDialog(
+            heading=_("Block «{name}»?").format(name=name),
+            body=_(
+                "It can no longer open or add to the backups, and forgets its key the next "
+                "time it tries. Files on it stay as they are. If it was stolen, the backups "
+                "also get a new key and you get a new recovery sheet."
+            ),
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("lost", _("Block"))
+        dialog.add_response("stolen", _("It was stolen"))
+        dialog.set_response_appearance("lost", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_response_appearance("stolen", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_close_response("cancel")
+
+        def answered(_d: Adw.AlertDialog, response: str) -> None:
+            if response not in ("lost", "stolen"):
+                return
+            stolen = response == "stolen"
+
+            def done(_out: Any, error: Exception | None) -> None:
+                self.refresh()
+                if error:
+                    self.win.toast(_("Could not block: {why}").format(why=error))
+                    return
+                self.win.toast(_("«{name}» is blocked.").format(name=name))
+                if stolen:
+                    self.protect()
+
+            _in_thread(lambda: devices.block(self.win.backup, key_id, stolen=stolen), done)
+
+        dialog.connect("response", answered)
+        dialog.present(self.win)
+
+    def protect(self) -> None:
+        """After theft: a new key for every backup (devices.md 5), then a new sheet."""
+        dialog = Adw.AlertDialog(
+            heading=_("Protect the backups after the theft?"),
+            body=_(
+                "The stolen device may know the key of the backups. Vilna moves every backup "
+                "under a new key and deletes the old copy; this can take a while. Then you "
+                "write down a new recovery sheet, and your other devices connect again with "
+                "a code."
+            ),
+        )
+        dialog.add_response("later", _("Later"))
+        dialog.add_response("protect", _("Protect"))
+        dialog.set_response_appearance("protect", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_close_response("later")
+
+        def answered(_d: Adw.AlertDialog, response: str) -> None:
+            if response != "protect":
+                return
+            self.win.toast(_("Moving the backups under a new key…"))
+
+            def done(out: Any, error: Exception | None) -> None:
+                if error:
+                    self.win.toast(_("The backups were not moved: {why}").format(why=error))
+                    self.refresh()
+                    return
+                self.win.show_sheet(out["recovery_key"])
+                if out.get("delete_old"):
+                    self.win.toast(
+                        _("Delete the old copy yourself: {place}").format(
+                            place=view.place_text(out["delete_old"])
+                        )
+                    )
+
+            _in_thread(lambda: devices.protect(self.win.backup), done)
+
+        dialog.connect("response", answered)
+        dialog.present(self.win)
 
     # -- actions -----------------------------------------------------------
 

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 18 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Writing to the calendar (alpha plan, item 27): create_event, update_event,
+  delete_event and restore; single events without guests only; every change
+  undoable through Herkos (undo files in $XDG_STATE_HOME/vilna-mcp-calendar)
+
+-------------------------------------------------------------------
 Mon Nov  9 21:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: MCP server "calendar" 0.1 preview (ADR 0023, read only), started

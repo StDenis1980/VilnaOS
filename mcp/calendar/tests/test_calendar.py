@@ -93,6 +93,8 @@ def test_all_day_event_has_dates():
         "all_day": True,
         "start": "2027-03-13",
         "end": "2027-03-14",
+        "id": holiday["id"],
+        "calendar_id": "home",
     }
 
 
@@ -169,7 +171,15 @@ def test_server_checks_arguments():
             "tools"
         ]
     ]
-    assert names == ["list_calendars", "list_events", "search_events"]
+    assert names == [
+        "list_calendars",
+        "list_events",
+        "search_events",
+        "create_event",
+        "update_event",
+        "delete_event",
+        "restore",
+    ]
 
 
 def test_server_survives_junk():
