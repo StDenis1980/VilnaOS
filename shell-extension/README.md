@@ -114,6 +114,7 @@ Gloxi потрібне `--talk-name=io.github.stdenis1980.VilnaShell` у ман�
 
 Док стільниці — Dash to Dock ([`docs/design/desktop/`](../docs/design/desktop/README.md)); його вмикає й налаштовує `vilna-branding`, а вигляд дає це розширення. У GNOME Shell 46 розширення має одну таблицю стилів на будь-який стиль, тому `colorScheme.js` ставить на `Main.uiGroup` клас `vilna-light` або `vilna-dark` за ключем `org.gnome.desktop.interface color-scheme` (темний лише за `prefer-dark`, бо Vilna світла за замовчуванням) і стежить за перемиканням у «Налаштування ▸ Вигляд». `stylesheet.css` за цим класом малює док: кремове скло на світлому, нічне синє скло на темному, кути 24 px, крапки запущених програм іржаві на світлому й золоті на темному, підписи над значками пігулками. Власну тему Dash to Dock вимкнено (`apply-custom-theme=false`). На екрані входу класу немає: док там не працює.
 
+<<<<<<< HEAD
 ## (ж) Анімації вікон Vilna
 
 Рух вікон за токенами Дмитра ([`docs/design/motion/tokens.json`](../docs/design/motion/tokens.json)), без копії чужих ефектів. Числа й криві — у `lib/windowMotion.js` (перевіряють тести на node), підключення до Shell — у `windowMotion.js`.
@@ -129,6 +130,8 @@ Gloxi потрібне `--talk-name=io.github.stdenis1980.VilnaShell` у ман�
 
 Ключ `window-motion`: `vilna` (за замовчуванням), `reduced` (лише проявлення й згасання за 100 мс, без масштабу й руху, для тих, кому рух заважає) або `gnome` (рух GNOME без змін). Коли в «Налаштування ▸ Доступність» вимкнено анімації (`org.gnome.desktop.interface enable-animations`), Shell не анімує нічого, і модуль теж. Розсування значків у доку — власна анімація Dash to Dock (`animation-time` 0,28 с у `vilna-branding`).
 
+=======
+>>>>>>> ab4d4d5780bedc3fda3d2f1e994efeea36c761fd
 ## Налаштування
 
 Схема `org.gnome.shell.extensions.vilna` ([`schemas/`](vilna@stdenis1980.github.io/schemas/)):
@@ -174,7 +177,10 @@ gnome-extensions enable vilna@stdenis1980.github.io
 | `dbus.js` | Сервіс D-Bus |
 | `vpnOffer.js`, `lib/wifiOffer.js` | (д): стан NetworkManager, коли пропонувати, слова 10 мовами |
 | `colorScheme.js`, `lib/colorScheme.js` | (е): клас світлого чи темного стилю на `Main.uiGroup` |
+<<<<<<< HEAD
 | `windowMotion.js`, `lib/windowMotion.js` | (ж): підміна параметрів анімації вікон Shell, «підйом» під час перетягування; токени руху |
+=======
+>>>>>>> ab4d4d5780bedc3fda3d2f1e994efeea36c761fd
 | `stylesheet.css` | Індикатор, смуга, екран входу (г) і кольори доку (е) |
 
 Логіка без GNOME — у `lib/`: її перевіряють тести на node.
@@ -183,11 +189,19 @@ gnome-extensions enable vilna@stdenis1980.github.io
 
 ```sh
 cd shell-extension
+<<<<<<< HEAD
 node --test tests/*.test.js     # логіка в lib/, 52 тести
+=======
+node --test tests/*.test.js     # логіка в lib/, 45 тестів
+>>>>>>> ab4d4d5780bedc3fda3d2f1e994efeea36c761fd
 tests/shell/run.sh              # справжній GNOME Shell без екрана
 sudo tests/shell/run.sh gdm     # екран входу (підробляє localed, тому root)
 ```
 
+<<<<<<< HEAD
 `tests/shell/run.sh` запускає GNOME Shell (46 або новіший) з `--headless`, допоміжне розширення `tests/shell/vilna-test@vilna.test` і три GTK-вікна (Gloxi, діалог Herkos, стороннє вікно з полем пароля). Воно перевіряє: поля паролів GNOME Shell і GTK, «Пароль»/«Повторіть пароль», ручне перемикання в полі, польську розкладку, вимкнення розширення посеред поля, режим блокування екрана, «поверх усіх» для Gloxi і Herkos, вікно Gloxi біля правого краю (усі розміри, D-Bus, вимкнення), смугу (робоча область, розгорнуте вікно, банери, 1/6 і 1/3, згортання й закриття Gloxi), ім'я на D-Bus у сеансі й відсутність його на екрані входу, тло екрана входу (г), кольори доку за світлим і темним стилем на підставному доку з іменами Dash to Dock (е) і відсутність класу стилю на екрані входу, анімації вікон (ж): тривалість і криву відкриття, закриття, згортання й розгортання, «підйом» під час перетягування, стилі `reduced` і `gnome`. Потрібні `gnome-shell`, `gjs`, typelib GTK 4, `dbus-run-session` і системна шина D-Bus. У CI це окреме завдання `shell-extension` на Ubuntu 24.04 (GNOME Shell 46).
+=======
+`tests/shell/run.sh` запускає GNOME Shell (46 або новіший) з `--headless`, допоміжне розширення `tests/shell/vilna-test@vilna.test` і три GTK-вікна (Gloxi, діалог Herkos, стороннє вікно з полем пароля). Воно перевіряє: поля паролів GNOME Shell і GTK, «Пароль»/«Повторіть пароль», ручне перемикання в полі, польську розкладку, вимкнення розширення посеред поля, режим блокування екрана, «поверх усіх» для Gloxi і Herkos, вікно Gloxi біля правого краю (усі розміри, D-Bus, вимкнення), смугу (робоча область, розгорнуте вікно, банери, 1/6 і 1/3, згортання й закриття Gloxi), ім'я на D-Bus у сеансі й відсутність його на екрані входу, тло екрана входу (г), кольори доку за світлим і темним стилем на підставному доку з іменами Dash to Dock (е) і відсутність класу стилю на екрані входу. Потрібні `gnome-shell`, `gjs`, typelib GTK 4, `dbus-run-session` і системна шина D-Bus. У CI це окреме завдання `shell-extension` на Ubuntu 24.04 (GNOME Shell 46).
+>>>>>>> ab4d4d5780bedc3fda3d2f1e994efeea36c761fd
 
 Що перевірити руками на пристрої з Aeon (GNOME 49+): справжній екран входу GDM і блокування, Wi-Fi і зашифрована флешка, Firefox, клацання по індикатору у звичайному вікні.

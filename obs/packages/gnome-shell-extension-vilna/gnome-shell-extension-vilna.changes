@@ -1,4 +1,5 @@
 -------------------------------------------------------------------
+<<<<<<< HEAD
 Wed Nov 18 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.5: Vilna window motion from the design motion tokens: windows
@@ -9,6 +10,8 @@ Wed Nov 18 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   (100 ms fades only) or gnome.
 
 -------------------------------------------------------------------
+=======
+>>>>>>> ab4d4d5780bedc3fda3d2f1e994efeea36c761fd
 Wed Nov 18 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.4: the Vilna colours of the dock (Dash to Dock): a vilna-light
