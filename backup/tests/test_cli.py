@@ -60,3 +60,12 @@ def test_errors_are_json(env, capsys):
 def test_person_only_commands_refuse_json(env, capsys):
     assert cli.main(["--json", "secrets", "on"]) == 1
     assert cli.main(["--json", "restore", "--in-place"]) == 1
+    assert cli.main(["--json", "devices", "add"]) == 1
+    assert cli.main(["--json", "devices", "block", "0123456789"]) == 1
+    assert cli.main(["--json", "join", "/tmp/x"]) == 1
+    assert cli.main(["--json", "protect", "--yes"]) == 1
+
+
+def test_devices_list_needs_a_place(env, capsys):
+    code, data = run(capsys, "devices")
+    assert code == 1 and "no place" in data["error"]

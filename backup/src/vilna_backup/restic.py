@@ -172,6 +172,25 @@ class Restic:
             raise ResticError("could not find the key just added")
         return new[0]
 
+    def remove_key(self, key_id: str, env: Mapping[str, str] | None = None) -> None:
+        """Remove another key. restic itself refuses to remove the key in use."""
+        self.run(["key", "remove", key_id], env=env)
+
+    def init_copying_chunker(self, from_repository: str, from_env: Mapping[str, str]) -> str:
+        """A new repository with its own master key and the chunker of ``from``.
+
+        The same chunker parameters let ``restic copy`` keep deduplication.
+        """
+        env = {"RESTIC_FROM_REPOSITORY": from_repository, **from_env}
+        out = self.run(["init", "--json", "--copy-chunker-params"], env=env).stdout
+        msgs = [json.loads(x) for x in out.splitlines() if x.startswith("{")]
+        return next((m["id"] for m in msgs if m.get("message_type") == "initialized"), "")
+
+    def copy_from(self, from_repository: str, from_env: Mapping[str, str]) -> None:
+        """Copy every snapshot of ``from`` into this repository (re-encrypted)."""
+        env = {"RESTIC_FROM_REPOSITORY": from_repository, **from_env}
+        self.run(["copy"], env=env)
+
     def snapshots(self) -> list[dict[str, Any]]:
         return json.loads(self.run(["snapshots", "--json"]).stdout or "[]") or []
 

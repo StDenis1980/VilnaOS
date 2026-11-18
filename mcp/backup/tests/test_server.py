@@ -37,6 +37,7 @@ def test_tools_list_offers_only_r0_to_r2():
     assert names == {
         "status",
         "list_snapshots",
+        "list_devices",
         "overview",
         "run_now",
         "set_schedule",
@@ -126,6 +127,7 @@ def test_check_arguments_types():
     with pytest.raises(ToolFailure):
         check_arguments("set_paths", {"gloxi_history": "yes"})
     assert to_command("list_snapshots", {}) == ["snapshots"]
+    assert to_command("list_devices", {}) == ["devices", "list"]
 
 
 def test_serve_over_stdio():

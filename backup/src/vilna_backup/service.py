@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from vilna_backup import keys, plan, schedule
+from vilna_backup import devices, keys, plan, schedule
 from vilna_backup.restic import Restic, ResticError
 from vilna_backup.settings import (
     PRESETS,
@@ -342,7 +342,14 @@ class Backup:
                 raise BackupError("a backup is already running")
             try:
                 return self._run(s)
-            except (BackupError, ResticError, OSError) as e:
+            except ResticError as e:
+                if devices.forget_if_blocked(self, e):
+                    raise BackupError(
+                        "this device was blocked from another one; backups are off"
+                    ) from None
+                self._log("backup", ok=False, message=str(e))
+                raise BackupError(str(e)) from None
+            except (BackupError, OSError) as e:
                 self._log("backup", ok=False, message=str(e))
                 raise BackupError(str(e)) from None
             finally:

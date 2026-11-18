@@ -685,3 +685,12 @@ msgstr "{what} (лише читання)"
 
 msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
 msgstr "Натисніть кнопку самі, клавіатурою або мишею: Herkos не приймає натискань від інших програм."
+
+msgid "See which devices can open the backups"
+msgstr "Переглянути, які пристрої мають доступ до копій"
+
+msgid "Block a device from the backups"
+msgstr "Заблокувати пристрій для копій"
+
+msgid "Let a new device open the backups"
+msgstr "Підключити новий пристрій до копій"

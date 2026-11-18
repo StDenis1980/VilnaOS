@@ -70,6 +70,14 @@ TOOLS = [
     ),
     _tool("list_snapshots", "List the backups made so far", {}, [], **_READ),
     _tool(
+        "list_devices",
+        "Devices that can open the backups (this one, the recovery sheet, other devices). "
+        "Adding or blocking a device is for the person, in the Backups window",
+        {},
+        [],
+        **_READ,
+    ),
+    _tool(
         "overview",
         "Sizes of what could be backed up (settings, documents, pictures, ...) and whether "
         "the current choice fits the limit, with large folders to leave out if not",
@@ -146,6 +154,8 @@ def to_command(name: str, args: dict) -> list[str]:
         return ["status"]
     if name == "list_snapshots":
         return ["snapshots"]
+    if name == "list_devices":
+        return ["devices", "list"]
     if name == "overview":
         return ["overview"]
     if name == "run_now":
