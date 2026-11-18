@@ -89,7 +89,8 @@
 | --- | --- |
 | `gloxi` | Системний сервіс асистента (окремий користувач `gloxi`, обмеження systemd з розд. 9.1 permissions.md), маршрутизатор моделей |
 | `gloxi-session` | Клієнт у сеансі користувача: вікно чату, гаряча клавіша, сповіщення. У Vilna — **RPM** (рішення 2.11.2026), бо говорить із системним сокетом Herkos; для звичайного Linux той самий код іде як Flatpak |
-| `gnome-shell-extension-vilna` | Розширення GNOME Shell Vilna ([`../../shell-extension/`](../../shell-extension/)): латинська розкладка в полях паролів (зокрема на екранах входу й блокування), Gloxi поверх усіх вікон, смуга екрана під панель Gloxi на етапі B. Увімкнене для всіх користувачів і для `gdm`. Пізніше — кнопка й швидкий виклик Gloxi з верхньої панелі |
+| `gnome-shell-extension-vilna` | Розширення GNOME Shell Vilna ([`../../shell-extension/`](../../shell-extension/)): латинська розкладка в полях паролів (зокрема на екранах входу й блокування), Gloxi поверх усіх вікон, смуга екрана під панель Gloxi на етапі B. Увімкнене для всіх користувачів і для `gdm`. Малює док у кольорах Vilna. Пізніше — кнопка й швидкий виклик Gloxi з верхньої панелі |
+| `gnome-shell-extension-dash-to-dock` | Док стільниці: [Dash to Dock](https://github.com/micheleg/dash-to-dock) без змін (GPL-2.0-or-later), з тегу випуску, SHA-256 у `_service`. Знизу, ховається, коли вікно в фокусі його закриває; налаштування — у `30_Vilna.gschema.override` (`vilna-branding`), вигляд — з розширення Vilna. Чому так — [`docs/design/desktop/`](../../docs/design/desktop/README.md) |
 
 ### 4.4. Шлюз приватності, MCP-сервери, модель
 

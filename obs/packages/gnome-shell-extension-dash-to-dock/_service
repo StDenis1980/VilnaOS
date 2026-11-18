@@ -1,0 +1,18 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Dash to Dock, the dock of the Vilna desktop (docs/design/desktop/README.md),
+     from the upstream release tag. OBS fetches it and checks the SHA-256;
+     CI fetches it with obs/tools/fetch_sources.py. A new version is let in
+     only after a VM check: the dock is part of every session. -->
+<services>
+  <service name="download_url">
+    <param name="protocol">https</param>
+    <param name="host">github.com</param>
+    <param name="path">/micheleg/dash-to-dock/archive/refs/tags/extensions.gnome.org-v110.tar.gz</param>
+    <param name="filename">dash-to-dock-110.tar.gz</param>
+  </service>
+  <service name="verify_file">
+    <param name="file">_service:download_url:dash-to-dock-110.tar.gz</param>
+    <param name="verifier">sha256</param>
+    <param name="checksum">0000000000000000000000000000000000000000000000000000000000000000</param>
+  </service>
+</services>

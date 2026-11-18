@@ -51,3 +51,73 @@
 .login-dialog .login-dialog-prompt-entry:focus {
   border-color: #2d6bff; /* blue #2D6BFF */
 }
+
+/* The dock (Dash to Dock, docs/design/desktop/README.md) in the Vilna
+   colours of docs/design/style/vilna.css: glass on cream in the light
+   style, glass on night blue in the dark one. The style class on
+   Main.uiGroup comes from colorScheme.js. The selectors name .bottom so
+   that they outrank Dash to Dock's own (2 ids, 3+ classes). */
+.vilna-light #dashtodockContainer.bottom #dash .dash-background {
+  background-color: rgba(255, 252, 246, 0.86); /* glass light rgba(255,252,246,.72), more opaque without blur */
+  border: 1px solid rgba(19, 33, 58, 0.1);
+  border-radius: 24px;
+}
+
+.vilna-dark #dashtodockContainer.bottom #dash .dash-background {
+  background-color: rgba(14, 26, 46, 0.82); /* glass dark rgba(14,26,46,.62) */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+}
+
+.vilna-light #dashtodockContainer.bottom #dash .dash-separator {
+  background-color: rgba(19, 33, 58, 0.14);
+}
+
+.vilna-dark #dashtodockContainer.bottom #dash .dash-separator {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* The app with the focused window, and the one under the pointer. */
+.vilna-light #dashtodockContainer.bottom #dash .dash-item-container .overview-tile.focused .overview-icon,
+.vilna-light #dashtodockContainer.bottom #dash .dash-item-container .overview-tile:hover .overview-icon,
+.vilna-light #dashtodockContainer.bottom #dash .dash-item-container .show-apps:hover .overview-icon {
+  background-color: rgba(19, 33, 58, 0.08);
+}
+
+.vilna-dark #dashtodockContainer.bottom #dash .dash-item-container .overview-tile.focused .overview-icon,
+.vilna-dark #dashtodockContainer.bottom #dash .dash-item-container .overview-tile:hover .overview-icon,
+.vilna-dark #dashtodockContainer.bottom #dash .dash-item-container .show-apps:hover .overview-icon {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Running apps: Dash to Dock draws its dots in this colour. Gold on
+   night blue, rust on cream (gold is too pale there). */
+.vilna-light #dashtodockContainer .app-grid-running-dot,
+.vilna-light #dashtodockContainer .app-well-app-running-dot {
+  background-color: #c2581e; /* rust #C2581E */
+}
+
+.vilna-dark #dashtodockContainer .app-grid-running-dot,
+.vilna-dark #dashtodockContainer .app-well-app-running-dot {
+  background-color: #f5c24a; /* gold #F5C24A */
+}
+
+/* The grid button's symbol follows the text colour. */
+.vilna-light #dashtodockContainer .show-apps .overview-icon {
+  color: #13213a; /* light text #13213A */
+}
+
+/* The name above an icon. */
+.vilna-light .dash-label {
+  background-color: #ffffff;
+  color: #13213a;
+  border: 1px solid rgba(19, 33, 58, 0.1);
+  border-radius: 999px;
+}
+
+.vilna-dark .dash-label {
+  background-color: #16243d; /* dark surface #16243D */
+  color: #eef1f7;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}

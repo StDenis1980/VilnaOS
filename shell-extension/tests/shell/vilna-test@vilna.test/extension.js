@@ -296,6 +296,33 @@ async function locked() {
     entry.destroy();
 }
 
+// The dock's Vilna colours (colorScheme.js and stylesheet.css). Dash to
+// Dock is not installed here: a stand-in with its names takes the styles.
+async function dockColours() {
+    const iface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
+    const classes = () => ['vilna-light', 'vilna-dark'].filter(c => Main.uiGroup.has_style_class_name(c));
+    const container = new St.Widget({name: 'dashtodockContainer', style_class: 'bottom'});
+    const dash = new St.Widget({name: 'dash'});
+    const background = new St.Widget({style_class: 'dash-background'});
+    dash.add_child(background);
+    container.add_child(dash);
+    Main.uiGroup.add_child(container);
+    const colour = () => background.get_theme_node().get_background_color().to_string();
+
+    iface.set_string('color-scheme', 'default');
+    await waitFor(() => classes().length === 1 && classes()[0] === 'vilna-light');
+    check('dock: light style by default', classes(), ['vilna-light']);
+    check('dock: cream glass in the light style', colour(), '#fffcf6dc');
+    iface.set_string('color-scheme', 'prefer-dark');
+    await waitFor(() => classes()[0] === 'vilna-dark');
+    check('dock: dark style follows the setting', classes(), ['vilna-dark']);
+    check('dock: night glass in the dark style', colour(), '#0e1a2ed1');
+    iface.set_string('color-scheme', 'default');
+    await waitFor(() => classes()[0] === 'vilna-light');
+    check('dock: back to light', classes(), ['vilna-light']);
+    container.destroy();
+}
+
 // The login screen draws its background on the actor named lockDialogGroup
 // (screenShield.js). The container has no logind, so the Shell makes no
 // screen shield here: style a stand-in with the same name.
@@ -335,9 +362,12 @@ async function run() {
     await passwordFields();
     if (mode === 'gdm') {
         check('login screen: no D-Bus service', await nameOwned('io.github.stdenis1980.VilnaShell'), false);
+        check('login screen: no dock style class',
+            ['vilna-light', 'vilna-dark'].some(c => Main.uiGroup.has_style_class_name(c)), false);
         await loginBackground();
         return;
     }
+    await dockColours();
     await locked();
     await windows();
 }
