@@ -1138,6 +1138,10 @@ class ChatWindow(Adw.ApplicationWindow):
             self.entry.grab_focus()
 
 
+# A question from the command line is at most this long; more is cut.
+MAX_ASK = 2000
+
+
 class GloxiApp(Adw.Application):
     def __init__(self) -> None:
         super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
@@ -1163,6 +1167,16 @@ class GloxiApp(Adw.Application):
             _("Show Gloxi and talk about a VPN"),
             None,
         )
+        # `gloxi-gtk --ask TEXT`: a question from the Gloxi widget on the
+        # Vilna desktop (shell-extension, part (з)).
+        self.add_main_option(
+            "ask",
+            0,
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.STRING,
+            _("Show Gloxi and ask it a question"),
+            _("TEXT"),
+        )
 
     def do_command_line(self, command_line: Gio.ApplicationCommandLine) -> int:
         options = command_line.get_options_dict()
@@ -1170,6 +1184,9 @@ class GloxiApp(Adw.Application):
             self.toggle()
         elif options.contains("vpn"):
             self.talk_about_vpn()
+        elif options.contains("ask"):
+            question = options.lookup_value("ask", GLib.VariantType.new("s"))
+            self.ask(question.unpack() if question else "")
         else:
             self.activate()
         return 0
@@ -1180,6 +1197,14 @@ class GloxiApp(Adw.Application):
         window = self.get_active_window()
         if isinstance(window, ChatWindow):
             window.controller.submit("/vpn")
+
+    def ask(self, question: str) -> None:
+        """Bring Gloxi up and send a question, as if the person typed it."""
+        self.activate()
+        text = question.strip()[:MAX_ASK]
+        window = self.get_active_window()
+        if text and isinstance(window, ChatWindow):
+            window.controller.submit(text)
 
     def do_activate(self) -> None:
         window = self.get_active_window()

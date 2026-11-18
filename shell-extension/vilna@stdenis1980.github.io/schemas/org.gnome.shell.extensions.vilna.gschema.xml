@@ -69,5 +69,20 @@
       <summary>Rubber windows while dragging</summary>
       <description>A dragged window bends a little and springs back when let go. Only with the vilna window motion and with animations on.</description>
     </key>
+    <key name="widgets" type="b">
+      <default>true</default>
+      <summary>Desktop widgets</summary>
+      <description>A column of cards on the left of the desktop: clock, Gloxi, today in the calendar, weather and backups.</description>
+    </key>
+    <key name="weather" type="b">
+      <default>true</default>
+      <summary>Weather widget</summary>
+      <description>The forecast comes from Open-Meteo for the place below.</description>
+    </key>
+    <key name="weather-location" type="(sdd)">
+      <default>('', 0.0, 0.0)</default>
+      <summary>Place for the weather</summary>
+      <description>Name, latitude and longitude of a place the person chose. Empty: the capital of the system's country, so that no location of the person is sent.</description>
+    </key>
   </schema>
 </schemalist>

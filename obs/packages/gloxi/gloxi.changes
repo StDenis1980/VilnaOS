@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Nov 18 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- gloxi-gtk --ask TEXT: bring Gloxi up and send the question, as if
+  typed; the suggestions of the Gloxi widget on the Vilna desktop use it.
+
+-------------------------------------------------------------------
 Tue Nov 17 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - A VPN chosen in the installer wizard: on the first start Gloxi goes

@@ -405,6 +405,78 @@ async function dockColours() {
 // The login screen draws its background on the actor named lockDialogGroup
 // (screenShield.js). The container has no logind, so the Shell makes no
 // screen shield here: style a stand-in with the same name.
+// Every label text under an actor, in order.
+function texts(actor) {
+    const out = [];
+    const walk = a => {
+        if (a instanceof St.Label)
+            out.push(a.text);
+        for (const child of a.get_children())
+            walk(child);
+    };
+    if (actor)
+        walk(actor);
+    return out;
+}
+
+const widgetsRoot = () => Main.layoutManager._backgroundGroup.get_children().find(a => a.name === 'vilnaWidgets') ?? null;
+const widget = name => {
+    const find = a => a.name === name ? a : a.get_children().map(find).find(Boolean) ?? null;
+    const root = widgetsRoot();
+    return root ? find(root) : null;
+};
+
+async function widgets() {
+    const settings = vilnaSettings();
+    const root = widgetsRoot();
+    check('widgets: shown by default', Boolean(root), true);
+    if (!root)
+        return;
+    // The wallpapers are a group at the bottom of the window group.
+    const backgrounds = Main.layoutManager._backgroundGroup;
+    check('widgets: above the wallpaper, under the windows',
+        [backgrounds.get_last_child() === root, global.window_group.get_first_child() === backgrounds], [true, true]);
+    check('widgets: left, below the top bar', [root.x, root.y], [24, Main.panel.height + 24]);
+    const [time] = texts(widget('vilnaClock'));
+    check('widgets: the clock shows the time', /^\d{1,2}:\d{2}$/.test(time ?? ''), true);
+    const weatherText = () => texts(widget('vilnaWeatherWidget'));
+    check('widgets: weather for the capital by default (Madrid)',
+        await waitFor(() => weatherText()[2]?.startsWith('Madrid · '), 5000) ? weatherText().slice(1) : weatherText(),
+        ['18°', 'Madrid · Clear · ↑21° ↓11°']);
+    settings.set_value('weather-location', new GLib.Variant('(sdd)', ['València', 39.47, -0.38]));
+    check('widgets: a chosen place wins', await waitFor(() => weatherText()[2]?.startsWith('València · '), 5000), true);
+    settings.set_value('weather-location', new GLib.Variant('(sdd)', ['', 0, 0]));
+    await waitFor(() => weatherText()[2]?.startsWith('Madrid · '), 5000);
+    settings.set_boolean('weather', false);
+    await sleep(200);
+    check('widgets: weather can be hidden', widget('vilnaWeatherWidget')?.visible, false);
+    settings.set_boolean('weather', true);
+
+    check('widgets: Копії not set up yet', texts(widget('vilnaBackupWidget'))[0], 'Backups are not set up');
+    const dir = GLib.build_filenamev([GLib.get_user_state_dir(), 'vilna-backup']);
+    GLib.mkdir_with_parents(dir, 0o700);
+    const now = Math.floor(Date.now() / 1000);
+    GLib.file_set_contents(`${dir}/runs.jsonl`, `${JSON.stringify({time: now, kind: 'backup', ok: true})}\n`);
+    check('widgets: Копії saved today', await waitFor(() => texts(widget('vilnaBackupWidget'))[0] === 'Backups: all saved', 5000)
+        ? texts(widget('vilnaBackupWidget'))[1]?.startsWith('Last: today at ') : texts(widget('vilnaBackupWidget')), true);
+    check('widgets: calendar card says nothing is planned', texts(widget('vilnaCalendarWidget')).slice(1), ['Nothing planned']);
+    check('widgets: Gloxi card', texts(widget('vilnaGloxiWidget')).slice(0, 2), ['GLOXI', 'How can I help?']);
+
+    Main.overview.show();
+    await waitFor(() => Main.overview.visible && !Main.overview.animationInProgress);
+    check('widgets: hidden in the overview', widgetsRoot()?.visible, false);
+    Main.overview.hide();
+    await waitFor(() => !Main.overview.visible && !Main.overview.animationInProgress);
+    check('widgets: back after the overview', widgetsRoot()?.visible, true);
+
+    settings.set_boolean('widgets', false);
+    await sleep(200);
+    check('widgets: off by the setting', widgetsRoot(), null);
+    settings.set_boolean('widgets', true);
+    await sleep(200);
+    check('widgets: on again', Boolean(widgetsRoot()), true);
+}
+
 async function loginBackground() {
     const group = new St.Widget({name: 'lockDialogGroup'});
     Main.layoutManager.uiGroup.add_child(group);
@@ -444,10 +516,12 @@ async function run() {
         check('login screen: no D-Bus service', await nameOwned('io.github.stdenis1980.VilnaShell'), false);
         check('login screen: no dock style class',
             ['vilna-light', 'vilna-dark'].some(c => Main.uiGroup.has_style_class_name(c)), false);
+        check('login screen: no widgets', widgetsRoot(), null);
         await loginBackground();
         return;
     }
     await dockColours();
+    await widgets();
     await locked();
     await windows();
 }

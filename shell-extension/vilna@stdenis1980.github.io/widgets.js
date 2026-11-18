@@ -1,0 +1,389 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// (з) Desktop widgets (docs/design/desktop/README.md): a column of cards
+// on the left of the desktop, above the wallpaper and under every window.
+// The clock and date, Gloxi (a question goes to the Gloxi app), today in
+// the calendar (GNOME's own calendar server, nothing leaves the computer),
+// the weather and the state of Копії (vilna-backup's own log).
+//
+// The weather is for the capital of the system's country unless the
+// person picked a place in the preferences (lib/widgets.js says why): the
+// only request is the forecast for that place, to Open-Meteo, every 30
+// minutes while the widgets are on.
+
+import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GnomeDesktop from 'gi://GnomeDesktop';
+import Shell from 'gi://Shell';
+import Soup from 'gi://Soup?version=3.0';
+import St from 'gi://St';
+
+import * as Calendar from 'resource:///org/gnome/shell/ui/calendar.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
+import {
+    REFRESH_MINUTES, RETRY_MINUTES, askArgv, backupWhen, forecastUrl, homeCountry, lastBackup,
+    parseForecast, todayEvents, weatherKind, weatherPlace, widgetText,
+} from './lib/widgets.js';
+
+const GLOXI = 'io.github.stdenis1980.Gloxi.desktop';
+const BACKUP = 'io.github.stdenis1980.VilnaBackup.desktop';
+const WIDTH = 340;
+const MARGIN = 24;
+// Tests only: a JSON file read instead of asking Open-Meteo, so that the
+// headless Shell test checks the whole weather path without the network.
+const WEATHER_FILE = GLib.getenv('VILNA_TEST_WEATHER_FILE');
+
+function label(text, style) {
+    return new St.Label({text, style_class: style, x_expand: true});
+}
+
+function card(name, title) {
+    const box = new St.BoxLayout({vertical: true, style_class: 'vilna-widget', x_expand: true});
+    box.name = name;
+    if (title)
+        box.add_child(label(title.toUpperCase(), 'vilna-widget-title'));
+    return box;
+}
+
+function readText(path) {
+    try {
+        const [ok, bytes] = GLib.file_get_contents(path);
+        return ok ? new TextDecoder().decode(bytes) : null;
+    } catch {
+        return null;
+    }
+}
+
+export class Widgets {
+    constructor(settings, openPreferences) {
+        this._settings = settings;
+        this._openPreferences = openPreferences;
+        this._root = null;
+    }
+
+    enable() {
+        this._text = widgetText(GLib.get_language_names());
+        this._settingsIds = ['changed::widgets', 'changed::weather', 'changed::weather-location']
+            .map(signal => this._settings.connect(signal, () => this._sync()));
+        this._sync();
+    }
+
+    disable() {
+        for (const id of this._settingsIds ?? [])
+            this._settings.disconnect(id);
+        this._settingsIds = [];
+        this._hide();
+    }
+
+    // For the headless test.
+    get root() {
+        return this._root;
+    }
+
+    _sync() {
+        if (!this._settings.get_boolean('widgets')) {
+            this._hide();
+            return;
+        }
+        if (!this._root)
+            this._show();
+        this._weatherCard.visible = this._settings.get_boolean('weather');
+        this._refreshWeather();
+    }
+
+    _show() {
+        const t = this._text;
+        this._root = new St.BoxLayout({vertical: true, style_class: 'vilna-widgets', width: WIDTH});
+        this._root.name = 'vilnaWidgets';
+
+        // Clock and date.
+        const clock = card('vilnaClock');
+        this._time = label('', 'vilna-widget-time');
+        this._date = label('', 'vilna-widget-date');
+        clock.add_child(this._time);
+        clock.add_child(this._date);
+        this._root.add_child(clock);
+
+        // Gloxi: the field opens Gloxi; a suggestion asks it at once.
+        const gloxi = card('vilnaGloxiWidget', t.gloxi);
+        gloxi.add_child(label(t.help, 'vilna-widget-heading'));
+        const field = new St.Button({style_class: 'vilna-widget-field', x_expand: true,
+            child: new St.Label({text: t.askPlaceholder, x_align: Clutter.ActorAlign.START, x_expand: true})});
+        field.connect('clicked', () => this._launch(GLOXI));
+        gloxi.add_child(field);
+        // Two suggestions to a row, as in the mockup: long words fit.
+        let chips = null;
+        t.chips.forEach((question, i) => {
+            if (i % 2 === 0) {
+                chips = new St.BoxLayout({style_class: 'vilna-widget-chips'});
+                gloxi.add_child(chips);
+            }
+            const chip = new St.Button({label: question, style_class: 'vilna-widget-chip'});
+            chip.connect('clicked', () => this._ask(question));
+            chips.add_child(chip);
+        });
+        this._root.add_child(gloxi);
+
+        // Today in the calendar.
+        this._events = card('vilnaCalendarWidget', t.today);
+        this._eventList = new St.BoxLayout({vertical: true});
+        this._events.add_child(this._eventList);
+        this._root.add_child(this._events);
+
+        // Weather.
+        this._weatherCard = card('vilnaWeatherWidget', t.weather);
+        const row = new St.BoxLayout({x_expand: true});
+        const temps = new St.BoxLayout({vertical: true, x_expand: true});
+        this._temp = label('—', 'vilna-widget-temp');
+        this._weatherLine = label(t.noWeather, 'vilna-widget-line');
+        temps.add_child(this._temp);
+        temps.add_child(this._weatherLine);
+        this._weatherIcon = new St.Icon({icon_name: 'weather-overcast-symbolic', style_class: 'vilna-widget-weather-icon',
+            y_align: Clutter.ActorAlign.CENTER});
+        row.add_child(temps);
+        row.add_child(this._weatherIcon);
+        const weatherButton = new St.Button({child: row, x_expand: true, style_class: 'vilna-widget-plain'});
+        weatherButton.connect('clicked', () => this._openPreferences?.());
+        this._weatherCard.add_child(weatherButton);
+        this._root.add_child(this._weatherCard);
+
+        // Копії.
+        this._backupTitle = label('', 'vilna-widget-heading-small');
+        this._backupLine = label('', 'vilna-widget-line');
+        const backupBox = new St.BoxLayout({vertical: true, x_expand: true});
+        backupBox.add_child(this._backupTitle);
+        backupBox.add_child(this._backupLine);
+        const backupButton = new St.Button({child: backupBox, x_expand: true, style_class: 'vilna-widget-plain'});
+        backupButton.connect('clicked', () => this._launch(BACKUP));
+        const backup = card('vilnaBackupWidget');
+        backup.add_child(backupButton);
+        this._root.add_child(backup);
+
+        // The wallpapers live in their own group inside the window group, at
+        // its bottom; the widgets go on top of them there, so that every
+        // window covers them.
+        Main.layoutManager._backgroundGroup.add_child(this._root);
+        this._place();
+
+        this._wallClock = new GnomeDesktop.WallClock();
+        this._interface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
+        this._clockIds = [
+            this._wallClock.connect('notify::clock', () => this._tick()),
+            this._interface.connect('changed::clock-format', () => this._tick()),
+        ];
+        this._tick();
+
+        this._calendar = new Calendar.DBusEventSource();
+        this._calendarId = this._calendar.connect('changed', () => this._syncEvents());
+        this._syncEvents();
+
+        this._backupFile = Gio.File.new_for_path(GLib.build_filenamev([GLib.get_user_state_dir(), 'vilna-backup', 'runs.jsonl']));
+        try {
+            this._backupMonitor = this._backupFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
+            this._backupMonitorId = this._backupMonitor.connect('changed', () => this._syncBackup());
+        } catch (e) {
+            console.warn(`Vilna widgets: cannot watch the Копії log: ${e.message}`);
+        }
+        this._syncBackup();
+
+        this._monitorsId = Main.layoutManager.connect('monitors-changed', () => this._place());
+        this._overviewIds = [
+            Main.overview.connect('showing', () => (this._root.visible = false)),
+            Main.overview.connect('hidden', () => (this._root.visible = true)),
+        ];
+        this._root.visible = !Main.overview.visible;
+        this._session = new Soup.Session({user_agent: 'Vilna desktop widgets', timeout: 20});
+        this._cancellable = new Gio.Cancellable();
+    }
+
+    _hide() {
+        if (!this._root)
+            return;
+        this._cancellable?.cancel();
+        this._cancellable = null;
+        if (this._weatherTimer)
+            GLib.source_remove(this._weatherTimer);
+        this._weatherTimer = 0;
+        this._session?.abort();
+        this._session = null;
+        Main.layoutManager.disconnect(this._monitorsId);
+        for (const id of this._overviewIds)
+            Main.overview.disconnect(id);
+        this._wallClock.disconnect(this._clockIds[0]);
+        this._interface.disconnect(this._clockIds[1]);
+        this._wallClock.run_dispose?.();
+        this._wallClock = null;
+        this._calendar.disconnect(this._calendarId);
+        this._calendar.destroy();
+        this._calendar = null;
+        if (this._backupMonitor) {
+            this._backupMonitor.disconnect(this._backupMonitorId);
+            this._backupMonitor.cancel();
+        }
+        this._backupMonitor = null;
+        this._root.destroy();
+        this._root = null;
+    }
+
+    _place() {
+        const monitor = Main.layoutManager.primaryMonitor;
+        if (!monitor || !this._root)
+            return;
+        // New monitors bring new wallpapers; stay above them.
+        this._root.get_parent()?.set_child_above_sibling(this._root, null);
+        this._root.set_position(monitor.x + MARGIN, monitor.y + Main.panel.height + MARGIN);
+    }
+
+    _tick() {
+        const now = GLib.DateTime.new_now_local();
+        const twelve = this._interface.get_string('clock-format') === '12h';
+        this._time.text = now.format(twelve ? '%l:%M' : '%H:%M').trim();
+        const date = now.format('%A, %-d %B') ?? '';
+        this._date.text = date.charAt(0).toLocaleUpperCase() + date.slice(1);
+        // A new day: today's events change too.
+        if (this._day !== now.get_day_of_year()) {
+            this._day = now.get_day_of_year();
+            this._syncEvents();
+        }
+        if (this._backupFile)
+            this._syncBackup();
+    }
+
+    _syncEvents() {
+        if (!this._calendar)
+            return;
+        const now = new Date();
+        const begin = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const end = new Date(begin.getTime() + 86400000);
+        this._calendar.requestRange(begin, end);
+        const events = todayEvents(this._calendar.getEvents(begin, end), now);
+        this._eventList.destroy_all_children();
+        if (!events.length) {
+            this._eventList.add_child(label(this._text.nothing, 'vilna-widget-line'));
+            return;
+        }
+        const time = d => GLib.DateTime.new_from_unix_local(Math.floor(d.getTime() / 1000)).format('%H:%M');
+        for (const e of events) {
+            const box = new St.BoxLayout({vertical: true, style_class: 'vilna-widget-event'});
+            box.add_child(label(e.summary, 'vilna-widget-event-title'));
+            box.add_child(label(e.allDay ? this._text.allDay : `${time(e.start)}–${time(e.end)}`, 'vilna-widget-line'));
+            this._eventList.add_child(box);
+        }
+    }
+
+    _syncBackup() {
+        const t = this._text;
+        const last = lastBackup(readText(this._backupFile.get_path()));
+        if (!last) {
+            this._backupTitle.text = t.backupNone;
+            this._backupLine.text = '';
+            this._backupLine.visible = false;
+            return;
+        }
+        this._backupTitle.text = last.ok ? t.backupOk : t.backupFailed;
+        const local = s => GLib.DateTime.new_from_unix_local(Math.floor(s));
+        const now = GLib.DateTime.new_now_local();
+        const [when, value] = backupWhen(last.time, now.to_unix(), now.get_utc_offset() / 1e6,
+            s => local(s).format('%H:%M'), s => local(s).format('%-d %B'));
+        this._backupLine.text = t.last[when].replace('%s', value);
+        this._backupLine.visible = true;
+    }
+
+    // The place: the person's choice, else the capital of the system's country.
+    currentPlace() {
+        const [name, lat, lon] = this._settings.get_value('weather-location').deepUnpack();
+        const region = new Gio.Settings({schema_id: 'org.gnome.system.locale'}).get_string('region');
+        const country = homeCountry({
+            zone: GLib.TimeZone.new_local().get_identifier(),
+            zoneTab: readText('/usr/share/zoneinfo/zone.tab'),
+            region,
+            lang: GLib.getenv('LANG'),
+        });
+        return weatherPlace([name, lat, lon], country);
+    }
+
+    async _refreshWeather() {
+        if (!this._root || !this._settings.get_boolean('weather'))
+            return;
+        if (this._weatherTimer)
+            GLib.source_remove(this._weatherTimer);
+        this._weatherTimer = 0;
+        const place = this.currentPlace();
+        if (!place) {
+            this._showWeather(null, null);
+            return;
+        }
+        let forecast = null;
+        try {
+            forecast = parseForecast(await this._fetch(forecastUrl(place)));
+        } catch (e) {
+            if (e.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                return;
+            console.warn(`Vilna widgets: no forecast: ${e.message}`);
+        }
+        if (!this._root)
+            return;
+        this._showWeather(place, forecast);
+        const minutes = forecast ? REFRESH_MINUTES : RETRY_MINUTES;
+        this._weatherTimer = GLib.timeout_add_seconds(GLib.PRIORITY_LOW, minutes * 60, () => {
+            this._weatherTimer = 0;
+            this._refreshWeather();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    async _fetch(url) {
+        if (WEATHER_FILE)
+            return readText(WEATHER_FILE) ?? '';
+        const message = Soup.Message.new('GET', url);
+        const bytes = await this._session.send_and_read_async(message, GLib.PRIORITY_LOW, this._cancellable);
+        if (message.get_status() !== Soup.Status.OK)
+            throw new Error(`HTTP ${message.get_status()}`);
+        return new TextDecoder().decode(bytes.get_data());
+    }
+
+    _showWeather(place, forecast) {
+        const t = this._text;
+        if (!place) {
+            this._temp.text = '—';
+            this._weatherLine.text = t.chooseCity;
+            return;
+        }
+        if (!forecast) {
+            this._temp.text = '—';
+            this._weatherLine.text = `${place.name} · ${t.noWeather}`;
+            return;
+        }
+        const kind = weatherKind(forecast.code, forecast.day);
+        this._temp.text = `${forecast.temp}°`;
+        const range = forecast.high !== null && forecast.low !== null ? ` · ↑${forecast.high}° ↓${forecast.low}°` : '';
+        this._weatherLine.text = `${place.name} · ${t.kinds[kind.index]}${range}`;
+        this._weatherIcon.icon_name = kind.icon;
+    }
+
+    _launch(desktopId) {
+        const app = Shell.AppSystem.get_default().lookup_app(desktopId);
+        if (app)
+            app.activate();
+        else
+            console.warn(`Vilna widgets: ${desktopId} is not installed`);
+    }
+
+    _ask(question) {
+        const info = Gio.DesktopAppInfo.new(GLOXI);
+        if (!info) {
+            console.warn('Vilna widgets: Gloxi is not installed');
+            return;
+        }
+        try {
+            const [, argv] = GLib.shell_parse_argv(info.get_commandline());
+            const command = askArgv(argv, question);
+            if (command)
+                Gio.Subprocess.new(command, Gio.SubprocessFlags.NONE);
+        } catch (e) {
+            console.warn(`Vilna widgets: cannot ask Gloxi: ${e.message}`);
+        }
+    }
+}
