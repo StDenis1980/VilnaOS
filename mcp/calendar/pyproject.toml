@@ -2,7 +2,7 @@
 [project]
 name = "vilna-mcp-calendar"
 version = "0.1.0.dev0"
-description = "MCP server for reading the calendars of GNOME (Vilna OS)"
+description = "MCP server for the calendars of GNOME (Vilna OS)"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"

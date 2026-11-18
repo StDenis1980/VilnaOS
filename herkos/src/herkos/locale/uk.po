@@ -461,6 +461,18 @@ msgstr "Прочитати календар"
 msgid "Search the calendar"
 msgstr "Шукати в календарі"
 
+msgid "Add an event to the calendar"
+msgstr "Додати подію в календар"
+
+msgid "Change an event in the calendar"
+msgstr "Змінити подію в календарі"
+
+msgid "Delete an event from the calendar"
+msgstr "Видалити подію з календаря"
+
+msgid "Undo an earlier change to the calendar"
+msgstr "Скасувати попередню зміну в календарі"
+
 msgid "See whether Gloxi may reach the internet"
 msgstr "Подивитися, чи може Gloxi виходити в інтернет"
 
