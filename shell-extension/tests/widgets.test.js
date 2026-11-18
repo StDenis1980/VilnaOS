@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {
     CAPITALS, LANGUAGES, askArgv, backupWhen, checkTables, countryOfLocale, countryOfZone, forecastUrl,
     geocodeUrl, homeCountry, lastBackup, parseForecast, parseGeocode, roundForPrivacy, todayEvents,
-    weatherKind, weatherPlace, widgetText,
+    HOT, WINDY_GUSTS, WINDY_WIND, weatherKind, weatherPlace, weatherScene, widgetText,
 } from '../vilna@stdenis1980.github.io/lib/widgets.js';
 
 const ZONES = '# comment\nES\t+4024-00341\tEurope/Madrid\tSpain (mainland)\nUA\t+5026+03031\tEurope/Kyiv\tmost of Ukraine\n';
@@ -38,11 +38,18 @@ test('the forecast request carries only the place, and the answer is read safely
     assert.match(url, /^https:\/\/api\.open-meteo\.com\/v1\/forecast\?latitude=40\.42&longitude=-3\.70&/);
     const answer = JSON.stringify({current: {temperature_2m: 17.6, weather_code: 2, is_day: 0},
         daily: {temperature_2m_max: [21.2], temperature_2m_min: [10.6]}});
-    assert.deepEqual(parseForecast(answer), {temp: 18, high: 21, low: 11, code: 2, day: false});
+    assert.deepEqual(parseForecast(answer), {temp: 18, high: 21, low: 11, code: 2, day: false,
+        feels: null, wind: null, gusts: null});
+    assert.match(url, /apparent_temperature/);
+    assert.match(url, /wind_gusts_10m/);
+    const windy = JSON.stringify({current: {temperature_2m: 20, apparent_temperature: 18.4, weather_code: 1,
+        is_day: 1, wind_speed_10m: 24.6, wind_gusts_10m: 61.2}});
+    assert.deepEqual(parseForecast(windy),
+        {temp: 20, high: null, low: null, code: 1, day: true, feels: 18, wind: 25, gusts: 61});
     assert.equal(parseForecast('not json'), null);
     assert.equal(parseForecast('{"current":{"temperature_2m":"hot"}}'), null);
-    assert.deepEqual(parseForecast('{"current":{"temperature_2m":3,"weather_code":71}}'),
-        {temp: 3, high: null, low: null, code: 71, day: true});
+    assert.deepEqual(parseForecast('{"current":{"temperature_2m":3,"weather_code":71,"wind_speed_10m":"x"}}'),
+        {temp: 3, high: null, low: null, code: 71, day: true, feels: null, wind: null, gusts: null});
 });
 
 test('weather codes map to eight kinds with night icons', () => {
@@ -54,6 +61,24 @@ test('weather codes map to eight kinds with night icons', () => {
     assert.equal(weatherKind(96).kind, 'storm');
     assert.equal(weatherKind(48).kind, 'fog');
     assert.equal(weatherKind(1234).kind, 'overcast');
+});
+
+test('a dry sky becomes windy or hot; wet weather stays what it is', () => {
+    const f = (code, extra = {}) => ({temp: 20, high: null, low: null, code, day: true, feels: null, wind: 5, gusts: 10,
+        ...extra});
+    assert.equal(weatherScene(null), null);
+    assert.equal(weatherScene(f(0)).kind, 'clear');
+    assert.equal(weatherScene(f(0, {feels: 36})).kind, 'heat');
+    assert.equal(weatherScene(f(0, {temp: 37})).kind, 'heat', 'without a felt temperature the air one counts');
+    assert.equal(weatherScene(f(3, {feels: 38})).kind, 'overcast', 'an overcast sky is not drawn as heat');
+    assert.equal(weatherScene(f(2, {gusts: WINDY_GUSTS})).kind, 'wind');
+    assert.equal(weatherScene(f(3, {wind: WINDY_WIND})).kind, 'wind');
+    assert.equal(weatherScene(f(0, {feels: HOT, gusts: 80})).kind, 'heat', 'heat first: hot wind is still heat');
+    assert.equal(weatherScene(f(63, {gusts: 90})).kind, 'rain', 'rain with wind is drawn as rain');
+    assert.equal(weatherScene(f(0, {day: false})).icon, 'weather-clear-night-symbolic');
+    const wind = weatherScene(f(1, {gusts: 70}));
+    assert.deepEqual([wind.index, wind.icon, wind.day], [8, 'weather-windy-symbolic', true]);
+    assert.equal(weatherScene(f(0, {feels: 40})).index, 9);
 });
 
 test('the town search sends only the text, and my location is rounded to about 10 km', () => {
@@ -125,7 +150,7 @@ test('words in all ten languages, English as the fallback', () => {
     for (const code of LANGUAGES) {
         const t = widgetText([code]);
         assert.equal(t.chips.length, 3, code);
-        assert.equal(t.kinds.length, 8, code);
+        assert.equal(t.kinds.length, 10, code);
         assert.ok(t.capital.includes('%s') && t.last.today.includes('%s') && t.last.on.includes('%s'), code);
         assert.ok(t.dataBy.includes('Open-Meteo'), code);
     }

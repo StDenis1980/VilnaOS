@@ -357,6 +357,37 @@ async function windows() {
     settings.set_boolean('gloxi-dock', false);
 }
 
+const theSky = () => Main.extensionManager.lookup(UUID)?.stateObj?._userParts
+    ?.find(p => p.constructor.name === 'Widgets')?.sky ?? null;
+
+// The live sky moves only when it can be seen and animations are on.
+// windows() leaves the other window maximised, over the widgets.
+async function skyMotion() {
+    const softwareOnly = !St.Settings.get().enable_animations;
+    if (softwareOnly)
+        St.Settings.get().uninhibit_animations();
+    const sky = theSky();
+    const other = findWindow(OTHER);
+    const dialog = findWindow(HERKOS);
+    check('sky: still under a window', await waitFor(() => sky?.moving === false, 2500), true);
+    dialog?.minimize();
+    other.minimize();
+    check('sky: moves once the window is gone', await waitFor(() => sky?.moving === true, 2500), true);
+    check('sky: sized like the card', [sky._sky?.w, sky._sky?.h] , [Math.round(sky.actor.width), Math.round(sky.actor.height)]);
+    check('sky: as wide as the column', sky._sky?.w, 340);
+    Main.overview.show();
+    check('sky: still in the overview', await waitFor(() => sky?.moving === false, 2500), true);
+    Main.overview.hide();
+    check('sky: moves after the overview', await waitFor(() => sky?.moving === true, 3000), true);
+    St.Settings.get().inhibit_animations();
+    check('sky: still with animations off', await waitFor(() => sky?.moving === false, 2500), true);
+    if (!softwareOnly)
+        St.Settings.get().uninhibit_animations();
+    other.unminimize();
+    dialog?.unminimize();
+    check('sky: still under the window again', await waitFor(() => sky?.moving === false, 2500), true);
+}
+
 async function locked() {
     const entry = new St.PasswordEntry({width: 200});
     Main.layoutManager.addTopChrome(entry);
@@ -443,6 +474,12 @@ async function widgets() {
     check('widgets: weather for the capital by default (Madrid)',
         await waitFor(() => weatherText()[2]?.startsWith('Madrid · '), 5000) ? weatherText().slice(1) : weatherText(),
         ['18°', 'Madrid · Clear · ↑21° ↓11°']);
+    const sky = theSky();
+    check('sky: a clear day behind the weather, with dark text',
+        [sky?.kind, sky?.actor.visible, widget('vilnaWeatherWidget')?.get_last_child().has_style_class_name('vilna-sky-ink-dark')],
+        ['clear', true, true]);
+    check('sky: the icon gives way to the sky', widget('vilnaWeatherWidget')?.get_last_child()
+        .get_children().flatMap(c => c.get_children?.() ?? []).some(c => c instanceof St.Icon && c.visible), false);
     settings.set_value('weather-location', new GLib.Variant('(sdd)', ['València', 39.47, -0.38]));
     check('widgets: a chosen place wins', await waitFor(() => weatherText()[2]?.startsWith('València · '), 5000), true);
     settings.set_value('weather-location', new GLib.Variant('(sdd)', ['', 0, 0]));
@@ -524,6 +561,7 @@ async function run() {
     await widgets();
     await locked();
     await windows();
+    await skyMotion();
 }
 
 export default class VilnaTest extends Extension {

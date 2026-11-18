@@ -9,7 +9,8 @@
 // The weather is for the capital of the system's country unless the
 // person picked a place in the preferences (lib/widgets.js says why): the
 // only request is the forecast for that place, to Open-Meteo, every 30
-// minutes while the widgets are on.
+// minutes while the widgets are on. Behind the card a live sky
+// (sky.js) shows the weather, and stops whenever a window covers it.
 
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
@@ -24,8 +25,10 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import {
     REFRESH_MINUTES, RETRY_MINUTES, askArgv, backupWhen, forecastUrl, homeCountry, lastBackup,
-    parseForecast, todayEvents, weatherKind, weatherPlace, widgetText,
+    parseForecast, todayEvents, weatherPlace, weatherScene, widgetText,
 } from './lib/widgets.js';
+import {skyColours} from './lib/weatherSky.js';
+import {Sky} from './sky.js';
 
 const GLOXI = 'io.github.stdenis1980.Gloxi.desktop';
 const BACKUP = 'io.github.stdenis1980.VilnaBackup.desktop';
@@ -41,7 +44,8 @@ function label(text, style) {
 
 function card(name, title) {
     const box = new St.BoxLayout({vertical: true, style_class: 'vilna-widget', x_expand: true});
-    box.name = name;
+    if (name)
+        box.name = name;
     if (title)
         box.add_child(label(title.toUpperCase(), 'vilna-widget-title'));
     return box;
@@ -132,8 +136,14 @@ export class Widgets {
         this._events.add_child(this._eventList);
         this._root.add_child(this._events);
 
-        // Weather.
-        this._weatherCard = card('vilnaWeatherWidget', t.weather);
+        // Weather: the card over its live sky.
+        this._weatherCard = new St.Widget({layout_manager: new Clutter.BinLayout(), x_expand: true});
+        this._weatherCard.name = 'vilnaWeatherWidget';
+        this._sky = new Sky();
+        this._sky.actor.visible = false;
+        this._weatherCard.add_child(this._sky.actor);
+        this._weatherContent = card(null, t.weather);
+        this._weatherCard.add_child(this._weatherContent);
         const row = new St.BoxLayout({x_expand: true});
         const temps = new St.BoxLayout({vertical: true, x_expand: true});
         this._temp = label('—', 'vilna-widget-temp');
@@ -146,7 +156,7 @@ export class Widgets {
         row.add_child(this._weatherIcon);
         const weatherButton = new St.Button({child: row, x_expand: true, style_class: 'vilna-widget-plain'});
         weatherButton.connect('clicked', () => this._openPreferences?.());
-        this._weatherCard.add_child(weatherButton);
+        this._weatherContent.add_child(weatherButton);
         this._root.add_child(this._weatherCard);
 
         // Копії.
@@ -223,6 +233,8 @@ export class Widgets {
             this._backupMonitor.cancel();
         }
         this._backupMonitor = null;
+        this._sky.destroy();
+        this._sky = null;
         this._root.destroy();
         this._root = null;
     }
@@ -346,21 +358,44 @@ export class Widgets {
 
     _showWeather(place, forecast) {
         const t = this._text;
+        const scene = place ? weatherScene(forecast) : null;
+        this._setSky(scene);
         if (!place) {
             this._temp.text = '—';
             this._weatherLine.text = t.chooseCity;
             return;
         }
-        if (!forecast) {
+        if (!scene) {
             this._temp.text = '—';
             this._weatherLine.text = `${place.name} · ${t.noWeather}`;
             return;
         }
-        const kind = weatherKind(forecast.code, forecast.day);
         this._temp.text = `${forecast.temp}°`;
         const range = forecast.high !== null && forecast.low !== null ? ` · ↑${forecast.high}° ↓${forecast.low}°` : '';
-        this._weatherLine.text = `${place.name} · ${t.kinds[kind.index]}${range}`;
-        this._weatherIcon.icon_name = kind.icon;
+        const wind = scene.kind === 'wind' && forecast.gusts !== null ? ` · ${forecast.gusts} km/h` : '';
+        this._weatherLine.text = `${place.name} · ${t.kinds[scene.index]}${wind}${range}`;
+        this._weatherIcon.icon_name = scene.icon;
+    }
+
+    // The sky behind the card, and text that reads on it; without a
+    // forecast the card is plain glass like the others.
+    _setSky(scene) {
+        const content = this._weatherContent;
+        for (const name of ['vilna-widget-on-sky', 'vilna-sky-ink-dark', 'vilna-sky-ink-light'])
+            content.remove_style_class_name(name);
+        this._sky.actor.visible = Boolean(scene);
+        // The sky itself shows the weather, the sun or moon where the icon was.
+        this._weatherIcon.visible = !scene;
+        if (!scene)
+            return;
+        this._sky.show(scene.kind, scene.day);
+        content.add_style_class_name('vilna-widget-on-sky');
+        content.add_style_class_name(`vilna-sky-ink-${skyColours(scene.kind, scene.day).ink}`);
+    }
+
+    // For the headless test.
+    get sky() {
+        return this._sky;
     }
 
     _launch(desktopId) {

@@ -100,14 +100,15 @@ export function roundForPrivacy(value) {
 export function forecastUrl(place, base = FORECAST_URL) {
     const q = [
         `latitude=${place.lat.toFixed(2)}`, `longitude=${place.lon.toFixed(2)}`,
-        'current=temperature_2m,weather_code,is_day',
+        'current=temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,wind_gusts_10m',
         'daily=temperature_2m_max,temperature_2m_min',
         'timezone=auto', 'forecast_days=1',
     ];
     return `${base}?${q.join('&')}`;
 }
 
-// The Open-Meteo answer -> {temp, high, low, code, day}, or null.
+// The Open-Meteo answer -> {temp, high, low, code, day, feels, wind, gusts}
+// (wind in km/h; feels, wind and gusts null when missing), or null.
 export function parseForecast(text) {
     let data;
     try {
@@ -122,8 +123,10 @@ export function parseForecast(text) {
     if (!finite(temp) || !Number.isInteger(code))
         return null;
     const first = a => Array.isArray(a) && finite(a[0]) ? Math.round(a[0]) : null;
+    const value = v => finite(v) ? Math.round(v) : null;
     return {temp: Math.round(temp), high: first(daily.temperature_2m_max), low: first(daily.temperature_2m_min),
-        code, day: current.is_day !== 0};
+        code, day: current.is_day !== 0, feels: value(current.apparent_temperature),
+        wind: value(current.wind_speed_10m), gusts: value(current.wind_gusts_10m)};
 }
 
 export function geocodeUrl(query, language, base = GEOCODE_URL) {
@@ -148,7 +151,8 @@ export function parseGeocode(text) {
     });
 }
 
-// WMO weather codes -> one of eight kinds, each with an Adwaita icon.
+// WMO weather codes -> one of eight kinds, each with an Adwaita icon. Two
+// more come from the wind and the heat (weatherScene).
 const KINDS = [
     ['clear', 'weather-clear-symbolic', 'weather-clear-night-symbolic'],
     ['cloudy', 'weather-few-clouds-symbolic', 'weather-few-clouds-night-symbolic'],
@@ -158,7 +162,16 @@ const KINDS = [
     ['rain', 'weather-showers-symbolic'],
     ['snow', 'weather-snow-symbolic'],
     ['storm', 'weather-storm-symbolic'],
+    ['wind', 'weather-windy-symbolic'],
+    ['heat', 'weather-clear-symbolic', 'weather-clear-night-symbolic'],
 ];
+
+// Above these, a dry sky becomes windy (km/h) or hot (°C, as it feels).
+// 50 km/h gusts are where Spain's yellow wind warnings begin inland;
+// 35 °C is a hot day almost anywhere in Europe.
+export const WINDY_GUSTS = 50;
+export const WINDY_WIND = 30;
+export const HOT = 35;
 
 export function weatherKind(code, day = true) {
     let i;
@@ -173,6 +186,22 @@ export function weatherKind(code, day = true) {
     else i = 2;
     const [kind, icon, night] = KINDS[i];
     return {kind, index: i, icon: !day && night ? night : icon};
+}
+
+// The forecast -> what the card shows and draws: a weatherKind, where
+// a clear or cloudy sky may be hot instead, and a dry sky windy.
+export function weatherScene(forecast) {
+    if (!forecast)
+        return null;
+    const base = weatherKind(forecast.code, forecast.day);
+    const pick = i => ({kind: KINDS[i][0], index: i, icon: !forecast.day && KINDS[i][2] ? KINDS[i][2] : KINDS[i][1]});
+    const dry = base.index <= 2;
+    const feels = forecast.feels ?? forecast.temp;
+    if (dry && base.index <= 1 && finite(feels) && feels >= HOT)
+        return {...pick(9), day: forecast.day};
+    if (dry && ((forecast.gusts ?? 0) >= WINDY_GUSTS || (forecast.wind ?? 0) >= WINDY_WIND))
+        return {...pick(8), day: forecast.day};
+    return {...base, day: forecast.day};
 }
 
 // runsJsonl: the text of ~/.local/state/vilna-backup/runs.jsonl. Returns
@@ -225,7 +254,7 @@ const KEYS = ['gloxi', 'help', 'askPlaceholder', 'chips', 'today', 'nothing', 'a
 const TEXT = {
     en: ['Gloxi', 'How can I help?', 'Ask Gloxi…', ['What’s on today?', 'Find a file', 'Set up Wi-Fi'],
         'Today · Calendar', 'Nothing planned', 'All day', 'Weather', 'No forecast yet', 'Choose a town',
-        ['Clear', 'Partly cloudy', 'Overcast', 'Fog', 'Drizzle', 'Rain', 'Snow', 'Thunderstorm'],
+        ['Clear', 'Partly cloudy', 'Overcast', 'Fog', 'Drizzle', 'Rain', 'Snow', 'Thunderstorm', 'Windy', 'Hot'],
         'Backups: all saved', 'Backups: the last one failed', 'Backups are not set up',
         {today: 'Last: today at %s', yesterday: 'Last: yesterday at %s', on: 'Last: %s'},
         'Desktop widgets', 'Show the widgets', 'Show the weather', 'Place for the weather', '%s (the capital, by default)',
@@ -235,7 +264,7 @@ const TEXT = {
         'My location', 'Weather data: Open-Meteo.com (CC BY 4.0)'],
     uk: ['Gloxi', 'Чим допомогти?', 'Запитайте Gloxi…', ['Що сьогодні?', 'Знайди файл', 'Налаштуй Wi-Fi'],
         'Сьогодні · календар', 'Нічого не заплановано', 'Увесь день', 'Погода', 'Прогнозу ще немає', 'Оберіть місто',
-        ['Ясно', 'Мінлива хмарність', 'Хмарно', 'Туман', 'Мряка', 'Дощ', 'Сніг', 'Гроза'],
+        ['Ясно', 'Мінлива хмарність', 'Хмарно', 'Туман', 'Мряка', 'Дощ', 'Сніг', 'Гроза', 'Вітряно', 'Спека'],
         'Копії: усе збережено', 'Копії: остання не вдалася', 'Копії ще не налаштовано',
         {today: 'Остання сьогодні о %s', yesterday: 'Остання вчора о %s', on: 'Остання %s'},
         'Віджети стільниці', 'Показувати віджети', 'Показувати погоду', 'Місце для погоди', '%s (столиця, за замовчуванням)',
@@ -245,7 +274,7 @@ const TEXT = {
         'Моє розташування', 'Дані погоди: Open-Meteo.com (CC BY 4.0)'],
     es: ['Gloxi', '¿En qué te ayudo?', 'Pregunta a Gloxi…', ['¿Qué hay hoy?', 'Busca un archivo', 'Configura el wifi'],
         'Hoy · Calendario', 'Nada previsto', 'Todo el día', 'Tiempo', 'Aún no hay previsión', 'Elige una ciudad',
-        ['Despejado', 'Parcialmente nublado', 'Nublado', 'Niebla', 'Llovizna', 'Lluvia', 'Nieve', 'Tormenta'],
+        ['Despejado', 'Parcialmente nublado', 'Nublado', 'Niebla', 'Llovizna', 'Lluvia', 'Nieve', 'Tormenta', 'Viento', 'Calor'],
         'Copias: todo guardado', 'Copias: la última falló', 'Las copias no están configuradas',
         {today: 'Última: hoy a las %s', yesterday: 'Última: ayer a las %s', on: 'Última: %s'},
         'Widgets del escritorio', 'Mostrar los widgets', 'Mostrar el tiempo', 'Lugar para el tiempo', '%s (la capital, por defecto)',
@@ -255,7 +284,7 @@ const TEXT = {
         'Mi ubicación', 'Datos del tiempo: Open-Meteo.com (CC BY 4.0)'],
     pl: ['Gloxi', 'W czym pomóc?', 'Zapytaj Gloxi…', ['Co dziś?', 'Znajdź plik', 'Skonfiguruj Wi-Fi'],
         'Dziś · kalendarz', 'Nic nie zaplanowano', 'Cały dzień', 'Pogoda', 'Brak prognozy', 'Wybierz miasto',
-        ['Bezchmurnie', 'Częściowe zachmurzenie', 'Pochmurno', 'Mgła', 'Mżawka', 'Deszcz', 'Śnieg', 'Burza'],
+        ['Bezchmurnie', 'Częściowe zachmurzenie', 'Pochmurno', 'Mgła', 'Mżawka', 'Deszcz', 'Śnieg', 'Burza', 'Wietrznie', 'Upał'],
         'Kopie: wszystko zapisane', 'Kopie: ostatnia się nie udała', 'Kopie nie są skonfigurowane',
         {today: 'Ostatnia: dziś o %s', yesterday: 'Ostatnia: wczoraj o %s', on: 'Ostatnia: %s'},
         'Widżety pulpitu', 'Pokazuj widżety', 'Pokazuj pogodę', 'Miejsce dla pogody', '%s (stolica, domyślnie)',
@@ -265,7 +294,7 @@ const TEXT = {
         'Moja lokalizacja', 'Dane pogodowe: Open-Meteo.com (CC BY 4.0)'],
     de: ['Gloxi', 'Wobei kann ich helfen?', 'Gloxi fragen …', ['Was steht heute an?', 'Datei finden', 'WLAN einrichten'],
         'Heute · Kalender', 'Nichts geplant', 'Ganztägig', 'Wetter', 'Noch keine Vorhersage', 'Ort wählen',
-        ['Klar', 'Teils bewölkt', 'Bedeckt', 'Nebel', 'Nieselregen', 'Regen', 'Schnee', 'Gewitter'],
+        ['Klar', 'Teils bewölkt', 'Bedeckt', 'Nebel', 'Nieselregen', 'Regen', 'Schnee', 'Gewitter', 'Windig', 'Hitze'],
         'Sicherungen: alles gesichert', 'Sicherungen: die letzte ist fehlgeschlagen', 'Sicherungen sind nicht eingerichtet',
         {today: 'Zuletzt: heute um %s', yesterday: 'Zuletzt: gestern um %s', on: 'Zuletzt: %s'},
         'Schreibtisch-Widgets', 'Widgets anzeigen', 'Wetter anzeigen', 'Ort für das Wetter', '%s (Hauptstadt, Standard)',
@@ -275,7 +304,7 @@ const TEXT = {
         'Mein Standort', 'Wetterdaten: Open-Meteo.com (CC BY 4.0)'],
     fr: ['Gloxi', 'Comment puis-je aider ?', 'Demander à Gloxi…', ['Quoi de prévu ?', 'Trouver un fichier', 'Configurer le Wi-Fi'],
         'Aujourd’hui · Agenda', 'Rien de prévu', 'Toute la journée', 'Météo', 'Pas encore de prévisions', 'Choisir une ville',
-        ['Dégagé', 'Partiellement nuageux', 'Couvert', 'Brouillard', 'Bruine', 'Pluie', 'Neige', 'Orage'],
+        ['Dégagé', 'Partiellement nuageux', 'Couvert', 'Brouillard', 'Bruine', 'Pluie', 'Neige', 'Orage', 'Venteux', 'Chaleur'],
         'Sauvegardes : tout est enregistré', 'Sauvegardes : la dernière a échoué', 'Les sauvegardes ne sont pas configurées',
         {today: 'Dernière : aujourd’hui à %s', yesterday: 'Dernière : hier à %s', on: 'Dernière : %s'},
         'Widgets du bureau', 'Afficher les widgets', 'Afficher la météo', 'Lieu pour la météo', '%s (la capitale, par défaut)',
@@ -285,7 +314,7 @@ const TEXT = {
         'Ma position', 'Données météo : Open-Meteo.com (CC BY 4.0)'],
     it: ['Gloxi', 'Come posso aiutarti?', 'Chiedi a Gloxi…', ['Cosa c’è oggi?', 'Trova un file', 'Configura il Wi-Fi'],
         'Oggi · Calendario', 'Niente in programma', 'Tutto il giorno', 'Meteo', 'Nessuna previsione', 'Scegli una città',
-        ['Sereno', 'Parzialmente nuvoloso', 'Coperto', 'Nebbia', 'Pioviggine', 'Pioggia', 'Neve', 'Temporale'],
+        ['Sereno', 'Parzialmente nuvoloso', 'Coperto', 'Nebbia', 'Pioviggine', 'Pioggia', 'Neve', 'Temporale', 'Ventoso', 'Caldo'],
         'Copie: tutto salvato', 'Copie: l’ultima non è riuscita', 'Le copie non sono configurate',
         {today: 'Ultima: oggi alle %s', yesterday: 'Ultima: ieri alle %s', on: 'Ultima: %s'},
         'Widget del desktop', 'Mostra i widget', 'Mostra il meteo', 'Luogo per il meteo', '%s (la capitale, predefinita)',
@@ -295,7 +324,7 @@ const TEXT = {
         'La mia posizione', 'Dati meteo: Open-Meteo.com (CC BY 4.0)'],
     ro: ['Gloxi', 'Cu ce te pot ajuta?', 'Întreabă-l pe Gloxi…', ['Ce e azi?', 'Găsește un fișier', 'Configurează Wi-Fi'],
         'Azi · Calendar', 'Nimic planificat', 'Toată ziua', 'Vremea', 'Încă nu există prognoză', 'Alege un oraș',
-        ['Senin', 'Parțial noros', 'Înnorat', 'Ceață', 'Burniță', 'Ploaie', 'Ninsoare', 'Furtună'],
+        ['Senin', 'Parțial noros', 'Înnorat', 'Ceață', 'Burniță', 'Ploaie', 'Ninsoare', 'Furtună', 'Vânt', 'Caniculă'],
         'Copii: totul salvat', 'Copii: ultima nu a reușit', 'Copiile nu sunt configurate',
         {today: 'Ultima: azi la %s', yesterday: 'Ultima: ieri la %s', on: 'Ultima: %s'},
         'Widgeturi pe desktop', 'Arată widgeturile', 'Arată vremea', 'Locul pentru vreme', '%s (capitala, implicit)',
@@ -305,7 +334,7 @@ const TEXT = {
         'Locația mea', 'Date meteo: Open-Meteo.com (CC BY 4.0)'],
     cs: ['Gloxi', 'S čím pomoci?', 'Zeptejte se Gloxi…', ['Co je dnes?', 'Najdi soubor', 'Nastav Wi-Fi'],
         'Dnes · kalendář', 'Nic naplánováno', 'Celý den', 'Počasí', 'Zatím bez předpovědi', 'Vyberte město',
-        ['Jasno', 'Polojasno', 'Zataženo', 'Mlha', 'Mrholení', 'Déšť', 'Sníh', 'Bouřka'],
+        ['Jasno', 'Polojasno', 'Zataženo', 'Mlha', 'Mrholení', 'Déšť', 'Sníh', 'Bouřka', 'Větrno', 'Vedro'],
         'Zálohy: vše uloženo', 'Zálohy: poslední se nezdařila', 'Zálohy nejsou nastavené',
         {today: 'Poslední: dnes v %s', yesterday: 'Poslední: včera v %s', on: 'Poslední: %s'},
         'Widgety plochy', 'Zobrazit widgety', 'Zobrazit počasí', 'Místo pro počasí', '%s (hlavní město, výchozí)',
@@ -315,7 +344,7 @@ const TEXT = {
         'Moje poloha', 'Data o počasí: Open-Meteo.com (CC BY 4.0)'],
     lt: ['Gloxi', 'Kuo galiu padėti?', 'Klauskite Gloxi…', ['Kas šiandien?', 'Rask failą', 'Nustatyk „Wi-Fi“'],
         'Šiandien · kalendorius', 'Nieko nesuplanuota', 'Visą dieną', 'Orai', 'Prognozės dar nėra', 'Pasirinkite miestą',
-        ['Giedra', 'Nepastovus debesuotumas', 'Debesuota', 'Rūkas', 'Dulksna', 'Lietus', 'Sniegas', 'Perkūnija'],
+        ['Giedra', 'Nepastovus debesuotumas', 'Debesuota', 'Rūkas', 'Dulksna', 'Lietus', 'Sniegas', 'Perkūnija', 'Vėjuota', 'Karšta'],
         'Kopijos: viskas išsaugota', 'Kopijos: paskutinė nepavyko', 'Kopijos nenustatytos',
         {today: 'Paskutinė: šiandien %s', yesterday: 'Paskutinė: vakar %s', on: 'Paskutinė: %s'},
         'Darbalaukio valdikliai', 'Rodyti valdiklius', 'Rodyti orus', 'Vieta orams', '%s (sostinė, numatytoji)',

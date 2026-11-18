@@ -243,3 +243,31 @@
   background: none;
   border: none;
 }
+
+/* The weather card over its live sky (sky.js, lib/weatherSky.js): the
+   sky draws the card's shape, so the glass goes, and the text takes the
+   ink that reads on that sky. Three classes outrank .vilna-light/.vilna-dark. */
+.vilna-widget.vilna-widget-on-sky {
+  background-color: transparent;
+  border: none;
+}
+
+.vilna-widget.vilna-widget-on-sky.vilna-sky-ink-dark,
+.vilna-widget.vilna-sky-ink-dark .vilna-widget-title,
+.vilna-widget.vilna-sky-ink-dark .vilna-widget-line {
+  color: #13213a; /* ink */
+}
+
+.vilna-widget.vilna-sky-ink-dark .vilna-widget-title,
+.vilna-widget.vilna-sky-ink-dark .vilna-widget-line {
+  color: rgba(19, 33, 58, 0.78);
+}
+
+.vilna-widget.vilna-widget-on-sky.vilna-sky-ink-light {
+  color: #f2e8d5; /* cream */
+}
+
+.vilna-widget.vilna-sky-ink-light .vilna-widget-title,
+.vilna-widget.vilna-sky-ink-light .vilna-widget-line {
+  color: rgba(242, 232, 213, 0.82);
+}
