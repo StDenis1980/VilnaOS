@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Wed Nov 18 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.13
+- After a failed update, health-checker's reboot starts the last
+  working snapshot (LoaderEntryOneShot), not the first good entry of
+  the menu, whose TPM2 prediction may be missing (V2 VM test of
+  Build12.2, scenario S6)
+- sdbootutil-update-predictions runs after systemd-bless-boot, which
+  renamed the entry it was hashing
+
+-------------------------------------------------------------------
 Wed Nov 18 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.12: the dock. Dash to Dock is enabled for everyone and set up

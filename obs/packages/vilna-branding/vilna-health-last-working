@@ -1,0 +1,48 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# After a failed update, start the last snapshot that worked.
+#
+# Runs after health-checker.service stops (ExecStopPost, drop-in
+# 50-vilna-last-working.conf). When the health check failed on its last
+# boot try, health-checker writes NEW_SNAPSHOT_FAILED=1, clears the
+# default entry and reboots; systemd-boot then starts the first good entry
+# of its menu, which need not be the snapshot that last worked, and the
+# TPM2 predictions only cover the running, default and last working
+# snapshots: VM test of milestone V2, Build12.2 (scenario S6) booted an
+# older snapshot and asked for the recovery key.
+#
+# So: point the next boot (LoaderEntryOneShot, ahead of Default and
+# Preferred) at the newest snapshot in LAST_WORKING_SNAPSHOTS of
+# transactional-update. health-checker makes it the default once it boots
+# fine. Without one, systemd-boot decides as before.
+
+set -u
+
+HC_STATE=${VILNA_HC_STATE:-/var/lib/misc/health-check.state}
+TU_STATE=${VILNA_TU_STATE:-/var/lib/misc/transactional-update.state}
+
+grep -qx 'NEW_SNAPSHOT_FAILED=1' "$HC_STATE" 2>/dev/null || exit 0
+[ "$(systemd-bless-boot status 2>/dev/null)" = dirty ] || exit 0
+
+current=$(findmnt -no OPTIONS / | sed -n 's|.*subvol=/@/\.snapshots/\([0-9]*\)/snapshot.*|\1|p')
+working=$(sed -n 's/^LAST_WORKING_SNAPSHOTS="\{0,1\}\([0-9 ]*\)"\{0,1\}$/\1/p' "$TU_STATE" 2>/dev/null)
+entries=$(bootctl list --json=short --no-pager 2>/dev/null) || entries='[]'
+
+# transactional-update appends, so the newest is last.
+for snap in $(printf '%s\n' $working | tac); do
+    [ "$snap" = "$current" ] && continue
+    id=$(jq -r --arg s "@/.snapshots/$snap/snapshot" \
+        'first(.[] | select((.options // "") | contains($s)) | .id) // empty' \
+        <<<"$entries")
+    [ -n "$id" ] || continue
+    if bootctl set-oneshot "$id"; then
+        logger -p user.warning -t vilna-health-last-working \
+            "the update failed its health check; the next boot starts snapshot $snap ($id), the last that worked"
+        exit 0
+    fi
+done
+logger -p user.err -t vilna-health-last-working \
+    "the update failed its health check, but no boot entry of a last working snapshot was found (${working:-none}); systemd-boot picks one"
+# Never fail health-checker's own decision.
+exit 0

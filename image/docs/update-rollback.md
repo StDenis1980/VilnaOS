@@ -42,8 +42,9 @@
 
 - **Відкат вручну (S4, S5)** працює. Плагін `20-vilna-loader-preferred` прийшов з образу, але цього разу не знадобився: обидва знімки мали новий `sdbootutil`.
 - **Перше завантаження**: `sdbootutil-enroll` раз стартував за 0,2 с до монтування `/boot/efi`, упав і лишив `enrollment-key` у слоті 0. Виправлено: `RequiresMountsFor=/boot/efi` у drop-in установника.
-- **Після оновлення (S3)**: `sdbootutil-update-predictions` падає, бо `systemd-bless-boot` саме перейменовує запис з лічильником спроб.
-- **Автовідкат (S6)**: `health-checker` повертає наступний пункт меню, а не останній робочий знімок; прогнози TPM2 його не покривають, тож диск просить пароль.
+- **Після оновлення (S3)**: `sdbootutil-update-predictions` падав, бо `systemd-bless-boot` саме перейменовував запис з лічильником спроб.
+- **Автовідкат (S6)**: `health-checker` на systemd-boot сам знімка не вибирає (`bootctl set-default ""`), і systemd-boot бере перший добрий пункт меню, а не останній робочий знімок. Прогнози TPM2 (`sdbootutil`) покривають лише знімок, що працює, типовий і останні робочі, тож диск просить пароль. Виправлено в vilna-branding 0.13: після невдалої перевірки `health-last-working` ставить `LoaderEntryOneShot` на найновіший знімок з `LAST_WORKING_SNAPSHOTS`.
+- **Прогнози після оновлення**: `sdbootutil-update-predictions` тепер стартує після `systemd-bless-boot` (drop-in у vilna-branding 0.13).
 - **Tinta Office**: сховище Flatpak Vilna не віддає правильного сертифіката HTTPS (налаштування CDN).
 
 ## Історія змін
