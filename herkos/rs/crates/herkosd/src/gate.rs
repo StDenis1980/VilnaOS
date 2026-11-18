@@ -1484,7 +1484,11 @@ pub(crate) mod tests {
 
     impl Tools for FakeTools {
         fn running(&self, tool: &str) -> bool {
-            tool == "org.vilna.mcp.files" || tool == SETTINGS || tool == SYSTEM || tool == APPS
+            tool == "org.vilna.mcp.files"
+                || tool == SETTINGS
+                || tool == SYSTEM
+                || tool == APPS
+                || tool == MAIL
         }
         fn annotations(&self, _t: &str, _o: &str) -> Option<Map<String, Value>> {
             None
@@ -1512,6 +1516,12 @@ pub(crate) mod tests {
                     "install" => Ok(json!({"undo_arguments":
                         {"action": "uninstall", "app_id": app}})),
                     "restore" => Ok(json!({"uninstalled": app})),
+                    _ => Err("boom".into()),
+                };
+            }
+            if request.tool == MAIL {
+                return match request.operation.as_str() {
+                    "send" => Ok(json!({"sent": true, "recipients": 1})),
                     _ => Err("boom".into()),
                 };
             }
@@ -2156,6 +2166,7 @@ pub(crate) mod tests {
     const SETTINGS: &str = "org.vilna.mcp.settings";
     const SYSTEM: &str = "org.vilna.mcp.system";
     const APPS: &str = "org.vilna.mcp.apps";
+    const MAIL: &str = "org.vilna.mcp.mail";
 
     /// A gate on R3 whose dialog only records what it was asked.
     fn recording_gate(name: &str) -> (Gate, std::sync::Arc<Mutex<Vec<Question>>>, PathBuf) {
@@ -2304,6 +2315,31 @@ pub(crate) mod tests {
                 "org.vilna.herkos.apps.change update"
             ]
         );
+    }
+
+    #[test]
+    fn a_message_is_sent_only_after_a_yes_every_time_with_all_of_it_shown() {
+        let (g, asked, _docs) = recording_gate("mail");
+        let mut s = Session::default();
+        let message = json!({
+            "account": "ola@example.org", "to": ["marta@example.com"],
+            "bcc": ["boss@example.com"], "subject": "Lunch", "text": "Friday, 13:00?"
+        });
+        let send = parse_request(&json!({
+            "tool": MAIL, "operation": "send", "reason": "the person asked to answer Marta",
+            "arguments": message
+        }))
+        .expect("valid");
+        for _ in 0..3 {
+            let o = g.handle(&send, &mut s);
+            assert_eq!((o.code, o.level), ("allowed", Some(Level::R4)), "{o:?}");
+        }
+        let asked = asked.lock().expect("lock");
+        assert_eq!(asked.len(), 3, "no permission covers sending");
+        let q = asked.last().expect("asked");
+        assert_eq!(q.choices, vec![Answer::Once]);
+        // Exactly the message: sender, every recipient (Bcc too), subject, text.
+        assert_eq!(q.content, Some(message));
     }
 
     fn apps(operation: &str, arguments: Value) -> ActionRequest {

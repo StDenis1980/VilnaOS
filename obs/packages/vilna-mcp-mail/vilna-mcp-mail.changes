@@ -1,0 +1,6 @@
+-------------------------------------------------------------------
+Wed Nov 18 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: MCP server "mail" 0.1 preview (ADR 0030): reading over IMAP,
+  drafts, sending over SMTP (R4 in Herkos), accounts from GNOME Online Accounts;
+  started by Herkos as the person (vilna-mcp-mail@.service)

@@ -473,6 +473,31 @@ msgstr "Видалити подію з календаря"
 msgid "Undo an earlier change to the calendar"
 msgstr "Скасувати попередню зміну в календарі"
 
+# Mail (org.vilna.mcp.mail, ADR 0030)
+msgid "List the mail accounts"
+msgstr "Переглянути поштові облікові записи"
+
+msgid "List the mail folders"
+msgstr "Переглянути поштові теки"
+
+msgid "List messages in a folder"
+msgstr "Переглянути листи в теці"
+
+msgid "Search the mail"
+msgstr "Шукати в пошті"
+
+msgid "Read a message"
+msgstr "Прочитати лист"
+
+msgid "Save a message as a draft without sending it"
+msgstr "Зберегти лист як чернетку, не надсилаючи"
+
+msgid "Send a message"
+msgstr "Надіслати лист"
+
+msgid "Remove a draft Gloxi saved"
+msgstr "Прибрати чернетку, яку зберіг Gloxi"
+
 msgid "See whether Gloxi may reach the internet"
 msgstr "Подивитися, чи може Gloxi виходити в інтернет"
 

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 18 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Mail tool for Gloxi (ADR 0030): manifest org.vilna.mcp.mail (reading R1,
+  drafts R2, sending R4 every time with the whole message shown), unit
+  vilna-mcp-mail@.service with the network, polkit rule may start it.
+
+-------------------------------------------------------------------
 Tue Nov 17 19:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - herkos-agent: the allow buttons of the permission window count only
