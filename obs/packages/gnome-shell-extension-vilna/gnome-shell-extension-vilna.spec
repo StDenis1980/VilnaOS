@@ -25,7 +25,11 @@ screens, Wi-Fi, encrypted disks, administrator prompts and GTK password
 entries) it switches to a Latin keyboard layout, shows which layout is on
 and switches back afterwards. It keeps the Gloxi assistant above other
 windows, and the Herkos confirmation dialog always. It can reserve a strip
-of the screen for the Gloxi panel (experimental, off by default).
+of the screen for the Gloxi panel (experimental, off by default). It draws
+the dock (Dash to Dock) in the Vilna colours, light or dark with the style,
+and moves windows (open, close, minimise, drag) with the Vilna motion.
+Desktop widgets show the clock, Gloxi, today's events, the weather and
+the state of backups.
 
 %prep
 %autosetup -p1

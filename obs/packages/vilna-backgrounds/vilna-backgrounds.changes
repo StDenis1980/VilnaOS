@@ -1,0 +1,23 @@
+-------------------------------------------------------------------
+Mon Nov 16 19:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: the final wallpapers by Dmytro Sizmin (CC-BY-SA-4.0): the
+  same seven pairs, 3840x2160, redrawn in Petrykivka with a checked
+  safe area under the panel. Vector sources in docs/design/wallpapers/.
+  vilna-login.jpg made again from the new Сонце dark with the 0.2
+  recipe; white text in the middle keeps a contrast of at least 7.1:1.
+
+-------------------------------------------------------------------
+Mon Nov  9 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.2: vilna-login.jpg, the login screen background: Сонце dark
+  scaled to 1920x1080, Gaussian blur 56 px and brightness 0.55 (Pillow:
+  resize LANCZOS, ImageFilter.GaussianBlur(56),
+  ImageEnhance.Brightness(0.55), JPEG quality 88). White text in the
+  middle of the screen keeps a contrast of at least 6.9:1.
+
+-------------------------------------------------------------------
+Mon Nov  9 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.1: first package: seven light/dark wallpaper pairs (3840x2160) and
+  the GNOME wallpaper list; Сонце is the default.

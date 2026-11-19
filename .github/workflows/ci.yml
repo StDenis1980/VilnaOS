@@ -22,6 +22,12 @@ jobs:
         run: |
           python3 obs/packages/vilna-software-picks/build_picks.py --defaults image/packages.yaml check
           python3 tools/test_software_picks.py
+      - name: The memory check tool (image/docs/low-memory-check.md)
+        run: python3 image/tools/test_memcheck.py
+      - name: Tinta Office bundles are pinned and in the image (ADR 0011)
+        run: |
+          python3 tools/tinta_bundles.py check
+          python3 tools/test_tinta_bundles.py
 
   gloxi:
     runs-on: ubuntu-latest
@@ -44,6 +50,11 @@ jobs:
       - name: The pinned model is the one Hugging Face serves
         if: matrix.python == '3.13'
         run: uv run python tools/check_model.py
+      - name: The pinned voice models are the ones GitHub serves (ADR 0015)
+        if: matrix.python == '3.13'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: uv run python tools/check_voice.py
       - run: uv run pytest
 
   herkos:
@@ -88,6 +99,39 @@ jobs:
           HERKOS_SERVE: rs/target/debug/herkosd serve --confirm deny
           HERKOSD: ${{ github.workspace }}/herkos/rs/target/debug/herkosd
         run: uv sync --locked && uv run pytest conformance
+
+  reports:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: reports
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: rustup toolchain install stable --profile minimal -c rustfmt,clippy && rustup default stable
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - name: Deploy script parses
+        run: sh -n deploy/install.sh
+
+  feedback:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: reports/feedback
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
 
   privacy-gateway:
     runs-on: ubuntu-latest
@@ -170,6 +214,116 @@ jobs:
       - run: uv sync --locked
       - run: uv run ruff check .
       - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  installer:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: installer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  mcp-installer:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: mcp/installer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  mcp-apps:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: mcp/apps
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  mcp-settings:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: mcp/settings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  mcp-calendar:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: mcp/calendar
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  mcp-mail:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: mcp/mail
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      # Against a real IMAP server too: Dovecot (the test skips without it).
+      - run: (sudo apt-get update -qq && sudo apt-get install -y -qq dovecot-imapd && sudo systemctl stop dovecot) || true
       - run: uv run pytest
 
   shell-extension:

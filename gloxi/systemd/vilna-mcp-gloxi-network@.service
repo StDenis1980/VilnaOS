@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The internet of the Gloxi service of uid %i (ADR 0025, section 3), as a
+# Herkos tool. herkosd starts it (50-herkos.rules) and calls it only after
+# the person said yes. It runs as root because it asks systemd to change
+# IPAddressAllow of gloxi@%i.service, and it can change nothing else: the
+# uid comes from the unit's name, not from the request.
+[Unit]
+Description=Internet for the Gloxi of uid %i, a Herkos tool
+ConditionPathExists=/run/herkos-tools/%i/gloxi-network.sock
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/vilna-mcp-gloxi-network %i
+StandardInput=file:/run/herkos-tools/%i/gloxi-network.sock
+StandardOutput=file:/run/herkos-tools/%i/gloxi-network.sock
+StandardError=journal
+# The tool stops when herkosd closes the connection; no restarts behind its back.
+Restart=no
+
+# Sandbox: no files to write, no network; only systemd's own socket.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

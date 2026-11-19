@@ -1,4 +1,182 @@
 -------------------------------------------------------------------
+Wed Nov 18 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Mail tool for Gloxi (ADR 0030): manifest org.vilna.mcp.mail (reading R1,
+  drafts R2, sending R4 every time with the whole message shown), unit
+  vilna-mcp-mail@.service with the network, polkit rule may start it.
+
+-------------------------------------------------------------------
+Tue Nov 17 19:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkos-agent: the allow buttons of the permission window count only
+  a real press, from the keyboard or the pointer; an AT-SPI «click» on
+  them no longer allows anything (docs/adr/0029).
+
+-------------------------------------------------------------------
+Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- polkit for what changes the whole computer (permissions.md 9.2): after
+  the person says yes in Herkos's window, herkosd asks polkit (pkcheck,
+  about the person's session agent) with Herkos's own actions in
+  org.vilna.herkos.policy: org.vilna.herkos.apps.change (install, update
+  and remove apps; an administrator at the computer may, anybody else
+  needs an administrator's password, as with Flatpak),
+  org.vilna.herkos.system.rollback (an administrator's password every
+  time) and org.vilna.herkos.network.weaken (weaken the VPN kill switch;
+  whoever sits at the computer). Manifests name the action in the new
+  operation field "polkit". New rules: 50-herkos-actions.rules,
+  40-herkos-gloxi.rules (Gloxi's users gloxi-<uid> and vilna-llm get
+  nothing from polkit).
+
+-------------------------------------------------------------------
+Tue Nov 17 11:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkosd: time on a locked or blank screen no longer counts towards the
+  time to answer a question, up to 30 minutes in all; herkos-agent reports
+  the screen (herkos.agent.away, through gdbus). Before, a question asked
+  while the screen locked was refused after two minutes.
+
+-------------------------------------------------------------------
+Mon Nov 16 11:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-netguard: during a captive-portal window the network links also
+  answer for every name (resolvectl domain LINK ~.), so the login page
+  opens; their own domains come back after the window. NetworkManager is
+  asked to check again every 15 seconds while the window is open, without
+  waiting for it. A reconnect to the same network no longer gives a new
+  5-minute window.
+
+-------------------------------------------------------------------
+Sun Nov 15 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-netguard: during a captive-portal window the network links
+  (never the tunnels) take plain DNS from the network, so the login page
+  opens; afterwards they are strict DNS-over-TLS again. With the kill
+  switch off, the service opens such a window by itself when
+  NetworkManager sees a login page (at most 5 minutes, once per network,
+  decision of Denys 2026-11-15). Requires iproute2, systemd-resolved,
+  NetworkManager.
+
+-------------------------------------------------------------------
+Sun Nov 15 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkosd: a question shown through herkos-agent that nobody answers in
+  time is also denied_timeout (Build14.24 still said denied_user); an
+  agent that goes away stays a plain no.
+
+-------------------------------------------------------------------
+Sat Nov 14 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- A confirmation window that nobody answers in time is reported as
+  denied_timeout, not denied_user, in herkosd and Herkos-lite, so Gloxi
+  no longer says the person refused.
+- vilna-mcp-apps@: explain the harmless revokefs warnings in the journal.
+
+-------------------------------------------------------------------
+Fri Nov 13 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-mcp-apps@: installs work in the sandbox. Flatpak's download
+  repository moves from the private /var/tmp to the unit's cache, where
+  flatpak-system-helper can see it ("Path does not exist"); revokefs-fuse
+  is not tried (it needs FUSE and setuid fusermount3, which the sandbox
+  refuses); refused system calls fail with EPERM instead of a core dump.
+
+-------------------------------------------------------------------
+Fri Nov 13 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Programs through Gloxi (ADR 0012): the manifests org.vilna.mcp.apps
+  (search and describe R0; install, update, removal R3; adding a source
+  of apps or installing from a file forbidden) and org.vilna.mcp.launcher
+  (open an installed app, R1), their units vilna-mcp-apps@ (as the user
+  vilna-apps) and vilna-mcp-launcher@ (as the person); the polkit rule
+  lets herkos start them. A manifest operation may name a `preview`: an
+  R0 operation herkosd runs before it asks, so the dialog shows the app,
+  its developer, verification, «Рекомендовано Vilna», size, licence and
+  permissions.
+
+-------------------------------------------------------------------
+Thu Nov 12 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The VPN kill switch of Vilna (ADR 0027): vilna-netguard and its
+  service (nftables table inet vilna_killswitch, off until the person
+  turns it on), and the Herkos tool vilna-mcp-vpn@ (herkosd vpn-tool)
+  with the kill switch and the choice of encrypted DNS (Quad9 or
+  Mullvad). The polkit rule lets herkos start vilna-mcp-vpn@ too.
+
+-------------------------------------------------------------------
+Tue Nov 10 22:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkos-selinux: the rule is optional in herkos.cil, so a policy
+  without one of its types (the OBS build root) leaves it out instead of
+  failing the installation; %post no longer fails when semodule does;
+  owns /usr/share/selinux and /usr/share/selinux/packages (OBS build 66.1)
+
+-------------------------------------------------------------------
+Tue Nov 10 15:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkos-agent requires hicolor-icon-theme, which owns the icon
+  directories of the Permissions window; the OBS filelist check failed
+  the build without it.
+- herkos-agent: herkosd closing the connection before the first line
+  (EPIPE on write) also means "this account is not served" (exit 77).
+
+-------------------------------------------------------------------
+Tue Nov 10 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- New subpackage herkos-selinux (herkos.cil): with SELinux enforcing,
+  systemd (init_t) could not connect a tool unit's stdin to herkosd
+  (unconfined_service_t), so no tool started (VM test of Build13.2).
+  herkos pulls it in when selinux-policy-targeted is installed
+
+-------------------------------------------------------------------
+Tue Nov 10 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-home-setup (path and service, as root): a new home that
+  useradd made a btrfs subvolume (BTRFS_SUBVOLUME_HOME, ADR 0026) has no
+  SELinux label, so useradd could not give it to the person or copy the
+  skeleton, and no setting was kept (VM test of Build13.2). The service
+  waits for useradd, then copies the skeleton, gives the home to its
+  person, sets HOME_MODE and runs restorecon; also on every boot, to
+  mend a home made earlier
+
+-------------------------------------------------------------------
+Tue Nov 10 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Mitos on btrfs snapshots (ADR 0026): herkosd takes a snapper pre/post
+  pair of the person's home around an action the tool cannot undo
+  itself (Tinta programs saving a file), so it is R2 and undoable;
+  undo puts back the changed files through the files tool
+  (restore_snapshot) and leaves alone what the person changed since
+- herkosd mitos-setup (ExecStartPre, as root): a snapper config
+  mitos-<uid> for each person whose home is a btrfs subvolume; pairs
+  kept 30 days, or down to a day when the disk is nearly full
+- New tool "system" (herkosd system-tool, vilna-mcp-system@.service):
+  the saved states of the system and, for an administrator, a return
+  to one with transactional-update rollback (R4, after a restart),
+  undoable like any other change
+- The "Permissions" window offers undo for settings and snapshots too
+
+-------------------------------------------------------------------
+Mon Nov  9 18:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- New window "Permissions" (herkos-permissions, in herkos-agent): the
+  journal of Gloxi's actions in plain language, with undo for changes
+  up to 30 days old, and the person's permissions, each with revoke
+- herkosd: the person's own connection (not Gloxi's) has
+  herkos.permissions, herkos.revoke, herkos.journal and herkos.undo;
+  a revoke is journalled
+
+-------------------------------------------------------------------
+Mon Nov  9 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- herkos-agent no longer restarts every 3 s all session where herkosd
+  serves nobody (the login screen, GNOME Initial Setup, an account that
+  is not a person in system.toml): it exits with status 77, which the
+  unit does not restart and counts as success, and it does not start
+  for gdm-greeter, gnome-initial-setup and system accounts at all
+  (Build11.3 VM test)
+
+-------------------------------------------------------------------
 Thu Nov  5 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - New subpackage herkos-manifests: the catalogue of programs Gloxi may

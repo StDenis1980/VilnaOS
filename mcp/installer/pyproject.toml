@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+[project]
+name = "vilna-mcp-installer"
+version = "0.1.0.dev0"
+description = "MCP server of the Vilna installer: reads the machine, changes only the plan, validates it"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+vilna-mcp-installer = "vilna_mcp_installer.server:main"
+vilna-plan-check = "vilna_mcp_installer.check:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vilna_mcp_installer"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]

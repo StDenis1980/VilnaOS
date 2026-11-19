@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The socket of the Gloxi of the person with uid %i (ADR 0025). Only that
+# person may connect: the socket belongs to them, and gloxid checks the
+# uid again (SO_PEERCRED). vilna-people-sync enables it for each person.
+[Unit]
+Description=Gloxi socket for uid %i
+
+[Socket]
+ListenStream=/run/gloxi/%i/gloxi.sock
+SocketUser=%i
+SocketMode=0600
+DirectoryMode=0755
+Accept=no
+
+[Install]
+WantedBy=sockets.target

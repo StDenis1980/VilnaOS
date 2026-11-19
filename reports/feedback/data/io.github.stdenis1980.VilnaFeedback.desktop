@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[Desktop Entry]
+Type=Application
+Name=Feedback about Vilna
+Name[uk]=Відгук про Vilna
+Name[es]=Opiniones sobre Vilna
+Name[pl]=Opinia o Vilna
+Name[de]=Feedback zu Vilna
+Name[fr]=Votre avis sur Vilna
+Name[it]=Opinioni su Vilna
+Name[ro]=Păreri despre Vilna
+Name[cs]=Zpětná vazba k Vilna
+Name[lt]=Atsiliepimas apie Vilna
+Comment=Tell the Vilna team what went wrong or what you would like; read your crash reports
+Comment[uk]=Розкажіть команді Vilna, що пішло не так або чого вам хочеться; ваші звіти про збої
+Comment[es]=Cuente al equipo de Vilna qué salió mal o qué le gustaría; sus informes de fallos
+Comment[pl]=Napisz zespołowi Vilna, co poszło nie tak lub czego byś chciał; Twoje raporty o awariach
+Comment[de]=Sagen Sie dem Vilna-Team, was schiefging oder was Sie sich wünschen; Ihre Absturzberichte
+Comment[fr]=Dites à l’équipe Vilna ce qui n’a pas marché ou ce que vous aimeriez ; vos rapports de plantage
+Comment[it]=Racconta al team di Vilna cosa non va o cosa vorresti; i tuoi rapporti sui crash
+Comment[ro]=Spuneți echipei Vilna ce nu a mers sau ce v-ați dori; rapoartele dumneavoastră despre blocări
+Comment[cs]=Napište týmu Vilna, co se pokazilo nebo co byste si přáli; vaše hlášení o pádech
+Comment[lt]=Parašykite Vilna komandai, kas nepavyko ar ko norėtumėte; jūsų strigčių ataskaitos
+Icon=mail-send-symbolic
+Exec=vilna-feedback
+Terminal=false
+Categories=GNOME;GTK;System;
+Keywords=feedback;bug;crash;report;Vilna;відгук;збій;звіт;
+StartupNotify=true
+X-GNOME-UsesNotifications=true

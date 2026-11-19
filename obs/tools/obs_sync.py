@@ -53,6 +53,8 @@ class Tarball:
     folder: str  # repository folder with the code
     version: Callable[[], str]  # RPM version of the code
     extra: tuple[tuple[str, str], ...] = ()  # (repo path, path in tarball)
+    # (repo folder, folder in tarball): every tracked file under it
+    extra_folders: tuple[tuple[str, str], ...] = ()
     # Cargo.lock of Rust code: its crates go to vendor.tar.xz (OBS builds offline).
     cargo: str | None = None
 
@@ -80,13 +82,50 @@ def extension_version(folder: str) -> Callable[[], str]:
     return read
 
 
+def file_version(path: str) -> Callable[[], str]:
+    """The version written alone in a file (image/plymouth/VERSION)."""
+
+    def read() -> str:
+        return (ROOT / path).read_text(encoding="utf-8").strip()
+
+    return read
+
+
 TARBALLS: dict[str, Tarball] = {
     "gloxi": Tarball("gloxi", pyproject_version("gloxi"), extra=(("LICENSE", "LICENSE"),)),
     "herkos": Tarball(
         "herkos",
         pyproject_version("herkos"),
-        extra=(("LICENSE", "LICENSE"),),
+        extra=(
+            ("LICENSE", "LICENSE"),
+            ("docs/design/icons/vilna-permissions.svg", "data/vilna-permissions.svg"),
+            (
+                "docs/design/icons/vilna-permissions-symbolic.svg",
+                "data/vilna-permissions-symbolic.svg",
+            ),
+        ),
         cargo="herkos/rs/Cargo.toml",
+    ),
+    "vilna-backup": Tarball(
+        "backup",
+        pyproject_version("backup"),
+        extra=(
+            ("LICENSE", "LICENSE"),
+            ("docs/design/icons/vilna-backup.svg", "data/vilna-backup.svg"),
+            ("docs/design/icons/vilna-backup-symbolic.svg", "data/vilna-backup-symbolic.svg"),
+        ),
+    ),
+    "vilna-installer": Tarball(
+        "installer",
+        pyproject_version("installer"),
+        extra=(
+            ("LICENSE", "LICENSE"),
+            ("docs/design/icons/vilna-installer.svg", "data/vilna-installer.svg"),
+            (
+                "docs/design/icons/vilna-installer-symbolic.svg",
+                "data/vilna-installer-symbolic.svg",
+            ),
+        ),
     ),
     "vilna-mcp-backup": Tarball(
         "mcp/backup",
@@ -96,6 +135,21 @@ TARBALLS: dict[str, Tarball] = {
     "vilna-mcp-files": Tarball(
         "mcp/files", pyproject_version("mcp/files"), extra=(("mcp/LICENSE", "LICENSE"),)
     ),
+    "vilna-mcp-installer": Tarball(
+        "mcp/installer", pyproject_version("mcp/installer"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
+    "vilna-mcp-apps": Tarball(
+        "mcp/apps", pyproject_version("mcp/apps"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
+    "vilna-mcp-settings": Tarball(
+        "mcp/settings", pyproject_version("mcp/settings"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
+    "vilna-mcp-calendar": Tarball(
+        "mcp/calendar", pyproject_version("mcp/calendar"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
+    "vilna-mcp-mail": Tarball(
+        "mcp/mail", pyproject_version("mcp/mail"), extra=(("mcp/LICENSE", "LICENSE"),)
+    ),
     "python-vilna-privacy-gateway": Tarball(
         "privacy-gateway", pyproject_version("privacy-gateway")
     ),
@@ -103,6 +157,18 @@ TARBALLS: dict[str, Tarball] = {
         "shell-extension",
         extension_version("shell-extension/vilna@stdenis1980.github.io"),
         extra=(("LICENSE", "LICENSE"),),
+    ),
+    "plymouth-branding-Vilna": Tarball(
+        "image/plymouth",
+        file_version("image/plymouth/VERSION"),
+        extra=(
+            ("LICENSE", "LICENSE"),
+            ("docs/design/logo/Vilna_logo_dark-bg.svg", "Vilna_logo_dark-bg.svg"),
+            # Dmytro Sizmin's graphics (CC-BY-SA-4.0, LICENSING.md)
+            ("LICENSES/CC-BY-SA-4.0.txt", "LICENSE.CC-BY-SA-4.0"),
+            ("docs/design/blavet/svg/blavet-mark-dark-bg.svg", "release/mark.svg"),
+        ),
+        extra_folders=(("docs/design/plymouth/logo@2x", "frames"),),
     ),
 }
 
@@ -127,6 +193,8 @@ def make_tarball(name: str, spec: Tarball, version: str, out: Path) -> Path:
     mtime = source_date()
     files = [(rel, rel[len(spec.folder) + 1 :]) for rel in tracked_files(spec.folder)]
     files += list(spec.extra)
+    for src_dir, dst_dir in spec.extra_folders:
+        files += [(rel, f"{dst_dir}/{rel[len(src_dir) + 1 :]}") for rel in tracked_files(src_dir)]
     path = out / f"{prefix}.tar.gz"
     buf = io.BytesIO()
     with tarfile.open(fileobj=buf, mode="w", format=tarfile.PAX_FORMAT) as tar:

@@ -3,7 +3,7 @@
 # herkos/docs/protocol.md, the manifests, the Mitos journal format.
 [workspace]
 resolver = "3"
-members = ["crates/herkos-core", "crates/herkosd"]
+members = ["crates/herkos-core", "crates/herkosd", "crates/vilna-netguard"]
 
 [workspace.package]
 version = "0.1.0"

@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The local model of this computer, shared by every person's Gloxi
+# (ADR 0025, point 4): one llama-server, so 8 GB of RAM hold one model.
+# It listens only on 127.0.0.1 and wants a key, which only the group gloxi
+# can read.
+[Unit]
+Description=Local model for Gloxi (llama-server)
+Documentation=https://github.com/StDenis1980/VilnaOS/blob/main/docs/adr/0025-gloxi-system-service.md
+# The weights come from vilna-model-default (or a download, ADR 0025 step 5).
+ConditionPathExists=/usr/share/vilna/models/default.gguf
+
+[Service]
+Type=simple
+User=vilna-llm
+Group=gloxi
+StateDirectory=vilna-llm
+StateDirectoryMode=0750
+UMask=0027
+# One key for as long as the computer lives: every Gloxi reads it when it starts.
+ExecStartPre=/bin/sh -c 'test -s "$STATE_DIRECTORY/key" || (umask 0027; head -c 32 /dev/urandom | od -An -tx1 | tr -d " \\n" > "$STATE_DIRECTORY/key")'
+# Gloxi talks in slot 0 and Keros checks in the last slot (PR #152). The slots
+# share one 4096-token KV pool, and by default llama-server clears the idle
+# slots whenever another slot gets a request, so every Keros check wiped the
+# conversation and the next turn read ~2,000 tokens again (80-90 s on 4 vCPU).
+# --no-cache-idle-slots keeps them; measured on Build15.2, it does not use more
+# memory. The pool is still shared: if both slots together pass 4096 tokens,
+# llama-server purges one of them.
+ExecStart=/usr/bin/llama-server --model /usr/share/vilna/models/default.gguf \
+  --host 127.0.0.1 --port 8080 --api-key-file ${STATE_DIRECTORY}/key \
+  --ctx-size 4096 --no-cache-idle-slots \
+  --jinja --chat-template-kwargs '{"enable_thinking":false}'
+WorkingDirectory=/usr/share/vilna/models
+# Keep the weights in memory when programs need it (image/docs/low-memory-check.md).
+# On 8 GB with Firefox open the kernel dropped the mapped weights and Gloxi read
+# them back from disk: the first word took 17 s with 10 tabs. With MemoryLow=5G
+# (Qwen3 4B takes ~4.7 GB PSS) it took 6.5 s, Firefox still held 30 tabs and
+# nothing was OOM-killed (VM, 8 GB, Build15.6, 17.11.2026). The protection is
+# soft: the kernel still takes this memory when nothing else is left, and it
+# does not change whom the OOM killer picks.
+MemoryLow=5G
+Restart=on-failure
+RestartSec=5
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

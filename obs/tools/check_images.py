@@ -114,6 +114,16 @@ def resolve(image: str, capabilities: list[str]) -> list[str]:
     return [f"{image}: zypper cannot resolve the packages:\n{detail}"]
 
 
+# Images OBS wraps into RPMs of their own name in the images repository
+# (containment-tik-img-to-rpm, obs/project/_prjconf); another image can
+# ask for such an RPM, and zypper here cannot know it.
+IMAGE_RPM = re.compile(r"^tik-osimage-")
+
+
+def image_rpms() -> set[str]:
+    return {p.name for p in IMAGES.iterdir() if p.is_dir() and IMAGE_RPM.match(p.name)}
+
+
 def check(image: Path, built: set[str] | None, solve: bool = False) -> list[str]:
     from kiwi.xml_description import XMLDescription
     from kiwi.xml_state import XMLState
@@ -132,7 +142,12 @@ def check(image: Path, built: set[str] | None, solve: bool = False) -> list[str]
             if result.returncode != 0:
                 errors.append(f"{image.name}: {script}: {result.stderr.strip()}")
     wanted = set(state.get_system_packages()) | set(state.get_bootstrap_packages())
-    capabilities = sorted(wanted)
+    from_images = {name for name in wanted if IMAGE_RPM.match(name)}
+    errors += [
+        f"{image.name}: {name} is not an image in obs/images"
+        for name in sorted(from_images - image_rpms())
+    ]
+    capabilities = sorted(wanted - from_images)
     patterns = our_patterns()
     for collection in state.get_system_collections():
         capabilities.append(f"pattern() = {collection}")

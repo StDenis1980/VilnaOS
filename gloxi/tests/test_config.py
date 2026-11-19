@@ -93,3 +93,33 @@ def test_start_server(tmp_path):
     path.write_text("[local]\nstart_server = false\n")
     assert load_settings(path, env={}).start_server is False
     assert load_settings(path, env={"GLOXI_START_SERVER": "yes"}).start_server is True
+
+
+def test_mask_strict_is_off_by_default(tmp_path):
+    assert not load_settings(tmp_path / "x.toml", env={}).router.mask_strict
+    path = tmp_path / "g.toml"
+    path.write_text("[router]\nmask_strict = true\n")
+    assert load_settings(path, env={}).router.mask_strict
+    assert load_settings(tmp_path / "x.toml", env={"GLOXI_MASK_STRICT": "1"}).router.mask_strict
+
+
+def test_local_key_file_of_the_shared_model(tmp_path):
+    key = tmp_path / "key"
+    key.write_text("s3cr3t-key\n")
+    env = {"XDG_CONFIG_HOME": str(tmp_path), "GLOXI_LOCAL_KEY_FILE": str(key)}
+    assert load_settings(env=env).local.api_key == "s3cr3t-key"
+
+
+def test_missing_local_key_means_no_key_yet(tmp_path):
+    env = {"XDG_CONFIG_HOME": str(tmp_path), "GLOXI_LOCAL_KEY_FILE": str(tmp_path / "nope")}
+    assert load_settings(env=env).local.api_key is None
+
+
+def test_unreadable_or_empty_local_key_is_a_config_error(tmp_path):
+    env = {"XDG_CONFIG_HOME": str(tmp_path), "GLOXI_LOCAL_KEY_FILE": str(tmp_path)}
+    with pytest.raises(ConfigError):
+        load_settings(env=env)
+    (tmp_path / "empty").write_text("\n")
+    env["GLOXI_LOCAL_KEY_FILE"] = str(tmp_path / "empty")
+    with pytest.raises(ConfigError):
+        load_settings(env=env)

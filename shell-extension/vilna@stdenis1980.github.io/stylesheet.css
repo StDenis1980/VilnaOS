@@ -27,3 +27,318 @@
   background-color: #1f345c; /* night #1F345C */
   border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+/* The login screen (GDM). GNOME Shell always draws it dark; Vilna puts
+   the blurred Сонце wallpaper behind it (vilna-backgrounds), with the
+   night colour underneath in case the picture is missing. In the
+   person's own session this group is only the lock screen, which covers
+   it with their own blurred wallpaper. Login screen in the Vilna design
+   (docs/design/brief.md): our background and logo, otherwise standard GDM. */
+#lockDialogGroup {
+  background: #0e1a2e url("file:///usr/share/backgrounds/vilna/vilna-login.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Frosted-glass password field, as in the design. */
+.login-dialog .login-dialog-prompt-entry {
+  background-color: rgba(14, 26, 46, 0.6); /* dark glass rgba(14,26,46,.6) */
+  border: 1px solid rgba(242, 232, 213, 0.18); /* cream #F2E8D5 */
+  color: #eef1f7;
+}
+
+.login-dialog .login-dialog-prompt-entry:focus {
+  border-color: #2d6bff; /* blue #2D6BFF */
+}
+
+/* The dock (Dash to Dock, docs/design/desktop/README.md) in the Vilna
+   colours of docs/design/style/vilna.css: glass on cream in the light
+   style, glass on night blue in the dark one. The style class on
+   Main.uiGroup comes from colorScheme.js. The selectors name .bottom so
+   that they outrank Dash to Dock's own (2 ids, 3+ classes). */
+.vilna-light #dashtodockContainer.bottom #dash .dash-background {
+  background-color: rgba(255, 252, 246, 0.86); /* glass light rgba(255,252,246,.72), more opaque without blur */
+  border: 1px solid rgba(19, 33, 58, 0.1);
+  border-radius: 24px;
+}
+
+.vilna-dark #dashtodockContainer.bottom #dash .dash-background {
+  background-color: rgba(14, 26, 46, 0.82); /* glass dark rgba(14,26,46,.62) */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+}
+
+.vilna-light #dashtodockContainer.bottom #dash .dash-separator {
+  background-color: rgba(19, 33, 58, 0.14);
+}
+
+.vilna-dark #dashtodockContainer.bottom #dash .dash-separator {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* The app with the focused window, and the one under the pointer. */
+.vilna-light #dashtodockContainer.bottom #dash .dash-item-container .overview-tile.focused .overview-icon,
+.vilna-light #dashtodockContainer.bottom #dash .dash-item-container .overview-tile:hover .overview-icon,
+.vilna-light #dashtodockContainer.bottom #dash .dash-item-container .show-apps:hover .overview-icon {
+  background-color: rgba(19, 33, 58, 0.08);
+}
+
+.vilna-dark #dashtodockContainer.bottom #dash .dash-item-container .overview-tile.focused .overview-icon,
+.vilna-dark #dashtodockContainer.bottom #dash .dash-item-container .overview-tile:hover .overview-icon,
+.vilna-dark #dashtodockContainer.bottom #dash .dash-item-container .show-apps:hover .overview-icon {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Running apps: Dash to Dock draws its dots in this colour. Gold on
+   night blue, rust on cream (gold is too pale there). */
+.vilna-light #dashtodockContainer .app-grid-running-dot,
+.vilna-light #dashtodockContainer .app-well-app-running-dot {
+  background-color: #c2581e; /* rust #C2581E */
+}
+
+.vilna-dark #dashtodockContainer .app-grid-running-dot,
+.vilna-dark #dashtodockContainer .app-well-app-running-dot {
+  background-color: #f5c24a; /* gold #F5C24A */
+}
+
+/* The grid button's symbol follows the text colour. */
+.vilna-light #dashtodockContainer .show-apps .overview-icon {
+  color: #13213a; /* light text #13213A */
+}
+
+/* The name above an icon. */
+.vilna-light .dash-label {
+  background-color: #ffffff;
+  color: #13213a;
+  border: 1px solid rgba(19, 33, 58, 0.1);
+  border-radius: 999px;
+}
+
+.vilna-dark .dash-label {
+  background-color: #16243d; /* dark surface #16243D */
+  color: #eef1f7;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+
+/* (з) Desktop widgets (widgets.js), as in the mockup of
+   docs/design/desktop/README.md: cards of glass on the wallpaper, ink
+   #13213A and muted #4D5D7A on cream, cream on night blue. */
+.vilna-widgets {
+  spacing: 14px;
+}
+
+.vilna-widget {
+  padding: 16px 20px;
+  border-radius: 20px;
+  spacing: 6px;
+}
+
+.vilna-light .vilna-widget {
+  background-color: rgba(255, 252, 246, 0.86);
+  border: 1px solid rgba(19, 33, 58, 0.08);
+  color: #13213a;
+}
+
+.vilna-dark .vilna-widget {
+  background-color: rgba(14, 26, 46, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #eef1f7;
+}
+
+.vilna-widget-title {
+  font-size: 8pt;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.vilna-light .vilna-widget-title,
+.vilna-light .vilna-widget-line {
+  color: #4d5d7a; /* muted */
+}
+
+.vilna-dark .vilna-widget-title,
+.vilna-dark .vilna-widget-line {
+  color: #aab4c8;
+}
+
+.vilna-widget-time {
+  font-size: 40pt;
+  font-weight: 800;
+}
+
+.vilna-widget-date,
+.vilna-widget-heading-small {
+  font-size: 11pt;
+}
+
+.vilna-widget-heading {
+  font-size: 14pt;
+  font-weight: bold;
+}
+
+.vilna-widget-line {
+  font-size: 9.5pt;
+}
+
+.vilna-widget-field {
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 10.5pt;
+}
+
+.vilna-light .vilna-widget-field {
+  background-color: rgba(19, 33, 58, 0.06);
+  color: #4d5d7a;
+}
+
+.vilna-dark .vilna-widget-field {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #aab4c8;
+}
+
+.vilna-widget-field:hover,
+.vilna-widget-chip:hover {
+  border-color: #2d6bff; /* blue */
+}
+
+.vilna-widget-chips {
+  spacing: 6px;
+}
+
+.vilna-widget-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 9pt;
+  border: 1px solid rgba(19, 33, 58, 0.14);
+}
+
+.vilna-dark .vilna-widget-chip {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.vilna-widget-event {
+  padding-left: 10px;
+  border-left: 3px solid #2d6bff;
+  margin-top: 4px;
+}
+
+.vilna-widget-event-title {
+  font-weight: bold;
+}
+
+.vilna-widget-temp {
+  font-size: 30pt;
+  font-weight: 800;
+}
+
+.vilna-widget-weather-icon {
+  icon-size: 48px;
+  color: #f5c24a; /* gold */
+}
+
+.vilna-widget-plain {
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+/* The weather card over its live sky (sky.js, lib/weatherSky.js): the
+   sky draws the card's shape, so the glass goes, and the text takes the
+   ink that reads on that sky. Three classes outrank .vilna-light/.vilna-dark. */
+.vilna-widget.vilna-widget-on-sky {
+  background-color: transparent;
+  border: none;
+}
+
+.vilna-widget.vilna-widget-on-sky.vilna-sky-ink-dark,
+.vilna-widget.vilna-sky-ink-dark .vilna-widget-title,
+.vilna-widget.vilna-sky-ink-dark .vilna-widget-line {
+  color: #13213a; /* ink */
+}
+
+.vilna-widget.vilna-sky-ink-dark .vilna-widget-title,
+.vilna-widget.vilna-sky-ink-dark .vilna-widget-line {
+  color: rgba(19, 33, 58, 0.78);
+}
+
+.vilna-widget.vilna-widget-on-sky.vilna-sky-ink-light {
+  color: #f2e8d5; /* cream */
+}
+
+.vilna-widget.vilna-sky-ink-light .vilna-widget-title,
+.vilna-widget.vilna-sky-ink-light .vilna-widget-line {
+  color: rgba(242, 232, 213, 0.82);
+}
+
+/* Weather warnings on the weather card (weatherAlerts.js): a band in the
+   colour of the warning, the national service's own words under our
+   label. Yellow is deepened to amber so that dark text reads on it. */
+.vilna-alerts {
+  spacing: 6px;
+  margin-top: 6px;
+}
+
+.vilna-alert {
+  padding: 8px 12px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.vilna-alert-yellow {
+  background-color: #f5c24a; /* gold */
+  color: #13213a;
+}
+
+.vilna-alert-orange {
+  background-color: #e8772e;
+  color: #13213a;
+}
+
+.vilna-alert-red {
+  background-color: #c0392b;
+  color: #ffffff;
+}
+
+.vilna-alert-paused {
+  background-color: rgba(19, 33, 58, 0.12);
+  color: #13213a;
+  font-size: 9pt;
+}
+
+.vilna-dark .vilna-alert-paused,
+.vilna-sky-ink-light .vilna-alert-paused {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #f2e8d5;
+}
+
+/* On a light sky the ink is dark whatever the style. */
+.vilna-widget.vilna-sky-ink-dark .vilna-alert-paused {
+  background-color: rgba(19, 33, 58, 0.12);
+  color: #13213a;
+}
+
+.vilna-alert:hover {
+  border: 1px solid rgba(19, 33, 58, 0.4);
+}
+
+.vilna-alert-title {
+  font-weight: bold;
+  font-size: 9.5pt;
+}
+
+.vilna-alert-original,
+.vilna-alert-translation {
+  font-size: 9pt;
+}
+
+/* Under Gloxi's translation the original stays whole, a little quieter. */
+.vilna-alert-original-under {
+  font-size: 8pt;
+  font-style: italic;
+}
+
+.vilna-alert-source {
+  font-size: 8pt;
+}

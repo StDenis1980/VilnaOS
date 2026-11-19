@@ -164,3 +164,105 @@ def test_backups_are_private(files, tmp_path):
     assert files.backup_dir.stat().st_mode & 0o777 == 0o700
     for folder in files.backup_dir.iterdir():
         assert folder.stat().st_mode & 0o777 == 0o700
+
+
+# -- restore_snapshot (Mitos snapshots of the home, ADR 0026) -------------
+
+
+@pytest.fixture
+def home(tmp_path):
+    """A home with Documents, and snapper-like snapshots 1 (before) and 2 (after)."""
+    h = tmp_path / "home"
+    (h / "Documents").mkdir(parents=True)
+    return h
+
+
+def snapshot(home, number):
+    """Copy the home as it is now into .snapshots/<number>/snapshot."""
+    import shutil
+
+    dest = home / ".snapshots" / str(number) / "snapshot"
+    shutil.copytree(home, dest, ignore=shutil.ignore_patterns(".snapshots"), symlinks=True)
+    return dest
+
+
+def test_restore_snapshot_undoes_a_change(home, tmp_path):
+    f = Files([home / "Documents"], tmp_path / "backups", home=home)
+    d = home / "Documents"
+    (d / "zvit.odt").write_text("before")
+    (d / "gone.txt").write_text("deleted by the action")
+    snapshot(home, 1)
+    # The action: changes one file, deletes one, creates a file in a new folder.
+    (d / "zvit.odt").write_text("after")
+    (d / "gone.txt").unlink()
+    (d / "new").mkdir()
+    (d / "new" / "x.txt").write_text("created")
+    snapshot(home, 2)
+    paths = [str(d / n) for n in ("zvit.odt", "gone.txt", "new", "new/x.txt")]
+    out = f.restore_snapshot(1, paths, post=2)
+    assert out["skipped"] == []
+    assert (d / "zvit.odt").read_text() == "before"
+    assert (d / "gone.txt").read_text() == "deleted by the action"
+    assert not (d / "new").exists()
+    assert sorted(out["restored"]) == sorted(paths)
+
+
+def test_restore_snapshot_keeps_later_work(home, tmp_path):
+    f = Files([home / "Documents"], tmp_path / "backups", home=home)
+    d = home / "Documents"
+    (d / "a.txt").write_text("1")
+    (d / "b.txt").write_text("1")
+    snapshot(home, 1)
+    (d / "a.txt").write_text("2")
+    (d / "b.txt").write_text("2")
+    snapshot(home, 2)
+    (d / "b.txt").write_text("3: the person's own edit")
+    out = f.restore_snapshot(1, [str(d / "a.txt"), str(d / "b.txt")], post=2)
+    assert (d / "a.txt").read_text() == "1"
+    assert (d / "b.txt").read_text() == "3: the person's own edit"
+    assert out["skipped"] == [{"path": str(d / "b.txt"), "why": "changed again after the action"}]
+    # Without post, there is nothing to compare with: it goes back.
+    f.restore_snapshot(1, [str(d / "b.txt")])
+    assert (d / "b.txt").read_text() == "1"
+
+
+def test_restore_snapshot_refuses(home, tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    f = Files([home / "Documents", outside], tmp_path / "backups", home=home)
+    snapshot(home, 1)
+    d = home / "Documents"
+    for bad in (
+        lambda: f.restore_snapshot(9, [str(d / "a")]),
+        lambda: f.restore_snapshot(0, [str(d / "a")]),
+        lambda: f.restore_snapshot(True, [str(d / "a")]),
+        lambda: f.restore_snapshot(1, []),
+        lambda: f.restore_snapshot(1, [str(outside / "a")]),  # not in the home
+        lambda: f.restore_snapshot(1, [str(home / "secret")]),  # not in the roots
+        lambda: f.restore_snapshot(1, [str(d / "a")], post=7),
+    ):
+        with pytest.raises(FilesError):
+            bad()
+
+
+def test_snapshot_folders_are_off_limits(home, tmp_path):
+    f = Files([home], tmp_path / "backups", home=home)
+    snapshot(home, 1)
+    with pytest.raises(FilesError):
+        f.list(str(home / ".snapshots"))
+    with pytest.raises(FilesError):
+        f.restore_snapshot(1, [str(home / ".snapshots/1/snapshot/Documents")])
+
+
+def test_restore_snapshot_over_mcp(home, tmp_path):
+    f = Files([home / "Documents"], tmp_path / "backups", home=home)
+    (home / "Documents" / "a.txt").write_text("1")
+    snapshot(home, 1)
+    (home / "Documents" / "a.txt").write_text("2")
+    server = Server(f)
+    p = str(home / "Documents" / "a.txt")
+    ok = server.call("restore_snapshot", {"pre": 1, "paths": [p]})
+    assert ok["isError"] is False
+    assert ok["structuredContent"]["restored"] == [p]
+    for bad in ({"pre": "1", "paths": [p]}, {"pre": 1, "paths": p}, {"pre": 1, "paths": [1]}):
+        assert server.call("restore_snapshot", bad)["isError"] is True

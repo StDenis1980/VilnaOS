@@ -42,8 +42,17 @@ test('Ukrainian switches to English', () => {
     assert.deepEqual(decideOnEnter([ua, us], ua, ['us']), {action: 'switch', to: us});
 });
 
-test('a Latin layout is kept, as on macOS', () => {
-    assert.deepEqual(decideOnEnter([pl, ua, us], pl, ['us']), {action: 'stay'});
+test('another Latin layout switches to English too', () => {
+    assert.deepEqual(decideOnEnter([pl, ua, us], pl, ['us']), {action: 'switch', to: us});
+});
+
+test('already on English: stay', () => {
+    assert.deepEqual(decideOnEnter([ua, us], us, ['us']), {action: 'stay'});
+});
+
+test('without English, a Latin layout is kept', () => {
+    assert.deepEqual(decideOnEnter([pl, ua], pl, ['us']), {action: 'stay'});
+    assert.deepEqual(decideOnEnter([ua, pl], ua, ['us']), {action: 'switch', to: pl});
 });
 
 test('no Latin layout at all gives a warning', () => {

@@ -21,23 +21,34 @@ use std::collections::HashMap;
 use std::io::{BufReader, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::mpsc::{Sender, channel};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::mpsc::{RecvTimeoutError, Sender, channel};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 use toml::Table;
 
 use crate::config::{Config, Owner};
-use crate::gate::{Answer, Confirmer, Gate, Question, Tools};
+use crate::gate::{Answer, Confirmer, Gate, Question, Session, Tools};
 use crate::passwd::{self, Account};
+use crate::polkit::Pkcheck;
 use crate::rpc;
+use crate::snapshots::{Snapper, Snapshots};
 
 pub const SYSTEM_CONFIG: &str = "/etc/herkos/system.toml";
 pub const CONFIG: &str = "/etc/herkos/config.toml";
 pub const STATE: &str = "/var/lib/herkos";
+pub const SNAPPER_CONFIGS: &str = "/etc/snapper/configs";
+/// How long a question may wait in all while the person's screen is locked
+/// or blank (`herkos.agent.away`): the person stepped away, they did not say
+/// no (Build15.6: the screen locked and the action was refused after two
+/// minutes). Time on a locked screen does not count towards
+/// `confirm_timeout`, up to this.
+pub const AWAY_CAP: f64 = 1800.0;
+/// How often a waiting question checks the clock and the screen.
+const ASK_STEP: Duration = Duration::from_millis(200);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Person {
@@ -137,14 +148,29 @@ struct Link {
     serial: u64,
     writer: Arc<Mutex<UnixStream>>,
     pending: Arc<Mutex<HashMap<String, Sender<Value>>>>,
+    /// The agent said the screen is locked or blank.
+    away: Arc<AtomicBool>,
+    /// Its process, from the socket: the subject polkit judges (polkit.rs).
+    pid: Option<i32>,
 }
 
 /// The registered session agents, one per person (the latest wins: a new
 /// login replaces the agent of the old one).
-#[derive(Default)]
 pub struct Agents {
     links: Mutex<HashMap<u32, Link>>,
     next: AtomicU64,
+    /// [`AWAY_CAP`]; shorter in tests.
+    away_cap: f64,
+}
+
+impl Default for Agents {
+    fn default() -> Agents {
+        Agents {
+            links: Mutex::default(),
+            next: AtomicU64::default(),
+            away_cap: AWAY_CAP,
+        }
+    }
 }
 
 fn send(writer: &Mutex<UnixStream>, msg: &Value) -> bool {
@@ -160,6 +186,8 @@ impl Agents {
         uid: u32,
         writer: Arc<Mutex<UnixStream>>,
         pending: Arc<Mutex<HashMap<String, Sender<Value>>>>,
+        away: Arc<AtomicBool>,
+        pid: Option<i32>,
     ) -> u64 {
         let serial = self.next.fetch_add(1, Ordering::Relaxed);
         if let Ok(mut links) = self.links.lock() {
@@ -169,10 +197,34 @@ impl Agents {
                     serial,
                     writer,
                     pending,
+                    away,
+                    pid,
                 },
             );
         }
         serial
+    }
+
+    /// The process of the person's session agent, while it is connected.
+    pub fn pid(&self, uid: u32) -> Option<i32> {
+        self.links.lock().ok()?.get(&uid)?.pid
+    }
+
+    #[cfg(test)]
+    pub fn register_pid_for_tests(&self, uid: u32, pid: i32) -> u64 {
+        let (a, _b) = UnixStream::pair().expect("pair");
+        self.register(
+            uid,
+            Arc::new(Mutex::new(a)),
+            Arc::default(),
+            Arc::default(),
+            Some(pid),
+        )
+    }
+
+    #[cfg(test)]
+    pub fn unregister_for_tests(&self, uid: u32, serial: u64) {
+        self.unregister(uid, serial);
     }
 
     fn unregister(&self, uid: u32, serial: u64) {
@@ -184,11 +236,19 @@ impl Agents {
     }
 
     /// Show the question on the person's screen and wait for the answer.
-    /// No agent, a broken one, silence or an answer that was not offered: "no".
+    /// No agent, a broken one or an answer that was not offered: "no". No
+    /// answer in time: [`Answer::TimedOut`], which is a "no" too, but not the
+    /// person's (Build14.24 reported it as "the user said no"). While the
+    /// agent reports the screen locked or blank, the time does not count,
+    /// up to [`AWAY_CAP`] in all.
     pub fn ask(&self, uid: u32, question: &Question, timeout: f64) -> Answer {
-        let (writer, pending) = match self.links.lock() {
+        let (writer, pending, away) = match self.links.lock() {
             Ok(links) => match links.get(&uid) {
-                Some(l) => (Arc::clone(&l.writer), Arc::clone(&l.pending)),
+                Some(l) => (
+                    Arc::clone(&l.writer),
+                    Arc::clone(&l.pending),
+                    Arc::clone(&l.away),
+                ),
                 None => return Answer::Deny,
             },
             Err(_) => return Answer::Deny,
@@ -200,20 +260,23 @@ impl Agents {
         }
         let request = json!({"jsonrpc": "2.0", "id": id, "method": "herkos.agent.ask", "params": question.to_json()});
         let reply = if send(&writer, &request) {
-            rx.recv_timeout(Duration::from_secs_f64(timeout.max(0.0)))
-                .ok()
+            self.wait(&rx, &away, timeout)
         } else {
-            None
+            Err(RecvTimeoutError::Disconnected)
         };
         if let Ok(mut p) = pending.lock() {
             p.remove(&id);
         }
-        let Some(reply) = reply else {
-            // Take the window away: the answer no longer counts.
-            let cancel =
-                json!({"jsonrpc": "2.0", "method": "herkos.agent.cancel", "params": {"id": id}});
-            send(&writer, &cancel);
-            return Answer::Deny;
+        let reply = match reply {
+            Ok(reply) => reply,
+            Err(RecvTimeoutError::Timeout) => {
+                // Take the window away: the answer no longer counts.
+                let cancel = json!({"jsonrpc": "2.0", "method": "herkos.agent.cancel", "params": {"id": id}});
+                send(&writer, &cancel);
+                return Answer::TimedOut;
+            }
+            // The agent went away or could not be reached.
+            Err(RecvTimeoutError::Disconnected) => return Answer::Deny,
         };
         let answer = reply
             .get("result")
@@ -223,6 +286,39 @@ impl Agents {
         match answer {
             Some(a) if question.choices.contains(&a) => a,
             _ => Answer::Deny,
+        }
+    }
+}
+
+impl Agents {
+    /// The answer, or a timeout once `timeout` seconds have passed with the
+    /// screen in use, or [`AWAY_CAP`] (or `timeout`, if longer) in all.
+    fn wait(
+        &self,
+        rx: &std::sync::mpsc::Receiver<Value>,
+        away: &AtomicBool,
+        timeout: f64,
+    ) -> Result<Value, RecvTimeoutError> {
+        let timeout = if timeout.is_finite() {
+            timeout.max(0.0)
+        } else {
+            0.0
+        };
+        let cap = timeout.max(self.away_cap);
+        let start = Instant::now();
+        let mut counted = 0.0;
+        loop {
+            let step = Instant::now();
+            match rx.recv_timeout(ASK_STEP) {
+                Err(RecvTimeoutError::Timeout) => {}
+                done => return done,
+            }
+            if !away.load(Ordering::Relaxed) {
+                counted += step.elapsed().as_secs_f64();
+            }
+            if counted >= timeout || start.elapsed().as_secs_f64() >= cap {
+                return Err(RecvTimeoutError::Timeout);
+            }
         }
     }
 }
@@ -249,6 +345,11 @@ pub struct System {
     pub agents: Arc<Agents>,
     pub tools: Box<ToolsFor>,
     gates: Mutex<HashMap<u32, Arc<Gate>>>,
+    /// Where snapper keeps its configs: a person with `mitos-<uid>` there
+    /// gets Mitos snapshots of their home (ADR 0026).
+    pub snapper_configs: PathBuf,
+    /// `pkcheck`: polkit for what changes the whole computer (polkit.rs).
+    pub pkcheck: PathBuf,
 }
 
 impl System {
@@ -265,6 +366,8 @@ impl System {
             agents: Arc::new(Agents::default()),
             tools,
             gates: Mutex::new(HashMap::new()),
+            snapper_configs: PathBuf::from(SNAPPER_CONFIGS),
+            pkcheck: PathBuf::from("pkcheck"),
         }
     }
 
@@ -291,11 +394,27 @@ impl System {
             uid,
             agents: Arc::clone(&self.agents),
         };
-        let gate = Arc::new(crate::build_gate_from(config, tools, Box::new(confirmer))?);
+        let snapshots = Snapper::for_person(uid, &person.account.home, &self.snapper_configs)
+            .map(|s| Box::new(s) as Box<dyn Snapshots>);
+        let mitos = snapshots
+            .as_ref()
+            .map(|s| s.subvolume().display().to_string());
+        let gate = crate::build_gate_from(config, tools, Box::new(confirmer))?;
+        let authority = Pkcheck {
+            program: self.pkcheck.clone(),
+            uid,
+            agents: Arc::clone(&self.agents),
+        };
+        let gate = Arc::new(
+            gate.with_snapshots(snapshots)
+                .with_authority(Some(Box::new(authority))),
+        );
         let start = json!({
             "server": concat!("herkosd/", env!("CARGO_PKG_VERSION")),
             "mode": "system",
             "person": person.account.name,
+            // Snapshots of the home (ADR 0026), or null: no undo through them.
+            "snapshots": mitos,
         });
         gate.journal()
             .append("start", start, None)
@@ -326,20 +445,41 @@ fn connection(stream: UnixStream, system: &System) {
             Ok(gate) => crate::serve_connection(stream, gate),
             Err(e) => eprintln!("herkosd: {}: {e}", person.account.name),
         },
-        Some(Role::Agent(person)) => agent(stream, person.account.uid, &system.agents),
+        Some(Role::Agent(person)) => agent(stream, person, system),
         // Not one of ours: no answer at all.
         None => {}
     }
 }
 
-/// A session agent's connection: it says hello, registers, then answers
-/// `herkos.agent.ask` requests. It cannot ask for actions.
-fn agent(stream: UnixStream, uid: u32, agents: &Agents) {
+/// A connection from the person: their session agent, which says hello,
+/// registers, then answers `herkos.agent.ask` requests, or their «Дозволи»
+/// window, which lists and revokes their permissions, reads their journal
+/// and undoes an action. Neither can ask for actions; Gloxi, a different
+/// user, can do none of this (protocol.md 2).
+fn agent(stream: UnixStream, person: &Person, system: &System) {
+    agent_loop(
+        stream,
+        person.account.uid,
+        &system.agents,
+        &|id: &Value, method: &str, params: &Value| match system.gate(person) {
+            Ok(gate) => person_method(&gate, id, method, params),
+            Err(e) => rpc::error(id, rpc::INTERNAL_ERROR, &e),
+        },
+    );
+}
+
+type PersonMethods<'a> = dyn Fn(&Value, &str, &Value) -> Value + 'a;
+
+fn agent_loop(stream: UnixStream, uid: u32, agents: &Agents, person: &PersonMethods<'_>) {
     let Ok(w) = stream.try_clone() else {
         return;
     };
+    let pid = rustix::net::sockopt::socket_peercred(&stream)
+        .ok()
+        .map(|c| c.pid.as_raw_nonzero().get());
     let writer = Arc::new(Mutex::new(w));
     let pending: Arc<Mutex<HashMap<String, Sender<Value>>>> = Arc::default();
+    let away = Arc::new(AtomicBool::new(false));
     let mut reader = BufReader::new(stream);
     let mut hello = false;
     let mut serial = None;
@@ -371,7 +511,13 @@ fn agent(stream: UnixStream, uid: u32, agents: &Agents) {
             continue;
         }
         let Some(id) = msg.get("id").cloned() else {
-            continue; // notifications from the agent mean nothing yet
+            // The person's screen locked or blank, or back in use.
+            if hello && msg.get("method").and_then(Value::as_str) == Some("herkos.agent.away") {
+                if let Some(a) = msg.pointer("/params/away").and_then(Value::as_bool) {
+                    away.store(a, Ordering::Relaxed);
+                }
+            }
+            continue;
         };
         let method = msg.get("method").and_then(Value::as_str).unwrap_or("");
         let reply = match method {
@@ -401,9 +547,19 @@ fn agent(stream: UnixStream, uid: u32, agents: &Agents) {
             _ if !hello => rpc::error(&id, rpc::HELLO_REQUIRED, "call herkos.hello first"),
             "herkos.agent.register" => {
                 if serial.is_none() {
-                    serial = Some(agents.register(uid, Arc::clone(&writer), Arc::clone(&pending)));
+                    serial = Some(agents.register(
+                        uid,
+                        Arc::clone(&writer),
+                        Arc::clone(&pending),
+                        Arc::clone(&away),
+                        pid,
+                    ));
                 }
                 rpc::result(&id, json!({"registered": true}))
+            }
+            "herkos.permissions" | "herkos.revoke" | "herkos.journal" | "herkos.undo" => {
+                let params = msg.get("params").cloned().unwrap_or(Value::Null);
+                person(&id, method, &params)
             }
             _ => rpc::error(
                 &id,
@@ -421,6 +577,55 @@ fn agent(stream: UnixStream, uid: u32, agents: &Agents) {
     // Questions still waiting get "no" now, not at their timeout.
     if let Ok(mut p) = pending.lock() {
         p.clear();
+    }
+}
+
+/// Most journal records one `herkos.journal` call returns.
+pub const JOURNAL_MAX: u64 = 1000;
+
+fn is_id(v: Option<&str>) -> Option<&str> {
+    v.filter(|a| !a.is_empty() && a.chars().count() <= 64 && a.chars().all(char::is_alphanumeric))
+}
+
+/// The person's own methods (their «Дозволи» window).
+fn person_method(gate: &Gate, id: &Value, method: &str, params: &Value) -> Value {
+    match method {
+        "herkos.permissions" => rpc::result(id, gate.permissions()),
+        "herkos.revoke" => match is_id(params.get("grant_id").and_then(Value::as_str)) {
+            Some(g) => match gate.revoke(g) {
+                Ok(revoked) => rpc::result(id, json!({ "revoked": revoked })),
+                Err(e) => rpc::error(id, rpc::INTERNAL_ERROR, &e),
+            },
+            None => rpc::error(
+                id,
+                rpc::INVALID_PARAMS,
+                "'grant_id' must be a permission id",
+            ),
+        },
+        "herkos.journal" => {
+            let limit = match params.get("limit") {
+                None => Some(200),
+                Some(v) => v.as_u64().filter(|n| (1..=JOURNAL_MAX).contains(n)),
+            };
+            match limit.and_then(|n| usize::try_from(n).ok()) {
+                Some(n) => rpc::result(id, gate.recent(n)),
+                None => rpc::error(
+                    id,
+                    rpc::INVALID_PARAMS,
+                    &format!("'limit' must be from 1 to {JOURNAL_MAX}"),
+                ),
+            }
+        }
+        "herkos.undo" => match is_id(params.get("action_id").and_then(Value::as_str)) {
+            // A clean session: the person asked, not a model that read something.
+            Some(a) => rpc::result(id, gate.undo(a, &mut Session::default()).to_json()),
+            None => rpc::error(id, rpc::INVALID_PARAMS, "'action_id' must be an action id"),
+        },
+        _ => rpc::error(
+            id,
+            rpc::METHOD_NOT_FOUND,
+            &format!("unknown method {method}"),
+        ),
     }
 }
 
@@ -508,7 +713,11 @@ mod tests {
         fn start(agents: &Arc<Agents>) -> FakeAgent {
             let (ours, theirs) = UnixStream::pair().expect("pair");
             let a = Arc::clone(agents);
-            thread::spawn(move || agent(theirs, 1000, &a));
+            thread::spawn(move || {
+                agent_loop(theirs, 1000, &a, &|id, _, _| {
+                    rpc::result(id, json!({"person": true}))
+                })
+            });
             let mut fake = FakeAgent {
                 reader: std::io::BufReader::new(ours.try_clone().expect("clone")),
                 writer: ours,
@@ -548,6 +757,56 @@ mod tests {
     }
 
     #[test]
+    fn the_person_s_own_methods() {
+        let (g, docs) = crate::gate::tests::gate("person-rpc", Answer::Session);
+        let mut s = Session::default();
+        let o = g.handle(
+            &crate::gate::tests::files("write", &docs.join("a.txt")),
+            &mut s,
+        );
+        assert!(o.allowed);
+        let id = json!(1);
+        let call = |m: &str, p: Value| person_method(&g, &id, m, &p);
+        let list = call("herkos.permissions", Value::Null);
+        let gid = list["result"]["permissions"][0]["grant_id"].clone();
+        assert_eq!(
+            call("herkos.journal", json!({"limit": 0}))["error"]["code"],
+            rpc::INVALID_PARAMS
+        );
+        assert_eq!(
+            call("herkos.journal", json!({"limit": 5000}))["error"]["code"],
+            rpc::INVALID_PARAMS
+        );
+        let recent = call("herkos.journal", json!({"limit": 2}));
+        assert_eq!(
+            recent["result"]["records"].as_array().map(Vec::len),
+            Some(2)
+        );
+        assert_eq!(
+            call("herkos.revoke", json!({"grant_id": "../x"}))["error"]["code"],
+            rpc::INVALID_PARAMS
+        );
+        assert_eq!(
+            call("herkos.revoke", json!({"grant_id": gid}))["result"]["revoked"],
+            true
+        );
+        assert_eq!(
+            call("herkos.undo", json!({"action_id": ""}))["error"]["code"],
+            rpc::INVALID_PARAMS
+        );
+        let undone = call("herkos.undo", json!({"action_id": o.action_id}));
+        assert_eq!(undone["result"]["code"], "allowed", "{undone}");
+    }
+
+    #[test]
+    fn the_agent_connection_passes_the_person_s_methods_on() {
+        let agents = Arc::new(Agents::default());
+        let mut fake = FakeAgent::start(&agents);
+        fake.send(&json!({"jsonrpc": "2.0", "id": 9, "method": "herkos.permissions"}));
+        assert_eq!(fake.read()["result"]["person"], true);
+    }
+
+    #[test]
     fn asks_the_person_through_their_agent() {
         let agents = Arc::new(Agents::default());
         let all = || vec![Answer::Once, Answer::Session, Answer::Always];
@@ -575,13 +834,53 @@ mod tests {
     }
 
     #[test]
-    fn silence_and_disconnects_are_no() {
+    fn a_locked_screen_does_not_use_up_the_time_to_answer() {
+        // Build15.6: the screen locked while Herkos asked, and two minutes
+        // later the action was refused though nobody had said no.
+        let agents = Arc::new(Agents {
+            away_cap: 3.0,
+            ..Agents::default()
+        });
+        let mut fake = FakeAgent::start(&agents);
+        fake.send(
+            &json!({"jsonrpc": "2.0", "method": "herkos.agent.away", "params": {"away": true}}),
+        );
+        let waiting = {
+            let a = Arc::clone(&agents);
+            thread::spawn(move || a.ask(1000, &question(vec![Answer::Once]), 0.5))
+        };
+        let ask = fake.read();
+        // Well past the 0.5 s to answer, but the screen is locked.
+        thread::sleep(Duration::from_millis(1500));
+        fake.send(
+            &json!({"jsonrpc": "2.0", "method": "herkos.agent.away", "params": {"away": false}}),
+        );
+        fake.send(&json!({"jsonrpc": "2.0", "id": ask["id"], "result": {"answer": "once"}}));
+        assert_eq!(waiting.join().expect("ask"), Answer::Once);
+
+        // Locked all along: the question still ends, after the cap.
+        fake.send(
+            &json!({"jsonrpc": "2.0", "method": "herkos.agent.away", "params": {"away": true}}),
+        );
+        thread::sleep(Duration::from_millis(100));
+        let start = std::time::Instant::now();
+        assert_eq!(
+            agents.ask(1000, &question(vec![Answer::Once]), 0.5),
+            Answer::TimedOut
+        );
+        let took = start.elapsed();
+        assert!(took >= Duration::from_millis(2900), "{took:?}");
+        assert!(took < Duration::from_secs(6), "{took:?}");
+    }
+
+    #[test]
+    fn silence_is_a_timeout_and_disconnects_are_no() {
         let agents = Arc::new(Agents::default());
         let mut fake = FakeAgent::start(&agents);
         let start = std::time::Instant::now();
         assert_eq!(
             agents.ask(1000, &question(vec![Answer::Once]), 0.5),
-            Answer::Deny
+            Answer::TimedOut
         );
         assert!(start.elapsed() < Duration::from_secs(3));
         let ask = fake.read();

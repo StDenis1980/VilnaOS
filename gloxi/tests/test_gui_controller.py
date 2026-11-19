@@ -34,6 +34,9 @@ class RecordingView:
     def open_uri(self, url):
         self.events.append(("open", url))
 
+    def launch_app(self, app_id):
+        self.events.append(("launch", app_id))
+
     def answer(self):
         return "".join(e[1] for e in self.events if e[0] == "piece")
 
@@ -153,6 +156,64 @@ def test_backup_talk_in_the_window(tmp_path):
     assert controller.submit("/backup")  # but always on request
     assert view.answer().count("Shall I keep backups") == 2
     assert server.requests == []
+
+
+def test_vpn_talk_after_the_backup_talk(tmp_path):
+    from test_backup_intro import FakeHerkos
+    from test_vpn_intro import FakeHerkos as FakeVpn
+
+    from gloxi.backup_intro import BackupIntro
+    from gloxi.vpn_intro import PROTON_APP, PROTON_SIGNUP, VpnIntro
+
+    server = FakeLlamaServer()
+    view = RecordingView()
+    intro = BackupIntro(FakeHerkos(), path=tmp_path / "intro.json")
+    vpn = VpnIntro(FakeVpn(tunnels=(0, 1)), path=tmp_path / "vpn.json")
+    controller = ChatController(make_conversation(server), view, runner=sync, intro=intro, vpn=vpn)
+    assert controller.offer_intro()  # the first start: backups only
+    assert "Shall I keep backups" in view.answer()
+    assert "VPN" not in view.answer()
+    assert controller.submit("2")
+    assert controller.offer_intro()  # the next start: the VPN
+    assert ("start", "Gloxi, VPN") in view.events
+    assert controller.submit("2")  # a free Proton account
+    assert ("open", PROTON_SIGNUP) in view.events
+    assert ("launch", PROTON_APP) in view.events
+    assert controller.submit("1")  # connected
+    assert controller.submit("1")  # kill switch on
+    assert "kill switch is on" in view.answer()
+    assert not controller.offer_intro()  # nothing due any more
+    assert controller.submit("/vpn")  # but always on request
+    assert server.requests == []
+
+
+def test_a_vpn_chosen_in_the_installer_comes_before_the_backup_talk(tmp_path):
+    from test_backup_intro import FakeHerkos
+    from test_vpn_intro import FakeHerkos as FakeVpn
+
+    from gloxi.backup_intro import BackupIntro
+    from gloxi.vpn_intro import MULLVAD_APP, VpnIntro
+
+    server = FakeLlamaServer()
+    view = RecordingView()
+    intro = BackupIntro(FakeHerkos(), path=tmp_path / "intro.json")
+    vpn = VpnIntro(FakeVpn(tunnels=(0, 1)), path=tmp_path / "vpn.json")
+    vpn.path.write_text('{"status": "chosen", "choice": "mullvad"}')
+    controller = ChatController(make_conversation(server), view, runner=sync, intro=intro, vpn=vpn)
+    assert controller.offer_intro()  # the first start: the VPN chosen while installing
+    assert ("launch", MULLVAD_APP) in view.events
+    assert "Shall I keep backups" not in view.answer()
+    assert controller.submit("1")  # connected
+    assert controller.submit("2")  # no kill switch
+    assert controller.offer_intro()  # the next start: backups
+    assert "Shall I keep backups" in view.answer()
+    assert server.requests == []
+
+
+def test_vpn_talk_without_herkos():
+    controller, view, _ = make(FakeLlamaServer())
+    assert not controller.submit("/vpn")
+    assert view.kinds() == ["error"]
 
 
 def test_backup_talk_without_herkos():
@@ -292,3 +353,49 @@ def test_feedback_phrase_starts_the_talk_and_cancel_opens_nothing():
     assert not talk.active
     assert server.requests == []
     assert not [e for e in view.events if e[0] == "open"]
+
+
+def test_a_new_conversation_has_the_model_read_the_prompt_in_advance():
+    server = FakeLlamaServer("ok")
+    controller, _view, conv = make(server)
+    controller.submit("привіт")
+    controller.reset()
+    assert conv.history == []
+    warm = server.requests[-1]
+    assert warm["max_tokens"] == 1 and warm["messages"] == [conv.messages()[0]]
+
+
+def _cloud_texts(server):
+    return [m["content"] for m in server.requests[-1]["messages"] if m["role"] != "system"]
+
+
+def test_switch_to_cloud_keeps_earlier_messages_until_the_person_decides():
+    cloud = FakeLlamaServer("хмара")
+    ctl, _view, conv = make(
+        FakeLlamaServer("тут"), cloud=cloud, policy=RouterPolicy(cloud_allowed=True)
+    )
+    ctl.set_mode("local")
+    assert ctl.submit("перше питання")
+    assert ctl.held_back() == 0
+    assert ctl.set_mode("cloud")
+    assert ctl.held_back() == 2  # the question and the answer stay here
+    assert ctl.submit("друге питання")
+    assert _cloud_texts(cloud) == ["друге питання"]
+    ctl.share_history(True)
+    assert ctl.held_back() == 0
+    assert ctl.submit("третє питання")
+    assert "перше питання" in _cloud_texts(cloud)
+
+
+def test_no_question_when_nothing_stayed_local():
+    ctl, _view, conv = make(
+        FakeLlamaServer("тут"), cloud=FakeLlamaServer(), policy=RouterPolicy(cloud_allowed=True)
+    )
+    ctl.set_mode("local")
+    assert ctl.set_mode("cloud") and ctl.held_back() == 0  # empty conversation
+    assert ctl.submit("в хмару")
+    ctl.set_mode("local")
+    assert ctl.submit("тут")
+    assert ctl.set_mode("cloud") and ctl.held_back() == 0  # the cloud has seen it already
+    conv.reset()
+    assert conv.cloud_from == 0 and not conv.sent_to_cloud

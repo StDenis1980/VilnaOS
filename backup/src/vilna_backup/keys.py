@@ -38,6 +38,11 @@ RECOVERY_GROUPS = 8
 RECOVERY_GROUP_LEN = 4  # 8 x 4 characters x 5 bits = 160 bits
 
 
+# One-time code that joins a new device (devices.md, "Add a device"):
+# 4 x 4 characters x 5 bits = 80 bits, valid for minutes only.
+PAIRING_GROUPS = 4
+
+
 class KeysError(Exception):
     """The key store is unavailable or refused."""
 
@@ -58,15 +63,34 @@ def format_recovery_key(chars: str) -> str:
 
 def normalise_recovery_key(text: str) -> str:
     """What the person typed, read forgivingly: case, spaces, dashes, O/0, I/L/1."""
+    return _normalise(text, RECOVERY_GROUPS, "a recovery key")
+
+
+def new_pairing_code() -> str:
+    chars = "".join(secrets.choice(_ALPHABET) for _ in range(PAIRING_GROUPS * RECOVERY_GROUP_LEN))
+    return format_recovery_key(chars)
+
+
+def normalise_pairing_code(text: str) -> str:
+    return _normalise(text, PAIRING_GROUPS, "a code to add a device")
+
+
+def _normalise(text: str, groups: int, what: str) -> str:
     cleaned = "".join(c for c in text.upper() if c not in " -\t\n")
     cleaned = cleaned.translate(str.maketrans({"O": "0", "I": "1", "L": "1", "U": "V"}))
-    if len(cleaned) != RECOVERY_GROUPS * RECOVERY_GROUP_LEN or any(
-        c not in _ALPHABET for c in cleaned
-    ):
-        raise KeysError(
-            f"a recovery key is {RECOVERY_GROUPS} groups of {RECOVERY_GROUP_LEN} letters and digits"
-        )
+    if len(cleaned) != groups * RECOVERY_GROUP_LEN or any(c not in _ALPHABET for c in cleaned):
+        raise KeysError(f"{what} is {groups} groups of {RECOVERY_GROUP_LEN} letters and digits")
     return format_recovery_key(cleaned)
+
+
+def as_from_env(password_env: Mapping[str, str]) -> dict[str, str]:
+    """The same password, for the repository restic copies *from*."""
+    names = {
+        "RESTIC_PASSWORD": "RESTIC_FROM_PASSWORD",
+        "RESTIC_PASSWORD_FILE": "RESTIC_FROM_PASSWORD_FILE",
+        "RESTIC_PASSWORD_COMMAND": "RESTIC_FROM_PASSWORD_COMMAND",
+    }
+    return {names[k]: v for k, v in password_env.items() if k in names}
 
 
 class KeyStore(Protocol):
@@ -133,7 +157,7 @@ class FileStore:
         self.folder = Path(folder)
 
     def _path(self, repo_id: str, item: str) -> Path:
-        if not repo_id.isalnum() or not item.replace("-", "").isalnum():
+        if not repo_id.isalnum() or not item.replace("-", "").replace("_", "").isalnum():
             raise KeysError("bad key name")
         return self.folder / repo_id / item
 

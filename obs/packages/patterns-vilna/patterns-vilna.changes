@@ -1,11 +1,69 @@
 -------------------------------------------------------------------
+Wed Nov 18 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.14: require vilna-mcp-mail, the mail tool of Gloxi (ADR 0030).
+
+-------------------------------------------------------------------
+Wed Nov 18 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.13: require gnome-shell-extension-dash-to-dock, the dock of
+  the Vilna desktop.
+
+-------------------------------------------------------------------
+Tue Nov 17 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.12: require the translations of the GNOME desktop (the *-lang
+  packages of the Shell, Initial Setup, Settings, Files, Software, GTK
+  and libadwaita): in the VM test of Build15.6 they were missing and
+  GNOME stayed in English after choosing Українська.
+
+-------------------------------------------------------------------
+Sun Nov 15 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.11: require sdbootutil-enroll: the first boot seals the disk key in the TPM.
+
+-------------------------------------------------------------------
+Fri Nov 13 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.10: require vilna-mcp-apps (programs through Gloxi, ADR 0012).
+
+-------------------------------------------------------------------
+Fri Nov 13 07:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.9: require proton-vpn and mullvad-vpn (ADR 0027).
+
+-------------------------------------------------------------------
+Tue Nov 10 07:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.8: require vilna-backup (the Backups window and timers).
+
+-------------------------------------------------------------------
+Mon Nov  9 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.7: require gloxi-session (the Gloxi window, split from gloxi,
+  which is now the Gloxi service, ADR 0025) and vilna-model-default
+  (the weights of the local model, in the image, ADR 0006).
+
+-------------------------------------------------------------------
+Sat Nov  7 23:59:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.6: require plymouth-branding-Vilna (the Vilna boot splash).
+
+-------------------------------------------------------------------
+Sat Nov  7 23:15:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.5: require openSUSE-repos-Tumbleweed (moved from Vilna-release,
+  which KIWI installs in its bootstrap).
+
+-------------------------------------------------------------------
 Thu Nov  5 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.4: Vilna and upstream branding instead of Aeon and openSUSE:
   gnome-, systemd-presets-, x86_64_v3-, NetworkManager- and
-  hicolor-icon-theme-branding-Vilna; branding-, gdm-, gio-, gtk2/3/4-,
+  hicolor-icon-theme-branding-Vilna; branding-, gdm-, gtk2/3/4-,
   gnome-menus- and systemd-default-settings-branding-upstream. Drop
-  systemd-icon-branding-openSUSE.
+  systemd-icon-branding-openSUSE. gio-branding stays openSUSE's:
+  openSUSE:Factory bans gio-branding-upstream from KIWI images.
 
 -------------------------------------------------------------------
 Thu Nov  5 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

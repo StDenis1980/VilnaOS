@@ -32,18 +32,26 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--tasks",
         default="default",
-        help="tasks file, or a built-in set: default (ten languages) or uk-quality",
+        help="tasks file, or a built-in set: default (ten languages), uk-quality or voice",
     )
     p.add_argument("--only", help="run only tasks whose id or category contains this")
     p.add_argument("--server-pid", type=int, help="PID of llama-server, to report its peak RAM")
     p.add_argument("--timeout", type=float, default=300, help="seconds per answer")
     p.add_argument("--out", type=Path, default=Path("bench-results"), help="where to write")
     p.add_argument("--no-warmup", action="store_true", help="skip the first, untimed request")
+    p.add_argument("--json", action="store_true", help="voice: print the results as JSON")
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.tasks == "voice":
+        # ADR 0015, section 7: the voice models, not the language model.
+        from gloxi.bench import voice
+        from gloxi.voice.store import voice_dir
+
+        langs = args.only.split(",") if args.only else None
+        return voice.main(voice_dir(), langs, args.json)
     tasks = load_tasks(args.tasks)
     if args.only:
         tasks = [t for t in tasks if args.only in t.id or args.only in t.category]

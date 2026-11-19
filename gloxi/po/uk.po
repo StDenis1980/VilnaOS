@@ -19,7 +19,7 @@ msgstr "Зовнішній диск"
 msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
 msgstr "А паролі Wi-Fi, облікові записи в мережі, ключі SSH і GPG?"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 #, python-brace-format
 msgid "Choose a number from 1 to {n}."
 msgstr "Виберіть число від 1 до {n}."
@@ -95,11 +95,11 @@ msgstr ""
 "  vilna-backup recover <де лежать копії>\n"
 "Потім: vilna-backup restore --in-place"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Herkos sent an answer Gloxi does not understand"
 msgstr "Herkos надіслав відповідь, якої Gloxi не розуміє"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Herkos, the permission service, is not available"
 msgstr "Herkos, служба дозволів, недоступна"
 
@@ -133,7 +133,7 @@ msgstr "Зберігати розмови з Gloxi в резервних коп�
 msgid "Keep your conversations with Gloxi in backups too?"
 msgstr "Зберігати в резервних копіях і ваші розмови з Gloxi?"
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Later"
 msgstr "Пізніше"
 
@@ -153,7 +153,7 @@ msgstr "Музика"
 msgid "My own storage (S3, SFTP)"
 msgstr "Власне сховище (S3, SFTP)"
 
-#: src/gloxi/backup_intro.py src/gloxi/feedback.py
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py src/gloxi/vpn_intro.py
 msgid "No"
 msgstr "Ні"
 
@@ -205,7 +205,7 @@ msgstr "Робити резервні копії ваших даних, щоб �
 
 #: src/gloxi/backup_intro.py
 msgid "The Vilna cloud is not open yet in this preview. Choose another place."
-msgstr "Хмара Vilna ще не відкрита в цій попередній версії. Виберіть інше місце."
+msgstr "Vilna хмара ще не відкрита в цій попередній версії. Виберіть інше місце."
 
 #: src/gloxi/backup_intro.py
 msgid "The last step is yours, because it is about keys: run this in a terminal. It shows the recovery key once; write it on paper and keep it away from the computer. Without it, backups cannot be restored if this computer is lost. The first backup starts right after."
@@ -229,7 +229,7 @@ msgstr "Відео"
 
 #: src/gloxi/backup_intro.py
 msgid "Vilna cloud (EU)"
-msgstr "Хмара Vilna (ЄС)"
+msgstr "Vilna хмара (ЄС)"
 
 #: src/gloxi/backup_intro.py
 msgid "We are not talking about backups now."
@@ -291,7 +291,7 @@ msgstr "налаштування і документи"
 msgid "settings and the folders you chose"
 msgstr "налаштування і вибрані вами теки"
 
-#: src/gloxi/backup_intro.py src/gloxi/cli.py
+#: src/gloxi/backup_intro.py src/gloxi/cli.py src/gloxi/voice/cli.py
 msgid "yes"
 msgstr "так"
 
@@ -377,14 +377,14 @@ msgid "Cloud: on ({mode} mode)."
 msgstr "Хмара: увімкнена (режим {mode})."
 
 #: src/gloxi/cli.py
-msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
-msgstr "Команди: /local <текст> чи /cloud <текст> обирає модель для одного повідомлення, /reset очищає розмову, /backup налаштовує резервні копії, /feedback — повідомити про проблему чи запропонувати щось, /exit — вихід."
+msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /vpn sets up a VPN, /feedback reports a problem or suggests something, /exit quits."
+msgstr "Команди: /local <текст> чи /cloud <текст> обирає модель для одного повідомлення, /reset очищає розмову, /backup налаштовує резервні копії, /vpn налаштовує VPN, /feedback — повідомити про проблему чи запропонувати щось, /exit — вихід."
 
 #: src/gloxi/cli.py
 msgid "Conversation cleared."
 msgstr "Розмову очищено."
 
-#: src/gloxi/cli.py
+#: src/gloxi/cli.py src/gloxi/voice/cli.py
 msgid "Download it now? [y/N] "
 msgstr "Завантажити зараз? [т/Н] "
 
@@ -420,10 +420,19 @@ msgstr "Не завантажено. Gloxi спитає ще раз наступ
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
 msgstr "Увага: маскування вимкнено (mask_cloud = false), тож повідомлення до хмари НЕ маскуються."
 
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "Open the app: {app}"
+msgstr "Відкрийте застосунок: {app}"
+
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Starting {name} on this computer…"
 msgstr "Запуск {name} на цьому комп'ютері…"
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "The VPN needs Vilna and Herkos, and Herkos is not running."
+msgstr "Для VPN потрібні Vilna і Herkos, а Herkos не запущений."
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
@@ -473,6 +482,10 @@ msgstr "[локально]"
 #: src/gloxi/engine.py
 msgid "."
 msgstr ","
+
+#: src/gloxi/engine.py
+msgid "Google on Hugging Face"
+msgstr "Google на Hugging Face"
 
 #: src/gloxi/engine.py
 msgid "Mistral AI on Hugging Face"
@@ -558,7 +571,7 @@ msgstr "Відповідайте, будь ласка, 1, 2 або 3."
 msgid "Please write a few words, or /cancel to stop."
 msgstr "Напишіть кілька слів або /cancel, щоб зупинитися."
 
-#: src/gloxi/feedback.py
+#: src/gloxi/feedback.py src/gloxi/gui/panel.py
 msgid "Something went wrong"
 msgstr "Щось пішло не так"
 
@@ -620,6 +633,10 @@ msgid "a password or key"
 msgstr "пароль чи ключ"
 
 #: src/gloxi/feedback.py
+msgid "a personal ID number"
+msgstr "номер особи"
+
+#: src/gloxi/feedback.py
 msgid "a phone number"
 msgstr "номер телефону"
 
@@ -646,6 +663,67 @@ msgstr "адресу"
 #: src/gloxi/feedback.py
 msgid "an e-mail address"
 msgstr "адресу пошти"
+
+#: src/gloxi/gui/cards.py
+msgid "Action"
+msgstr "Дія"
+
+#: src/gloxi/gui/cards.py
+msgid "Denied"
+msgstr "Відмовлено"
+
+#: src/gloxi/gui/cards.py
+msgid "Done"
+msgstr "Виконано"
+
+#: src/gloxi/gui/cards.py
+msgid "Failed"
+msgstr "Не вдалося"
+
+#: src/gloxi/gui/cards.py
+msgid "It asks Gloxi to ignore its instructions."
+msgstr "Просить Gloxi не зважати на свої інструкції."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains a link that could carry your data away."
+msgstr "Містить посилання, яке може винести ваші дані."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains invisible or direction-changing characters."
+msgstr "Містить невидимі символи або символи, що змінюють напрям тексту."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains markers that imitate system messages."
+msgstr "Містить позначки, що імітують системні повідомлення."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains text hidden from people."
+msgstr "Містить текст, прихований від людей."
+
+#: src/gloxi/gui/cards.py
+msgid "It tries to give Gloxi a new role or new instructions."
+msgstr "Намагається дати Gloxi нову роль або нові інструкції."
+
+#: src/gloxi/gui/cards.py
+msgid "The check on this computer found text addressed to Gloxi."
+msgstr "Перевірка на цьому комп'ютері знайшла текст, звернений до Gloxi."
+
+#: src/gloxi/gui/cards.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Вміст {what}."
+
+#: src/gloxi/gui/cards.py
+msgid "Tidy up Downloads"
+msgstr "Розібрати Завантаження"
+
+#: src/gloxi/gui/cards.py
+msgid "Turn on the dark theme"
+msgstr "Увімкнути темну тему"
+
+#: src/gloxi/gui/cards.py
+msgid "What do I have today?"
+msgstr "Що в мене сьогодні?"
 
 #: src/gloxi/gui/controller.py
 msgid "Auto"
@@ -682,6 +760,10 @@ msgid "Cloud: {host}, not masked"
 msgstr "Хмара: {host}, без маскування"
 
 #: src/gloxi/gui/controller.py
+msgid "Gloxi, VPN"
+msgstr "Gloxi, VPN"
+
+#: src/gloxi/gui/controller.py
 msgid "Gloxi, backups"
 msgstr "Gloxi, резервні копії"
 
@@ -689,11 +771,11 @@ msgstr "Gloxi, резервні копії"
 msgid "Gloxi, feedback"
 msgstr "Gloxi, відгук"
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "Local"
 msgstr "Локальна"
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py src/gloxi/gui/switcher.py
 msgid "On this computer"
 msgstr "На цьому комп'ютері"
 
@@ -729,6 +811,91 @@ msgstr "{model} на {host}, особисті дані маскуються"
 msgid "{model}, on this computer"
 msgstr "{model}, на цьому комп'ютері"
 
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is answering"
+msgstr "Gloxi відповідає"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is listening"
+msgstr "Gloxi слухає"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is ready"
+msgstr "Gloxi чекає на запитання"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is thinking"
+msgstr "Gloxi міркує"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is waiting for you"
+msgstr "Gloxi чекає на вас"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi"
+msgstr "Gloxi"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr "Gloxi недоступний: його служба не працює. Спробуйте за хвилинку."
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr "Gloxi відкрито в іншому вікні."
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
+msgstr "Зв'язок зі службою Gloxi втрачено. Спробуйте ще раз."
+
+#: src/gloxi/gui/shortcuts.py
+msgid "Show or hide Gloxi"
+msgstr "Показати або сховати Gloxi"
+
+#: src/gloxi/gui/switcher.py
+msgid "In the cloud"
+msgstr "У хмарі"
+
+#: src/gloxi/gui/switcher.py
+#, python-brace-format
+msgid "Model changed to «{model}» · it answers from the next message"
+msgstr "Модель змінено на «{model}» · вона відповідає з наступного повідомлення"
+
+#: src/gloxi/gui/switcher.py
+msgid "Turned off in the settings"
+msgstr "Вимкнено в налаштуваннях"
+
+#: src/gloxi/gui/switcher.py
+msgid "cloud"
+msgstr "хмара"
+
+#: src/gloxi/gui/switcher.py
+msgid "local"
+msgstr "локально"
+
+#: src/gloxi/gui/switcher.py
+msgid "recommended"
+msgstr "рекомендовано"
+
+#: src/gloxi/gui/window.py
+msgid "1/3"
+msgstr "1/3"
+
+#: src/gloxi/gui/window.py
+msgid "1/6"
+msgstr "1/6"
+
+#: src/gloxi/gui/window.py
+msgid "A sixth of the screen"
+msgstr "Шоста частина екрана"
+
+#: src/gloxi/gui/window.py
+msgid "A third of the screen"
+msgstr "Третина екрана"
+
+#: src/gloxi/gui/window.py
+msgid "Above other windows"
+msgstr "Поверх інших вікон"
+
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
 msgstr "Дії, приховані від Gloxi"
@@ -742,16 +909,36 @@ msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr "Запитайте Gloxi… (/local або /cloud, щоб вибрати модель)"
 
 #: src/gloxi/gui/window.py
+msgid "Background"
+msgstr "Тло"
+
+#: src/gloxi/gui/window.py
+msgid "Background opacity"
+msgstr "Непрозорість тла"
+
+#: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
 msgstr "Оберіть теку для Gloxi"
+
+#: src/gloxi/gui/window.py
+msgid "Ctrl + / opens this list"
+msgstr "Ctrl + / відкриває цей список"
 
 #: src/gloxi/gui/window.py
 msgid "Download"
 msgstr "Завантажити"
 
 #: src/gloxi/gui/window.py
+msgid "Download Gloxi's voice?"
+msgstr "Завантажити голос Gloxi?"
+
+#: src/gloxi/gui/window.py
 msgid "Download the language model?"
 msgstr "Завантажити мовну модель?"
+
+#: src/gloxi/gui/window.py
+msgid "Expand to a sixth (Ctrl+2)"
+msgstr "Розгорнути до 1/6 екрана (Ctrl+2)"
 
 #: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
@@ -764,6 +951,10 @@ msgstr "Gloxi може користуватися лише програмами,
 #: src/gloxi/gui/window.py
 msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
 msgstr "Gloxi бачить лише теки, які ви тут оберете, і кожна дія в них іде через Herkos, який спершу питає вас."
+
+#: src/gloxi/gui/window.py
+msgid "Herkos checks Gloxi's next actions more strictly."
+msgstr "Herkos суворіше перевірятиме наступні дії Gloxi."
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
@@ -780,12 +971,24 @@ msgid "Herkos found something suspicious in how the program describes them."
 msgstr "Herkos знайшов щось підозріле в тому, як програма їх описує."
 
 #: src/gloxi/gui/window.py
+msgid "How can I help?"
+msgstr "Чим допомогти?"
+
+#: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
 msgstr "Програма запуститься, коли Herkos запуститься наступного разу."
 
 #: src/gloxi/gui/window.py
+msgid "Listening… press again to finish (Esc to cancel)"
+msgstr "Слухаю… натисніть ще раз, щоб завершити (Esc — скасувати)"
+
+#: src/gloxi/gui/window.py
 msgid "Model"
 msgstr "Модель"
+
+#: src/gloxi/gui/window.py
+msgid "Model for the next messages"
+msgstr "Модель для наступних повідомлень"
 
 #: src/gloxi/gui/window.py
 msgid "New conversation"
@@ -808,12 +1011,28 @@ msgid "Not turned on: you said no in the Herkos window."
 msgstr "Не ввімкнено: ви відмовили у вікні Herkos."
 
 #: src/gloxi/gui/window.py
-msgid "Only the local model: turn the cloud on in the settings to choose another"
-msgstr "Лише локальна модель: щоб обрати іншу, увімкніть хмару в налаштуваннях"
+msgid "Off in high contrast"
+msgstr "Вимкнено за високого контрасту"
+
+#: src/gloxi/gui/window.py
+msgid "Only the new message"
+msgstr "Лише нове повідомлення"
+
+#: src/gloxi/gui/window.py
+msgid "Otherwise it waits in the field for you to check and send"
+msgstr "Інакше текст чекає в полі, щоб ви перевірили й надіслали"
+
+#: src/gloxi/gui/window.py
+msgid "Panel size and look"
+msgstr "Розмір і вигляд панелі"
 
 #: src/gloxi/gui/window.py
 msgid "Programs for Gloxi"
 msgstr "Програми для Gloxi"
+
+#: src/gloxi/gui/window.py
+msgid "Read answers aloud"
+msgstr "Читати відповіді вголос"
 
 #: src/gloxi/gui/window.py
 msgid "Report a problem or suggest something"
@@ -824,8 +1043,109 @@ msgid "Send"
 msgstr "Надіслати"
 
 #: src/gloxi/gui/window.py
+msgid "Send dictated text at once"
+msgstr "Надсилати продиктований текст одразу"
+
+#: src/gloxi/gui/window.py
+msgid "Send the conversation to the cloud?"
+msgstr "Надіслати розмову в хмару?"
+
+#: src/gloxi/gui/window.py
+msgid "Send with context"
+msgstr "Надіслати з контекстом"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi and ask it a question"
+msgstr "Показати Gloxi й поставити йому запитання"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi and talk about a VPN"
+msgstr "Показати Gloxi й поговорити про VPN"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi, or hide it if it is in front"
+msgstr "Показати Gloxi або сховати, якщо він на передньому плані"
+
+#: src/gloxi/gui/window.py
+msgid "Size"
+msgstr "Розмір"
+
+#: src/gloxi/gui/window.py
+msgid "Small"
+msgstr "Мала"
+
+#: src/gloxi/gui/window.py
+msgid "Speak instead of typing (Ctrl+M)"
+msgstr "Говорити замість набору (Ctrl+M)"
+
+#: src/gloxi/gui/window.py
+msgid "Stop reading aloud (Esc)"
+msgstr "Зупинити читання (Esc)"
+
+#: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
 msgstr "Більше не давати цю теку"
+
+#: src/gloxi/gui/window.py
+msgid "Suspicious content"
+msgstr "Підозрілий вміст"
+
+#: src/gloxi/gui/window.py
+msgid "TEXT"
+msgstr "ТЕКСТ"
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "The app {app} is not installed."
+msgstr "Застосунок {app} не встановлено."
+
+#: src/gloxi/gui/window.py
+msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
+msgstr "Хмарна модель не бачить попередніх повідомлень цієї розмови. Надіслати їх теж, щоб вона знала контекст?"
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages stay on this computer."
+msgstr "Попередні повідомлення лишаються на цьому комп'ютері."
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages will go to the cloud with the next one."
+msgstr "Попередні повідомлення підуть у хмару разом із наступним."
+
+#: src/gloxi/gui/window.py
+msgid "The last lines of the chat and the input"
+msgstr "Останні рядки чату й поле введення"
+
+#: src/gloxi/gui/window.py
+msgid "Translucent"
+msgstr "Напівпрозора"
+
+#: src/gloxi/gui/window.py
+msgid "You:"
+msgstr "Ви:"
+
+#: src/gloxi/gui/window.py
+msgid "Your own size. Drag an edge of the panel to change it."
+msgstr "Ваш власний розмір. Щоб змінити, потягніть за край панелі."
+
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxi перевіряє, чи може він виходити в інтернет."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi не дозволено виходити в інтернет, тож хмарна модель не може відповісти."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxi потрібен інтернет, щоб надіслати ваше повідомлення хмарній моделі."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos не працює, тож Gloxi не може вийти в інтернет для хмари."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "Хмару вимкнено."
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"
@@ -866,3 +1186,239 @@ msgstr "{what} (виконано; увага: вміст {warnings})"
 #, python-brace-format
 msgid "{what} (error: {message})"
 msgstr "{what} (помилка: {message})"
+
+#: src/gloxi/voice/cli.py
+msgid "Listening… speak now."
+msgstr "Слухаю… говоріть."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Not downloaded. Gloxi will ask when you use voice again."
+msgstr "Не завантажено. Gloxi запитає, коли ви знову скористаєтеся голосом."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "The download was cancelled."
+msgstr "Завантаження скасовано."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The voice models were not downloaded: {why}"
+msgstr "Голосові моделі не завантажено: {why}"
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Voice is ready."
+msgstr "Голос готовий."
+
+#: src/gloxi/voice/models.py
+msgid "NVIDIA via sherpa-onnx on GitHub"
+msgstr "NVIDIA через sherpa-onnx на GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "Piper via sherpa-onnx on GitHub"
+msgstr "Piper через sherpa-onnx на GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "Silero via sherpa-onnx on GitHub"
+msgstr "Silero через sherpa-onnx на GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "hexgrad via sherpa-onnx on GitHub"
+msgstr "hexgrad через sherpa-onnx на GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "lang-uk via PyPI"
+msgstr "lang-uk через PyPI"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Downloading the voice models: {percent}%"
+msgstr "Завантаження голосових моделей: {percent}%"
+
+#: src/gloxi/voice/session.py
+msgid "End of speech"
+msgstr "Кінець мовлення"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid ""
+"Gloxi can listen to you and read its answers aloud on this computer, without the internet. For that it needs:\n"
+"\n"
+"{models}\n"
+"\n"
+"In total {size}, kept in {folder}. The sound of your voice never leaves this computer and is not saved."
+msgstr ""
+"Gloxi може слухати вас і читати свої відповіді вголос на цьому комп'ютері, без інтернету. Для цього потрібно:\n"
+"\n"
+"{models}\n"
+"\n"
+"Усього {size}, зберігається в {folder}. Звук вашого голосу ніколи не залишає цей комп'ютер і не зберігається."
+
+#: src/gloxi/voice/session.py
+msgid "Nothing was heard. Press the microphone and speak."
+msgstr "Нічого не чути. Натисніть мікрофон і говоріть."
+
+#: src/gloxi/voice/session.py
+msgid "Recognising…"
+msgstr "Розпізнаю…"
+
+#: src/gloxi/voice/session.py
+msgid "Speech recognition"
+msgstr "Розпізнавання мовлення"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The answer could not be read aloud: {why}"
+msgstr "Відповідь не вдалося прочитати вголос: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone could not be opened: {why}"
+msgstr "Не вдалося відкрити мікрофон: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone stopped: {why}"
+msgstr "Мікрофон зупинився: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The speech was not recognised: {why}"
+msgstr "Мовлення не розпізнано: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "The voice models are still downloading."
+msgstr "Голосові моделі ще завантажуються."
+
+#: src/gloxi/voice/session.py
+msgid "Ukrainian word stress"
+msgstr "Наголоси в українських словах"
+
+#: src/gloxi/voice/session.py
+msgid "Unpacking the voice models…"
+msgstr "Розпаковую голосові моделі…"
+
+#: src/gloxi/voice/session.py
+msgid "Voice"
+msgstr "Голос"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Voice could not be started: {why}"
+msgstr "Не вдалося ввімкнути голос: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "Voices"
+msgstr "Голоси"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "• {what}: {name}, {size}, {licence}, {source}"
+msgstr "• {what}: {name}, {size}, {licence}, {source}"
+
+#: src/gloxi/voice/speech.py
+msgid "The code is on the screen."
+msgstr "Код показано на екрані."
+
+#: src/gloxi/voice/speech.py
+msgid "link"
+msgstr "посилання"
+
+#: src/gloxi/voice/speech.py
+msgid "password hidden"
+msgstr "пароль приховано"
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. I will ask once more in a week. You can also type /vpn any time."
+msgstr "Гаразд. Я спитаю ще раз за тиждень. Також можете будь-коли набрати /vpn."
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. Type /vpn when you want to go on."
+msgstr "Гаразд. Наберіть /vpn, коли захочете продовжити."
+
+#: src/gloxi/vpn_intro.py
+msgid "Connected"
+msgstr "Під’єднано"
+
+#: src/gloxi/vpn_intro.py
+msgid "Create a free Proton account (5 countries, 1 device)"
+msgstr "Створити безкоштовний акаунт Proton (5 країн, 1 пристрій)"
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether a VPN protects this computer"
+msgstr "Gloxi перевіряє, чи захищає цей комп’ютер VPN"
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether the VPN is connected"
+msgstr "Gloxi перевіряє, чи під’єднано VPN"
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening Proton's sign-up page. You can create the account with a Proton address, without another email. Then sign in in the Proton VPN app that I open next, press Connect and tell me when it is connected."
+msgstr "Відкриваю сторінку реєстрації Proton. Акаунт можна створити з адресою Proton, без іншої пошти. Потім увійдіть у застосунку Proton VPN, який я відкрию слідом, натисніть «Connect» й скажіть мені, коли під’єднається."
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Mullvad app. Enter your account number or activation code there, not here: I do not see it and do not keep it. Then press Connect and tell me when it is connected."
+msgstr "Відкриваю застосунок Mullvad. Введіть номер акаунта чи код активації там, а не тут: я його не бачу й не зберігаю. Потім натисніть «Connect» й скажіть мені, коли під’єднається."
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Proton VPN app. Sign in there, not here: I do not see your password. Then press Connect and tell me when it is connected."
+msgstr "Відкриваю застосунок Proton VPN. Увійдіть там, а не тут: я не бачу вашого пароля. Потім натисніть «Connect» й скажіть мені, коли під’єднається."
+
+#: src/gloxi/vpn_intro.py
+#, python-brace-format
+msgid "I could not continue: {why}. We can go on later: type /vpn."
+msgstr "Не вдалося продовжити: {why}. Продовжимо пізніше: наберіть /vpn."
+
+#: src/gloxi/vpn_intro.py
+msgid "I do not see a VPN connection yet. Press Connect in the app, wait a few seconds and tell me again."
+msgstr "Я ще не бачу з’єднання VPN. Натисніть «Під’єднатися» в застосунку, зачекайте кілька секунд і скажіть мені знову."
+
+#: src/gloxi/vpn_intro.py
+msgid "I have a Mullvad account number or code"
+msgstr "У мене є номер акаунта чи код Mullvad"
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Mullvad app: in its settings turn on “Auto-connect”, so the VPN comes up by itself."
+msgstr "Ще один крок у застосунку Mullvad: у його налаштуваннях увімкніть «Auto-connect» (автоматичне під’єднання), щоб VPN вмикався сам."
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Proton VPN app: in its settings turn on “Connect at startup”, so the VPN comes up by itself."
+msgstr "Ще один крок у застосунку Proton VPN: у його налаштуваннях увімкніть «Connect at startup» (під’єднуватися під час запуску), щоб VPN вмикався сам."
+
+#: src/gloxi/vpn_intro.py
+msgid "Sign in to Proton VPN"
+msgstr "Увійти в Proton VPN"
+
+#: src/gloxi/vpn_intro.py
+msgid "Start Mullvad VPN and keep its service on after a restart"
+msgstr "Запустити Mullvad VPN і лишати його службу ввімкненою після перезавантаження"
+
+#: src/gloxi/vpn_intro.py
+msgid "The VPN is connected. Shall I turn on the kill switch? Then nothing leaves this computer outside the VPN: if the VPN drops, the internet stops until it is back. Turning it off later always asks you first."
+msgstr "VPN під’єднано. Увімкнути аварійний вимикач? Тоді ніщо не вийде з цього комп’ютера поза VPN: якщо VPN впаде, інтернет зупиниться, доки він не повернеться. Вимкнення потім щоразу спершу питає вас."
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch is on."
+msgstr "Аварійний вимикач увімкнено."
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch stays off. You can turn it on any time: type /vpn."
+msgstr "Аварійний вимикач лишається вимкненим. Його можна будь-коли ввімкнути: наберіть /vpn."
+
+#: src/gloxi/vpn_intro.py
+msgid "Turn on the VPN kill switch"
+msgstr "Увімкнути аварійний вимикач VPN"
+
+#: src/gloxi/vpn_intro.py
+msgid "We are not talking about a VPN now."
+msgstr "Зараз ми не говоримо про VPN."
+
+#: src/gloxi/vpn_intro.py
+msgid "Yes, recommended"
+msgstr "Так, рекомендовано"
+
+#: src/gloxi/vpn_intro.py
+msgid "You chose this while installing Vilna."
+msgstr "Ви обрали це під час встановлення Vilna."
+
+#: src/gloxi/vpn_intro.py
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up. Do you want even more protection with a VPN? It also hides the rest of your traffic from that network (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones."
+msgstr "Ваше з’єднання вже захищене: Vilna шифрує DNS, тож мережа, у якій ви є, не бачить, які сайти ви шукаєте. Хочете ще більше захисту з VPN? Він приховує від цієї мережі (кав’ярня, готель) і решту трафіку, а вашу адресу — від сайтів. Провайдер VPN бачить, куди ви ходите, тому я пропоную лише перевірених."

@@ -78,7 +78,7 @@
 | Пакет | Що робить |
 | --- | --- |
 | `herkos` | Сервіс шлюзу дозволів (systemd-юніт, окремий системний користувач `herkos`), Keros, Mitos |
-| `herkos-polkit` | Дії `org.vilna.herkos.*` і правила `/etc/polkit-1/rules.d/`, що забороняють користувачу `gloxi` прямі системні дії (розд. 9.2 permissions.md) |
+| `herkos-polkit` | Увійшов у пакет `herkos`: дії `org.vilna.herkos.*` (`org.vilna.herkos.policy`), правило `50-herkos-actions.rules` (адміністратор біля комп'ютера ставить програми без пароля) і `40-herkos-gloxi.rules`, яке не дає користувачам Gloxi (`gloxi-<uid>`, `vilna-llm`) жодної дії polkit (розд. 9.2 permissions.md) |
 | `herkos-selinux` | Модуль SELinux: домени `herkos_t` і `gloxi_t`, що Gloxi може говорити лише з сокетом Herkos |
 | `herkos-dialog` | Діалог підтвердження в сеансі GNOME (окремий процес, приймає лише реальне введення) |
 | `herkos-manifests` | Маніфести програм із Flatpak, якими Gloxi користується через Herkos, і їхні юніти `vilna-mcp-ext-*@` ([`../../herkos/catalogue/`](../../herkos/catalogue/README.md): спершу п'ять програм Tinta Office). Пізніше — D-Bus-інтерфейси GNOME |
@@ -89,7 +89,8 @@
 | --- | --- |
 | `gloxi` | Системний сервіс асистента (окремий користувач `gloxi`, обмеження systemd з розд. 9.1 permissions.md), маршрутизатор моделей |
 | `gloxi-session` | Клієнт у сеансі користувача: вікно чату, гаряча клавіша, сповіщення. У Vilna — **RPM** (рішення 2.11.2026), бо говорить із системним сокетом Herkos; для звичайного Linux той самий код іде як Flatpak |
-| `gnome-shell-extension-vilna` | Розширення GNOME Shell Vilna ([`../../shell-extension/`](../../shell-extension/)): латинська розкладка в полях паролів (зокрема на екранах входу й блокування), Gloxi поверх усіх вікон, смуга екрана під панель Gloxi на етапі B. Увімкнене для всіх користувачів і для `gdm`. Пізніше — кнопка й швидкий виклик Gloxi з верхньої панелі |
+| `gnome-shell-extension-vilna` | Розширення GNOME Shell Vilna ([`../../shell-extension/`](../../shell-extension/)): латинська розкладка в полях паролів (зокрема на екранах входу й блокування), Gloxi поверх усіх вікон, смуга екрана під панель Gloxi на етапі B. Увімкнене для всіх користувачів і для `gdm`. Малює док у кольорах Vilna. Пізніше — кнопка й швидкий виклик Gloxi з верхньої панелі |
+| `gnome-shell-extension-dash-to-dock` | Док стільниці: [Dash to Dock](https://github.com/micheleg/dash-to-dock) без змін (GPL-2.0-or-later), з тегу випуску, SHA-256 у `_service`. Знизу, ховається, коли вікно в фокусі його закриває; налаштування — у `30_Vilna.gschema.override` (`vilna-branding`), вигляд — з розширення Vilna. Чому так — [`docs/design/desktop/`](../../docs/design/desktop/README.md) |
 
 ### 4.4. Шлюз приватності, MCP-сервери, модель
 
@@ -97,9 +98,10 @@
 | --- | --- | --- |
 | `vilna-privacy-gateway` | Бібліотека шлюзу приватності | Apache-2.0 |
 | `vilna-mcp-files` | MCP-сервер «файли» | Apache-2.0 |
-| `vilna-mcp-settings` | MCP-сервер «налаштування GNOME» (через GSettings / D-Bus) | Apache-2.0 |
-| `vilna-mcp-calendar` | MCP-сервер «календар» (CalDAV / GNOME Online Accounts) | Apache-2.0 |
-| `vilna-mcp-apps` | MCP-сервер «програми»: пошук, запуск, встановлення, оновлення і видалення Flatpak через libflatpak, лише через Herkos ([ADR 0012](../../docs/adr/0012-recommended-apps-and-install-via-gloxi.md)) | Apache-2.0 |
+| `vilna-mcp-settings` | MCP-сервер «налаштування GNOME»: тема, акцент, розмір тексту, нічне світло, «не турбувати», звук (GSettings і PipeWire, [ADR 0023](../../docs/adr/0023-gloxi-calendar-settings-hotkey.md)) | Apache-2.0 |
+| `vilna-mcp-calendar` | MCP-сервер «календар»: читання і запис простих подій (без повторів і запрошених), календарі GNOME і GNOME Online Accounts через Evolution Data Server ([ADR 0023](../../docs/adr/0023-gloxi-calendar-settings-hotkey.md)) | Apache-2.0 |
+| `vilna-mcp-mail` | MCP-сервер «пошта»: читання (IMAP), чернетки, надсилання (SMTP) лише після «так» людини щоразу; облікові записи з GNOME Online Accounts ([ADR 0030](../../docs/adr/0030-gloxi-mail.md)) | Apache-2.0 |
+| `vilna-mcp-apps` | MCP-сервер «програми»: пошук, встановлення, оновлення і видалення Flatpak через libflatpak від системного користувача `vilna-apps` (polkit дає йому лише це, без нових джерел), і `vilna-mcp-launcher` — запуск встановленої програми; лише через Herkos ([ADR 0012](../../docs/adr/0012-recommended-apps-and-install-via-gloxi.md), [`mcp/apps`](../../mcp/apps/README.md)) | Apache-2.0 |
 | `vilna-software-picks` | Добірка «Рекомендовано Vilna»: метадані AppStream, за якими GNOME Software показує вибрані програми Flathub (ADR 0012) | GPL-3.0-or-later |
 | `vilna-mcp-mail` | MCP-сервер «пошта» (IMAP / SMTP) | Apache-2.0 |
 | `llama.cpp` (`llama-server`) | Рушій локальної моделі. Перевірити, чи є актуальний пакет у Tumbleweed; якщо ні — збираємо самі | MIT (upstream) |
@@ -114,17 +116,20 @@
 
 | Пакет Aeon / openSUSE | Замість нього | Що містить |
 | --- | --- | --- |
-| `Aeon-release` | `Vilna-release` | Назва й версія ОС, репозиторії (`openSUSE-repos-Tumbleweed` і `vilna.repo`) |
+| `Aeon-release` | `Vilna-release` | Назва й версія ОС, репозиторій `vilna.repo` з ключем; сервіс `openSUSE-repos-Tumbleweed` вимагає `patterns-vilna-base`, бо `Vilna-release` KIWI ставить ще в bootstrap |
 | `distribution-logos-openSUSE-Aeon`, `distribution-logos-openSUSE-icons` | `distribution-logos-Vilna` | Логотип (поки заглушка), іконки |
 | `hicolor-icon-theme-branding-openSUSE` | `hicolor-icon-theme-branding-Vilna` | Іконка `distributor` |
-| `gnome-branding-Aeon` | `gnome-branding-Vilna` | Налаштування GNOME (темна тема, логотип на екрані входу, Gloxi в доку), права адміністратора для wheel (sudo, polkit), logind, transactional-update, сторінки GNOME Initial Setup. Без `aeon-firstboot`: Flatpak ставить `vilna-flatpak-defaults` |
+| `gnome-branding-Aeon` | `gnome-branding-Vilna` | Налаштування GNOME (світла тема, шпалери «Сонце», логотип на екрані входу, Gloxi в доку), права адміністратора для wheel (sudo, polkit), logind, transactional-update, сторінки GNOME Initial Setup. Без `aeon-firstboot`: Flatpak ставить `vilna-flatpak-defaults` |
 | `systemd-presets-branding-Aeon` | `systemd-presets-branding-Vilna` | Служби за замовчуванням, як в Aeon; власні рішення Vilna — у `vilna-presets` |
 | `x86_64_v3-branding-Aeon` | `x86_64_v3-branding-Vilna` | Бібліотеки x86_64_v3 після оновлень |
 | `NetworkManager-branding-openSUSE` | `NetworkManager-branding-Vilna` | Перевірка з'єднання для captive portal (поки сервер openSUSE) |
+| тема Plymouth `bgrt` | `plymouth-branding-Vilna` | Екран завантаження Vilna: коло-мазок, ластівка, мотиви в манері петриківки, поле пароля диска ([`../plymouth/`](../plymouth/)) |
 | `systemd-repart-branding-Aeon` | — (прибрано) | Розмітка для установника tik, ламала перший запуск образу |
-| `branding-openSUSE`, `gdm-branding-Aeon`, `gio-branding-openSUSE`, `gtk2/3/4-branding-openSUSE`, `gnome-menus-branding-openSUSE`, `systemd-default-settings-branding-openSUSE` | `*-branding-upstream` | Нейтральні налаштування самих програм |
+| `branding-openSUSE`, `gdm-branding-Aeon`, `gtk2/3/4-branding-openSUSE`, `gnome-menus-branding-openSUSE`, `systemd-default-settings-branding-openSUSE` | `*-branding-upstream` | Нейтральні налаштування самих програм |
 | `systemd-icon-branding-openSUSE` | — (прибрано) | Нікому в образі не потрібен |
-| — | `vilna-wallpapers` | Шпалери, зокрема петриківський розпис (після договорів з майстрами); поки шпалери GNOME |
+| `gnome-backgrounds` (лишається) | `vilna-backgrounds` | Сім пар шпалер (світла й темна): «Сонце» (за замовчуванням), «Схід», «Тюльпан», «Соняшник», «Волошка», «Мальва», «Blavet»; петриківський розпис майстрів — пізніше, після договорів |
+
+`gio-branding-openSUSE` поки лишається: конфігурація openSUSE:Factory (`image_package_conflicts`) забороняє `gio-branding-upstream` в усіх образах KIWI, тож образ із ним не розв'язується. Його `20_openSUSE-branding.gschema.override` перекриває `30_Vilna.gschema.override` (логотип на екрані входу, тема, док). Замінимо власним `gio-branding-Vilna`, коли буде що в ньому налаштувати (шпалери).
 
 Ще лишаються пакети openSUSE без `branding` в назві брендування, але з налаштуваннями openSUSE: `distrobox-branding-openSUSE` (образ контейнера за замовчуванням), `chrony-pool-openSUSE`, `libcontainers-openSUSE-policy`, `openSUSE-build-key`, `aeon-check`. Їх замінимо, коли будуть свої налаштування або сервери.
 
@@ -160,14 +165,14 @@
 | --- | --- | --- |
 | Служби за замовчуванням | Вмикаємо `herkosd.socket` (Herkos стартує на вимогу), `herkos-agent.service` у сесії людини і `vilna-flatpak-defaults.service` (програми з Flathub при першому запуску); `gloxi.service` — коли з'явиться системна служба Gloxi | Асистент і вікна підтвердження Herkos працюють з першого запуску |
 | SELinux | Додаємо модуль `herkos-selinux`, режим enforcing не змінюємо | Ізоляція Gloxi на рівні ядра на додачу до systemd |
-| Знімки snapper | Додаємо конфігурацію для `/home` з політикою зберігання під Mitos | Відкат змін Gloxi у файлах користувача (у Aeon знімки лише для кореня) |
+| Знімки snapper | Домашня тека кожної людини — окремий підтом (`BTRFS_SUBVOLUME_HOME=yes` у `/etc/default/useradd`) зі своєю конфігурацією snapper `mitos-<uid>`, яку робить `herkosd mitos-setup`; знімки 30 днів ([ADR 0026](../../docs/adr/0026-mitos-btrfs-snapshots.md)) | Відкат змін Gloxi у файлах людини (у Aeon знімки лише для кореня), без доступу до файлів інших людей |
 | Автоматичні оновлення | Залишаємо як в Aeon; Mitos записує кожне оновлення в журнал | Користувач бачить, що змінилося |
 | Avahi, samba, openssh | **Вимкнені за замовчуванням** (рішення 2.11.2026): пакети залишаються, служби не вмикаються через `systemd-presets-branding-Vilna`. Користувач вмикає в налаштуваннях; через Gloxi — як дія R3 | Принцип найменшої поверхні атаки. Пакети не видаляємо, щоб не розходитися з Aeon |
 | kdump, `steam-devices` | Залишаємо | Видалення не дає переваг і створює розбіжність з Aeon |
 
 ## 6. Програми за замовчуванням (Flatpak)
 
-Встановлюються під час першого запуску з Flathub (Tinta Office — з власного Flatpak-сховища Vilna, поки його немає на Flathub). Список — пропозиція для обговорення. LibreOffice, Thunderbird, Papers та інші програми людина може поставити сама з Flathub (через «Програмне забезпечення» або попросивши Gloxi).
+Встановлюються під час першого запуску з Flathub, а Tinta Office — з власного підписаного Flatpak-сховища Vilna ([ADR 0024](../../docs/adr/0024-vilna-flatpak-repository.md)), куди CI кладе закріплені бандли з релізів Tinta ([`../tinta-bundles.toml`](../tinta-bundles.toml); як саме — [ADR 0011](../../docs/adr/0011-default-office-suite.md), розділ «Як Tinta Office потрапляє в образ»). Пакет `vilna-flatpak-defaults` також робить Tinta Office типовою програмою для документів, PDF, пошти, календарних файлів і контактів. Список — пропозиція для обговорення. LibreOffice, Thunderbird, Papers та інші програми людина може поставити сама з Flathub (через «Програмне забезпечення» або попросивши Gloxi).
 
 **Менеджер програм** — GNOME Software («Програмне забезпечення») з Flathub, як в Aeon. Vilna додає в нього добірку **«Рекомендовано Vilna»** (пакет `vilna-software-picks`) і дає змогу ставити програми через Gloxi: Gloxi пропонує програму, Herkos показує діалог підтвердження (дія R3), `vilna-mcp-apps` її встановлює. Критерії добірки й рівні дозволів — у [ADR 0012](../../docs/adr/0012-recommended-apps-and-install-via-gloxi.md); у дорожній карті це окремий крок наприкінці етапу 2.
 

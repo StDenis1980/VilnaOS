@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The "VPN" tool of Herkos for the person with uid %i (ADR 0027): the kill
+# switch of Vilna and the encrypted DNS, through vilna-netguard. herkosd
+# starts it (50-herkos.rules) and calls it only after the person said yes
+# (R2 to make protection stronger, R3 every time to weaken it). It runs as
+# root because nftables and systemd-resolved belong to the whole computer;
+# it cannot do anything else: it is herkosd's own code (herkosd vpn-tool)
+# with eight operations, and it never sees a VPN account.
+[Unit]
+Description=VPN kill switch and DNS for uid %i, a Herkos tool
+ConditionPathExists=/run/herkos-tools/%i/vpn.sock
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/herkos/herkosd vpn-tool %i
+StandardInput=file:/run/herkos-tools/%i/vpn.sock
+StandardOutput=file:/run/herkos-tools/%i/vpn.sock
+StandardError=journal
+# The tool stops when herkosd closes the connection; no restarts behind its back.
+Restart=no
+
+# vilna-netguard writes /var/lib/vilna-netguard and
+# /etc/systemd/resolved.conf.d, changes nftables (netlink) and asks systemd
+# to reload systemd-resolved or to start mullvad-daemon. No home folders,
+# no network of its own.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/vilna-netguard /etc/systemd/resolved.conf.d
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+CapabilityBoundingSet=CAP_NET_ADMIN
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native

@@ -37,6 +37,21 @@ function flush() {
         GLib.file_set_contents(out, `${lines.join('\n')}\nEND\n`);
 }
 
+// Every ease on a window actor, by WM class: what the window motion module
+// handed to Clutter (Shell's own path ends in the same prototype method).
+const eases = {};
+function spyEases() {
+    const ease = Clutter.Actor.prototype.ease;
+    Clutter.Actor.prototype.ease = function (params) {
+        const cls = this instanceof Meta.WindowActor ? this.meta_window?.get_wm_class() : null;
+        if (cls)
+            (eases[cls] ??= []).push([params.duration, params.mode]);
+        return ease.call(this, params);
+    };
+}
+const lastEase = cls => eases[cls]?.at(-1) ?? null;
+const Mode = Clutter.AnimationMode;
+
 async function waitFor(predicate, ms = 5000) {
     for (let t = 0; t < ms && !predicate(); t += 100)
         await sleep(100);
@@ -105,8 +120,9 @@ async function passwordFields() {
 
     await useLayout('pl');
     await focus(entry);
-    check('a Latin layout (Polish) is kept', current(), 'pl');
+    check('another Latin layout (Polish) switches to English', current(), 'us');
     await focus(null);
+    check('Polish back after the field', current(), 'pl');
 
     await useLayout('ua');
     await focus(entry);
@@ -151,6 +167,59 @@ const dockPanel = () => {
     return p ? [p.x, p.y, p.width, p.height] : null;
 };
 
+function setShellProperty(name, variant) {
+    return new Promise((resolve, reject) => Gio.DBus.session.call('io.github.stdenis1980.VilnaShell',
+        '/io/github/stdenis1980/VilnaShell', 'org.freedesktop.DBus.Properties', 'Set',
+        new GLib.Variant('(ssv)', ['io.github.stdenis1980.VilnaShell1', name, variant]),
+        null, Gio.DBusCallFlags.NONE, -1, null, (connection, result) => {
+            try {
+                connection.call_finish(result);
+                resolve(true);
+            } catch (e) {
+                reject(e);
+            }
+        }));
+}
+
+const frame = w => {
+    const r = w.get_frame_rect();
+    return [r.x, r.y, r.width, r.height];
+};
+
+// Stage A: the Shell keeps the Gloxi window at the right edge.
+async function panelPlacement(settings) {
+    const gloxi = findWindow(GLOXI);
+    const [, top, , height] = workArea();
+    const bottom = top + height;
+    const tall = h => h - 16;
+    await waitFor(() => frame(gloxi)[0] === 1592, 3000);
+    check('panel: a sixth at the right edge on first show', frame(gloxi), [1592, top + 8, 320, tall(height)]);
+    settings.set_string('gloxi-panel-size', 'compact');
+    await sleep(800);
+    check('panel: compact at the bottom right', frame(gloxi), [1592, bottom - 8 - 220, 320, 220]);
+    await setShellProperty('GloxiPanelSize', new GLib.Variant('s', 'one-third'));
+    await sleep(800);
+    check('panel: a third, set over D-Bus', [settings.get_string('gloxi-panel-size'), frame(gloxi)],
+        ['one-third', [1272, top + 8, 640, tall(height)]]);
+    await setShellProperty('GloxiPanelSize', new GLib.Variant('s', 'half')).catch(() => false);
+    await sleep(300);
+    check('panel: an unknown size over D-Bus is ignored', settings.get_string('gloxi-panel-size'), 'one-third');
+    gloxi.move_resize_frame(true, 300, 200, 500, 600);
+    await sleep(500);
+    settings.set_string('gloxi-panel-size', 'custom');
+    await sleep(800);
+    check('panel: custom keeps the size, back at the edge', frame(gloxi), [1920 - 8 - 500, top + 8, 500, 600]);
+    await setShellProperty('GloxiPanelEdge', new GLib.Variant('b', false));
+    await sleep(300);
+    gloxi.move_frame(true, 100, 100);
+    settings.set_string('gloxi-panel-size', 'one-sixth');
+    await sleep(800);
+    check('panel: edge off, the window stays where it is', frame(gloxi).slice(0, 2), [100, 100]);
+    settings.set_boolean('gloxi-panel-edge', true);
+    await sleep(800);
+    check('panel: edge on again', frame(gloxi), [1592, top + 8, 320, tall(height)]);
+}
+
 async function windows() {
     const settings = vilnaSettings();
     GLib.file_set_contents(`${GLib.getenv('VILNA_TEST_OUT')}.windows`, '');
@@ -159,6 +228,8 @@ async function windows() {
     if (!ready)
         return;
     await sleep(500);
+    check('motion: Gloxi opens in 280 ms', eases[GLOXI]?.[0] ?? null, [280, Mode.EASE_OUT_QUINT]);
+    check('motion: other window opens in 280 ms', eases[OTHER]?.[0] ?? null, [280, Mode.EASE_OUT_QUINT]);
 
     // GTK password field (Wayland text-input): each window holds one
     // focused field, a password one in OTHER and a plain one in Gloxi.
@@ -188,7 +259,65 @@ async function windows() {
     await sleep(300);
     check('setting on again: Gloxi above', findWindow(GLOXI).is_above(), true);
 
+    // The other window: a drag lift, then each motion style.
+    const otherActor = findWindow(OTHER).get_compositor_private();
+    global.display.emit('grab-op-begin', findWindow(OTHER), Meta.GrabOp.MOVING);
+    check('motion: drag lifts the window', lastEase(OTHER), [150, Mode.EASE_OUT_QUAD]);
+    await sleep(400);
+    check('motion: lifted by 1%', otherActor.scale_x, 1.01);
+    global.display.emit('grab-op-end', findWindow(OTHER), Meta.GrabOp.MOVING);
+    await sleep(400);
+    check('motion: set down after the drag', [otherActor.scale_x, otherActor.pivot_point.x], [1, 0]);
+    // Rubber window: the far side lags while the window is dragged and
+    // springs back afterwards. GNOME Shell turns animations off on
+    // software rendering, as here; turn them on for this part only.
+    const softwareOnly = !St.Settings.get().enable_animations;
+    if (softwareOnly)
+        St.Settings.get().uninhibit_animations();
+    const wobble = () => otherActor.get_effect('vilna-wobble');
+    const other0 = findWindow(OTHER).get_frame_rect();
+    global.display.emit('grab-op-begin', findWindow(OTHER), Meta.GrabOp.MOVING);
+    check('rubber: effect on while dragged', Boolean(wobble()), true);
+    findWindow(OTHER).move_frame(true, other0.x + 160, other0.y + 40);
+    await sleep(30);
+    const bend = wobble()?.jelly.at(1, 1) ?? [0, 0];
+    check('rubber: the window bends with the drag', Math.hypot(...bend) > 2, true);
+    global.display.emit('grab-op-end', findWindow(OTHER), Meta.GrabOp.MOVING);
+    check('rubber: effect gone once settled', await waitFor(() => !wobble(), 3000), true);
+    findWindow(OTHER).move_frame(true, other0.x, other0.y);
+    settings.set_boolean('window-wobble', false);
+    global.display.emit('grab-op-begin', findWindow(OTHER), Meta.GrabOp.MOVING);
+    check('rubber: off by the setting', Boolean(wobble()), false);
+    global.display.emit('grab-op-end', findWindow(OTHER), Meta.GrabOp.MOVING);
+    settings.set_boolean('window-wobble', true);
+    if (softwareOnly) {
+        St.Settings.get().inhibit_animations();
+        global.display.emit('grab-op-begin', findWindow(OTHER), Meta.GrabOp.MOVING);
+        check('rubber: none with animations off', Boolean(wobble()), false);
+        global.display.emit('grab-op-end', findWindow(OTHER), Meta.GrabOp.MOVING);
+    }
+    await sleep(400);
+
+    settings.set_string('window-motion', 'reduced');
+    findWindow(OTHER).minimize();
+    await sleep(600);
+    check('motion: reduced minimise is a 100 ms fade', lastEase(OTHER), [100, Mode.EASE_OUT_QUAD]);
+    findWindow(OTHER).unminimize();
+    await sleep(600);
+    check('motion: reduced unminimise settles', [lastEase(OTHER), otherActor.opacity, otherActor.scale_x],
+        [[100, Mode.EASE_OUT_QUAD], 255, 1]);
+    settings.set_string('window-motion', 'gnome');
+    findWindow(OTHER).minimize();
+    await sleep(800);
+    check('motion: gnome style keeps the Shell\'s 400 ms', lastEase(OTHER), [400, Mode.EASE_OUT_EXPO]);
+    findWindow(OTHER).unminimize();
+    await sleep(800);
+    settings.set_string('window-motion', 'vilna');
+    findWindow(GLOXI).activate(global.get_current_time());
+    await sleep(300);
+
     check('D-Bus name owned in the user session', await nameOwned('io.github.stdenis1980.VilnaShell'), true);
+    await panelPlacement(settings);
 
     const [mx, mw, mh] = [0, 1920, 1080];
     check('monitor is 1920x1080', [Main.layoutManager.primaryMonitor.width, Main.layoutManager.primaryMonitor.height], [mw, mh]);
@@ -213,14 +342,51 @@ async function windows() {
     check('strip: one third', dockPanel(), [1280, top, 640, mh - top]);
     findWindow(GLOXI).minimize();
     await sleep(800);
+    check('motion: minimise in 450 ms', lastEase(GLOXI), [450, Mode.EASE_IN_OUT_CUBIC]);
     check('strip: released while Gloxi is minimised', dockPanel(), null);
     findWindow(GLOXI).unminimize();
     await sleep(800);
+    check('motion: unminimise in 450 ms', lastEase(GLOXI), [450, Mode.EASE_IN_OUT_CUBIC]);
+    check('motion: shown window settled', [findWindow(GLOXI).get_compositor_private()?.opacity,
+        findWindow(GLOXI).get_compositor_private()?.scale_x], [255, 1]);
     check('strip: back when Gloxi is shown', Boolean(dockPanel()), true);
     findWindow(GLOXI).delete(global.get_current_time());
     await sleep(1500);
+    check('motion: close in 196 ms', lastEase(GLOXI), [196, Mode.EASE_IN_CUBIC]);
     check('strip: released when Gloxi closes', [dockPanel(), workArea()[2]], [null, mw]);
     settings.set_boolean('gloxi-dock', false);
+}
+
+const theWidgets = () => Main.extensionManager.lookup(UUID)?.stateObj?._userParts
+    ?.find(p => p.constructor.name === 'Widgets') ?? null;
+const theSky = () => theWidgets()?.sky ?? null;
+
+// The live sky moves only when it can be seen and animations are on.
+// windows() leaves the other window maximised, over the widgets.
+async function skyMotion() {
+    const softwareOnly = !St.Settings.get().enable_animations;
+    if (softwareOnly)
+        St.Settings.get().uninhibit_animations();
+    const sky = theSky();
+    const other = findWindow(OTHER);
+    const dialog = findWindow(HERKOS);
+    check('sky: still under a window', await waitFor(() => sky?.moving === false, 2500), true);
+    dialog?.minimize();
+    other.minimize();
+    check('sky: moves once the window is gone', await waitFor(() => sky?.moving === true, 2500), true);
+    check('sky: sized like the card', [sky._sky?.w, sky._sky?.h] , [Math.round(sky.actor.width), Math.round(sky.actor.height)]);
+    check('sky: as wide as the column', sky._sky?.w, 340);
+    Main.overview.show();
+    check('sky: still in the overview', await waitFor(() => sky?.moving === false, 2500), true);
+    Main.overview.hide();
+    check('sky: moves after the overview', await waitFor(() => sky?.moving === true, 3000), true);
+    St.Settings.get().inhibit_animations();
+    check('sky: still with animations off', await waitFor(() => sky?.moving === false, 2500), true);
+    if (!softwareOnly)
+        St.Settings.get().uninhibit_animations();
+    other.unminimize();
+    dialog?.unminimize();
+    check('sky: still under the window again', await waitFor(() => sky?.moving === false, 2500), true);
 }
 
 async function locked() {
@@ -241,7 +407,186 @@ async function locked() {
     entry.destroy();
 }
 
+// The dock's Vilna colours (colorScheme.js and stylesheet.css). Dash to
+// Dock is not installed here: a stand-in with its names takes the styles.
+async function dockColours() {
+    const iface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
+    const classes = () => ['vilna-light', 'vilna-dark'].filter(c => Main.uiGroup.has_style_class_name(c));
+    const container = new St.Widget({name: 'dashtodockContainer', style_class: 'bottom'});
+    const dash = new St.Widget({name: 'dash'});
+    const background = new St.Widget({style_class: 'dash-background'});
+    dash.add_child(background);
+    container.add_child(dash);
+    Main.uiGroup.add_child(container);
+    const colour = () => background.get_theme_node().get_background_color().to_string();
+
+    iface.set_string('color-scheme', 'default');
+    await waitFor(() => classes().length === 1 && classes()[0] === 'vilna-light');
+    check('dock: light style by default', classes(), ['vilna-light']);
+    check('dock: cream glass in the light style', colour(), '#fffcf6dc');
+    iface.set_string('color-scheme', 'prefer-dark');
+    await waitFor(() => classes()[0] === 'vilna-dark');
+    check('dock: dark style follows the setting', classes(), ['vilna-dark']);
+    check('dock: night glass in the dark style', colour(), '#0e1a2ed1');
+    iface.set_string('color-scheme', 'default');
+    await waitFor(() => classes()[0] === 'vilna-light');
+    check('dock: back to light', classes(), ['vilna-light']);
+    container.destroy();
+}
+
+// The login screen draws its background on the actor named lockDialogGroup
+// (screenShield.js). The container has no logind, so the Shell makes no
+// screen shield here: style a stand-in with the same name.
+// Every label text under an actor, in order.
+function texts(actor) {
+    const out = [];
+    const walk = a => {
+        if (a instanceof St.Label)
+            out.push(a.text);
+        for (const child of a.get_children())
+            walk(child);
+    };
+    if (actor)
+        walk(actor);
+    return out;
+}
+
+const widgetsRoot = () => Main.layoutManager._backgroundGroup.get_children().find(a => a.name === 'vilnaWidgets') ?? null;
+const widget = name => {
+    const find = a => a.name === name ? a : a.get_children().map(find).find(Boolean) ?? null;
+    const root = widgetsRoot();
+    return root ? find(root) : null;
+};
+
+async function widgets() {
+    const settings = vilnaSettings();
+    const root = widgetsRoot();
+    check('widgets: shown by default', Boolean(root), true);
+    if (!root)
+        return;
+    // The wallpapers are a group at the bottom of the window group.
+    const backgrounds = Main.layoutManager._backgroundGroup;
+    check('widgets: above the wallpaper, under the windows',
+        [backgrounds.get_last_child() === root, global.window_group.get_first_child() === backgrounds], [true, true]);
+    check('widgets: left, below the top bar', [root.x, root.y], [24, Main.panel.height + 24]);
+    const [time] = texts(widget('vilnaClock'));
+    check('widgets: the clock shows the time', /^\d{1,2}:\d{2}$/.test(time ?? ''), true);
+    const weatherText = () => texts(widget('vilnaWeatherWidget'));
+    check('widgets: weather for the capital by default (Madrid)',
+        await waitFor(() => weatherText()[2]?.startsWith('Madrid · '), 5000) ? weatherText().slice(1, 3) : weatherText(),
+        ['18°', 'Madrid · Clear · ↑21° ↓11°']);
+    const sky = theSky();
+    check('sky: a clear day behind the weather, with dark text',
+        [sky?.kind, sky?.actor.visible, widget('vilnaWeatherWidget')?.get_last_child().has_style_class_name('vilna-sky-ink-dark')],
+        ['clear', true, true]);
+    const alertTexts = () => texts(widget('vilnaWeatherAlerts'));
+    check('warnings: the zone is found on this computer', await waitFor(() =>
+        settings.get_value('alert-zones').deepUnpack()[2].join() === 'ES219', 15000)
+        ? settings.get_value('alert-zones').deepUnpack()[2]
+        : [settings.get_value('alert-zones').deepUnpack(), theWidgets()?.weatherAlerts?.status], ['ES219']);
+    check('warnings: orange wind in the zone and yellow fog around it, the original words and the service',
+        await waitFor(() => alertTexts().length === 6, 10000)
+            ? alertTexts().map(s => s.replace(/(\b[A-Z][a-z]{2} )?\d{1,2}:\d{2}/g, 'T'))
+            : alertTexts(),
+        ['Orange warning: Wind · until T', 'Orange test warning. Test zone', 'Test Service · issued T',
+            'Yellow warning: Fog · until T', 'Yellow Fog Warning issued for Spain - Área de prueba',
+            'EUMETNET – MeteoAlarm · issued T']);
+    check('warnings: words already in the person\u2019s language, Gloxi not asked', gloxiRequests.length, 0);
+    // The first refresh came before passwordFields() turned the extension
+    // off and on, which took its notification away; the warning was
+    // remembered, so it did not come again.
+    const stateFile = GLib.build_filenamev([GLib.get_user_state_dir(), 'vilna', 'alerts-notified.json']);
+    const notified = () => {
+        try {
+            return new TextDecoder().decode(GLib.file_get_contents(stateFile)[1]);
+        } catch {
+            return '';
+        }
+    };
+    const warningNotes = () => Main.messageTray.getSources().flatMap(s => s.notifications ?? [])
+        .filter(n => /warning:/.test(n.title)).map(n => [n.title, n.urgency]);
+    check('warnings: remembered, so it comes once', [notified(), warningNotes()], ['["test.orange.wind"]', []]);
+    // Forget it and start the widgets again: the orange one comes, the
+    // yellow one does not.
+    GLib.unlink(stateFile);
+    settings.set_boolean('widgets', false);
+    settings.set_boolean('widgets', true);
+    check('warnings: one notification, for the orange one only',
+        await waitFor(() => warningNotes().length > 0, 10000) ? warningNotes() : [warningNotes(), notified()],
+        [['Orange warning: Wind', 2]]);
+    // A person reading Ukrainian: the service gave no Ukrainian words, so
+    // Gloxi translates them and the translation stands above the original.
+    const alerts = theWidgets()?.weatherAlerts;
+    alerts._languages = ['uk_UA.UTF-8', 'uk'];
+    alerts._caps.clear();
+    alerts.update();
+    check('warnings: Gloxi\u2019s translation above the unchanged original',
+        await waitFor(() => alertTexts().length === 8, 10000)
+            ? alertTexts().map(s => s.replace(/(\b[A-Z][a-z]{2} )?\d{1,2}:\d{2}/g, 'T'))
+            : [alertTexts(), alerts.status],
+        ['Orange warning: Wind · until T', '[uk] Orange test warning. Test zone', 'Orange test warning. Test zone',
+            'Test Service · issued T · translated by Gloxi',
+            'Yellow warning: Fog · until T', '[uk] Yellow Fog Warning issued for Spain - Área de prueba',
+            'Yellow Fog Warning issued for Spain - Área de prueba',
+            'EUMETNET – MeteoAlarm · issued T · translated by Gloxi']);
+    check('warnings: Gloxi was asked for Ukrainian, once per text',
+        gloxiRequests.map(r => [r.method, r.params.language]), [['text.translate', 'uk'], ['text.translate', 'uk']]);
+    alerts.update();
+    await sleep(1000);
+    check('warnings: a translation is kept, not asked for again', gloxiRequests.length, 2);
+    settings.set_boolean('weather-alerts', false);
+    check('warnings: off by the setting', await waitFor(() => !widget('vilnaWeatherAlerts')?.visible, 3000), true);
+    settings.set_boolean('weather-alerts', true);
+    check('sky: the icon gives way to the sky', widget('vilnaWeatherWidget')?.get_last_child()
+        .get_children().flatMap(c => c.get_children?.() ?? []).some(c => c instanceof St.Icon && c.visible), false);
+    settings.set_value('weather-location', new GLib.Variant('(sdd)', ['València', 39.47, -0.38]));
+    check('widgets: a chosen place wins', await waitFor(() => weatherText()[2]?.startsWith('València · '), 5000), true);
+    settings.set_value('weather-location', new GLib.Variant('(sdd)', ['', 0, 0]));
+    await waitFor(() => weatherText()[2]?.startsWith('Madrid · '), 5000);
+    settings.set_boolean('weather', false);
+    await sleep(200);
+    check('widgets: weather can be hidden', widget('vilnaWeatherWidget')?.visible, false);
+    settings.set_boolean('weather', true);
+
+    check('widgets: Копії not set up yet', texts(widget('vilnaBackupWidget'))[0], 'Backups are not set up');
+    const dir = GLib.build_filenamev([GLib.get_user_state_dir(), 'vilna-backup']);
+    GLib.mkdir_with_parents(dir, 0o700);
+    const now = Math.floor(Date.now() / 1000);
+    GLib.file_set_contents(`${dir}/runs.jsonl`, `${JSON.stringify({time: now, kind: 'backup', ok: true})}\n`);
+    check('widgets: Копії saved today', await waitFor(() => texts(widget('vilnaBackupWidget'))[0] === 'Backups: all saved', 5000)
+        ? texts(widget('vilnaBackupWidget'))[1]?.startsWith('Last: today at ') : texts(widget('vilnaBackupWidget')), true);
+    check('widgets: calendar card says nothing is planned', texts(widget('vilnaCalendarWidget')).slice(1), ['Nothing planned']);
+    check('widgets: Gloxi card', texts(widget('vilnaGloxiWidget')).slice(0, 2), ['GLOXI', 'How can I help?']);
+
+    Main.overview.show();
+    await waitFor(() => Main.overview.visible && !Main.overview.animationInProgress);
+    check('widgets: hidden in the overview', widgetsRoot()?.visible, false);
+    Main.overview.hide();
+    await waitFor(() => !Main.overview.visible && !Main.overview.animationInProgress);
+    check('widgets: back after the overview', widgetsRoot()?.visible, true);
+
+    settings.set_boolean('widgets', false);
+    await sleep(200);
+    check('widgets: off by the setting', widgetsRoot(), null);
+    settings.set_boolean('widgets', true);
+    await sleep(200);
+    check('widgets: on again', Boolean(widgetsRoot()), true);
+}
+
+async function loginBackground() {
+    const group = new St.Widget({name: 'lockDialogGroup'});
+    Main.layoutManager.uiGroup.add_child(group);
+    await sleep(100);
+    const node = group.get_theme_node();
+    check('login screen: Vilna background',
+        node.get_background_image()?.get_path() ?? null,
+        '/usr/share/backgrounds/vilna/vilna-login.jpg');
+    check('login screen: night colour beneath it', node.get_background_color().to_string(), '#0e1a2eff');
+    group.destroy();
+}
+
 async function run() {
+    spyEases();
     const ok = await waitFor(() => Main.extensionManager.lookup(UUID)?.state === ENABLED, 10000);
     check('extension enabled', ok, true);
     check('no extension error', Main.extensionManager.lookup(UUID)?.error ?? '', '');
@@ -265,10 +610,49 @@ async function run() {
     await passwordFields();
     if (mode === 'gdm') {
         check('login screen: no D-Bus service', await nameOwned('io.github.stdenis1980.VilnaShell'), false);
+        check('login screen: no dock style class',
+            ['vilna-light', 'vilna-dark'].some(c => Main.uiGroup.has_style_class_name(c)), false);
+        check('login screen: no widgets', widgetsRoot(), null);
+        await loginBackground();
         return;
     }
+    await dockColours();
+    await widgets();
     await locked();
     await windows();
+    await skyMotion();
+}
+
+// A stand-in for gloxid's text.translate (gloxi/docs/service-protocol.md)
+// on GLOXI_SERVICE_SOCKET: it answers "[uk] " + the text and keeps the
+// requests, so the checks see what the weather card asked.
+const gloxiRequests = [];
+function fakeGloxid() {
+    const path = GLib.getenv('GLOXI_SERVICE_SOCKET');
+    if (!path)
+        return;
+    const service = new Gio.SocketService();
+    service.add_address(Gio.UnixSocketAddress.new(path), Gio.SocketType.STREAM, Gio.SocketProtocol.DEFAULT, null);
+    service.connect('incoming', (_s, conn) => {
+        const input = new Gio.DataInputStream({base_stream: conn.get_input_stream()});
+        input.read_line_async(GLib.PRIORITY_DEFAULT, null, (_i, result) => {
+            try {
+                const [line] = input.read_line_finish_utf8(result);
+                const request = JSON.parse(line);
+                gloxiRequests.push(request);
+                // An event first, as a busy gloxid may send: it is not the answer.
+                const lines = [{event: 'busy', busy: false},
+                    {id: request.id, result: {text: `[${request.params.language}] ${request.params.text}`}}];
+                conn.get_output_stream().write_all(new TextEncoder().encode(
+                    lines.map(l => `${JSON.stringify(l)}\n`).join('')), null);
+            } catch (e) {
+                console.warn(`vilna fake gloxid: ${e.message}`);
+            }
+        });
+        return true;
+    });
+    service.start();
+    globalThis.__vilnaFakeGloxid = service;
 }
 
 export default class VilnaTest extends Extension {
@@ -277,6 +661,7 @@ export default class VilnaTest extends Extension {
         if (globalThis.__vilnaTestRan)
             return;
         globalThis.__vilnaTestRan = true;
+        fakeGloxid();
         run().catch(e => check('no exception', `${e}\n${e.stack}`, null)).finally(flush);
     }
 

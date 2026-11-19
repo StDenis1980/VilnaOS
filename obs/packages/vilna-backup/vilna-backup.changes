@@ -1,0 +1,19 @@
+-------------------------------------------------------------------
+Tue Nov 10 09:20:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Folders named .snapshots (Mitos snapshots of the home, ADR 0026)
+  never go into backups
+
+-------------------------------------------------------------------
+Tue Nov 10 09:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Require the secret-tool package instead of /usr/bin/secret-tool:
+  OBS does not resolve that file path for KIWI images.
+
+-------------------------------------------------------------------
+Mon Nov  9 17:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: vilna-backup (command line and timers) and the
+  Backups window vilna-backup-gui: turn backups on (what, where, how
+  often, the recovery sheet typed back), state, back up now, restore
+  into a new folder. Ukrainian translation of the window.

@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "vilna-reports-server"
+description = "reports.vilnaos.com: receives Vilna crash reports and feedback, keeps them 90 days in the EU (ADR 0018)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "vilna-reports-server"
+path = "src/main.rs"
+
+[dependencies]
+vilna-reports-protocol.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+axum = { version = "0.8", default-features = false, features = ["http1", "json", "form", "query", "tokio"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "time", "sync"] }
+tower-http = { version = "0.6", features = ["limit", "timeout"] }
+# SQLite is built in (public domain), so the server needs nothing else on the host.
+rusqlite = { version = "0.37", features = ["bundled"] }
+# GitHub issues for confirmed crashes. rustls with ring, and the system's CA
+# certificates (Debian ca-certificates) instead of the bundled webpki-roots,
+# whose CDLA-Permissive-2.0 licence is not one we use.
+ureq = { version = "3", default-features = false, features = ["rustls-no-provider", "_ring", "platform-verifier", "json"] }
+getrandom = "0.3"
+base64 = "0.22"
+serde_urlencoded = "0.7"
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+
+[lints]
+workspace = true

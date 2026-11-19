@@ -1,0 +1,104 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Finish the home of a new person when useradd could not (ADR 0026).
+#
+# On Vilna, useradd makes each new home a btrfs subvolume of its own
+# (BTRFS_SUBVOLUME_HOME=yes), so Mitos can snapshot it. useradd creates
+# the subvolume by running "btrfs subvolume create", and the root of a
+# new subvolume gets no SELinux label: it reads as unlabeled_t. useradd
+# runs confined (useradd_t), which may not touch unlabeled_t, so its
+# chown fails (it only warns), the skeleton is not copied and the home
+# stays root:root 0755. The person then cannot keep any setting: no
+# ~/.config, ~/.cache or ~/.local, no dconf, keyring or GNOME Shell
+# state (VM test of Build13.2).
+#
+# vilna-home-setup.path runs this whenever /home changes, and
+# vilna-home-setup.service also on every boot, as root outside useradd's
+# confinement. For each home right under /home that is still
+# unlabeled_t it waits for useradd to finish, then does what useradd
+# could not: copies the skeleton without replacing anything, gives the
+# home to its person, sets HOME_MODE and labels it all (restorecon).
+# A home with a label is never touched, so the person's own files and
+# a Mitos ~/.snapshots are safe; ~/.snapshots is skipped anyway.
+#
+# Tests point VILNA_HOME_ROOT at a scratch folder.
+set -u
+
+home_root=${VILNA_HOME_ROOT:-/home}
+# useradd copies /etc/skel, then the vendor skeleton /usr/etc/skel.
+skel_dirs=${VILNA_SKEL_DIRS:-/etc/skel /usr/etc/skel}
+login_defs=${VILNA_LOGIN_DEFS:-/etc/login.defs /etc/login.defs.d/*.defs /usr/etc/login.defs /usr/etc/login.defs.d/*.defs}
+wait_seconds=${VILNA_USERADD_WAIT:-60}
+
+if ! command -v selinuxenabled >/dev/null 2>&1 || ! selinuxenabled; then
+    exit 0
+fi
+
+# The type of a file's SELinux label, e.g. user_home_dir_t.
+label_type() {
+    stat -c %C -- "$1" 2>/dev/null | cut -d: -f3
+}
+
+# HOME_MODE from login.defs, as useradd reads it; the first file wins.
+home_mode() {
+    for defs in $login_defs; do
+        [ -r "$defs" ] || continue
+        mode=$(sed -n 's/^[[:space:]]*HOME_MODE[[:space:]]\{1,\}\([0-7]\{3,4\}\)[[:space:]]*$/\1/p' "$defs" | tail -n 1)
+        if [ -n "$mode" ]; then
+            echo "$mode"
+            return
+        fi
+    done
+    echo 0700
+}
+
+# Give useradd (and AccountsService around it) time to finish, so it
+# does not race with the fixes below.
+wait_for_useradd() {
+    waited=0
+    while pgrep -x useradd >/dev/null 2>&1 && [ "$waited" -lt "$wait_seconds" ]; do
+        sleep 1
+        waited=$((waited + 1))
+    done
+}
+
+status=0
+waited_once=no
+for home in "$home_root"/*; do
+    [ -d "$home" ] && [ ! -L "$home" ] || continue
+    [ "$(label_type "$home")" = unlabeled_t ] || continue
+
+    if [ "$waited_once" = no ]; then
+        wait_for_useradd
+        waited_once=yes
+    fi
+
+    # The person whose home this is, from passwd (useradd writes it
+    # before it makes the home).
+    entry=$(getent passwd | awk -F: -v h="$home" '$6 == h && $3 >= 1000 { print $3 ":" $4; exit }')
+    if [ -z "$entry" ]; then
+        echo "vilna-home-setup: $home belongs to nobody in passwd, only labelling it" >&2
+        restorecon -F -- "$home" || status=1
+        continue
+    fi
+
+    echo "vilna-home-setup: finishing $home for uid ${entry%%:*}" >&2
+    # Only a home useradd left to root gets the skeleton and a new owner:
+    # anything else already belongs to someone.
+    if [ "$(stat -c %u -- "$home")" = 0 ]; then
+        for skel in $skel_dirs; do
+            [ -d "$skel" ] || continue
+            cp -R --update=none --preserve=mode,timestamps -- "$skel"/. "$home"/ || status=1
+        done
+        find "$home" -path "$home/.snapshots" -prune -o -exec chown -h -- "$entry" {} + || status=1
+        chmod -- "$(home_mode)" "$home" || status=1
+    fi
+    if [ -e "$home/.snapshots" ]; then
+        restorecon -RF -e "$home/.snapshots" -- "$home" || status=1
+    else
+        restorecon -RF -- "$home" || status=1
+    fi
+done
+
+exit "$status"

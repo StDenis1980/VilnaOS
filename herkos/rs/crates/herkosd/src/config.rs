@@ -88,7 +88,7 @@ fn defaults(owner: &Owner) -> Config {
         confirm_timeout: 120.0,
         max_level: MAX_LEVEL,
         keros_model: Some("http://127.0.0.1:8080/v1".to_owned()),
-        keros_budget: 20.0,
+        keros_budget: 60.0,
         state_dir: owner.state_dir.clone(),
     }
 }

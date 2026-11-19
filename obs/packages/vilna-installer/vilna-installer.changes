@@ -1,0 +1,189 @@
+-------------------------------------------------------------------
+Wed Nov 18 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- sdbootutil-enroll waits for /boot/efi (RequiresMountsFor= in the
+  installer's drop-in): it once started 0.2 s before the ESP was
+  mounted, failed and kept the enrollment key in slot 0 (V2 VM test
+  of Build12.2)
+
+-------------------------------------------------------------------
+Tue Nov 17 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The TPM2 credentials for the first boot are encrypted by the new
+  system's systemd-creds (in a chroot), not the live one: a newer live
+  systemd (262.2) wrote a format the installed one (261.4) could not
+  read, so the first boot left the installer's key in slot 0 (V2 VM
+  test of Build10.19)
+
+-------------------------------------------------------------------
+Tue Nov 17 23:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Herkos screen (docs/adr/0029): «Install» counts only a real press,
+  from the keyboard or the pointer, not an AT-SPI «click»; the recovery
+  key is drawn, not given to accessibility software, and «Read the key
+  aloud» says it through speech-dispatcher (recommends python3-speechd);
+  the last group is typed into a password field.
+
+-------------------------------------------------------------------
+Tue Nov 17 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Classic wizard: a VPN step after Privacy (ADR 0027 section 2): sign
+  in to Proton VPN, create a free Proton account, Mullvad, or skip; none
+  chosen in advance, in all ten languages. The choice goes to the new
+  account for Gloxi (~/.local/state/gloxi/vpn-intro.json); no account
+  or password is ever asked here.
+- Radio choices in the wizard (network, privacy, VPN) are one keyboard
+  stop each, on the radio button, so Orca says its state.
+- The Herkos screen shows the VPN choice when the wizard has one.
+
+-------------------------------------------------------------------
+Tue Nov 17 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- A theme button (sun / moon) on every installer screen: the first
+  screen, the conversation, the wizard, the Herkos screen and the
+  progress window. It switches between the night blue and the cream
+  theme; the choice holds in every installer window for the rest of
+  the installation (a file in the runtime directory).
+- Until the button is pressed the theme follows the clock: light from
+  07:00 to 19:59, night blue the rest of the day, checked every
+  minute. On the live image the clock is in UTC until the plan has a
+  time zone.
+
+-------------------------------------------------------------------
+Tue Nov 17 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The installer's windows are night blue (#0E1A2E ground), as in the
+  designer's installer screens, instead of libadwaita's white: they
+  prefer the dark theme and redefine its surfaces
+  (data/style/installer-dark.css). A system set to light explicitly
+  gets warm cream surfaces with night blue text
+  (installer-light.css). Herkos, Gloxi and «Копії» are unchanged.
+
+-------------------------------------------------------------------
+Tue Nov 17 17:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The live session takes the plan's time zone as soon as the plan has
+  one (timedatectl set-timezone): the top bar showed UTC time on a
+  real laptop.
+- The first screen puts the chosen language's keyboard layout first in
+  the live session (us stays second): Ukrainian could not be typed
+  until the conversation's language step was over.
+
+-------------------------------------------------------------------
+Tue Nov 17 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Gloxi in the installer: the system prompt and the functions stay the
+  same for the whole conversation, and the step, the plan and the disk
+  data come as installer notes at the end, only when they change; the
+  history is cut back seldom. llama-server now reads only the new part
+  of the prompt: on KLX every turn read 1,100-1,250 tokens again
+  (43-56 s, S7 on Vilna-Live Build10.11).
+
+-------------------------------------------------------------------
+Tue Nov 17 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Put virtio_input into the first initrd: the host-only initrd left
+  it out, and a VM with a virtio keyboard could not type the
+  passphrase or the recovery key at boot.
+
+-------------------------------------------------------------------
+Mon Nov 16 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Progress screen: a branch with leaves and cornflowers grows with the
+  percent (branch.py, drawn with cairo: requires python3-gobject-cairo);
+  when Vilna is installed the Blavet sign sits at its end and the bar
+  and the list of steps give way to «Restart». Designer frames in
+  data/branch/ replace the drawing; reduced animation jumps.
+- The Blavet sign on the first screen and on «Done» is now Dmytro
+  Sizmin's final sign (CC-BY-SA-4.0).
+
+-------------------------------------------------------------------
+Mon Nov 16 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Require udev for systemd-repart: OBS does not resolve the file
+  dependency /usr/bin/systemd-repart.
+
+-------------------------------------------------------------------
+Sun Nov 15 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Install engine after the first VM test: a mount namespace and a
+  session keyring of its own (cr_root is not kept busy, sdbootutil finds
+  its keys under sudo), wipefs before systemd-repart (installing over an
+  earlier install), keyring entries dropped whatever happens, no
+  systemd-growfs on the read-only snapshot. TPM2 is sealed on the first
+  boot of the new system (sdbootutil-enroll.service): the live boot's
+  measurements cannot predict it. Require the TSS libraries systemd loads.
+- sdbootutil with --disable-predictions for TPM2 (the first boot
+  predicts), the GPT "grow file system" attribute cleared with sfdisk,
+  no control characters in the error shown at step 13.
+
+-------------------------------------------------------------------
+Sun Nov 15 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The install engine (vilna-installer-engine, as root through sudo
+  after the Herkos screen): systemd-repart copies the system partition
+  of the Vilna disk image block by block into LUKS2 (recovery key, TPM2
+  or a passphrase, as Aeon), the btrfs grows to the disk and gets a
+  UUID of its own, the model is copied and checked with sha256sum,
+  languages, keyboards, time zone, computer name, the account and the
+  Wi-Fi connection are set up, and sdbootutil installs the boot loader
+- Step 13 on the screen: progress.json as a progress window, then
+  «Restart»; a failure says whether the disk was already written
+- Gloxi is told when the computer has no TPM 2.0, and a change it
+  says it made without calling the function gets one more round
+
+-------------------------------------------------------------------
+Thu Nov 12 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The model wakes once GNOME Shell shows the first screen (it gets the
+  keyboard), at most 30 s after the code is read: woken at map, it kept
+  the window off the screen for 11 s on the live image
+
+-------------------------------------------------------------------
+Thu Nov 12 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The first screen reads the code of the chat and the wizard while
+  the person picks a language, and wakes the model only after that:
+  on the live image the import waited 47 s behind the model
+
+-------------------------------------------------------------------
+Wed Nov 11 20:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The first screen stays until the chat window is on the screen and
+  takes one press; each step towards the chat logs the seconds since
+  boot, and SIGUSR1 writes the Python stacks to the journal
+
+-------------------------------------------------------------------
+Wed Nov 11 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The classic wizard without the assistant (vilna-installer-wizard):
+  the same steps and plan with no model, a partition editor for
+  manual layout; «Without the assistant» opens it in the same program
+  instead of ending with status 3
+- Step 12: the summary of the plan and the Herkos confirmation
+  screen (vilna-installer-confirm, its own process): every change of
+  the disks, the recovery key typed back, the plan confirmed only
+  there; requires tpm2.0-tools
+- Disk encryption for the engine: LUKS2 with systemd-repart, the
+  recovery key, then TPM2 or a passphrase, as in Aeon
+
+-------------------------------------------------------------------
+Wed Nov 11 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The chat window shows at once and says Gloxi is waking up while
+  the installer's tools start (they froze the window for ~8 s on
+  the live image); a double click on Change asks once
+
+-------------------------------------------------------------------
+Tue Nov 10 08:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The conversation with Gloxi (steps 1-13): chat with the plan beside
+  it, protected password fields; vilna-installer-chat; requires
+  vilna-mcp-installer
+
+-------------------------------------------------------------------
+Mon Nov  9 21:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: vilna-installer, the first installer screen
+  (languages, screen reader, with or without Gloxi) for the live
+  image Vilna-Live.

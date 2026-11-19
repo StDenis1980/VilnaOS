@@ -1,0 +1,125 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The first installer screen (cs). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Welcome to Vilna"
+msgstr "Vítejte v systému Vilna"
+
+msgid "Blavet release"
+msgstr "Vydání Blavet"
+
+msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
+msgstr "Vyberte jazyk. Potom vám já, Gloxi, pomohu nainstalovat systém, nebo můžete projít kroky sami."
+
+msgid "Screen reader"
+msgstr "Čtečka obrazovky"
+
+msgid "Without the assistant"
+msgstr "Bez asistenta"
+
+msgid "Continue with Gloxi"
+msgstr "Pokračovat s Gloxi"
+
+msgid "Install Vilna"
+msgstr "Instalace Vilna"
+
+msgid "Other languages"
+msgstr "Další jazyky"
+
+msgid "Search for a language"
+msgstr "Hledat jazyk"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Soukromí"
+
+msgid "Cloud model off until the first login"
+msgstr "Cloudový model vypnutý do prvního přihlášení"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi běží přímo na tomto počítači a to, co mu řeknete, zůstává tady. Cloudový model je teď vypnutý; můžete si ho vybrat po prvním přihlášení a pak brána soukromí skryje jména a čísla dřív, než cokoli opustí počítač."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi běží přímo na tomto počítači a to, co mu řeknete, zůstává tady. Cloudový model je teď vypnutý; můžete si ho vybrat po prvním přihlášení a pak brána soukromí skryje jména a čísla dřív, než cokoli opustí počítač. Jedna otázka tady patří jen vám, proto za vás neodpovídám: vyberte níže."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Když program spadne, poslat nám hlášení o pádu?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Hlášení o pádu říká, který program spadl a na kterém místě svého kódu. Nikdy neobsahuje vaše soubory, co jste psali, vaše jméno ani adresu počítače. Každé hlášení si můžete přečíst a tuto odpověď později změnit v Nastavení."
+
+msgid "Send automatically"
+msgstr "Posílat automaticky"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Hlášení odcházejí sama; každé si můžete přečíst."
+
+msgid "Ask me every time"
+msgstr "Pokaždé se zeptat"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Po pádu se oznámení zeptá, zda hlášení poslat."
+
+msgid "Never"
+msgstr "Nikdy"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Hlášení zůstanou na tomto počítači; i tak můžete kterékoli poslat sami."
+
+msgid "What is in a report"
+msgstr "Co je v hlášení"
+
+msgid "Choose an answer about crash reports."
+msgstr "Vyberte odpověď ohledně hlášení o pádech."
+
+msgid "Crash reports: {answer}"
+msgstr "Hlášení o pádech: {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Přepnout na tmavý motiv"
+
+msgid "Switch to the light theme"
+msgstr "Přepnout na světlý motiv"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "Vaše připojení je už chráněné: Vilna šifruje DNS, takže síť, ve které jste, nevidí, jaké stránky hledáte."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Chcete ještě větší ochranu s VPN?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "VPN skrývá váš provoz před sítí, ve které jste (kavárna, hotel), a vaši adresu před weby. Poskytovatel VPN vidí, kam chodíte, proto nabízíme jen ověřené."
+
+msgid "Sign in to Proton VPN"
+msgstr "Přihlásit se do Proton VPN"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "Po prvním přihlášení Gloxi otevře aplikaci Proton VPN a vy se přihlásíte v ní."
+
+msgid "Create a free Proton account"
+msgstr "Vytvořit bezplatný účet Proton"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 zemí, 1 zařízení najednou. Po prvním přihlášení Gloxi otevře registrační stránku Protonu a potom aplikaci."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Mám číslo účtu nebo kód Mullvad"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Pro největší anonymitu: bez e-mailu, jen číslo účtu. Po prvním přihlášení Gloxi otevře aplikaci Mullvad."
+
+msgid "Skip"
+msgstr "Přeskočit"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "VPN můžete zapnout později: požádejte Gloxi nebo napište /vpn v jeho okně."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Přihlašujete se jen v aplikaci samotného poskytovatele: Vilna a Gloxi nikdy nevidí vaše heslo, číslo účtu ani kód."
+
+msgid "Choose an answer about the VPN."
+msgstr "Vyberte odpověď ohledně VPN."

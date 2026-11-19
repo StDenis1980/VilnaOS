@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# A new home under /home (GNOME Initial Setup, GNOME Settings, useradd):
+# finish it if useradd could not (vilna-home-setup).
+[Unit]
+Description=Watch /home for new homes to finish
+
+[Path]
+PathChanged=/home
+
+[Install]
+WantedBy=paths.target

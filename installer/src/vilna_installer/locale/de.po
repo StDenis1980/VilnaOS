@@ -1,0 +1,125 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The first installer screen (de). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Welcome to Vilna"
+msgstr "Willkommen bei Vilna"
+
+msgid "Blavet release"
+msgstr "Version Blavet"
+
+msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
+msgstr "Wählen Sie eine Sprache. Danach helfe ich, Gloxi, Ihnen bei der Installation, oder Sie gehen die Schritte selbst durch."
+
+msgid "Screen reader"
+msgstr "Bildschirmleser"
+
+msgid "Without the assistant"
+msgstr "Ohne Assistent"
+
+msgid "Continue with Gloxi"
+msgstr "Weiter mit Gloxi"
+
+msgid "Install Vilna"
+msgstr "Vilna installieren"
+
+msgid "Other languages"
+msgstr "Weitere Sprachen"
+
+msgid "Search for a language"
+msgstr "Sprache suchen"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Datenschutz"
+
+msgid "Cloud model off until the first login"
+msgstr "Cloud-Modell bis zur ersten Anmeldung aus"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi arbeitet direkt auf diesem Computer, und was Sie ihm sagen, bleibt hier. Ein Cloud-Modell ist jetzt aus; Sie können es nach der ersten Anmeldung wählen, und dann verbirgt das Datenschutz-Gateway Namen und Nummern, bevor etwas den Computer verlässt."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi arbeitet direkt auf diesem Computer, und was Sie ihm sagen, bleibt hier. Ein Cloud-Modell ist jetzt aus; Sie können es nach der ersten Anmeldung wählen, und dann verbirgt das Datenschutz-Gateway Namen und Nummern, bevor etwas den Computer verlässt. Eine Frage hier beantworten nur Sie, deshalb antworte ich nicht für Sie: Wählen Sie unten."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Wenn ein Programm abstürzt, uns einen Absturzbericht senden?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Ein Absturzbericht sagt, welches Programm abgestürzt ist und an welcher Stelle seines Codes. Er enthält nie Ihre Dateien, was Sie getippt haben, Ihren Namen oder die Adresse des Computers. Sie können jeden Bericht lesen und diese Antwort später in den Einstellungen ändern."
+
+msgid "Send automatically"
+msgstr "Automatisch senden"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Berichte gehen von selbst; Sie können jeden lesen."
+
+msgid "Ask me every time"
+msgstr "Jedes Mal fragen"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Nach einem Absturz fragt eine Benachrichtigung, ob der Bericht gesendet werden soll."
+
+msgid "Never"
+msgstr "Nie"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Berichte bleiben auf diesem Computer; Sie können trotzdem selbst einen senden."
+
+msgid "What is in a report"
+msgstr "Was in einem Bericht steht"
+
+msgid "Choose an answer about crash reports."
+msgstr "Wählen Sie eine Antwort zu Absturzberichten."
+
+msgid "Crash reports: {answer}"
+msgstr "Absturzberichte: {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Zum dunklen Design wechseln"
+
+msgid "Switch to the light theme"
+msgstr "Zum hellen Design wechseln"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "Ihre Verbindung ist bereits geschützt: Vilna verschlüsselt DNS, sodass das Netzwerk, in dem Sie sind, nicht sieht, welche Websites Sie aufrufen."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Möchten Sie mit einem VPN noch mehr Schutz?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "Ein VPN verbirgt Ihren Datenverkehr vor dem Netzwerk, in dem Sie sind (ein Café, ein Hotel), und Ihre Adresse vor Websites. Der VPN-Anbieter sieht, wohin Sie gehen, deshalb schlagen wir nur bewährte Anbieter vor."
+
+msgid "Sign in to Proton VPN"
+msgstr "Bei Proton VPN anmelden"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "Nach der ersten Anmeldung öffnet Gloxi die App Proton VPN, und Sie melden sich dort an."
+
+msgid "Create a free Proton account"
+msgstr "Kostenloses Proton-Konto erstellen"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 Länder, 1 Gerät gleichzeitig. Nach der ersten Anmeldung öffnet Gloxi die Registrierungsseite von Proton, danach die App."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Ich habe eine Mullvad-Kontonummer oder einen Code"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Für die größte Anonymität: keine E-Mail, nur eine Kontonummer. Nach der ersten Anmeldung öffnet Gloxi die App Mullvad."
+
+msgid "Skip"
+msgstr "Überspringen"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "Sie können ein VPN später einschalten: Fragen Sie Gloxi oder geben Sie /vpn in seinem Fenster ein."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Sie melden sich nur in der App des Anbieters selbst an: Vilna und Gloxi sehen nie Ihr Passwort, Ihre Kontonummer oder Ihren Code."
+
+msgid "Choose an answer about the VPN."
+msgstr "Wählen Sie eine Antwort zum VPN."

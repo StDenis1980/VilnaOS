@@ -25,6 +25,7 @@ from gloxi.cli import model_consent_text, split_command, upgrade_consent_text
 from gloxi.config import Settings
 from gloxi.engine import (
     LARGE_MODEL,
+    LARGE_MODEL_MIN_RAM,
     Engine,
     EngineError,
     Plan,
@@ -34,8 +35,11 @@ from gloxi.engine import (
     total_ram,
 )
 from gloxi.feedback import FeedbackTalk, wants_feedback
+from gloxi.gui.cards import card_view
 from gloxi.llm import ModelError, ModelUnavailable
-from gloxi.router import CloudNotAllowed, Route, Router
+from gloxi.router import CloudNotAllowed, NetworkRefused, Route, Router
+from gloxi.tools import ToolOutcome
+from gloxi.vpn_intro import VpnIntro
 
 # Runs a callable on a worker; replaced by a synchronous runner in tests.
 Runner = Callable[[Callable[[], None]], None]
@@ -56,7 +60,27 @@ class ChatView(Protocol):
     def show_error(self, text: str) -> None: ...
     def set_busy(self, busy: bool) -> None: ...
     def show_note(self, text: str) -> None: ...
+    # Optional: a view without cards (the terminal) gets a note instead.
+    # def show_action(self, card: dict) -> None: ...
     def open_uri(self, url: str) -> None: ...
+    def launch_app(self, app_id: str) -> None: ...
+
+
+def show_action(view: object, card: dict) -> None:
+    """An action card if the view draws cards, else the same as a short note."""
+    draw = getattr(view, "show_action", None)
+    if callable(draw):
+        draw(card)
+    else:
+        view.show_note(card_view(card).title)  # type: ignore[attr-defined]
+
+
+def show_outcome(view: object, outcome: ToolOutcome) -> None:
+    draw = getattr(view, "show_action", None)
+    if callable(draw):
+        draw(outcome.card())
+    else:
+        view.show_note(outcome.summary())  # type: ignore[attr-defined]
 
 
 def route_label(route: Route, masks_cloud: bool) -> str:
@@ -124,14 +148,16 @@ class ChatController:
         runner: Runner = thread_runner,
         intro: BackupIntro | None = None,
         feedback: FeedbackTalk | None = None,
+        vpn: VpnIntro | None = None,
     ) -> None:
         self.conversation = conversation
         self.feedback = feedback or FeedbackTalk()
         self.view = view
         self.runner = runner
         self.intro = intro
+        self.vpn = vpn
         self.busy = False
-        conversation.on_tool = lambda outcome: view.show_note(outcome.summary())
+        conversation.on_tool = lambda outcome: show_outcome(view, outcome)
 
     def submit(self, raw: str) -> bool:
         """Handle one line of input. Returns False if it was ignored."""
@@ -140,6 +166,8 @@ class ChatController:
             return False
         if text == "/backup":
             return self.offer_intro(always=True)
+        if text == "/vpn":
+            return self.offer_vpn(always=True)
         if self.feedback.active:
             self.view.show_user_message(text)
             if text == "/cancel":
@@ -153,6 +181,9 @@ class ChatController:
         if self.intro and self.intro.active:
             self.view.show_user_message(text)
             return self._intro_step(lambda: self.intro.answer(text))
+        if self.vpn and self.vpn.active:
+            self.view.show_user_message(text)
+            return self._intro_step(lambda: self.vpn.answer(text), _("Gloxi, VPN"))
         force, text = split_command(text)
         if not text:
             return False
@@ -170,16 +201,39 @@ class ChatController:
         return True
 
     def offer_intro(self, *, always: bool = False) -> bool:
-        """The backup talk (design.md 2a): on start if due, or on /backup."""
-        if self.busy or self.intro is None:
-            if always and self.intro is None:
-                self.view.show_error(_("Backups need Herkos, and it is not running."))
-            return False
-        if not always and not self.intro.due():
-            return False
-        return self._intro_step(self.intro.start)
+        """The first-run talks: on start the one that is due, or /backup.
 
-    def _intro_step(self, step: Callable[[], Turn | None]) -> bool:
+        One talk per start: backups first (design.md 2a), the VPN (ADR 0027)
+        the next time, so a new person is not asked everything at once. A
+        VPN the person chose in the installer wizard comes first: that
+        question is answered, and installer.md step 14 puts the first-start
+        steps before backups.
+        """
+        if self.busy:
+            return False
+        if not always and self.vpn is not None and self.vpn.chosen():
+            return self.offer_vpn()
+        if self.intro is None:
+            if always:
+                self.view.show_error(_("Backups need Herkos, and it is not running."))
+                return False
+        elif always or self.intro.due():
+            return self._intro_step(self.intro.start)
+        return False if always else self.offer_vpn()
+
+    def offer_vpn(self, *, always: bool = False) -> bool:
+        """The VPN talk (ADR 0027): on start if due, or on /vpn."""
+        if self.busy or self.vpn is None:
+            if always and self.vpn is None:
+                self.view.show_error(
+                    _("The VPN needs Vilna and Herkos, and Herkos is not running.")
+                )
+            return False
+        if not always and not self.vpn.due():
+            return False
+        return self._intro_step(self.vpn.start, _("Gloxi, VPN"))
+
+    def _intro_step(self, step: Callable[[], Turn | None], label: str | None = None) -> bool:
         # Herkos may show its window and wait for the person: off the UI thread.
         self.busy = True
         self.view.set_busy(True)
@@ -188,9 +242,13 @@ class ChatController:
             try:
                 turn = step()
                 if turn is not None:
-                    self.view.start_answer(_("Gloxi, backups"))
+                    self.view.start_answer(label or _("Gloxi, backups"))
                     self.view.append_answer(turn.render())
                     self.view.finish_answer()
+                    if turn.open_uri:
+                        self.view.open_uri(turn.open_uri)
+                    if turn.launch:
+                        self.view.launch_app(turn.launch)
             finally:
                 self.busy = False
                 self.view.set_busy(False)
@@ -225,6 +283,49 @@ class ChatController:
     def reset(self) -> None:
         if not self.busy:
             self.conversation.reset()
+            self.warm()
+
+    def warm(self) -> None:
+        """Let the local model read the prompt and the functions before the next message."""
+        self.runner(self.conversation.warm)
+
+    # -- the model switcher and the header (the same calls as RemoteController) ---
+
+    def choices(self) -> list[ModelChoice]:
+        return model_choices(self.conversation.router)
+
+    def current_choice(self) -> str:
+        return current_choice(self.conversation.router)
+
+    def set_mode(self, mode: str) -> bool:
+        """Pick auto, local or cloud; False if the cloud is off or the mode unknown.
+
+        Turning the cloud on in the middle of a conversation that has stayed on
+        this computer keeps what was said here until the person decides
+        (``held_back``, ``share_history``; brief 10.3): a switch alone never
+        sends earlier messages away.
+        """
+        conv = self.conversation
+        before = current_choice(conv.router)
+        try:
+            conv.router.set_mode(mode)
+        except (CloudNotAllowed, ValueError):
+            return False
+        if before == "local" and mode != "local" and conv.history and not conv.sent_to_cloud:
+            conv.hold_history_from_cloud()
+        return True
+
+    def held_back(self) -> int:
+        """How many earlier messages the cloud does not get (0: nothing to decide)."""
+        return self.conversation.cloud_from
+
+    def share_history(self, share: bool) -> None:
+        """The person's answer: send the earlier messages to the cloud too, or not."""
+        if share:
+            self.conversation.share_history_with_cloud()
+
+    def cloud_status(self) -> str:
+        return cloud_status(self.conversation)
 
     def _stream(self, text: str, route: Route) -> None:
         try:
@@ -239,6 +340,10 @@ class ChatController:
                 self.view.show_error(_("Cannot reach the cloud model."))
         except ModelError as exc:
             self.view.show_error(_("The model returned an error: {error}").format(error=exc))
+        except NetworkRefused as exc:
+            self.view.show_error(str(exc))
+        except CloudNotAllowed:
+            self.view.show_error(_("The cloud is turned off in the settings."))
         finally:
             self.view.finish_answer()
             self.busy = False
@@ -269,10 +374,13 @@ class ModelSetup:
         engine_type: Callable[..., Engine] = Engine,
         ram: Callable[[], int | None] = total_ram,
         measure: Callable[..., upgrade.SpeedResult] = upgrade.measure_speed,
+        machine: Callable[..., upgrade.Machine] = upgrade.this_machine,
     ) -> None:
         self.settings = settings
         self.ram = ram
         self.measure = measure
+        self.machine = machine
+        self._offer: upgrade.Offer | None = None
         self.view = view
         self.runner = runner
         self.planner = planner
@@ -337,7 +445,8 @@ class ModelSetup:
 
     def _offer_large_model(self) -> None:
         p = self._plan
-        if upgrade.needs_test(p, self.ram()):
+        ram = self.ram()
+        if upgrade.needs_test(p, ram):
             self.view.show_model_progress(
                 _("Checking how fast this computer runs the model (about a minute)…"), None
             )
@@ -347,14 +456,18 @@ class ModelSetup:
                 return
             finally:
                 self.view.hide_model_progress()
-        if upgrade.should_offer(p.folder):
-            expected = upgrade.load_state(p.folder).get("large_expected", 0.0)
+        if p.folder is None or ram is None or ram < LARGE_MODEL_MIN_RAM:
+            return
+        self._offer = upgrade.should_offer(p.folder, self.machine(p.folder, ram))
+        if self._offer is not None:
             self.view.ask_model_download(
-                upgrade_consent_text(p.folder, expected), self.answer_large
+                upgrade_consent_text(p.folder, self._offer.expected, self._offer.model),
+                self.answer_large,
             )
 
     def answer_large(self, yes: bool) -> None:
-        upgrade.record_answer(self._plan.folder, yes)
+        offer = self._offer
+        upgrade.record_answer(self._plan.folder, yes, offer.model if offer else None)
         if yes:
             self.runner(self._download_large)
         else:
@@ -370,7 +483,8 @@ class ModelSetup:
             self.view.show_model_progress(text, fraction)
 
         try:
-            self.fetch(LARGE_MODEL, folder, progress=progress, cancelled=self._cancel.is_set)
+            model = self._offer.model if self._offer else LARGE_MODEL
+            self.fetch(model, folder, progress=progress, cancelled=self._cancel.is_set)
         except EngineError as exc:
             upgrade.record_answer_reset(folder)
             self.view.show_error(_("The model was not downloaded: {why}").format(why=exc))

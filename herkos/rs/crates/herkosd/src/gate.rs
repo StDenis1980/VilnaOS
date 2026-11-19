@@ -14,10 +14,14 @@
 //! Every failure along the way is a denial, never an allowance.
 
 use std::collections::BTreeMap;
+use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::mpsc::{Receiver, RecvTimeoutError, Sender, TryRecvError, channel};
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Instant;
 
-use herkos_core::keros::{Finding, Report};
+use herkos_core::keros::{Finding, Report, model_text};
 use herkos_core::manifest::{Operation, Registry};
 use herkos_core::policy::{Assessment, Limits, Raise, SessionState, assess};
 use herkos_core::request::{ActionRequest, normpath, parse_request};
@@ -25,14 +29,18 @@ use herkos_core::risk::Level;
 use serde_json::{Map, Value, json};
 
 use crate::config::Config;
-use crate::grants::{Duration, GrantStore, grant_record};
+use crate::grants::{Duration, GrantStore, grant_listing, grant_record};
 use crate::keros_model::ModelCheck;
 use crate::mitos::{Journal, JournalError, digest, read_records};
 use crate::pins::PinStore;
+use crate::polkit::{Authority, Verdict};
 use crate::programs::ProgramStore;
 use crate::rpc::new_action_id;
+use crate::snapshots::{Snapshots, in_snapshots, within};
 
 const JOURNAL_MAX_RESOURCES: usize = 50;
+/// The files tool: it also puts back what a snapshot of Mitos holds.
+pub const FILES: &str = "org.vilna.mcp.files";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Answer {
@@ -40,6 +48,10 @@ pub enum Answer {
     Once,
     Session,
     Always,
+    /// The window or the terminal got no answer before the timeout. It is a
+    /// "no" like `Deny`, but the person did not say no, so Gloxi may offer to
+    /// ask again (`denied_timeout`). Never one of the offered choices.
+    TimedOut,
 }
 
 impl Answer {
@@ -49,6 +61,7 @@ impl Answer {
             Answer::Once => "once",
             Answer::Session => "session",
             Answer::Always => "always",
+            Answer::TimedOut => "timed_out",
         }
     }
 
@@ -139,6 +152,26 @@ pub trait Tools: Send + Sync {
 /// The server's description and schema of one operation, as JSON, at most.
 pub const MAX_SAID_CHARS: usize = 16_000;
 
+/// At most this many lines of a preview, each at most `MAX_PREVIEW_CHARS`.
+pub const MAX_PREVIEW_LINES: usize = 16;
+pub const MAX_PREVIEW_CHARS: usize = 400;
+
+fn short(s: &str) -> String {
+    let mut out: String = s.chars().take(MAX_PREVIEW_CHARS).collect();
+    if s.chars().nth(MAX_PREVIEW_CHARS).is_some() {
+        out.push('…');
+    }
+    out
+}
+
+fn short_value(v: &Value) -> Value {
+    match v {
+        Value::String(s) => Value::String(short(s)),
+        Value::Bool(_) | Value::Number(_) | Value::Null => v.clone(),
+        other => Value::String(short(&other.to_string())),
+    }
+}
+
 /// The description and input schema a server gave for an operation.
 fn server_said(entry: Option<&Value>) -> Value {
     let description = entry
@@ -188,12 +221,15 @@ pub struct Outcome {
     pub allowed: bool,
     pub level: Option<Level>,
     /// allowed, tool_error, denied_unknown, denied_forbidden, denied_level,
-    /// denied_user, denied_no_tool, denied_mismatch, denied_journal, denied_error.
+    /// denied_user, denied_timeout, denied_no_tool, denied_mismatch, denied_journal, denied_error.
     pub code: &'static str,
     pub message: String,
     pub result: Option<Value>,
     /// For results with external content: where it came from and what Keros saw.
     pub keros: Option<Value>,
+    /// Mitos takes snapshots of the home before and after (ADR 0026): the
+    /// level was set as for an action that can be undone.
+    pub snapshot: bool,
 }
 
 impl Outcome {
@@ -212,7 +248,14 @@ impl Outcome {
             message,
             result: None,
             keros: None,
+            snapshot: false,
         }
+    }
+
+    #[must_use]
+    fn with_snapshot(mut self, snapshot: bool) -> Outcome {
+        self.snapshot = snapshot && self.allowed;
+        self
     }
 
     fn level_name(&self) -> &'static str {
@@ -244,27 +287,50 @@ pub fn undeclared_resource<'a>(request: &ActionRequest, op: &'a Operation) -> Op
         .iter()
         .filter_map(|r| r.path.as_deref())
         .collect();
+    let undeclared = |v: &Value| match v.as_str() {
+        Some(v) if v.starts_with('/') && !v.contains('\0') => {
+            !declared.contains(&normpath(v).as_str())
+        }
+        _ => true,
+    };
     op.resource_args.iter().map(String::as_str).find(|name| {
-        match request.arguments.get(*name).and_then(Value::as_str) {
-            Some(v) if v.starts_with('/') && !v.contains('\0') => {
-                !declared.contains(&normpath(v).as_str())
-            }
-            _ => true,
+        match request.arguments.get(*name) {
+            // A list of files (restore_snapshot): each one declared.
+            Some(Value::Array(items)) => items.is_empty() || items.iter().any(undeclared),
+            Some(v) => undeclared(v),
+            None => true,
         }
     })
 }
 
-/// What Mitos needs to undo a change later: the tool's backup id and the file.
+/// Largest `undo_arguments` a tool may return, in bytes of JSON (ADR 0023, section 3).
+pub const UNDO_ARGUMENTS_MAX: usize = 4096;
+
+/// What Mitos needs to undo a change later: the files tool's backup id and
+/// the file, or the arguments the tool gave for its own `restore` (ADR 0023,
+/// section 3), such as a setting and the value it had before.
 pub fn undo_info(request: &ActionRequest, op: &Operation, result: &Value) -> Option<Value> {
     if !op.undoable {
         return None;
     }
-    let backup_id = result.get("backup_id")?.as_str()?;
-    let path = request.arguments.get(op.resource_args.first()?)?.as_str()?;
-    if backup_id.is_empty() || !backup_id.chars().all(char::is_alphanumeric) {
+    let backup = result.get("backup_id").and_then(Value::as_str);
+    let path = op
+        .resource_args
+        .first()
+        .and_then(|a| request.arguments.get(a))
+        .and_then(Value::as_str);
+    if let (Some(backup_id), Some(path)) = (backup, path) {
+        if !backup_id.is_empty() && backup_id.chars().all(char::is_alphanumeric) {
+            return Some(json!({"backup_id": backup_id, "path": normpath(path)}));
+        }
         return None;
     }
-    Some(json!({"backup_id": backup_id, "path": normpath(path)}))
+    let arguments = result.get("undo_arguments")?.as_object()?;
+    if arguments.is_empty() {
+        return None;
+    }
+    let size = serde_json::to_vec(arguments).ok()?.len();
+    (size <= UNDO_ARGUMENTS_MAX).then(|| json!({"arguments": arguments}))
 }
 
 /// Symlinks of the longest existing prefix are resolved; the rest may not
@@ -290,6 +356,61 @@ pub fn resolve_path(path: &Path) -> PathBuf {
     }
 }
 
+/// A model check of an earlier result that is still running.
+///
+/// The model check takes 35-45 s on four processor cores (Build14.10),
+/// more than the result should wait. Gloxi gets the result at once; the
+/// check goes on in the background, and the next action of the session
+/// that its verdict could raise (R1 and up, ADR 0010 point 3) waits for it.
+/// The check first lets the model finish Gloxi's answer
+/// (`ModelCheck::wait_idle`); `go` tells it the verdict is needed now.
+struct PendingCheck {
+    source: String,
+    action_id: String,
+    total_chars: usize,
+    deadline: Instant,
+    go: Sender<()>,
+    done: Receiver<Report>,
+}
+
+/// One Gloxi connection: Herkos's session state and its running checks.
+#[derive(Default)]
+pub struct Session {
+    pub state: SessionState,
+    pending: Vec<PendingCheck>,
+}
+
+impl Session {
+    #[cfg(test)]
+    /// How many model checks are still running.
+    pub fn pending(&self) -> usize {
+        self.pending.len()
+    }
+}
+
+impl Deref for Session {
+    type Target = SessionState;
+    fn deref(&self) -> &SessionState {
+        &self.state
+    }
+}
+
+impl DerefMut for Session {
+    fn deref_mut(&mut self) -> &mut SessionState {
+        &mut self.state
+    }
+}
+
+/// At most this many checks run at once for one session: they all ask the
+/// same local model, so more would only slow each other down.
+const MAX_PENDING: usize = 4;
+
+/// A check that does not answer in time counts as not done.
+const PENDING_MARGIN: std::time::Duration = std::time::Duration::from_secs(2);
+
+/// A check waits at most this long for the model to finish other answers.
+const IDLE_CAP: std::time::Duration = std::time::Duration::from_secs(120);
+
 pub struct Gate {
     pub config: Config,
     manifests: Registry,
@@ -300,11 +421,16 @@ pub struct Gate {
     /// One question on screen at a time.
     ask_lock: Mutex<()>,
     /// The local model check of Keros (ADR 0010), unless it is off.
-    model_check: Option<ModelCheck>,
+    model_check: Option<Arc<ModelCheck>>,
     /// What catalogue tools said about their operations (ADR 0017, step 3).
     pins: PinStore,
     /// Which catalogue programs the person turned on (ADR 0017, step 6).
     pub programs: ProgramStore,
+    /// Snapshots of the person's home, where the system has them (ADR 0026).
+    snapshots: Option<Box<dyn Snapshots>>,
+    /// polkit, for operations that name an `org.vilna.herkos.*` action. Only
+    /// the system Herkos has it; without it such operations are refused.
+    authority: Option<Box<dyn Authority>>,
 }
 
 fn decision_record(o: &Outcome) -> Value {
@@ -344,6 +470,8 @@ impl Gate {
             confirmer,
             ask_lock: Mutex::new(()),
             model_check: None,
+            snapshots: None,
+            authority: None,
         }
     }
 
@@ -483,15 +611,60 @@ impl Gate {
 
     #[must_use]
     pub fn with_model_check(mut self, check: Option<ModelCheck>) -> Gate {
-        self.model_check = check;
+        self.model_check = check.map(Arc::new);
         self
+    }
+
+    #[must_use]
+    pub fn with_authority(mut self, authority: Option<Box<dyn Authority>>) -> Gate {
+        self.authority = authority;
+        self
+    }
+
+    pub fn with_snapshots(mut self, snapshots: Option<Box<dyn Snapshots>>) -> Gate {
+        self.snapshots = snapshots;
+        self
+    }
+
+    /// A snapshot of the home makes this action undoable (ADR 0026, section 2):
+    /// it changes something (base R2 or more), the tool cannot put it back
+    /// itself, and everything it may touch is in the person's home. A
+    /// built-in tool qualifies only for operations that name files.
+    fn snapshot_covers(
+        &self,
+        request: &ActionRequest,
+        op: &Operation,
+        base: Option<Level>,
+    ) -> bool {
+        let Some(snapshots) = &self.snapshots else {
+            return false;
+        };
+        if op.undoable || op.reversible || base.is_none_or(|b| b < Level::R2) {
+            return false;
+        }
+        let home = snapshots.subvolume();
+        let inside = |p: &str| within(p, home) && !in_snapshots(p);
+        let files = request
+            .resources
+            .iter()
+            .all(|r| r.path.as_deref().is_some_and(inside));
+        if self.manifests.is_builtin(&request.tool) {
+            return files && !op.resource_args.is_empty() && !request.resources.is_empty();
+        }
+        // A program writes where it may: in the allowed folders.
+        let roots = &self.config.allowed_roots;
+        files && !roots.is_empty() && roots.iter().all(|r| inside(&r.to_string_lossy()))
     }
 
     pub fn journal(&self) -> &Journal {
         &self.journal
     }
 
-    pub fn handle(&self, request: &ActionRequest, session: &mut SessionState) -> Outcome {
+    pub fn handle(&self, request: &ActionRequest, session: &mut Session) -> Outcome {
+        // An earlier verdict of the model may raise this action: wait for it
+        // unless the action stays R0, which no Keros finding raises.
+        let wait = !session.pending.is_empty() && self.may_be_raised(request, session);
+        self.settle(session, wait);
         let action_id = new_action_id();
         if let Err(e) = self
             .journal
@@ -520,6 +693,122 @@ impl Gate {
         self.execute(request, session, outcome)
     }
 
+    /// Whether a Keros finding could raise this action: anything but a
+    /// plain R0 (permissions.md 6; a changed operation is never R0).
+    fn may_be_raised(&self, request: &ActionRequest, session: &SessionState) -> bool {
+        let manifest = self.manifests.get(&request.tool);
+        let running = self.tools.running(&request.tool);
+        let annotations = if running {
+            self.tools.annotations(&request.tool, &request.operation)
+        } else {
+            None
+        };
+        let limits = Limits {
+            allowed_roots: &self.config.allowed_roots,
+            bulk_threshold: self.config.bulk_threshold,
+            resolve: &resolve_path,
+        };
+        let a = assess(request, manifest, session, &limits, annotations.as_ref());
+        match a.level {
+            None => false, // denied whatever Keros says
+            Some(Level::R0) => !matches!(self.changed(request, running), Ok(None)),
+            Some(_) => true,
+        }
+    }
+
+    /// Take the verdicts of the model checks that are done; with `wait`,
+    /// wait for the rest, each until its budget is over ("unavailable"
+    /// then, which changes nothing, as a timeout always did).
+    pub fn settle(&self, session: &mut Session, wait: bool) {
+        let pending = std::mem::take(&mut session.pending);
+        if wait {
+            // Every waiting check starts now, side by side.
+            for check in &pending {
+                let _ = check.go.send(());
+            }
+        }
+        let budget = self
+            .model_check
+            .as_ref()
+            .map_or(std::time::Duration::ZERO, |m| m.budget());
+        for check in pending {
+            let report = if wait {
+                let left = check
+                    .deadline
+                    .saturating_duration_since(Instant::now())
+                    .min(budget + PENDING_MARGIN);
+                match check.done.recv_timeout(left) {
+                    Ok(r) => r,
+                    Err(RecvTimeoutError::Timeout | RecvTimeoutError::Disconnected) => {
+                        unavailable(check.total_chars)
+                    }
+                }
+            } else {
+                match check.done.try_recv() {
+                    Ok(r) => r,
+                    Err(TryRecvError::Empty) if Instant::now() < check.deadline => {
+                        session.pending.push(check);
+                        continue;
+                    }
+                    Err(_) => unavailable(check.total_chars),
+                }
+            };
+            let record = json!({
+                "source": check.source,
+                "keros_model": report.status,
+                "checked_chars": report.checked_chars,
+                "total_chars": report.total_chars,
+            });
+            if let Err(e) = self
+                .journal
+                .append("keros_model", record, Some(&check.action_id))
+            {
+                eprintln!("herkosd: Keros model verdict not journaled: {}", e.0);
+            }
+            session.keros.record_model(&check.source, report);
+        }
+    }
+
+    /// Start the model check of a result in the background.
+    fn start_check(
+        &self,
+        check: &Arc<ModelCheck>,
+        source: &str,
+        action_id: &str,
+        result: &Value,
+        session: &mut Session,
+    ) -> bool {
+        if session.pending.len() >= MAX_PENDING {
+            self.settle(session, true);
+        }
+        let text = model_text(result);
+        let total_chars = text.chars().count();
+        let (tx, done) = channel();
+        let (go, wait_go) = channel();
+        let model = Arc::clone(check);
+        let started = thread::Builder::new()
+            .name("keros-model".into())
+            .spawn(move || {
+                // Nobody waits any more when the connection is gone.
+                if model.wait_idle(&wait_go, IDLE_CAP) {
+                    let _ = tx.send(model.check(&text));
+                }
+            });
+        if let Err(e) = started {
+            eprintln!("herkosd: Keros model check not started: {e}");
+            return false;
+        }
+        session.pending.push(PendingCheck {
+            source: source.to_owned(),
+            action_id: action_id.to_owned(),
+            total_chars,
+            deadline: Instant::now() + IDLE_CAP + check.budget() + PENDING_MARGIN,
+            go,
+            done,
+        });
+        true
+    }
+
     fn decide(
         &self,
         id: &str,
@@ -539,6 +828,24 @@ impl Gate {
             resolve: &resolve_path,
         };
         let mut a = assess(request, manifest, session, &limits, annotations.as_ref());
+        // Undoable through Mitos snapshots: assessed as such (no "it cannot be undone").
+        let mut snapshot = false;
+        if let (Some(m), Some(op)) = (manifest, a.operation.as_ref()) {
+            if self.snapshot_covers(request, op, a.base) {
+                let mut covered = m.clone();
+                if let Some(o) = covered.operations.get_mut(&request.operation) {
+                    o.undoable = true;
+                }
+                a = assess(
+                    request,
+                    Some(&covered),
+                    session,
+                    &limits,
+                    annotations.as_ref(),
+                );
+                snapshot = true;
+            }
+        }
         let deny = |level, code, message: String| Ok(Outcome::new(id, false, level, code, message));
         if manifest.is_none() {
             return deny(
@@ -620,17 +927,69 @@ impl Gate {
                 .map_err(|_| JournalError("permissions lock poisoned".into()))?
                 .find(&request.tool, &request.operation, &a.roots, level)
         };
-        if let Some(g) = found {
+        let outcome = if let Some(g) = found {
             let msg = format!("permission {} ({})", g.id, g.duration.name());
-            return Ok(Outcome::new(id, true, a.level, "allowed", msg));
-        }
-        let outcome = self.ask(id, request, session, &a, &op, level, changed.is_some())?;
+            Outcome::new(id, true, a.level, "allowed", msg).with_snapshot(snapshot)
+        } else {
+            self.ask(id, request, session, &a, &op, level, changed.is_some())?
+                .with_snapshot(snapshot)
+        };
+        // What changes the whole computer: polkit decides too (permissions.md 9.2).
+        let outcome = match (&op.polkit, outcome.allowed) {
+            (Some(action), true) => self.authorize(action, &op, outcome),
+            _ => outcome,
+        };
         if let (true, Some(fp)) = (outcome.allowed, &changed) {
             self.pins
                 .pin(&request.tool, &request.operation, fp)
                 .map_err(JournalError)?;
         }
         Ok(outcome)
+    }
+
+    /// After the person's yes, polkit's: Herkos's window said what and why,
+    /// polkit says whether this person may (an administrator, at the
+    /// computer), asking for a password in the desktop's own window when its
+    /// policy says so. Herkos never sees the password.
+    fn authorize(&self, action: &str, op: &Operation, outcome: Outcome) -> Outcome {
+        let Some(authority) = &self.authority else {
+            let why = format!("{action} needs polkit, which only the system Herkos asks");
+            return Outcome {
+                allowed: false,
+                code: "denied_error",
+                message: why,
+                ..outcome
+            };
+        };
+        let details = [
+            ("operation", op.name.as_str()),
+            ("summary", op.summary.as_str()),
+        ];
+        let verdict = {
+            let _one = self
+                .ask_lock
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            authority.check(action, &details, self.config.confirm_timeout)
+        };
+        let (code, message) = match verdict {
+            Verdict::Yes => {
+                let message = format!("{}; polkit: {action}", outcome.message);
+                return Outcome { message, ..outcome };
+            }
+            Verdict::No(why) => ("denied_user", format!("polkit ({action}): {why}")),
+            Verdict::TimedOut => (
+                "denied_timeout",
+                format!("polkit ({action}): the user did not answer in time"),
+            ),
+            Verdict::Error(why) => ("denied_error", format!("polkit ({action}): {why}")),
+        };
+        Outcome {
+            allowed: false,
+            code,
+            message,
+            ..outcome
+        }
     }
 
     /// The operation's new fingerprint if it changed since it was trusted.
@@ -650,6 +1009,70 @@ impl Gate {
         } else {
             Ok(None)
         }
+    }
+
+    /// What the dialog shows besides the summary: the facts the operation's
+    /// `preview` gives about it (ADR 0012, section 5), then, for R4 and for a
+    /// changed operation, the exact arguments.
+    fn content(&self, request: &ActionRequest, op: &Operation, exact: bool) -> Option<Value> {
+        let mut out = op
+            .preview
+            .as_deref()
+            .map(|name| self.preview(request, name))
+            .unwrap_or_default();
+        if exact {
+            for (k, v) in &request.arguments {
+                out.insert(k.clone(), v.clone());
+            }
+        }
+        (exact || !out.is_empty()).then_some(Value::Object(out))
+    }
+
+    /// Runs the R0 `preview` operation with the arguments it takes (from the
+    /// server's own schema) and keeps a few short lines of what it says. It
+    /// goes to the person only, never to Gloxi. A preview that fails says so
+    /// in the dialog; the person decides without it.
+    fn preview(&self, request: &ActionRequest, name: &str) -> Map<String, Value> {
+        let takes: Option<Vec<String>> = self.tools.entry(&request.tool, name).and_then(|e| {
+            e.get("inputSchema")?
+                .get("properties")?
+                .as_object()
+                .map(|p| p.keys().cloned().collect())
+        });
+        let arguments = request
+            .arguments
+            .iter()
+            .filter(|(k, _)| takes.as_ref().is_none_or(|t| t.contains(k)))
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        let probe = ActionRequest {
+            operation: name.to_owned(),
+            arguments,
+            ..request.clone()
+        };
+        let mut out = Map::new();
+        match self.tools.execute(&probe) {
+            Ok(said) => {
+                let facts = said.get("facts").filter(|f| f.is_object()).unwrap_or(&said);
+                match facts.as_object() {
+                    Some(lines) => {
+                        for (k, v) in lines.iter().take(MAX_PREVIEW_LINES) {
+                            out.insert(short(k), short_value(v));
+                        }
+                    }
+                    None => {
+                        out.insert("preview".into(), short_value(facts));
+                    }
+                }
+            }
+            Err(e) => {
+                out.insert(
+                    "preview".into(),
+                    json!(format!("not available: {}", short(&e))),
+                );
+            }
+        }
+        out
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -678,7 +1101,7 @@ impl Gate {
             } else {
                 choices_for(level, a.in_bounds())
             },
-            content: (level >= Level::R4 || once).then(|| Value::Object(request.arguments.clone())),
+            content: self.content(request, op, level >= Level::R4 || once),
         };
         let answer = {
             // A poisoned lock still serialises; a broken dialog is a "no".
@@ -688,6 +1111,15 @@ impl Gate {
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
             self.confirmer.ask(&question, self.config.confirm_timeout)
         };
+        if answer == Answer::TimedOut {
+            return Ok(Outcome::new(
+                id,
+                false,
+                Some(level),
+                "denied_timeout",
+                "the user did not answer in time".into(),
+            ));
+        }
         if answer == Answer::Deny || !question.choices.contains(&answer) {
             return Ok(Outcome::new(
                 id,
@@ -720,12 +1152,7 @@ impl Gate {
         Ok(Outcome::new(id, true, Some(level), "allowed", msg))
     }
 
-    fn execute(
-        &self,
-        request: &ActionRequest,
-        session: &mut SessionState,
-        outcome: Outcome,
-    ) -> Outcome {
+    fn execute(&self, request: &ActionRequest, session: &mut Session, outcome: Outcome) -> Outcome {
         let op = self
             .manifests
             .get(&request.tool)
@@ -737,10 +1164,25 @@ impl Gate {
                 ..outcome
             };
         };
+        let pre = match (outcome.snapshot, &self.snapshots) {
+            (true, Some(s)) => match s.before(&outcome.action_id) {
+                Ok(n) => Some(n),
+                Err(e) => return self.not_carried_out(outcome, &e),
+            },
+            (true, None) => return self.not_carried_out(outcome, "no snapshots"),
+            _ => None,
+        };
         let (result, code, message) = match self.tools.execute(request) {
             Ok(v) => (Some(v), "allowed", outcome.message.clone()),
             Err(e) => (None, "tool_error", e),
         };
+        // Even a failed call may have changed something: the pair is kept.
+        let post = pre.and_then(|p| {
+            let s = self.snapshots.as_ref()?;
+            s.after(p, &outcome.action_id)
+                .map_err(|e| eprintln!("herkosd: Mitos: no snapshot after the action: {e}"))
+                .ok()
+        });
         let mut record = Map::new();
         record.insert("ok".into(), json!(result.is_some()));
         record.insert("code".into(), json!(code));
@@ -752,13 +1194,7 @@ impl Gate {
         if let (Some(r), true) = (&result, op.returns_external) {
             let source = format!("{}.{}", request.tool, request.operation);
             session.taint(&source);
-            let check = self
-                .model_check
-                .as_ref()
-                .map(|m| move |text: &str| m.check(text));
-            let model: Option<&dyn Fn(&str) -> Report> =
-                check.as_ref().map(|c| c as &dyn Fn(&str) -> Report);
-            let findings = session.keros.inspect(&source, r, model);
+            let findings = session.keros.inspect_rules(&source, r);
             let mut k = json!({
                 "source": source,
                 "untrusted": true,
@@ -768,14 +1204,24 @@ impl Gate {
                 "keros".into(),
                 json!(findings.iter().map(|f| &f.rule).collect::<Vec<_>>()),
             );
-            if let Some(report) = &session.keros.last_report {
-                k["model"] = report.to_json();
-                record.insert("keros_model".into(), json!(report.status));
+            // The model is slow: ask it only when the rules saw nothing, and
+            // do not keep the result waiting for it (see PendingCheck).
+            if let (Some(m), true) = (&self.model_check, findings.is_empty()) {
+                if self.start_check(m, &source, &outcome.action_id, r, session) {
+                    k["model"] = json!({"status": "pending"});
+                    record.insert("keros_model".into(), json!("pending"));
+                }
             }
             keros = Some(k);
         }
         if let Some(undo) = result.as_ref().and_then(|r| undo_info(request, op, r)) {
             record.insert("undo".into(), undo);
+        } else if let Some(pre) = pre {
+            // Without the post snapshot, undo compares with the home as it is then.
+            record.insert(
+                "undo".into(),
+                json!({"snapshot": {"pre": pre, "post": post}}),
+            );
         }
         if let Err(e) =
             self.journal
@@ -801,9 +1247,67 @@ impl Gate {
         }
     }
 
+    /// Allowed, but Mitos could not take the snapshot first: nothing is done.
+    fn not_carried_out(&self, outcome: Outcome, why: &str) -> Outcome {
+        let message = format!("Mitos could not take a snapshot first, so nothing was done: {why}");
+        let record = json!({"ok": false, "code": "denied_mitos", "result": null});
+        if let Err(e) = self
+            .journal
+            .append("result", record, Some(&outcome.action_id))
+        {
+            return Outcome {
+                allowed: false,
+                code: "denied_journal",
+                message: e.0,
+                ..outcome
+            };
+        }
+        Outcome {
+            allowed: false,
+            code: "denied_mitos",
+            message,
+            ..outcome
+        }
+    }
+
+    /// The person's permissions, session and permanent (their window only:
+    /// Gloxi has no method to see or change them, protocol.md 2).
+    pub fn permissions(&self) -> Value {
+        let list = match self.grants.lock() {
+            Ok(mut g) => g.all().iter().map(grant_listing).collect(),
+            Err(_) => Vec::new(),
+        };
+        json!({ "permissions": list })
+    }
+
+    /// The person takes a permission back. Journalled as a `grant` record.
+    pub fn revoke(&self, grant_id: &str) -> Result<bool, String> {
+        let revoked = self
+            .grants
+            .lock()
+            .map_err(|_| "permissions poisoned".to_owned())?
+            .revoke(grant_id);
+        if revoked {
+            self.journal
+                .append("grant", json!({"revoked": grant_id}), None)
+                .map_err(|e| e.0)?;
+        }
+        Ok(revoked)
+    }
+
+    /// The last `limit` journal records, oldest first, for the person's window.
+    pub fn recent(&self, limit: usize) -> Value {
+        let records: Vec<Value> = match read_records(self.journal.path()) {
+            Ok(r) => r.into_iter().flatten().collect(),
+            Err(_) => Vec::new(),
+        };
+        let skip = records.len().saturating_sub(limit);
+        json!({ "records": records.into_iter().skip(skip).collect::<Vec<_>>() })
+    }
+
     /// Undo an earlier action by its journal id: a new `restore` request that
     /// goes through the gate like any other action.
-    pub fn undo(&self, action_id: &str, session: &mut SessionState) -> Outcome {
+    pub fn undo(&self, action_id: &str, session: &mut Session) -> Outcome {
         let nothing = || {
             Outcome::new(
                 &new_action_id(),
@@ -833,22 +1337,109 @@ impl Gate {
         let (Some(tool), Some(undo)) = (tool, undo) else {
             return nothing();
         };
-        let (Some(path), Some(backup_id)) = (
-            undo.get("path").and_then(Value::as_str),
-            undo.get("backup_id").and_then(Value::as_str),
-        ) else {
-            return nothing();
+        if let Some(snapshot) = undo.get("snapshot") {
+            return self.undo_snapshot(action_id, snapshot, session);
+        }
+        let (resources, arguments) = if let Some(arguments) = undo.get("arguments") {
+            // A change the tool can put back itself (ADR 0023, section 3).
+            if !arguments.is_object() {
+                return nothing();
+            }
+            (json!([]), arguments.clone())
+        } else {
+            let (Some(path), Some(backup_id)) = (
+                undo.get("path").and_then(Value::as_str),
+                undo.get("backup_id").and_then(Value::as_str),
+            ) else {
+                return nothing();
+            };
+            (
+                json!([file_uri(path)]),
+                json!({"path": path, "backup_id": backup_id}),
+            )
         };
         let params = json!({
             "tool": tool,
             "operation": "restore",
-            "resources": [file_uri(path)],
+            "resources": resources,
             "reason": format!("Undo action {action_id}"),
-            "arguments": {"path": path, "backup_id": backup_id},
+            "arguments": arguments,
         });
         match parse_request(&params) {
             Ok(request) => self.handle(&request, session),
             Err(_) => nothing(),
+        }
+    }
+}
+
+fn unavailable(total_chars: usize) -> Report {
+    Report {
+        status: "unavailable",
+        checked_chars: 0,
+        total_chars,
+    }
+}
+
+impl Gate {
+    /// Undo from Mitos snapshots (ADR 0026, section 3): the files the action
+    /// changed in the allowed folders go back as they were in the `pre`
+    /// snapshot, through the files tool (it runs as the person). A file the
+    /// person changed again after the action is left alone by the tool.
+    fn undo_snapshot(&self, action_id: &str, snapshot: &Value, session: &mut Session) -> Outcome {
+        let refuse =
+            |code, message: String| Outcome::new(&new_action_id(), false, None, code, message);
+        let Some(snapshots) = &self.snapshots else {
+            return refuse(
+                "denied_unknown",
+                "nothing to undo: this computer has no Mitos snapshots".into(),
+            );
+        };
+        let Some(pre) = snapshot.get("pre").and_then(Value::as_u64) else {
+            return refuse("denied_unknown", "nothing to undo".into());
+        };
+        let post = snapshot.get("post").and_then(Value::as_u64);
+        let changes = match snapshots.changes(pre, post.unwrap_or(0)) {
+            Ok(c) => c,
+            // Snapper cleaned the snapshot up, or cannot compare: say so.
+            Err(e) => {
+                return refuse(
+                    "denied_error",
+                    format!("Mitos cannot compare snapshots: {e}"),
+                );
+            }
+        };
+        let home = snapshots.subvolume();
+        let roots = &self.config.allowed_roots;
+        let mut paths: Vec<String> = changes
+            .into_iter()
+            .filter(|c| c.kind != '.')
+            .map(|c| c.path)
+            .filter(|p| within(p, home) && !in_snapshots(p))
+            .filter(|p| roots.iter().any(|r| within(p, r)))
+            .collect();
+        paths.sort();
+        paths.dedup();
+        if paths.is_empty() {
+            return refuse(
+                "denied_unknown",
+                "nothing to undo: no files changed in the allowed folders".into(),
+            );
+        }
+        let resources: Vec<Value> = paths.iter().map(|p| json!(file_uri(p))).collect();
+        let mut arguments = json!({"pre": pre, "paths": paths});
+        if let Some(post) = post {
+            arguments["post"] = json!(post);
+        }
+        let params = json!({
+            "tool": FILES,
+            "operation": "restore_snapshot",
+            "resources": resources,
+            "reason": format!("Undo action {action_id}"),
+            "arguments": arguments,
+        });
+        match parse_request(&params) {
+            Ok(request) => self.handle(&request, session),
+            Err(e) => refuse("denied_error", format!("cannot undo: {e}")),
         }
     }
 }
@@ -883,7 +1474,7 @@ fn describe(request: &ActionRequest, session: &SessionState) -> Value {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::config::parse_config;
     use crate::grants::now;
@@ -894,13 +1485,63 @@ mod tests {
     impl Tools for FakeTools {
         fn running(&self, tool: &str) -> bool {
             tool == "org.vilna.mcp.files"
+                || tool == SETTINGS
+                || tool == SYSTEM
+                || tool == APPS
+                || tool == MAIL
         }
         fn annotations(&self, _t: &str, _o: &str) -> Option<Map<String, Value>> {
             None
         }
+        fn entry(&self, tool: &str, operation: &str) -> Option<Value> {
+            (tool == APPS && operation == "describe").then(|| {
+                json!({"name": "describe", "inputSchema": {"type": "object", "properties":
+                    {"app_id": {"type": "string"}, "remote": {"type": "string"}}}})
+            })
+        }
         fn execute(&self, request: &ActionRequest) -> Result<Value, String> {
+            if request.tool == APPS {
+                let app = request
+                    .arguments
+                    .get("app_id")
+                    .cloned()
+                    .unwrap_or(Value::Null);
+                return match request.operation.as_str() {
+                    // Only what describe takes reaches it (no "action").
+                    "describe" if request.arguments.contains_key("action") => Err("bad".into()),
+                    "describe" if app == json!("org.example.Gone") => Err("not in flathub".into()),
+                    "describe" => Ok(json!({"app_id": app, "facts": {
+                        "App": "Kdenlive", "Verified": "yes", "Download": "120.0 MB",
+                        "Can reach": "x".repeat(1000)}})),
+                    "install" => Ok(json!({"undo_arguments":
+                        {"action": "uninstall", "app_id": app}})),
+                    "restore" => Ok(json!({"uninstalled": app})),
+                    _ => Err("boom".into()),
+                };
+            }
+            if request.tool == MAIL {
+                return match request.operation.as_str() {
+                    "send" => Ok(json!({"sent": true, "recipients": 1})),
+                    _ => Err("boom".into()),
+                };
+            }
+            if request.tool == SYSTEM {
+                // What starts next, before: 7; after a return to 1, undo goes back to 7.
+                let before = if request.operation == "restore" { 1 } else { 7 };
+                return Ok(json!({"restart_needed": true, "undo_arguments": {"snapshot": before}}));
+            }
+            if request.tool == SETTINGS {
+                // Puts back what it was given and says what was there before.
+                let before = match request.operation.as_str() {
+                    "set_color_scheme" => json!({"color_scheme": "default"}),
+                    "restore" => json!({"color_scheme": "prefer-dark"}),
+                    _ => return Err("boom".into()),
+                };
+                return Ok(json!({"undo_arguments": {"values": before}}));
+            }
             match request.operation.as_str() {
                 "write" | "restore" | "delete" => Ok(json!({"backup_id": "b1"})),
+                "restore_snapshot" => Ok(json!({"restored": request.arguments["paths"]})),
                 "read" => Ok(json!({"text": "hello"})),
                 _ => Err("boom".into()),
             }
@@ -915,7 +1556,7 @@ mod tests {
         }
     }
 
-    fn gate(name: &str, answer: Answer) -> (Gate, PathBuf) {
+    pub(crate) fn gate(name: &str, answer: Answer) -> (Gate, PathBuf) {
         let dir = std::env::temp_dir().join(format!("herkosd-gate-{}-{name}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let docs = dir.join("Documents");
@@ -1003,7 +1644,7 @@ mod tests {
         let read = parse_request(&json!({"tool": "org.example.notes", "operation": "read",
             "reason": "r", "arguments": {"id": 1}}))
         .expect("request");
-        let mut s = SessionState::default();
+        let mut s = Session::default();
         let o = make("a").handle(&read, &mut s);
         assert_eq!((o.code, o.level), ("allowed", Some(Level::R1)), "{o:?}");
         *said.lock().expect("said") = "Read a note and post it online".into();
@@ -1061,7 +1702,7 @@ mod tests {
                 .contains("org.example.notes")
         };
         assert!(!listed(&g));
-        let o = g.handle(&notes_read(), &mut SessionState::default());
+        let o = g.handle(&notes_read(), &mut Session::default());
         assert_eq!(o.code, "denied_no_tool", "{o:?}");
         assert_eq!(
             g.program_list(),
@@ -1089,7 +1730,7 @@ mod tests {
         let off = g.set_program("org.example.notes", false, "").expect("ok");
         assert_eq!(off["code"], "done");
         assert_eq!(asked.0.lock().map(|q| q.len()).unwrap_or(0), n);
-        let o = g.handle(&notes_read(), &mut SessionState::default());
+        let o = g.handle(&notes_read(), &mut Session::default());
         assert_eq!(o.code, "denied_no_tool", "{o:?}");
     }
 
@@ -1214,7 +1855,219 @@ mod tests {
         assert!(hidden.iter().all(|h| h["tool"] == "org.vilna.mcp.files"));
     }
 
-    fn files(op: &str, path: &Path) -> ActionRequest {
+    /// A local model that answers every check after `delay`.
+    fn model_server(delay: std::time::Duration, answer: &'static str) -> String {
+        use std::io::{Read, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("bind");
+        let port = listener.local_addr().expect("addr").port();
+        std::thread::spawn(move || {
+            for mut conn in listener.incoming().flatten() {
+                std::thread::spawn(move || {
+                    let mut got = Vec::new();
+                    let mut buf = [0u8; 65536];
+                    while let Ok(n @ 1..) = conn.read(&mut buf) {
+                        got.extend_from_slice(&buf[..n]);
+                        let text = String::from_utf8_lossy(&got);
+                        if let Some(end) = text.find("\r\n\r\n") {
+                            let len = text
+                                .lines()
+                                .find_map(|l| l.strip_prefix("Content-Length: "))
+                                .and_then(|n| n.trim().parse::<usize>().ok())
+                                .unwrap_or(0);
+                            if got.len() >= end + 4 + len {
+                                break;
+                            }
+                        }
+                    }
+                    std::thread::sleep(delay);
+                    let body = format!(
+                        "{{\"choices\":[{{\"message\":{{\"content\":\"{{\\\"answer\\\": \\\"{answer}\\\"}}\"}}}}]}}"
+                    );
+                    let _ = conn.write_all(
+                        format!(
+                            "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{body}",
+                            body.len()
+                        )
+                        .as_bytes(),
+                    );
+                });
+            }
+        });
+        format!("http://127.0.0.1:{port}/v1")
+    }
+
+    fn model_gate(
+        name: &str,
+        delay: std::time::Duration,
+        answer: &'static str,
+        budget: f64,
+    ) -> (Gate, PathBuf, std::sync::Arc<Asked>) {
+        let (mut g, docs) = gate(name, Answer::Deny);
+        g.config.max_level = Level::R4;
+        let asked = std::sync::Arc::new(Asked(Mutex::new(Vec::new()), Answer::Once));
+        let judge = crate::keros_model::Judge::new(&model_server(delay, answer)).expect("judge");
+        let g = Gate {
+            confirmer: Box::new(std::sync::Arc::clone(&asked)),
+            ..g
+        }
+        .with_model_check(Some(ModelCheck::new(judge, budget)));
+        (g, docs, asked)
+    }
+
+    #[test]
+    fn the_model_check_does_not_keep_the_result_waiting() {
+        // Build14.10: 35-45 s per check on four cores, so the result went
+        // back without a verdict after 20 s and "Allow once" took 63 s.
+        let slow = std::time::Duration::from_millis(1500);
+        let (g, docs, asked) = model_gate("keros-later", slow, "yes", 10.0);
+        let mut s = Session::default();
+        let start = Instant::now();
+        let o = g.handle(&files("read", &docs.join("a.txt")), &mut s);
+        assert!(o.allowed, "{o:?}");
+        assert!(start.elapsed() < std::time::Duration::from_millis(1000));
+        assert_eq!(
+            o.keros.as_ref().map(|k| k["model"]["status"].clone()),
+            Some(json!("pending"))
+        );
+        assert_eq!(s.pending(), 1);
+
+        // An R0 action does not wait for it: no finding raises R0.
+        let status = parse_request(&json!({"tool": "org.vilna.gloxi.network",
+            "operation": "status", "reason": "r"}))
+        .expect("request");
+        let start = Instant::now();
+        let o = g.handle(&status, &mut s);
+        assert_eq!(o.level, Some(Level::R0), "{o:?}");
+        assert!(start.elapsed() < std::time::Duration::from_millis(1000));
+        assert_eq!(s.pending(), 1);
+
+        // A write may be raised by the verdict: it waits, and is raised.
+        let o = g.handle(&files("write", &docs.join("c.txt")), &mut s);
+        assert!(o.allowed, "{o:?}");
+        assert_eq!(s.pending(), 0);
+        assert!(s.keros.findings.iter().any(|(_, f)| f.rule == "model"));
+        {
+            let qs = asked.0.lock().expect("asked");
+            let q = qs.last().expect("the write was asked");
+            assert!(
+                q.raises
+                    .iter()
+                    .any(|r| r.msgid.contains("content read earlier")),
+                "{:?}",
+                q.raises
+            );
+        }
+        let journal = std::fs::read_to_string(g.journal.path()).expect("journal");
+        assert!(journal.contains("\"keros_model\":\"pending\""), "{journal}");
+        assert!(
+            journal.contains("\"keros_model\":\"injection\""),
+            "{journal}"
+        );
+    }
+
+    #[test]
+    fn the_model_check_lets_gloxi_answer_first() {
+        // Build14.15: run beside Gloxi's answer on the same model, the
+        // check halved its speed (36-56 s after "Allow once").
+        use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+        let busy = std::sync::Arc::new(AtomicBool::new(true));
+        let checks = std::sync::Arc::new(AtomicUsize::new(0));
+        let url = crate::keros_model::tests::llama_server(
+            std::sync::Arc::clone(&busy),
+            std::sync::Arc::clone(&checks),
+            "yes",
+        );
+        // A fresh gate each time, so the verdict cache asks the model again.
+        let make = |name: &str| {
+            let (mut g, docs) = gate(name, Answer::Deny);
+            g.config.max_level = Level::R4;
+            let asked = std::sync::Arc::new(Asked(Mutex::new(Vec::new()), Answer::Once));
+            let judge = crate::keros_model::Judge::new(&url).expect("judge");
+            let g = Gate {
+                confirmer: Box::new(asked),
+                ..g
+            }
+            .with_model_check(Some(ModelCheck::new(judge, 10.0)));
+            (g, docs)
+        };
+        let (g, docs) = make("keros-after-gloxi");
+        let mut s = Session::default();
+
+        // Twice: once Gloxi finishes its answer, and once the next action
+        // needs the verdict while the model is still busy.
+        let o = g.handle(&files("read", &docs.join("a.txt")), &mut s);
+        assert!(o.allowed, "{o:?}");
+        std::thread::sleep(std::time::Duration::from_millis(2500));
+        assert_eq!(checks.load(Ordering::SeqCst), 0, "Gloxi is still answering");
+        busy.store(false, Ordering::SeqCst);
+        let start = Instant::now();
+        while checks.load(Ordering::SeqCst) == 0 {
+            assert!(start.elapsed() < std::time::Duration::from_secs(5));
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+        g.settle(&mut s, true);
+        assert_eq!(s.pending(), 0);
+        assert!(s.keros.findings.iter().any(|(_, f)| f.rule == "model"));
+
+        busy.store(true, Ordering::SeqCst);
+        let (g, docs) = make("keros-needed-now");
+        let mut s = Session::default();
+        assert!(
+            g.handle(&files("read", &docs.join("a.txt")), &mut s)
+                .allowed
+        );
+        let start = Instant::now();
+        let o = g.handle(&files("write", &docs.join("c.txt")), &mut s);
+        assert!(o.allowed, "{o:?}");
+        assert!(start.elapsed() < std::time::Duration::from_secs(2));
+        assert_eq!(checks.load(Ordering::SeqCst), 2);
+        assert!(s.keros.findings.iter().any(|(_, f)| f.rule == "model"));
+    }
+
+    #[test]
+    fn a_model_that_does_not_answer_in_time_changes_nothing() {
+        let never = std::time::Duration::from_secs(30);
+        let (g, docs, asked) = model_gate("keros-silent", never, "yes", 1.0);
+        let mut s = Session::default();
+        assert!(
+            g.handle(&files("read", &docs.join("a.txt")), &mut s)
+                .allowed
+        );
+        let start = Instant::now();
+        let o = g.handle(&files("write", &docs.join("c.txt")), &mut s);
+        assert!(o.allowed, "{o:?}");
+        // At most the budget and the margin, not the 30 s of the model.
+        assert!(start.elapsed() < std::time::Duration::from_secs(4));
+        assert_eq!(s.pending(), 0);
+        assert!(s.keros.findings.is_empty());
+        let qs = asked.0.lock().expect("asked");
+        let q = qs.last().expect("the write was asked");
+        assert!(
+            !q.raises
+                .iter()
+                .any(|r| r.msgid.contains("content read earlier"))
+        );
+    }
+
+    #[test]
+    fn the_session_reports_verdicts_that_came_in() {
+        let quick = std::time::Duration::from_millis(10);
+        let (g, docs, _) = model_gate("keros-session", quick, "yes", 10.0);
+        let mut s = Session::default();
+        assert!(
+            g.handle(&files("read", &docs.join("a.txt")), &mut s)
+                .allowed
+        );
+        let end = Instant::now() + std::time::Duration::from_secs(5);
+        while s.pending() > 0 && Instant::now() < end {
+            std::thread::sleep(std::time::Duration::from_millis(20));
+            g.settle(&mut s, false);
+        }
+        assert_eq!(s.pending(), 0);
+        assert!(s.keros.findings.iter().any(|(_, f)| f.rule == "model"));
+    }
+
+    pub(crate) fn files(op: &str, path: &Path) -> ActionRequest {
         let p = path.display().to_string();
         parse_request(
             &json!({"tool": "org.vilna.mcp.files", "operation": op, "reason": "r",
@@ -1224,9 +2077,19 @@ mod tests {
     }
 
     #[test]
+    fn no_answer_in_time_is_not_a_no_from_the_person() {
+        // The window closed after the timeout: denied, but Gloxi must not
+        // tell the person they said no (seen in a VM, 2026-11-14).
+        let (g, docs) = gate("no-answer", Answer::TimedOut);
+        let mut s = Session::default();
+        let o = g.handle(&files("read", &docs.join("a.txt")), &mut s);
+        assert_eq!((o.allowed, o.code), (false, "denied_timeout"), "{o:?}");
+    }
+
+    #[test]
     fn denials_are_journalled() {
         let (g, docs) = gate("denials", Answer::Deny);
-        let mut s = SessionState::default();
+        let mut s = Session::default();
         let file = docs.join("a.txt");
         assert_eq!(g.handle(&files("read", &file), &mut s).code, "denied_user");
         assert_eq!(
@@ -1247,7 +2110,7 @@ mod tests {
     #[test]
     fn allowed_read_taints_and_raises_writes() {
         let (g, docs) = gate("taint", Answer::Once);
-        let mut s = SessionState::default();
+        let mut s = Session::default();
         let o = g.handle(&files("read", &docs.join("a.txt")), &mut s);
         assert_eq!((o.code, o.allowed), ("allowed", true));
         assert_eq!(o.result, Some(json!({"text": "hello"})));
@@ -1260,7 +2123,7 @@ mod tests {
     #[test]
     fn session_permission_and_undo() {
         let (g, docs) = gate("grant", Answer::Session);
-        let mut s = SessionState::default();
+        let mut s = Session::default();
         let o = g.handle(&files("write", &docs.join("a.txt")), &mut s);
         assert_eq!(o.message, "the user allowed (session)");
         let o2 = g.handle(&files("write", &docs.join("b.txt")), &mut s);
@@ -1269,6 +2132,559 @@ mod tests {
         assert_eq!(u.code, "allowed", "{u:?}");
         assert_eq!(g.undo("0123", &mut s).code, "denied_unknown");
         assert!(verify(g.journal().path()).is_ok());
+    }
+
+    #[test]
+    fn the_person_lists_and_revokes_permissions_and_reads_the_journal() {
+        let (g, docs) = gate("person", Answer::Session);
+        let mut s = Session::default();
+        let o = g.handle(&files("write", &docs.join("a.txt")), &mut s);
+        assert!(o.allowed);
+        let list = g.permissions();
+        let p = &list["permissions"][0];
+        assert_eq!(p["tool"], "org.vilna.mcp.files");
+        assert_eq!(p["duration"], "session");
+        assert!(p["created"].as_f64().is_some_and(|t| t > 0.0));
+        let id = p["grant_id"].as_str().expect("id").to_owned();
+        assert_eq!(g.revoke(&id), Ok(true));
+        assert_eq!(g.revoke(&id), Ok(false));
+        assert_eq!(g.permissions()["permissions"], json!([]));
+
+        let all = g.recent(1000)["records"]
+            .as_array()
+            .map(Vec::len)
+            .unwrap_or(0);
+        let last = g.recent(1);
+        let last = last["records"].as_array().expect("records");
+        assert_eq!(last.len(), 1);
+        assert_eq!(last[0]["kind"], "grant");
+        assert_eq!(last[0]["data"]["revoked"], id.as_str());
+        assert!(all >= 4, "{all}");
+        assert!(verify(g.journal().path()).is_ok());
+    }
+
+    const SETTINGS: &str = "org.vilna.mcp.settings";
+    const SYSTEM: &str = "org.vilna.mcp.system";
+    const APPS: &str = "org.vilna.mcp.apps";
+    const MAIL: &str = "org.vilna.mcp.mail";
+
+    /// A gate on R3 whose dialog only records what it was asked.
+    fn recording_gate(name: &str) -> (Gate, std::sync::Arc<Mutex<Vec<Question>>>, PathBuf) {
+        let (base, docs) = gate(name, Answer::Once);
+        let mut config = base.config.clone();
+        config.max_level = Level::R4;
+        let journal = Journal::open(&config.state_dir.join(format!("{name}.jsonl"))).expect("j");
+        let grants = GrantStore::new(&config.state_dir.join(format!("{name}.json")), now);
+        let asked = std::sync::Arc::new(Mutex::new(Vec::new()));
+        struct Record(std::sync::Arc<Mutex<Vec<Question>>>);
+        impl Confirmer for Record {
+            fn ask(&self, q: &Question, _t: f64) -> Answer {
+                self.0.lock().expect("lock").push(q.clone());
+                Answer::Once
+            }
+        }
+        let g = Gate::new(
+            config,
+            Registry::builtin().expect("manifests"),
+            Box::new(FakeTools),
+            grants,
+            journal,
+            Box::new(Record(std::sync::Arc::clone(&asked))),
+        )
+        .with_authority(Some(Box::new(Polkit::says(Verdict::Yes))));
+        (g, asked, docs)
+    }
+
+    /// polkit as the gate sees it: one verdict, and the actions it was asked about.
+    pub(crate) struct Polkit {
+        verdict: Verdict,
+        pub asked: std::sync::Arc<Mutex<Vec<String>>>,
+    }
+
+    impl Polkit {
+        pub(crate) fn says(verdict: Verdict) -> Polkit {
+            Polkit {
+                verdict,
+                asked: std::sync::Arc::default(),
+            }
+        }
+    }
+
+    impl Authority for Polkit {
+        fn check(&self, action: &str, details: &[(&str, &str)], _timeout: f64) -> Verdict {
+            let op = details.iter().find(|(k, _)| *k == "operation").map(|d| d.1);
+            self.asked
+                .lock()
+                .expect("lock")
+                .push(format!("{action} {}", op.unwrap_or("?")));
+            self.verdict.clone()
+        }
+    }
+
+    #[test]
+    fn what_changes_the_whole_computer_needs_polkit_after_the_person_s_yes() {
+        let install = || apps("install", json!({"app_id": "org.kde.kdenlive"}));
+        // polkit says yes: carried out, asked about the action of the manifest.
+        let (g, asked, _docs) = recording_gate("polkit-yes");
+        let yes = Polkit::says(Verdict::Yes);
+        let polkit_asked = std::sync::Arc::clone(&yes.asked);
+        let g = g.with_authority(Some(Box::new(yes)));
+        let mut s = Session::default();
+        let o = g.handle(&install(), &mut s);
+        assert_eq!((o.code, o.allowed), ("allowed", true), "{o:?}");
+        assert!(o.result.is_some(), "{o:?}");
+        assert_eq!(asked.lock().expect("lock").len(), 1);
+        assert_eq!(
+            *polkit_asked.lock().expect("lock"),
+            ["org.vilna.herkos.apps.change install"]
+        );
+        // The person's own things never ask polkit.
+        let search = g.handle(&apps("search", json!({"query": "video"})), &mut s);
+        assert!(search.allowed, "{search:?}");
+        assert_eq!(polkit_asked.lock().expect("lock").len(), 1);
+
+        // polkit says no, nobody answers it, or it cannot be asked: nothing is done.
+        for (name, verdict, code) in [
+            (
+                "polkit-no",
+                Verdict::No("not authorized".into()),
+                "denied_user",
+            ),
+            ("polkit-late", Verdict::TimedOut, "denied_timeout"),
+            (
+                "polkit-gone",
+                Verdict::Error("no agent".into()),
+                "denied_error",
+            ),
+        ] {
+            let (g, asked, _docs) = recording_gate(name);
+            let g = g.with_authority(Some(Box::new(Polkit::says(verdict))));
+            let mut s = Session::default();
+            let o = g.handle(&install(), &mut s);
+            assert_eq!((o.code, o.allowed), (code, false), "{name}: {o:?}");
+            assert!(o.result.is_none() && o.message.contains("polkit"), "{o:?}");
+            // Herkos asked first: what and why, then polkit: who.
+            assert_eq!(asked.lock().expect("lock").len(), 1, "{name}");
+            let journal = std::fs::read_to_string(g.config.state_dir.join(format!("{name}.jsonl")))
+                .expect("journal");
+            assert!(
+                journal.contains(code) && !journal.contains("\"result\""),
+                "{journal}"
+            );
+        }
+
+        // A person who said no is never shown polkit's window.
+        let (g, _asked, _docs) = recording_gate("polkit-person-no");
+        let never = Polkit::says(Verdict::Yes);
+        let never_asked = std::sync::Arc::clone(&never.asked);
+        let mut g = g.with_authority(Some(Box::new(never)));
+        g.confirmer = Box::new(DenyAll);
+        let o = g.handle(&install(), &mut Session::default());
+        assert_eq!(o.code, "denied_user", "{o:?}");
+        assert!(never_asked.lock().expect("lock").is_empty());
+
+        // Without polkit (Herkos-lite's place), such an operation is refused.
+        let (g, _asked, _docs) = recording_gate("polkit-none");
+        let g = g.with_authority(None);
+        let o = g.handle(&install(), &mut Session::default());
+        assert_eq!((o.code, o.allowed), ("denied_error", false), "{o:?}");
+    }
+
+    #[test]
+    fn a_session_permission_skips_herkos_s_window_but_never_polkit() {
+        let (g, _asked, _docs) = recording_gate("polkit-session");
+        let polkit = Polkit::says(Verdict::Yes);
+        let polkit_asked = std::sync::Arc::clone(&polkit.asked);
+        let mut g = g.with_authority(Some(Box::new(polkit)));
+        struct SaysSession;
+        impl Confirmer for SaysSession {
+            fn ask(&self, _q: &Question, _t: f64) -> Answer {
+                Answer::Session
+            }
+        }
+        g.confirmer = Box::new(SaysSession);
+        let mut s = Session::default();
+        for _ in 0..2 {
+            let o = g.handle(&apps("update", json!({})), &mut s);
+            assert!(o.allowed, "{o:?}");
+        }
+        assert_eq!(
+            *polkit_asked.lock().expect("lock"),
+            [
+                "org.vilna.herkos.apps.change update",
+                "org.vilna.herkos.apps.change update"
+            ]
+        );
+    }
+
+    #[test]
+    fn a_message_is_sent_only_after_a_yes_every_time_with_all_of_it_shown() {
+        let (g, asked, _docs) = recording_gate("mail");
+        let mut s = Session::default();
+        let message = json!({
+            "account": "ola@example.org", "to": ["marta@example.com"],
+            "bcc": ["boss@example.com"], "subject": "Lunch", "text": "Friday, 13:00?"
+        });
+        let send = parse_request(&json!({
+            "tool": MAIL, "operation": "send", "reason": "the person asked to answer Marta",
+            "arguments": message
+        }))
+        .expect("valid");
+        for _ in 0..3 {
+            let o = g.handle(&send, &mut s);
+            assert_eq!((o.code, o.level), ("allowed", Some(Level::R4)), "{o:?}");
+        }
+        let asked = asked.lock().expect("lock");
+        assert_eq!(asked.len(), 3, "no permission covers sending");
+        let q = asked.last().expect("asked");
+        assert_eq!(q.choices, vec![Answer::Once]);
+        // Exactly the message: sender, every recipient (Bcc too), subject, text.
+        assert_eq!(q.content, Some(message));
+    }
+
+    fn apps(operation: &str, arguments: Value) -> ActionRequest {
+        parse_request(&json!({
+            "tool": APPS, "operation": operation, "reason": "the person wants to edit video",
+            "arguments": arguments
+        }))
+        .expect("valid")
+    }
+
+    #[test]
+    fn installing_an_app_is_r3_and_the_dialog_shows_what_the_app_is() {
+        let (g, asked, _docs) = recording_gate("apps");
+        let mut s = Session::default();
+        let o = g.handle(
+            &apps("install", json!({"app_id": "org.kde.kdenlive"})),
+            &mut s,
+        );
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R3)), "{o:?}");
+        let q = asked.lock().expect("lock")[0].clone();
+        let content = q.content.expect("facts");
+        assert_eq!(content["App"], "Kdenlive");
+        assert_eq!(content["Download"], "120.0 MB");
+        // Long text is cut; R3 does not list the raw arguments.
+        assert!(
+            content["Can reach"]
+                .as_str()
+                .is_some_and(|c| c.chars().count() == 401)
+        );
+        assert!(content.get("app_id").is_none());
+        // Undo removes it again, asked again with the facts.
+        let u = g.undo(&o.action_id, &mut s);
+        assert_eq!((u.code, u.level), ("allowed", Some(Level::R3)), "{u:?}");
+        let asked = asked.lock().expect("lock");
+        assert_eq!(asked.len(), 2);
+        assert_eq!(asked[1].operation, "restore");
+        assert_eq!(
+            asked[1].content.as_ref().map(|c| c["App"].clone()),
+            Some(json!("Kdenlive"))
+        );
+    }
+
+    #[test]
+    fn an_app_asked_for_after_untrusted_content_is_r4_with_its_exact_name() {
+        let (g, asked, docs) = recording_gate("apps-taint");
+        let mut s = Session::default();
+        let read = g.handle(&files("read", &docs.join("page.html")), &mut s);
+        assert!(read.allowed && s.tainted, "{read:?}");
+        let o = g.handle(
+            &apps("install", json!({"app_id": "org.example.Gone"})),
+            &mut s,
+        );
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R4)), "{o:?}");
+        let q = asked.lock().expect("lock").last().cloned().expect("asked");
+        assert_eq!(q.operation, "install");
+        let content = q.content.expect("content");
+        assert_eq!(content["app_id"], "org.example.Gone");
+        assert_eq!(content["preview"], "not available: not in flathub");
+        assert!(!q.taint_sources.is_empty());
+    }
+
+    #[test]
+    fn gloxi_can_never_add_a_source_of_apps_or_install_a_file() {
+        let (g, asked, _docs) = recording_gate("apps-forbidden");
+        let mut s = Session::default();
+        for op in ["add_remote", "install_from_file"] {
+            let o = g.handle(
+                &apps(op, json!({"url": "https://example.org/repo"})),
+                &mut s,
+            );
+            assert_eq!((o.code, o.allowed), ("denied_forbidden", false), "{o:?}");
+        }
+        // Looking needs no dialog.
+        let o = g.handle(&apps("search", json!({"query": "video"})), &mut s);
+        assert_eq!(o.level, Some(Level::R0), "{o:?}");
+        assert!(asked.lock().expect("lock").is_empty());
+    }
+
+    #[test]
+    fn a_return_of_the_system_is_r4_and_undone_like_any_change() {
+        let (base, _docs) = gate("system", Answer::Once);
+        let mut config = base.config.clone();
+        config.max_level = Level::R4;
+        let journal = Journal::open(&config.state_dir.join("j3.jsonl")).expect("journal");
+        let grants = GrantStore::new(&config.state_dir.join("p3.json"), now);
+        let asked = std::sync::Arc::new(Mutex::new(Vec::new()));
+        struct Record(std::sync::Arc<Mutex<Vec<Question>>>);
+        impl Confirmer for Record {
+            fn ask(&self, q: &Question, _t: f64) -> Answer {
+                self.0.lock().expect("lock").push(q.clone());
+                Answer::Once
+            }
+        }
+        let g = Gate::new(
+            config,
+            Registry::builtin().expect("manifests"),
+            Box::new(FakeTools),
+            grants,
+            journal,
+            Box::new(Record(std::sync::Arc::clone(&asked))),
+        )
+        .with_authority(Some(Box::new(Polkit::says(Verdict::Yes))));
+        let mut s = Session::default();
+        let back = parse_request(&json!({
+            "tool": SYSTEM, "operation": "rollback", "reason": "the update broke the sound",
+            "arguments": {"snapshot": 1}
+        }))
+        .expect("valid");
+        let o = g.handle(&back, &mut s);
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R4)), "{o:?}");
+        let u = g.undo(&o.action_id, &mut s);
+        assert_eq!((u.code, u.level), ("allowed", Some(Level::R4)), "{u:?}");
+        let asked = asked.lock().expect("lock");
+        // Asked every time, once only, with the state it goes to.
+        assert_eq!(asked.len(), 2);
+        assert_eq!(asked[0].choices, vec![Answer::Once]);
+        assert_eq!(asked[0].content, Some(json!({"snapshot": 1})));
+        assert_eq!(
+            (asked[1].operation.as_str(), asked[1].content.clone()),
+            ("restore", Some(json!({"snapshot": 7})))
+        );
+    }
+
+    /// Snapper as seen by the gate: numbers count up; `changes` gives a fixed list.
+    pub(crate) struct FakeSnapshots {
+        pub home: PathBuf,
+        pub log: std::sync::Arc<Mutex<Vec<String>>>,
+        pub fail: bool,
+        pub changed: Vec<crate::snapshots::Change>,
+    }
+
+    impl Snapshots for FakeSnapshots {
+        fn subvolume(&self) -> &Path {
+            &self.home
+        }
+        fn before(&self, action_id: &str) -> Result<u64, String> {
+            if self.fail {
+                return Err("snapperd is not running".into());
+            }
+            let mut log = self.log.lock().expect("log");
+            log.push(format!("pre {action_id}"));
+            Ok(log.len() as u64)
+        }
+        fn after(&self, pre: u64, action_id: &str) -> Result<u64, String> {
+            let mut log = self.log.lock().expect("log");
+            log.push(format!("post {pre} {action_id}"));
+            Ok(log.len() as u64)
+        }
+        fn changes(&self, from: u64, to: u64) -> Result<Vec<crate::snapshots::Change>, String> {
+            self.log
+                .lock()
+                .expect("log")
+                .push(format!("status {from}..{to}"));
+            Ok(self.changed.clone())
+        }
+    }
+
+    fn change(kind: char, path: &Path) -> crate::snapshots::Change {
+        crate::snapshots::Change {
+            kind,
+            path: path.display().to_string(),
+        }
+    }
+
+    fn restore_request(path: &Path) -> ActionRequest {
+        let p = path.display().to_string();
+        parse_request(&json!({
+            "tool": FILES, "operation": "restore_snapshot", "reason": "r",
+            "resources": [file_uri(&p)],
+            "arguments": {"pre": 1, "paths": [p]}
+        }))
+        .expect("valid")
+    }
+
+    #[test]
+    fn snapshots_make_a_change_undoable() {
+        let (g, docs) = gate("snap", Answer::Once);
+        let home = docs.parent().expect("home").to_path_buf();
+        let a = docs.join("a.txt");
+        let mut s = Session::default();
+
+        // No snapshots: the tool keeps no backup, so it cannot be undone (R3,
+        // more than this gate may do).
+        let o = g.handle(&restore_request(&a), &mut s);
+        assert_eq!(
+            (o.code, o.level),
+            ("denied_level", Some(Level::R3)),
+            "{o:?}"
+        );
+
+        let log = std::sync::Arc::new(Mutex::new(Vec::new()));
+        let g = g.with_snapshots(Some(Box::new(FakeSnapshots {
+            home: home.clone(),
+            log: log.clone(),
+            fail: false,
+            changed: vec![
+                change('c', &a),
+                change('.', &docs.join("only-metadata")),
+                change('+', &home.join(".snapshots/9/snapshot/x")),
+                change('-', &home.join("Downloads/b")),
+                change('+', &docs.join("new.txt")),
+            ],
+        })));
+        let o = g.handle(&restore_request(&a), &mut s);
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R2)), "{o:?}");
+        let id = o.action_id.clone();
+        assert_eq!(
+            *log.lock().expect("log"),
+            vec![format!("pre {id}"), format!("post 1 {id}")]
+        );
+
+        // Undo: only the files changed in the allowed folders go back.
+        let u = g.undo(&id, &mut s);
+        assert_eq!(u.code, "allowed", "{u:?}");
+        let restored = u.result.as_ref().map(|r| r["restored"].clone());
+        let expect = json!([
+            a.display().to_string(),
+            docs.join("new.txt").display().to_string()
+        ]);
+        assert_eq!(restored, Some(expect));
+        assert_eq!(log.lock().expect("log")[2], "status 1..2");
+        // The undo took its own pair of snapshots: it can be undone too.
+        let records = read_records(g.journal().path()).expect("records");
+        let undo = records
+            .iter()
+            .flatten()
+            .filter(|r| r["action_id"] == u.action_id.as_str() && r["kind"] == "result")
+            .map(|r| r["data"]["undo"].clone())
+            .next();
+        assert_eq!(undo, Some(json!({"snapshot": {"pre": 4, "post": 5}})));
+        assert!(verify(g.journal().path()).is_ok());
+    }
+
+    #[test]
+    fn no_snapshot_no_action() {
+        let (g, docs) = gate("snapfail", Answer::Once);
+        let home = docs.parent().expect("home").to_path_buf();
+        let g = g.with_snapshots(Some(Box::new(FakeSnapshots {
+            home,
+            log: std::sync::Arc::new(Mutex::new(Vec::new())),
+            fail: true,
+            changed: Vec::new(),
+        })));
+        let mut s = Session::default();
+        let o = g.handle(&restore_request(&docs.join("a")), &mut s);
+        assert!(!o.allowed);
+        assert_eq!(o.code, "denied_mitos", "{o:?}");
+        assert!(o.message.contains("snapperd"), "{o:?}");
+        assert!(verify(g.journal().path()).is_ok());
+    }
+
+    #[test]
+    fn snapshots_cover_only_the_home() {
+        let (g, docs) = gate("snapout", Answer::Once);
+        let g = g.with_snapshots(Some(Box::new(FakeSnapshots {
+            home: PathBuf::from("/elsewhere"),
+            log: std::sync::Arc::new(Mutex::new(Vec::new())),
+            fail: false,
+            changed: Vec::new(),
+        })));
+        let mut s = Session::default();
+        let o = g.handle(&restore_request(&docs.join("a")), &mut s);
+        assert_eq!(
+            (o.code, o.level),
+            ("denied_level", Some(Level::R3)),
+            "{o:?}"
+        );
+        // A file tool's own undo needs no snapshot.
+        let w = parse_request(&json!({
+            "tool": FILES, "operation": "write", "reason": "r",
+            "resources": [file_uri(&docs.join("a").display().to_string())],
+            "arguments": {"path": docs.join("a").display().to_string(), "text": "x"}
+        }))
+        .expect("valid");
+        assert!(!g.handle(&w, &mut s).snapshot);
+    }
+
+    #[test]
+    fn a_list_of_files_must_all_be_declared() {
+        let (g, docs) = gate("snaplist", Answer::Once);
+        let (a, b) = (
+            docs.join("a").display().to_string(),
+            docs.join("b").display().to_string(),
+        );
+        let mut s = Session::default();
+        let r = parse_request(&json!({
+            "tool": FILES, "operation": "restore_snapshot", "reason": "r",
+            "resources": [file_uri(&a)],
+            "arguments": {"pre": 1, "paths": [a, b]}
+        }))
+        .expect("valid");
+        assert_eq!(g.handle(&r, &mut s).code, "denied_mismatch");
+        let empty = parse_request(&json!({
+            "tool": FILES, "operation": "restore_snapshot", "reason": "r",
+            "resources": [], "arguments": {"pre": 1, "paths": []}
+        }))
+        .expect("valid");
+        assert_eq!(g.handle(&empty, &mut s).code, "denied_mismatch");
+    }
+
+    #[test]
+    fn undo_with_arguments_from_the_tool() {
+        let (g, _docs) = gate("settings", Answer::Once);
+        let mut s = Session::default();
+        let dark = parse_request(&json!({
+            "tool": SETTINGS, "operation": "set_color_scheme", "reason": "r",
+            "arguments": {"scheme": "dark"}
+        }))
+        .expect("valid");
+        let o = g.handle(&dark, &mut s);
+        assert_eq!((o.code, o.level), ("allowed", Some(Level::R2)), "{o:?}");
+        let u = g.undo(&o.action_id, &mut s);
+        assert_eq!(u.code, "allowed", "{u:?}");
+        // The undo is undoable too: restore said what it replaced.
+        let r = g.undo(&u.action_id, &mut s);
+        assert_eq!(r.code, "allowed", "{r:?}");
+        assert!(verify(g.journal().path()).is_ok());
+    }
+
+    #[test]
+    fn undo_arguments_have_limits() {
+        let registry = Registry::builtin().expect("builtin");
+        let op = registry
+            .get(SETTINGS)
+            .and_then(|m| m.operations.get("set_color_scheme"))
+            .expect("op")
+            .clone();
+        let request = parse_request(
+            &json!({"tool": SETTINGS, "operation": "set_color_scheme", "reason": "r"}),
+        )
+        .expect("valid");
+        let ok = json!({"undo_arguments": {"values": {"color_scheme": "default"}}});
+        assert_eq!(
+            undo_info(&request, &op, &ok),
+            Some(json!({"arguments": {"values": {"color_scheme": "default"}}}))
+        );
+        let huge = json!({"undo_arguments": {"x": "a".repeat(UNDO_ARGUMENTS_MAX)}});
+        assert_eq!(undo_info(&request, &op, &huge), None);
+        for bad in [
+            json!({"undo_arguments": []}),
+            json!({"undo_arguments": {}}),
+            json!({}),
+        ] {
+            assert_eq!(undo_info(&request, &op, &bad), None);
+        }
     }
 
     /// Answers from a list, one per question, and keeps the questions.
@@ -1317,7 +2733,7 @@ mod tests {
             journal,
             Box::new(Shared(std::sync::Arc::clone(&script))),
         );
-        let mut s = SessionState::default();
+        let mut s = Session::default();
         // R3: every time or for the session, never for good.
         let o = g.handle(&files("delete", &docs.join("a.txt")), &mut s);
         assert_eq!((o.code, o.level), ("allowed", Some(Level::R3)), "{o:?}");

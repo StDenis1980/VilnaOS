@@ -1,0 +1,824 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The first installer screen (uk). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Welcome to Vilna"
+msgstr "Вітаємо у Vilna"
+
+msgid "Blavet release"
+msgstr "Випуск Blavet"
+
+msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
+msgstr "Виберіть мову. Далі я, Gloxi, допоможу встановити систему, або можна пройти кроки самостійно."
+
+msgid "Screen reader"
+msgstr "Читач екрана"
+
+msgid "Without the assistant"
+msgstr "Без асистента"
+
+msgid "Continue with Gloxi"
+msgstr "Далі з Gloxi"
+
+msgid "Install Vilna"
+msgstr "Встановлення Vilna"
+
+msgid "Other languages"
+msgstr "Інші мови"
+
+msgid "Search for a language"
+msgstr "Пошук мови"
+
+# The conversation with Gloxi (steps 1–13). New texts are in uk only for now;
+# the other eight languages fall back to English until they are translated.
+
+msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the right and change any item yourself."
+msgstr "Я Gloxi, допоможу встановити Vilna. Нічого на диску не зміниться, доки ви не підтвердите план; його видно праворуч, і будь-який пункт можна змінити самостійно."
+
+msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
+msgstr "Якими мовами ви пишете? Я додам і їхні розкладки клавіатури, наприклад українську й англійську."
+
+msgid "Gloxi cannot start on this computer right now. You can go on without the assistant: the steps are the same, and what you chose stays in the plan."
+msgstr "Gloxi зараз не може запуститися на цьому комп'ютері. Можна продовжити без асистента: кроки ті самі, а вже обране лишається в плані."
+
+msgid "Gloxi did not answer. Try again, or go on without the assistant."
+msgstr "Gloxi не відповів. Спробуйте ще раз або продовжте без асистента."
+
+msgid "Gloxi is thinking…"
+msgstr "Gloxi думає…"
+
+msgid "Send"
+msgstr "Надіслати"
+
+msgid "Message to Gloxi"
+msgstr "Повідомлення для Gloxi"
+
+msgid "Change"
+msgstr "Змінити"
+
+msgid "Plan"
+msgstr "План"
+
+msgid "Not decided yet"
+msgstr "Ще не вирішено"
+
+msgid "Check and confirm the plan"
+msgstr "Перевірити й підтвердити план"
+
+msgid "Wi-Fi password for {name}"
+msgstr "Пароль Wi‑Fi для {name}"
+
+msgid "Connect"
+msgstr "Підключити"
+
+msgid "Connecting…"
+msgstr "Підключення…"
+
+msgid "Could not connect. Check the password and try again."
+msgstr "Не вдалося підключитися. Перевірте пароль і спробуйте ще раз."
+
+msgid "Password for {name}"
+msgstr "Пароль для {name}"
+
+msgid "Repeat the password"
+msgstr "Повторіть пароль"
+
+msgid "The passwords are not the same."
+msgstr "Паролі не збігаються."
+
+msgid "At least 8 characters."
+msgstr "Щонайменше 8 символів."
+
+msgid "Passphrase for the disk"
+msgstr "Фраза-пароль для диска"
+
+msgid "Save"
+msgstr "Зберегти"
+
+msgid "Gloxi does not see what you type here."
+msgstr "Gloxi не бачить того, що ви тут вводите."
+
+msgid "entered"
+msgstr "введено"
+
+msgid "Without a network"
+msgstr "Без мережі"
+
+msgid "Cable"
+msgstr "Кабель"
+
+msgid "Erase the whole disk"
+msgstr "Стерти весь диск"
+
+msgid "Manual layout"
+msgstr "Розмітка вручну"
+
+msgid "Encrypted, with a recovery key"
+msgstr "Зашифровано, з ключем відновлення"
+
+msgid "Encrypted with a passphrase"
+msgstr "Зашифровано фразою-паролем"
+
+msgid "Not encrypted"
+msgstr "Без шифрування"
+
+msgid "Cloud model off until the first login"
+msgstr "Хмарна модель вимкнена до першого входу"
+
+msgid "Languages and keyboard"
+msgstr "Мови й клавіатура"
+
+msgid "Network"
+msgstr "Мережа"
+
+msgid "Disk"
+msgstr "Диск"
+
+msgid "Encryption"
+msgstr "Шифрування"
+
+msgid "Account"
+msgstr "Обліковий запис"
+
+msgid "Time and region"
+msgstr "Час і регіон"
+
+msgid "Privacy"
+msgstr "Приватність"
+
+msgid "Gloxi is waking up… The first start from the USB stick can take a few minutes. You can also go on without the assistant."
+msgstr "Gloxi прокидається… Перший запуск із флешки може тривати кілька хвилин. Можна й продовжити без асистента."
+
+msgid "Shall we connect to a network now? It is not needed: everything for installing is already on the USB stick. Name your Wi-Fi network, or say that we go on without a network."
+msgstr "Підключимося до мережі зараз? Це не обов'язково: усе для встановлення вже є на флешці. Назвіть свою мережу Wi-Fi або скажіть, що продовжимо без мережі."
+
+msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
+msgstr "Що зробимо з диском? Раджу стерти весь диск і встановити Vilna; інший спосіб — власна розмітка в редакторі розділів."
+
+msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
+msgstr "Збережіть ключ відновлення в надійному місці: без нього ніхто, навіть ви, не відкриє диск, якщо в комп'ютері щось зміниться."
+
+msgid "What is your name? From it I will suggest a login name and a name for the computer."
+msgstr "Як вас звати? З імені я запропоную ім'я для входу й назву комп'ютера."
+
+msgid "I suggest the time zone {timezone} and the date and number formats of {region}. Is that right? If not, name your city or country."
+msgstr "Пропоную часовий пояс {timezone} і формати дат і чисел за мовою «{region}». Так? Якщо ні, назвіть своє місто або країну."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi працює просто на цьому комп'ютері, і те, що ви йому кажете, лишається тут. Хмарна модель зараз вимкнена; її можна обрати після першого входу, і тоді шлюз приватності приховає імена й номери, перш ніж щось вийде за межі комп'ютера. Одне питання тут лише ваше, тож я не відповідаю за вас: оберіть нижче."
+
+# The classic wizard without the assistant (wizard.py).
+
+msgid "Summary"
+msgstr "Підсумок"
+
+msgid "Step {number} of {count}: {title}"
+msgstr "Крок {number} з {count}: {title}"
+
+msgid "Back"
+msgstr "Назад"
+
+msgid "Next"
+msgstr "Далі"
+
+msgid "Which languages do you write in? The first one chosen is the main language."
+msgstr "Якими мовами ви пишете? Перша вибрана мова — основна."
+
+msgid "Main language"
+msgstr "Основна мова"
+
+msgid "Keyboard layouts"
+msgstr "Розкладки клавіатури"
+
+msgid "Another keyboard layout"
+msgstr "Ще одна розкладка"
+
+msgid "None"
+msgstr "Немає"
+
+msgid "A network is not needed: everything for installing is already on the USB stick."
+msgstr "Мережа не потрібна: усе для встановлення вже є на флешці."
+
+msgid "Wi-Fi networks"
+msgstr "Мережі Wi‑Fi"
+
+msgid "Look for networks again"
+msgstr "Шукати мережі ще раз"
+
+msgid "No Wi-Fi networks found."
+msgstr "Мереж Wi‑Fi не знайдено."
+
+msgid "Connected"
+msgstr "Підключено"
+
+msgid "Choose the disk for Vilna and what to do with it."
+msgstr "Виберіть диск для Vilna і що з ним зробити."
+
+msgid "Disks"
+msgstr "Диски"
+
+msgid "What to do with the disk"
+msgstr "Що зробити з диском"
+
+msgid "Erase the whole disk and install Vilna"
+msgstr "Стерти весь диск і встановити Vilna"
+
+msgid "Choose the partitions yourself in the partition editor"
+msgstr "Самі виберіть розділи в редакторі розділів"
+
+msgid "Empty"
+msgstr "Порожній"
+
+msgid "{size} free"
+msgstr "вільно {size}"
+
+msgid "Everything on this disk will be erased: {what}."
+msgstr "Усе на цьому диску буде стерто: {what}."
+
+msgid "Open the partition editor"
+msgstr "Відкрити редактор розділів"
+
+msgid "Partition editor"
+msgstr "Редактор розділів"
+
+msgid "Choose what each partition is for. Partitions you do not use stay as they are. New partitions go into the largest free space."
+msgstr "Виберіть, для чого кожен розділ. Розділи, які ви не використовуєте, лишаються як є. Нові розділи створюються в найбільшому вільному місці."
+
+msgid "Partitions on the disk"
+msgstr "Розділи на диску"
+
+msgid "New partitions"
+msgstr "Нові розділи"
+
+msgid "Add a partition"
+msgstr "Додати розділ"
+
+msgid "Remove"
+msgstr "Прибрати"
+
+msgid "Suggest a layout"
+msgstr "Запропонувати розмітку"
+
+msgid "Use"
+msgstr "Призначення"
+
+msgid "Format (erase)"
+msgstr "Форматувати (стерти)"
+
+msgid "Size, GiB"
+msgstr "Розмір, GiB"
+
+msgid "Not used, keep"
+msgstr "Не використовувати, лишити"
+
+msgid "EFI system partition"
+msgstr "Системний розділ EFI"
+
+msgid "System"
+msgstr "Система"
+
+msgid "Home folders"
+msgstr "Домашні теки"
+
+msgid "Swap"
+msgstr "Підкачка"
+
+msgid "Partitions chosen: {count}"
+msgstr "Вибрано розділів: {count}"
+
+msgid "Encryption keeps your files safe if the computer or the disk is lost or stolen."
+msgstr "Шифрування береже ваші файли, якщо комп'ютер чи диск загубиться або його вкрадуть."
+
+msgid "The disk opens by itself on this computer; a recovery key opens it if something changes. Recommended."
+msgstr "Диск відкривається сам на цьому комп'ютері; ключ відновлення відкриє його, якщо щось зміниться. Рекомендовано."
+
+msgid "This computer has no TPM 2.0 chip, so this way is not available."
+msgstr "У цьому комп'ютері немає чипа TPM 2.0, тому цей спосіб недоступний."
+
+msgid "You type the passphrase every time the computer starts."
+msgstr "Фразу треба вводити щоразу, коли комп'ютер вмикається."
+
+msgid "Anyone who has the disk can read your files."
+msgstr "Будь-хто, у кого опиниться диск, зможе прочитати ваші файли."
+
+msgid "The next screen shows the recovery key; keep it safe."
+msgstr "Наступний екран покаже ключ відновлення; збережіть його в надійному місці."
+
+msgid "Your name"
+msgstr "Ваше ім'я"
+
+msgid "Login name"
+msgstr "Ім'я для входу"
+
+msgid "Computer name"
+msgstr "Назва комп'ютера"
+
+msgid "Time zone"
+msgstr "Часовий пояс"
+
+msgid "Date and number formats"
+msgstr "Формати дат і чисел"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi працює просто на цьому комп'ютері, і те, що ви йому кажете, лишається тут. Хмарна модель зараз вимкнена; її можна вибрати після першого входу, і тоді шлюз приватності ховає імена й номери, перш ніж щось покине комп'ютер."
+
+msgid "What happens to the disk"
+msgstr "Що станеться з диском"
+
+msgid "Still to do"
+msgstr "Що ще зробити"
+
+msgid "The plan is ready. The next screen, from Herkos, shows exactly what will change."
+msgstr "План готовий. Наступний екран, від Herkos, точно покаже, що зміниться."
+
+msgid "Fill in this step."
+msgstr "Заповніть цей крок."
+
+msgid "{name} ({size}{what}) will be erased"
+msgstr "{name} ({size}{what}) буде стерто"
+
+msgid "{name} ({size}{what}) stays as it is"
+msgstr "{name} ({size}{what}) лишається як є"
+
+msgid "{name} ({size}) is used as {use}, its files stay"
+msgstr "{name} ({size}) стає розділом «{use}», файли на ньому лишаються"
+
+msgid "A new partition of {size} is created{use}"
+msgstr "Створюється новий розділ на {size}{use}"
+
+msgid "Partitions are chosen in the partition editor"
+msgstr "Розділи вибираються в редакторі розділів"
+
+msgid "Type your name."
+msgstr "Введіть своє ім'я."
+
+msgid "Choose a disk."
+msgstr "Виберіть диск."
+
+msgid "Choose one of the options."
+msgstr "Виберіть один із варіантів."
+
+msgid "Connect to the Wi-Fi network first, or choose another way."
+msgstr "Спершу підключіться до мережі Wi‑Fi або виберіть інший спосіб."
+
+msgid "Type the Wi-Fi password and connect."
+msgstr "Введіть пароль Wi‑Fi і підключіться."
+
+msgid "Type the password for the account."
+msgstr "Введіть пароль облікового запису."
+
+msgid "Type the passphrase for the disk."
+msgstr "Введіть фразу для диска."
+
+msgid "The disks changed (a disk added or removed?). Choose the disk again."
+msgstr "Диски змінилися (додали чи вийняли диск?). Виберіть диск ще раз."
+
+# The summary of the plan and the Herkos confirmation screen (step 12).
+
+msgid "{n} GiB"
+msgstr "{n} ГіБ"
+
+msgid "{n} MiB"
+msgstr "{n} МіБ"
+
+msgid "Erased: {what}"
+msgstr "Буде стерто: {what}"
+
+msgid "Formatted for {use}, everything on it erased: {what}"
+msgstr "Буде відформатовано під {use}, усе на ньому стерто: {what}"
+
+msgid "Kept as it is: {what}"
+msgstr "Лишається як є: {what}"
+
+msgid "Shrunk to {to}: {what}"
+msgstr "Буде зменшено до {to}: {what}"
+
+msgid "Used for {use} without formatting: {what}"
+msgstr "Використовується під {use} без форматування: {what}"
+
+msgid "New: Vilna, {size}"
+msgstr "Нове: Vilna, {size}"
+
+msgid "New: Vilna, {size}, encrypted"
+msgstr "Нове: Vilna, {size}, зашифровано"
+
+msgid "New partition for {use}: {size}"
+msgstr "Новий розділ під {use}: {size}"
+
+msgid "Your own layout of {disk}"
+msgstr "Власна розмітка диска {disk}"
+
+msgid "{model} ({name}, {size})"
+msgstr "{model} ({name}, {size})"
+
+msgid "Disk {name}, {size}"
+msgstr "Диск {name}, {size}"
+
+msgid "encrypted with {kind}"
+msgstr "зашифровано {kind}"
+
+msgid "unknown contents"
+msgstr "невідомий вміст"
+
+msgid "empty"
+msgstr "порожній"
+
+msgid "the boot partition (EFI)"
+msgstr "розділ завантаження (EFI)"
+
+msgid "the system"
+msgstr "систему"
+
+msgid "home folders"
+msgstr "домашні теки"
+
+msgid "swap"
+msgstr "підкачку"
+
+msgid "The disks changed since they were looked at (a USB stick put in or taken out?). Choose the disk again."
+msgstr "Диски змінилися після огляду (вставили чи вийняли флешку?). Виберіть диск ще раз."
+
+msgid "The chosen disk is not in the computer now. Choose the disk again."
+msgstr "Вибраного диска зараз немає в комп'ютері. Виберіть диск ще раз."
+
+msgid "This is the USB stick Vilna is running from. Choose another disk."
+msgstr "З цієї флешки зараз працює Vilna. Виберіть інший диск."
+
+msgid "This disk is read-only. Choose another disk."
+msgstr "Цей диск лише для читання. Виберіть інший диск."
+
+msgid "There is not enough room: Vilna needs at least 40 GiB."
+msgstr "Замало місця: Vilna потрібно щонайменше 40 ГіБ."
+
+msgid "There is not enough free space for these partitions."
+msgstr "Для цих розділів замало вільного місця."
+
+msgid "The EFI system partition needs at least 256 MiB."
+msgstr "Системному розділу EFI потрібно щонайменше 256 МіБ."
+
+msgid "This disk has RAID, LVM or a filesystem Vilna does not know: only the partition editor can use it."
+msgstr "На цьому диску RAID, LVM або файлова система, якої Vilna не знає: його можна використати лише в редакторі розділів."
+
+msgid "Choose the partitions in the partition editor."
+msgstr "Виберіть розділи в редакторі розділів."
+
+msgid "Choose exactly one EFI system partition."
+msgstr "Виберіть рівно один системний розділ EFI."
+
+msgid "Choose exactly one partition for the system."
+msgstr "Виберіть рівно один розділ для системи."
+
+msgid "The system and swap partitions are always formatted."
+msgstr "Розділи системи й підкачки завжди форматуються."
+
+msgid "This partition is not an EFI system partition; format it or choose another."
+msgstr "Цей розділ — не системний розділ EFI; відформатуйте його або виберіть інший."
+
+msgid "This partition cannot be kept for home folders; format it or choose another."
+msgstr "Цей розділ не можна лишити для домашніх тек; відформатуйте його або виберіть інший."
+
+msgid "Only a Linux partition can be kept for home folders; format it."
+msgstr "Для домашніх тек можна лишити лише розділ Linux; відформатуйте цей."
+
+msgid "A partition is chosen twice."
+msgstr "Один розділ вибрано двічі."
+
+msgid "Choose at most one partition for home folders."
+msgstr "Виберіть не більше одного розділу для домашніх тек."
+
+msgid "Choose at most one swap partition."
+msgstr "Виберіть не більше одного розділу підкачки."
+
+msgid "This comes in a later version of Vilna."
+msgstr "Це буде в наступних версіях Vilna."
+
+msgid "A login name starts with a Latin letter and has only small Latin letters, digits, «-» and «_»."
+msgstr "Ім'я для входу починається з латинської літери і має лише малі латинські літери, цифри, «-» і «_»."
+
+msgid "The system already uses this login name; choose another."
+msgstr "Система вже використовує це ім'я для входу; виберіть інше."
+
+msgid "A computer name has only small Latin letters, digits and «-»."
+msgstr "Назва комп'ютера має лише малі латинські літери, цифри і «-»."
+
+msgid "Worth knowing"
+msgstr "Варто знати"
+
+msgid "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its recovery key (48 digits) once. Save the key before going on: it is in your Microsoft account or on the printout you made."
+msgstr "Windows на цьому диску використовує BitLocker. Після встановлення Vilna Windows може один раз попросити ключ відновлення (48 цифр). Збережіть ключ, перш ніж продовжити: він є у вашому обліковому записі Microsoft або на роздруківці, яку ви зробили."
+
+msgstr "З цієї флешки зараз працює Vilna. Виберіть інший диск."
+
+msgid "The chosen disk cannot be written to."
+msgstr "На вибраний диск не можна записувати."
+
+msgid "The disk is too small: Vilna needs at least 40 GiB."
+msgstr "Диск замалий: Vilna потрібно щонайменше 40 ГіБ."
+
+msgid "The disk has RAID, LVM or a filesystem Vilna does not know: only your own layout in the partition editor is possible."
+msgstr "На диску RAID, LVM або файлова система, якої Vilna не знає: можлива лише власна розмітка в редакторі розділів."
+
+msgid "This way of installing comes in a later version of Vilna."
+msgstr "Такий спосіб встановлення з'явиться в одній із наступних версій Vilna."
+
+msgid "Make the layout in the partition editor first."
+msgstr "Спершу зробіть розмітку в редакторі розділів."
+
+msgid "The Wi-Fi password is not entered yet."
+msgstr "Пароль Wi-Fi ще не введено."
+
+msgid "The account password is not entered yet."
+msgstr "Пароль облікового запису ще не введено."
+
+msgid "The disk passphrase is not entered yet."
+msgstr "Фразу для диска ще не введено."
+
+msgid "There is not enough free space for Vilna on the disk."
+msgstr "На диску замало вільного місця для Vilna."
+
+msgid "This computer has no TPM 2.0 chip that can keep the disk key. Choose encryption with a passphrase instead."
+msgstr "У цьому комп'ютері немає чипа TPM 2.0, який може зберігати ключ диска. Виберіть натомість шифрування з фразою."
+
+msgid "Without encryption anyone who has the disk can read your files."
+msgstr "Без шифрування будь-хто, у кого опиниться диск, прочитає ваші файли."
+
+msgid "The chosen disk is removable, such as a USB disk."
+msgstr "Вибраний диск знімний, наприклад USB-диск."
+
+msgid "The plan cannot be installed yet: {message}"
+msgstr "План поки не можна встановити: {message}"
+
+msgid "Not decided yet: {parts}"
+msgstr "Ще не вирішено: {parts}"
+
+msgid "Herkos"
+msgstr "Herkos"
+
+msgid "Confirm the installation"
+msgstr "Підтвердьте встановлення"
+
+msgid "Check what will happen. Nothing has changed on the disks yet; after you confirm, Vilna is installed and this cannot be undone."
+msgstr "Перевірте, що станеться. На дисках поки нічого не змінено; після підтвердження Vilna встановиться, і скасувати це буде неможливо."
+
+msgid "What happens to the disks"
+msgstr "Що станеться з дисками"
+
+msgid "The plan"
+msgstr "План"
+
+msgid "What has to be fixed first"
+msgstr "Що треба виправити спершу"
+
+msgid "The plan cannot be installed yet. Go back and change it:"
+msgstr "План поки не можна встановити. Поверніться й змініть його:"
+
+msgid "Note"
+msgstr "Зверніть увагу"
+
+msgid "Recovery key"
+msgstr "Ключ відновлення"
+
+msgid "Write this key down or take a photo of it, and keep it away from the computer. You need it if the disk does not open by itself: after a change of the hardware or of Secure Boot, or when you forget the passphrase. Nobody else has it, not even Vilna."
+msgstr "Запишіть цей ключ або сфотографуйте його й зберігайте окремо від комп'ютера. Він знадобиться, якщо диск не відкриється сам: після зміни обладнання чи Secure Boot або якщо ви забудете фразу. Більше ні в кого його немає, навіть у Vilna."
+
+msgid "To show that you saved it, type the last group of the key (8 letters):"
+msgstr "Щоб підтвердити, що ключ збережено, введіть його останню групу (8 літер):"
+
+msgid "The last group of the recovery key"
+msgstr "Остання група ключа відновлення"
+
+msgid "That is not the last group. Look at the key again."
+msgstr "Це не остання група. Погляньте на ключ ще раз."
+
+msgid "Right. The key is saved."
+msgstr "Так. Ключ збережено."
+
+msgid "Recovery key, letter by letter: {key}"
+msgstr "Ключ відновлення, по літері: {key}"
+
+msgid "I understand that everything on {disk} is erased"
+msgstr "Я розумію, що все на диску {disk} буде стерто"
+
+msgid "I understand that the partitions marked above are erased"
+msgstr "Я розумію, що позначені вище розділи буде стерто"
+
+msgid "Back to the plan"
+msgstr "Назад до плану"
+
+msgid "Erase and install"
+msgstr "Стерти й встановити"
+
+msgid "Install"
+msgstr "Встановити"
+
+msgid "Read the changes first…"
+msgstr "Спершу прочитайте зміни…"
+
+msgid "The disks changed while this screen was open. Go back and choose the disk again."
+msgstr "Диски змінилися, поки цей екран був відкритий. Поверніться й виберіть диск ще раз."
+
+msgid "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its buttons."
+msgstr "Цей екран показує Herkos, а не Gloxi. Gloxi не може натиснути його кнопки."
+
+msgid "Installing Vilna"
+msgstr "Встановлення Vilna"
+
+msgid "This takes a few minutes. Do not switch the computer off and do not pull out the stick."
+msgstr "Це займе кілька хвилин. Не вимикайте комп'ютер і не виймайте флешку."
+
+msgid "Vilna is installed"
+msgstr "Vilna встановлено"
+
+msgid "Take out the stick Vilna started from, then restart the computer. Vilna starts from the disk."
+msgstr "Вийміть флешку, з якої запущено Vilna, і перезапустіть комп'ютер. Vilna запуститься з диска."
+
+msgid "The installation stopped"
+msgstr "Встановлення зупинилося"
+
+msgid "Nothing on the disk has changed yet. You can close this window and try again."
+msgstr "На диску ще нічого не змінилося. Можна закрити це вікно й спробувати знову."
+
+msgid "The disk was already partly written: Vilna will not start from it, and what was on it before is erased. Close this window and start the installation again."
+msgstr "Диск уже частково записано: Vilna з нього не запуститься, а те, що було на ньому раніше, стерто. Закрийте це вікно й почніть встановлення знову."
+
+msgid "Restart"
+msgstr "Перезапустити"
+
+msgid "Close"
+msgstr "Закрити"
+
+msgid "What went wrong (for a bug report):"
+msgstr "Що пішло не так (для звіту про помилку):"
+
+msgid "Checking the plan and the disk"
+msgstr "Перевірка плану й диска"
+
+msgid "Writing Vilna to the disk"
+msgstr "Запис Vilna на диск"
+
+msgid "Opening the new system"
+msgstr "Відкриття нової системи"
+
+msgid "Copying Gloxi's model"
+msgstr "Копіювання моделі Gloxi"
+
+msgid "Setting up languages, time and your account"
+msgstr "Налаштування мов, часу й облікового запису"
+
+msgid "Setting up start-up and encryption"
+msgstr "Налаштування запуску й шифрування"
+
+msgid "Finishing"
+msgstr "Завершення"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "If a program crashes, send us a crash report?"
+msgstr "Якщо програма впаде, надсилати нам звіт про збій?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Звіт про збій каже, яка програма впала і в якому місці свого коду. У ньому ніколи немає ваших файлів, того, що ви набирали, вашого імені чи адреси комп'ютера. Кожен звіт можна прочитати, а цю відповідь змінити пізніше в Налаштуваннях."
+
+msgid "Send automatically"
+msgstr "Надсилати автоматично"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Звіти йдуть самі; кожен можна прочитати."
+
+msgid "Ask me every time"
+msgstr "Питати щоразу"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Після збою сповіщення спитає, чи надіслати звіт."
+
+msgid "Never"
+msgstr "Ніколи"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Звіти лишаються на цьому комп'ютері; будь-який можна надіслати самому."
+
+msgid "What is in a report"
+msgstr "Що є в звіті"
+
+msgid "Choose an answer about crash reports."
+msgstr "Оберіть відповідь про звіти про збої."
+
+msgid "Crash reports: {answer}"
+msgstr "Звіти про збої: {answer}"
+
+msgid "Recovery key. It is only drawn on the screen, so that other programs cannot read it. Press «Read the key aloud» to hear it."
+msgstr "Ключ відновлення. Його лише намальовано на екрані, щоб інші програми не могли його прочитати. Натисніть «Прочитати ключ уголос», щоб його почути."
+
+msgid "Read the key aloud"
+msgstr "Прочитати ключ уголос"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Натисніть кнопку самі, клавіатурою або мишею: Herkos не приймає натискань від інших програм."
+
+msgid "Connected to Wi-Fi."
+msgstr "Wi-Fi підключено."
+
+msgid "The password is saved."
+msgstr "Пароль збережено."
+
+msgid "The passphrase is saved."
+msgstr "Парольну фразу збережено."
+
+msgid "Type the Wi-Fi password into the protected field below. I do not see it."
+msgstr "Введіть пароль Wi-Fi у захищене поле нижче. Я його не бачу."
+
+msgid "Type the password for your account into the protected field below, twice. I do not see it."
+msgstr "Введіть пароль облікового запису в захищене поле нижче, двічі. Я його не бачу."
+
+msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
+msgstr "Введіть парольну фразу диска в захищене поле нижче, двічі. Я її не бачу."
+
+msgid "This computer is already connected to the network, so I keep that connection; you can change it in the plan."
+msgstr "Комп'ютер уже підключено до мережі, тож я лишаю це підключення; змінити його можна в плані."
+
+msgid "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; the other way is your own layout in the partition editor. Use the whole disk?"
+msgstr "Диск для Vilna має {size} ГБ і порожній. Раджу віддати його Vilna повністю; інший спосіб — власна розмітка в редакторі розділів. Використати весь диск?"
+
+msgid "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it completely and installing Vilna: everything on it will be lost. The other way is your own layout in the partition editor. Erase this disk?"
+msgstr "Диск для Vilna має {size} ГБ, і на ньому є {what}. Раджу стерти його повністю й встановити Vilna: усе, що на ньому, буде втрачено. Інший спосіб — власна розмітка в редакторі розділів. Стерти цей диск?"
+
+msgid "files"
+msgstr "файли"
+
+msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. For more protection if the computer is stolen, the disk can also ask for a PIN at every start. You can also type a passphrase at every start, or not encrypt the disk."
+msgstr "Зашифрувати нову систему? Раджу шифрування з ключем відновлення: на цьому комп'ютері диск відкриватиметься сам, а ключ відкриє його, якщо щось зміниться. Щоб краще захиститися на випадок крадіжки, диск може ще й питати PIN під час кожного запуску. Можна також вводити парольну фразу під час кожного запуску або не шифрувати диск."
+
+msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
+msgstr "Зашифрувати нову систему? На цьому комп'ютері немає чипа TPM, тож диск відкриватиметься парольною фразою, яку ви вводите під час кожного запуску. Без шифрування будь-хто з цим диском зможе прочитати ваші файли."
+
+msgid "Switch to the dark theme"
+msgstr "Увімкнути темну тему"
+
+msgid "Switch to the light theme"
+msgstr "Увімкнути світлу тему"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "Ваше з’єднання вже захищене: Vilna шифрує DNS, тож мережа, у якій ви є, не бачить, які сайти ви шукаєте."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Хочете ще більше захисту з VPN?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "VPN приховує ваш трафік від мережі, у якій ви є (кав’ярня, готель), а вашу адресу — від сайтів. Провайдер VPN бачить, куди ви ходите, тому ми пропонуємо лише перевірених."
+
+msgid "Sign in to Proton VPN"
+msgstr "Увійти в Proton VPN"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "Після першого входу в систему Gloxi відкриє застосунок Proton VPN, і ви ввійдете в ньому."
+
+msgid "Create a free Proton account"
+msgstr "Створити безкоштовний акаунт Proton"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 країн, 1 пристрій одночасно. Після першого входу в систему Gloxi відкриє сторінку реєстрації Proton, а потім застосунок."
+
+msgid "I have a Mullvad account number or code"
+msgstr "У мене є номер акаунта чи код Mullvad"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Для максимальної анонімності: без email, лише номер акаунта. Після першого входу в систему Gloxi відкриє застосунок Mullvad."
+
+msgid "Skip"
+msgstr "Пропустити"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "VPN можна ввімкнути пізніше: попросіть Gloxi або наберіть /vpn у його вікні."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Ви входите лише в застосунку самого провайдера: Vilna і Gloxi ніколи не бачать вашого пароля, номера акаунта чи коду."
+
+msgid "Choose an answer about the VPN."
+msgstr "Оберіть відповідь про VPN."
+
+msgid "Encrypted, with a PIN at every start"
+msgstr "Зашифровано, з PIN під час кожного запуску"
+
+msgid "Start PIN (6 to 20 digits)"
+msgstr "PIN запуску (від 6 до 20 цифр)"
+
+msgid "The PIN is 6 to 20 digits, nothing else."
+msgstr "PIN — це від 6 до 20 цифр, нічого іншого."
+
+msgid "The PIN is saved."
+msgstr "PIN збережено."
+
+msgid "Type the start PIN, 6 to 20 digits, into the protected field below, twice. I do not see it."
+msgstr "Введіть PIN запуску, від 6 до 20 цифр, у захищене поле нижче, двічі. Я його не бачу."
+
+msgid "Like the first way, plus a PIN of 6 to 20 digits at every start: a stolen computer does not even reach the login screen."
+msgstr "Як перший спосіб, а ще PIN з 6–20 цифр під час кожного запуску: вкрадений комп'ютер не дійде навіть до екрана входу."
+
+msgid "Type the start PIN for the disk."
+msgstr "Введіть PIN запуску для диска."
+
+msgid "The start PIN is not entered yet."
+msgstr "PIN запуску ще не введено."

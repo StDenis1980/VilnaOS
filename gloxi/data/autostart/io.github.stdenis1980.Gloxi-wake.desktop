@@ -1,0 +1,11 @@
+[Desktop Entry]
+# Vilna only (package gloxi-session): at login, start the person's gloxid
+# so the local model reads Gloxi's prompt before the first message
+# (`gloxi wake`; about two minutes on a slow processor, Build14.9).
+Type=Application
+Name=Gloxi
+Comment=Gets Gloxi ready after login
+Exec=gloxi wake
+NoDisplay=true
+OnlyShowIn=GNOME;
+X-GNOME-Autostart-enabled=true

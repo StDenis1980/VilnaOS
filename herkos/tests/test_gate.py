@@ -44,6 +44,15 @@ def test_user_says_no(env):
     assert env.files.calls == []
 
 
+def test_no_answer_in_time_is_not_a_no(tmp_path):
+    # The window closed after the timeout (seen in a VM, 2026-11-14): denied,
+    # but not reported as the person's "no".
+    env = Env(tmp_path, Answer.TIMED_OUT)
+    out = env.gate.handle(request(env, "read", env.docs / "a.txt"), SessionState())
+    assert not out.allowed and out.code == "denied_timeout"
+    assert env.files.calls == []
+
+
 def test_unknown_tool_and_operation_are_denied(env):
     s = SessionState()
     out = env.gate.handle(request(env, "read", tool="org.example.none"), s)

@@ -10,6 +10,6 @@
 """
 
 from privacy_gateway.detectors import Finding, Kind, detect
-from privacy_gateway.masking import Masker
+from privacy_gateway.masking import PLACEHOLDER_HINT, Masker
 
-__all__ = ["Finding", "Kind", "Masker", "detect"]
+__all__ = ["PLACEHOLDER_HINT", "Finding", "Kind", "Masker", "detect"]

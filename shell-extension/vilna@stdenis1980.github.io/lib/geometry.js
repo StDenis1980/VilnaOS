@@ -63,3 +63,45 @@ export function dockStrip(monitor, workArea, size = 'one-sixth') {
         ? workArea.y : monitor.y;
     return {x: monitor.x + monitor.width - width, y: top, width, height: bottom - top};
 }
+
+// Stage A of the Gloxi window: an ordinary GTK window that the Shell keeps at
+// the right edge of the work area. Gloxi uses the same numbers when the Shell
+// is missing (gloxi/src/gloxi/gui/panel.py; a Gloxi test reads them here).
+export const PANEL_SIZES = ['compact', 'one-sixth', 'one-third', 'custom'];
+export const PANEL_MARGIN = 8;
+// Compact: the owl, the last two or three lines of the chat and the input.
+export const PANEL_COMPACT_HEIGHT = 220;
+export const PANEL_MIN_HEIGHT = 160;
+
+/**
+ * Where the Gloxi window goes in a work area (stage A).
+ *  - one-sixth, one-third: that share of the width (as the strip), the whole
+ *    height, a small margin all round;
+ *  - compact: a sixth wide, PANEL_COMPACT_HEIGHT tall, at the bottom right,
+ *    next to where one types;
+ *  - custom: the window's own size (the person dragged an edge), at the top
+ *    right.
+ * Sizes are clamped to the work area. Junk in, a sane rectangle out.
+ */
+export function panelRect(workArea, size, current, margin = PANEL_MARGIN) {
+    const wa = {
+        x: finite(workArea?.x), y: finite(workArea?.y),
+        width: Math.max(0, finite(workArea?.width)), height: Math.max(0, finite(workArea?.height)),
+    };
+    const m = Math.min(Math.max(0, finite(margin)), Math.floor(Math.min(wa.width, wa.height) / 4));
+    const maxW = Math.max(1, wa.width - 2 * m), maxH = Math.max(1, wa.height - 2 * m);
+    const kind = PANEL_SIZES.includes(size) ? size : 'one-sixth';
+    let width, height;
+    if (kind === 'custom') {
+        width = Math.max(1, finite(current?.width, dockWidth(wa.width)));
+        height = Math.max(1, finite(current?.height, maxH));
+    } else {
+        width = dockWidth(wa.width, kind === 'one-third' ? 'one-third' : 'one-sixth');
+        height = kind === 'compact' ? PANEL_COMPACT_HEIGHT : maxH;
+    }
+    width = Math.max(1, Math.round(Math.min(width, maxW)));
+    height = Math.round(Math.min(Math.max(height, Math.min(PANEL_MIN_HEIGHT, maxH)), maxH));
+    const x = wa.x + wa.width - m - width;
+    const y = kind === 'compact' ? wa.y + wa.height - m - height : wa.y + m;
+    return {x, y, width, height};
+}

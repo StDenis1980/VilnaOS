@@ -1,4 +1,57 @@
 -------------------------------------------------------------------
+Wed Nov 18 14:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- gloxid: text.translate puts a short text into one of the ten Vilna
+  languages with the model on this computer only (never the cloud, no
+  history, not the conversation's slot). The weather warnings of the
+  Vilna Shell extension use it. A connection becomes the window with
+  its first other request, so translating does not take the Gloxi
+  window's events away.
+
+-------------------------------------------------------------------
+Wed Nov 18 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- gloxi-gtk --ask TEXT: bring Gloxi up and send the question, as if
+  typed; the suggestions of the Gloxi widget on the Vilna desktop use it.
+
+-------------------------------------------------------------------
+Tue Nov 17 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- A VPN chosen in the installer wizard: on the first start Gloxi goes
+  straight to that provider's app (or Proton's sign-up page) instead of
+  asking again, before the backup talk; «Skip» there means no question.
+
+-------------------------------------------------------------------
+Sat Nov 14 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- When nobody answers Herkos's window in time, Gloxi says so and offers
+  to ask again, instead of saying the person refused.
+
+-------------------------------------------------------------------
+Tue Nov 10 00:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.2.0~a1 (ADR 0023): calendar (read only) and GNOME
+  settings through Herkos, with undo; a global key through the
+  GlobalShortcuts portal (gloxi-gtk --toggle); the side panel
+
+-------------------------------------------------------------------
+Mon Nov  9 23:55:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The cloud needs a yes through Herkos (ADR 0025, section 3): the
+  Herkos tool vilna-mcp-gloxi-network@.service opens or closes the
+  internet of gloxi@<uid>.service; until then it reaches only
+  this computer
+
+-------------------------------------------------------------------
+Mon Nov  9 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Gloxi as a system service (ADR 0025): gloxid runs as gloxi-<uid>
+  for each person (gloxi@.socket, gloxi@.service), the window moves
+  to the new subpackage gloxi-session, one llama-server for the
+  whole computer (vilna-llm.service), vilna-people-sync creates the
+  Gloxi users and /etc/herkos/system.toml
+
+-------------------------------------------------------------------
 Mon Nov  2 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Files tool through Herkos-lite: the local model can list, search,

@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The group of every person's Gloxi (gloxi-<uid>, made by vilna-people-sync)
+# and the user of the shared local model (vilna-llm.service).
+g gloxi -
+u vilna-llm - "Local model for Gloxi" /var/lib/vilna-llm /usr/sbin/nologin
+m vilna-llm gloxi

@@ -1,0 +1,26 @@
+-------------------------------------------------------------------
+Tue Nov 17 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- privacy.vpn: the person's VPN choice from the classic wizard
+  (set_vpn, not a Gloxi setter); optional, checked when present
+
+-------------------------------------------------------------------
+Sun Nov 15 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- plan_set_encryption refuses tpm2 on a computer without a TPM 2.0
+  and suggests a passphrase, instead of the Herkos screen blocking the
+  plan at the end
+
+-------------------------------------------------------------------
+Wed Nov 11 19:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Manual layout in the plan: disk.partitions (EFI, system, home,
+  swap; an existing partition or a new one), set by the classic
+  wizard's partition editor only; the validator checks it and lists
+  every partition erased, used, kept or created
+
+-------------------------------------------------------------------
+Tue Nov 10 08:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: the installer's MCP server, the installation plan
+  format and its validator (vilna-plan-check), 0.1 preview

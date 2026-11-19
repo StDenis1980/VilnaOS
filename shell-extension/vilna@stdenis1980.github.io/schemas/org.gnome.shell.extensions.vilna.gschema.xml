@@ -6,6 +6,19 @@
     <value nick="one-third" value="1"/>
   </enum>
 
+  <enum id="org.gnome.shell.extensions.vilna.PanelSize">
+    <value nick="compact" value="0"/>
+    <value nick="one-sixth" value="1"/>
+    <value nick="one-third" value="2"/>
+    <value nick="custom" value="3"/>
+  </enum>
+
+  <enum id="org.gnome.shell.extensions.vilna.WindowMotion">
+    <value nick="vilna" value="0"/>
+    <value nick="reduced" value="1"/>
+    <value nick="gnome" value="2"/>
+  </enum>
+
   <schema id="org.gnome.shell.extensions.vilna" path="/org/gnome/shell/extensions/vilna/">
     <key name="password-latin-layout" type="b">
       <default>true</default>
@@ -15,12 +28,22 @@
     <key name="password-preferred-layouts" type="as">
       <default>['us']</default>
       <summary>Preferred layouts for passwords</summary>
-      <description>XKB layout ids tried first, in order, when the current layout does not type Latin letters. If none is configured, the first Latin layout is used.</description>
+      <description>XKB layout ids, in order: a password field always switches to the first one that is configured, even from another Latin layout. If none is configured, a Latin layout is kept and a non-Latin one switches to the first Latin layout.</description>
     </key>
     <key name="gloxi-keep-above" type="b">
       <default>true</default>
       <summary>Keep Gloxi above other windows</summary>
       <description>Keep the Gloxi window above all other windows. The Herkos confirmation dialog is always kept above.</description>
+    </key>
+    <key name="gloxi-panel-edge" type="b">
+      <default>true</default>
+      <summary>Keep Gloxi at the right edge of the screen</summary>
+      <description>Place the Gloxi window at the right edge of the screen, like a side panel, when it appears and when its size changes. Gloxi sets the size.</description>
+    </key>
+    <key name="gloxi-panel-size" enum="org.gnome.shell.extensions.vilna.PanelSize">
+      <default>'one-sixth'</default>
+      <summary>Size of the Gloxi panel</summary>
+      <description>compact: the last lines of the chat and the input, at the bottom right; one-sixth or one-third: that share of the screen width, the whole height; custom: the size the person gave the window.</description>
     </key>
     <key name="gloxi-dock" type="b">
       <default>false</default>
@@ -30,6 +53,51 @@
     <key name="gloxi-dock-size" enum="org.gnome.shell.extensions.vilna.DockSize">
       <default>'one-sixth'</default>
       <summary>Width of the Gloxi strip</summary>
+    </key>
+    <key name="vpn-offered-networks" type="as">
+      <default>[]</default>
+      <summary>Wi-Fi networks the VPN offer was shown for</summary>
+      <description>Connection UUIDs of the shared Wi-Fi networks (those with a login page) after whose login the Shell already offered a VPN, so that it offers once per network. Clear the list to see the offer again.</description>
+    </key>
+    <key name="window-motion" enum="org.gnome.shell.extensions.vilna.WindowMotion">
+      <default>'vilna'</default>
+      <summary>How windows move</summary>
+      <description>vilna: windows open from slightly smaller with a fade (280 ms), close faster than they open, go to their dock icon and back (450 ms) and lift a little while dragged. reduced: no movement, only a short fade (100 ms). gnome: GNOME's own animations. With animations turned off in Settings nothing moves in any case.</description>
+    </key>
+    <key name="window-wobble" type="b">
+      <default>true</default>
+      <summary>Rubber windows while dragging</summary>
+      <description>A dragged window bends a little and springs back when let go. Only with the vilna window motion and with animations on.</description>
+    </key>
+    <key name="widgets" type="b">
+      <default>true</default>
+      <summary>Desktop widgets</summary>
+      <description>A column of cards on the left of the desktop: clock, Gloxi, today in the calendar, weather and backups.</description>
+    </key>
+    <key name="weather" type="b">
+      <default>true</default>
+      <summary>Weather widget</summary>
+      <description>The forecast comes from Open-Meteo for the place below.</description>
+    </key>
+    <key name="weather-location" type="(sdd)">
+      <default>('', 0.0, 0.0)</default>
+      <summary>Place for the weather</summary>
+      <description>Name, latitude and longitude of a place the person chose. Empty: the capital of the system's country, so that no location of the person is sent.</description>
+    </key>
+    <key name="weather-alerts" type="b">
+      <default>true</default>
+      <summary>Weather warnings</summary>
+      <description>MeteoAlarm's warnings for the weather place on the weather card, and a notification for each orange or red one. The whole country's warnings are downloaded and matched on this computer.</description>
+    </key>
+    <key name="alerts-metered" type="b">
+      <default>false</default>
+      <summary>Download warnings on a metered connection</summary>
+      <description>Off: on a metered connection the warnings pause and the card asks first. The country's warnings are up to 0.5 MB every 10 minutes; the zone boundaries about 30 MB once per place.</description>
+    </key>
+    <key name="alert-zones" type="(ddas)">
+      <default>(0.0, 0.0, @as [])</default>
+      <summary>Warning zones of the weather place</summary>
+      <description>Latitude and longitude of the weather place and the MeteoAlarm zones (EMMA_ID) it lies in, found on this computer. Cleared or stale: found again.</description>
     </key>
   </schema>
 </schemalist>

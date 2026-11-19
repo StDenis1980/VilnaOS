@@ -1,0 +1,8 @@
+{"type": "FeatureCollection", "features": [
+ {"type": "Feature", "properties": {"code": "ES219", "country": "ES", "name": "Zona de prueba", "type": "EMMA_ID"},
+  "geometry": {"type": "Polygon", "coordinates": [[[-4.0, 40.0], [-3.4, 40.0], [-3.4, 40.8], [-4.0, 40.8], [-4.0, 40.0]],
+   [[-3.55, 40.6], [-3.45, 40.6], [-3.45, 40.7], [-3.55, 40.7], [-3.55, 40.6]]]}},
+ {"type": "Feature", "properties": {"code": "ES001", "country": "ES", "name": "Otra zona", "type": "EMMA_ID"},
+  "geometry": {"type": "MultiPolygon", "coordinates": [[[[0.0, 39.0], [1.0, 39.0], [1.0, 40.0], [0.0, 39.0]]]]}},
+ {"type": "Feature", "properties": {"code": 7}, "geometry": null}
+]}

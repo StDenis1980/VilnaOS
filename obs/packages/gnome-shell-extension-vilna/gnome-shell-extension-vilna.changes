@@ -1,4 +1,73 @@
 -------------------------------------------------------------------
+Wed Nov 18 14:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.7: MeteoAlarm weather warnings on the weather card
+  (weatherAlerts.js, lib/alerts.js): up to two bands in the level's
+  colour for warnings in force or due within a day, with the national
+  service's own words, its name and the time of issue, and a
+  notification once for orange and red. The whole country's feed is
+  fetched and the zone found on this computer (alertZones.js, run as
+  its own gjs process; only the zone codes are kept). Every 10 minutes,
+  not while locked, and on a metered connection only after the person
+  agrees. New keys weather-alerts, alerts-metered and alert-zones.
+  Words not in the person's language are translated by Gloxi on this
+  computer (gloxid text.translate) and shown above the unchanged
+  original; words already in that language are shown as they are.
+
+-------------------------------------------------------------------
+Wed Nov 18 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.6: desktop widgets on the wallpaper, under every window: clock,
+  Gloxi (suggestions ask it with gloxi-gtk --ask), today's events from
+  the GNOME calendar server, the weather from Open-Meteo and the state
+  of Копії. The weather is for the capital of the system's country
+  unless the person picks a town (search sends only the typed text) or,
+  after agreeing, their location rounded to about 10 km (prefs.js).
+  New keys widgets, weather and weather-location.
+  A live sky behind the weather card (sky.js, lib/weatherSky.js):
+  a Vilna gradient and light motion for ten states, including wind
+  (gusts from 50 km/h) and heat (feels like 35 °C or more), still
+  under a window, in the overview and with animations off.
+
+-------------------------------------------------------------------
+Wed Nov 18 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.5: Vilna window motion from the design motion tokens: windows
+  open in 280 ms (scale 0.94 to 1 and fade in), close in 196 ms,
+  minimise to the dock in 450 ms, and a dragged window lifts by 1%.
+  The Shell keeps its own bookkeeping; only the ease parameters of
+  normal windows change. New key window-motion: vilna, reduced
+  (100 ms fades only) or gnome.
+- Rubber windows: a dragged window bends a little (own spring grid
+  on a Clutter.DeformEffect) and springs back when let go. Key
+  window-wobble, on by default, only with the vilna motion.
+
+-------------------------------------------------------------------
+Wed Nov 18 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.4: the Vilna colours of the dock (Dash to Dock): a vilna-light
+  or vilna-dark class on the Shell's UI group follows the style
+  setting, and the stylesheet draws the dock as cream or night-blue
+  glass with rust or gold dots for running apps.
+
+-------------------------------------------------------------------
+Sun Nov 15 23:45:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: after the login page of a shared Wi-Fi network (captive portal)
+  lets the internet through, one notification per network offers to set
+  up a VPN; its button opens the VPN talk in Gloxi (gloxi-gtk --vpn).
+  Nothing is shown when a VPN is already up.
+
+-------------------------------------------------------------------
+Mon Nov  9 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.2: the Vilna login screen: blurred Сонце wallpaper
+  (vilna-backgrounds) behind the login dialog, night colour beneath it,
+  frosted-glass password field.
+- A password field always switches to English (us), also from another
+  Latin layout such as Polish; the layout comes back after the field.
+
+-------------------------------------------------------------------
 Thu Nov  5 08:05:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Own %{_datadir}/gnome-shell and its extensions directory: the OBS

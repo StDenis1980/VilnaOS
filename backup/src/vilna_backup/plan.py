@@ -25,6 +25,8 @@ EXCLUDE_NAMES = (
     ".cache",
     "node_modules",
     ".Trash-*",
+    # Mitos snapshots of the home (ADR 0026): already copies, on this disk.
+    ".snapshots",
 )
 _USER_DIR = re.compile(r'^XDG_([A-Z]+)_DIR="(.*)"\s*$')
 _DEFAULT_USER_DIRS = {

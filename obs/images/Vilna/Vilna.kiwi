@@ -26,7 +26,7 @@
   <preferences>
     <version>0.0.1</version>
     <packagemanager>zypper</packagemanager>
-    <bootsplash-theme>bgrt</bootsplash-theme>
+    <bootsplash-theme>vilna</bootsplash-theme>
     <rpm-excludedocs>false</rpm-excludedocs>
     <rpm-check-signatures>false</rpm-check-signatures>
     <locale>en_US</locale>
@@ -42,9 +42,16 @@
       btrfs_root_is_snapshot="true"
       btrfs_root_is_readonly_snapshot="true"
       btrfs_quota_groups="true"
-      kernelcmdline="quiet splash security=selinux selinux=1 enforcing=1"
+      kernelcmdline="quiet splash loglevel=3 rd.udev.log_level=3 security=selinux selinux=1 enforcing=1"
     >
-      <bootloader name="systemd_boot" timeout="1"/>
+      <!-- timeout 0 hides the menu (loader.conf "timeout 0", the same as
+           menu-hidden): the default snapshot boots at once, and holding
+           Space (or any key) while the computer starts shows the menu
+           with the other snapshots. Not "sdbootutil set-timeout 0": it
+           writes menu-disabled, and then no key opens the menu.
+           quiet, loglevel=3 and rd.udev.log_level=3 keep kernel and udev
+           messages off the splash; Esc on the splash shows the log. -->
+      <bootloader name="systemd_boot" timeout="0"/>
       <systemdisk>
         <volume name="home"/>
         <volume name="root"/>

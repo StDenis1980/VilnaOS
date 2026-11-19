@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.4
+Version:        0.14
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -27,6 +27,11 @@ Provides:       pattern-visible()
 # Vilna branding and components (image/docs/composition.md, section 4).
 # Vilna-release provides distribution-release, which Aeon's packages need.
 Requires:       Vilna-release
+# The openSUSE Tumbleweed repositories (oss, non-oss, update) as a zypp
+# service; without it the system never updates (VM test of Build7.2).
+# Here and not in Vilna-release, which KIWI installs in its bootstrap:
+# see the comment there.
+Requires:       openSUSE-repos-Tumbleweed
 Requires:       distribution-logos-Vilna
 Requires:       vilna-presets
 Requires:       herkos
@@ -34,18 +39,63 @@ Requires:       herkos-agent
 # Programs Gloxi may use (Tinta Office); each stays off until turned on.
 Requires:       herkos-manifests
 Requires:       gloxi
+Requires:       gloxi-session
+# The model weights, so the installer and the first talk work offline (ADR 0006).
+Requires:       vilna-model-default
 Requires:       vilna-mcp-files
+Requires:       vilna-backup
 Requires:       vilna-mcp-backup
+Requires:       vilna-mcp-settings
+Requires:       vilna-mcp-calendar
+# Mail through Gloxi: reading, drafts, sending only after a yes (ADR 0030).
+Requires:       vilna-mcp-mail
+# Programs through Gloxi and Herkos (ADR 0012).
+Requires:       vilna-mcp-apps
 Requires:       vilna-flatpak-defaults
 Requires:       gnome-shell-extension-vilna
+# The dock (docs/design/desktop/README.md), set up in vilna-branding.
+Requires:       gnome-shell-extension-dash-to-dock
+# Translations of the GNOME desktop. openSUSE puts them in *-lang
+# packages that only supplement the program, and the image installs
+# required packages alone (KIWI onlyRequired, zypp solver.onlyRequires):
+# in the VM test of Build15.6 GNOME Initial Setup, the search and the
+# rest of the Shell stayed in English after the person chose Українська.
+# Firefox and the other Flatpak apps get theirs from Flathub
+# (vilna-flatpak-defaults sets the ten languages of ADR 0009).
+Requires:       gnome-shell-lang
+Requires:       mutter-lang
+Requires:       gnome-initial-setup-lang
+Requires:       gnome-control-center-lang
+Requires:       gnome-settings-daemon-lang
+Requires:       gnome-session-lang
+Requires:       gnome-desktop-lang
+Requires:       gdm-lang
+Requires:       nautilus-lang
+Requires:       gnome-software-lang
+Requires:       gnome-console-lang
+Requires:       gtk4-lang
+Requires:       gtk3-lang
+Requires:       libadwaita-lang
+Requires:       glib2-lang
 Requires:       vilna-software-picks
+# VPN (ADR 0027): Proton VPN, offered first (openSUSE's package), and
+# Mullvad (Mullvad's RPM with our scriptlets, obs/packages/mullvad-vpn).
+# Their services stay off until the person chooses one.
+Requires:       proton-vpn
+Requires:       mullvad-vpn
 # Branding (composition.md, section 4.5): Vilna's own packages where
 # Aeon or openSUSE set something for the distribution, the neutral
 # *-branding-upstream ones elsewhere. The Aeon and openSUSE ones are
 # swapped in the list below; these pin the providers the solver would
 # otherwise pick from openSUSE.
-Requires:       gio-branding-upstream
+# gio-branding stays openSUSE's for now: openSUSE:Factory's prjconf
+# (image_package_conflicts) bans gio-branding-upstream from every KIWI
+# image, so the image does not resolve with it. 30_Vilna.gschema.override
+# in gnome-branding-Vilna overrides its 20_openSUSE-branding settings.
+Requires:       gio-branding-openSUSE
 Requires:       NetworkManager-branding-Vilna
+# Boot splash "vilna" (image/plymouth); KIWI makes it the default theme.
+Requires:       plymouth-branding-Vilna
 Requires:       systemd-default-settings-branding-upstream
 # Not yet packaged, added here once they build on OBS:
 #   vilna-model-default   default model weights (ADR 0006, 0008)
@@ -238,6 +288,10 @@ Requires:       libvulkan_intel
 Requires:       libvulkan_radeon
 Requires:       nautilus-extension-seahorse
 Requires:       sdbootutil-snapper
+# The first boot seals the disk key in the TPM (sdbootutil-enroll.service),
+# as the Vilna installer leaves it: the live system cannot predict the
+# new system's measurements (installer/src/vilna_installer/encryption.py).
+Requires:       sdbootutil-enroll
 Requires:       spice-vdagent
 Requires:       steam-devices
 Requires:       system-group-wheel

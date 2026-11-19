@@ -1,0 +1,114 @@
+# SPDX-License-Identifier: Apache-2.0
+# Tasks for the placeholder measurement. Every name, number and address is made
+# up; the numbers are synthetic and only pass their check digit. These texts
+# are masked and then sent to cloud models on purpose: never add real data.
+#
+# keep = "all": every value must come back in the answer (rewrite, translate,
+# table). keep = "some": the model may leave values out (summary, letter);
+# a missing value is reported but not counted as a failure.
+
+[[task]]
+id = "uk-rewrite"
+lang = "uk"
+keep = "all"
+instruction = "Перепиши ввічливіше, усі контакти залиш без змін."
+text = "Олено, надішліть договір на olena.koval@example.com або подзвоніть +380 67 123 45 67 до п'ятниці."
+
+[[task]]
+id = "uk-to-en"
+lang = "uk"
+keep = "all"
+instruction = "Переклади англійською."
+text = """ПІБ: Коваль Олена Петрівна
+Дата народження: 12.03.1985
+Адреса: м. Львів, вул. Зелена, 15, кв. 3
+Телефон: +380 67 123 45 67"""
+
+[[task]]
+id = "uk-many"
+lang = "uk"
+keep = "all"
+instruction = "Склади коротке нагадування про оплату для кожного клієнта окремим рядком, з його поштою."
+text = "Клієнти з боргом: taras.melnyk@example.com, olena.koval@example.com, iryna.bondar@example.com, petro.savchuk@example.com."
+
+[[task]]
+id = "en-summary"
+lang = "en"
+keep = "some"
+instruction = "Summarise this note in two sentences for a colleague."
+text = """Name: Taras Melnyk
+Email: taras.melnyk@example.com
+IBAN: UA21 3223 1300 0002 6007 2335 6600 1
+Note: wants the March invoice issued again to the new account and asks for a call back."""
+
+[[task]]
+id = "en-lowercase"
+lang = "en"
+keep = "all"
+instruction = "Rewrite the following entirely in lowercase letters."
+text = "Please call +380 67 123 45 67 and email Taras.Melnyk@example.com about card 4111 1111 1111 1111."
+
+[[task]]
+id = "en-secret"
+lang = "en"
+keep = "some"
+instruction = "Explain what this configuration does and say what to change before sharing it."
+text = """OPENAI_API_KEY=sk-proj-AbCdEfGhIjKlMnOpQrStUvWx1234
+password: Kvitka-7731
+server: 192.168.40.17"""
+
+[[task]]
+id = "es-reply"
+lang = "es"
+keep = "some"
+instruction = "Responde a este correo en nombre del despacho, en español, confirmando los datos."
+text = "Hola, soy cliente con DNI 12345678Z. ¿Podéis enviar el contrato a lucia.garcia@example.com? Mi teléfono es +34 612 345 678."
+
+[[task]]
+id = "pl-table"
+lang = "pl"
+keep = "all"
+instruction = "Zrób tabelę Markdown z kolumnami: PESEL, telefon."
+text = "Klienci: Anna Nowak, PESEL 90010112349, tel. +48 601 234 567; Piotr Zieliński, PESEL 02210312342, tel. +48 602 345 678."
+
+[[task]]
+id = "de-json"
+lang = "de"
+keep = "all"
+instruction = "Gib nur JSON mit den Feldern email und steuer_id zurück."
+text = "Herr Becker (Steuer-ID 86095742719) bittet um Rückruf, E-Mail: jonas.becker@example.com."
+
+[[task]]
+id = "fr-letter"
+lang = "fr"
+keep = "some"
+instruction = "Rédige une courte lettre formelle de rappel de paiement à ce client."
+text = "Client : NIR 1 85 05 78 006 084 91, e-mail claire.martin@example.com, IBAN FR14 2004 1010 0505 0001 3M02 606, montant 240 €."
+
+[[task]]
+id = "it-steps"
+lang = "it"
+keep = "all"
+instruction = "Scrivi i passi per registrare questo cliente nel gestionale, riportando i suoi dati."
+text = "Cliente: codice fiscale RSSMRA85T10A562S, email mario.rossi@example.com, telefono +39 312 345 6789."
+
+[[task]]
+id = "ro-to-uk"
+lang = "ro"
+keep = "all"
+instruction = "Tradu în ucraineană."
+text = "Clientul cu CNP 1900101123457 a plătit. Trimiteți chitanța la ion.popescu@example.com."
+
+[[task]]
+id = "cs-formal"
+lang = "cs"
+keep = "all"
+instruction = "Přepiš to formálněji."
+text = "Paní Dvořáková (rodné číslo 905101/1002) chce změnit e-mail na jana.dvorakova@example.com a telefon na +420 601 123 456."
+
+[[task]]
+id = "lt-to-en"
+lang = "lt"
+keep = "all"
+instruction = "Išversk į anglų kalbą."
+text = "Kliento asmens kodas 39001011237, el. paštas ona.kazlauskiene@example.com, tel. +370 612 34567."

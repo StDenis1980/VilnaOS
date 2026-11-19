@@ -1,0 +1,154 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The «Feedback about Vilna» window (it). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Feedback about Vilna"
+msgstr "Opinioni su Vilna"
+
+msgid "Feedback"
+msgstr "Opinione"
+
+msgid "Crash reports"
+msgstr "Rapporti sui crash"
+
+msgid "Tell us what went wrong, what surprised you or what you would like. Only the Vilna team reads it; nothing is published without your permission."
+msgstr "Raccontaci cosa è andato storto, cosa ti ha sorpreso o cosa vorresti. Lo legge solo il team di Vilna; nulla viene pubblicato senza il tuo permesso."
+
+msgid "What is it about?"
+msgstr "Di cosa si tratta?"
+
+msgid "Something does not work"
+msgstr "Qualcosa non funziona"
+
+msgid "An idea or a wish"
+msgstr "Un’idea o un desiderio"
+
+msgid "Something else"
+msgstr "Altro"
+
+msgid "Your message"
+msgstr "Il tuo messaggio"
+
+msgid "Add facts about this computer"
+msgstr "Aggiungi informazioni su questo computer"
+
+msgid "You may answer me by e-mail"
+msgstr "Potete rispondermi per e-mail"
+
+msgid "E-mail address"
+msgstr "Indirizzo e-mail"
+
+msgid "You may publish it, without my address, after reading it"
+msgstr "Potete pubblicarlo, senza il mio indirizzo, dopo averlo letto"
+
+msgid "Add my conversation with Gloxi from the installation"
+msgstr "Aggiungi la mia conversazione con Gloxi durante l’installazione"
+
+msgid "It may have your name, the computer's name or a Wi-Fi network. You read it before it is added."
+msgstr "Può contenere il tuo nome, il nome del computer o una rete Wi-Fi. La leggi prima che venga aggiunta."
+
+msgid "Conversation with Gloxi"
+msgstr "Conversazione con Gloxi"
+
+msgid "Read"
+msgstr "Leggi"
+
+msgid "Add"
+msgstr "Aggiungi"
+
+msgid "Do not add"
+msgstr "Non aggiungere"
+
+msgid "What will be sent"
+msgstr "Cosa verrà inviato"
+
+msgid "Send"
+msgstr "Invia"
+
+msgid "Sending…"
+msgstr "Invio in corso…"
+
+msgid "Thank you! Your feedback is sent."
+msgstr "Grazie! La tua opinione è stata inviata."
+
+msgid "Write what happened or what you suggest."
+msgstr "Scrivi cosa è successo o cosa proponi."
+
+msgid "This does not look like an e-mail address."
+msgstr "Questo non sembra un indirizzo e-mail."
+
+msgid "The message is longer than 8000 characters."
+msgstr "Il messaggio supera gli 8000 caratteri."
+
+msgid "The report service is not running on this computer, so nothing can be sent now. Your text stays here."
+msgstr "Il servizio dei rapporti non è attivo su questo computer, quindi ora non si può inviare nulla. Il tuo testo resta qui."
+
+msgid "Not sent: {reason}"
+msgstr "Non inviato: {reason}"
+
+msgid "Crash reports stay on this computer until they are sent. Each one has only what you see here: which program crashed and where in its code."
+msgstr "I rapporti sui crash restano su questo computer finché non vengono inviati. Ognuno contiene solo ciò che vedi qui: quale programma è andato in crash e in quale punto del suo codice."
+
+msgid "No crash reports."
+msgstr "Nessun rapporto sui crash."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Se un programma va in crash, inviarci un rapporto sul crash?"
+
+msgid "Send automatically"
+msgstr "Invia automaticamente"
+
+msgid "Ask me every time"
+msgstr "Chiedimelo ogni volta"
+
+msgid "Never"
+msgstr "Mai"
+
+msgid "No answer yet: nothing is sent."
+msgstr "Nessuna risposta ancora: non viene inviato nulla."
+
+msgid "The answer was not changed."
+msgstr "La risposta non è stata cambiata."
+
+msgid "Not sent"
+msgstr "Non inviato"
+
+msgid "Sent"
+msgstr "Inviato"
+
+msgid "Not accepted by the server"
+msgstr "Non accettato dal server"
+
+msgid "First report of this crash"
+msgstr "Primo rapporto su questo crash"
+
+msgid "We already know about this crash"
+msgstr "Conosciamo già questo crash"
+
+msgid "Fixed in {version}"
+msgstr "Corretto in {version}"
+
+msgid "View"
+msgstr "Visualizza"
+
+msgid "Crash report"
+msgstr "Rapporto sul crash"
+
+msgid "Close"
+msgstr "Chiudi"
+
+msgid "Do not send"
+msgstr "Non inviare"
+
+msgid "Delete everything I sent from the server"
+msgstr "Elimina dal server tutto ciò che ho inviato"
+
+msgid "Deleted from the server: {count}"
+msgstr "Eliminati dal server: {count}"
+
+msgid "{program} crashed"
+msgstr "{program} è andato in crash"
+
+msgid "Send us a crash report? It has only which program crashed and where in its code."
+msgstr "Inviarci un rapporto sul crash? Contiene solo quale programma è andato in crash e in quale punto del suo codice."

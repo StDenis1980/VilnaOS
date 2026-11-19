@@ -5,12 +5,14 @@
 
 Herkos starts this process for each question (``confirm.Dialog``), so the
 window belongs to Herkos and not to Gloxi: the model can neither change its
-text nor press its buttons through Gloxi. "Deny" is the default button;
-closing the window or the timeout also means "deny".
+text nor press its buttons through Gloxi. Enter presses the safest button
+for the level (:func:`default_choice`); closing the window or the timeout
+means "deny".
 
-Known limit of the preview: in a normal desktop session another program of
-the same user could still drive the window through accessibility (AT-SPI).
-The system Herkos in Vilna closes this (permissions.md 5.2).
+Every program of the same user can reach the window through accessibility
+(AT-SPI), which Orca needs. So the allow buttons count only a real press,
+from the keyboard or the pointer (``real_input``, docs/adr/0029); an AT-SPI
+«click» on them does nothing. "Deny" needs no such care.
 """
 
 from __future__ import annotations
@@ -75,11 +77,84 @@ def application_id(env) -> str:
     return f"{flatpak}.HerkosDialog" if flatpak else DIALOG_ID
 
 
+NOT_REAL = (
+    "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses "
+    "from other programs."
+)
+
 LABELS = {
     "once": "Allow once",
     "session": "Allow for this session",
     "always": "Always allow",
 }  # translated when shown
+
+# The level as a chip: text and colour together (brief, scheme 10.6).
+RISK_LABELS = {
+    "R0": "R0 · no questions",
+    "R1": "R1 · reads your data",
+    "R2": "R2 · can be undone",
+    "R3": "R3 · hard to undo",
+    "R4": "R4 · cannot be undone",
+}  # translated when shown
+
+# A shape for each level, so the chip reads without colour (design system by
+# Dmytro Sizmin): circle, shield, undo arrow, triangle, stop sign. These are
+# standard symbolic icon names of the GNOME icon theme.
+RISK_ICONS = {
+    "R0": "media-record-symbolic",
+    "R1": "security-high-symbolic",
+    "R2": "edit-undo-symbolic",
+    "R3": "dialog-warning-symbolic",
+    "R4": "process-stop-symbolic",
+}
+
+
+def risk_level(question: dict) -> str:
+    """The level as shown; anything unknown is shown as the strictest, R4."""
+    level = str(question.get("level", "")).strip().upper()
+    return level if level in RISK_LABELS else "R4"
+
+
+def suspicious(question: dict) -> bool:
+    """Untrusted content took part in this request (Keros, brief scheme 10.7)."""
+    return bool(question.get("taint_sources"))
+
+
+def shown_choices(question: dict) -> list[str]:
+    """The allow buttons, in order. "Deny" is always there.
+
+    Herkos already limits the choices by level; the window may only narrow
+    them further: with suspicious content or at R4 only "Allow once" stays,
+    so a single click never grants more than this one action. "Always allow"
+    is offered only up to R2.
+    """
+    choices = [c for c in question.get("choices", []) if c in LABELS]
+    if suspicious(question) or risk_level(question) == "R4":
+        choices = [c for c in choices if c == "once"]
+    if risk_level(question) not in ("R0", "R1", "R2"):
+        choices = [c for c in choices if c != "always"]
+    return choices
+
+
+def default_choice(question: dict) -> str:
+    """The button Enter presses: the safest one for the level (design wave 2).
+
+    Up to R2 the change can be undone, so Enter allows it once; from R3, with
+    suspicious content or without "Allow once" Enter denies. The irreversible
+    allow button of R4 is never the default.
+    """
+    if (
+        risk_level(question) in ("R0", "R1", "R2")
+        and not suspicious(question)
+        and "once" in shown_choices(question)
+    ):
+        return "once"
+    return "deny"
+
+
+def needs_acknowledgement(question: dict) -> bool:
+    """R4: "allow" stays off until the person ticks that they read the plan."""
+    return risk_level(question) == "R4"
 
 
 def main() -> int:
@@ -88,11 +163,16 @@ def main() -> int:
     except ValueError:
         print("deny")
         return 1
+    if not isinstance(question, dict):
+        print("deny")
+        return 1
     import gi
 
     gi.require_version("Gtk", "4.0")
     gi.require_version("Adw", "1")
-    from gi.repository import Adw, GLib, Gtk, Pango
+    from gi.repository import Adw, Gtk, Pango
+
+    from herkos import real_input, style
 
     answer = ["deny"]
     from gi.repository import Gio
@@ -114,64 +194,122 @@ def main() -> int:
         label.set_max_width_chars(60)
         return label
 
+    def text(value: str, *classes: str, selectable: bool = False) -> Gtk.Label:
+        label = Gtk.Label(label=value, xalign=0, wrap=True, selectable=selectable)
+        for c in classes:
+            label.add_css_class(c)
+        return label
+
     def build(app: Adw.Application) -> None:
+        style.install()
+        level = risk_level(question)
         win = Adw.Window(application=app, title=_("Herkos: permission"), modal=True)
-        win.set_default_size(460, -1)
+        win.set_default_size(480, -1)
         win.connect("close-request", lambda *_: finish("deny") or False)
+        gate = real_input.RealInput()
+        real_input.watch_window(win, gate)
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        box.add_css_class("vilna-sheet")
+        box.add_css_class(level.lower())
+        inner = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
         for side in ("top", "bottom", "start", "end"):
-            getattr(box, f"set_margin_{side}")(18)
+            getattr(inner, f"set_margin_{side}")(20)
+        box.append(inner)
 
-        title = Gtk.Label(xalign=0, wrap=True)
-        title.set_markup(
-            f"<b>{GLib.markup_escape_text(_(question['summary']))}</b>  ({question['level']})"
-        )
-        box.append(title)
+        # 1. Who asks.  2. What and how risky: the chip has text, not only colour.
+        inner.append(text(_("Herkos: Gloxi asks for permission"), "vilna-requester"))
+        head = Gtk.Box(spacing=10)
+        title = text(_(str(question.get("summary", ""))), "title-3")
+        title.set_hexpand(True)
+        head.append(title)
+        chip = Gtk.Box(spacing=6, valign=Gtk.Align.START)
+        chip.append(Gtk.Image.new_from_icon_name(RISK_ICONS[level]))
+        chip.append(Gtk.Label(label=_(RISK_LABELS[level])))
+        chip.add_css_class("vilna-risk")
+        chip.add_css_class(level.lower())
+        head.append(chip)
+        inner.append(head)
 
-        reason = Gtk.Label(xalign=0, wrap=True, selectable=True)
-        reason.set_text(_("Gloxi's reason: ") + question["reason"])
-        box.append(reason)
+        # 3. Why: the model's words, shown as such.
+        inner.append(text(_("Gloxi's reason: ") + str(question.get("reason", "")), selectable=True))
 
-        resources = question.get("resources", [])
+        # 4. What changes and whether it can be undone.
+        facts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        facts.add_css_class("vilna-facts")
+        resources = question.get("resources") or []
         if resources:
-            listing = "\n".join(f"• {readable_resource(r)}" for r in resources[:10])
+            listing = "\n".join(f"• {readable_resource(str(r))}" for r in resources[:10])
             if len(resources) > 10:
                 listing += "\n" + _("… and {n} more").format(n=len(resources) - 10)
-            box.append(narrow(Gtk.Label(label=listing, xalign=0, wrap=True, selectable=True)))
-
+            facts.append(narrow(text(listing, selectable=True)))
         notes = [_("Can be undone.") if question.get("undoable") else _("Cannot be undone.")]
-        why_riskier = translated_raises(question)
-        notes += [_("Riskier than usual: {why}.").format(why=w) for w in why_riskier]
-        if question.get("taint_sources"):
-            notes.append(
-                _("Untrusted content came from: {src}").format(
-                    src=", ".join(question["taint_sources"])
-                )
-            )
-        box.append(Gtk.Label(label="\n".join(notes), xalign=0, wrap=True))
-
+        riskier = _("Riskier than usual: {why}.")
+        notes += [riskier.format(why=w) for w in translated_raises(question)]
+        facts.append(text("\n".join(notes), "dim-label"))
         content = content_text(question)
         if content is not None:
-            box.append(Gtk.Label(label=_("Exactly this will be done:"), xalign=0))
-            shown = narrow(Gtk.Label(label=content, xalign=0, wrap=True, selectable=True))
-            shown.add_css_class("monospace")
-            box.append(shown)
+            facts.append(text(_("Exactly this will be done:"), "heading"))
+            facts.append(narrow(text(content, "monospace", selectable=True)))
+        inner.append(facts)
 
+        # 5. Suspicious content (Keros): its own block, noticeable, no panic.
+        if suspicious(question):
+            warning = Gtk.Box(spacing=10)
+            warning.add_css_class("vilna-warning")
+            icon = Gtk.Image.new_from_icon_name("dialog-warning-symbolic")
+            icon.set_valign(Gtk.Align.START)
+            warning.append(icon)
+            words = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            words.append(text(_("Suspicious content"), "title"))
+            sources = ", ".join(str(s) for s in question["taint_sources"])
+            words.append(narrow(text(_("Untrusted content came from: {src}").format(src=sources))))
+            words.append(text(_("Allow only if you asked for exactly this yourself.")))
+            warning.append(words)
+            inner.append(warning)
+
+        # 6. Buttons: Enter presses the safest one for the level (default_choice).
+        allow_buttons: list[Gtk.Button] = []
+        not_real = text(_(NOT_REAL), "dim-label")
+        not_real.set_visible(False)
+
+        def allow(button: Gtk.Button, choice: str) -> None:
+            # A press sent by a program over AT-SPI is not the person's answer.
+            if gate.allows(button):
+                finish(choice)
+            else:
+                not_real.set_visible(True)
+
+        default = deny = Gtk.Button(label=_("Deny"))
+        if needs_acknowledgement(question):
+            ack = Gtk.CheckButton(label=_("I have read exactly what will be done"))
+            ack.connect(
+                "toggled",
+                lambda b: [x.set_sensitive(b.get_active()) for x in allow_buttons],
+            )
+            inner.append(ack)
         buttons = Gtk.Box(spacing=8, halign=Gtk.Align.END)
-        deny = Gtk.Button(label=_("Deny"))
         deny.connect("clicked", lambda *_: finish("deny"))
         buttons.append(deny)
-        for choice in question.get("choices", []):
-            if choice in LABELS:
-                b = Gtk.Button(label=_(LABELS[choice]))
-                b.connect("clicked", lambda _b, c=choice: finish(c))
-                buttons.append(b)
-        box.append(buttons)
+        for choice in shown_choices(question):
+            b = Gtk.Button(label=_(LABELS[choice]))
+            b.connect("clicked", lambda b, c=choice: allow(b, c))
+            real_input.guard(b, gate)
+            if choice == default_choice(question):
+                default = b
+            if level == "R4":
+                b.add_css_class("vilna-danger")
+            if needs_acknowledgement(question):
+                b.set_sensitive(False)
+            allow_buttons.append(b)
+            buttons.append(b)
+        inner.append(not_real)
+        inner.append(buttons)
 
         win.set_content(box)
-        win.set_default_widget(deny)
-        deny.grab_focus()
+        default.add_css_class("suggested-action")
+        win.set_default_widget(default)
+        default.grab_focus()
         win.present()
 
     app.connect("activate", build)

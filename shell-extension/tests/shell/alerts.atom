@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic test feed in the shape of MeteoAlarm's Atom feeds, written for the Vilna tests. -->
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:cap="urn:oasis:names:tc:emergency:cap:1.2">
+  <title>Test feed</title>
+  <entry>
+    <cap:geocode><valueName>EMMA_ID</valueName><value>ES219</value></cap:geocode>
+    <link title="Zona de prueba" href="https://meteoalarm.org?geocode=EMMA_ID:ES219" hreflang="en"/>
+    <cap:areaDesc>Zona de prueba</cap:areaDesc>
+    <cap:event>Test wind warning</cap:event>
+    <cap:sent>2026-11-18T10:00:00+00:00</cap:sent>
+    <cap:expires>2099-01-01T00:00:00+00:00</cap:expires>
+    <cap:onset>2026-11-18T09:00:00+00:00</cap:onset>
+    <cap:severity>Moderate</cap:severity>
+    <cap:message_type>Alert</cap:message_type>
+    <cap:status>Actual</cap:status>
+    <cap:identifier>test.orange.wind</cap:identifier>
+    <link type="application/cap+xml" href="https://feeds.meteoalarm.org/api/v1/warnings/feeds-spain/test-orange-wind"/>
+    <title>Orange Wind Warning issued for Spain - Zona de prueba</title>
+  </entry>
+  <entry>
+    <cap:geocode><valueName>EMMA_ID</valueName><value>ES219</value></cap:geocode>
+    <cap:areaDesc>Zona de prueba</cap:areaDesc>
+    <cap:event>Test rain warning</cap:event>
+    <cap:sent>2026-11-18T10:00:00+00:00</cap:sent>
+    <cap:expires>2099-01-03T00:00:00+00:00</cap:expires>
+    <cap:onset>2099-01-02T00:00:00+00:00</cap:onset>
+    <cap:status>Actual</cap:status>
+    <cap:identifier>test.yellow.rain.later</cap:identifier>
+    <title>Yellow Rain Warning issued for Spain - Zona de prueba</title>
+  </entry>
+  <entry>
+    <cap:geocode><valueName>EMMA_ID</valueName><value>ES001</value></cap:geocode>
+    <cap:areaDesc>Otra zona</cap:areaDesc>
+    <cap:sent>2026-11-18T10:00:00+00:00</cap:sent>
+    <cap:expires>2099-01-01T00:00:00+00:00</cap:expires>
+    <cap:onset>2026-11-18T09:00:00+00:00</cap:onset>
+    <cap:status>Actual</cap:status>
+    <cap:identifier>test.red.elsewhere</cap:identifier>
+    <title>Red Rain Warning issued for Spain - Otra zona</title>
+  </entry>
+  <entry>
+    <cap:geocode><valueName>EMMA_ID</valueName><value>ES219</value></cap:geocode>
+    <cap:expires>2099-01-01T00:00:00+00:00</cap:expires>
+    <cap:status>Actual</cap:status>
+    <cap:message_type>Cancel</cap:message_type>
+    <cap:identifier>test.cancelled</cap:identifier>
+    <title>Red Snow-ice Warning issued for Spain - Zona de prueba</title>
+  </entry>
+  <entry>
+    <cap:polygon>40.0,-4.0 40.0,-3.4 40.8,-3.4 40.8,-4.0 40.0,-4.0</cap:polygon>
+    <cap:areaDesc>Área de prueba</cap:areaDesc>
+    <cap:sent>2026-11-18T10:00:00+00:00</cap:sent>
+    <cap:expires>2099-01-01T00:00:00+00:00</cap:expires>
+    <cap:onset>2026-11-18T09:00:00+00:00</cap:onset>
+    <cap:status>Actual</cap:status>
+    <cap:identifier>test.yellow.fog.polygon</cap:identifier>
+    <title>Yellow Fog Warning issued for Spain - Área de prueba</title>
+  </entry>
+  <entry>
+    <cap:geocode><valueName>EMMA_ID</valueName><value>ES219</value></cap:geocode>
+    <cap:expires>2001-01-01T00:00:00+00:00</cap:expires>
+    <cap:identifier>test.over</cap:identifier>
+    <title>Yellow Wind Warning issued for Spain - Zona de prueba</title>
+  </entry>
+  <entry>
+    <title>Not a warning &amp; junk</title>
+  </entry>
+</feed>

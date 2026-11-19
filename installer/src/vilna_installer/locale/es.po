@@ -1,0 +1,125 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The first installer screen (es). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Welcome to Vilna"
+msgstr "Te damos la bienvenida a Vilna"
+
+msgid "Blavet release"
+msgstr "Versión Blavet"
+
+msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
+msgstr "Elige un idioma. Después yo, Gloxi, te ayudaré a instalar el sistema, o puedes seguir los pasos por tu cuenta."
+
+msgid "Screen reader"
+msgstr "Lector de pantalla"
+
+msgid "Without the assistant"
+msgstr "Sin asistente"
+
+msgid "Continue with Gloxi"
+msgstr "Continuar con Gloxi"
+
+msgid "Install Vilna"
+msgstr "Instalar Vilna"
+
+msgid "Other languages"
+msgstr "Otros idiomas"
+
+msgid "Search for a language"
+msgstr "Buscar un idioma"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Privacidad"
+
+msgid "Cloud model off until the first login"
+msgstr "Modelo en la nube desactivado hasta el primer inicio de sesión"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi funciona directamente en este ordenador, y lo que le dices se queda aquí. Un modelo en la nube está desactivado ahora; puedes elegirlo después del primer inicio de sesión, y entonces la pasarela de privacidad oculta nombres y números antes de que nada salga del ordenador."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi funciona directamente en este ordenador, y lo que le dices se queda aquí. Un modelo en la nube está desactivado ahora; puedes elegirlo después del primer inicio de sesión, y entonces la pasarela de privacidad oculta nombres y números antes de que nada salga del ordenador. Una pregunta aquí es solo tuya, así que no respondo por ti: elige abajo."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Si un programa falla, ¿enviarnos un informe del fallo?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Un informe de fallo dice qué programa falló y en qué parte de su código. Nunca contiene tus archivos, lo que escribiste, tu nombre ni la dirección del ordenador. Puedes leer cada informe y cambiar esta respuesta más tarde en Configuración."
+
+msgid "Send automatically"
+msgstr "Enviar automáticamente"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Los informes se envían solos; puedes leer cada uno."
+
+msgid "Ask me every time"
+msgstr "Preguntarme cada vez"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Tras un fallo, una notificación pregunta si enviar su informe."
+
+msgid "Never"
+msgstr "Nunca"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Los informes se quedan en este ordenador; aun así puedes enviar uno tú."
+
+msgid "What is in a report"
+msgstr "Qué hay en un informe"
+
+msgid "Choose an answer about crash reports."
+msgstr "Elige una respuesta sobre los informes de fallos."
+
+msgid "Crash reports: {answer}"
+msgstr "Informes de fallos: {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Cambiar al tema oscuro"
+
+msgid "Switch to the light theme"
+msgstr "Cambiar al tema claro"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "Tu conexión ya está protegida: Vilna cifra el DNS, así que la red en la que estás no ve qué sitios buscas."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "¿Quieres aún más protección con una VPN?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "Una VPN oculta tu tráfico a la red en la que estás (una cafetería, un hotel) y tu dirección a los sitios web. El proveedor de la VPN ve adónde vas, por eso solo sugerimos proveedores probados."
+
+msgid "Sign in to Proton VPN"
+msgstr "Iniciar sesión en Proton VPN"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "Tras el primer inicio de sesión, Gloxi abre la aplicación Proton VPN y tú inicias sesión allí."
+
+msgid "Create a free Proton account"
+msgstr "Crear una cuenta gratuita de Proton"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 países, 1 dispositivo a la vez. Tras el primer inicio de sesión, Gloxi abre la página de registro de Proton y luego la aplicación."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Tengo un número de cuenta o un código de Mullvad"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Para el máximo anonimato: sin correo electrónico, solo un número de cuenta. Tras el primer inicio de sesión, Gloxi abre la aplicación Mullvad."
+
+msgid "Skip"
+msgstr "Omitir"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "Puedes activar una VPN más tarde: pídeselo a Gloxi o escribe /vpn en su ventana."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Solo inicias sesión en la propia aplicación del proveedor: Vilna y Gloxi nunca ven tu contraseña, número de cuenta ni código."
+
+msgid "Choose an answer about the VPN."
+msgstr "Elige una respuesta sobre la VPN."

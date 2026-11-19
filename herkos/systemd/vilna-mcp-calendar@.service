@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The calendar tool (ADR 0023) for the person with uid %i, started by the
+# system Herkos (50-herkos.rules). It runs as the person and only reads their
+# calendars from Evolution Data Server, over their session bus.
+[Unit]
+Description=Calendar tool of Herkos for uid %i
+ConditionPathExists=/run/herkos-tools/%i/calendar.sock
+
+[Service]
+Type=simple
+User=%i
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%i/bus
+Environment=XDG_RUNTIME_DIR=/run/user/%i
+ExecStart=/usr/bin/vilna-mcp-calendar
+StandardInput=file:/run/herkos-tools/%i/calendar.sock
+StandardOutput=file:/run/herkos-tools/%i/calendar.sock
+StandardError=journal
+# The tool stops when herkosd closes the connection; no restarts behind its back.
+Restart=no
+
+# Sandbox: no files to write, no network; only the session bus.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

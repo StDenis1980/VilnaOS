@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 10 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- New operation restore_snapshot: puts files back from a Mitos
+  snapshot of the home (ADR 0026), skipping what the person changed
+  again after the action
+- Folders named .snapshots are off limits
+
+-------------------------------------------------------------------
 Tue Nov  3 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: MCP server "files" 0.1 preview, started by Herkos

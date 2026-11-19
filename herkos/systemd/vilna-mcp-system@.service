@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The "system" tool of Herkos for the person with uid %i (ADR 0026,
+# section 5): the saved states of the system and a return to one of them
+# through transactional-update. herkosd starts it (50-herkos.rules) and
+# calls it only after the person said yes to that exact state, every time.
+# It runs as root because transactional-update needs root; the uid comes
+# from the unit's name, and only an administrator (group wheel) may return
+# the system. It cannot do anything else: it is herkosd's own code
+# (herkosd system-tool), with three operations.
+[Unit]
+Description=Saved states of the system for uid %i, a Herkos tool
+ConditionPathExists=/run/herkos-tools/%i/system.sock
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/herkos/herkosd system-tool %i
+StandardInput=file:/run/herkos-tools/%i/system.sock
+StandardOutput=file:/run/herkos-tools/%i/system.sock
+StandardError=journal
+# The tool stops when herkosd closes the connection; no restarts behind its back.
+Restart=no
+
+# transactional-update writes the btrfs default subvolume and the boot
+# entries (sdbootutil), so the file system stays writable; no network,
+# no home folders.
+NoNewPrivileges=yes
+ProtectHome=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictRealtime=yes
+LockPersonality=yes
+SystemCallArchitectures=native

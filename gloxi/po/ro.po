@@ -19,7 +19,7 @@ msgstr ""
 msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 #, python-brace-format
 msgid "Choose a number from 1 to {n}."
 msgstr ""
@@ -92,11 +92,11 @@ msgid ""
 "Then: vilna-backup restore --in-place"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Herkos sent an answer Gloxi does not understand"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Herkos, the permission service, is not available"
 msgstr ""
 
@@ -130,7 +130,7 @@ msgstr ""
 msgid "Keep your conversations with Gloxi in backups too?"
 msgstr ""
 
-#: src/gloxi/backup_intro.py
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
 msgid "Later"
 msgstr ""
 
@@ -150,7 +150,7 @@ msgstr ""
 msgid "My own storage (S3, SFTP)"
 msgstr ""
 
-#: src/gloxi/backup_intro.py src/gloxi/feedback.py
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py src/gloxi/vpn_intro.py
 msgid "No"
 msgstr ""
 
@@ -288,7 +288,7 @@ msgstr ""
 msgid "settings and the folders you chose"
 msgstr ""
 
-#: src/gloxi/backup_intro.py src/gloxi/cli.py
+#: src/gloxi/backup_intro.py src/gloxi/cli.py src/gloxi/voice/cli.py
 msgid "yes"
 msgstr ""
 
@@ -372,14 +372,14 @@ msgid "Cloud: on ({mode} mode)."
 msgstr ""
 
 #: src/gloxi/cli.py
-msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /feedback reports a problem or suggests something, /exit quits."
+msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /vpn sets up a VPN, /feedback reports a problem or suggests something, /exit quits."
 msgstr ""
 
 #: src/gloxi/cli.py
 msgid "Conversation cleared."
 msgstr ""
 
-#: src/gloxi/cli.py
+#: src/gloxi/cli.py src/gloxi/voice/cli.py
 msgid "Download it now? [y/N] "
 msgstr ""
 
@@ -412,9 +412,18 @@ msgstr ""
 msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
 msgstr ""
 
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "Open the app: {app}"
+msgstr ""
+
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
 #, python-brace-format
 msgid "Starting {name} on this computer…"
+msgstr ""
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "The VPN needs Vilna and Herkos, and Herkos is not running."
 msgstr ""
 
 #: src/gloxi/cli.py src/gloxi/gui/controller.py
@@ -464,6 +473,10 @@ msgstr ""
 
 #: src/gloxi/engine.py
 msgid "."
+msgstr ""
+
+#: src/gloxi/engine.py
+msgid "Google on Hugging Face"
 msgstr ""
 
 #: src/gloxi/engine.py
@@ -550,7 +563,7 @@ msgstr ""
 msgid "Please write a few words, or /cancel to stop."
 msgstr ""
 
-#: src/gloxi/feedback.py
+#: src/gloxi/feedback.py src/gloxi/gui/panel.py
 msgid "Something went wrong"
 msgstr ""
 
@@ -612,6 +625,10 @@ msgid "a password or key"
 msgstr ""
 
 #: src/gloxi/feedback.py
+msgid "a personal ID number"
+msgstr ""
+
+#: src/gloxi/feedback.py
 msgid "a phone number"
 msgstr ""
 
@@ -638,6 +655,67 @@ msgstr ""
 #: src/gloxi/feedback.py
 msgid "an e-mail address"
 msgstr ""
+
+#: src/gloxi/gui/cards.py
+msgid "Action"
+msgstr "Acțiune"
+
+#: src/gloxi/gui/cards.py
+msgid "Denied"
+msgstr "Refuzat"
+
+#: src/gloxi/gui/cards.py
+msgid "Done"
+msgstr "Gata"
+
+#: src/gloxi/gui/cards.py
+msgid "Failed"
+msgstr "Eșuat"
+
+#: src/gloxi/gui/cards.py
+msgid "It asks Gloxi to ignore its instructions."
+msgstr "Îi cere lui Gloxi să își ignore instrucțiunile."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains a link that could carry your data away."
+msgstr "Conține un link care ar putea scoate datele dumneavoastră."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains invisible or direction-changing characters."
+msgstr "Conține caractere invizibile sau care schimbă direcția textului."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains markers that imitate system messages."
+msgstr "Conține marcaje care imită mesaje de sistem."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains text hidden from people."
+msgstr "Conține text ascuns de oameni."
+
+#: src/gloxi/gui/cards.py
+msgid "It tries to give Gloxi a new role or new instructions."
+msgstr "Încearcă să îi dea lui Gloxi un rol nou sau instrucțiuni noi."
+
+#: src/gloxi/gui/cards.py
+msgid "The check on this computer found text addressed to Gloxi."
+msgstr "Verificarea de pe acest computer a găsit text adresat lui Gloxi."
+
+#: src/gloxi/gui/cards.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Conținutul {what}."
+
+#: src/gloxi/gui/cards.py
+msgid "Tidy up Downloads"
+msgstr "Ordonează Descărcări"
+
+#: src/gloxi/gui/cards.py
+msgid "Turn on the dark theme"
+msgstr "Activează tema întunecată"
+
+#: src/gloxi/gui/cards.py
+msgid "What do I have today?"
+msgstr "Ce am azi?"
 
 #: src/gloxi/gui/controller.py
 msgid "Auto"
@@ -674,6 +752,10 @@ msgid "Cloud: {host}, not masked"
 msgstr ""
 
 #: src/gloxi/gui/controller.py
+msgid "Gloxi, VPN"
+msgstr ""
+
+#: src/gloxi/gui/controller.py
 msgid "Gloxi, backups"
 msgstr ""
 
@@ -681,11 +763,11 @@ msgstr ""
 msgid "Gloxi, feedback"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
 msgid "Local"
 msgstr ""
 
-#: src/gloxi/gui/controller.py
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py src/gloxi/gui/switcher.py
 msgid "On this computer"
 msgstr ""
 
@@ -721,6 +803,91 @@ msgstr ""
 msgid "{model}, on this computer"
 msgstr ""
 
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is answering"
+msgstr "Gloxi răspunde"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is listening"
+msgstr "Gloxi vă ascultă"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is ready"
+msgstr "Gloxi așteaptă întrebarea dumneavoastră"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is thinking"
+msgstr "Gloxi se gândește"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is waiting for you"
+msgstr "Gloxi vă așteaptă"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi"
+msgstr "Gloxi"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr "Gloxi nu este disponibil: serviciul său nu rulează. Încercați din nou peste câteva clipe."
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr "Gloxi este deschis în altă fereastră."
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
+msgstr "Conexiunea cu serviciul Gloxi s-a pierdut. Încercați din nou."
+
+#: src/gloxi/gui/shortcuts.py
+msgid "Show or hide Gloxi"
+msgstr "Afișați sau ascundeți Gloxi"
+
+#: src/gloxi/gui/switcher.py
+msgid "In the cloud"
+msgstr "În cloud"
+
+#: src/gloxi/gui/switcher.py
+#, python-brace-format
+msgid "Model changed to «{model}» · it answers from the next message"
+msgstr "Model schimbat în „{model}” · răspunde de la următorul mesaj"
+
+#: src/gloxi/gui/switcher.py
+msgid "Turned off in the settings"
+msgstr "Dezactivat în setări"
+
+#: src/gloxi/gui/switcher.py
+msgid "cloud"
+msgstr "cloud"
+
+#: src/gloxi/gui/switcher.py
+msgid "local"
+msgstr "local"
+
+#: src/gloxi/gui/switcher.py
+msgid "recommended"
+msgstr "recomandat"
+
+#: src/gloxi/gui/window.py
+msgid "1/3"
+msgstr "1/3"
+
+#: src/gloxi/gui/window.py
+msgid "1/6"
+msgstr "1/6"
+
+#: src/gloxi/gui/window.py
+msgid "A sixth of the screen"
+msgstr "O șesime din ecran"
+
+#: src/gloxi/gui/window.py
+msgid "A third of the screen"
+msgstr "O treime din ecran"
+
+#: src/gloxi/gui/window.py
+msgid "Above other windows"
+msgstr "Deasupra celorlalte ferestre"
+
 #: src/gloxi/gui/window.py
 msgid "Actions hidden from Gloxi"
 msgstr ""
@@ -734,16 +901,36 @@ msgid "Ask Gloxi… (/local or /cloud to pick the model)"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Background"
+msgstr "Fundal"
+
+#: src/gloxi/gui/window.py
+msgid "Background opacity"
+msgstr "Opacitatea fundalului"
+
+#: src/gloxi/gui/window.py
 msgid "Choose a folder for Gloxi"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Ctrl + / opens this list"
+msgstr "Ctrl + / deschide această listă"
 
 #: src/gloxi/gui/window.py
 msgid "Download"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Download Gloxi's voice?"
+msgstr "Descărcați vocea lui Gloxi?"
+
+#: src/gloxi/gui/window.py
 msgid "Download the language model?"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Expand to a sixth (Ctrl+2)"
+msgstr "Extindeți la 1/6 din ecran (Ctrl+2)"
 
 #: src/gloxi/gui/window.py
 msgid "Folders Gloxi may use"
@@ -756,6 +943,10 @@ msgstr ""
 #: src/gloxi/gui/window.py
 msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Herkos checks Gloxi's next actions more strictly."
+msgstr "Herkos va verifica mai strict următoarele acțiuni ale lui Gloxi."
 
 #: src/gloxi/gui/window.py
 #, python-brace-format
@@ -772,12 +963,24 @@ msgid "Herkos found something suspicious in how the program describes them."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "How can I help?"
+msgstr "Cu ce vă pot ajuta?"
+
+#: src/gloxi/gui/window.py
 msgid "It starts the next time Herkos starts."
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Listening… press again to finish (Esc to cancel)"
+msgstr "Ascult… apăsați din nou pentru a termina (Esc pentru a anula)"
+
+#: src/gloxi/gui/window.py
 msgid "Model"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Model for the next messages"
+msgstr "Model pentru următoarele mesaje"
 
 #: src/gloxi/gui/window.py
 msgid "New conversation"
@@ -800,12 +1003,28 @@ msgid "Not turned on: you said no in the Herkos window."
 msgstr ""
 
 #: src/gloxi/gui/window.py
-msgid "Only the local model: turn the cloud on in the settings to choose another"
-msgstr ""
+msgid "Off in high contrast"
+msgstr "Dezactivat la contrast ridicat"
+
+#: src/gloxi/gui/window.py
+msgid "Only the new message"
+msgstr "Doar mesajul nou"
+
+#: src/gloxi/gui/window.py
+msgid "Otherwise it waits in the field for you to check and send"
+msgstr "Altfel așteaptă în câmp până îl verificați și îl trimiteți"
+
+#: src/gloxi/gui/window.py
+msgid "Panel size and look"
+msgstr "Dimensiunea și aspectul panoului"
 
 #: src/gloxi/gui/window.py
 msgid "Programs for Gloxi"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Read answers aloud"
+msgstr "Citește răspunsurile cu voce tare"
 
 #: src/gloxi/gui/window.py
 msgid "Report a problem or suggest something"
@@ -816,8 +1035,109 @@ msgid "Send"
 msgstr ""
 
 #: src/gloxi/gui/window.py
+msgid "Send dictated text at once"
+msgstr "Trimite imediat textul dictat"
+
+#: src/gloxi/gui/window.py
+msgid "Send the conversation to the cloud?"
+msgstr "Trimiteți conversația în cloud?"
+
+#: src/gloxi/gui/window.py
+msgid "Send with context"
+msgstr "Trimite cu context"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi and ask it a question"
+msgstr "Arată Gloxi și pune-i o întrebare"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi and talk about a VPN"
+msgstr "Arată Gloxi și vorbește despre un VPN"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi, or hide it if it is in front"
+msgstr "Afișați Gloxi sau ascundeți-l dacă este în prim-plan"
+
+#: src/gloxi/gui/window.py
+msgid "Size"
+msgstr "Dimensiune"
+
+#: src/gloxi/gui/window.py
+msgid "Small"
+msgstr "Mic"
+
+#: src/gloxi/gui/window.py
+msgid "Speak instead of typing (Ctrl+M)"
+msgstr "Vorbiți în loc să tastați (Ctrl+M)"
+
+#: src/gloxi/gui/window.py
+msgid "Stop reading aloud (Esc)"
+msgstr "Oprește citirea (Esc)"
+
+#: src/gloxi/gui/window.py
 msgid "Stop sharing this folder"
 msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "Suspicious content"
+msgstr "Conținut suspect"
+
+#: src/gloxi/gui/window.py
+msgid "TEXT"
+msgstr "TEXT"
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "The app {app} is not installed."
+msgstr ""
+
+#: src/gloxi/gui/window.py
+msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
+msgstr "Modelul din cloud nu vede mesajele anterioare ale acestei conversații. Le trimiteți și pe ele, ca să cunoască contextul?"
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages stay on this computer."
+msgstr "Mesajele anterioare rămân pe acest computer."
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages will go to the cloud with the next one."
+msgstr "Mesajele anterioare vor merge în cloud odată cu următorul."
+
+#: src/gloxi/gui/window.py
+msgid "The last lines of the chat and the input"
+msgstr "Ultimele rânduri ale conversației și câmpul de scriere"
+
+#: src/gloxi/gui/window.py
+msgid "Translucent"
+msgstr "Translucid"
+
+#: src/gloxi/gui/window.py
+msgid "You:"
+msgstr "Dumneavoastră:"
+
+#: src/gloxi/gui/window.py
+msgid "Your own size. Drag an edge of the panel to change it."
+msgstr "Dimensiunea dumneavoastră. Trageți de o margine a panoului pentru a o schimba."
+
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxi verifică dacă se poate conecta la internet."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi nu are voie să se conecteze la internet, așa că modelul din cloud nu poate răspunde."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxi are nevoie de internet ca să trimită mesajul dumneavoastră modelului din cloud."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos nu rulează, așa că Gloxi nu se poate conecta la internet pentru cloud."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "Cloudul este dezactivat."
 
 #: src/gloxi/programs.py
 msgid "Off: Gloxi cannot use it"
@@ -857,4 +1177,240 @@ msgstr ""
 #: src/gloxi/tools.py
 #, python-brace-format
 msgid "{what} (error: {message})"
+msgstr ""
+
+#: src/gloxi/voice/cli.py
+msgid "Listening… speak now."
+msgstr "Ascult… vorbiți acum."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Not downloaded. Gloxi will ask when you use voice again."
+msgstr "Nu s-a descărcat. Gloxi vă va întreba când veți folosi din nou vocea."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "The download was cancelled."
+msgstr "Descărcarea a fost anulată."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The voice models were not downloaded: {why}"
+msgstr "Modelele de voce nu au fost descărcate: {why}"
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Voice is ready."
+msgstr "Vocea este gata."
+
+#: src/gloxi/voice/models.py
+msgid "NVIDIA via sherpa-onnx on GitHub"
+msgstr "NVIDIA prin sherpa-onnx pe GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "Piper via sherpa-onnx on GitHub"
+msgstr "Piper prin sherpa-onnx pe GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "Silero via sherpa-onnx on GitHub"
+msgstr "Silero prin sherpa-onnx pe GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "hexgrad via sherpa-onnx on GitHub"
+msgstr "hexgrad prin sherpa-onnx pe GitHub"
+
+#: src/gloxi/voice/models.py
+msgid "lang-uk via PyPI"
+msgstr "lang-uk prin PyPI"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Downloading the voice models: {percent}%"
+msgstr "Se descarcă modelele de voce: {percent}%"
+
+#: src/gloxi/voice/session.py
+msgid "End of speech"
+msgstr "Sfârșitul vorbirii"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid ""
+"Gloxi can listen to you and read its answers aloud on this computer, without the internet. For that it needs:\n"
+"\n"
+"{models}\n"
+"\n"
+"In total {size}, kept in {folder}. The sound of your voice never leaves this computer and is not saved."
+msgstr ""
+"Gloxi vă poate asculta și vă poate citi răspunsurile cu voce tare pe acest calculator, fără internet. Pentru asta are nevoie de:\n"
+"\n"
+"{models}\n"
+"\n"
+"În total {size}, păstrate în {folder}. Sunetul vocii dumneavoastră nu părăsește niciodată acest calculator și nu este salvat."
+
+#: src/gloxi/voice/session.py
+msgid "Nothing was heard. Press the microphone and speak."
+msgstr "Nu s-a auzit nimic. Apăsați microfonul și vorbiți."
+
+#: src/gloxi/voice/session.py
+msgid "Recognising…"
+msgstr "Se recunoaște…"
+
+#: src/gloxi/voice/session.py
+msgid "Speech recognition"
+msgstr "Recunoașterea vorbirii"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The answer could not be read aloud: {why}"
+msgstr "Răspunsul nu a putut fi citit cu voce tare: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone could not be opened: {why}"
+msgstr "Microfonul nu a putut fi deschis: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone stopped: {why}"
+msgstr "Microfonul s-a oprit: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The speech was not recognised: {why}"
+msgstr "Vorbirea nu a fost recunoscută: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "The voice models are still downloading."
+msgstr "Modelele de voce încă se descarcă."
+
+#: src/gloxi/voice/session.py
+msgid "Ukrainian word stress"
+msgstr "Accentul cuvintelor ucrainene"
+
+#: src/gloxi/voice/session.py
+msgid "Unpacking the voice models…"
+msgstr "Se dezarhivează modelele de voce…"
+
+#: src/gloxi/voice/session.py
+msgid "Voice"
+msgstr "Voce"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Voice could not be started: {why}"
+msgstr "Vocea nu a putut fi pornită: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "Voices"
+msgstr "Voci"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "• {what}: {name}, {size}, {licence}, {source}"
+msgstr "• {what}: {name}, {size}, {licence}, {source}"
+
+#: src/gloxi/voice/speech.py
+msgid "The code is on the screen."
+msgstr "Codul este pe ecran."
+
+#: src/gloxi/voice/speech.py
+msgid "link"
+msgstr "link"
+
+#: src/gloxi/voice/speech.py
+msgid "password hidden"
+msgstr "parolă ascunsă"
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. I will ask once more in a week. You can also type /vpn any time."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. Type /vpn when you want to go on."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Connected"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Create a free Proton account (5 countries, 1 device)"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether a VPN protects this computer"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether the VPN is connected"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening Proton's sign-up page. You can create the account with a Proton address, without another email. Then sign in in the Proton VPN app that I open next, press Connect and tell me when it is connected."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Mullvad app. Enter your account number or activation code there, not here: I do not see it and do not keep it. Then press Connect and tell me when it is connected."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Proton VPN app. Sign in there, not here: I do not see your password. Then press Connect and tell me when it is connected."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+#, python-brace-format
+msgid "I could not continue: {why}. We can go on later: type /vpn."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I do not see a VPN connection yet. Press Connect in the app, wait a few seconds and tell me again."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "I have a Mullvad account number or code"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Mullvad app: in its settings turn on “Auto-connect”, so the VPN comes up by itself."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Proton VPN app: in its settings turn on “Connect at startup”, so the VPN comes up by itself."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Sign in to Proton VPN"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Start Mullvad VPN and keep its service on after a restart"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "The VPN is connected. Shall I turn on the kill switch? Then nothing leaves this computer outside the VPN: if the VPN drops, the internet stops until it is back. Turning it off later always asks you first."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch is on."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch stays off. You can turn it on any time: type /vpn."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Turn on the VPN kill switch"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "We are not talking about a VPN now."
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "Yes, recommended"
+msgstr ""
+
+#: src/gloxi/vpn_intro.py
+msgid "You chose this while installing Vilna."
+msgstr "Ați ales asta la instalarea Vilna."
+
+#: src/gloxi/vpn_intro.py
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up. Do you want even more protection with a VPN? It also hides the rest of your traffic from that network (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones."
 msgstr ""

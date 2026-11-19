@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><title>Дозволи</title><defs><linearGradient id="h1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A4A86"/><stop offset="1" stop-color="#1F345C"/></linearGradient><linearGradient id="h2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5C24A"/><stop offset="1" stop-color="#D9A22E"/></linearGradient></defs><path d="M64 12 L104 26 Q106 27 106 30 L106 58 Q106 92 64 116 Q22 92 22 58 L22 30 Q22 27 24 26Z" transform="translate(0 5)" fill="#D9A22E"/>
+<path d="M64 12 L104 26 Q106 27 106 30 L106 58 Q106 92 64 116 Q22 92 22 58 L22 30 Q22 27 24 26Z" fill="url(#h2)"/>
+<path d="M64 21 L97 32 L97 58 Q97 86 64 106 Q31 86 31 58 L31 32Z" fill="url(#h1)"/>
+<g fill="#F2E8D5">
+<path d="M44 52 L50 46 L56 52 L56 84 L44 84Z"/><path d="M58 48 L64 42 L70 48 L70 88 L58 88Z"/><path d="M72 52 L78 46 L84 52 L84 84 L72 84Z"/>
+<rect x="40" y="58" width="48" height="6" rx="2"/><rect x="40" y="72" width="48" height="6" rx="2"/></g>
+<circle cx="86" cy="88" r="17" fill="#C2581E" /><circle cx="86" cy="85" r="17" fill="#F0963A"/>
+<path d="M78 85 L84 91 L95 79" fill="none" stroke="#1F345C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>

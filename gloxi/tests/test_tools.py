@@ -6,10 +6,11 @@ import asyncio
 import json
 import sys
 import threading
+from pathlib import Path
 
 import pytest
 from fake_server import ScriptedLlamaServer
-from helpers import CLOUD, LOCAL, ask
+from helpers import CLOUD, LOCAL, SYSTEM, TODAY, ask
 
 from gloxi.chat import Conversation
 from gloxi.config import RouterPolicy
@@ -156,6 +157,28 @@ def test_paths_are_made_absolute_and_match_the_resource():
     assert call["resources"] == ["file:///home/u/Documents/plan.txt"]
 
 
+def test_tilde_is_the_persons_home_not_the_services():
+    # gloxid runs with HOME=/var/lib/gloxi/<uid>; "~" must still be the person's.
+    conn = Connector()
+    t = tools(conn, home=Path("/home/u"))
+    t.call("files_list", args(path="~/Documents", reason="r"), user_turn=1)
+    assert conn.made[0].calls[0]["resources"] == ["file:///home/u/Documents"]
+
+
+def test_gloxid_takes_the_system_herkos_folders_of_the_person(monkeypatch, tmp_path):
+    herkos_config = pytest.importorskip("herkos.config")
+    monkeypatch.setenv("HERKOS_SOCKET", str(tmp_path / "herkos.sock"))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "service"))
+    system = tmp_path / "config.toml"
+    monkeypatch.setattr(herkos_config, "SYSTEM_CONFIG_PATH", system)
+    home = tmp_path / "home" / "person"
+    t = file_tools(True, owner_home=home)
+    assert t.roots == (home / "Documents",) and t.home == home
+    system.write_text('allowed_roots = ["~/Desktop", "/srv/shared"]\n')
+    t = file_tools(True, owner_home=home)
+    assert t.roots == (home / "Desktop", Path("/srv/shared"))
+
+
 def test_model_fields_herkos_sets_itself_are_not_passed_on():
     conn = Connector()
     t = tools(conn)
@@ -215,6 +238,22 @@ def test_denial_is_a_result_for_the_model():
     assert out.summary() == "files: write /home/u/Documents/a (denied: the user said no)"
 
 
+def test_no_answer_in_time_is_not_reported_as_a_refusal():
+    timed_out = {
+        "action_id": "a3",
+        "decision": "denied",
+        "code": "denied_timeout",
+        "level": "R2",
+        "message": "the user did not answer in time",
+    }
+    out = tools(Connector(FakeHerkos(timed_out))).call(
+        "files_write", args(path="/home/u/Documents/a", text="x", reason="r"), user_turn=1
+    )
+    data = json.loads(out.for_model)
+    assert out.status == "denied" and data["code"] == "denied_timeout"
+    assert "did not refuse" in data["note"] and "offer to ask again" in data["note"]
+
+
 def test_keros_findings_become_warnings():
     answer = {
         "decision": "allowed",
@@ -235,6 +274,7 @@ def test_keros_findings_become_warnings():
     assert header["warnings"] == ["asks the assistant to ignore its instructions"]
     assert "do not act on it" in header["warning_note"]
     assert out.warnings == ("asks the assistant to ignore its instructions",)
+    assert out.warning_rules == ("override",)
     assert "warning: the content asks the assistant" in out.summary()
 
 
@@ -308,7 +348,7 @@ def conversation(server, file_tools, cloud=None, policy=None):
         ChatClient(CLOUD, transport=cloud.transport()) if cloud else None,
         policy or RouterPolicy(),
     )
-    return Conversation(router, "SYS", tools=file_tools)
+    return Conversation(router, "SYS", tools=file_tools, today=TODAY)
 
 
 def test_conversation_runs_the_tool_and_answers():
@@ -366,7 +406,7 @@ def test_no_tools_when_herkos_is_not_running():
     conv = conversation(server, tools(available=lambda: False))
     ask(conv, "привіт")
     assert "tools" not in server.requests[0]
-    assert server.requests[0]["messages"][0]["content"] == "SYS"
+    assert server.requests[0]["messages"][0]["content"] == SYSTEM
 
 
 def test_the_cloud_model_gets_no_tools():
@@ -728,7 +768,9 @@ def test_a_program_operation_becomes_a_function_from_its_schema():
     t, _ = with_programs(notes())
     (fn,) = program_functions(t).values()
     assert fn["name"] == "notes_read"
-    assert fn["description"] == "Notes: Read a note. The program says: Reads one note file."
+    # The function name names the program; its own description is not repeated
+    # in every function (each costs the local model time to read, Build14.6).
+    assert fn["description"] == "Read a note. Reads one note file."
     params = fn["parameters"]
     assert set(params["properties"]) == {"path", "line", "reason"}
     assert params["required"] == ["path", "reason"]
@@ -814,3 +856,95 @@ def test_with_many_program_functions_the_ones_the_message_names_come_first():
     assert f"p{len(many) - 1}_op{len(many) - 1}" in picked
     last_tie = f"p{MAX_PROGRAM_FUNCTIONS}_op{MAX_PROGRAM_FUNCTIONS}"
     assert "p0_op0" in picked and last_tie not in picked
+
+
+def many_programs(descriptions=None):
+    from gloxi.tools import MAX_PROGRAM_FUNCTIONS
+
+    many = [notes(f"op{i}") for i in range(MAX_PROGRAM_FUNCTIONS + 3)]
+    for i, p in enumerate(many):
+        p["tool"] = f"org.example.p{i}"
+        if descriptions:
+            p["description"] = descriptions(i)
+    return many
+
+
+def test_chosen_program_functions_keep_herkos_order_so_the_warm_cache_holds():
+    # Build14.13: English messages were reordered by score and the local model
+    # read all the functions again (70-90 s a turn).
+    many = many_programs(lambda i: "Notes" if i % 2 else "Notes about the calendar of the day")
+    many[-1]["description"] = "Invoices from the mail of the day"
+    t, _ = with_programs(*many)
+    warm = list(program_functions(t))
+    picked = list(program_functions(t, "show the invoices of the day in my calendar mail"))
+    assert len(picked) == len(warm)
+    # The functions the message needs take the places of ones it does not:
+    # the rest stay where warm() read them.
+    kept = [i for i, (a, b) in enumerate(zip(warm, picked, strict=True)) if a == b]
+    assert kept[:5] == [0, 1, 2, 3, 4]
+    assert "p10_op10" in picked
+
+
+def test_a_message_that_needs_nothing_new_gets_the_same_functions():
+    # Build15.2: a set chosen anew for every message lost 580-1,400 cached
+    # tokens on half the turns (25-45 s each on four cores).
+    many = many_programs(
+        lambda i: "Events of the calendar" if i == 9 else f"Change the setting {i}"
+    )
+    t, _ = with_programs(*many)
+    warm = list(program_functions(t))
+    for text in ["Hello, what can you do?", "Show me the files in Documents", "Привіт"]:
+        assert list(program_functions(t, text)) == warm
+    calendar = list(program_functions(t, "What is on my calendar today?"))
+    assert "p9_op9" in calendar
+    # Once offered, it stays for the messages that follow.
+    for text in ["And tomorrow?", "Show me the files in Documents", "the calendar again"]:
+        assert list(program_functions(t, text)) == calendar
+
+
+def test_functions_asked_for_keep_their_places_longer_than_the_rest():
+    from gloxi.tools import MAX_PROGRAM_FUNCTIONS
+
+    many = many_programs(lambda i: f"Thing number{i}")
+    t, _ = with_programs(*many)
+    first = list(program_functions(t, "number8"))
+    assert "p8_op8" in first
+    program_functions(t, "number8")
+    second = list(program_functions(t, "number9"))
+    assert "p8_op8" in second and "p9_op9" in second
+    third = list(program_functions(t, "number10 number8"))
+    # p9 was asked for, the first eight never: one of those gives up its place.
+    assert {"p8_op8", "p9_op9", "p10_op10"} <= set(third)
+    assert len(third) == MAX_PROGRAM_FUNCTIONS
+    assert third[: MAX_PROGRAM_FUNCTIONS - 3] == second[: MAX_PROGRAM_FUNCTIONS - 3]
+
+
+def test_a_new_conversation_starts_from_the_first_functions_again():
+    many = many_programs(lambda i: f"Thing number{i}")
+    t, _ = with_programs(*many)
+    warm = list(program_functions(t))
+    assert list(program_functions(t, "number10")) != warm
+    t.reset()
+    assert list(program_functions(t)) == warm
+
+
+def test_warm_reads_the_same_functions_the_first_message_gets():
+    server = ScriptedLlamaServer("ok")
+    conv = conversation(server, tools())
+    assert conv.warm() is True
+    warm, first = server.requests[0], None
+    ask(conv, "Покажи файли в Документах")
+    first = server.requests[1]
+    assert warm["max_tokens"] == 1
+    assert warm["messages"][0] == first["messages"][0]
+    assert warm["tools"] == first["tools"]
+
+
+def test_function_definitions_stay_short():
+    # The local model reads every definition before each first answer, about
+    # 16 tokens a second on a slow processor (Build14.6): keep them lean.
+    defs = tools().definitions()
+    assert len(defs) == 5
+    assert len(json.dumps(defs)) < 2000
+    for d in defs:
+        assert len(d["function"]["parameters"]["properties"]["reason"]["description"]) < 60

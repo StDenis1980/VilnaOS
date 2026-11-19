@@ -1,0 +1,18 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- The weights of the default local model (ADR 0008, ADR 0025 step 5).
+     OBS fetches them itself and checks them; the same file and SHA-256 as
+     the Gloxi Flatpak downloads (gloxi/src/gloxi/engine.py). CI fetches it
+     with obs/tools/fetch_sources.py. -->
+<services>
+  <service name="download_url">
+    <param name="protocol">https</param>
+    <param name="host">huggingface.co</param>
+    <param name="path">/Qwen/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf</param>
+    <param name="filename">Qwen3-4B-Q4_K_M.gguf</param>
+  </service>
+  <service name="verify_file">
+    <param name="file">_service:download_url:Qwen3-4B-Q4_K_M.gguf</param>
+    <param name="verifier">sha256</param>
+    <param name="checksum">7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5</param>
+  </service>
+</services>

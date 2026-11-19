@@ -13,7 +13,7 @@ use crate::request::is_name;
 use crate::risk::Level;
 
 pub const FORBIDDEN: &str = "forbidden";
-const OPERATION_KEYS: [&str; 9] = [
+const OPERATION_KEYS: [&str; 11] = [
     "level",
     "summary",
     "undoable",
@@ -23,7 +23,12 @@ const OPERATION_KEYS: [&str; 9] = [
     "resource_args",
     "command_arg",
     "command_key",
+    "preview",
+    "polkit",
 ];
+/// Every polkit action an operation may name starts with this: Herkos's own
+/// actions in `org.vilna.herkos.policy` (permissions.md 9.2).
+pub const POLKIT_PREFIX: &str = "org.vilna.herkos.";
 /// A group of the program's commands in `[commands]`: `home.*`.
 const GROUP_SUFFIX: &str = ".*";
 pub const MAX_COMMANDS: usize = 4096;
@@ -48,14 +53,46 @@ const MAX_FIXED: usize = 16;
 const MAX_ROOT_FLAGS: usize = 4;
 
 /// The manifests shipped with Herkos: the same files Herkos-lite reads.
-const BUILTIN: [(&str, &str); 2] = [
+const BUILTIN: [(&str, &str); 10] = [
+    (
+        "org.vilna.gloxi.network.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.gloxi.network.toml"),
+    ),
+    (
+        "org.vilna.mcp.apps.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.apps.toml"),
+    ),
     (
         "org.vilna.mcp.backup.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.backup.toml"),
     ),
     (
+        "org.vilna.mcp.calendar.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.calendar.toml"),
+    ),
+    (
         "org.vilna.mcp.files.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.files.toml"),
+    ),
+    (
+        "org.vilna.mcp.launcher.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.launcher.toml"),
+    ),
+    (
+        "org.vilna.mcp.mail.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.mail.toml"),
+    ),
+    (
+        "org.vilna.mcp.settings.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.settings.toml"),
+    ),
+    (
+        "org.vilna.mcp.system.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.system.toml"),
+    ),
+    (
+        "org.vilna.mcp.vpn.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.vpn.toml"),
     ),
 ];
 
@@ -91,6 +128,31 @@ pub struct Operation {
     /// string, or a list of strings or of tables whose `command_key` names it.
     pub command_arg: Option<String>,
     pub command_key: Option<String>,
+    /// An R0 operation of the same tool that Herkos runs with the same
+    /// arguments before it asks, to show the person what the action is about
+    /// (ADR 0012, section 5: the app, its developer, size and permissions).
+    pub preview: Option<String>,
+    /// The polkit action (`org.vilna.herkos.*`) the person must also be
+    /// authorized for after they said yes in Herkos's window: what changes
+    /// the whole computer, not only the person's own things (permissions.md
+    /// 9.2). Only for R3-R4 operations; only the system Herkos can check it.
+    pub polkit: Option<String>,
+}
+
+/// `org.vilna.herkos.` and then lowercase words joined by `.` or `-`.
+pub fn is_polkit_action(id: &str) -> bool {
+    let Some(rest) = id.strip_prefix(POLKIT_PREFIX) else {
+        return false;
+    };
+    id.len() <= 128
+        && !rest.is_empty()
+        && rest.split('.').all(|w| {
+            !w.is_empty()
+                && !w.starts_with('-')
+                && !w.ends_with('-')
+                && w.bytes()
+                    .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+        })
 }
 
 impl Operation {
@@ -317,6 +379,19 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
         };
         let command_arg = arg_name("command_arg")?;
         let command_key = arg_name("command_key")?;
+        let preview = arg_name("preview")?;
+        let polkit = match op.get("polkit") {
+            None => None,
+            Some(Value::String(s)) if is_polkit_action(s) => Some(s.clone()),
+            Some(_) => {
+                return bad(format!(
+                    "{at}: 'polkit' must name an action {POLKIT_PREFIX}*"
+                ));
+            }
+        };
+        if polkit.is_some() && !level.is_some_and(|l| l >= Level::R3) {
+            return bad(format!("{at}: 'polkit' goes only with R3 or R4"));
+        }
         if command_key.is_some() && command_arg.is_none() {
             return bad(format!("{at}: 'command_key' goes only with 'command_arg'"));
         }
@@ -336,8 +411,23 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
                 resource_args,
                 command_arg,
                 command_key,
+                preview,
+                polkit,
             },
         );
+    }
+    for op in operations.values() {
+        if let Some(p) = &op.preview {
+            let at = format!("{source}: operations.{}", op.name);
+            match operations.get(p).and_then(|o| o.level) {
+                Some(Level::R0) => {}
+                _ => {
+                    return bad(format!(
+                        "{at}: 'preview' must name an R0 operation of this tool"
+                    ));
+                }
+            }
+        }
     }
     let launch = match data.get("launch") {
         None => None,
@@ -643,6 +733,88 @@ mod tests {
         ] {
             assert!(with_launch(&wrong).is_err(), "{wrong}");
         }
+    }
+
+    #[test]
+    fn a_preview_names_an_r0_operation_of_the_same_tool() {
+        let base = "tool = \"t.x\"\n[operations.look]\nlevel = \"R0\"\n\
+                    [operations.put]\nlevel = \"R3\"\n";
+        let ok = parse_manifest_str(&format!("{base}preview = \"look\"\n"), "t").expect("ok");
+        assert_eq!(ok.operations["put"].preview.as_deref(), Some("look"));
+        for wrong in ["preview = \"put\"", "preview = \"gone\"", "preview = 3"] {
+            assert!(
+                parse_manifest_str(&format!("{base}{wrong}\n"), "t").is_err(),
+                "{wrong}"
+            );
+        }
+        let apps = Registry::builtin().expect("manifests");
+        let install = apps
+            .get("org.vilna.mcp.apps")
+            .and_then(|m| m.operation("install"));
+        assert_eq!(install.and_then(|o| o.preview.as_deref()), Some("describe"));
+        let add = apps
+            .get("org.vilna.mcp.apps")
+            .and_then(|m| m.operation("add_remote"));
+        assert!(add.is_some_and(Operation::forbidden));
+    }
+
+    #[test]
+    fn a_polkit_action_is_herkos_s_own_and_only_for_r3_and_r4() {
+        let base = "tool = \"t.x\"\n[operations.put]\n";
+        let ok = parse_manifest_str(
+            &format!("{base}level = \"R3\"\npolkit = \"org.vilna.herkos.apps.change\"\n"),
+            "t",
+        )
+        .expect("ok");
+        assert_eq!(
+            ok.operations["put"].polkit.as_deref(),
+            Some("org.vilna.herkos.apps.change")
+        );
+        for wrong in [
+            "level = \"R2\"\npolkit = \"org.vilna.herkos.apps.change\"",
+            "level = \"R3\"\npolkit = \"org.freedesktop.systemd1.manage-units\"",
+            "level = \"R3\"\npolkit = \"org.vilna.herkos.\"",
+            "level = \"R3\"\npolkit = \"org.vilna.herkos.Apps\"",
+            "level = \"R3\"\npolkit = \"org.vilna.herkos..x\"",
+            "level = \"R4\"\npolkit = 3",
+            "level = \"forbidden\"\npolkit = \"org.vilna.herkos.x\"",
+        ] {
+            assert!(
+                parse_manifest_str(&format!("{base}{wrong}\n"), "t").is_err(),
+                "{wrong}"
+            );
+        }
+        // What changes the whole computer names one; the person's own things do not.
+        let r = Registry::builtin().expect("manifests");
+        let action = |tool: &str, op: &str| {
+            r.get(tool)
+                .and_then(|m| m.operation(op))
+                .and_then(|o| o.polkit.clone())
+        };
+        let apps = "org.vilna.herkos.apps.change";
+        for op in ["install", "update", "uninstall", "restore"] {
+            assert_eq!(
+                action("org.vilna.mcp.apps", op).as_deref(),
+                Some(apps),
+                "{op}"
+            );
+        }
+        for op in ["rollback", "restore"] {
+            assert_eq!(
+                action("org.vilna.mcp.system", op).as_deref(),
+                Some("org.vilna.herkos.system.rollback"),
+                "{op}"
+            );
+        }
+        for op in ["killswitch_off", "allow_lan", "open_portal"] {
+            assert_eq!(
+                action("org.vilna.mcp.vpn", op).as_deref(),
+                Some("org.vilna.herkos.network.weaken"),
+                "{op}"
+            );
+        }
+        assert_eq!(action("org.vilna.mcp.vpn", "killswitch_on"), None);
+        assert_eq!(action("org.vilna.mcp.files", "delete"), None);
     }
 
     #[test]

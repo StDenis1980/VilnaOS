@@ -1,18 +1,74 @@
-# Vilna defaults for GNOME (replaces Aeon's 30_Aeon and openSUSE's
-# 20_openSUSE-branding overrides). Design: dark by default, the system
+# Vilna defaults for GNOME (replace Aeon's 30_Aeon, override openSUSE's
+# 20_openSUSE-branding overrides). Design: light by default (decision 2026-11-09), the system
 # accent colour (image/docs/composition.md, Vilna design brief).
 
 [org.gnome.desktop.interface]
-color-scheme='prefer-dark'
+color-scheme='default'
 clock-show-weekday=true
 show-battery-percentage=true
 font-antialiasing='rgba'
 
-[org.gnome.login-screen]
-logo='/usr/share/icons/hicolor/scalable/apps/vilna-logo.svg'
+# Vilna wallpapers (vilna-backgrounds): Сонце by default, the light and
+# dark pictures switch with the style. config.sh fails the image build if
+# these files are missing.
+[org.gnome.desktop.background]
+picture-uri='file:///usr/share/backgrounds/vilna/vilna-sonce-light.jpg'
+picture-uri-dark='file:///usr/share/backgrounds/vilna/vilna-sonce-dark.jpg'
+primary-color='#F7F0E3'
+secondary-color='#0D1830'
 
+[org.gnome.desktop.screensaver]
+picture-uri='file:///usr/share/backgrounds/vilna/vilna-sonce-dark.jpg'
+
+# The screen goes dark (and locks) after 15 minutes without input, not
+# GNOME's 5: in the VM test of Build15.6 it went dark in the first
+# session while the person was still reading, and a Herkos confirmation
+# waiting on screen was lost. Settings ▸ Power changes it as before.
+[org.gnome.desktop.session]
+idle-delay=uint32 900
+
+# The login screen is always dark (GNOME Shell's gdm mode): the logo for
+# dark backgrounds and the word Vilna in one row, 40 px high, at the
+# bottom (distribution-logos-Vilna 0.4). Its background comes from the
+# Vilna GNOME Shell extension.
+[org.gnome.login-screen]
+logo='/usr/share/pixmaps/distribution-logos/vilna-logo-login.svg'
+
+# The Vilna GNOME Shell extension, for everyone and for the login screen
+# (GDM reads the same defaults): Latin layout in password fields, Gloxi
+# above other windows, the login screen background, the dock's colours.
+# Dash to Dock is the dock (docs/design/desktop/README.md); it runs only
+# in the person's session, not on the login screen.
 [org.gnome.shell]
+enabled-extensions=['vilna@stdenis1980.github.io', 'dash-to-dock@micxgx.gmail.com']
 favorite-apps=['io.github.stdenis1980.Gloxi.desktop', 'org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop']
+
+# The dock (Dash to Dock, gnome-shell-extension-dash-to-dock): at the
+# bottom, 48 px icons, Gloxi first (favorite-apps above). It stays on an
+# empty desktop and slides away when the focused app's window covers it.
+# Its look comes from the Vilna extension's stylesheet, so upstream's
+# theme and colour options stay off. A click shows the app, a second
+# click minimises it, with several windows the previews open. The
+# session starts on the desktop, not in the overview.
+[org.gnome.shell.extensions.dash-to-dock]
+dock-position='BOTTOM'
+dock-fixed=false
+intellihide=true
+intellihide-mode='FOCUS_APPLICATION_WINDOWS'
+dash-max-icon-size=48
+apply-custom-theme=false
+custom-background-color=false
+transparency-mode='DEFAULT'
+running-indicator-style='DOTS'
+running-indicator-dominant-color=false
+unity-backlit-items=false
+click-action='focus-minimize-or-previews'
+show-trash=true
+show-mounts=true
+show-mounts-only-mounted=true
+show-apps-at-top=false
+disable-overview-on-startup=true
+animation-time=0.28
 
 [org.gnome.software]
 install-bundles-system-wide=false

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!--
+  The night light keys of GNOME's colour settings, declared again for the
+  Gloxi Flatpak: the GNOME runtime has no gnome-settings-daemon schemas, and
+  without a schema GSettings cannot reach these keys in the person's dconf.
+  Only the keys vilna-mcp-settings uses, with GNOME's names, types and
+  defaults; GNOME's own settings daemon reads the values. Not installed in
+  Vilna, where the system schema is present.
+-->
+<schemalist>
+  <schema id="org.gnome.settings-daemon.plugins.color" path="/org/gnome/settings-daemon/plugins/color/">
+    <key name="night-light-enabled" type="b">
+      <default>false</default>
+    </key>
+    <key name="night-light-temperature" type="u">
+      <default>2700</default>
+    </key>
+    <key name="night-light-schedule-automatic" type="b">
+      <default>true</default>
+    </key>
+    <key name="night-light-schedule-from" type="d">
+      <default>20.0</default>
+    </key>
+    <key name="night-light-schedule-to" type="d">
+      <default>6.0</default>
+    </key>
+  </schema>
+</schemalist>

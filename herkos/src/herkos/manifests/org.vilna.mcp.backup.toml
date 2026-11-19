@@ -26,6 +26,10 @@ summary = "See whether backups are on and how the last one went"
 level = "R0"
 summary = "List the backups"
 
+[operations.list_devices]
+level = "R1"
+summary = "See which devices can open the backups"
+
 [operations.overview]
 level = "R1"
 summary = "See how much space the folders take"
@@ -62,6 +66,14 @@ egress = true
 [operations.restore_in_place]
 level = "R3"
 summary = "Bring files back over the current ones"
+
+[operations.block_device]
+level = "R3"
+summary = "Block a device from the backups"
+
+[operations.add_device]
+level = "R4"
+summary = "Let a new device open the backups"
 
 [operations.forget]
 level = "R4"

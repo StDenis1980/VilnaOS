@@ -17,9 +17,22 @@ disable sshd.socket
 # no network (and the first-boot Flatpak install fails).
 enable NetworkManager.service
 enable NetworkManager-wait-online.service
+# Encrypted DNS (ADR 0027): NetworkManager hands DNS to systemd-resolved.
+enable systemd-resolved.service
+# The VPN kill switch; it does nothing until the person turns it on.
+enable vilna-netguard.service
 
 # Vilna components (no effect until the units are installed).
-# herkosd starts on demand through its socket; Gloxi has no system
-# service yet, it runs in the person's session.
+# herkosd starts on demand through its socket. Each person's Gloxi
+# (gloxi@<uid>.socket) is enabled by vilna-people-sync, which runs on
+# every boot and whenever /etc/passwd changes (ADR 0025); the shared
+# local model starts with the system.
 enable herkosd.socket
+enable vilna-people-sync.service
+enable vilna-people-sync.path
+enable vilna-llm.service
 enable vilna-flatpak-defaults.service
+# A new person's home: useradd makes it a btrfs subvolume (ADR 0026), but
+# under SELinux cannot give it to the person; vilna-home-setup does.
+enable vilna-home-setup.path
+enable vilna-home-setup.service

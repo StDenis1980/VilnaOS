@@ -1,0 +1,125 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The first installer screen (ro). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Welcome to Vilna"
+msgstr "Bun venit în Vilna"
+
+msgid "Blavet release"
+msgstr "Versiunea Blavet"
+
+msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
+msgstr "Alegeți o limbă. Apoi eu, Gloxi, vă voi ajuta să instalați sistemul, sau puteți parcurge pașii pe cont propriu."
+
+msgid "Screen reader"
+msgstr "Cititor de ecran"
+
+msgid "Without the assistant"
+msgstr "Fără asistent"
+
+msgid "Continue with Gloxi"
+msgstr "Continuați cu Gloxi"
+
+msgid "Install Vilna"
+msgstr "Instalare Vilna"
+
+msgid "Other languages"
+msgstr "Alte limbi"
+
+msgid "Search for a language"
+msgstr "Caută o limbă"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Confidențialitate"
+
+msgid "Cloud model off until the first login"
+msgstr "Modelul din cloud oprit până la prima autentificare"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi lucrează direct pe acest calculator, iar ce îi spuneți rămâne aici. Un model din cloud este oprit acum; îl puteți alege după prima autentificare, iar atunci poarta de confidențialitate ascunde nume și numere înainte ca ceva să părăsească calculatorul."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi lucrează direct pe acest calculator, iar ce îi spuneți rămâne aici. Un model din cloud este oprit acum; îl puteți alege după prima autentificare, iar atunci poarta de confidențialitate ascunde nume și numere înainte ca ceva să părăsească calculatorul. O întrebare de aici este doar a dumneavoastră, așa că nu răspund în locul dumneavoastră: alegeți mai jos."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Dacă un program se blochează, ne trimiteți un raport despre blocare?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Un raport despre blocare spune ce program s-a blocat și în ce loc din codul său. Nu conține niciodată fișierele dumneavoastră, ce ați tastat, numele dumneavoastră sau adresa calculatorului. Puteți citi fiecare raport și puteți schimba acest răspuns mai târziu în Setări."
+
+msgid "Send automatically"
+msgstr "Trimite automat"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Rapoartele pleacă singure; le puteți citi pe fiecare."
+
+msgid "Ask me every time"
+msgstr "Întreabă-mă de fiecare dată"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "După o blocare, o notificare întreabă dacă să trimită raportul."
+
+msgid "Never"
+msgstr "Niciodată"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Rapoartele rămân pe acest calculator; puteți totuși trimite unul singur."
+
+msgid "What is in a report"
+msgstr "Ce conține un raport"
+
+msgid "Choose an answer about crash reports."
+msgstr "Alegeți un răspuns despre rapoartele de blocare."
+
+msgid "Crash reports: {answer}"
+msgstr "Rapoarte despre blocări: {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Treci la tema întunecată"
+
+msgid "Switch to the light theme"
+msgstr "Treci la tema luminoasă"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "Conexiunea dumneavoastră este deja protejată: Vilna criptează DNS, astfel încât rețeaua în care vă aflați nu vede ce site-uri căutați."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Doriți și mai multă protecție cu un VPN?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "Un VPN ascunde traficul dumneavoastră de rețeaua în care vă aflați (o cafenea, un hotel) și adresa dumneavoastră de site-uri. Furnizorul VPN vede unde mergeți, de aceea propunem doar furnizori verificați."
+
+msgid "Sign in to Proton VPN"
+msgstr "Autentificare în Proton VPN"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "După prima autentificare, Gloxi deschide aplicația Proton VPN, iar dumneavoastră vă autentificați acolo."
+
+msgid "Create a free Proton account"
+msgstr "Creați un cont Proton gratuit"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 țări, 1 dispozitiv odată. După prima autentificare, Gloxi deschide pagina de înregistrare Proton, apoi aplicația."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Am un număr de cont sau un cod Mullvad"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Pentru cea mai mare anonimitate: fără e-mail, doar un număr de cont. După prima autentificare, Gloxi deschide aplicația Mullvad."
+
+msgid "Skip"
+msgstr "Omiteți"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "Puteți porni un VPN mai târziu: cereți-i lui Gloxi sau tastați /vpn în fereastra sa."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Vă autentificați doar în aplicația furnizorului însuși: Vilna și Gloxi nu văd niciodată parola, numărul de cont sau codul dumneavoastră."
+
+msgid "Choose an answer about the VPN."
+msgstr "Alegeți un răspuns despre VPN."

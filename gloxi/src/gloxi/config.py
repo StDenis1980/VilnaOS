@@ -10,6 +10,8 @@ environment variables. The config file lives at
     model = "local"
     timeout = 120
     start_server = true          # start the bundled llama-server if nothing answers at url
+    slot = 0                     # llama-server slot that keeps the conversation cached; -1: any
+    repeat_penalty = 1.1         # llama-server: penalise repeated words; 1: off
 
     [cloud]                      # optional: the user's own provider and key
     url = "https://api.mistral.ai/v1"
@@ -21,6 +23,7 @@ environment variables. The config file lives at
     cloud_allowed = false        # the cloud is off until the user turns it on
     long_message_chars = 1500    # auto: longer messages go to the cloud
     mask_cloud = true            # privacy gateway: mask personal data sent to the cloud
+    mask_strict = false          # also hide bare numbers that nothing ties to a person
 
     [tools]
     enabled = true               # files tool through Herkos, when Herkos is running
@@ -35,14 +38,35 @@ from pathlib import Path
 
 DEFAULT_LOCAL_URL = "http://127.0.0.1:8080/v1"
 
+# No word about Ukrainian here: with one, Ministral 3 8B answered Spanish,
+# Polish, German and English messages in Ukrainian (gloxi-bench 37/69, 51/69
+# without it). A Ukrainian message gets its own reminder (chat.UKRAINIAN_HINT).
 DEFAULT_SYSTEM_PROMPT = (
     "You are Gloxi, the assistant of Vilna OS. Answer briefly and clearly, "
-    "in the language the user writes in. If you are not sure, say so."
+    "in the language of the user's latest message. "
+    "If you are not sure, say so."
 )
 
 
 class ConfigError(Exception):
     """The config file exists but cannot be used."""
+
+
+def _slot(value: object) -> int | None:
+    """A llama-server slot number; a negative one lets the server choose."""
+    try:
+        slot = int(str(value))
+    except ValueError as exc:
+        raise ConfigError(f"slot must be a whole number, got {value!r}") from exc
+    return slot if slot >= 0 else None
+
+
+def _penalty(value: object) -> float | None:
+    """A llama-server repeat penalty: 1 or less sends none (the server's default, off)."""
+    penalty = _number(value, "repeat_penalty")
+    if penalty != penalty or penalty > 2:  # NaN, or so high that answers stop making sense
+        raise ConfigError(f"repeat_penalty must be between 1 and 2, got {value!r}")
+    return penalty if penalty > 1 else None
 
 
 @dataclass(frozen=True)
@@ -54,6 +78,14 @@ class ModelEndpoint:
     timeout: float = 120.0
     # The cloud key. A local server gets Gloxi's own key (gloxi.localkey).
     api_key: str | None = field(default=None, repr=False)
+    # llama-server only: the slot whose cache keeps this conversation
+    # (``id_slot``). Left to itself, llama-server often gave a turn an idle
+    # slot without it and read the whole prompt again: up to 61 s to choose an
+    # action (Build14.23). Keros asks in the last slot (herkosd keros_model).
+    slot: int | None = None
+    # llama-server only (``repeat_penalty``). Its default is 1, off, and on
+    # long answers the 4B model looped, repeating one sentence (Build15.6).
+    repeat_penalty: float | None = None
 
 
 ROUTER_MODES = ("auto", "local", "cloud")
@@ -65,6 +97,7 @@ class RouterPolicy:
     cloud_allowed: bool = False
     long_message_chars: int = 1500
     mask_cloud: bool = True
+    mask_strict: bool = False
 
 
 @dataclass(frozen=True)
@@ -104,6 +137,11 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         url=_get(env, "GLOXI_LOCAL_URL", local, "url", DEFAULT_LOCAL_URL).rstrip("/"),
         model=_get(env, "GLOXI_LOCAL_MODEL", local, "model", "local"),
         timeout=_number(_get(env, "GLOXI_LOCAL_TIMEOUT", local, "timeout", 120), "timeout"),
+        api_key=_key_file(env.get("GLOXI_LOCAL_KEY_FILE", "")),
+        slot=_slot(_get(env, "GLOXI_LOCAL_SLOT", local, "slot", 0)),
+        repeat_penalty=_penalty(
+            _get(env, "GLOXI_LOCAL_REPEAT_PENALTY", local, "repeat_penalty", 1.1)
+        ),
     )
 
     cloud_endpoint = None
@@ -128,6 +166,7 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
             _number(_get(env, "", router, "long_message_chars", 1500), "long_message_chars")
         ),
         mask_cloud=_flag(_get(env, "GLOXI_MASK_CLOUD", router, "mask_cloud", True)),
+        mask_strict=_flag(_get(env, "GLOXI_MASK_STRICT", router, "mask_strict", False)),
     )
     if policy.cloud_allowed and cloud_endpoint is None:
         raise ConfigError("cloud_allowed is on, but no [cloud] url is configured")
@@ -141,6 +180,23 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
         tools_enabled=_flag(_get(env, "GLOXI_TOOLS", tools, "enabled", True)),
         start_server=_flag(_get(env, "GLOXI_START_SERVER", local, "start_server", True)),
     )
+
+
+def _key_file(name: str) -> str | None:
+    """The key of a model server Gloxi did not start (vilna-llm.service, ADR 0025)."""
+    if not name:
+        return None
+    try:
+        key = Path(name).read_text(encoding="ascii").strip()
+    except FileNotFoundError:
+        # The shared model has not started yet (no weights): Gloxi still
+        # starts and says the model is not running when asked.
+        return None
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ConfigError(f"cannot read the local model key {name}: {exc}") from exc
+    if not key or len(key) > 512 or any(c.isspace() for c in key):
+        raise ConfigError(f"{name} does not hold a key")
+    return key
 
 
 def _table(data: dict, name: str, path: Path) -> dict:

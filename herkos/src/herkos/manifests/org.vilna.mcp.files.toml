@@ -53,3 +53,13 @@ level = "R2"
 summary = "Undo an earlier change to a file"
 undoable = true
 resource_args = ["path"]
+
+# Undo from Mitos snapshots of the home (ADR 0026): the files an action
+# changed go back as they were in its `pre` snapshot. The tool takes no
+# backup of its own; in the system Herkos the snapshot taken before this
+# action makes it undoable in turn. Herkos-lite has no snapshots: there it
+# "cannot be undone" (R3) and so is not carried out.
+[operations.restore_snapshot]
+level = "R2"
+summary = "Undo an earlier change from a snapshot"
+resource_args = ["paths"]

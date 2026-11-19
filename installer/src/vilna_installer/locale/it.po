@@ -1,0 +1,125 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The first installer screen (it). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Welcome to Vilna"
+msgstr "Benvenuti in Vilna"
+
+msgid "Blavet release"
+msgstr "Versione Blavet"
+
+msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
+msgstr "Scegli una lingua. Poi io, Gloxi, ti aiuterò a installare il sistema, oppure puoi seguire i passaggi in autonomia."
+
+msgid "Screen reader"
+msgstr "Lettore dello schermo"
+
+msgid "Without the assistant"
+msgstr "Senza assistente"
+
+msgid "Continue with Gloxi"
+msgstr "Continua con Gloxi"
+
+msgid "Install Vilna"
+msgstr "Installa Vilna"
+
+msgid "Other languages"
+msgstr "Altre lingue"
+
+msgid "Search for a language"
+msgstr "Cerca una lingua"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "Privacy"
+msgstr "Privacy"
+
+msgid "Cloud model off until the first login"
+msgstr "Modello cloud disattivato fino al primo accesso"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi funziona direttamente su questo computer, e ciò che gli dici resta qui. Un modello cloud ora è disattivato; puoi sceglierlo dopo il primo accesso, e allora il gateway della privacy nasconde nomi e numeri prima che qualcosa lasci il computer."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi funziona direttamente su questo computer, e ciò che gli dici resta qui. Un modello cloud ora è disattivato; puoi sceglierlo dopo il primo accesso, e allora il gateway della privacy nasconde nomi e numeri prima che qualcosa lasci il computer. Una domanda qui spetta solo a te, quindi non rispondo al tuo posto: scegli qui sotto."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Se un programma va in crash, inviarci un rapporto sul crash?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Un rapporto sul crash dice quale programma si è bloccato e in quale punto del suo codice. Non contiene mai i tuoi file, ciò che hai digitato, il tuo nome o l'indirizzo del computer. Puoi leggere ogni rapporto e cambiare questa risposta più tardi nelle Impostazioni."
+
+msgid "Send automatically"
+msgstr "Invia automaticamente"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "I rapporti partono da soli; puoi leggerli tutti."
+
+msgid "Ask me every time"
+msgstr "Chiedimelo ogni volta"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Dopo un crash, una notifica chiede se inviare il rapporto."
+
+msgid "Never"
+msgstr "Mai"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "I rapporti restano su questo computer; puoi comunque inviarne uno tu."
+
+msgid "What is in a report"
+msgstr "Cosa contiene un rapporto"
+
+msgid "Choose an answer about crash reports."
+msgstr "Scegli una risposta sui rapporti dei crash."
+
+msgid "Crash reports: {answer}"
+msgstr "Rapporti sui crash: {answer}"
+
+msgid "Switch to the dark theme"
+msgstr "Passa al tema scuro"
+
+msgid "Switch to the light theme"
+msgstr "Passa al tema chiaro"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "La tua connessione è già protetta: Vilna cifra il DNS, quindi la rete in cui ti trovi non vede quali siti cerchi."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Vuoi una protezione ancora maggiore con una VPN?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "Una VPN nasconde il tuo traffico alla rete in cui ti trovi (un bar, un hotel) e il tuo indirizzo ai siti web. Il fornitore della VPN vede dove vai, perciò proponiamo solo fornitori collaudati."
+
+msgid "Sign in to Proton VPN"
+msgstr "Accedi a Proton VPN"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "Dopo il primo accesso Gloxi apre l'app Proton VPN, e tu accedi lì."
+
+msgid "Create a free Proton account"
+msgstr "Crea un account Proton gratuito"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 paesi, 1 dispositivo alla volta. Dopo il primo accesso Gloxi apre la pagina di registrazione di Proton, poi l'app."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Ho un numero di account o un codice Mullvad"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Per il massimo anonimato: niente email, solo un numero di account. Dopo il primo accesso Gloxi apre l'app Mullvad."
+
+msgid "Skip"
+msgstr "Salta"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "Puoi attivare una VPN più tardi: chiedi a Gloxi o digita /vpn nella sua finestra."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Accedi solo nell'app del fornitore stesso: Vilna e Gloxi non vedono mai la tua password, il numero di account o il codice."
+
+msgid "Choose an answer about the VPN."
+msgstr "Scegli una risposta sulla VPN."

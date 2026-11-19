@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>Vilna · Сонце</name>
+    <filename>/usr/share/backgrounds/vilna/vilna-sonce-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/vilna/vilna-sonce-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#F7F0E3</pcolor>
+    <scolor>#0D1830</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Vilna · Схід</name>
+    <filename>/usr/share/backgrounds/vilna/vilna-skhid-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/vilna/vilna-skhid-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#F7F0E3</pcolor>
+    <scolor>#0D1830</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Vilna · Тюльпан</name>
+    <filename>/usr/share/backgrounds/vilna/vilna-tulpan-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/vilna/vilna-tulpan-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#F7F0E3</pcolor>
+    <scolor>#0D1830</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Vilna · Соняшник</name>
+    <filename>/usr/share/backgrounds/vilna/vilna-sonyashnyk-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/vilna/vilna-sonyashnyk-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#F7F0E3</pcolor>
+    <scolor>#0D1830</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Vilna · Волошка</name>
+    <filename>/usr/share/backgrounds/vilna/vilna-voloshka-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/vilna/vilna-voloshka-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#F7F0E3</pcolor>
+    <scolor>#0D1830</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Vilna · Мальва</name>
+    <filename>/usr/share/backgrounds/vilna/vilna-malva-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/vilna/vilna-malva-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#F7F0E3</pcolor>
+    <scolor>#0D1830</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Vilna · Blavet</name>
+    <filename>/usr/share/backgrounds/vilna/vilna-blavet-light.jpg</filename>
+    <filename-dark>/usr/share/backgrounds/vilna/vilna-blavet-dark.jpg</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#F7F0E3</pcolor>
+    <scolor>#0D1830</scolor>
+  </wallpaper>
+</wallpapers>

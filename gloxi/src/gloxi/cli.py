@@ -27,8 +27,10 @@ from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
 from gloxi.engine import (
     DECIMAL_POINT,
     LARGE_MODEL,
+    LARGE_MODEL_MIN_RAM,
     Engine,
     EngineError,
+    ModelFile,
     Plan,
     download,
     human_size,
@@ -44,10 +46,12 @@ from gloxi.privacy import guard_factory
 from gloxi.router import CloudNotAllowed, Route, Router, Target
 from gloxi.tools import ToolOutcome, file_tools
 from gloxi.upgrade import SpeedResult, measure_speed
+from gloxi.vpn_intro import VpnIntro, vpn_intro
 
 HELP = N_(
     "Commands: /local <text> or /cloud <text> picks the model for one message, "
-    "/reset clears the conversation, /backup sets up backups, /feedback reports a problem "
+    "/reset clears the conversation, /backup sets up backups, /vpn sets up a VPN, "
+    "/feedback reports a problem "
     "or suggests something, /exit quits."
 )
 
@@ -99,12 +103,12 @@ def model_consent_text(p: Plan) -> str:
     )
 
 
-def upgrade_consent_text(folder, expected: float) -> str:
+def upgrade_consent_text(folder, expected: float, model: ModelFile = LARGE_MODEL) -> str:
     return _(UPGRADE_CONSENT).format(
-        name=LARGE_MODEL.name,
-        size=human_size(LARGE_MODEL.size),
-        licence=LARGE_MODEL.licence,
-        source=_(LARGE_MODEL.source),
+        name=model.name,
+        size=human_size(model.size),
+        licence=model.licence,
+        source=_(model.source),
         speed=human_number(expected),
         folder=folder,
     )
@@ -125,10 +129,11 @@ def prepare_engine(
     engine_type: Callable[..., Engine] = Engine,
     ram: int | None | Callable[[], int | None] = total_ram,
     measure: Callable[..., SpeedResult] = measure_speed,
+    machine: Callable[..., upgrade.Machine] = upgrade.this_machine,
 ) -> Engine | None:
     """Start the bundled model if needed; download it first only after a yes.
 
-    On a 16 GB computer, once, the speed test may then offer the larger model.
+    On a 16 GB computer, once, the speed test may then offer a larger model.
 
     Raises ``NoModel`` if the model is needed and still missing afterwards.
     """
@@ -162,11 +167,12 @@ def prepare_engine(
         print(_("The model could not be started: {why}").format(why=exc), file=out)
         raise NoModel from None
     if interactive:
-        _offer_large_model(p, settings, ram() if callable(ram) else ram, read, out, fetch, measure)
+        ram_now = ram() if callable(ram) else ram
+        _offer_large_model(p, settings, ram_now, read, out, fetch, measure, machine)
     return engine
 
 
-def _offer_large_model(p, settings, ram, read, out, fetch, measure) -> None:
+def _offer_large_model(p, settings, ram, read, out, fetch, measure, machine) -> None:
     """The speed test of gloxi.upgrade and, if it says so, the question."""
     if upgrade.needs_test(p, ram):
         print(_("Checking how fast this computer runs the model (about a minute)…"), file=out)
@@ -174,21 +180,23 @@ def _offer_large_model(p, settings, ram, read, out, fetch, measure) -> None:
             upgrade.record_result(p.folder, measure(settings.local.url))
         except (httpx.HTTPError, ValueError, OSError):
             return  # try again next time; the chat must not wait for this
-    if not upgrade.should_offer(p.folder):
+    if ram is None or ram < LARGE_MODEL_MIN_RAM:
         return
-    expected = upgrade.load_state(p.folder).get("large_expected", 0.0)
-    print(upgrade_consent_text(p.folder, expected), file=out)
+    offer = upgrade.should_offer(p.folder, machine(p.folder, ram))
+    if offer is None:
+        return
+    print(upgrade_consent_text(p.folder, offer.expected, offer.model), file=out)
     try:
         answer = read(_("Download it now? [y/N] ")).strip().casefold()
     except (EOFError, KeyboardInterrupt):
         answer = ""
     yes = answer in YES | {_("yes").casefold()}
-    upgrade.record_answer(p.folder, yes)
+    upgrade.record_answer(p.folder, yes, offer.model)
     if not yes:
         print(_("Gloxi keeps the current model and will not ask again."), file=out)
         return
     try:
-        fetch(LARGE_MODEL, p.folder, progress=_percent_printer(out))
+        fetch(offer.model, p.folder, progress=_percent_printer(out))
     except (EngineError, KeyboardInterrupt) as exc:
         print("\n" + _("The model was not downloaded: {why}").format(why=exc), file=out)
         upgrade.record_answer_reset(p.folder)
@@ -221,6 +229,11 @@ def build_parser() -> argparse.ArgumentParser:
     ask = sub.add_parser("ask", help="ask one question and exit")
     ask.add_argument("question", nargs="+")
     sub.add_parser("check", help="will this computer run the local model well?")
+    sub.add_parser("wake", help="start gloxid at login so it is ready (Vilna)")
+    voice = sub.add_parser("voice", help="speech on this computer: status, download, say, listen")
+    voice.add_argument("action", choices=("status", "download", "say", "listen"))
+    voice.add_argument("text", nargs="*", help="for say: what to read aloud")
+    voice.add_argument("--lang", help="language code (uk, en, es, pl, de, fr, it, ro, cs, lt)")
     return parser
 
 
@@ -277,6 +290,7 @@ def repl(
     intro: BackupIntro | None = None,
     feedback: FeedbackTalk | None = None,
     open_url: Callable[[str], object] = webbrowser.open,
+    vpn: VpnIntro | None = None,
 ) -> int:
     feedback = feedback or FeedbackTalk()
     print(f"Gloxi {__version__}. {_(HELP)}", file=out)
@@ -287,8 +301,14 @@ def repl(
             print(_(UNMASKED_WARNING), file=out)
     else:
         print(_("Cloud: off. Everything stays on this computer."), file=out)
-    if intro and intro.due():
+    # One first-run talk per start: backups first, the VPN the next time;
+    # a VPN chosen in the installer wizard first (gui/controller.py).
+    if vpn and vpn.chosen():
+        run_intro(vpn, read, out, open_url)
+    elif intro and intro.due():
         run_intro(intro, read, out)
+    elif vpn and vpn.due():
+        run_intro(vpn, read, out, open_url)
     while True:
         try:
             text = read("> ").strip()
@@ -302,6 +322,12 @@ def repl(
         if text == "/reset":
             conversation.reset()
             print(_("Conversation cleared."), file=out)
+            continue
+        if text == "/vpn":
+            if vpn:
+                run_intro(vpn, read, out, open_url)
+            else:
+                print(_("The VPN needs Vilna and Herkos, and Herkos is not running."), file=out)
             continue
         if text == "/backup":
             if intro:
@@ -350,11 +376,21 @@ def run_feedback(
     print(file=out)
 
 
-def run_intro(intro: BackupIntro, read: Callable[[str], str], out: TextIO) -> None:
-    """The backup talk (design.md 2a) in the terminal; Ctrl+D leaves it."""
+def run_intro(
+    intro: BackupIntro | VpnIntro,
+    read: Callable[[str], str],
+    out: TextIO,
+    open_url: Callable[[str], object] = webbrowser.open,
+) -> None:
+    """A first-run talk (backups, VPN) in the terminal; Ctrl+D leaves it."""
     turn = intro.start()
     while turn is not None:
         print(f"\nGloxi: {turn.render()}", file=out)
+        if turn.open_uri:
+            print(turn.open_uri, file=out)
+            open_url(turn.open_uri)
+        if turn.launch:
+            print(_("Open the app: {app}").format(app=turn.launch), file=out)
         if turn.done:
             break
         try:
@@ -391,6 +427,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "check":
         print(check.collect().render())
         return 0
+    if args.command == "wake":
+        from gloxi.service import wake
+
+        return 0 if wake() else 1
+    if args.command == "voice":
+        from gloxi.voice import cli as voice_cli
+
+        return voice_cli.main(args.action, args.text, args.lang)
     try:
         settings = _settings(args)
     except ConfigError as exc:
@@ -429,4 +473,7 @@ def main(argv: list[str] | None = None) -> int:
         intro = backup_intro(settings.tools_enabled)
         if intro:
             stack.callback(intro.close)
-        return repl(conversation, intro=intro)
+        vpn = vpn_intro(settings.tools_enabled)
+        if vpn:
+            stack.callback(vpn.close)
+        return repl(conversation, intro=intro, vpn=vpn)

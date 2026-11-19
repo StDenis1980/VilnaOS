@@ -1,4 +1,50 @@
 -------------------------------------------------------------------
+Tue Nov 17 21:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.6: when offline or a remote fails, try again after 30 s,
+  then less often up to every 15 minutes (RestartSteps); on first boot
+  the network was not up yet and Tinta Office arrived only after 16
+  minutes (V2 VM test of Build10.19)
+- Start after NetworkManager.service: nm-online -x gave up at once
+  because NetworkManager was not running yet (0.2 s too early)
+
+-------------------------------------------------------------------
+Tue Nov 17 12:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.5: before installing, set Flatpak's languages to the ten
+  of ADR 0009 (uk, en, es, pl, de, fr, it, ro, cs, lt), so Firefox and
+  the other apps come with their translations; before, Flatpak took
+  only en_US, the language of the first boot (VM test of Build15.6).
+
+-------------------------------------------------------------------
+Tue Nov 17 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.4: do not hold the boot (1 min 20 s in a VM): the service
+  is Type=exec without After=network-online.target and waits for the
+  network itself (nm-online, 5 minutes)
+- Offline or a remote down is no longer a failed unit: exit 75, and
+  systemd runs the script again 15 minutes later; a build without
+  vilna.flatpakrepo exits 0 and Tinta Office waits for the next boot
+- vilna.flatpakrepo is now Source5: a build without it fails (the
+  Build15.6 image had no repository file, so Tinta never installed)
+
+-------------------------------------------------------------------
+Mon Nov 16 21:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.3: ship vilna.flatpakrepo with the public key of Vilna's
+  Flatpak repository, so Tinta Office installs on first boot
+
+-------------------------------------------------------------------
+Mon Nov 16 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.2: install Tinta Office (ADR 0011) from Vilna's own
+  Flatpak repository (flatpaks-vilna.list, ADR 0024) once the package
+  carries vilna.flatpakrepo; one stamp per remote, so a remote that
+  failed is tried again alone on the next boot
+- Make Tinta Office the GNOME default for office documents, PDF, mail,
+  calendar files and contacts (/etc/xdg/gnome-mimeapps.list)
+
+-------------------------------------------------------------------
 Wed Nov  4 22:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: install Firefox, the GNOME basics and KeePassXC

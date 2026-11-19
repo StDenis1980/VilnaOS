@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 [project]
 name = "gloxi"
-version = "0.1.0a1"
+version = "0.2.0a1"
 description = "Gloxi, the AI assistant of Vilna OS"
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -14,10 +14,17 @@ dependencies = [
 [project.optional-dependencies]
 # The files tool goes through Herkos; without it Gloxi just chats.
 tools = ["herkos"]
+# Voice on this computer (ADR 0015): speech recognition and synthesis. In the
+# Flatpak it is always there; without it Gloxi has no microphone button.
+# marisa-trie reads the Ukrainian stress dictionary, downloaded after a yes.
+voice = ["sherpa-onnx>=2.0.1", "marisa-trie>=1.4.1"]
 
 [project.scripts]
 gloxi = "gloxi.cli:main"
 gloxi-gtk = "gloxi.gui.window:main"
+gloxid = "gloxi.service:main"
+vilna-people-sync = "gloxi.people:main"
+vilna-mcp-gloxi-network = "gloxi.network:main"
 gloxi-bench = "gloxi.bench.__main__:main"
 
 [dependency-groups]
@@ -29,6 +36,8 @@ dev = [
     "vilna-mcp-files",
     "vilna-mcp-backup",
     "vilna-backup",
+    # The stress dictionary tests build a tiny trie of their own.
+    "marisa-trie>=1.4.1",
 ]
 
 [tool.uv.sources]

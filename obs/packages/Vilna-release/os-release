@@ -1,10 +1,13 @@
 # Vilna operating system identification, see os-release(5).
+# Blavet: the name of the first Vilna release (Valencian "cornflower" and
+# "kingfisher").
 # HOME_URL, SUPPORT_URL and BUG_REPORT_URL: add once the project domain is chosen.
 NAME="Vilna"
-PRETTY_NAME="Vilna @VERSION@ (pre-alpha)"
+PRETTY_NAME="Vilna @VERSION@ Blavet (pre-alpha)"
 ID="vilna"
 ID_LIKE="opensuse-tumbleweed opensuse suse"
-VERSION="@VERSION@ (pre-alpha)"
+VERSION="@VERSION@ Blavet (pre-alpha)"
+VERSION_CODENAME="blavet"
 VERSION_ID="@VERSION@"
 ANSI_COLOR="0;38;2;0;87;184"
 LOGO="vilna-logo"

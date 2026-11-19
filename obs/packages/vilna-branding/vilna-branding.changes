@@ -1,4 +1,97 @@
 -------------------------------------------------------------------
+Wed Nov 18 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.13
+- After a failed update, health-checker's reboot starts the last
+  working snapshot (LoaderEntryOneShot), not the first good entry of
+  the menu, whose TPM2 prediction may be missing (V2 VM test of
+  Build12.2, scenario S6)
+- sdbootutil-update-predictions runs after systemd-bless-boot, which
+  renamed the entry it was hashing
+
+-------------------------------------------------------------------
+Wed Nov 18 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.12: the dock. Dash to Dock is enabled for everyone and set up
+  in 30_Vilna.gschema.override: at the bottom, 48 px icons, hides
+  when the focused window covers it, dots for running apps, the
+  Vilna extension's colours, the session starts on the desktop.
+
+-------------------------------------------------------------------
+Tue Nov 17 23:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.11: snapper plugin 20-vilna-loader-preferred: after a rollback,
+  remove a stale LoaderEntryPreferred EFI variable so the chosen
+  snapshot starts. An older sdbootutil in the target snapshot writes
+  only LoaderEntryDefault, and systemd-boot (261.4 on the ESP) prefers Preferred, so a
+  rollback did nothing after a restart (V2 VM test of Build10.19).
+
+-------------------------------------------------------------------
+Tue Nov 17 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.10: the screen goes dark after 15 minutes without input instead of
+  GNOME's 5 (org.gnome.desktop.session idle-delay; VM test of Build15.6:
+  it went dark in the first session and a Herkos confirmation was lost).
+
+-------------------------------------------------------------------
+Mon Nov 16 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.9: the login screen shows the logo and the word Vilna in one row
+  (vilna-logo-login.svg from distribution-logos-Vilna 0.4).
+
+-------------------------------------------------------------------
+Thu Nov 12 20:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.8: NetworkManager-branding-Vilna sends DNS through systemd-resolved,
+  encrypted (DNS-over-TLS) to Quad9, from the first minute and before
+  any VPN (ADR 0027, decision of 2026-11-12). /etc/resolv.conf points at
+  the resolved stub. Requires systemd-resolved.
+
+-------------------------------------------------------------------
+Mon Nov  9 17:10:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.7: gnome-branding-Vilna enables the Vilna GNOME Shell extension for
+  everyone and for the login screen (org.gnome.shell enabled-extensions;
+  GDM reads the same defaults) and shows the final logo for dark
+  backgrounds on the login screen. Requires gnome-shell-extension-vilna.
+
+-------------------------------------------------------------------
+Mon Nov  9 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.6: gnome-branding-Vilna sets the Vilna wallpaper Сонце (light and
+  dark, from vilna-backgrounds) instead of GNOME's Adwaita one, also
+  for the lock screen.
+
+-------------------------------------------------------------------
+Mon Nov  9 13:50:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.5: gnome-branding-Vilna makes the light style the default
+  (color-scheme 'default' instead of 'prefer-dark').
+
+-------------------------------------------------------------------
+Mon Nov  9 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.4: gnome-branding-Vilna no longer owns /usr/etc/sudoers.d and
+  /usr/share/polkit-1/rules.d. It declared them 0755, but sudo has
+  sudoers.d 0750 and filesystem and polkit have rules.d 0555, so an
+  installed system could not update the package (file conflicts in
+  transactional-update, VM test of 0.3), and the image got sudoers.d 0755.
+
+-------------------------------------------------------------------
+Mon Nov  9 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: gnome-branding-Vilna stops GNOME Initial Setup's session within
+  5 s on poweroff. It locks logout down, so gnome-session-service waited
+  for the 90 s default timeout and shutdown took about 90 s (Build11.3).
+
+-------------------------------------------------------------------
+Sun Nov  8 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.2: gnome-branding-Vilna sets GNOME's Adwaita wallpaper; the
+  openSUSE one gio-branding-openSUSE points at is not installed
+  (Build9.2 showed a flat colour). Require gnome-backgrounds.
+
+-------------------------------------------------------------------
 Thu Nov  5 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Initial package: gnome-branding-Vilna, systemd-presets-branding-Vilna,

@@ -1,9 +1,23 @@
 -------------------------------------------------------------------
+Mon Nov  9 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.4: the first Vilna release is called Blavet: VERSION_CODENAME and
+  the name in PRETTY_NAME and VERSION (shown in GNOME Settings, About).
+
+-------------------------------------------------------------------
+Sat Nov  7 23:15:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.3: no longer require openSUSE-repos-Tumbleweed (patterns-vilna-base
+  does): in KIWI's bootstrap its zypp service made the image build
+  refresh the openSUSE repositories, which fails without network.
+
+-------------------------------------------------------------------
 Thu Nov  5 23:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.2: the image had no zypper repository (VM test of Build7.2):
   require openSUSE-repos-Tumbleweed, add vilna.repo for
-  home:StDenis1980:vilna and import its signing key.
+  home:StDenis1980:vilna and ship its signing key in
+  /usr/lib/rpm/gnupg/keys (the image imports it).
 
 -------------------------------------------------------------------
 Mon Nov  2 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

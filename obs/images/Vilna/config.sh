@@ -94,10 +94,96 @@ WantedBy=multi-user.target
 UNIT
 systemctl enable vilna-boot-entries.service
 
+# The computer's name. Without /etc/hostname the system is called
+# «linux» (VM test of Build15.6): that is what Settings, the terminal
+# prompt and the local network show. GNOME Initial Setup does not ask
+# for it, so on the first boot the computer gets «vilna-» and four
+# characters of its machine id, different on every computer. A name
+# someone already chose (the Vilna installer writes /etc/hostname from
+# its plan, Settings or hostnamectl afterwards) is left alone.
+cat >/usr/libexec/vilna/hostname <<'SCRIPT'
+#!/bin/sh
+set -eu
+current=$(tr -d '[:space:]' 2>/dev/null </etc/hostname || true)
+case "$current" in
+    ""|linux|localhost|localhost.localdomain) ;;
+    *) exit 0 ;;
+esac
+id=$(tr -dc '0-9a-f' 2>/dev/null </etc/machine-id | cut -c1-4)
+[ -n "$id" ] || exit 0
+name="vilna-$id"
+printf '%s\n' "$name" >/etc/hostname
+# SELinux: hostname_etc_t, as /etc/hostname has on any other system.
+restorecon /etc/hostname 2>/dev/null || true
+hostname "$name"
+SCRIPT
+chmod 0755 /usr/libexec/vilna/hostname
+cat >/usr/lib/systemd/system/vilna-hostname.service <<'UNIT'
+[Unit]
+Description=Give the computer a Vilna name instead of «linux»
+DefaultDependencies=no
+After=local-fs.target systemd-machine-id-commit.service
+Before=systemd-hostnamed.service NetworkManager.service display-manager.service sysinit.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/vilna/hostname
+
+[Install]
+WantedBy=sysinit.target
+UNIT
+systemctl enable vilna-hostname.service
+
+# Trust the package signing keys shipped in /usr/lib/rpm/gnupg/keys:
+# Vilna's (Vilna-release) and openSUSE's (openSUSE-build-key), so zypper,
+# also inside transactional-update which never asks, accepts the vilna
+# and openSUSE repositories (Build9.2: without the openSUSE key
+# transactional-update dup failed). rpm cannot do this from the
+# packages' %post (its database is locked during the transaction), and
+# on the running system the rpm database is read-only.
+for key in /usr/lib/rpm/gnupg/keys/gpg-pubkey-*.asc; do
+    rpm --import "$key"
+done
+rpm -q gpg-pubkey-06386694 gpg-pubkey-29b700a4
+
+# The wallpaper 30_Vilna.gschema.override (gnome-branding-Vilna) sets.
+test -e /usr/share/backgrounds/vilna/vilna-sonce-light.jpg
+test -e /usr/share/backgrounds/vilna/vilna-sonce-dark.jpg
+
 # zypper (inside transactional-update) installs only what is required,
 # as in Aeon: recommended packages do not slip into the system.
 if [ -e /etc/zypp/zypp.conf ]; then
     sed -i 's/^#\? *solver.onlyRequires.*/solver.onlyRequires = true/' /etc/zypp/zypp.conf
+fi
+
+# Each new person's home is a btrfs subvolume of its own (ADR 0026):
+# useradd (also through AccountsService and GNOME Initial Setup) reads
+# BTRFS_SUBVOLUME_HOME. herkosd mitos-setup then gives that home a snapper
+# config, and Mitos snapshots it around Gloxi's actions. A home that is a
+# plain folder still works, only without those snapshots.
+# Under SELinux the new subvolume has no label and useradd cannot give
+# it to the person; vilna-home-setup (herkos) finishes it right after.
+useradd_defaults=/etc/default/useradd
+if [ ! -e "$useradd_defaults" ] && [ -e /usr/etc/default/useradd ]; then
+    install -Dm0644 /usr/etc/default/useradd "$useradd_defaults"
+fi
+if grep -q '^#\? *BTRFS_SUBVOLUME_HOME=' "$useradd_defaults" 2>/dev/null; then
+    sed -i 's/^#\? *BTRFS_SUBVOLUME_HOME=.*/BTRFS_SUBVOLUME_HOME=yes/' "$useradd_defaults"
+else
+    install -d /etc/default
+    echo 'BTRFS_SUBVOLUME_HOME=yes' >>"$useradd_defaults"
+fi
+
+# tik-osimage-Vilna (the same config.sh) is the system the installer
+# writes to disk; Vilna-Live carries it next to its own copy of the
+# model, and the install engine copies the weights from the live system
+# and checks them against default.gguf.sha256. So this image leaves the
+# weights out (the package stays installed; rpm -V passes again once
+# the engine put them back), and the ISO has them once (~2.5 GB).
+if [ "${kiwi_iname:-}" = "tik-osimage-Vilna" ] && [ -e /usr/share/vilna/models/default.gguf ]; then
+    rm -f -- "$(readlink -f /usr/share/vilna/models/default.gguf)"
+    test -e /usr/share/vilna/models/default.gguf.sha256
 fi
 
 # Branding check (composition.md, section 4.5): no openSUSE or Aeon

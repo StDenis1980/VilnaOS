@@ -24,15 +24,38 @@ BuildRequires:  %{python_module hatchling >= 1.26}
 BuildRequires:  %{python_module pip}
 BuildRequires:  %{python_module wheel}
 BuildRequires:  fdupes
+# Owns the icon directories of herkos-agent (OBS filelist check).
+BuildRequires:  hicolor-icon-theme
 BuildRequires:  python-rpm-macros
 BuildRequires:  sysuser-tools
 BuildRequires:  systemd-rpm-macros
 %sysusers_requires
-# 50-herkos.rules: herkosd may start only its tool units.
+# 50-herkos.rules: herkosd may start only its tool units. herkosd asks
+# polkit (pkcheck) about Herkos's own actions, org.vilna.herkos.policy.
 Requires:       polkit
+# vilna-home-setup: restorecon, pgrep.
+Requires:       policycoreutils
+Requires:       procps
+# With SELinux, systemd may connect a tool unit to herkosd only with this module.
+Requires:       (herkos-selinux if selinux-policy-targeted)
 # The tools run as the person (vilna-mcp-*@.service); packaged separately.
 Recommends:     vilna-mcp-files
 Recommends:     vilna-mcp-backup
+Recommends:     vilna-mcp-settings
+Recommends:     vilna-mcp-calendar
+Recommends:     vilna-mcp-mail
+Recommends:     vilna-mcp-apps
+# Mitos snapshots of people's homes and the system's saved states (ADR 0026).
+Recommends:     snapper
+Recommends:     transactional-update
+# vilna-netguard: the VPN kill switch (nft) and the servers of WireGuard tunnels (wg), ADR 0027.
+Requires:       nftables
+Requires:       wireguard-tools
+# During a captive-portal window it opens the DNS of the network links (ip,
+# resolvectl) and asks NetworkManager to check again (nmcli).
+Requires:       iproute2
+Requires:       systemd-resolved
+Requires:       NetworkManager
 %{?systemd_ordering}
 
 %description
@@ -49,15 +72,35 @@ each person.
 Summary:        Confirmation windows of the Herkos permission gate
 License:        GPL-3.0-or-later
 Requires:       python3-gobject
+# gdbus: the agent asks GNOME whether the screen is locked while a question
+# waits (herkos.agent.away).
+Requires:       glib2-tools
 Requires:       typelib(Adw) = 1
 Requires:       typelib(Gtk) = 4.0
+# /usr/share/icons/hicolor/{scalable,symbolic}/apps for the Permissions icons.
+Requires:       hicolor-icon-theme
 BuildArch:      noarch
 
 %description agent
 The session agent of Herkos: shows the questions of the system herkosd on
 the person's screen (herkos-agent, a user service) in Herkos's own
-window. It also contains Herkos-lite, the preview gate that runs in the
+window. The "Permissions" window (herkos-permissions) shows what Gloxi
+did, undoes a change, and takes back a permission. It also contains Herkos-lite, the preview gate that runs in the
 person's session.
+
+%package selinux
+Summary:        SELinux module for the Herkos permission gate
+License:        GPL-3.0-or-later
+Requires:       %{name} = %{version}-%{release}
+Requires:       selinux-policy-targeted
+Requires(post): policycoreutils
+Requires(postun): policycoreutils
+BuildArch:      noarch
+
+%description selinux
+Lets systemd connect the tools herkosd starts for a person
+(vilna-mcp-*@<uid>.service) to herkosd's own socket. Without it SELinux
+refuses that connection and Gloxi has no tools.
 
 %package -n herkos-manifests
 Summary:        Herkos manifests for programs Gloxi may use
@@ -87,7 +130,7 @@ directory = "vendor"
 CARGO
 
 %build
-cargo build --manifest-path rs/Cargo.toml --release --offline --locked -p herkosd
+cargo build --manifest-path rs/Cargo.toml --release --offline --locked -p herkosd -p vilna-netguard
 %pyproject_wheel
 %sysusers_generate_pre systemd/herkos.sysusers herkos herkos.conf
 
@@ -97,10 +140,35 @@ install -Dm0644 systemd/herkosd.socket %{buildroot}%{_unitdir}/herkosd.socket
 install -Dm0644 systemd/herkosd.service %{buildroot}%{_unitdir}/herkosd.service
 install -Dm0644 systemd/vilna-mcp-files@.service %{buildroot}%{_unitdir}/vilna-mcp-files@.service
 install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-mcp-backup@.service
+install -Dm0644 systemd/vilna-mcp-settings@.service %{buildroot}%{_unitdir}/vilna-mcp-settings@.service
+install -Dm0644 systemd/vilna-mcp-calendar@.service %{buildroot}%{_unitdir}/vilna-mcp-calendar@.service
+install -Dm0644 systemd/vilna-mcp-mail@.service %{buildroot}%{_unitdir}/vilna-mcp-mail@.service
+install -Dm0644 systemd/vilna-mcp-system@.service %{buildroot}%{_unitdir}/vilna-mcp-system@.service
+# Programs through Gloxi (ADR 0012): as vilna-apps, and the launcher as the person.
+install -Dm0644 systemd/vilna-mcp-apps@.service %{buildroot}%{_unitdir}/vilna-mcp-apps@.service
+install -Dm0644 systemd/vilna-mcp-launcher@.service %{buildroot}%{_unitdir}/vilna-mcp-launcher@.service
+# The VPN kill switch and encrypted DNS (ADR 0027).
+install -Dm0644 systemd/vilna-mcp-vpn@.service %{buildroot}%{_unitdir}/vilna-mcp-vpn@.service
+install -Dm0755 rs/target/release/vilna-netguard %{buildroot}%{_bindir}/vilna-netguard
+install -Dm0644 systemd/vilna-netguard.service %{buildroot}%{_unitdir}/vilna-netguard.service
+# New homes useradd could not finish under SELinux (ADR 0026).
+install -Dm0755 systemd/vilna-home-setup %{buildroot}%{_libexecdir}/herkos/vilna-home-setup
+install -Dm0644 systemd/vilna-home-setup.service %{buildroot}%{_unitdir}/vilna-home-setup.service
+install -Dm0644 systemd/vilna-home-setup.path %{buildroot}%{_unitdir}/vilna-home-setup.path
 install -Dm0644 systemd/50-herkos.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos.rules
+# Herkos's own polkit actions for what changes the whole computer, who may
+# carry them out, and nothing from polkit for Gloxi (permissions.md 9.2).
+install -Dm0644 systemd/org.vilna.herkos.policy %{buildroot}%{_datadir}/polkit-1/actions/org.vilna.herkos.policy
+install -Dm0644 systemd/50-herkos-actions.rules %{buildroot}%{_datadir}/polkit-1/rules.d/50-herkos-actions.rules
+install -Dm0644 systemd/40-herkos-gloxi.rules %{buildroot}%{_datadir}/polkit-1/rules.d/40-herkos-gloxi.rules
 install -Dm0644 systemd/herkos.sysusers %{buildroot}%{_sysusersdir}/herkos.conf
+install -Dm0644 selinux/herkos.cil %{buildroot}%{_datadir}/selinux/packages/herkos/herkos.cil
 install -Dm0644 systemd/system.toml %{buildroot}%{_sysconfdir}/herkos/system.toml
 install -Dm0644 systemd/herkos-agent.service %{buildroot}%{_userunitdir}/herkos-agent.service
+# The «Дозволи» window (herkos-permissions) in the app grid.
+install -Dm0644 data/io.github.stdenis1980.VilnaPermissions.desktop %{buildroot}%{_datadir}/applications/io.github.stdenis1980.VilnaPermissions.desktop
+install -Dm0644 data/vilna-permissions.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/vilna-permissions.svg
+install -Dm0644 data/vilna-permissions-symbolic.svg %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps/vilna-permissions-symbolic.svg
 # The catalogue (herkos/catalogue) and, for each program in it, the unit
 # that runs it for a person, made from its manifest.
 install -d %{buildroot}%{_datadir}/herkos/manifests
@@ -117,16 +185,28 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{buildroot}%{_libexecdir}/herkos/herkosd --version
 
 %pre -f herkos.pre
-%service_add_pre herkosd.socket herkosd.service
+%service_add_pre herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path vilna-netguard.service
 
 %post
-%service_add_post herkosd.socket herkosd.service
+%service_add_post herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path vilna-netguard.service
 
 %preun
-%service_del_preun herkosd.socket herkosd.service
+%service_del_preun herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path vilna-netguard.service
 
 %postun
-%service_del_postun herkosd.socket herkosd.service
+%service_del_postun herkosd.socket herkosd.service vilna-home-setup.service vilna-home-setup.path vilna-netguard.service
+
+%post selinux
+# Also inside an image build (chroot): semodule works on the policy store.
+# A policy store semodule cannot load into must not fail the installation
+# (OBS herkos build 66.1); `semodule -l | grep herkos` shows whether it loaded.
+%{_sbindir}/semodule -X 200 -i %{_datadir}/selinux/packages/herkos/herkos.cil || \
+  echo "herkos-selinux: semodule could not load the module herkos" >&2
+
+%postun selinux
+if [ $1 -eq 0 ]; then
+  %{_sbindir}/semodule -X 200 -r herkos || :
+fi
 
 %post agent
 %systemd_user_post herkos-agent.service
@@ -139,14 +219,36 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %doc README.md
 %dir %{_libexecdir}/herkos
 %{_libexecdir}/herkos/herkosd
+%{_libexecdir}/herkos/vilna-home-setup
+%{_unitdir}/vilna-home-setup.service
+%{_unitdir}/vilna-home-setup.path
 %{_unitdir}/herkosd.socket
 %{_unitdir}/herkosd.service
 %{_unitdir}/vilna-mcp-files@.service
 %{_unitdir}/vilna-mcp-backup@.service
+%{_unitdir}/vilna-mcp-settings@.service
+%{_unitdir}/vilna-mcp-calendar@.service
+%{_unitdir}/vilna-mcp-mail@.service
+%{_unitdir}/vilna-mcp-system@.service
+%{_unitdir}/vilna-mcp-apps@.service
+%{_unitdir}/vilna-mcp-launcher@.service
+%{_unitdir}/vilna-mcp-vpn@.service
+%{_bindir}/vilna-netguard
+%{_unitdir}/vilna-netguard.service
 %{_datadir}/polkit-1/rules.d/50-herkos.rules
+%{_datadir}/polkit-1/rules.d/50-herkos-actions.rules
+%{_datadir}/polkit-1/rules.d/40-herkos-gloxi.rules
+%{_datadir}/polkit-1/actions/org.vilna.herkos.policy
 %{_sysusersdir}/herkos.conf
 %dir %{_sysconfdir}/herkos
 %config(noreplace) %{_sysconfdir}/herkos/system.toml
+
+%files selinux
+%license LICENSE
+%dir %{_datadir}/selinux
+%dir %{_datadir}/selinux/packages
+%dir %{_datadir}/selinux/packages/herkos
+%{_datadir}/selinux/packages/herkos/herkos.cil
 
 %files -n herkos-manifests
 %license LICENSE
@@ -159,7 +261,11 @@ cargo test --manifest-path rs/Cargo.toml --release --offline --locked
 %{_bindir}/herkos
 %{_bindir}/herkos-agent
 %{_bindir}/herkos-dialog
+%{_bindir}/herkos-permissions
 %{_userunitdir}/herkos-agent.service
+%{_datadir}/applications/io.github.stdenis1980.VilnaPermissions.desktop
+%{_datadir}/icons/hicolor/scalable/apps/vilna-permissions.svg
+%{_datadir}/icons/hicolor/symbolic/apps/vilna-permissions-symbolic.svg
 %{python_sitelib}/herkos
 %{python_sitelib}/herkos-*.dist-info
 

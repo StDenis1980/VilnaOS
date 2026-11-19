@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Finish a new person's home when useradd could not: an unlabeled btrfs
+# subvolume (BTRFS_SUBVOLUME_HOME, ADR 0026) left to root, without the
+# skeleton. On every boot (to mend a home made before this unit) and
+# whenever /home changes (vilna-home-setup.path).
+[Unit]
+Description=Finish new homes useradd left unlabeled
+RequiresMountsFor=/home
+Before=systemd-user-sessions.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/herkos/vilna-home-setup
+
+[Install]
+WantedBy=multi-user.target

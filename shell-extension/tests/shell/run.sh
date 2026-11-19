@@ -37,6 +37,15 @@ fi
 
 export HOME=$work/home GSETTINGS_BACKEND=keyfile VILNA_TEST_OUT=$work/result.txt
 export VILNA_TEST_MODE=$mode VILNA_TEST_HERE=$here
+# Widgets: the weather comes from this file instead of Open-Meteo, and the
+# clock is in Madrid, so the default place is that capital.
+export VILNA_TEST_WEATHER_FILE=$here/weather.json TZ=Europe/Madrid
+# Weather warnings: a synthetic feed, warning text and zone boundaries
+# (alerts.atom, alert-cap.xml, geocodes.json) instead of MeteoAlarm.
+export VILNA_TEST_ALERTS_FILE=$here/alerts.atom VILNA_TEST_CAP_FILE=$here/alert-cap.xml \
+    VILNA_TEST_GEOCODES_FILE=$here/geocodes.json
+# Gloxi's translations of warnings: the helper answers in place of gloxid.
+export GLOXI_SERVICE_SOCKET=$work/gloxi.sock
 dbus-run-session -- bash -c '
     set -u
     export XDG_RUNTIME_DIR=$(mktemp -d)

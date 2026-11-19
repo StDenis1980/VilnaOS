@@ -49,6 +49,9 @@ LANGUAGES = {
 # Guides that exist in docs/ in more than one language; the rest get English.
 GUIDE_LANGS = {"uk", "es"}
 REPO = "https://github.com/StDenis1980/VilnaOS"
+# The site feedback form posts here (reports/docs/protocol.md, "Форма на сайті");
+# site/public/_headers allows it in form-action.
+FEEDBACK_ACTION = "https://reports.vilnaos.com/v1/feedback"
 
 # page id -> (source body, path under the language root, extra <head> lines)
 NOINDEX = '<meta name="robots" content="noindex">\n'
@@ -56,11 +59,16 @@ PAGES = {
     "home": ("home.html", "index.html", ""),
     "gloxi": ("gloxi.html", "gloxi/index.html", NOINDEX),
     "privacy": ("privacy.html", "privacy/index.html", NOINDEX),
+    "blavet": ("blavet.html", "blavet/index.html", NOINDEX),
+    "security": ("security.html", "security/index.html", NOINDEX),
+    "feedback": ("feedback.html", "feedback/index.html", NOINDEX),
+    # The reports server sends the site form here (reports/server/src/app.rs).
+    "feedback-thanks": ("feedback-thanks.html", "feedback/thanks/index.html", NOINDEX),
     "404": ("404.html", "404.html", NOINDEX),
 }
 
 FIELD = re.compile(r"\{\{(\w+)\}\}")
-MAX_PASSES = 4  # strings may use computed values, which never nest deeper
+MAX_PASSES = 6  # layout > page > string > {{contact}} > its URL, with room to spare
 
 
 class BuildError(Exception):
@@ -154,6 +162,9 @@ def render(lang: str, strings: dict[str, str]) -> dict[str, str]:
             home_url=lang_root(lang),
             gloxi_url=page_url(lang, PAGES["gloxi"][1]),
             privacy_url=page_url(lang, PAGES["privacy"][1]),
+            feedback_url=page_url(lang, PAGES["feedback"][1]),
+            security_url=page_url(lang, PAGES["security"][1]),
+            feedback_action=FEEDBACK_ACTION,
             guide_url=f"{REPO}/blob/main/docs/getting-started"
             + (f".{lang}.md" if lang in GUIDE_LANGS else ".md"),
             repo_url=REPO,
@@ -162,6 +173,8 @@ def render(lang: str, strings: dict[str, str]) -> dict[str, str]:
             icon="/assets/gloxi.svg" if page == "gloxi" else "/assets/vilna-icon.svg",
             privacy_current=' aria-current="page"' if page == "privacy" else "",
             gloxi_current=' aria-current="page"' if page == "gloxi" else "",
+            security_current=' aria-current="page"' if page == "security" else "",
+            feedback_current=' aria-current="page"' if page == "feedback" else "",
         )
         # The page body may set the title, footer and navigation of the layout.
         parts = dict(re.findall(r"<!--\s*(\w+):\s*(.*?)\s*-->", body))

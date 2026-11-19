@@ -48,17 +48,28 @@ export function pickLatin(sources, preferred = []) {
 }
 
 /**
- * What to do when a password field gets focus.
- *  - {action: 'stay'}: the current source already types Latin letters
- *    (a Polish or German layout is kept, as on macOS);
+ * What to do when a password field gets focus. Any layout switches to the
+ * first configured preferred one (English by default), even another Latin
+ * layout such as Polish: one layout for every password (Denys, 2026-11-09).
+ *  - {action: 'stay'}: already on that layout, or no preferred layout is
+ *    configured and the current one types Latin letters;
  *  - {action: 'switch', to}: switch to this source;
  *  - {action: 'no-latin'}: no Latin layout is configured; warn instead.
  */
 export function decideOnEnter(sources, current, preferred = []) {
-    if (isLatin(current))
-        return {action: 'stay'};
     const to = pickLatin(sources, preferred);
-    return to ? {action: 'switch', to} : {action: 'no-latin'};
+    if (!to)
+        return isLatin(current) ? {action: 'stay'} : {action: 'no-latin'};
+    if (sourceKey(to) === sourceKey(current))
+        return {action: 'stay'};
+    if (isLatin(current) && !isPreferred(to, preferred))
+        return {action: 'stay'};
+    return {action: 'switch', to};
+}
+
+function isPreferred(source, preferred) {
+    return source?.type === 'xkb' &&
+        Array.isArray(preferred) && preferred.includes(source.id);
 }
 
 /** The source after `current`, wrapping around: the indicator's click. */

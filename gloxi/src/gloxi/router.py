@@ -53,6 +53,18 @@ class CloudNotAllowed(Exception):
     """The user asked for the cloud, but it is off or not configured."""
 
 
+class NetworkRefused(CloudNotAllowed):
+    """The cloud is on, but Gloxi may not reach the internet (ADR 0025, section 3).
+
+    ``str(exc)`` is already in the person's language.
+    """
+
+
+# Opens the way to the internet before the first message to the cloud, or
+# raises NetworkRefused. The system service asks Herkos (gloxi.network).
+NetworkGate = Callable[[], None]
+
+
 @dataclass(frozen=True)
 class Route:
     target: Target
@@ -69,8 +81,10 @@ class Router:
         policy: RouterPolicy,
         *,
         guard_factory: GuardFactory | None = None,
+        network: NetworkGate | None = None,
     ) -> None:
         self.local = local
+        self.network = network
         self.cloud = cloud
         self.policy = policy
         self._guard_factory = guard_factory
@@ -126,7 +140,9 @@ class Router:
         return self._route("local", "simple message")
 
     def stream(self, messages: Sequence[Message], route: Route) -> Iterator[str]:
-        messages = self.secrets.mask_messages(messages)
+        # Passwords are only shown as dots in the answer, so the model needs no
+        # hint about their placeholders (and the local model no extra prompt).
+        messages = self.secrets.mask_messages(messages, hint=False)
         yield from self.secrets.conceal_stream(self._stream(messages, route))
 
     def _stream(self, messages: Sequence[Message], route: Route) -> Iterator[str]:
@@ -135,6 +151,8 @@ class Router:
             return
         if not self.cloud_enabled:
             raise CloudNotAllowed("the cloud is turned off")
+        if self.network is not None:
+            self.network()
         if self.guard is None:
             yield from self.cloud.stream(messages)
             return
@@ -161,7 +179,9 @@ class Router:
             yield from self.stream(messages, route)
             return
         held = ""
-        for event in self.local.stream_events(self.secrets.mask_messages(messages), tools):
+        for event in self.local.stream_events(
+            self.secrets.mask_messages(messages, hint=False), tools
+        ):
             if isinstance(event, str):
                 held += event
                 # Hold back a tail that may still become a placeholder: "[SEC".

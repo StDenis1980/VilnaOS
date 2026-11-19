@@ -1,0 +1,511 @@
+# Ukrainian translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: uk\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "B"
+msgstr "Б"
+
+msgid "kB"
+msgstr "кБ"
+
+msgid "MB"
+msgstr "МБ"
+
+msgid "GB"
+msgstr "ГБ"
+
+msgid "TB"
+msgstr "ТБ"
+
+msgid "Backups are on"
+msgstr "Копії увімкнено"
+
+msgid "Choose where to keep the backups."
+msgstr "Виберіть, де зберігати копії."
+
+msgid "recommended"
+msgstr "рекомендовано"
+
+msgid "{day} {month} at {time}"
+msgstr "{day} {month} о {time}"
+
+msgid "Backing up…"
+msgstr "Іде копіювання…"
+
+msgid "Backups are off"
+msgstr "Копії вимкнено"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Увімкніть їх, щоб не втратити файли."
+
+msgid "The last backup failed"
+msgstr "Остання копія не вдалася"
+
+msgid "Settings only"
+msgstr "Лише налаштування"
+
+msgid "Settings and documents"
+msgstr "Налаштування і документи"
+
+msgid "The whole home folder"
+msgstr "Уся домашня папка"
+
+msgid "Chosen by you"
+msgstr "Вибрано самостійно"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Налаштування, Gloxi, Herkos, паролі"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "Ще Документи, Стільниця і Зображення"
+
+msgid "Everything except caches and Downloads"
+msgstr "Усе, крім кешів і Завантажень"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Папки, вибрані з Gloxi або в терміналі"
+
+msgid "Every hour"
+msgstr "Щогодини"
+
+msgid "Every day"
+msgstr "Щодня"
+
+msgid "Every week"
+msgstr "Щотижня"
+
+msgid "Off"
+msgstr "Вимкнено"
+
+msgid "today at {time}"
+msgstr "сьогодні о {time}"
+
+msgid "yesterday at {time}"
+msgstr "учора о {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Остання копія {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Виберіть папку на зовнішньому диску."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Введіть адресу сервера: sftp:user@host:/папка, s3:https://… або rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Для папки на цьому комп'ютері виберіть «Зовнішній диск»."
+
+msgid "This server needs a login and a password."
+msgstr "Для цього сервера потрібні логін і пароль."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "Готово {percent} %"
+
+msgid "No backup yet · {schedule}"
+msgstr "Копій ще не було · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "файлів: {n}"
+
+msgid "The server address is not right: {why}"
+msgstr "Адреса сервера неправильна: {why}"
+
+msgid "Vilna cloud"
+msgstr "Vilna хмара"
+
+msgid "In the EU · coming later"
+msgstr "У ЄС · з'явиться пізніше"
+
+msgid "External disk"
+msgstr "Зовнішній диск"
+
+msgid "No folder chosen yet"
+msgstr "Папку ще не вибрано"
+
+msgid "Your own server"
+msgstr "Свій сервер"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 або REST"
+
+msgid "Turn on backups"
+msgstr "Увімкнути копії"
+
+msgid "Recovery sheet"
+msgstr "Аркуш відновлення"
+
+msgid "Backups"
+msgstr "Копії"
+
+msgid "What to keep in backups?"
+msgstr "Що зберігати в копіях?"
+
+msgid "Where"
+msgstr "Куди"
+
+msgid "Choose…"
+msgstr "Вибрати…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Адреса, напр. sftp:me@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Логін (S3 і REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Пароль (S3 і REST)"
+
+msgid "How often"
+msgstr "Як часто"
+
+msgid "Back up"
+msgstr "Робити копію"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Копії шифруються на цьому комп'ютері. Без ключа їх ніхто не прочитає, навіть ми."
+
+msgid "Later"
+msgstr "Пізніше"
+
+msgid "Next"
+msgstr "Далі"
+
+msgid "Folder for backups on the external disk"
+msgstr "Папка для копій на зовнішньому диску"
+
+msgid "Type the key from your sheet"
+msgstr "Введіть ключ з аркуша"
+
+msgid "Start again with another place"
+msgstr "Почати знову з іншим місцем"
+
+msgid "Confirm and turn on"
+msgstr "Підтвердити й увімкнути"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Запишіть цей ключ на папері й зберігайте окремо від комп'ютера. Якщо комп'ютер загубиться, копії відкриє лише цей ключ. Ми його не знаємо і не зможемо надіслати знову."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "Ключ показано лише зараз. Літер I, L, O і U у ньому не буває."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Копії не почнуться, доки ви не введете ключ відновлення з аркуша. Його показали один раз, коли налаштовували місце."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "Аркуша немає? Почніть знову з іншим місцем: буде новий ключ."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Копії увімкнено. Перша копія вже почалася."
+
+msgid "Back up now"
+msgstr "Зробити копію зараз"
+
+msgid "Settings"
+msgstr "Налаштування"
+
+msgid "What to keep"
+msgstr "Що зберігати"
+
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Шифруються на цьому комп'ютері. Без ключа їх ніхто не прочитає, навіть ми."
+
+msgid "Cannot read the state of backups"
+msgstr "Не вдалося прочитати стан копій"
+
+msgid "Where to put the restored files"
+msgstr "Куди покласти відновлені файли"
+
+msgid "Cannot list the backups"
+msgstr "Не вдалося отримати список копій"
+
+msgid "Restore…"
+msgstr "Відновити…"
+
+msgid "No backups yet"
+msgstr "Копій ще немає"
+
+msgid "A backup is already running."
+msgstr "Копія вже йде."
+
+msgid "Restored from backup {stamp}"
+msgstr "Відновлено з копії {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "Відновлюю копію: {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "Не вдалося налаштувати копії: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "Це не той ключ: {why}"
+
+msgid "Could not start: {why}"
+msgstr "Не вдалося почати: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "Відновлено файлів: {n}, у папку {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "Не вдалося відновити: {why}"
+
+msgid "January"
+msgstr "січня"
+
+msgid "February"
+msgstr "лютого"
+
+msgid "March"
+msgstr "березня"
+
+msgid "April"
+msgstr "квітня"
+
+msgid "May"
+msgstr "травня"
+
+msgid "June"
+msgstr "червня"
+
+msgid "July"
+msgstr "липня"
+
+msgid "August"
+msgstr "серпня"
+
+msgid "September"
+msgstr "вересня"
+
+msgid "October"
+msgstr "жовтня"
+
+msgid "November"
+msgstr "листопада"
+
+msgid "December"
+msgstr "грудня"
+
+msgid "Disk"
+msgstr "Диск"
+
+msgid "Vilna server"
+msgstr "Сервер Vilna"
+
+msgid "Already have backups?"
+msgstr "Уже маєте копії?"
+
+msgid "Back"
+msgstr "Назад"
+
+msgid "Bring back"
+msgstr "Повернути"
+
+msgid "Bring back {n} files?"
+msgstr "Повернути файли ({n})?"
+
+msgid "Bring them back…"
+msgstr "Повернути…"
+
+msgid "Bring your files back now?"
+msgstr "Повернути ваші файли зараз?"
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "Checking which files would change…"
+msgstr "Перевіряю, які файли зміняться…"
+
+msgid "Connect"
+msgstr "Підключити"
+
+msgid "Connect this computer to the backups you made before. You need the place of the backups and the key from your recovery sheet. Nothing on this computer changes until you choose what to bring back."
+msgstr "Підключіть цей комп'ютер до копій, які ви робили раніше. Потрібні місце копій і ключ з аркуша відновлення. На комп'ютері нічого не зміниться, доки ви не виберете, що повернути."
+
+msgid "Could not open the backups: {why}"
+msgstr "Не вдалося відкрити копії: {why}"
+
+msgid "Could not turn on: {why}"
+msgstr "Не вдалося увімкнути: {why}"
+
+msgid "Files changed while you were reading the list; nothing was replaced. Try again."
+msgstr "Поки ви читали перелік, файли змінилися, тож нічого не замінено. Спробуйте ще раз."
+
+msgid "Files from the latest backup come back into your home folder. First you see which files would change. Then turn backups on to keep this computer safe too."
+msgstr "Файли з останньої копії повернуться в домашню папку. Спершу ви побачите, які файли зміняться. Потім увімкніть копії, щоб берегти і цей комп'ютер."
+
+msgid "Files made after the backup stay. Your passwords and keys on this computer stay."
+msgstr "Файли, створені після копії, лишаються. Паролі й ключі на цьому комп'ютері теж лишаються."
+
+msgid "Into a new folder, nothing on this computer is replaced. Over your files, files changed since the backup get their old version back; you see the list first."
+msgstr "У нову папку: на комп'ютері нічого не замінюється. Поверх ваших файлів: змінені після копії файли отримають стару версію; перелік ви побачите заздалегідь."
+
+msgid "Into a new folder…"
+msgstr "У нову папку…"
+
+msgid "Keep system secrets in backups?"
+msgstr "Зберігати секрети системи в копіях?"
+
+msgid "Keep them"
+msgstr "Зберігати"
+
+msgid "Nothing is replaced."
+msgstr "Нічого не замінюється."
+
+msgid "Old saved passwords came back as a separate key ring."
+msgstr "Старі збережені паролі повернулися окремою ключницею."
+
+msgid "On a new computer, with your recovery sheet"
+msgstr "На новому комп'ютері, з аркушем відновлення"
+
+msgid "Over my files…"
+msgstr "Поверх моїх файлів…"
+
+msgid "Replace files"
+msgstr "Замінити файли"
+
+msgid "Replace {n} files with their versions from the backup?"
+msgstr "Замінити файли ({n}) їхніми версіями з копії?"
+
+msgid "Restore from backups"
+msgstr "Відновлення з копій"
+
+msgid "Restore from backups made before"
+msgstr "Відновити з копій, зроблених раніше"
+
+msgid "Restore into a new folder, or over your files after seeing which ones change."
+msgstr "Відновлюйте в нову папку або поверх своїх файлів, побачивши спершу, які з них зміняться."
+
+msgid "Restore the backup made {title}?"
+msgstr "Відновити копію, зроблену {title}?"
+
+msgid "Restored: {files} files back, {replaced} replaced."
+msgstr "Відновлено. Повернуто файлів: {files}, замінено: {replaced}."
+
+msgid "Restoring…"
+msgstr "Відновлюю…"
+
+msgid "Saved passwords from the key ring, online accounts, and SSH and GPG keys go into the backups, encrypted like everything else. Whoever has your recovery key can open them, so keep the sheet safe."
+msgstr "Збережені паролі з ключниці, облікові записи, ключі SSH і GPG потраплять у копії, зашифровані, як і все інше. Хто має ваш ключ відновлення, зможе їх відкрити, тож бережіть аркуш."
+
+msgid "Saved passwords, online accounts, SSH and GPG keys"
+msgstr "Збережені паролі, облікові записи, ключі SSH і GPG"
+
+msgid "System secrets"
+msgstr "Секрети системи"
+
+msgid "These files were changed after the backup and get their old version:"
+msgstr "Ці файли змінено після копії, вони отримають стару версію:"
+
+msgid "This computer can now use your backups."
+msgstr "Тепер цей комп'ютер може користуватися вашими копіями."
+
+msgid "Turn on"
+msgstr "Увімкнути"
+
+msgid "Where are your backups?"
+msgstr "Де ваші копії?"
+
+msgid "Your files are already as in this backup"
+msgstr "Ваші файли вже такі, як у цій копії"
+
+msgid "{n} files that are missing now come back."
+msgstr "Повернуться файли, яких зараз немає: {n}."
+
+msgid "…and {n} more"
+msgstr "…і ще {n}"
+
+msgid "Add a device"
+msgstr "Додати пристрій"
+
+msgid "Added {when}"
+msgstr "Підключено {when}"
+
+msgid "Block"
+msgstr "Заблокувати"
+
+msgid "Block «{name}»?"
+msgstr "Заблокувати «{name}»?"
+
+msgid "Block…"
+msgstr "Заблокувати…"
+
+msgid "Cannot list the devices"
+msgstr "Не вдалося прочитати перелік пристроїв"
+
+msgid "Code for a new device"
+msgstr "Код для нового пристрою"
+
+msgid "Could not block: {why}"
+msgstr "Не вдалося заблокувати: {why}"
+
+msgid "Could not make a code: {why}"
+msgstr "Не вдалося створити код: {why}"
+
+msgid "Delete the old copy yourself: {place}"
+msgstr "Видаліть стару копію самі: {place}"
+
+msgid "Done"
+msgstr "Готово"
+
+msgid "Each device has its own key. Block a lost or stolen one."
+msgstr "Кожен пристрій має власний ключ. Заблокуйте втрачений чи вкрадений."
+
+msgid "It can no longer open or add to the backups, and forgets its key the next time it tries. Files on it stay as they are. If it was stolen, the backups also get a new key and you get a new recovery sheet."
+msgstr "Він більше не зможе ні відкрити копії, ні додати до них нові, а під час наступної спроби забуде свій ключ. Файли на ньому лишаться як є. Якщо його вкрали, копії ще й отримають новий ключ, а ви — новий аркуш відновлення."
+
+msgid "It was stolen"
+msgstr "Його вкрали"
+
+msgid "Key from your sheet, or a code from your other device"
+msgstr "Ключ з аркуша або код з іншого вашого пристрою"
+
+msgid "Moving the backups under a new key…"
+msgstr "Переносимо копії під новий ключ…"
+
+msgid "My devices"
+msgstr "Мої пристрої"
+
+msgid "On a computer that already makes backups, open Backups and choose «Add a device»: it shows a code valid for 15 minutes."
+msgstr "На комп'ютері, який уже робить копії, відкрийте «Копії» й виберіть «Додати пристрій»: він покаже код, дійсний 15 хвилин."
+
+msgid "On the new computer, open Backups, choose «Restore from backups made before» and type this code there. It works once, until {when}. Do not tell it to anyone."
+msgstr "На новому комп'ютері відкрийте «Копії», виберіть «Відновити з копій, зроблених раніше» і введіть там цей код. Він спрацює один раз, до {when}. Нікому його не кажіть."
+
+msgid "Opens the backups if every device is lost"
+msgstr "Відкриє копії, якщо втрачено всі пристрої"
+
+msgid "Protect"
+msgstr "Захистити"
+
+msgid "Protect the backups after the theft?"
+msgstr "Захистити копії після крадіжки?"
+
+msgid "The backups were not moved: {why}"
+msgstr "Копії не перенесено: {why}"
+
+msgid "The stolen device may know the key of the backups. Vilna moves every backup under a new key and deletes the old copy; this can take a while. Then you write down a new recovery sheet, and your other devices connect again with a code."
+msgstr "Вкрадений пристрій міг знати ключ копій. Vilna перенесе всі копії під новий ключ і видалить стару копію; це може тривати довго. Потім ви запишете новий аркуш відновлення, а інші ваші пристрої підключите знову кодом."
+
+msgid "This device · added {when}"
+msgstr "Цей пристрій · підключено {when}"
+
+msgid "Valid until {when}"
+msgstr "Дійсний до {when}"
+
+msgid "Withdraw the code"
+msgstr "Скасувати код"
+
+msgid "«{name}» is blocked."
+msgstr "«{name}» заблоковано."

@@ -30,6 +30,9 @@ class Answer(Enum):
     ONCE = "once"
     SESSION = "session"
     ALWAYS = "always"
+    # No answer before the timeout: a "no", but the person did not say no, so
+    # Herkos reports it as denied_timeout. Never one of the offered choices.
+    TIMED_OUT = "timed_out"
 
 
 @dataclass(frozen=True)
@@ -95,6 +98,61 @@ def readable_resource(uri: str) -> str:
     return uri
 
 
+# The lines a tool's preview gives (`facts` of vilna-mcp-apps' describe,
+# ADR 0012, section 5), translated here because the tool does not know the
+# person's language. Values are translated piece by piece ("; " between).
+PREVIEW_LABELS = (
+    "App",
+    "Developer",
+    "Verified",
+    "In Recommended by Vilna",
+    "Source",
+    "Download",
+    "License",
+    "Can reach",
+    "preview",
+)
+PREVIEW_PHRASES = (
+    "yes",
+    "a Vilna app",
+    "no: Flathub has not checked who makes it",
+    "no: Vilna has not checked this app",
+    "not given",
+    "unknown",
+    "only its own files",
+    "all files on the computer",
+    "the system's programs and libraries",
+    "the system's settings (/etc)",
+    "your whole home folder",
+    "the X11 display (can see other X11 windows)",
+    "every program on your session bus",
+    "every service on the system bus",
+    "your SSH keys (through the agent)",
+    "smart cards",
+    "printers",
+    "your GPG keys (through the agent)",
+    "all devices (camera, microphone, USB…)",
+    "input devices",
+    "the internet and local network",
+    "its permissions could not be read",
+)
+
+
+def _preview_value(value: str) -> str:
+    pieces = []
+    for piece in value.split("; "):
+        ro = piece.endswith(" (read only)")
+        piece = piece.removesuffix(" (read only)")
+        if piece.startswith("the folder "):
+            piece = _("the folder {path}").format(path=piece.removeprefix("the folder "))
+        elif piece in PREVIEW_PHRASES:
+            piece = _(piece)
+        elif piece.startswith("yes (") and piece.endswith(")"):
+            piece = _("yes") + piece[3:]
+        pieces.append(_("{what} (read only)").format(what=piece) if ro else piece)
+    return "; ".join(pieces)
+
+
 def content_lines(content: dict) -> list[str]:
     """The arguments as a person reads them: text as text, not as JSON with ``\\n``.
 
@@ -102,6 +160,9 @@ def content_lines(content: dict) -> list[str]:
     """
     lines: list[str] = []
     for key, value in content.items():
+        if key in PREVIEW_LABELS and isinstance(value, str):
+            lines.append(f"{_(key)}: {_preview_value(value)}")
+            continue
         if isinstance(value, str) and ("\n" in value or key == "text"):
             lines.append(f"{key}:")
             lines += [f"  {line}" for line in value.split("\n")]
@@ -172,7 +233,7 @@ class Terminal:
         ready, _unused, _none = select.select([reader], [], [], timeout)
         if not ready:
             writer.write("\n  " + _("No answer: denied.") + "\n")
-            return Answer.DENY
+            return Answer.TIMED_OUT
         key = reader.readline().strip().lower()[:1]
         answer = _KEYS.get(key, Answer.DENY)
         if answer not in question.choices:
@@ -212,8 +273,10 @@ class Dialog:
                 timeout=timeout,
                 check=False,
             )
-        except (OSError, subprocess.TimeoutExpired):
-            return Answer.DENY  # run() kills the window on timeout
+        except subprocess.TimeoutExpired:
+            return Answer.TIMED_OUT  # run() kills the window on timeout
+        except OSError:
+            return Answer.DENY
         lines = done.stdout.decode(errors="replace").strip().splitlines()
         try:
             answer = Answer(lines[-1].strip()) if lines else Answer.DENY

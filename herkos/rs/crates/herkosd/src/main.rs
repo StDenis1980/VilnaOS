@@ -18,10 +18,14 @@ mod mcp;
 mod mitos;
 mod passwd;
 mod pins;
+mod polkit;
 mod programs;
 mod rpc;
+mod snapshots;
 mod system;
+mod systool;
 mod units;
+mod vpntool;
 
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
@@ -37,7 +41,7 @@ use serde_json::Value;
 /// A longer message closes the connection (protocol.md).
 const MAX_LINE: usize = 1024 * 1024;
 
-const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd ext-unit MANIFEST.toml\n       herkosd ext-exec PROGRAM ARGS-FILE\n       herkosd --version";
+const USAGE: &str = "usage: herkosd serve [--socket PATH] [--confirm auto|gui|terminal|deny] [--confirm-command PATH]\n       herkosd system [--socket PATH] [--system-config PATH] [--config PATH] [--state DIR] [--passwd PATH] [--tools-dir DIR] [--start-command PATH] [--pkcheck-command PATH]\n       herkosd journal verify [--file PATH]\n       herkosd mitos-setup [--system-config PATH] [--passwd PATH]\n       herkosd system-tool UID\n       herkosd vpn-tool UID\n       herkosd ext-unit MANIFEST.toml\n       herkosd ext-exec PROGRAM ARGS-FILE\n       herkosd --version";
 
 fn default_socket() -> Result<PathBuf, String> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")
@@ -146,7 +150,10 @@ fn build_gate_from(
     let model_check = match &config.keros_model {
         None => None,
         Some(url) => match keros_model::Judge::new(url) {
-            Ok(judge) => Some(keros_model::ModelCheck::new(judge, config.keros_budget)),
+            Ok(judge) => Some(keros_model::ModelCheck::new(
+                with_model_key(judge),
+                config.keros_budget,
+            )),
             Err(e) => {
                 eprintln!("herkosd: Keros model check off: {e}");
                 None
@@ -157,6 +164,26 @@ fn build_gate_from(
         gate::Gate::new(config, manifests, tools, grants, journal, confirmer)
             .with_model_check(model_check),
     )
+}
+
+/// Where the key of the shared local model is, when it wants one:
+/// herkosd.service sets it to vilna-llm's key (ADR 0025).
+const KEROS_KEY_FILE_ENV: &str = "HERKOS_KEROS_KEY_FILE";
+
+/// The Keros judge with the model's key, when there is one to read. Without
+/// it the check stays on, and a server that wants a key answers
+/// "unavailable": rules and levels still hold.
+fn with_model_key(judge: keros_model::Judge) -> keros_model::Judge {
+    let Some(path) = std::env::var_os(KEROS_KEY_FILE_ENV).filter(|p| !p.is_empty()) else {
+        return judge;
+    };
+    match keros_model::read_key(Path::new(&path)) {
+        Ok(key) => judge.with_key(key),
+        Err(e) => {
+            eprintln!("herkosd: Keros model key not read: {e}");
+            judge
+        }
+    }
 }
 
 /// An executable on PATH (the tool servers are installed like any program).
@@ -326,6 +353,7 @@ fn run_system(args: &[String]) -> Result<(), String> {
         .filter(|p| p.is_absolute())
         .unwrap_or_else(|| PathBuf::from("/run/herkos-tools"));
     let mut start = PathBuf::from("systemctl");
+    let mut pkcheck = PathBuf::from("pkcheck");
     let mut rest = args.iter();
     while let Some(a) = rest.next() {
         match a.as_str() {
@@ -337,6 +365,8 @@ fn run_system(args: &[String]) -> Result<(), String> {
             "--tools-dir" => tools_dir = absolute(a, rest.next())?,
             // A stand-in for systemctl (tests).
             "--start-command" => start = absolute(a, rest.next())?,
+            // A stand-in for pkcheck (tests).
+            "--pkcheck-command" => pkcheck = absolute(a, rest.next())?,
             _ => return Err(format!("unknown argument {a}\n{USAGE}")),
         }
     }
@@ -358,12 +388,43 @@ fn run_system(args: &[String]) -> Result<(), String> {
     };
     let tools: Box<system::ToolsFor> =
         Box::new(move |config, person| units.tools_for(config, person));
-    let sys = Arc::new(system::System::new(people, config_path, state, tools));
+    let mut sys = system::System::new(people, config_path, state, tools);
+    sys.pkcheck = pkcheck;
+    let sys = Arc::new(sys);
     eprintln!(
         "herkosd: system service for {} people",
         sys.config.people.len()
     );
     system::serve(&listener, sys);
+    Ok(())
+}
+
+fn run_mitos_setup(args: &[String]) -> Result<(), String> {
+    let mut system_config = PathBuf::from(system::SYSTEM_CONFIG);
+    let mut passwd_path = PathBuf::from("/etc/passwd");
+    let mut rest = args.iter();
+    while let Some(a) = rest.next() {
+        match a.as_str() {
+            "--system-config" => system_config = absolute(a, rest.next())?,
+            "--passwd" => passwd_path = absolute(a, rest.next())?,
+            _ => return Err(format!("unknown argument {a}\n{USAGE}")),
+        }
+    }
+    let accounts = passwd::load(&passwd_path)?;
+    let people = system::load_system(&system_config, &accounts)?;
+    let snapper = ["/usr/bin/snapper", "/usr/sbin/snapper"]
+        .into_iter()
+        .map(PathBuf::from)
+        .find(|p| p.is_file());
+    let Some(snapper) = snapper else {
+        // Not an error: without snapper, herkosd works as before, without snapshots.
+        eprintln!("herkosd mitos-setup: snapper is not installed; no snapshots of homes");
+        return Ok(());
+    };
+    let homes: Vec<passwd::Account> = people.people.into_iter().map(|p| p.account).collect();
+    for line in snapshots::setup(&homes, &snapper, Path::new(system::SNAPPER_CONFIGS)) {
+        eprintln!("herkosd mitos-setup: {line}");
+    }
     Ok(())
 }
 
@@ -387,6 +448,12 @@ fn run(args: &[String]) -> Result<(), String> {
             Ok(())
         }
         Some("system") => run_system(&args[1..]),
+        // As root, before herkosd starts: snapper configs of people's homes (ADR 0026).
+        Some("mitos-setup") => run_mitos_setup(&args[1..]),
+        // As root, for one person: the system's saved states (vilna-mcp-system@.service).
+        Some("system-tool") => systool::main(&args[1..]),
+        // As root, for one person: the VPN kill switch and DNS (vilna-mcp-vpn@.service).
+        Some("vpn-tool") => vpntool::main(&args[1..]),
         // In a vilna-mcp-ext-<name>@<uid> unit, as the person (ADR 0017).
         Some("ext-exec") => match (args.get(1), args.get(2), args.len()) {
             (Some(program), Some(file), 3) if Path::new(file).is_absolute() => {

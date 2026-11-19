@@ -24,6 +24,7 @@ packages = ["src/privacy_gateway"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["bench"]
 
 [tool.ruff]
 line-length = 100

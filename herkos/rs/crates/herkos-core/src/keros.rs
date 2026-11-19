@@ -149,6 +149,11 @@ impl Finding {
     }
 }
 
+/// The text of a result that the model check reads.
+pub fn model_text(result: &Value) -> String {
+    strings(result, MAX_SCAN_CHARS).join("\n")
+}
+
 pub fn model_finding() -> Finding {
     Finding::new(
         "model",
@@ -263,21 +268,23 @@ impl Keros {
         result: &Value,
         model: Option<&dyn Fn(&str) -> Report>,
     ) -> Vec<Finding> {
-        let mut found = scan(result);
-        self.last_report = None;
+        let mut found = self.inspect_rules(source, result);
         // The model is slow: ask it only when the rules saw nothing.
         if let Some(check) = model.filter(|_| found.is_empty()) {
-            let report = check(&strings(result, MAX_SCAN_CHARS).join("\n"));
-            if report.status == "injection" {
-                found.push(model_finding());
+            let report = check(&model_text(result));
+            if let Some(f) = self.record_model(source, report) {
+                found.push(f);
             }
-            self.last_report = Some(report);
         }
+        found
+    }
+
+    /// The rules part of `inspect`: findings and addresses, no model.
+    pub fn inspect_rules(&mut self, source: &str, result: &Value) -> Vec<Finding> {
+        let found = scan(result);
+        self.last_report = None;
         for f in &found {
-            let entry = (source.to_owned(), f.clone());
-            if !self.findings.contains(&entry) {
-                self.findings.push(entry);
-            }
+            self.remember(source, f);
         }
         for a in addresses(result) {
             if self.seen.len() < MAX_REMEMBERED {
@@ -285,6 +292,25 @@ impl Keros {
             }
         }
         found
+    }
+
+    /// The model's verdict on what `source` returned, also when it comes
+    /// later than the result (herkosd checks in the background). Returns
+    /// the `model` finding when the model saw an injection.
+    pub fn record_model(&mut self, source: &str, report: Report) -> Option<Finding> {
+        let found = (report.status == "injection").then(model_finding);
+        if let Some(f) = &found {
+            self.remember(source, f);
+        }
+        self.last_report = Some(report);
+        found
+    }
+
+    fn remember(&mut self, source: &str, f: &Finding) {
+        let entry = (source.to_owned(), f.clone());
+        if !self.findings.contains(&entry) {
+            self.findings.push(entry);
+        }
     }
 
     pub fn suspicious(&self) -> bool {
