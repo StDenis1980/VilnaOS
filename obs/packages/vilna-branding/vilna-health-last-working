@@ -20,10 +20,13 @@
 set -u
 
 HC_STATE=${VILNA_HC_STATE:-/var/lib/misc/health-check.state}
+# Not in PATH: health-checker wraps it in a shell function of its own,
+# which an ExecStopPost does not have (V2 VM test of Build12.6).
+BLESS_BOOT=${VILNA_BLESS_BOOT:-/usr/lib/systemd/systemd-bless-boot}
 TU_STATE=${VILNA_TU_STATE:-/var/lib/misc/transactional-update.state}
 
 grep -qx 'NEW_SNAPSHOT_FAILED=1' "$HC_STATE" 2>/dev/null || exit 0
-[ "$(systemd-bless-boot status 2>/dev/null)" = dirty ] || exit 0
+[ "$("$BLESS_BOOT" status 2>/dev/null)" = dirty ] || exit 0
 
 current=$(findmnt -no OPTIONS / | sed -n 's|.*subvol=/@/\.snapshots/\([0-9]*\)/snapshot.*|\1|p')
 working=$(sed -n 's/^LAST_WORKING_SNAPSHOTS="\{0,1\}\([0-9 ]*\)"\{0,1\}$/\1/p' "$TU_STATE" 2>/dev/null)

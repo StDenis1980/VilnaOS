@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Nov 19 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.14
+- health-last-working calls /usr/lib/systemd/systemd-bless-boot by
+  its path: it is not in PATH, so the check always said "not dirty"
+  and the next boot was left to systemd-boot (V2 VM test of
+  Build12.6)
+
+-------------------------------------------------------------------
 Wed Nov 18 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.13
