@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Any
 
 from gloxi import __version__
+from gloxi.vpn_intro import CHOSEN
 
 PROTOCOL = 1
 # A line longer than this is not a request: the connection is closed.
@@ -303,7 +304,18 @@ class Service:
         always = params.get("always", False)
         if not isinstance(always, bool):
             raise RequestError("bad_params", "always must be true or false")
-        return {"started": self.controller.offer_intro(always=always)}
+        # The VPN the person chose in the installer wizard: the wizard wrote it
+        # in their home, which this service cannot read (ProtectHome=yes), so
+        # their window hands it on (gloxi.vpn_intro.installer_choice).
+        handed = params.get("vpn_chosen")
+        if handed is not None and handed not in CHOSEN:
+            raise RequestError("bad_params", f"vpn_chosen must be one of {', '.join(CHOSEN)}")
+        vpn = getattr(self.controller, "vpn", None)
+        adopted = handed is not None and vpn is not None and vpn.adopt(handed)
+        return {
+            "started": self.controller.offer_intro(always=always),
+            "vpn_adopted": adopted,
+        }
 
     def _translate(self, params: dict) -> dict:
         from gloxi.llm import ModelError

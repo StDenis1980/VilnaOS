@@ -16,10 +16,18 @@ The classic installer wizard asks the same question (ADR 0027 section 2) and
 leaves the answer in this talk's state: ``{"status": "chosen", "choice": …}``
 for a provider, so the first start goes straight to it instead of asking
 again, and ``declined`` for «Skip».
+
+The wizard writes that file in the person's home. In Vilna the talk runs in
+gloxid (ADR 0025), as gloxi-<uid> with its own state and no access to the
+home (``ProtectHome=yes``), so the window hands the choice on: it reads
+:func:`installer_choice` in the person's session, sends it with
+``chat.offer_intro``, gloxid takes it over with :meth:`VpnIntro.adopt` and
+the window marks the person's file ``handed`` (:func:`mark_handed`).
 """
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import time
@@ -97,6 +105,21 @@ class VpnIntro:
         if st.get("status") == "later":
             return self.clock() - float(st.get("time", 0)) >= REMIND_AFTER
         return False
+
+    def adopt(self, choice: Any) -> bool:
+        """Take over the wizard's choice handed on by the person's window.
+
+        Only into an empty state: a talk that has started or ended here wins
+        over the wizard's file. True if the choice was taken.
+        """
+        if choice not in CHOSEN or self.path.exists():
+            return False
+        try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            self.path.write_text(json.dumps({"status": "chosen", "choice": choice}), "utf-8")
+        except OSError:
+            return False
+        return True
 
     @property
     def active(self) -> bool:
@@ -297,6 +320,26 @@ class VpnIntro:
 
 def _again(n: int) -> Turn:
     return Turn(_("Choose a number from 1 to {n}.").format(n=n))
+
+
+def installer_choice(path: Path | None = None) -> str | None:
+    """The provider the wizard left in this user's own state, not handed on yet."""
+    path = state_path() if path is None else path
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(data, dict) or data.get("status") != "chosen":
+        return None
+    choice = data.get("choice")
+    return choice if choice in CHOSEN else None
+
+
+def mark_handed(choice: str, path: Path | None = None) -> None:
+    """The window gave the wizard's choice to gloxid: do not send it again."""
+    path = state_path() if path is None else path
+    with contextlib.suppress(OSError):
+        path.write_text(json.dumps({"status": "handed", "choice": choice}), encoding="utf-8")
 
 
 def vpn_intro(enabled: bool) -> VpnIntro | None:

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov 20 15:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The VPN chosen in the installer wizard now reaches Gloxi in Vilna: the
+  window reads it from the person's home and hands it to gloxid, which
+  cannot read the home (VM Build12.9 asked about backups first instead).
+
+-------------------------------------------------------------------
 Wed Nov 18 14:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - gloxid: text.translate puts a short text into one of the ten Vilna

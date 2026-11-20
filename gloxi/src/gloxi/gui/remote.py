@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from gloxi.gui.controller import ChatView, ModelChoice, show_action
-from gloxi.vpn_intro import LAUNCHABLE
+from gloxi.vpn_intro import LAUNCHABLE, installer_choice, mark_handed
 
 TIMEOUT = 10.0
 MAX_LINE = 1 << 20
@@ -87,8 +87,11 @@ class RemoteController:
         language: str | None = None,
         timeout: float = TIMEOUT,
         session: Callable[[], str | None] = login_session,
+        vpn_state: Path | None = None,
     ) -> None:
         self.path = path
+        # The person's own VPN talk state, where the installer wizard writes.
+        self.vpn_state = vpn_state
         self.view = view
         self.dispatch = dispatch
         self.language = language if language is not None else window_language()
@@ -302,7 +305,15 @@ class RemoteController:
             self._try("chat.reset")
 
     def offer_intro(self, *, always: bool = False) -> bool:
-        result = self._try("chat.offer_intro", {"always": always})
+        params: dict[str, Any] = {"always": always}
+        # The VPN chosen in the installer wizard is in the person's home,
+        # which gloxid cannot read: hand it on (gloxi.vpn_intro).
+        choice = installer_choice(self.vpn_state) if not always else None
+        if choice:
+            params["vpn_chosen"] = choice
+        result = self._try("chat.offer_intro", params)
+        if choice and isinstance(result, dict) and "vpn_adopted" in result:
+            mark_handed(choice, self.vpn_state)
         return bool(result and result.get("started"))
 
     def report_problem(self) -> bool:

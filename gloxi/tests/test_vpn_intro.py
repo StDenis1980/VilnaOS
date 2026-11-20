@@ -249,3 +249,23 @@ def test_a_refused_provider_service_from_the_wizard_choice_stops_kindly(make):
     turn = intro.start()
     assert turn.done and "/vpn" in turn.text
     assert intro.chosen() is None  # saved as "later": one reminder in a week
+
+
+def test_gloxid_adopts_a_handed_choice_only_into_an_empty_state(make, tmp_path):
+    from gloxi.vpn_intro import installer_choice, mark_handed
+
+    intro, _, _ = make()
+    assert not intro.adopt("nordvpn") and not intro.path.exists()
+    assert intro.adopt("proton_signup") and intro.chosen() == "proton_signup"
+    assert not intro.adopt("mullvad") and intro.chosen() == "proton_signup"
+
+    home = tmp_path / "home.json"
+    assert installer_choice(home) is None  # no file
+    home.write_text('{"status": "chosen", "choice": "mullvad"}')
+    assert installer_choice(home) == "mullvad"
+    mark_handed("mullvad", home)
+    assert installer_choice(home) is None
+    home.write_text('{"status": "chosen", "choice": "x"}')
+    assert installer_choice(home) is None
+    home.write_text("[]")
+    assert installer_choice(home) is None
