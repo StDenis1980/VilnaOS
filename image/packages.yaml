@@ -60,6 +60,8 @@ vilna:
     - {name: vilna-mcp-settings,           license: Apache-2.0,       status: obs}      # ADR 0023
     - {name: vilna-mcp-calendar,           license: Apache-2.0,       status: obs}      # ADR 0023
     - {name: vilna-mcp-mail,               license: Apache-2.0,       status: obs}      # ADR 0030
+    - {name: vilna-mcp-desktop,            license: Apache-2.0,       status: obs}      # ADR 0031: стільниця, дозволи порталів, інші програми (AT-SPI)
+    - {name: xdg-dbus-proxy,               license: LGPL-2.1-or-later, status: upstream} # ADR 0031: фільтр D-Bus інструментів Herkos (окремий процес)
     - {name: vilna-mcp-apps,               license: Apache-2.0,       status: obs}      # ADR 0012; також vilna-mcp-launcher
     - {name: vilna-flatpak-defaults,       license: GPL-3.0-or-later, status: obs}      # програми з Flathub при першому запуску
     - {name: vilna-software-picks,         license: GPL-3.0-or-later, status: obs}      # «Рекомендовано Vilna», ADR 0012; список: obs/packages/vilna-software-picks/picks.toml

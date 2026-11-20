@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Nov 20 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Desktop, portals and AT-SPI (ADR 0031): operations of a manifest may
+  name their D-Bus calls (dbus); `herkosd dbus-proxy` turns them into an
+  xdg-dbus-proxy filter. Manifests org.vilna.mcp.desktop, .portals and
+  .atspi, their units vilna-mcp-*@ and vilna-dbus-proxy-*@; the polkit
+  rule may start the tools (the filters come as their dependency).
+
+-------------------------------------------------------------------
 Wed Nov 18 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Mail tool for Gloxi (ADR 0030): manifest org.vilna.mcp.mail (reading R1,

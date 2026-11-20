@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The app permissions tool (ADR 0031) for the person with uid %i, started by the
+# system Herkos (50-herkos.rules): what the Flatpak portals let each app do,
+# in the portals' permission store. It runs as the person but does not see
+# their buses: only the filter vilna-dbus-proxy-portals@, with the calls of its manifest.
+[Unit]
+Description=App permissions tool of Herkos for uid %i
+ConditionPathExists=/run/herkos-tools/%i/portals.sock
+Requires=vilna-dbus-proxy-portals@%i.service
+After=vilna-dbus-proxy-portals@%i.service
+BindsTo=vilna-dbus-proxy-portals@%i.service
+
+[Service]
+Type=simple
+User=%i
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/herkos-bus/%i/portals/session.bus
+Environment=DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/herkos-bus/%i/portals/system.bus
+ExecStart=/usr/bin/vilna-mcp-portals
+StandardInput=file:/run/herkos-tools/%i/portals.sock
+StandardOutput=file:/run/herkos-tools/%i/portals.sock
+StandardError=journal
+Restart=no
+
+# Not the person's own buses or sockets (/run/user/%i), nor the system bus:
+# PrivateNetwork=yes hides abstract sockets too.
+TemporaryFileSystem=/run/user:ro
+InaccessiblePaths=-/run/dbus
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

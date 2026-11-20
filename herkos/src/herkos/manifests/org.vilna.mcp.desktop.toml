@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "desktop" tool (mcp/desktop, vilna-mcp-desktop, ADR 0031):
+# the first D-Bus manifest for GNOME. Each operation names the D-Bus methods
+# it calls; the system Herkos lets the tool reach the buses only through
+# xdg-dbus-proxy with exactly these calls (vilna-dbus-proxy-desktop@), so a
+# method not named here is refused by the bus filter, not only by the code.
+#
+# Never through Gloxi, so not here: screenshots and screen recording
+# (org.gnome.Shell.Screenshot, Screencast), GNOME Shell's Eval, the session's
+# systemd units, power off and restart.
+tool = "org.vilna.mcp.desktop"
+description = "Battery, notifications, music players and the screen lock of the desktop"
+
+# Only the system Herkos starts it (no module): without the bus filter the
+# manifest would be a promise of the code, not a limit.
+[launch]
+program = "vilna-mcp-desktop"
+args = []
+
+[operations.battery]
+level = "R0"
+summary = "See the battery charge"
+dbus = [
+  { bus = "system", name = "org.freedesktop.UPower", path = "/org/freedesktop/UPower/devices/DisplayDevice", call = "org.freedesktop.DBus.Properties.GetAll" },
+]
+
+[operations.notify]
+level = "R1"
+summary = "Show a notification from Gloxi"
+dbus = [
+  { bus = "session", name = "org.freedesktop.Notifications", path = "/org/freedesktop/Notifications", call = "org.freedesktop.Notifications.Notify" },
+]
+
+# Track titles and artists come from files and the web: external content.
+[operations.media_status]
+level = "R1"
+summary = "See what the music and video players are playing"
+returns_external = true
+dbus = [
+  { bus = "session", name = "org.mpris.MediaPlayer2.*", path = "/org/mpris/MediaPlayer2", call = "org.freedesktop.DBus.Properties.GetAll" },
+]
+
+[operations.media_control]
+level = "R1"
+summary = "Play, pause or skip in a music or video player"
+dbus = [
+  { bus = "session", name = "org.mpris.MediaPlayer2.*", path = "/org/mpris/MediaPlayer2", call = "org.mpris.MediaPlayer2.Player.PlayPause" },
+  { bus = "session", name = "org.mpris.MediaPlayer2.*", path = "/org/mpris/MediaPlayer2", call = "org.mpris.MediaPlayer2.Player.Play" },
+  { bus = "session", name = "org.mpris.MediaPlayer2.*", path = "/org/mpris/MediaPlayer2", call = "org.mpris.MediaPlayer2.Player.Pause" },
+  { bus = "session", name = "org.mpris.MediaPlayer2.*", path = "/org/mpris/MediaPlayer2", call = "org.mpris.MediaPlayer2.Player.Stop" },
+  { bus = "session", name = "org.mpris.MediaPlayer2.*", path = "/org/mpris/MediaPlayer2", call = "org.mpris.MediaPlayer2.Player.Next" },
+  { bus = "session", name = "org.mpris.MediaPlayer2.*", path = "/org/mpris/MediaPlayer2", call = "org.mpris.MediaPlayer2.Player.Previous" },
+]
+
+# Locking only protects: the person unlocks with their password.
+[operations.lock_screen]
+level = "R1"
+summary = "Lock the screen"
+dbus = [
+  { bus = "session", name = "org.gnome.ScreenSaver", path = "/org/gnome/ScreenSaver", call = "org.gnome.ScreenSaver.Lock" },
+]

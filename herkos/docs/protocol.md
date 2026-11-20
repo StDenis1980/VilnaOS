@@ -226,6 +226,21 @@ resource_args = ["path"]   # аргументи, що мають збігати�
 #                          # не виконує (denied_level), herkosd без polkit — denied_error
 ```
 
+**Виклики D-Bus** ([ADR 0031](../../docs/adr/0031-herkos-portals-dbus-atspi.md)). Операція може назвати методи D-Bus, які вона викликає; рівень методу — рівень операції:
+
+```toml
+[operations.notify]
+level = "R1"
+summary = "Show a notification from Gloxi"
+dbus = [
+  { bus = "session", name = "org.freedesktop.Notifications", path = "/org/freedesktop/Notifications", call = "org.freedesktop.Notifications.Notify" },
+]
+```
+
+- `bus` — `session` або `system`; `name` — відома назва (не `:1.42` і не `org.freedesktop.DBus`), може закінчуватися на `.*` (сімейство, `org.mpris.MediaPlayer2.*`); `path` — шлях об'єкта, може закінчуватися на `/*`; `call` — `інтерфейс.Метод` без зірочок. Від 1 до 16 викликів на операцію, до 64 на маніфест; заборонена операція і програма з Flatpak (`[launch] flatpak`) викликів не мають.
+- Для інструмента з `dbus` юніт `vilna-mcp-<назва>@<uid>` не бачить шин людини, а говорить через `vilna-dbus-proxy-<назва>@<uid>`: `herkosd dbus-proxy TOOL DIR` бере вбудований у `herkosd` маніфест і стає `xdg-dbus-proxy ADDRESS DIR/<bus>.bus --filter --call=NAME=INTERFACE.METHOD@PATH …`. Чого немає в маніфесті, шина не пропускає (`AccessDenied`, а назви поза маніфестом не видно зовсім — `ServiceUnknown`).
+- Herkos-lite фільтра не має: такі інструменти мають лише `program`, без `module`, і він їх не запускає.
+
 Як Mitos скасовує операцію з `undoable = true`, каже її результат. Інструмент «файли» повертає `backup_id`, і скасування — це `restore` з цим `backup_id` і шляхом. Будь-який інший інструмент може повернути `undo_arguments`: об'єкт JSON до 4096 байтів, з яким Herkos потім викличе `restore` того самого інструмента ([ADR 0023](../../docs/adr/0023-gloxi-calendar-settings-hotkey.md), розд. 3). Так «налаштування» повертає попередні значення ключів. Без жодного з двох полів дію скасувати не можна, крім випадку, коли системний `herkosd` бере знімки домашньої теки людини до й після дії ([ADR 0026](../../docs/adr/0026-mitos-btrfs-snapshots.md), розд. 2): тоді дія з базовим рівнем R2+, яка не скасовується сама, але торкається лише домашньої теки, оцінюється як `undoable`.
 
 Як Herkos запускає сервер, теж каже маніфест, у таблиці `[launch]` ([ADR 0017](../../docs/adr/0017-third-party-mcp-servers.md)), а не код Herkos:

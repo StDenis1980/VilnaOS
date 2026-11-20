@@ -13,7 +13,7 @@ use crate::request::is_name;
 use crate::risk::Level;
 
 pub const FORBIDDEN: &str = "forbidden";
-const OPERATION_KEYS: [&str; 11] = [
+const OPERATION_KEYS: [&str; 12] = [
     "level",
     "summary",
     "undoable",
@@ -25,6 +25,7 @@ const OPERATION_KEYS: [&str; 11] = [
     "command_key",
     "preview",
     "polkit",
+    "dbus",
 ];
 /// Every polkit action an operation may name starts with this: Herkos's own
 /// actions in `org.vilna.herkos.policy` (permissions.md 9.2).
@@ -34,6 +35,12 @@ const GROUP_SUFFIX: &str = ".*";
 pub const MAX_COMMANDS: usize = 4096;
 /// At most this many commands in one call (a batch); more is not read.
 pub const MAX_CALL_COMMANDS: usize = 64;
+
+/// The buses an operation's D-Bus calls go to (ADR 0031).
+pub const DBUS_BUSES: [&str; 2] = ["session", "system"];
+const DBUS_KEYS: [&str; 4] = ["bus", "name", "path", "call"];
+pub const MAX_DBUS_PER_OPERATION: usize = 16;
+pub const MAX_DBUS_PER_MANIFEST: usize = 64;
 
 /// What Herkos may pass a tool when it starts it, in this order:
 /// `backup_dir` -> `--backup-dir DIR`, `roots` -> `--root DIR` per allowed folder.
@@ -53,7 +60,7 @@ const MAX_FIXED: usize = 16;
 const MAX_ROOT_FLAGS: usize = 4;
 
 /// The manifests shipped with Herkos: the same files Herkos-lite reads.
-const BUILTIN: [(&str, &str); 10] = [
+const BUILTIN: [(&str, &str); 13] = [
     (
         "org.vilna.gloxi.network.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.gloxi.network.toml"),
@@ -63,12 +70,20 @@ const BUILTIN: [(&str, &str); 10] = [
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.apps.toml"),
     ),
     (
+        "org.vilna.mcp.atspi.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.atspi.toml"),
+    ),
+    (
         "org.vilna.mcp.backup.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.backup.toml"),
     ),
     (
         "org.vilna.mcp.calendar.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.calendar.toml"),
+    ),
+    (
+        "org.vilna.mcp.desktop.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.desktop.toml"),
     ),
     (
         "org.vilna.mcp.files.toml",
@@ -81,6 +96,10 @@ const BUILTIN: [(&str, &str); 10] = [
     (
         "org.vilna.mcp.mail.toml",
         include_str!("../../../../src/herkos/manifests/org.vilna.mcp.mail.toml"),
+    ),
+    (
+        "org.vilna.mcp.portals.toml",
+        include_str!("../../../../src/herkos/manifests/org.vilna.mcp.portals.toml"),
     ),
     (
         "org.vilna.mcp.settings.toml",
@@ -107,6 +126,67 @@ impl fmt::Display for ManifestError {
 }
 
 impl std::error::Error for ManifestError {}
+
+/// One D-Bus method an operation calls (ADR 0031, protocol.md 5).
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct DbusCall {
+    /// `session` or `system`.
+    pub bus: String,
+    /// A well-known name, or a family `org.mpris.MediaPlayer2.*`.
+    pub name: String,
+    /// An object path, or a subtree `/org/foo/*`.
+    pub path: String,
+    /// `interface.Method`.
+    pub call: String,
+}
+
+impl DbusCall {
+    /// The rule as xdg-dbus-proxy takes it: `--call=NAME=INTERFACE.METHOD@PATH`.
+    pub fn proxy_rule(&self) -> String {
+        format!("--call={}={}@{}", self.name, self.call, self.path)
+    }
+}
+
+/// One element of a bus name: `[A-Za-z_-][A-Za-z0-9_-]*`.
+fn is_dbus_element(s: &str, dash: bool) -> bool {
+    let ok = |c: char| c.is_ascii_alphanumeric() || c == '_' || (dash && c == '-');
+    let mut chars = s.chars();
+    chars
+        .next()
+        .is_some_and(|c| c.is_ascii_alphabetic() || c == '_' || (dash && c == '-'))
+        && chars.all(ok)
+}
+
+/// A well-known bus name (not a unique `:1.42`, not the bus itself), with
+/// an optional `.*` for a family. As `_DBUS_NAME` in manifest.py.
+pub fn is_dbus_name(s: &str) -> bool {
+    let base = s.strip_suffix(".*").unwrap_or(s);
+    let parts: Vec<&str> = base.split('.').collect();
+    s.len() <= 255
+        && parts.len() >= 2
+        && parts.iter().all(|p| is_dbus_element(p, true))
+        && base != "org.freedesktop.DBus"
+}
+
+/// `/`, `/a/b_c`, `/a/*` or `/*`. As `_DBUS_PATH` in manifest.py.
+pub fn is_dbus_path(s: &str) -> bool {
+    if s == "/" || s == "/*" {
+        return true;
+    }
+    let base = s.strip_suffix("/*").unwrap_or(s);
+    s.len() <= 255
+        && base.starts_with('/')
+        && base
+            .split('/')
+            .skip(1)
+            .all(|p| !p.is_empty() && p.chars().all(|c| c.is_ascii_alphanumeric() || c == '_'))
+}
+
+/// `interface.Method`, three elements or more, no wildcards.
+pub fn is_dbus_call(s: &str) -> bool {
+    let parts: Vec<&str> = s.split('.').collect();
+    s.len() <= 255 && parts.len() >= 3 && parts.iter().all(|p| is_dbus_element(p, false))
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
@@ -137,6 +217,9 @@ pub struct Operation {
     /// the whole computer, not only the person's own things (permissions.md
     /// 9.2). Only for R3-R4 operations; only the system Herkos can check it.
     pub polkit: Option<String>,
+    /// The D-Bus methods it calls (ADR 0031): its level is their level, and
+    /// the system Herkos lets the tool call nothing else on the buses.
+    pub dbus: Vec<DbusCall>,
 }
 
 /// `org.vilna.herkos.` and then lowercase words joined by `.` or `-`.
@@ -209,6 +292,13 @@ pub struct Manifest {
 impl Manifest {
     pub fn operation(&self, name: &str) -> Option<&Operation> {
         self.operations.get(name)
+    }
+
+    /// Every D-Bus call of its operations, once each, in a stable order.
+    pub fn dbus_calls(&self) -> Vec<DbusCall> {
+        let calls: std::collections::BTreeSet<&DbusCall> =
+            self.operations.values().flat_map(|op| &op.dbus).collect();
+        calls.into_iter().cloned().collect()
     }
 
     /// `(known, level)` of one command: the id itself, else its nearest group.
@@ -398,6 +488,13 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
         if command_arg.is_some() && !data.contains_key("commands") {
             return bad(format!("{at}: 'command_arg' needs a [commands] table"));
         }
+        let dbus = match op.get("dbus") {
+            None => Vec::new(),
+            Some(v) => parse_dbus(v, &at)?,
+        };
+        if !dbus.is_empty() && level.is_none() {
+            return bad(format!("{at}: a forbidden operation makes no D-Bus calls"));
+        }
         operations.insert(
             name.clone(),
             Operation {
@@ -413,6 +510,7 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
                 command_key,
                 preview,
                 polkit,
+                dbus,
             },
         );
     }
@@ -437,6 +535,17 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
         None => BTreeMap::new(),
         Some(c) => parse_commands(c, source)?,
     };
+    let calls: usize = operations.values().map(|op| op.dbus.len()).sum();
+    if calls > MAX_DBUS_PER_MANIFEST {
+        return bad(format!(
+            "{source}: more than {MAX_DBUS_PER_MANIFEST} D-Bus calls"
+        ));
+    }
+    if calls > 0 && launch.as_ref().is_some_and(|l| l.flatpak.is_some()) {
+        return bad(format!(
+            "{source}: a Flatpak program has no 'dbus': Flatpak filters its buses itself"
+        ));
+    }
     Ok(Manifest {
         tool,
         description,
@@ -444,6 +553,51 @@ pub fn parse_manifest(data: &Table, source: &str) -> Result<Manifest, ManifestEr
         launch,
         commands,
     })
+}
+
+fn parse_dbus(value: &Value, at: &str) -> Result<Vec<DbusCall>, ManifestError> {
+    let items = match value {
+        Value::Array(items) if (1..=MAX_DBUS_PER_OPERATION).contains(&items.len()) => items,
+        _ => {
+            return bad(format!(
+                "{at}: 'dbus' must be a list of 1 to {MAX_DBUS_PER_OPERATION} calls"
+            ));
+        }
+    };
+    let mut calls = Vec::new();
+    for (i, item) in items.iter().enumerate() {
+        let at = format!("{at}: dbus[{i}]");
+        let Value::Table(t) = item else {
+            return bad(format!(
+                "{at}: must be a table with bus, name, path and call"
+            ));
+        };
+        let unknown = unknown_keys(t, &DBUS_KEYS);
+        if !unknown.is_empty() {
+            return bad(format!("{at}: unknown keys {unknown:?}"));
+        }
+        let field = |k: &str| t.get(k).and_then(Value::as_str).unwrap_or_default();
+        let (bus, name, path, call) = (field("bus"), field("name"), field("path"), field("call"));
+        if !DBUS_BUSES.contains(&bus) {
+            return bad(format!("{at}: 'bus' must be one of {DBUS_BUSES:?}"));
+        }
+        if !is_dbus_name(name) {
+            return bad(format!("{at}: 'name' must be a well-known bus name"));
+        }
+        if !is_dbus_path(path) {
+            return bad(format!("{at}: 'path' must be an object path"));
+        }
+        if !is_dbus_call(call) {
+            return bad(format!("{at}: 'call' must be interface.Method"));
+        }
+        calls.push(DbusCall {
+            bus: bus.to_owned(),
+            name: name.to_owned(),
+            path: path.to_owned(),
+            call: call.to_owned(),
+        });
+    }
+    Ok(calls)
 }
 
 /// A program on PATH (and its systemd unit): no paths, no spaces.
@@ -919,5 +1073,92 @@ mod tests {
         let mut r = Registry::builtin().expect("builtin");
         let again = parse_manifest_str(BUILTIN[1].1, "again").expect("valid");
         assert!(r.add(again).is_err());
+    }
+    fn with_dbus(call: &str) -> String {
+        format!("tool = \"a\"\n[operations.b]\nlevel = \"R1\"\ndbus = [{call}]")
+    }
+
+    const NOTIFY: &str = "{ bus = \"session\", name = \"org.freedesktop.Notifications\", path = \"/org/freedesktop/Notifications\", call = \"org.freedesktop.Notifications.Notify\" }";
+
+    #[test]
+    fn dbus_calls_are_read_and_become_proxy_rules() {
+        let m = parse_manifest_str(&with_dbus(NOTIFY), "t").expect("valid");
+        let calls = m.dbus_calls();
+        assert_eq!(calls.len(), 1);
+        assert_eq!(
+            calls[0].proxy_rule(),
+            "--call=org.freedesktop.Notifications=org.freedesktop.Notifications.Notify@/org/freedesktop/Notifications"
+        );
+        // Families of names and subtrees of paths.
+        let family = "{ bus = \"session\", name = \"org.mpris.MediaPlayer2.*\", path = \"/org/mpris/*\", call = \"org.mpris.MediaPlayer2.Player.Play\" }";
+        assert!(parse_manifest_str(&with_dbus(family), "t").is_ok());
+    }
+
+    #[test]
+    fn bad_dbus_calls_are_refused() {
+        let call = |bus: &str, name: &str, path: &str, call: &str| {
+            format!(
+                "{{ bus = \"{bus}\", name = \"{name}\", path = \"{path}\", call = \"{call}\" }}"
+            )
+        };
+        let ok = (
+            "session",
+            "org.freedesktop.Notifications",
+            "/org/freedesktop/Notifications",
+            "org.freedesktop.Notifications.Notify",
+        );
+        let bad = [
+            call("user", ok.1, ok.2, ok.3),
+            call(ok.0, ":1.42", ok.2, ok.3),
+            call(ok.0, "org.freedesktop.DBus", ok.2, ok.3),
+            call(ok.0, "org.*", ok.2, ok.3),
+            call(ok.0, "Notifications", ok.2, ok.3),
+            call(ok.0, ok.1, "org/freedesktop", ok.3),
+            call(ok.0, ok.1, "/org//x", ok.3),
+            call(ok.0, ok.1, "/org/free-desktop", ok.3),
+            call(ok.0, ok.1, ok.2, "Notify"),
+            call(ok.0, ok.1, ok.2, "org.freedesktop.Notifications.*"),
+            call(ok.0, ok.1, ok.2, "org.freedesktop.Notifications.No-tify"),
+            format!(
+                "{{ bus = \"session\", name = \"{}\", path = \"{}\", call = \"{}\", own = true }}",
+                ok.1, ok.2, ok.3
+            ),
+            "\"session\"".to_owned(),
+        ];
+        for b in bad {
+            assert!(parse_manifest_str(&with_dbus(&b), "t").is_err(), "{b}");
+        }
+        assert!(parse_manifest_str(&with_dbus(&call(ok.0, ok.1, ok.2, ok.3)), "t").is_ok());
+        // Not empty, not too many, not on a forbidden operation.
+        assert!(parse_manifest_str(&with_dbus(""), "t").is_err());
+        let many = vec![NOTIFY; MAX_DBUS_PER_OPERATION + 1].join(", ");
+        assert!(parse_manifest_str(&with_dbus(&many), "t").is_err());
+        let forbidden =
+            format!("tool = \"a\"\n[operations.b]\nlevel = \"forbidden\"\ndbus = [{NOTIFY}]");
+        assert!(parse_manifest_str(&forbidden, "t").is_err());
+        // A program from Flatpak: Flatpak filters its buses itself.
+        let flatpak = format!(
+            "{}\n[launch]\nprogram = \"vilna-mcp-ext-x\"\nflatpak = \"org.example.App\"\ncommand = \"x\"",
+            with_dbus(NOTIFY)
+        );
+        assert!(parse_manifest_str(&flatpak, "t").is_err());
+    }
+
+    #[test]
+    fn builtin_dbus_tools_name_their_calls() {
+        let r = Registry::builtin().expect("builtin");
+        for tool in [
+            "org.vilna.mcp.desktop",
+            "org.vilna.mcp.portals",
+            "org.vilna.mcp.atspi",
+        ] {
+            let m = r.get(tool).expect(tool);
+            assert!(!m.dbus_calls().is_empty(), "{tool}");
+            // Only the system Herkos runs them: behind the bus filter.
+            assert!(
+                m.launch.as_ref().is_some_and(|l| l.module.is_none()),
+                "{tool}"
+            );
+        }
     }
 }

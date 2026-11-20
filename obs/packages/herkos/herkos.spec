@@ -44,6 +44,8 @@ Recommends:     vilna-mcp-backup
 Recommends:     vilna-mcp-settings
 Recommends:     vilna-mcp-calendar
 Recommends:     vilna-mcp-mail
+# Desktop, app permissions of the portals and other apps' windows (ADR 0031).
+Recommends:     vilna-mcp-desktop
 Recommends:     vilna-mcp-apps
 # Mitos snapshots of people's homes and the system's saved states (ADR 0026).
 Recommends:     snapper
@@ -143,6 +145,17 @@ install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-
 install -Dm0644 systemd/vilna-mcp-settings@.service %{buildroot}%{_unitdir}/vilna-mcp-settings@.service
 install -Dm0644 systemd/vilna-mcp-calendar@.service %{buildroot}%{_unitdir}/vilna-mcp-calendar@.service
 install -Dm0644 systemd/vilna-mcp-mail@.service %{buildroot}%{_unitdir}/vilna-mcp-mail@.service
+%{_unitdir}/vilna-mcp-desktop@.service
+%{_unitdir}/vilna-mcp-portals@.service
+%{_unitdir}/vilna-mcp-atspi@.service
+%{_unitdir}/vilna-dbus-proxy-desktop@.service
+%{_unitdir}/vilna-dbus-proxy-portals@.service
+%{_unitdir}/vilna-dbus-proxy-atspi@.service
+# Tools behind a D-Bus filter (ADR 0031): each with its vilna-dbus-proxy-<name>@.
+for t in desktop portals atspi; do
+  install -Dm0644 systemd/vilna-mcp-$t@.service %{buildroot}%{_unitdir}/vilna-mcp-$t@.service
+  install -Dm0644 systemd/vilna-dbus-proxy-$t@.service %{buildroot}%{_unitdir}/vilna-dbus-proxy-$t@.service
+done
 install -Dm0644 systemd/vilna-mcp-system@.service %{buildroot}%{_unitdir}/vilna-mcp-system@.service
 # Programs through Gloxi (ADR 0012): as vilna-apps, and the launcher as the person.
 install -Dm0644 systemd/vilna-mcp-apps@.service %{buildroot}%{_unitdir}/vilna-mcp-apps@.service

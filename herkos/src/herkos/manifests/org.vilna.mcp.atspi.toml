@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "other apps" tool (mcp/desktop, vilna-mcp-atspi, ADR 0031,
+# permissions.md 9.4): reading and using the windows of apps that have no
+# tool of their own, through the accessibility bus (AT-SPI).
+#
+# - What it reads is external content (window titles, texts of other apps).
+# - Pressing a button is at least R2 and cannot be undone, so it asks every
+#   time or for the session (R3). Before asking, the system Herkos shows the
+#   app, the window and the button from "describe", not from Gloxi's words.
+# - Protected apps (security, secrets, Vilna's own windows, administration,
+#   terminals) are never listed, read or touched; password fields neither.
+# - No synthetic keys or mouse, no moving the focus.
+tool = "org.vilna.mcp.atspi"
+description = "Windows of other apps, through accessibility"
+
+[launch]
+program = "vilna-mcp-atspi"
+args = []
+
+# The address of the accessibility bus: the only call on the session bus.
+# The accessibility bus itself does not go through the filter: its calls are
+# the same for every app, so the line is drawn by the app's process (ADR 0031).
+[operations.list_windows]
+level = "R1"
+summary = "See the open windows of other apps"
+returns_external = true
+dbus = [
+  { bus = "session", name = "org.a11y.Bus", path = "/org/a11y/bus", call = "org.a11y.Bus.GetAddress" },
+]
+
+[operations.read_window]
+level = "R1"
+summary = "Read a window of another app"
+returns_external = true
+dbus = [
+  { bus = "session", name = "org.a11y.Bus", path = "/org/a11y/bus", call = "org.a11y.Bus.GetAddress" },
+]
+
+[operations.describe]
+level = "R0"
+summary = "Say which app, window and button an action is about"
+dbus = [
+  { bus = "session", name = "org.a11y.Bus", path = "/org/a11y/bus", call = "org.a11y.Bus.GetAddress" },
+]
+
+[operations.activate]
+level = "R2"
+summary = "Press a button or menu item in another app"
+preview = "describe"
+dbus = [
+  { bus = "session", name = "org.a11y.Bus", path = "/org/a11y/bus", call = "org.a11y.Bus.GetAddress" },
+]
+
+[operations.set_text]
+level = "R2"
+summary = "Replace the text in a field of another app"
+preview = "describe"
+undoable = true
+dbus = [
+  { bus = "session", name = "org.a11y.Bus", path = "/org/a11y/bus", call = "org.a11y.Bus.GetAddress" },
+]
+
+[operations.restore]
+level = "R2"
+summary = "Put back the text a field had before"
+preview = "describe"
+undoable = true
+dbus = [
+  { bus = "session", name = "org.a11y.Bus", path = "/org/a11y/bus", call = "org.a11y.Bus.GetAddress" },
+]

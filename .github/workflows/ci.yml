@@ -326,6 +326,44 @@ jobs:
       - run: (sudo apt-get update -qq && sudo apt-get install -y -qq dovecot-imapd && sudo systemctl stop dovecot) || true
       - run: uv run pytest
 
+  mcp-desktop:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    defaults:
+      run:
+        working-directory: mcp/desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  # ADR 0031: the tools behind xdg-dbus-proxy with their manifests' rules, and
+  # vilna-mcp-atspi against real GTK 4 windows. PyGObject comes from the
+  # system, so the system Python; VILNA_MCP_DESKTOP_LIVE turns skips into failures.
+  mcp-desktop-live:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: mcp/desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: >
+          sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends
+          dbus-daemon xdg-dbus-proxy xvfb at-spi2-core python3-gi gir1.2-gtk-4.0 gir1.2-atspi-2.0
+      - run: uv venv --python /usr/bin/python3 --system-site-packages
+      - run: uv sync --locked
+      - run: uv run --no-sync pytest -v tests/test_proxy.py tests/test_atspi_live.py
+        env:
+          VILNA_MCP_DESKTOP_LIVE: "1"
+
   shell-extension:
     runs-on: ubuntu-24.04
     defaults:
