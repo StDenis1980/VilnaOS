@@ -13,8 +13,11 @@ from gloxi.tools import FileTools, ToolOutcome
 
 # Small local models have small context windows; keep the tail of the talk.
 DEFAULT_MAX_TURNS = 20
-# Tool calls the model may make while answering one message.
-MAX_TOOL_ROUNDS = 4
+# Tool calls the model may make while answering one message. Milestone В3's
+# "read the email, add the event, prepare the answer" takes four (find, read,
+# add, save the draft), so four left no room for a model that first looks at
+# the accounts or the folders. Each round is one more request to the model.
+MAX_TOOL_ROUNDS = 6
 
 # Letters Russian has and Ukrainian does not.
 _RUSSIAN_ONLY = frozenset("ыэъёЫЭЪЁ")
