@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov 20 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.15: require vilna-mcp-desktop: the desktop, the portals' app
+  permissions and other apps' windows for Gloxi (ADR 0031).
+
+-------------------------------------------------------------------
 Wed Nov 18 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.14: require vilna-mcp-mail, the mail tool of Gloxi (ADR 0030).

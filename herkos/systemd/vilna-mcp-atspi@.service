@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The tool for other apps (ADR 0031) for the person with uid %i, started by the
+# system Herkos (50-herkos.rules): windows of other apps through the
+# accessibility bus (AT-SPI). It runs as the person, sees their accessibility
+# bus (/run/user/%i/at-spi) and /proc of their apps, but not their session bus:
+# only the filter vilna-dbus-proxy-atspi@, with the calls of its manifest.
+[Unit]
+Description=Tool for other apps of Herkos for uid %i
+ConditionPathExists=/run/herkos-tools/%i/atspi.sock
+Requires=vilna-dbus-proxy-atspi@%i.service
+After=vilna-dbus-proxy-atspi@%i.service
+BindsTo=vilna-dbus-proxy-atspi@%i.service
+
+[Service]
+Type=simple
+User=%i
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/herkos-bus/%i/atspi/session.bus
+Environment=XDG_RUNTIME_DIR=/run/user/%i
+ExecStart=/usr/bin/vilna-mcp-atspi
+StandardInput=file:/run/herkos-tools/%i/atspi.sock
+StandardOutput=file:/run/herkos-tools/%i/atspi.sock
+StandardError=journal
+Restart=no
+
+# Not the person's own buses or sockets (/run/user/%i), nor the system bus:
+# PrivateNetwork=yes hides abstract sockets too.
+TemporaryFileSystem=/run/user:ro
+# The accessibility bus: its calls are the same for every app, so the line
+# is drawn in the tool by the app's process (protect.py), not by a filter.
+BindReadOnlyPaths=-/run/user/%i/at-spi
+InaccessiblePaths=-/run/dbus
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

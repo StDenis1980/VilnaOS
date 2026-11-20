@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The D-Bus filter of the atspi tool of Herkos for uid %i (ADR 0031). It runs
+# as the person, sees their buses and lets the tool (vilna-mcp-atspi@, which
+# does not see them) make only the calls named in the tool's manifest:
+# `herkosd dbus-proxy` takes them from the manifest built into herkosd and
+# becomes xdg-dbus-proxy with --filter and one --call per call.
+[Unit]
+Description=D-Bus filter of the atspi tool of Herkos for uid %i
+StopWhenUnneeded=yes
+
+[Service]
+Type=simple
+User=%i
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%i/bus
+Environment=DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
+RuntimeDirectory=herkos-bus/%i/atspi
+RuntimeDirectoryMode=0700
+ExecStart=/usr/libexec/herkos/herkosd dbus-proxy org.vilna.mcp.atspi /run/herkos-bus/%i/atspi
+Restart=no
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+# Path sockets only: no network, no abstract sockets.
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources

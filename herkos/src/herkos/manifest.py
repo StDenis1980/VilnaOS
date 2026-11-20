@@ -68,6 +68,7 @@ _OPERATION_KEYS = {
     "command_key",
     "preview",
     "polkit",
+    "dbus",
 }
 # Herkos's own polkit actions (org.vilna.herkos.policy, permissions.md 9.2).
 POLKIT_PREFIX = "org.vilna.herkos."
@@ -81,10 +82,36 @@ _GROUP_SUFFIX = ".*"
 MAX_COMMANDS = 4096
 # At most this many commands in one call (a batch); more is not read.
 MAX_CALL_COMMANDS = 64
+# The D-Bus calls an operation makes (ADR 0031): the system Herkos lets the
+# tool's process reach its buses only through xdg-dbus-proxy with these calls.
+DBUS_BUSES = ("session", "system")
+_DBUS_KEYS = {"bus", "name", "path", "call"}
+_DBUS_ELEMENT = r"[A-Za-z_-][A-Za-z0-9_-]*"
+# A well-known name (no unique ":1.42" names, not the bus itself); ".*" for a family.
+_DBUS_NAME = re.compile(rf"{_DBUS_ELEMENT}(\.{_DBUS_ELEMENT})+(\.\*)?")
+_DBUS_PATH = re.compile(r"/|(/[A-Za-z0-9_]+)+(/\*)?|/\*")
+# interface.Method: the interface has two elements or more, no wildcards.
+_DBUS_CALL = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*){2,}")
+MAX_DBUS_PER_OPERATION = 16
+MAX_DBUS_PER_MANIFEST = 64
 
 
 class ManifestError(Exception):
     """A manifest file is malformed. The tool stays unknown (and so denied)."""
+
+
+@dataclass(frozen=True)
+class DbusCall:
+    """One D-Bus method an operation calls (ADR 0031, protocol.md 5)."""
+
+    bus: str  # "session" or "system"
+    name: str  # well-known name, or a family "org.mpris.MediaPlayer2.*"
+    path: str  # object path, or a subtree "/org/foo/*"
+    call: str  # "interface.Method"
+
+    def proxy_rule(self) -> str:
+        """The rule as xdg-dbus-proxy takes it: ``--call=NAME=INTERFACE.METHOD@PATH``."""
+        return f"--call={self.name}={self.call}@{self.path}"
 
 
 @dataclass(frozen=True)
@@ -120,6 +147,9 @@ class Operation:
     # "yes": what changes the whole computer (permissions.md 9.2). Only for
     # R3-R4, which only the system Herkos carries out; Herkos-lite only checks it.
     polkit: str | None = None
+    # The D-Bus methods it calls (ADR 0031): its level is their level, and
+    # the system Herkos lets the tool call nothing else on the buses.
+    dbus: tuple[DbusCall, ...] = ()
 
     @property
     def forbidden(self) -> bool:
@@ -162,6 +192,11 @@ class Manifest:
 
     def operation(self, name: str) -> Operation | None:
         return self.operations.get(name)
+
+    def dbus_calls(self) -> tuple[DbusCall, ...]:
+        """Every D-Bus call of its operations, once each, in a stable order."""
+        calls = {c for op in self.operations.values() for c in op.dbus}
+        return tuple(sorted(calls, key=lambda c: (c.bus, c.name, c.path, c.call)))
 
     def command_level(self, command: str) -> tuple[bool, Level | None]:
         """(known, level) of one command: the id itself, else its nearest group."""
@@ -247,6 +282,9 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
             raise ManifestError(f"{where}: 'command_key' goes only with 'command_arg'")
         if command_arg is not None and "commands" not in data:
             raise ManifestError(f"{where}: 'command_arg' needs a [commands] table")
+        dbus = _parse_dbus(op.get("dbus"), where) if "dbus" in op else ()
+        if dbus and level is None:
+            raise ManifestError(f"{where}: a forbidden operation makes no D-Bus calls")
         operations[name] = Operation(
             name=name,
             level=level,
@@ -256,6 +294,7 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
             command_key=command_key,
             preview=preview,
             polkit=polkit,
+            dbus=dbus,
             **flags,
         )
     for op in operations.values():
@@ -268,6 +307,13 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
                 )
     launch = _parse_launch(data.get("launch"), source) if "launch" in data else None
     commands = _parse_commands(data["commands"], source) if "commands" in data else {}
+    if any(op.dbus for op in operations.values()):
+        if sum(len(op.dbus) for op in operations.values()) > MAX_DBUS_PER_MANIFEST:
+            raise ManifestError(f"{source}: more than {MAX_DBUS_PER_MANIFEST} D-Bus calls")
+        if launch is not None and launch.flatpak is not None:
+            raise ManifestError(
+                f"{source}: a Flatpak program has no 'dbus': Flatpak filters its buses itself"
+            )
     return Manifest(
         tool=tool,
         description=description,
@@ -275,6 +321,37 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
         launch=launch,
         commands=commands,
     )
+
+
+def _parse_dbus(data: Any, where: str) -> tuple[DbusCall, ...]:
+    if not isinstance(data, list) or not 1 <= len(data) <= MAX_DBUS_PER_OPERATION:
+        raise ManifestError(
+            f"{where}: 'dbus' must be a list of 1 to {MAX_DBUS_PER_OPERATION} calls"
+        )
+    calls = []
+    for i, item in enumerate(data):
+        at = f"{where}: dbus[{i}]"
+        if not isinstance(item, dict):
+            raise ManifestError(f"{at}: must be a table with bus, name, path and call")
+        unknown = set(item) - _DBUS_KEYS
+        if unknown:
+            raise ManifestError(f"{at}: unknown keys {sorted(unknown)}")
+        bus, name, path, call = (item.get(k) for k in ("bus", "name", "path", "call"))
+        if bus not in DBUS_BUSES:
+            raise ManifestError(f"{at}: 'bus' must be one of {list(DBUS_BUSES)}")
+        if (
+            not isinstance(name, str)
+            or len(name) > 255
+            or not _DBUS_NAME.fullmatch(name)
+            or name.removesuffix(".*") == "org.freedesktop.DBus"
+        ):
+            raise ManifestError(f"{at}: 'name' must be a well-known bus name")
+        if not isinstance(path, str) or len(path) > 255 or not _DBUS_PATH.fullmatch(path):
+            raise ManifestError(f"{at}: 'path' must be an object path")
+        if not isinstance(call, str) or len(call) > 255 or not _DBUS_CALL.fullmatch(call):
+            raise ManifestError(f"{at}: 'call' must be interface.Method")
+        calls.append(DbusCall(bus=bus, name=name, path=path, call=call))
+    return tuple(calls)
 
 
 def _parse_commands(data: Any, source: str) -> dict[str, Level | None]:

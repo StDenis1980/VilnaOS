@@ -110,6 +110,10 @@ PREVIEW_LABELS = (
     "Download",
     "License",
     "Can reach",
+    # The other apps tool, through accessibility (ADR 0031).
+    "Window",
+    "Control",
+    "Text now",
     "preview",
 )
 PREVIEW_PHRASES = (

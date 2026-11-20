@@ -1,0 +1,6 @@
+-------------------------------------------------------------------
+Fri Nov 20 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: MCP servers "desktop", "app permissions" and "other
+  apps" 0.1 preview (ADR 0031), started by Herkos as the person behind
+  their D-Bus filters (vilna-mcp-*@.service in the herkos package).

@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.14
+Version:        0.15
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -49,6 +49,8 @@ Requires:       vilna-mcp-settings
 Requires:       vilna-mcp-calendar
 # Mail through Gloxi: reading, drafts, sending only after a yes (ADR 0030).
 Requires:       vilna-mcp-mail
+# The desktop, the portals' app permissions and other apps' windows (ADR 0031).
+Requires:       vilna-mcp-desktop
 # Programs through Gloxi and Herkos (ADR 0012).
 Requires:       vilna-mcp-apps
 Requires:       vilna-flatpak-defaults

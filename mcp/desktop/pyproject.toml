@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+[project]
+name = "vilna-mcp-desktop"
+version = "0.1.0.dev0"
+description = "MCP servers for the GNOME desktop, the portals' app permissions and other apps' windows (Vilna OS)"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+# PyGObject (Gio, Atspi) comes from the system: imported only when a server
+# really starts, so the tests of the rules run without it.
+dependencies = []
+
+[project.scripts]
+vilna-mcp-desktop = "vilna_mcp_desktop.desktop:main"
+vilna-mcp-portals = "vilna_mcp_desktop.portals:main"
+vilna-mcp-atspi = "vilna_mcp_desktop.atspi:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vilna_mcp_desktop"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]

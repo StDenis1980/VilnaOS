@@ -95,3 +95,68 @@ def test_a_preview_names_an_r0_operation_of_the_same_tool():
     assert apps.operations["install"].preview == "describe"
     assert apps.operations["add_remote"].forbidden
     assert apps.launch.module is None  # not in Herkos-lite: installing is R3
+
+
+NOTIFY = {
+    "bus": "session",
+    "name": "org.freedesktop.Notifications",
+    "path": "/org/freedesktop/Notifications",
+    "call": "org.freedesktop.Notifications.Notify",
+}
+
+
+def _with_dbus(calls, level="R1", **extra):
+    return {"tool": "org.example.t", "operations": {"b": {"level": level, "dbus": calls}}, **extra}
+
+
+def test_dbus_calls_are_read_and_become_proxy_rules():
+    m = parse_manifest(_with_dbus([NOTIFY]))
+    (call,) = m.dbus_calls()
+    assert call.proxy_rule() == (
+        "--call=org.freedesktop.Notifications=org.freedesktop.Notifications.Notify"
+        "@/org/freedesktop/Notifications"
+    )
+    family = dict(NOTIFY, name="org.mpris.MediaPlayer2.*", path="/org/mpris/*")
+    assert parse_manifest(_with_dbus([family])).dbus_calls()[0].name == "org.mpris.MediaPlayer2.*"
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"bus": "user"},
+        {"name": ":1.42"},
+        {"name": "org.freedesktop.DBus"},
+        {"name": "org.*"},
+        {"name": "Notifications"},
+        {"path": "org/freedesktop"},
+        {"path": "/org//x"},
+        {"path": "/org/free-desktop"},
+        {"call": "Notify"},
+        {"call": "org.freedesktop.Notifications.*"},
+        {"call": "org.freedesktop.Notifications.No-tify"},
+        {"own": True},
+    ],
+)
+def test_bad_dbus_calls_are_refused(change):
+    with pytest.raises(ManifestError):
+        parse_manifest(_with_dbus([dict(NOTIFY, **change)]))
+
+
+def test_dbus_lists_are_bounded_and_not_for_forbidden_or_flatpak():
+    for calls in ([], [NOTIFY] * 17, "session", ["session"]):
+        with pytest.raises(ManifestError):
+            parse_manifest(_with_dbus(calls))
+    with pytest.raises(ManifestError):
+        parse_manifest(_with_dbus([NOTIFY], level="forbidden"))
+    flatpak = {"program": "vilna-mcp-ext-x", "flatpak": "org.example.App", "command": "x"}
+    with pytest.raises(ManifestError):
+        parse_manifest(_with_dbus([NOTIFY], launch=flatpak))
+
+
+def test_builtin_dbus_tools_run_only_behind_the_bus_filter():
+    reg = ManifestRegistry.builtin()
+    for tool in ("org.vilna.mcp.desktop", "org.vilna.mcp.portals", "org.vilna.mcp.atspi"):
+        m = reg.get(tool)
+        assert m.dbus_calls(), tool
+        # No module: Herkos-lite has no filter and does not start them.
+        assert m.launch is not None and m.launch.module is None, tool

@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manifest for the "app permissions" tool (mcp/desktop, vilna-mcp-portals,
+# ADR 0031, permissions.md 9.3): what the Flatpak portals let each app do,
+# from the portals' permission store. Seven permissions the person also sees
+# in Settings > Apps: camera, microphone, speakers, location, notifications,
+# running in the background, screenshots.
+#
+# Taking a permission away only narrows what an app may do and can be set
+# back: R2 with undo. Giving one is R3 (permissions.md 9.3). Undo ("restore")
+# is R3 too: putting back what was taken is giving it again, and Gloxi could
+# call restore itself.
+tool = "org.vilna.mcp.portals"
+description = "What the portals let each Flatpak app do: camera, microphone, location and more"
+
+[launch]
+program = "vilna-mcp-portals"
+args = []
+
+[operations.list]
+level = "R1"
+summary = "See which apps may use the camera, microphone, location and more"
+dbus = [
+  { bus = "session", name = "org.freedesktop.impl.portal.PermissionStore", path = "/org/freedesktop/impl/portal/PermissionStore", call = "org.freedesktop.impl.portal.PermissionStore.Lookup" },
+]
+
+[operations.revoke]
+level = "R2"
+summary = "Take a permission away from an app"
+undoable = true
+dbus = [
+  { bus = "session", name = "org.freedesktop.impl.portal.PermissionStore", path = "/org/freedesktop/impl/portal/PermissionStore", call = "org.freedesktop.impl.portal.PermissionStore.Lookup" },
+  { bus = "session", name = "org.freedesktop.impl.portal.PermissionStore", path = "/org/freedesktop/impl/portal/PermissionStore", call = "org.freedesktop.impl.portal.PermissionStore.SetPermission" },
+]
+
+[operations.grant]
+level = "R3"
+summary = "Give an app a permission"
+undoable = true
+dbus = [
+  { bus = "session", name = "org.freedesktop.impl.portal.PermissionStore", path = "/org/freedesktop/impl/portal/PermissionStore", call = "org.freedesktop.impl.portal.PermissionStore.Lookup" },
+  { bus = "session", name = "org.freedesktop.impl.portal.PermissionStore", path = "/org/freedesktop/impl/portal/PermissionStore", call = "org.freedesktop.impl.portal.PermissionStore.SetPermission" },
+]
+
+[operations.restore]
+level = "R3"
+summary = "Put an app's permissions back as they were"
+undoable = true
+dbus = [
+  { bus = "session", name = "org.freedesktop.impl.portal.PermissionStore", path = "/org/freedesktop/impl/portal/PermissionStore", call = "org.freedesktop.impl.portal.PermissionStore.Lookup" },
+  { bus = "session", name = "org.freedesktop.impl.portal.PermissionStore", path = "/org/freedesktop/impl/portal/PermissionStore", call = "org.freedesktop.impl.portal.PermissionStore.SetPermission" },
+  { bus = "session", name = "org.freedesktop.impl.portal.PermissionStore", path = "/org/freedesktop/impl/portal/PermissionStore", call = "org.freedesktop.impl.portal.PermissionStore.DeletePermission" },
+]

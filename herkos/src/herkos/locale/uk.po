@@ -731,3 +731,57 @@ msgstr "Заблокувати пристрій для копій"
 
 msgid "Let a new device open the backups"
 msgstr "Підключити новий пристрій до копій"
+
+msgid "See the battery charge"
+msgstr "Подивитися заряд батареї"
+
+msgid "Show a notification from Gloxi"
+msgstr "Показати сповіщення від Gloxi"
+
+msgid "See what the music and video players are playing"
+msgstr "Подивитися, що грають програвачі музики й відео"
+
+msgid "Play, pause or skip in a music or video player"
+msgstr "Увімкнути, призупинити чи перемкнути в програвачі музики чи відео"
+
+msgid "Lock the screen"
+msgstr "Заблокувати екран"
+
+msgid "See which apps may use the camera, microphone, location and more"
+msgstr "Подивитися, яким програмам можна камеру, мікрофон, місцезнаходження тощо"
+
+msgid "Take a permission away from an app"
+msgstr "Забрати дозвіл у програми"
+
+msgid "Give an app a permission"
+msgstr "Дати програмі дозвіл"
+
+msgid "Put an app's permissions back as they were"
+msgstr "Повернути дозволи програми, як були"
+
+msgid "See the open windows of other apps"
+msgstr "Подивитися відкриті вікна інших програм"
+
+msgid "Read a window of another app"
+msgstr "Прочитати вікно іншої програми"
+
+msgid "Say which app, window and button an action is about"
+msgstr "Сказати, про яку програму, вікно й кнопку йдеться"
+
+msgid "Press a button or menu item in another app"
+msgstr "Натиснути кнопку чи пункт меню в іншій програмі"
+
+msgid "Replace the text in a field of another app"
+msgstr "Замінити текст у полі іншої програми"
+
+msgid "Put back the text a field had before"
+msgstr "Повернути текст, який був у полі"
+
+msgid "Window"
+msgstr "Вікно"
+
+msgid "Control"
+msgstr "Елемент"
+
+msgid "Text now"
+msgstr "Текст зараз"

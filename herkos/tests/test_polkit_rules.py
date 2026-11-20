@@ -125,3 +125,36 @@ def test_every_action_a_manifest_names_is_declared_and_owned_by_herkos():
             assert seen == LANGUAGES | {None}, (action_id, tag)
     rollback = declared["org.vilna.herkos.system.rollback"].find("defaults")
     assert rollback.findtext("allow_active") == "auth_admin"  # every time
+
+
+def test_herkos_starts_every_built_in_tool_but_not_their_bus_filters():
+    """ADR 0031: the D-Bus filter units come only as a dependency of a tool unit."""
+    herkos = {"user": "herkos"}
+    units = sorted(
+        m.launch.program
+        for m in ManifestRegistry.builtin()
+        if m.launch is not None and m.launch.flatpak is None
+    )
+    assert {"vilna-mcp-desktop", "vilna-mcp-portals", "vilna-mcp-atspi"} <= set(units)
+    cases = [[UNITS, herkos, {"unit": f"{u}@1000.service", "verb": "start"}] for u in units]
+    filters = [
+        [UNITS, herkos, {"unit": f"vilna-dbus-proxy-{t}@1000.service", "verb": "start"}]
+        for t in ("desktop", "portals", "atspi")
+    ]
+    assert decide(cases + filters) == ["yes"] * len(cases) + ["no"] * len(filters)
+
+
+def test_every_tool_with_dbus_has_its_filter_unit():
+    for m in ManifestRegistry.builtin():
+        if not m.dbus_calls():
+            continue
+        short = m.launch.program.removeprefix("vilna-mcp-")
+        tool = (SYSTEMD / f"{m.launch.program}@.service").read_text()
+        proxy = (SYSTEMD / f"vilna-dbus-proxy-{short}@.service").read_text()
+        assert f"Requires=vilna-dbus-proxy-{short}@%i.service" in tool
+        # The tool sees neither the person's runtime folder nor abstract sockets.
+        assert "TemporaryFileSystem=/run/user:ro" in tool and "PrivateNetwork=yes" in tool
+        assert f"/run/herkos-bus/%i/{short}/session.bus" in tool
+        herkosd = "/usr/libexec/herkos/herkosd"
+        assert f"ExecStart={herkosd} dbus-proxy {m.tool} /run/herkos-bus/%i/{short}" in proxy
+        assert f"RuntimeDirectory=herkos-bus/%i/{short}" in proxy
