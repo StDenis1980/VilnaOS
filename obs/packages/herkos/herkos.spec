@@ -145,12 +145,6 @@ install -Dm0644 systemd/vilna-mcp-backup@.service %{buildroot}%{_unitdir}/vilna-
 install -Dm0644 systemd/vilna-mcp-settings@.service %{buildroot}%{_unitdir}/vilna-mcp-settings@.service
 install -Dm0644 systemd/vilna-mcp-calendar@.service %{buildroot}%{_unitdir}/vilna-mcp-calendar@.service
 install -Dm0644 systemd/vilna-mcp-mail@.service %{buildroot}%{_unitdir}/vilna-mcp-mail@.service
-%{_unitdir}/vilna-mcp-desktop@.service
-%{_unitdir}/vilna-mcp-portals@.service
-%{_unitdir}/vilna-mcp-atspi@.service
-%{_unitdir}/vilna-dbus-proxy-desktop@.service
-%{_unitdir}/vilna-dbus-proxy-portals@.service
-%{_unitdir}/vilna-dbus-proxy-atspi@.service
 # Tools behind a D-Bus filter (ADR 0031): each with its vilna-dbus-proxy-<name>@.
 for t in desktop portals atspi; do
   install -Dm0644 systemd/vilna-mcp-$t@.service %{buildroot}%{_unitdir}/vilna-mcp-$t@.service
@@ -242,6 +236,12 @@ fi
 %{_unitdir}/vilna-mcp-settings@.service
 %{_unitdir}/vilna-mcp-calendar@.service
 %{_unitdir}/vilna-mcp-mail@.service
+%{_unitdir}/vilna-mcp-desktop@.service
+%{_unitdir}/vilna-dbus-proxy-desktop@.service
+%{_unitdir}/vilna-mcp-portals@.service
+%{_unitdir}/vilna-dbus-proxy-portals@.service
+%{_unitdir}/vilna-mcp-atspi@.service
+%{_unitdir}/vilna-dbus-proxy-atspi@.service
 %{_unitdir}/vilna-mcp-system@.service
 %{_unitdir}/vilna-mcp-apps@.service
 %{_unitdir}/vilna-mcp-launcher@.service
