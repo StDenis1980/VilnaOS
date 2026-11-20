@@ -250,6 +250,13 @@ def build_parser() -> argparse.ArgumentParser:
     bench = sub.add_parser("keros-bench", help="measure Keros rules and model on test texts")
     bench.add_argument("--corpus", type=Path, help="JSONL file (default: the built-in set)")
     bench.add_argument(
+        "--set",
+        dest="set_name",
+        choices=["work", "holdout"],
+        default="work",
+        help="built-in set: work (tuned on) or holdout (only measured)",
+    )
+    bench.add_argument(
         "--model",
         help='llama-server URL on this device, or "off" (default: keros_model from the config)',
     )
@@ -273,7 +280,7 @@ def _keros_bench(args: argparse.Namespace) -> int:
             print(f"herkos: {e}", file=sys.stderr)
             return 1
         model = ModelCheck(LlamaServerJudge(url), args.budget)
-    samples = keros_bench.load_corpus(args.corpus)
+    samples = keros_bench.load_corpus(args.corpus, args.set_name)
     if args.ids:
         wanted = [w.strip() for w in args.ids.split(",") if w.strip()]
         samples = [s for s in samples if any(s.id.startswith(w) for w in wanted)]

@@ -9,11 +9,18 @@ colleague asking to forward a file). No real people or data are in it.
 
 Each text is checked by the rules and, separately, by the model, so the two
 can be compared; in Herkos the model only runs when the rules saw nothing.
+
+There are two sets. ``work`` is the one the rules and the model prompt were
+tuned on, so its numbers flatter Keros. ``holdout`` (``data/keros-holdout.jsonl``)
+was written apart from it and is only measured, never tuned on: when a rule or
+the prompt changes because of a holdout text, that text has to move to the work
+set and the holdout needs a new one (keros-bench.md).
 """
 
 from __future__ import annotations
 
 import json
+import math
 import statistics
 import sys
 from collections import defaultdict
@@ -35,9 +42,14 @@ class Sample:
     text: str
 
 
-def load_corpus(path: Path | None = None) -> list[Sample]:
+SETS = {"work": "keros-corpus.jsonl", "holdout": "keros-holdout.jsonl"}
+
+
+def load_corpus(path: Path | None = None, name: str = "work") -> list[Sample]:
     if path is None:
-        raw = resources.files("herkos").joinpath("data/keros-corpus.jsonl").read_text("utf-8")
+        if name not in SETS:
+            raise ValueError(f"unknown set {name!r}; known: {', '.join(SETS)}")
+        raw = resources.files("herkos").joinpath(f"data/{SETS[name]}").read_text("utf-8")
     else:
         raw = path.read_text("utf-8")
     out = []
@@ -76,6 +88,22 @@ def run(samples: list[Sample], model: ModelCheck | None) -> list[Row]:
                 verdict = report.status == "injection"
         rows.append(Row(s, rules, verdict, seconds))
     return rows
+
+
+def wilson(hits: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """95 % interval for a share: with a few dozen texts one miss moves it a lot."""
+    if n == 0:
+        return (0.0, 1.0)
+    p = hits / n
+    centre = (p + z * z / (2 * n)) / (1 + z * z / n)
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
+    return (max(0.0, centre - half), min(1.0, centre + half))
+
+
+def _share(hits: int, n: int) -> str:
+    lo, hi = wilson(hits, n)
+    pct = 100 * hits / n if n else 0.0
+    return f"{hits}/{n} = {pct:.0f} % (95 % interval {100 * lo:.0f}–{100 * hi:.0f} %)"
 
 
 def _rate(hits: int, n: int) -> str:
@@ -140,6 +168,25 @@ def report(rows: list[Row], out: TextIO = sys.stdout) -> None:
             )
         if down:
             print(f"model gave no answer for {down} texts", file=out)
+
+    inj = [r for r in rows if r.sample.label == "injection"]
+    cln = [r for r in rows if r.sample.label == "clean"]
+    print(file=out)
+    checks = [("rules", lambda r: r.rules)]
+    if with_model:
+        checks += [("model", lambda r: bool(r.model)), ("together", lambda r: r.combined)]
+    for name, hit in checks:
+        print(f"{name}: caught {_share(sum(map(hit, inj)), len(inj))}", file=out)
+        print(f"{name}: false alarms {_share(sum(map(hit, cln)), len(cln))}", file=out)
+
+    print("\nby kind (together):", file=out)
+    kinds: dict[tuple[str, str], list[Row]] = defaultdict(list)
+    for r in rows:
+        kinds[(r.sample.label, r.sample.kind)].append(r)
+    for (label, kind), group in sorted(kinds.items()):
+        print(
+            f"  {label:9} {kind:11} {_rate(sum(r.combined for r in group), len(group))}", file=out
+        )
 
     missed = [r.sample.id for r in rows if r.sample.label == "injection" and not r.combined]
     alarms = [r.sample.id for r in rows if r.sample.label == "clean" and r.combined]
