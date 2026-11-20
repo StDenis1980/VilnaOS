@@ -16,6 +16,10 @@
 # Preferred) at the newest snapshot in LAST_WORKING_SNAPSHOTS of
 # transactional-update. health-checker makes it the default once it boots
 # fine. Without one, systemd-boot decides as before.
+#
+# Either way it leaves a note in /var (shared by all snapshots) that the
+# Vilna Shell extension turns into one notification for the person after
+# the next login: the update did not start, the last working state is back.
 
 set -u
 
@@ -24,6 +28,18 @@ HC_STATE=${VILNA_HC_STATE:-/var/lib/misc/health-check.state}
 # which an ExecStopPost does not have (V2 VM test of Build12.6).
 BLESS_BOOT=${VILNA_BLESS_BOOT:-/usr/lib/systemd/systemd-bless-boot}
 TU_STATE=${VILNA_TU_STATE:-/var/lib/misc/transactional-update.state}
+# Read by shell-extension/vilna@stdenis1980.github.io/lib/rollbackNotice.js; keep the format in step.
+NOTE=${VILNA_ROLLBACK_NOTE:-/var/lib/misc/vilna-auto-rollback}
+
+note() {
+    # failed: the snapshot that failed its check, which is also what the
+    # extension remembers having shown; restored: the one booted next,
+    # empty when systemd-boot picks.
+    local tmp
+    tmp=$(mktemp "$NOTE.XXXXXX") || return 0
+    printf 'failed=%s\nrestored=%s\ntime=%s\n' "$current" "$1" "$(date +%s)" >"$tmp" &&
+        chmod 0644 "$tmp" && mv -f "$tmp" "$NOTE" || rm -f "$tmp"
+}
 
 grep -qx 'NEW_SNAPSHOT_FAILED=1' "$HC_STATE" 2>/dev/null || exit 0
 [ "$("$BLESS_BOOT" status 2>/dev/null)" = dirty ] || exit 0
@@ -42,10 +58,12 @@ for snap in $(printf '%s\n' $working | tac); do
     if bootctl set-oneshot "$id"; then
         logger -p user.warning -t vilna-health-last-working \
             "the update failed its health check; the next boot starts snapshot $snap ($id), the last that worked"
+        note "$snap"
         exit 0
     fi
 done
 logger -p user.err -t vilna-health-last-working \
     "the update failed its health check, but no boot entry of a last working snapshot was found (${working:-none}); systemd-boot picks one"
+note ""
 # Never fail health-checker's own decision.
 exit 0
