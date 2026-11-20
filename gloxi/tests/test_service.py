@@ -491,3 +491,44 @@ def test_a_translation_drops_thinking_and_refuses_an_empty_answer():
         fake_translator(FakeLlamaServer("<think>hmm</think>"))("Fog.", "uk")
     with pytest.raises(ValueError):
         translate(None, "Fog.", "xx")
+
+
+def test_the_window_hands_the_installers_vpn_choice_to_gloxid(running, tmp_path):
+    """VM Build12.9: gloxid runs with ProtectHome=yes and its own state, so the
+    wizard's file in the person's home is handed on by the window."""
+    from test_vpn_intro import FakeHerkos as FakeVpn
+
+    from gloxi.vpn_intro import MULLVAD_APP, VpnIntro
+
+    r = running()
+    service_state = tmp_path / "service" / "vpn-intro.json"
+    r.controller.vpn = VpnIntro(FakeVpn(tunnels=(0, 1)), path=service_state)
+    home_state = tmp_path / "home" / "vpn-intro.json"
+    home_state.parent.mkdir()
+    home_state.write_text('{"status": "chosen", "choice": "mullvad"}')
+    remote, view = r.client(vpn_state=home_state)
+    assert remote.offer_intro()
+    assert wait_for(lambda: ("launch", MULLVAD_APP) in view.events)
+    assert "You chose this while installing Vilna." in view.answer()
+    assert json.loads(home_state.read_text())["status"] == "handed"
+    # Not handed again: the next start finds nothing to send.
+    assert json.loads(service_state.read_text())["choice"] == "mullvad"
+
+
+def test_gloxid_keeps_its_own_vpn_talk_over_a_handed_choice(running, tmp_path):
+    from test_vpn_intro import FakeHerkos as FakeVpn
+
+    from gloxi.vpn_intro import VpnIntro
+
+    r = running()
+    service_state = tmp_path / "vpn-service.json"
+    service_state.write_text('{"status": "declined", "time": 1}')
+    r.controller.vpn = VpnIntro(FakeVpn(), path=service_state)
+    answers = raw_exchange(
+        r.path,
+        {"id": 1, "method": "chat.offer_intro", "params": {"vpn_chosen": "proton"}},
+        {"id": 2, "method": "chat.offer_intro", "params": {"vpn_chosen": "nordvpn"}},
+    )
+    assert answers[0]["result"]["vpn_adopted"] is False
+    assert answers[1]["error"]["code"] == "bad_params"
+    assert json.loads(service_state.read_text())["status"] == "declined"
