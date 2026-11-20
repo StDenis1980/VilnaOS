@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 from conftest import Env
 
-from herkos import keros_bench
+from herkos import keros_bench, keros_model
 from herkos.config import ConfigError, load_config
 from herkos.keros import MODEL_FINDING, Keros
 from herkos.keros_model import (
@@ -248,12 +248,40 @@ def test_config_keros_model(tmp_path):
 LANGS = {"uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"}  # ADR 0009
 
 
-def test_corpus_covers_every_language_both_ways():
-    samples = keros_bench.load_corpus()
+@pytest.mark.parametrize("name", ["work", "holdout"])
+def test_corpus_covers_every_language_both_ways(name):
+    samples = keros_bench.load_corpus(name=name)
     assert len({s.id for s in samples}) == len(samples)
     for lang in LANGS:
         labels = {s.label for s in samples if s.lang == lang}
         assert labels == {"injection", "clean"}, lang
+
+
+def _norm(text: str) -> str:
+    return " ".join(text.casefold().split())
+
+
+def test_holdout_shares_nothing_with_the_work_set_or_the_prompt():
+    # The holdout only means something while nothing was tuned on it: no text
+    # (and no id) of it may sit in the work set or among the prompt examples.
+    work = keros_bench.load_corpus()
+    holdout = keros_bench.load_corpus(name="holdout")
+    assert not {s.id for s in work} & {s.id for s in holdout}
+    seen = {_norm(s.text) for s in work} | {_norm(e) for e, _ in keros_model.EXAMPLES}
+    assert not [s.id for s in holdout if _norm(s.text) in seen]
+
+
+def test_unknown_set_is_an_error():
+    with pytest.raises(ValueError, match="holdout"):
+        keros_bench.load_corpus(name="nope")
+
+
+def test_wilson_interval():
+    lo, hi = keros_bench.wilson(0, 10)
+    assert lo == 0.0 and 0.25 < hi < 0.35
+    lo, hi = keros_bench.wilson(10, 10)
+    assert 0.65 < lo < 0.75 and hi == 1.0
+    assert keros_bench.wilson(0, 0) == (0.0, 1.0)
 
 
 def test_clean_answer(server):
@@ -272,3 +300,4 @@ def test_bench_report(tmp_path: Path):
     text = out.getvalue()
     assert "uk-i01" in text
     assert "| all |" in text and "together" in text and "model time per text" in text
+    assert "together: caught" in text and "95 % interval" in text

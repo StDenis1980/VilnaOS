@@ -3,7 +3,7 @@
 
 The rules cannot be reached through the socket without a person allowing a
 read, so this compares the scanners directly: `herkosd keros-scan` against
-`herkos.keros.scan`, on the whole Keros test corpus and on tricky strings.
+`herkos.keros.scan`, on both Keros test sets and on tricky strings.
 Runs only when ``HERKOSD`` names the herkosd binary.
 """
 
@@ -50,7 +50,8 @@ def rust_scan(values: list) -> list[list[str]]:
 
 
 def test_same_findings_as_python():
-    texts = [item.text for item in load_corpus()] + TRICKY
+    corpora = load_corpus() + load_corpus(name="holdout")
+    texts = [item.text for item in corpora] + TRICKY
     want = [sorted(f.rule for f in scan(t)) for t in texts]
     got = [sorted(r) for r in rust_scan(texts)]
     assert len(got) == len(want)
