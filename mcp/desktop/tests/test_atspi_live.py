@@ -42,6 +42,14 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+ACTIVATE_REGISTRY = """
+import gi
+gi.require_version("Atspi", "2.0")
+from gi.repository import Atspi
+Atspi.get_desktop(0).get_child_count()
+"""
+
+
 def wait_line(path: Path, word: str) -> None:
     deadline = time.monotonic() + 20
     while word not in path.read_text():
@@ -79,6 +87,9 @@ def session(tmp_path):
         )
         wait_for(bus)
         time.sleep(0.5)
+        # Start the registry first, as a desktop session does: apps that come up
+        # before it embed themselves only later, and a first list could miss them.
+        subprocess.run([sys.executable, "-c", ACTIVATE_REGISTRY], env=env, check=True, timeout=30)
         logs = {}
         # An ordinary app, and the same window run as if it were Herkos's.
         for name, script in (("editor", "gtk_app.py"), ("herkos", "herkos-fake-dialog.py")):
@@ -137,8 +148,14 @@ def call(tool, operation, **arguments):
 
 def test_reads_fills_and_presses_but_not_protected_or_passwords(session):
     tool, logs = session
-    windows = call(tool, "list_windows")["structuredContent"]["windows"]
-    titles = [w["title"] for w in windows]
+    # The apps reach the registry on their own time; give them a few seconds.
+    deadline = time.monotonic() + 15
+    while True:
+        windows = call(tool, "list_windows")["structuredContent"]["windows"]
+        titles = [w["title"] for w in windows]
+        if "editor window" in titles or time.monotonic() > deadline:
+            break
+        time.sleep(0.5)
     assert "editor window" in titles
     assert "herkos window" not in titles  # Vilna's own window: never listed
     window = next(w["window"] for w in windows if w["title"] == "editor window")
