@@ -393,12 +393,14 @@ def test_user_turn_counts_messages_and_resets():
 
 
 def test_tool_rounds_are_limited():
+    from gloxi.chat import MAX_TOOL_ROUNDS
+
     call = [("files_list", args(path="/home/u/Documents", reason="r"))]
-    server = ScriptedLlamaServer(call, call, call, call, "enough")
+    server = ScriptedLlamaServer(*[call] * MAX_TOOL_ROUNDS, "enough")
     conv = conversation(server, tools())
     assert ask(conv, "loop") == "enough"
     assert "tools" not in server.requests[-1]
-    assert len(server.requests) == 5
+    assert len(server.requests) == MAX_TOOL_ROUNDS + 1
 
 
 def test_no_tools_when_herkos_is_not_running():

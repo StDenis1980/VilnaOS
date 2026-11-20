@@ -1,0 +1,179 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Words in the ten languages of ADR 0009 that choose Vilna's own program
+# functions for a message (gloxi.tools.FileTools.programs, alpha item 31).
+#
+# Gloxi offers the local model at most eight program functions at a time and
+# picks them by the words of the person's message. The programs describe their
+# operations in English only, so without this file "Прочитай лист від Марти й
+# додай зустріч у календар" chose nothing, and the model was never given the
+# mail and calendar functions in nine of the ten languages.
+#
+# Each entry is the start of a word: "відповід" matches "відповідь" and
+# "відповісти" does not. An entry ending in "$" matches only the whole word.
+# Letters are compared without accents and case ("răspun" = "raspun"), so one
+# spelling is enough; letters that do not lose anything that way ("ł", "ß")
+# need both spellings. `words` count for every operation of the program, the
+# lists under `operations` only for that one.
+#
+# Order of the lines: uk, en, es, pl, de, fr, it, ro, cs, lt.
+
+["org.vilna.mcp.mail"]
+words = [
+  "лист", "пошт", "мейл", "імейл", "email",
+  "mail", "letter", "inbox", "message",
+  "correo", "mensaj", "carta",
+  "poczt", "wiadomosc", "wiadomosci", "listu", "skrzynk",
+  "nachricht", "brief", "posteingang", "postfach",
+  "courriel", "courrier", "messag", "lettre",
+  "messagg", "lettera",
+  "mesaj", "posta", "scrisoar",
+  "zprav", "post", "dopis",
+  "laisk", "pastas", "pasto", "zinut",
+]
+
+["org.vilna.mcp.mail".operations]
+list_messages = [
+  "останн", "нов", "непрочит", "вхідн",
+  "latest", "last$", "new$", "unread", "recent",
+  "ultim", "nuev", "bandeja",
+  "ostatni", "now", "nieprzeczyt",
+  "letzt", "neu", "ungelesen",
+  "dernier", "nouveau", "nouvel",
+  "ultim", "nuov",
+  "ultim", "nou$", "noi$", "necitit",
+  "posledn", "nov", "neprect",
+  "paskutin", "nauj", "neperskait",
+]
+# Finding, and someone who wrote, as for read_message: "Марта написала…"
+# needs her email found before it can be read.
+search_messages = [
+  "написал", "написав", "надіслал", "надіслав", "прислал", "прислав", "wrote", "escribio",
+  "napisał", "napisal", "geschrieben", "schrieb", "ecrit$", "scritto", "scris$", "trimis$",
+  "psal", "poslal", "parase", "atsiunt",
+  "знайд", "пошук", "шука",
+  "find", "search", "look",
+  "busca", "encuentr",
+  "znajdz", "szuk", "wyszuk",
+  "such", "find",
+  "cherch", "trouv", "recherch",
+  "cerca", "trova",
+  "caut", "gases",
+  "najdi", "najit", "hled",
+  "rask", "surask", "iesk",
+]
+# Reading, and what someone did who wrote: "Марта написала мені…" is about
+# an email to read first.
+read_message = [
+  "прочит", "читай", "відкри", "написал", "написав", "надіслал", "надіслав", "прислал",
+  "прислав", "отримал", "отримав",
+  "read", "open", "wrote", "sent$", "received",
+  "lee$", "leer", "lea$", "abre", "escribio", "recibi",
+  "przeczyt", "czyta", "otworz", "napisał", "napisal", "wysłał", "wyslal", "dostał", "dostal",
+  "lies$", "lesen", "offne", "geschrieben", "schrieb", "bekommen", "erhalten",
+  "lis$", "lire", "lisez", "ouvr", "ecrit$", "recu$",
+  "legg", "apri", "scritto", "mandato", "ricevut",
+  "citest", "citi", "deschide", "scris$", "trimis$", "primit",
+  "prect", "cti$", "otevr", "psal", "poslal", "dostal",
+  "perskait", "skait", "atidar", "parase", "atsiunt", "gavau",
+]
+save_draft = [
+  "відповід", "відпиш", "чернет", "підготу", "напиш", "склади",
+  "reply", "answer", "respond", "draft", "prepare", "write",
+  "respond", "respuest", "contest", "borrador", "prepar", "escrib", "redact",
+  "odpowied", "odpowiedz", "odpisz", "szkic", "przygot", "napisz",
+  "antwort", "beantwort", "entwurf", "vorbereit", "bereite", "schreib",
+  "repon", "brouillon", "prepar", "redig", "ecri",
+  "rispond", "rispost", "bozza", "prepar", "scriv",
+  "raspun", "ciorn", "pregat", "scrie",
+  "odpoved", "odpovez", "koncept", "priprav", "napis",
+  "atsak", "juodras", "paruos", "paras",
+]
+send = [
+  "надішл", "надсил", "відправ",
+  "send",
+  "envia", "envie", "mand",
+  "wyslij", "wysył", "wysyl",
+  "send", "schick", "versend",
+  "envoi", "envoy",
+  "invia", "mand", "spedis",
+  "trimit",
+  "posli", "odesli", "odesl",
+  "sius", "issius", "nusius",
+]
+
+["org.vilna.mcp.calendar"]
+words = [
+  "календар", "поді", "зустріч", "нарад",
+  "calendar", "event", "meeting", "appointment",
+  "calendari", "agenda", "evento", "reunion", "cita$",
+  "kalendarz", "wydarzeni", "spotkani", "termin",
+  "kalender", "termin", "ereignis", "treffen", "besprechung",
+  "calendrier", "agenda", "evenement", "reunion", "rendez",
+  "calendari", "agenda", "evento", "eventi", "riunion", "appuntament", "incontr",
+  "calendar", "eveniment", "intalnir", "sedint",
+  "kalendar", "udalost", "schuzk", "setkani",
+  "kalendor", "ivyk", "susitikim", "rengin",
+]
+
+["org.vilna.mcp.calendar".operations]
+list_events = [
+  "сьогодн", "завтра", "тижн", "тиждень",
+  "today", "tomorrow", "week",
+  "hoy$", "manana", "semana",
+  "dzis", "jutro", "tydzien", "tygodni",
+  "heute", "morgen", "woche",
+  "aujourd", "demain", "semaine",
+  "oggi", "domani", "settiman",
+  "azi$", "astazi", "maine", "saptaman",
+  "dnes", "zitra", "tyden", "tydn",
+  "siandien", "rytoj", "savait",
+]
+search_events = [
+  "знайд", "пошук", "коли",
+  "find", "search", "when$",
+  "busca", "encuentr", "cuando",
+  "znajdz", "szuk", "kiedy",
+  "such", "find", "wann",
+  "cherch", "trouv", "quand",
+  "cerca", "trova", "quando",
+  "caut", "gases", "cand$",
+  "najdi", "najit", "hled", "kdy$",
+  "rask", "surask", "iesk", "kada",
+]
+create_event = [
+  "дода", "запиш", "запис", "створ", "внес", "постав", "заплану",
+  "add$", "create", "put$", "schedule", "book",
+  "anad", "crea", "agend", "apunt", "pon$",
+  "dodaj", "utworz", "zapisz", "zaplan", "wpisz",
+  "hinzufug", "fug", "erstell", "eintrag", "trag", "plan",
+  "ajout", "cree", "creer", "planifi", "note$", "inscri",
+  "aggiung", "crea", "inseris", "segna", "pianific",
+  "adaug", "crea", "programeaz", "noteaz",
+  "prid", "vytvor", "zapis", "naplan",
+  "prid", "sukurk", "iras", "suplan",
+]
+update_event = [
+  "змін", "перенес", "пересун",
+  "change", "move", "reschedule",
+  "cambi", "muev", "mover",
+  "zmien", "przenies", "przesun",
+  "andern", "anderung", "verschieb",
+  "modifi", "chang", "deplac",
+  "modific", "cambi", "spost",
+  "modific", "schimb", "muta",
+  "zmen", "presun",
+  "pakeis", "perkel",
+]
+delete_event = [
+  "видал", "скасу", "прибер",
+  "delete", "remove", "cancel",
+  "borr", "elimin", "cancel",
+  "usun", "odwoł", "odwol",
+  "losch", "entfern", "absag",
+  "supprim", "annul",
+  "cancell", "elimin", "annull",
+  "sterg", "anulea",
+  "smaz", "zrus",
+  "istrin", "atsauk",
+]
