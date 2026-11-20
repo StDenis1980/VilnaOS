@@ -123,3 +123,18 @@ msgstr "Accedi solo nell'app del fornitore stesso: Vilna e Gloxi non vedono mai 
 
 msgid "Choose an answer about the VPN."
 msgstr "Scegli una risposta sulla VPN."
+
+msgid "Getting to know each other"
+msgstr "Conosciamoci"
+
+msgid "Disk and files"
+msgstr "Disco e file"
+
+msgid "You and the system"
+msgstr "Tu e il sistema"
+
+msgid "Step {n} of {total}"
+msgstr "Passo {n} di {total}"
+
+msgid "Installation"
+msgstr "Installazione"

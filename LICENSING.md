@@ -24,6 +24,7 @@
 | Стани сови Gloxi | `docs/design/owl-states/` |
 | Кадри логотипа для екрана завантаження | `docs/design/plymouth/`; у пакеті `plymouth-branding-Vilna` |
 | Знак Blavet в установнику (копії) | `installer/src/vilna_installer/data/blavet-mark-*.svg` |
+| Сова Gloxi в розмові установника (копії станів) | `installer/src/vilna_installer/data/owl/` |
 | Знак Blavet у логотипі «Про систему» | `obs/packages/distribution-logos-Vilna/vilna-logo-text*.svg` (малює `docs/design/logo/make_text_logo.py`) |
 | Токени руху | `docs/design/motion/` |
 | Шпалери (вектор і JPEG) | `docs/design/wallpapers/`, `obs/packages/vilna-backgrounds/*.jpg` |

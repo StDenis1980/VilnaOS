@@ -123,3 +123,18 @@ msgstr "Vă autentificați doar în aplicația furnizorului însuși: Vilna și 
 
 msgid "Choose an answer about the VPN."
 msgstr "Alegeți un răspuns despre VPN."
+
+msgid "Getting to know each other"
+msgstr "Să facem cunoștință"
+
+msgid "Disk and files"
+msgstr "Disc și fișiere"
+
+msgid "You and the system"
+msgstr "Dvs. și sistemul"
+
+msgid "Step {n} of {total}"
+msgstr "Pasul {n} din {total}"
+
+msgid "Installation"
+msgstr "Instalare"

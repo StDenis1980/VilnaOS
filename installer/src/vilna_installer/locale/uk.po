@@ -822,3 +822,18 @@ msgstr "Введіть PIN запуску для диска."
 
 msgid "The start PIN is not entered yet."
 msgstr "PIN запуску ще не введено."
+
+msgid "Getting to know each other"
+msgstr "Знайомство"
+
+msgid "Disk and files"
+msgstr "Диск і файли"
+
+msgid "You and the system"
+msgstr "Ви і система"
+
+msgid "Step {n} of {total}"
+msgstr "Крок {n} з {total}"
+
+msgid "Installation"
+msgstr "Встановлення"

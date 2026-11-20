@@ -123,3 +123,18 @@ msgstr "Prisijungiate tik paties teikėjo programoje: Vilna ir Gloxi niekada nem
 
 msgid "Choose an answer about the VPN."
 msgstr "Pasirinkite atsakymą dėl VPN."
+
+msgid "Getting to know each other"
+msgstr "Susipažinkime"
+
+msgid "Disk and files"
+msgstr "Diskas ir failai"
+
+msgid "You and the system"
+msgstr "Jūs ir sistema"
+
+msgid "Step {n} of {total}"
+msgstr "{n} žingsnis iš {total}"
+
+msgid "Installation"
+msgstr "Diegimas"

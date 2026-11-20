@@ -53,16 +53,37 @@ MIN_PASSWORD = 8
 CSS = """
 .vilna-chat { background-color: @view_bg_color; }
 .vilna-bubble { padding: 10px 14px; border-radius: 16px; }
-.vilna-gloxi { background-color: alpha(@accent_bg_color, 0.12); }
-.vilna-person { background-color: @accent_bg_color; color: @accent_fg_color; }
+.vilna-gloxi { background-color: alpha(@accent_bg_color, 0.12); border-top-left-radius: 4px; }
+.vilna-person { background-color: @accent_bg_color; color: @accent_fg_color;
+    border-bottom-right-radius: 4px; }
+.vilna-who { font-size: 0.85em; opacity: 0.65; }
 .vilna-card { padding: 14px; border-radius: 16px;
     border: 1px solid alpha(@view_fg_color, 0.15); background-color: @card_bg_color; }
-.vilna-plan { padding: 18px; background-color: @window_bg_color; }
-.vilna-plan-title { font-weight: 800; font-size: 15pt; }
+.vilna-plan { padding: 16px; background-color: @window_bg_color; }
+.vilna-steps-card { padding: 14px; border-radius: 16px; background-color: @card_bg_color; }
+.vilna-step-count { font-weight: 800; }
+.vilna-steps-bar trough { min-height: 4px; border-radius: 2px;
+    background-color: alpha(@view_fg_color, 0.12); }
+.vilna-steps-bar progress { min-height: 4px; border-radius: 2px; background-color: @vilna_gold; }
+.vilna-group { font-size: 0.75em; font-weight: 800; letter-spacing: 1px; opacity: 0.6;
+    margin-top: 10px; }
+.vilna-step-row { padding: 5px 8px; border-radius: 10px; }
 .vilna-section { font-weight: 700; }
-.vilna-value { opacity: 0.8; }
-.vilna-pending { opacity: 0.55; font-style: italic; }
-.vilna-current { border-left: 3px solid @accent_bg_color; padding-left: 8px; }
+.vilna-value { opacity: 0.75; font-size: 0.9em; }
+.vilna-pending { opacity: 0.55; font-style: italic; font-size: 0.9em; }
+.vilna-current { background-color: alpha(@accent_bg_color, 0.14); }
+.vilna-dot { min-width: 16px; min-height: 16px; border-radius: 999px;
+    border: 2px solid alpha(@view_fg_color, 0.35); }
+.vilna-dot.done { background-color: @vilna_green; border-color: @vilna_green;
+    color: @vilna_on_gold; }
+.vilna-dot.now { background-color: @vilna_gold; border-color: @vilna_gold; }
+.vilna-divider { font-size: 0.8em; font-weight: 800; letter-spacing: 2px; opacity: 0.7; }
+.vilna-seed { min-width: 7px; min-height: 7px; border-radius: 999px;
+    background-color: @vilna_gold; }
+.vilna-seed.leaf { min-width: 12px; background-color: @vilna_orange; }
+.vilna-composer { padding: 6px 6px 6px 14px; border-radius: 999px;
+    background-color: @card_bg_color; border: 1px solid alpha(@view_fg_color, 0.15); }
+.vilna-composer entry { background: none; box-shadow: none; }
 """
 
 
@@ -150,6 +171,25 @@ SECTION_OF_STEP = {
     "old_encrypted": "disk",
 }
 
+# The steps panel groups the plan as the designer's «Розмова встановлення» does.
+GROUP_INTRO = "Getting to know each other"
+GROUP_DISK = "Disk and files"
+GROUP_YOU = "You and the system"
+GROUPS = (
+    (GROUP_INTRO, ("languages", "network")),
+    (GROUP_DISK, ("disk", "encryption")),
+    (GROUP_YOU, ("user", "time", "privacy")),
+)
+STEP_OF = "Step {n} of {total}"
+INSTALLATION = "Installation"
+TEXTS = (GROUP_INTRO, GROUP_DISK, GROUP_YOU, STEP_OF, INSTALLATION)
+OWLS = Path(__file__).resolve().parent / "data" / "owl"
+
+
+def owl_file(state: str, dark: bool) -> Path:
+    """Dmytro Sizmin's Gloxi owl in one state (docs/design/owl-states/, CC-BY-SA-4.0)."""
+    return OWLS / f"gloxi-owl-{state}-{'dark' if dark else 'light'}.svg"
+
 
 class ChatWindow(Adw.ApplicationWindow):
     def __init__(
@@ -182,11 +222,16 @@ class ChatWindow(Adw.ApplicationWindow):
         self.last_change: str | None = None
         talks = conversation is not None or starting is not None
 
+        # Owl images follow the theme (dark or light drawing).
+        self.owls: list[tuple[Gtk.Image, str]] = []
+        manager = Adw.StyleManager.get_default()
+        handler = manager.connect("notify::dark", lambda *_a: self._show_owls())
+        self.connect("destroy", lambda *_a: manager.disconnect(handler))
+        self.section_shown: str | None = None
+
         header = Adw.HeaderBar()
-        header.set_title_widget(Gtk.Label(label=_(start.TITLE)))
-        without = Gtk.Button(label=_(start.WITHOUT))
-        without.connect("clicked", lambda *_a: self._without())
-        header.pack_end(without)
+        self.heading = Adw.WindowTitle(title=_(start.TITLE))
+        header.set_title_widget(self.heading)
         header.pack_start(style.theme_button(_))
 
         # The chat
@@ -198,15 +243,18 @@ class ChatWindow(Adw.ApplicationWindow):
         self.scroll = Gtk.ScrolledWindow(vexpand=True, hscrollbar_policy=Gtk.PolicyType.NEVER)
         self.scroll.set_child(self.list)
         self.scroll.add_css_class("vilna-chat")
-        self.entry = Gtk.Entry(hexpand=True, placeholder_text=_(conv.MESSAGE))
+        self.entry = Gtk.Entry(hexpand=True, has_frame=False, placeholder_text=_(conv.MESSAGE))
         self.entry.update_property([Gtk.AccessibleProperty.LABEL], [_(conv.MESSAGE)])
         self.entry.connect("activate", self._on_send)
-        self.send = Gtk.Button(label=_(conv.SEND))
+        self.send = Gtk.Button(icon_name="go-up-symbolic", tooltip_text=_(conv.SEND))
+        self.send.update_property([Gtk.AccessibleProperty.LABEL], [_(conv.SEND)])
         self.send.add_css_class("suggested-action")
+        self.send.add_css_class("circular")
         self.send.connect("clicked", self._on_send)
         self.thinking = Gtk.Label(label=_(conv.THINKING), visible=False, xalign=0)
         self.thinking.add_css_class("vilna-pending")
-        bar = Gtk.Box(spacing=8, margin_top=8, margin_bottom=12, margin_start=24, margin_end=24)
+        bar = Gtk.Box(spacing=8, margin_top=8, margin_bottom=16, margin_start=24, margin_end=24)
+        bar.add_css_class("vilna-composer")
         bar.append(self.entry)
         bar.append(self.send)
         chat = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True)
@@ -216,42 +264,75 @@ class ChatWindow(Adw.ApplicationWindow):
         chat.append(thinking)
         chat.append(bar)
 
-        # The plan
-        panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, width_request=380)
+        # The plan, as the steps of the installation (designer's P4, item 49)
+        panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, width_request=340)
         panel.set_hexpand(False)
         panel.add_css_class("vilna-plan")
-        title = Gtk.Label(label=_(conv.PLAN), xalign=0)
-        title.add_css_class("vilna-plan-title")
-        panel.append(title)
+        steps = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        steps.add_css_class("vilna-steps-card")
+        top = Gtk.Box(spacing=10)
+        self.owl = self._owl("waiting", 36)
+        top.append(self.owl)
+        self.step_count = Gtk.Label(xalign=0, hexpand=True)
+        self.step_count.add_css_class("vilna-step-count")
+        top.append(self.step_count)
+        steps.append(top)
+        self.progress = Gtk.ProgressBar(margin_top=6, margin_bottom=2)
+        self.progress.add_css_class("vilna-steps-bar")
+        self.progress.update_property([Gtk.AccessibleProperty.LABEL], [_(conv.PLAN)])
+        steps.append(self.progress)
         self.rows: dict[str, tuple[Gtk.Box, Gtk.Label]] = {}
-        for key, name in conv.SECTIONS.items():
-            row = Gtk.Box(spacing=8)
-            texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True)
-            head = Gtk.Label(label=_(name), xalign=0)
-            head.add_css_class("vilna-section")
-            value = Gtk.Label(xalign=0, wrap=True)
-            texts.append(head)
-            texts.append(value)
-            row.append(texts)
-            change = Gtk.Button(label=_(conv.CHANGE), valign=Gtk.Align.CENTER)
-            change.add_css_class("flat")
-            change.update_property([Gtk.AccessibleProperty.LABEL], [f"{_(conv.CHANGE)}: {_(name)}"])
-            change.connect("clicked", self._on_change, key)
-            change.set_visible(talks)  # «Change» talks to Gloxi
-            row.append(change)
-            panel.append(row)
-            self.rows[key] = (row, value)
-        panel.append(Gtk.Box(vexpand=True))
-        self.confirm = Gtk.Button(label=_(conv.CHECK_PLAN), visible=False)
+        self.dots: dict[str, Gtk.Box] = {}
+        for group, keys in GROUPS:
+            label = Gtk.Label(label=_(group).upper(), xalign=0)
+            label.add_css_class("vilna-group")
+            steps.append(label)
+            for key in keys:
+                name = conv.SECTIONS[key]
+                row = Gtk.Box(spacing=10)
+                row.add_css_class("vilna-step-row")
+                dot = Gtk.Box(valign=Gtk.Align.START, margin_top=2)
+                dot.add_css_class("vilna-dot")
+                row.append(dot)
+                self.dots[key] = dot
+                texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True)
+                head = Gtk.Label(label=_(name), xalign=0)
+                head.add_css_class("vilna-section")
+                value = Gtk.Label(xalign=0, wrap=True)
+                texts.append(head)
+                texts.append(value)
+                row.append(texts)
+                change = Gtk.Button(label=_(conv.CHANGE), valign=Gtk.Align.CENTER)
+                change.add_css_class("flat")
+                change.update_property(
+                    [Gtk.AccessibleProperty.LABEL], [f"{_(conv.CHANGE)}: {_(name)}"]
+                )
+                change.connect("clicked", self._on_change, key)
+                change.set_visible(talks)  # «Change» talks to Gloxi
+                row.append(change)
+                steps.append(row)
+                self.rows[key] = (row, value)
+        scroll_steps = Gtk.ScrolledWindow(vexpand=True, hscrollbar_policy=Gtk.PolicyType.NEVER)
+        scroll_steps.set_child(steps)
+        panel.append(scroll_steps)
+        self.confirm = Gtk.Button(label=_(conv.CHECK_PLAN), visible=False, margin_top=8)
         self.confirm.add_css_class("vilna-go")
         self.confirm.add_css_class("pill")
         self.confirm.connect("clicked", self._on_confirm)
         panel.append(self.confirm)
+        without = Gtk.Button(halign=Gtk.Align.START, margin_top=6)
+        without_box = Gtk.Box(spacing=8)
+        without_box.append(Gtk.Image(icon_name="edit-undo-symbolic"))
+        without_box.append(Gtk.Label(label=_(start.WITHOUT)))
+        without.set_child(without_box)
+        without.add_css_class("flat")
+        without.connect("clicked", lambda *_a: self._without())
+        panel.append(without)
 
         body = Gtk.Box()
-        body.append(chat)
-        body.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
         body.append(panel)
+        body.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
+        body.append(chat)
         view = Adw.ToolbarView()
         view.add_top_bar(header)
         view.set_content(body)
@@ -326,6 +407,7 @@ class ChatWindow(Adw.ApplicationWindow):
         return False
 
     def _no_model(self) -> bool:
+        self._set_owl("error")
         self.thinking.set_visible(False)
         self._say(self._(conv.NO_MODEL))
         # The way on is right under the message, and the keyboard is on it.
@@ -344,13 +426,63 @@ class ChatWindow(Adw.ApplicationWindow):
 
     # showing
 
+    def _owl(self, state: str, size: int) -> Gtk.Image:
+        image = Gtk.Image(valign=Gtk.Align.START, pixel_size=size)
+        image.set_from_file(str(owl_file(state, Adw.StyleManager.get_default().get_dark())))
+        image.set_accessible_role(Gtk.AccessibleRole.PRESENTATION)
+        self.owls.append((image, state))
+        return image
+
+    def _show_owls(self) -> None:
+        dark = Adw.StyleManager.get_default().get_dark()
+        for image, state in self.owls:
+            image.set_from_file(str(owl_file(state, dark)))
+
+    def _set_owl(self, state: str) -> None:
+        """The owl at the top of the steps: waiting, thinking, or something went wrong."""
+        self.owls = [(i, s) for i, s in self.owls if i is not self.owl] + [(self.owl, state)]
+        self._show_owls()
+
     def _bubble(self, text: str, mine: bool) -> None:
-        label = Gtk.Label(label=text, wrap=True, xalign=0, max_width_chars=60)
+        label = Gtk.Label(label=text, wrap=True, xalign=0, max_width_chars=60, selectable=False)
         label.add_css_class("vilna-bubble")
         label.add_css_class("vilna-person" if mine else "vilna-gloxi")
-        label.set_halign(Gtk.Align.END if mine else Gtk.Align.START)
-        self.list.append(label)
+        if mine:
+            label.set_halign(Gtk.Align.END)
+            self.list.append(label)
+        else:
+            # Gloxi speaks with the owl beside it and its name above, as in the design.
+            row = Gtk.Box(spacing=10, halign=Gtk.Align.START)
+            row.add_css_class("vilna-gloxi-row")
+            row.append(self._owl("waiting", 28))
+            column = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            who = Gtk.Label(label="Gloxi", xalign=0)
+            who.add_css_class("vilna-who")
+            column.append(who)
+            label.set_halign(Gtk.Align.START)
+            column.append(label)
+            row.append(column)
+            self.list.append(row)
         GLib.idle_add(self._scroll_down)
+
+    def _divider(self, section: str) -> None:
+        """A small Petrykivka-style divider with the name of the step that begins."""
+        row = Gtk.Box(spacing=8, halign=Gtk.Align.CENTER, margin_top=6, margin_bottom=2)
+        row.add_css_class("vilna-divider-row")
+        seeds = Gtk.Box(spacing=3, valign=Gtk.Align.CENTER)
+        for leaf in (False, True, False):
+            seed = Gtk.Box(valign=Gtk.Align.CENTER)
+            seed.add_css_class("vilna-seed")
+            if leaf:
+                seed.add_css_class("leaf")
+            seeds.append(seed)
+        row.append(seeds)
+        _ = self._
+        text = f"{_(INSTALLATION)} · {_(conv.SECTIONS[section])}".upper()
+        label = Gtk.Label(label=text)
+        label.add_css_class("vilna-divider")
+        row.append(label)
+        self.list.append(row)
 
     def _say(self, text: str) -> None:
         self._bubble(text, False)
@@ -361,6 +493,10 @@ class ChatWindow(Adw.ApplicationWindow):
         return False
 
     def _show(self, reply: conv.Reply) -> None:
+        section = SECTION_OF_STEP.get(reply.step.key or "")
+        if section and section != self.section_shown:
+            self.section_shown = section
+            self._divider(section)
         if reply.text:
             self._say(reply.text)
         self._show_plan(reply.plan, reply.step.key)
@@ -377,6 +513,23 @@ class ChatWindow(Adw.ApplicationWindow):
                 (value.add_css_class if on else value.remove_css_class)(css)
             current = SECTION_OF_STEP.get(step or "") == key
             (row.add_css_class if current else row.remove_css_class)("vilna-current")
+            dot = self.dots[key]
+            for css, on in (("done", bool(text) and not current), ("now", current)):
+                (dot.add_css_class if on else dot.remove_css_class)(css)
+            mark = dot.get_first_child()
+            if bool(text) and not current and mark is None:
+                dot.append(Gtk.Image(icon_name="object-select-symbolic", pixel_size=12))
+            elif (not text or current) and mark is not None:
+                dot.remove(mark)
+        decided = sum(1 for key in self.rows if lines.get(key))
+        total = len(self.rows)
+        keys = list(self.rows)
+        now = SECTION_OF_STEP.get(step or "")
+        n = keys.index(now) + 1 if now in keys else min(decided + 1, total)
+        count = self._(STEP_OF).format(n=n, total=total)
+        self.step_count.set_label(count)
+        self.heading.set_subtitle(count)
+        self.progress.set_fraction(decided / total if total else 0)
         needs = self.conversation.needs() if self.conversation else []
         self.confirm.set_visible("confirm" in needs)
 
@@ -587,6 +740,7 @@ class ChatWindow(Adw.ApplicationWindow):
         if self.conversation is None:
             return
         self.busy = True
+        self._set_owl("thinking")
         self.thinking.set_visible(True)
         self.send.set_sensitive(False)
         conversation = self.conversation
@@ -603,6 +757,7 @@ class ChatWindow(Adw.ApplicationWindow):
 
     def _turn_done(self, reply: conv.Reply) -> bool:
         self.busy = False
+        self._set_owl("waiting")
         self.thinking.set_visible(False)
         self.send.set_sensitive(True)
         self._show(reply)

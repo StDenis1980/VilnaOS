@@ -123,3 +123,18 @@ msgstr "Sie melden sich nur in der App des Anbieters selbst an: Vilna und Gloxi 
 
 msgid "Choose an answer about the VPN."
 msgstr "Wählen Sie eine Antwort zum VPN."
+
+msgid "Getting to know each other"
+msgstr "Kennenlernen"
+
+msgid "Disk and files"
+msgstr "Datenträger und Dateien"
+
+msgid "You and the system"
+msgstr "Sie und das System"
+
+msgid "Step {n} of {total}"
+msgstr "Schritt {n} von {total}"
+
+msgid "Installation"
+msgstr "Installation"
