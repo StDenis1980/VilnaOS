@@ -123,3 +123,18 @@ msgstr "Přihlašujete se jen v aplikaci samotného poskytovatele: Vilna a Gloxi
 
 msgid "Choose an answer about the VPN."
 msgstr "Vyberte odpověď ohledně VPN."
+
+msgid "Getting to know each other"
+msgstr "Seznámení"
+
+msgid "Disk and files"
+msgstr "Disk a soubory"
+
+msgid "You and the system"
+msgstr "Vy a systém"
+
+msgid "Step {n} of {total}"
+msgstr "Krok {n} z {total}"
+
+msgid "Installation"
+msgstr "Instalace"

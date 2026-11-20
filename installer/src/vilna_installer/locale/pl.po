@@ -123,3 +123,18 @@ msgstr "Logujesz się tylko w aplikacji samego dostawcy: Vilna i Gloxi nigdy nie
 
 msgid "Choose an answer about the VPN."
 msgstr "Wybierz odpowiedź dotyczącą VPN."
+
+msgid "Getting to know each other"
+msgstr "Poznajmy się"
+
+msgid "Disk and files"
+msgstr "Dysk i pliki"
+
+msgid "You and the system"
+msgstr "Ty i system"
+
+msgid "Step {n} of {total}"
+msgstr "Krok {n} z {total}"
+
+msgid "Installation"
+msgstr "Instalacja"

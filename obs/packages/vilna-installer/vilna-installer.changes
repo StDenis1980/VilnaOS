@@ -1,4 +1,18 @@
 -------------------------------------------------------------------
+Fri Nov 20 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The conversation with Gloxi looks like Dmytro Sizmin's «Розмова
+  встановлення» (P4, item 49), first stage: the plan is a steps panel
+  on the left, grouped (getting to know each other, disk and files,
+  you and the system), with done/current marks, «Step N of 7» and a
+  gold progress bar; Gloxi speaks beside its owl (Dmytro's owl
+  states, CC-BY-SA-4.0, data/owl/) under its name; a small
+  Petrykivka-style divider names each step as it begins; the message
+  field is one rounded bar with a round send button; «Without the
+  assistant» sits under the steps. The conversation itself is
+  unchanged. Texts in all ten languages.
+
+-------------------------------------------------------------------
 Wed Nov 18 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - sdbootutil-enroll waits for /boot/efi (RequiresMountsFor= in the

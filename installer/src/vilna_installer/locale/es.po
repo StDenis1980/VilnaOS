@@ -123,3 +123,18 @@ msgstr "Solo inicias sesión en la propia aplicación del proveedor: Vilna y Glo
 
 msgid "Choose an answer about the VPN."
 msgstr "Elige una respuesta sobre la VPN."
+
+msgid "Getting to know each other"
+msgstr "Presentación"
+
+msgid "Disk and files"
+msgstr "Disco y archivos"
+
+msgid "You and the system"
+msgstr "Usted y el sistema"
+
+msgid "Step {n} of {total}"
+msgstr "Paso {n} de {total}"
+
+msgid "Installation"
+msgstr "Instalación"

@@ -7,6 +7,7 @@ Needs GTK 4, libadwaita and a display (Xvfb is enough); skipped without them.
 import os
 import threading
 import time
+from pathlib import Path
 
 import pytest
 
@@ -85,10 +86,14 @@ def spin(until, seconds=5.0):
 
 
 def bubbles(win):
+    """The texts of the chat: the person's bubbles and Gloxi's (beside its owl)."""
     out, child = [], win.list.get_first_child()
     while child is not None:
-        if isinstance(child, Gtk.Label):
+        if isinstance(child, Gtk.Label) and child.has_css_class("vilna-bubble"):
             out.append(child.get_label())
+        elif child.has_css_class("vilna-gloxi-row"):
+            column = child.get_last_child()
+            out.append(column.get_last_child().get_label())
         child = child.get_next_sibling()
     return out
 
@@ -306,3 +311,34 @@ def test_the_chosen_languages_keyboard_is_set_only_on_a_real_computer(
     app.open_chat = lambda _w: None
     screen._finish(assistant=True)
     assert followed == expected
+
+
+def test_gloxi_speaks_beside_its_owl_and_steps_show_progress(plan_path):
+    win = window(plan_path)
+    win._say("Hello")
+    row = win.list.get_last_child()
+    assert row.has_css_class("vilna-gloxi-row")
+    owl = row.get_first_child()
+    assert isinstance(owl, Gtk.Image)
+    assert win.step_count.get_label() == "Step 1 of 7"
+    assert win.heading.get_subtitle() == "Step 1 of 7"
+    assert 0 <= win.progress.get_fraction() <= 1
+
+
+@pytest.mark.parametrize("code", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
+def test_steps_panel_texts_are_translated(code):
+    from vilna_installer import start
+
+    catalog = start.catalog(code)
+    assert [t for t in chat.TEXTS if t not in catalog] == []
+
+
+def test_owls_ship_and_match_the_design_source():
+    design = Path(__file__).resolve().parents[2] / "docs" / "design" / "owl-states"
+    for state in ("waiting", "thinking", "error"):
+        for dark in (False, True):
+            shipped = chat.owl_file(state, dark)
+            assert shipped.is_file()
+            source = design / shipped.name
+            if source.exists():
+                assert shipped.read_bytes() == source.read_bytes()

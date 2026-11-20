@@ -123,3 +123,18 @@ msgstr "Vous vous connectez uniquement dans l'application du fournisseur lui-mê
 
 msgid "Choose an answer about the VPN."
 msgstr "Choisissez une réponse au sujet du VPN."
+
+msgid "Getting to know each other"
+msgstr "Faisons connaissance"
+
+msgid "Disk and files"
+msgstr "Disque et fichiers"
+
+msgid "You and the system"
+msgstr "Vous et le système"
+
+msgid "Step {n} of {total}"
+msgstr "Étape {n} sur {total}"
+
+msgid "Installation"
+msgstr "Installation"
