@@ -107,6 +107,7 @@
         <choice value="air"/>
         <choice value="birds"/>
         <choice value="glass"/>
+        <choice value="star"/>
         <choice value="freedesktop"/>
       </choices>
       <default>'wood'</default>

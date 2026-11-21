@@ -76,7 +76,7 @@ DESKTOP_SOUND = "org.gnome.desktop.sound"
 # one by one, and writes them as the person's sound theme (lib/soundTheme.js).
 SHELL = "org.gnome.shell.extensions.vilna"
 
-SOUND_THEMES = ("wood", "bell", "water", "air", "birds", "glass", "freedesktop")
+SOUND_THEMES = ("wood", "bell", "water", "air", "birds", "glass", "star", "freedesktop")
 # The events a Vilna sound theme has (obs/packages/vilna-sound-themes).
 SOUND_EVENTS = (
     "message-new-instant",

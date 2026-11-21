@@ -12,7 +12,7 @@
 export const USER_THEME = 'vilna-user';
 
 // The themes obs/packages/vilna-sound-themes makes, plus GNOME's default.
-export const SOUND_THEMES = ['wood', 'bell', 'water', 'air', 'birds', 'glass', 'freedesktop'];
+export const SOUND_THEMES = ['wood', 'bell', 'water', 'air', 'birds', 'glass', 'star', 'freedesktop'];
 
 // The events a Vilna theme has (MOTIFS in make_sounds.py), so the ones a
 // person can turn off one by one.

@@ -1,0 +1,16 @@
+[Sound Theme]
+Name=Vilna Air
+Name[uk]=Vilna Повітря
+Name[es]=Vilna Aire
+Name[pl]=Vilna Powietrze
+Name[de]=Vilna Luft
+Name[fr]=Vilna Air
+Name[it]=Vilna Aria
+Name[ro]=Vilna Aer
+Name[cs]=Vilna Vzduch
+Name[lt]=Vilna Oras
+Inherits=freedesktop
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

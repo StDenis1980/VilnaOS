@@ -9,7 +9,10 @@ samples. Needs numpy and ffmpeg (libvorbis).
     python3 make_sounds.py OUT_DIR [--theme wood] [--preview]
 
 writes OUT_DIR/vilna-<theme>/index.theme and stereo/<event>.oga.
-The sounds are CC-BY-SA-4.0, like the other Vilna artwork.
+The sounds are CC-BY-SA-4.0, like the other Vilna artwork. Wood, bell
+and star are synthesised; water, air, birds and glass play short excerpts
+of CC0 and public-domain recordings (sources/, SOURCES.md) tuned to the
+motif.
 """
 
 from __future__ import annotations
@@ -54,6 +57,66 @@ MOTIFS: dict[str, tuple[list[float], float, float]] = {
 
 # Theme names in the ten Vilna languages (ADR 0009).
 THEMES: dict[str, dict[str, str]] = {
+    "water": {
+        "en": "Vilna Water",
+        "uk": "Vilna Вода",
+        "es": "Vilna Agua",
+        "pl": "Vilna Woda",
+        "de": "Vilna Wasser",
+        "fr": "Vilna Eau",
+        "it": "Vilna Acqua",
+        "ro": "Vilna Apă",
+        "cs": "Vilna Voda",
+        "lt": "Vilna Vanduo",
+    },
+    "air": {
+        "en": "Vilna Air",
+        "uk": "Vilna Повітря",
+        "es": "Vilna Aire",
+        "pl": "Vilna Powietrze",
+        "de": "Vilna Luft",
+        "fr": "Vilna Air",
+        "it": "Vilna Aria",
+        "ro": "Vilna Aer",
+        "cs": "Vilna Vzduch",
+        "lt": "Vilna Oras",
+    },
+    "birds": {
+        "en": "Vilna Birds",
+        "uk": "Vilna Птахи",
+        "es": "Vilna Pájaros",
+        "pl": "Vilna Ptaki",
+        "de": "Vilna Vögel",
+        "fr": "Vilna Oiseaux",
+        "it": "Vilna Uccelli",
+        "ro": "Vilna Păsări",
+        "cs": "Vilna Ptáci",
+        "lt": "Vilna Paukščiai",
+    },
+    "glass": {
+        "en": "Vilna Glass",
+        "uk": "Vilna Скло",
+        "es": "Vilna Cristal",
+        "pl": "Vilna Szkło",
+        "de": "Vilna Glas",
+        "fr": "Vilna Verre",
+        "it": "Vilna Vetro",
+        "ro": "Vilna Sticlă",
+        "cs": "Vilna Sklo",
+        "lt": "Vilna Stiklas",
+    },
+    "star": {
+        "en": "Vilna Star",
+        "uk": "Vilna Зірка",
+        "es": "Vilna Estrella",
+        "pl": "Vilna Gwiazda",
+        "de": "Vilna Stern",
+        "fr": "Vilna Étoile",
+        "it": "Vilna Stella",
+        "ro": "Vilna Stea",
+        "cs": "Vilna Hvězda",
+        "lt": "Vilna Žvaigždė",
+    },
     "wood": {
         "en": "Vilna Wood",
         "uk": "Vilna Дерево",
@@ -129,14 +192,118 @@ def bell(f: float, n: int, rng: np.random.Generator) -> np.ndarray:
     return body + 0.12 * _strike(n, 2, 2, rng)
 
 
-TIMBRES = {"wood": wood, "bell": bell}
-
-
-def _room(x: np.ndarray, rng: np.random.Generator, wet: float = 0.10) -> np.ndarray:
-    """A small dry room: convolution with decaying noise."""
-    n = int(0.35 * SR)
+def star(f: float, n: int, rng: np.random.Generator) -> np.ndarray:
+    # Space: a slow-blooming pure tone with a detuned twin (a slow beat), a
+    # shimmering octave and a faint sparkle, all in a long echo (ROOMS).
     t = np.arange(n) / SR
-    ir = rng.standard_normal(n) * np.exp(-t / 0.08)
+    glide = f * (1 - 0.02 * np.exp(-t / 0.05))  # rises into the note
+    ph = 2 * np.pi * np.cumsum(glide) / SR
+    swell = np.minimum(t / 0.03, 1) * np.exp(-t / 0.55)
+    tone = np.sin(ph) + 0.6 * np.sin(ph * 1.0023) + 0.6 * np.sin(ph * 0.9977)
+    shimmer = 0.25 * np.sin(2 * ph) * (0.6 + 0.4 * np.sin(2 * np.pi * 6.5 * t))
+    sparkle = 0.12 * np.sin(3.01 * ph) * np.exp(-t / 0.08)
+    return (tone + shimmer) * swell + sparkle
+
+
+# -- recorded timbres --------------------------------------------------------
+
+# Theme -> excerpts in sources/ (cut_sources.py, SOURCES.md) and how far to
+# move the whole motif so that the recordings shift as little as possible.
+RECORDED = {
+    "water": (["water-drip-1", "water-drip-2", "water-drip-3", "water-trickle-1"], 0.75),
+    "birds": (["birds-blackbird-1", "birds-blackbird-2", "birds-chirp-1"], 2.0),
+    "glass": (["glass-bing-1", "glass-bing-2"], 1.33),
+    "air": (["air-blow-1", "air-breath-1"], 1.0),
+}
+SOURCES = Path(__file__).resolve().parent / "sources"
+_cache: dict[str, np.ndarray] = {}
+
+
+def _load(name: str) -> np.ndarray:
+    if name not in _cache:
+        raw = subprocess.run(
+            [
+                "ffmpeg",
+                "-loglevel",
+                "error",
+                "-i",
+                str(SOURCES / f"{name}.flac"),
+                "-ac",
+                "1",
+                "-ar",
+                str(SR),
+                "-f",
+                "f32le",
+                "-",
+            ],
+            capture_output=True,
+            check=True,
+        ).stdout
+        x = np.frombuffer(raw, dtype="<f4").astype(float)
+        _cache[name] = x / (np.max(np.abs(x)) or 1.0)
+    return _cache[name]
+
+
+def _pitch(x: np.ndarray) -> float:
+    """The strongest partial between 200 Hz and 6 kHz."""
+    size = 1 << 16
+    spec = np.abs(np.fft.rfft(x * np.hanning(len(x)), size))
+    freq = np.fft.rfftfreq(size, 1 / SR)
+    spec[(freq < 200) | (freq > 6000)] = 0
+    return float(freq[int(np.argmax(spec))])
+
+
+def _resample(x: np.ndarray, ratio: float) -> np.ndarray:
+    """Play faster by ratio: higher and shorter, as a real object would be."""
+    pos = np.arange(0, len(x) - 1, ratio)
+    return np.interp(pos, np.arange(len(x)), x)
+
+
+def _fit(x: np.ndarray, n: int) -> np.ndarray:
+    out = np.zeros(n)
+    out[: min(n, len(x))] = x[:n]
+    return out
+
+
+def _resonate(noise: np.ndarray, f: float) -> np.ndarray:
+    """Breath through a pipe: keep the noise only near f and its overtones."""
+    size = len(noise)
+    spec = np.fft.rfft(noise)
+    freq = np.fft.rfftfreq(size, 1 / SR)
+    gain = sum(
+        a * np.exp(-(((freq - f * k) / (f * 0.012)) ** 2)) for k, a in ((1, 1), (2, 0.4), (3, 0.15))
+    )
+    return np.fft.irfft(spec * gain, size)
+
+
+def recorded(theme: str):
+    names, _ = RECORDED[theme]
+
+    def timbre(f: float, n: int, rng: np.random.Generator) -> np.ndarray:
+        x = _load(names[int(rng.integers(len(names)))])
+        if theme == "air":
+            breath = _fit(x, n)
+            env = np.sqrt(np.convolve(breath**2, np.ones(480) / 480, "same"))
+            tone = _resonate(breath, f)
+            # A steady pitch over the breath's own swell, a little raw air on top.
+            pipe = np.sin(2 * np.pi * f * np.arange(n) / SR) * env / (np.max(env) or 1)
+            tone = tone / (np.max(np.abs(tone)) or 1)
+            return 0.55 * tone + 0.35 * pipe + 0.10 * breath
+        return _fit(_resample(x, f / _pitch(x)), n)
+
+    return timbre
+
+
+TIMBRES = {"wood": wood, "bell": bell, "star": star} | {t: recorded(t) for t in RECORDED}
+# The echo of each theme: (wet level, decay in s).
+ROOMS = {"star": (0.30, 0.35), "glass": (0.08, 0.08), "water": (0.12, 0.10)}
+
+
+def _room(x: np.ndarray, rng: np.random.Generator, wet: float, decay: float) -> np.ndarray:
+    """A room: convolution with decaying noise."""
+    n = int(5 * decay * SR)
+    t = np.arange(n) / SR
+    ir = rng.standard_normal(n) * np.exp(-t / decay)
     ir = _smooth(ir, 3)
     ir /= np.sqrt(np.sum(ir**2))
     size = len(x) + n
@@ -154,9 +321,14 @@ def render(theme: str, event: str) -> np.ndarray:
     for i, f in enumerate(notes):
         start = int(i * gap * SR)
         # Later notes slightly softer, so a motif falls away gently.
+        f *= RECORDED.get(theme, ((), 1.0))[1]
         out[start : start + n] += TIMBRES[theme](f, n, rng) * (0.9**i)
-    out = _room(out, rng)
-    fade = int(0.03 * SR)
+    wet, decay = ROOMS.get(theme, (0.10, 0.08))
+    out = _room(out, rng, wet, decay)
+    # Trim the silent tail the long echoes leave, then fade out.
+    loud = np.nonzero(np.abs(out) > 0.01 * np.max(np.abs(out)))[0]
+    out = out[: int(loud[-1]) + 1] if len(loud) else out
+    fade = min(int(0.03 * SR), len(out))
     out[-fade:] *= np.linspace(1, 0, fade)
     peak = np.max(np.abs(out))
     return out / peak * PEAK if peak > 0 else out
