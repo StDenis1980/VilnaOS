@@ -291,7 +291,10 @@ def test_sound_events_match_the_shell_extension():
         / "vilna@stdenis1980.github.io"
         / "lib"
         / "soundTheme.js"
-    ).read_text(encoding="utf-8")
+    )
+    if not js.exists():
+        pytest.skip("not in the repository (the package is built alone)")
+    js = js.read_text(encoding="utf-8")
     for name in (*SOUND_EVENTS, *SOUND_THEMES):
         assert f"'{name}'" in js, name
 
