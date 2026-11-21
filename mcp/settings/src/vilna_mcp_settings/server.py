@@ -21,8 +21,12 @@ from vilna_mcp_settings import __version__
 from vilna_mcp_settings.settings import (
     ACCENT_COLORS,
     COLOR,
+    DESKTOP_SOUND,
     INTERFACE,
     NOTIFICATIONS,
+    SHELL,
+    SOUND_EVENTS,
+    SOUND_THEMES,
     TEMPERATURE,
     MemoryBackend,
     MemorySound,
@@ -55,7 +59,7 @@ _CHANGE = {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": Tr
 TOOLS = [
     _tool(
         "get",
-        "Current appearance, night light and notification settings",
+        "Current appearance, night light, notification and sound settings",
         {},
         [],
         readOnlyHint=True,
@@ -122,6 +126,27 @@ TOOLS = [
         **_CHANGE,
     ),
     _tool(
+        "set_event_sounds",
+        "Turn all event sounds (notifications, warnings, USB, Gloxi signals) on or off",
+        {"enabled": _BOOL},
+        ["enabled"],
+        **_CHANGE,
+    ),
+    _tool(
+        "set_sound_theme",
+        "Choose the sound theme of event sounds",
+        {"theme": {"type": "string", "enum": list(SOUND_THEMES)}},
+        ["theme"],
+        **_CHANGE,
+    ),
+    _tool(
+        "set_sound",
+        "Turn one event sound on or off, whatever the theme",
+        {"event": {"type": "string", "enum": list(SOUND_EVENTS)}, "enabled": _BOOL},
+        ["event", "enabled"],
+        **_CHANGE,
+    ),
+    _tool(
         "restore",
         "Undo a change: put settings back as they were before",
         {"values": {"type": "object"}},
@@ -171,6 +196,9 @@ class Server:
             "set_volume": settings.set_volume,
             "set_mute": settings.set_mute,
             "set_output": settings.set_output,
+            "set_event_sounds": settings.set_event_sounds,
+            "set_sound_theme": settings.set_sound_theme,
+            "set_sound": settings.set_sound,
             "restore": settings.restore,
         }
 
@@ -257,6 +285,9 @@ def demo_backend() -> MemoryBackend:
             (COLOR, "night-light-schedule-to"): 6.0,
             (COLOR, "night-light-temperature"): 2700,
             (NOTIFICATIONS, "show-banners"): True,
+            (DESKTOP_SOUND, "event-sounds"): True,
+            (SHELL, "sound-theme"): "wood",
+            (SHELL, "disabled-sounds"): [],
         }
     )
 

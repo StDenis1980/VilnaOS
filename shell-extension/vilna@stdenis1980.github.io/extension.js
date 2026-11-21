@@ -5,7 +5,7 @@
 // It runs in three session modes:
 //  - user: everything (password layout, Gloxi above, Gloxi at the right
 //    edge, Gloxi strip, D-Bus, the VPN offer after a Wi-Fi login page,
-//    the light or dark Vilna colours of the dock, Vilna's window motion and rubber windows, the desktop widgets);
+//    the light or dark Vilna colours of the dock, Vilna's window motion and rubber windows, the desktop widgets, the sound theme);
 //  - unlock-dialog: kept enabled while the screen is locked, so the
 //    password field of the lock screen gets the Latin layout too;
 //  - gdm: the login screen, where only the password layout runs.
@@ -21,6 +21,7 @@ import {PasswordLayout} from './passwordLayout.js';
 import {VilnaShellService} from './dbus.js';
 import {VpnOffer} from './vpnOffer.js';
 import {WindowMotion} from './windowMotion.js';
+import {Sounds} from './sounds.js';
 import {Wobble} from './wobble.js';
 import {Widgets} from './widgets.js';
 
@@ -66,6 +67,7 @@ export default class VilnaExtension extends Extension {
             new ColorSchemeClass(),
             new WindowMotion(this._settings),
             new Wobble(this._settings),
+            new Sounds(this._settings),
             new Widgets(this._settings, () => this.openPreferences(), this.dir),
         ];
         for (const part of this._userParts)

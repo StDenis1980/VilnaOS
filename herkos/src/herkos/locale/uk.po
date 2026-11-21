@@ -448,6 +448,15 @@ msgstr "Вимкнути чи ввімкнути звук"
 msgid "Play sound through another output"
 msgstr "Виводити звук на інший пристрій"
 
+msgid "Turn all event sounds on or off"
+msgstr "Увімкнути чи вимкнути всі звуки подій"
+
+msgid "Choose the sound theme"
+msgstr "Обрати звукову тему"
+
+msgid "Turn one event sound on or off"
+msgstr "Увімкнути чи вимкнути окремий звук події"
+
 msgid "Undo an earlier change to the settings"
 msgstr "Скасувати попередню зміну налаштувань"
 
