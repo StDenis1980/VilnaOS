@@ -10,9 +10,9 @@ samples. Needs numpy and ffmpeg (libvorbis).
 
 writes OUT_DIR/vilna-<theme>/index.theme and stereo/<event>.oga.
 The sounds are CC-BY-SA-4.0, like the other Vilna artwork. Wood, bell,
-star, water and air are synthesised; birds and glass play short excerpts
-of CC0 and public-domain recordings (sources/, SOURCES.md) tuned to the
-motif.
+star, water and air are synthesised; birds play short chaffinch calls at
+their own pitch and glass excerpts tuned to the motif, from CC0 and
+public-domain recordings (sources/, SOURCES.md).
 """
 
 from __future__ import annotations
@@ -247,7 +247,7 @@ def air(f: float, n: int, rng: np.random.Generator) -> np.ndarray:
 # Theme -> excerpts in sources/ (cut_sources.py, SOURCES.md) and how far to
 # move the whole motif so that the recordings shift as little as possible.
 RECORDED = {
-    "birds": (["birds-blackbird-1", "birds-blackbird-2", "birds-chirp-1"], 2.0),
+    "birds": ([f"birds-chaffinch-{i}" for i in range(1, 9)], 1.0),
     "glass": (["glass-bing-1", "glass-bing-2"], 1.33),
 }
 SOURCES = Path(__file__).resolve().parent / "sources"
@@ -310,11 +310,28 @@ def recorded(theme: str):
     return timbre
 
 
-TIMBRES = {"wood": wood, "bell": bell, "star": star, "water": water, "air": air} | {
-    t: recorded(t) for t in RECORDED
+def birds(f: float, n: int, rng: np.random.Generator) -> np.ndarray:
+    # Real chaffinch calls at their own pitch: tuning a bird to the motif
+    # sounded false. The motif keeps its rhythm, and a higher note picks a
+    # higher call. One sound never repeats a call (render() empties _USED).
+    calls = sorted((_load(name) for name in RECORDED["birds"][0]), key=_pitch)
+    step = 12 * np.log2(f / A5)  # the motif spans about -7..+7 semitones
+    want = int(np.clip(round((step + 7) / 14 * (len(calls) - 1)), 0, len(calls) - 1))
+    order = sorted(range(len(calls)), key=lambda i: abs(i - want))
+    pick = next((i for i in order if i not in _USED), want)
+    _USED.add(pick)
+    return _fit(calls[pick], n)
+
+
+_USED: set[int] = set()
+# Birds call with more room between notes than a struck bar rings.
+SPACING = {"birds": 1.6}
+
+TIMBRES = {"wood": wood, "bell": bell, "star": star, "water": water, "air": air, "birds": birds} | {
+    t: recorded(t) for t in RECORDED if t != "birds"
 }
 # The echo of each theme: (wet level, decay in s).
-ROOMS = {"star": (0.30, 0.35), "glass": (0.08, 0.08), "air": (0.10, 0.10)}
+ROOMS = {"birds": (0.06, 0.06), "star": (0.30, 0.35), "glass": (0.08, 0.08), "air": (0.10, 0.10)}
 
 
 def _room(x: np.ndarray, rng: np.random.Generator, wet: float, decay: float) -> np.ndarray:
@@ -332,7 +349,9 @@ def _room(x: np.ndarray, rng: np.random.Generator, wet: float, decay: float) -> 
 
 def render(theme: str, event: str) -> np.ndarray:
     notes, gap, ring = MOTIFS[event]
+    gap *= SPACING.get(theme, 1.0)
     rng = _rng(theme + event)
+    _USED.clear()
     n = int(ring * SR)
     total = int((gap * (len(notes) - 1)) * SR) + n
     out = np.zeros(total)

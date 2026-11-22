@@ -23,16 +23,22 @@ HERE = Path(__file__).resolve().parent
 
 # The original files, by the SHA-1 Commons gives for them.
 ORIGINALS = {
-    "Common_blackbird_singing_denoised.flac": "d96cad234eacb1888658a29a85791a7edf664f7f",
-    "Bird_call_separated_chirps.ogg": "c27612d85addec63e95f61da51645a83c51d2a71",
+    "Fringilla_coelebs_singing_in_Norfolk,_England.ogg": "1af4f5d5f4b0ba2fbd906dab7f69f59d0d500285",
     "Binging_glass.ogg": "6dc71d3fa58bbe10001fd8d3199add30facaf101",
 }
 
+CHAFFINCH = "Fringilla_coelebs_singing_in_Norfolk,_England.ogg"
+
 # excerpt -> (original, start in s, length in s)
 CUTS = {
-    "birds-blackbird-1": ("Common_blackbird_singing_denoised.flac", 3.68, 0.26),
-    "birds-blackbird-2": ("Common_blackbird_singing_denoised.flac", 0.96, 0.27),
-    "birds-chirp-1": ("Bird_call_separated_chirps.ogg", 30.95, 0.10),
+    "birds-chaffinch-1": (CHAFFINCH, 53.40, 0.15),
+    "birds-chaffinch-2": (CHAFFINCH, 53.56, 0.18),
+    "birds-chaffinch-3": (CHAFFINCH, 53.74, 0.19),
+    "birds-chaffinch-4": (CHAFFINCH, 53.95, 0.15),
+    "birds-chaffinch-5": (CHAFFINCH, 54.09, 0.16),
+    "birds-chaffinch-6": (CHAFFINCH, 54.30, 0.11),
+    "birds-chaffinch-7": (CHAFFINCH, 54.41, 0.11),
+    "birds-chaffinch-8": (CHAFFINCH, 54.99, 0.17),
     "glass-bing-1": ("Binging_glass.ogg", 62.09, 0.95),
     "glass-bing-2": ("Binging_glass.ogg", 52.54, 0.95),
 }
