@@ -9,8 +9,8 @@ samples. Needs numpy and ffmpeg (libvorbis).
     python3 make_sounds.py OUT_DIR [--theme wood] [--preview]
 
 writes OUT_DIR/vilna-<theme>/index.theme and stereo/<event>.oga.
-The sounds are CC-BY-SA-4.0, like the other Vilna artwork. Wood, bell
-and star are synthesised; water, air, birds and glass play short excerpts
+The sounds are CC-BY-SA-4.0, like the other Vilna artwork. Wood, bell,
+star, water and air are synthesised; birds and glass play short excerpts
 of CC0 and public-domain recordings (sources/, SOURCES.md) tuned to the
 motif.
 """
@@ -205,15 +205,50 @@ def star(f: float, n: int, rng: np.random.Generator) -> np.ndarray:
     return (tone + shimmer) * swell + sparkle
 
 
+def water(f: float, n: int, rng: np.random.Generator) -> np.ndarray:
+    # A drop into water rings as an air bubble: a decaying tone whose pitch
+    # rises as the bubble reaches the surface (van den Doel's bubble model:
+    # damping 0.043 f + 0.0014 f^1.5, rise a tenth of it), and two tiny
+    # bubbles after it.
+    t = np.arange(n) / SR
+
+    def bubble(g: float, rise: float) -> np.ndarray:
+        d = 0.043 * g + 0.0014 * g**1.5
+        return np.sin(2 * np.pi * g * (t + 0.5 * rise * d * t * t)) * np.exp(-d * t)
+
+    x = bubble(f, 0.1)
+    for _ in range(2):
+        g = f * rng.uniform(1.6, 2.4)
+        o = int(rng.uniform(0.01, 0.03) * SR)
+        x[o:] += 0.15 * bubble(g, 0.1)[: n - o]
+    a = int(0.0015 * SR)
+    x[:a] *= np.linspace(0, 1, a)
+    return x
+
+
+def air(f: float, n: int, rng: np.random.Generator) -> np.ndarray:
+    # A breath of air: noise through a band that slides upward around twice
+    # the note, so the motif's shape is heard without a tone.
+    seg = int(0.02 * SR)
+    x = rng.standard_normal(n)
+    centre = f * 2 * np.linspace(0.8, 1.25, n)
+    freq = np.fft.rfftfreq(seg, 1 / SR)
+    out = np.zeros(n)
+    for s in range(0, n - seg, seg // 2):
+        band = np.exp(-(((np.log(freq + 1) - np.log(centre[s])) / 0.35) ** 2))
+        out[s : s + seg] += np.fft.irfft(np.fft.rfft(x[s : s + seg] * np.hanning(seg)) * band, seg)
+    t = np.arange(n) / SR
+    length = min(n, int(0.32 * SR)) / SR
+    return out * np.where(t < length, np.sin(np.pi * t / length) ** 2, 0)
+
+
 # -- recorded timbres --------------------------------------------------------
 
 # Theme -> excerpts in sources/ (cut_sources.py, SOURCES.md) and how far to
 # move the whole motif so that the recordings shift as little as possible.
 RECORDED = {
-    "water": (["water-drip-1", "water-drip-2", "water-drip-3", "water-trickle-1"], 0.75),
     "birds": (["birds-blackbird-1", "birds-blackbird-2", "birds-chirp-1"], 2.0),
     "glass": (["glass-bing-1", "glass-bing-2"], 1.33),
-    "air": (["air-blow-1", "air-breath-1"], 1.0),
 }
 SOURCES = Path(__file__).resolve().parent / "sources"
 _cache: dict[str, np.ndarray] = {}
@@ -265,38 +300,21 @@ def _fit(x: np.ndarray, n: int) -> np.ndarray:
     return out
 
 
-def _resonate(noise: np.ndarray, f: float) -> np.ndarray:
-    """Breath through a pipe: keep the noise only near f and its overtones."""
-    size = len(noise)
-    spec = np.fft.rfft(noise)
-    freq = np.fft.rfftfreq(size, 1 / SR)
-    gain = sum(
-        a * np.exp(-(((freq - f * k) / (f * 0.012)) ** 2)) for k, a in ((1, 1), (2, 0.4), (3, 0.15))
-    )
-    return np.fft.irfft(spec * gain, size)
-
-
 def recorded(theme: str):
     names, _ = RECORDED[theme]
 
     def timbre(f: float, n: int, rng: np.random.Generator) -> np.ndarray:
         x = _load(names[int(rng.integers(len(names)))])
-        if theme == "air":
-            breath = _fit(x, n)
-            env = np.sqrt(np.convolve(breath**2, np.ones(480) / 480, "same"))
-            tone = _resonate(breath, f)
-            # A steady pitch over the breath's own swell, a little raw air on top.
-            pipe = np.sin(2 * np.pi * f * np.arange(n) / SR) * env / (np.max(env) or 1)
-            tone = tone / (np.max(np.abs(tone)) or 1)
-            return 0.55 * tone + 0.35 * pipe + 0.10 * breath
         return _fit(_resample(x, f / _pitch(x)), n)
 
     return timbre
 
 
-TIMBRES = {"wood": wood, "bell": bell, "star": star} | {t: recorded(t) for t in RECORDED}
+TIMBRES = {"wood": wood, "bell": bell, "star": star, "water": water, "air": air} | {
+    t: recorded(t) for t in RECORDED
+}
 # The echo of each theme: (wet level, decay in s).
-ROOMS = {"star": (0.30, 0.35), "glass": (0.08, 0.08), "water": (0.12, 0.10)}
+ROOMS = {"star": (0.30, 0.35), "glass": (0.08, 0.08), "air": (0.10, 0.10)}
 
 
 def _room(x: np.ndarray, rng: np.random.Generator, wet: float, decay: float) -> np.ndarray:

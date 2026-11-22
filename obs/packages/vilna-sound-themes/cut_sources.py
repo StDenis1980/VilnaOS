@@ -23,10 +23,6 @@ HERE = Path(__file__).resolve().parent
 
 # The original files, by the SHA-1 Commons gives for them.
 ORIGINALS = {
-    "Drip_coffee_maker_dripping.ogg": "e183b6e34a4cc92651bf28675c76b8bece53e8aa",
-    "Water_flowing_pouring_trickling.ogg": "4a302adbb0f1382c2d0d2ce7f13f204f264bc3ea",
-    "Me_blowing_laptop_microphone.wav": "17529bb63c0b03be367aa6f8a2d5977c57ee4723",
-    "Breathing_man.ogg": "e588e74da090efea5b528b979dcd1a93cc728eeb",
     "Common_blackbird_singing_denoised.flac": "d96cad234eacb1888658a29a85791a7edf664f7f",
     "Bird_call_separated_chirps.ogg": "c27612d85addec63e95f61da51645a83c51d2a71",
     "Binging_glass.ogg": "6dc71d3fa58bbe10001fd8d3199add30facaf101",
@@ -34,12 +30,6 @@ ORIGINALS = {
 
 # excerpt -> (original, start in s, length in s)
 CUTS = {
-    "water-drip-1": ("Drip_coffee_maker_dripping.ogg", 46.24, 0.16),
-    "water-drip-2": ("Drip_coffee_maker_dripping.ogg", 43.06, 0.16),
-    "water-drip-3": ("Drip_coffee_maker_dripping.ogg", 31.78, 0.16),
-    "water-trickle-1": ("Water_flowing_pouring_trickling.ogg", 70.02, 0.12),
-    "air-blow-1": ("Me_blowing_laptop_microphone.wav", 2.22, 0.80),
-    "air-breath-1": ("Breathing_man.ogg", 17.30, 0.30),
     "birds-blackbird-1": ("Common_blackbird_singing_denoised.flac", 3.68, 0.26),
     "birds-blackbird-2": ("Common_blackbird_singing_denoised.flac", 0.96, 0.27),
     "birds-chirp-1": ("Bird_call_separated_chirps.ogg", 30.95, 0.10),
