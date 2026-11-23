@@ -17,12 +17,56 @@ from the keyboard or the pointer (``real_input``, docs/adr/0029); an AT-SPI
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
+import shutil
+import subprocess
 import sys
 
 from herkos.confirm import content_lines, readable_resource
 from herkos.i18n import _
+
+CONSENT_SOUND = "x-vilna-herkos-consent"
+
+
+def play_consent_sound(which=shutil.which, popen=subprocess.Popen, enabled=None) -> bool:
+    """The Vilna sound theme's signal that Herkos is asking (sounds/).
+
+    Played once through libcanberra's canberra-gtk-play, which follows the
+    chosen theme and its switched-off sounds; GNOME's switch for all event
+    sounds is checked here because that program ignores it. Without the
+    program (outside Vilna) nothing plays. Never blocks the window and
+    never touches stdout, where the answer goes. Returns whether it played.
+    """
+    program = which("canberra-gtk-play")
+    if program is None:
+        return False
+    try:
+        on = event_sounds_on() if enabled is None else enabled()
+    except Exception:  # noqa: BLE001 - a sound must never stop the question
+        on = True
+    if not on:
+        return False
+    with contextlib.suppress(OSError):
+        popen(
+            [program, "-i", CONSENT_SOUND, "-d", "Herkos"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        return True
+    return False
+
+
+def event_sounds_on() -> bool:
+    from gi.repository import Gio
+
+    source = Gio.SettingsSchemaSource.get_default()
+    if source is None or source.lookup("org.gnome.desktop.sound", True) is None:
+        return True
+    return Gio.Settings.new("org.gnome.desktop.sound").get_boolean("event-sounds")
 
 
 def translated_raises(question: dict) -> list[str]:
@@ -311,6 +355,7 @@ def main() -> int:
         win.set_default_widget(default)
         default.grab_focus()
         win.present()
+        play_consent_sound()
 
     app.connect("activate", build)
     app.run([])
