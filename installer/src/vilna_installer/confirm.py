@@ -43,7 +43,7 @@ from typing import Any
 from vilna_mcp_installer import machine as machines
 from vilna_mcp_installer import plan as plans
 
-from vilna_installer import encryption, start, summary
+from vilna_installer import encryption, layout, start, summary
 
 ARM_SECONDS = 3
 # The group of the recovery key the person types back (the last one: «the
@@ -167,6 +167,7 @@ def check(
     method = ((plan.get("disk") or {}).get("encryption") or {}).get("method")
     if method in plans.TPM_METHODS and tpm is False:
         extra.append({"code": "no_tpm", "field": "disk.encryption.method"})
+    extra += layout.problems(plan, survey)
     return Check(
         plan, survey, report, summary.summarize(plan, report, survey, texts, extra_problems=extra)
     )

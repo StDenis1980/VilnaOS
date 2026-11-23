@@ -158,9 +158,21 @@ def tpm_can_seal(
 
 
 def repart_definitions(
-    method: str, copy_files: str | None = None, copy_blocks: str | None = None
+    method: str,
+    copy_files: str | None = None,
+    copy_blocks: str | None = None,
+    *,
+    esp_size: int | bool = True,
+    root_min: int | None = None,
+    root_max: int | None = None,
 ) -> dict[str, str]:
     """systemd-repart definitions for «Erase the whole disk»: the ESP and the system.
+
+    A manual layout (``layout``) changes three things: ``esp_size`` False
+    leaves the ESP out (the person chose an existing one), a number makes it
+    that size instead of ``ESP_SIZE``; ``root_min`` and ``root_max`` (bytes)
+    bound the system partition, so that it lands in the space the person
+    freed or has the size they asked for.
 
     What fills the system partition is the engine's choice: ``copy_blocks``
     (a partition of the Vilna disk image, with its btrfs subvolumes and
@@ -173,13 +185,9 @@ def repart_definitions(
         raise ValueError(f"unknown encryption method {method!r}; one of {', '.join(METHODS)}")
     if copy_files and copy_blocks:
         raise ValueError("either copy_files or copy_blocks")
+    size = ESP_SIZE if esp_size is True else str(esp_size)
     esp = (
-        "[Partition]\n"
-        "Type=esp\n"
-        "Label=ESP\n"
-        "Format=vfat\n"
-        f"SizeMinBytes={ESP_SIZE}\n"
-        f"SizeMaxBytes={ESP_SIZE}\n"
+        f"[Partition]\nType=esp\nLabel=ESP\nFormat=vfat\nSizeMinBytes={size}\nSizeMaxBytes={size}\n"
     )
     # The engine grows the filesystem itself; systemd-growfs-root would fail
     # on the read-only snapshot at the first boot.
@@ -190,6 +198,12 @@ def repart_definitions(
         root += "Encrypt=key-file\n"
     if copy_files:
         root += f"CopyFiles={copy_files}\n"
+    if root_min is not None:
+        root += f"SizeMinBytes={int(root_min)}\n"
+    if root_max is not None:
+        root += f"SizeMaxBytes={int(root_max)}\n"
+    if esp_size is False:
+        return {"10-root.conf": root}
     return {"00-esp.conf": esp, "10-root.conf": root}
 
 
@@ -237,14 +251,15 @@ def before_layout() -> list[Step]:
     ]
 
 
-def repart_command(disk: str, definitions: Path, key_file: Path) -> Step:
+def repart_command(disk: str, definitions: Path, key_file: Path, empty: str = "force") -> Step:
+    """``empty`` "force" for «Erase the whole disk»; "refuse" keeps the partition table."""
     return Step(
         "lay out the disk and encrypt the system partition",
         (
             "systemd-repart",
             "--no-pager",
             "--pretty=no",
-            "--empty=force",
+            f"--empty={empty}",
             "--dry-run=no",
             f"--definitions={definitions}",
             f"--key-file={key_file}",

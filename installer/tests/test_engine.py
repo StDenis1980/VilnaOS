@@ -17,7 +17,7 @@ import pytest
 from vilna_mcp_installer import machine as machines
 from vilna_mcp_installer import plan as plans
 
-from vilna_installer import confirm, encryption
+from vilna_installer import confirm, encryption, layout
 from vilna_installer import engine as eng
 from vilna_installer.vault import Vault
 
@@ -343,7 +343,7 @@ def test_without_encryption_no_luks_and_no_keys(setup):
     [
         ({}, None, False, "no TPM 2.0"),
         ({}, {"user": "pw"}, True, "recovery key"),
-        ({"layout": "manual"}, None, True, "Erase the whole disk"),
+        ({"layout": "other"}, None, True, "Erase the whole disk"),
     ],
 )
 def test_nothing_is_written_when_the_plan_cannot_be_installed(setup, change, secrets, tpm, why):
@@ -592,3 +592,207 @@ def test_the_engine_writes_what_vilna_reportd_writes():
                 assert line.replace('"', '\\"') in rust, line
             else:
                 assert line.split("=")[0] + "=" in rust, line
+
+
+# --- a manual layout beside Windows (the partition editor) ---------------------------
+
+MIB = 1 << 20
+GIB = 1 << 30
+
+
+class BesideWindows(machines.DemoMachine):
+    """Windows (EFI, MSR, BitLocker, recovery) and an old Linux with its own EFI partition."""
+
+    def __init__(self):
+        super().__init__("windows")
+        disk = next(d for d in self._disks if d.id == "nvme-Demo_SSD_512_0002")
+        disk.path = DISK
+        disk.size = 512 * GIB
+        disk.partitions[2].size = 273 * GIB
+        start = 280 * GIB
+        disk.partitions += [
+            machines.Partition("p-oldefi", "nvme0n1p5", 977 * MIB, start, "vfat", None,
+                               "EFI system", eng.ESP_TYPE),
+            machines.Partition("p-old", "nvme0n1p6", 172 * GIB, start + GIB, "ext4", None,
+                               None, LINUX),
+        ]  # fmt: skip
+
+
+class SystemBesideWindows(FakeSystem):
+    """lsblk shows the disk as it is before repart, and with the new system after."""
+
+    def __init__(self, root, fail=None, extra=()):
+        super().__init__(root, fail)
+        self.extra = list(extra)
+
+    def __call__(self, argv, input=None, text=False, **kw):
+        if argv[0] == "lsblk" and argv[-1] == DISK:
+            self.calls.append((list(argv), input, kw.get("cwd")))
+            parts = [
+                {"name": DISK + "p1", "type": "part", "parttype": eng.ESP_TYPE,
+                 "partuuid": "p-efi", "uuid": "WIN0-0001"},
+                {"name": DISK + "p3", "type": "part", "parttype": "ebd0a0a2", "partuuid": "p-win"},
+                {"name": DISK + "p5", "type": "part", "parttype": eng.ESP_TYPE,
+                 "partuuid": "p-oldefi"},
+                *self.extra,
+            ]  # fmt: skip
+            if any(a[0] == "systemd-repart" for a in self.argvs()):
+                parts.append({"name": DISK + "p6", "type": "part", "parttype": eng.ROOT_TYPE,
+                              "partlabel": "vilna", "partuuid": "new-root",
+                              "uuid": "0b0e8c5a-1111-4222-8333-944455556666"})  # fmt: skip
+            elif not any(a[:2] == ["sfdisk", "--delete"] for a in self.argvs()):
+                parts.append({"name": DISK + "p6", "type": "part", "parttype": LINUX,
+                              "partuuid": "p-old"})  # fmt: skip
+            out = lsblk(DISK, parts)
+            return subprocess.CompletedProcess(argv, 0, out if text else out.encode(), "")
+        return super().__call__(argv, input=input, text=text, **kw)
+
+
+def manual_setup(setup, items, extra=()):
+    tmp_path, path, _machine, image, models = setup
+    machine = BesideWindows()
+    survey = machines.survey(machine.disks())
+    plan = plans.load(path)
+    plans.set_disk(plan, "nvme-Demo_SSD_512_0002", "manual", survey=survey)
+    plans.set_partitions(plan, survey, items)
+    plans.acknowledge_recovery_key(plan)
+    plan["confirmed_by_user"] = True
+    plans.save(plan, path)
+    work = tmp_path / "work"
+    system = SystemBesideWindows(work / "root", extra=extra)
+    request = eng.Request(path, confirm.sha256(path), {"recovery_key": KEY, "user": "pw"}, None)
+    progress = eng.Progress(path.with_name("progress.json"))
+    engine = eng.Engine(request, image=image, run=system, machine=machine, progress=progress,
+                        work=work, model_dir=models, tpm=lambda: True)  # fmt: skip
+    return engine, system, progress, survey, plan
+
+
+EFI_AND_SYSTEM = [
+    {"use": "efi", "partition": "p-oldefi", "format": True},
+    {"use": "system", "partition": "p-old", "format": True},
+]
+
+
+def test_a_manual_layout_puts_vilna_in_the_freed_partitions_and_leaves_windows(setup):
+    engine, system, progress, survey, plan = manual_setup(setup, EFI_AND_SYSTEM)
+    assert plans.validate(plan, survey)["valid"]
+    engine.install()
+    calls = system.argvs()
+    flat = " | ".join(" ".join(a) for a in calls)
+    # Windows' partitions are never named in a command, and the disk is never wiped whole.
+    for windows in ("p1", "p2", "p3", "p4"):
+        assert DISK + windows not in flat
+    assert ["wipefs", "--all", "--force", DISK] not in calls
+    assert system.first("wipefs", "--all", "--force", DISK + "p6") < system.first(
+        "sfdisk", "--delete", DISK, "6"
+    )
+    assert ["sfdisk", "--part-type", DISK, "5", eng.ESP_TYPE] in calls
+    assert ["mkfs.vfat", "-F", "32", "-n", "EFI", DISK + "p5"] in calls
+    repart = calls[system.first("systemd-repart")]
+    assert "--empty=refuse" in repart and "--empty=force" not in repart
+    assert system.first("sfdisk", "--delete") < system.first("systemd-repart")
+    # Only the system partition is made, in the space the old one leaves.
+    defs = sorted(p.name for p in (engine.work / "repart.d").iterdir())
+    assert defs == ["10-root.conf"]
+    root_conf = (engine.work / "repart.d" / "10-root.conf").read_text()
+    assert f"SizeMinBytes={172 * GIB - eng.FREED_SLACK}" in root_conf
+    assert "SizeMaxBytes" not in root_conf and "Encrypt=key-file" in root_conf
+    assert ["mount", DISK + "p5", str(engine.root / "boot/efi")] in calls
+    assert "cryptsetup open" in flat and DISK + "p6 cr_root" in flat
+    assert eng.read_progress(progress.path)["state"] == "done"
+
+
+def test_a_kept_efi_partition_is_not_formatted(setup):
+    items = [
+        {"use": "efi", "partition": "p-efi", "format": False},
+        {"use": "system", "partition": "p-old", "format": True},
+    ]
+    engine, system, *_ = manual_setup(setup, items)
+    engine.install()
+    flat = " | ".join(" ".join(a) for a in system.argvs())
+    assert "mkfs.vfat" not in flat and "--part-type" not in flat
+    assert f"wipefs --all --force {DISK}p1" not in flat
+    assert ["mount", DISK + "p1", str(engine.root / "boot/efi")] in system.argvs()
+
+
+def test_a_new_system_partition_in_free_space_has_the_size_asked(setup):
+    items = [
+        {"use": "efi", "partition": "p-oldefi", "format": False},
+        {"use": "system", "size": 50 * GIB},
+    ]
+    engine, system, _progress, survey, plan = manual_setup(setup, items)
+    assert plans.validate(plan, survey)["valid"]
+    engine.install()
+    root_conf = (engine.work / "repart.d" / "10-root.conf").read_text()
+    assert f"SizeMinBytes={50 * GIB}" in root_conf and f"SizeMaxBytes={50 * GIB}" in root_conf
+    assert not any(a[:2] == ["sfdisk", "--delete"] for a in system.argvs())
+
+
+def written(system):
+    return [a for a in system.argvs() if a[0] in
+            ("wipefs", "sfdisk", "mkfs.vfat", "systemd-repart", "losetup", "keyctl")]  # fmt: skip
+
+
+@pytest.mark.parametrize(
+    "items, extra, why",
+    [
+        # repart would take an earlier Vilna system for its own and not make a new one.
+        (EFI_AND_SYSTEM,
+         [{"name": DISK + "p7", "type": "part", "parttype": eng.ROOT_TYPE, "partlabel": "vilna"}],
+         "earlier Vilna system"),
+        # repart would take Windows' EFI partition for the new one.
+        ([{"use": "efi", "size": 512 * MIB}, {"use": "system", "partition": "p-old",
+                                              "format": True}], (), "EFI system partition already"),
+        ([*EFI_AND_SYSTEM, {"use": "swap", "size": 4 * GIB}], (), "swap"),
+    ],
+)  # fmt: skip
+def test_a_manual_layout_the_engine_cannot_write_touches_nothing(setup, items, extra, why):
+    engine, system, progress, *_ = manual_setup(setup, items, extra)
+    with pytest.raises(eng.EngineError) as e:
+        engine.install()
+    assert why in str(e.value) and not e.value.touched
+    assert written(system) == []
+    assert eng.read_progress(progress.path)["disk_changed"] is False
+
+
+def test_a_partition_that_changed_since_the_editor_is_refused(setup):
+    engine, system, *_ = manual_setup(setup, EFI_AND_SYSTEM)
+    real = system.__call__
+
+    def changed(argv, input=None, text=False, **kw):
+        done = real(argv, input=input, text=text, **kw)
+        if argv[0] == "lsblk" and argv[-1] == DISK:
+            data = json.loads(done.stdout)
+            for p in data["blockdevices"][0]["children"]:
+                if p["name"].endswith("p6"):
+                    p["partuuid"] = "someone-else"
+            done = subprocess.CompletedProcess(argv, 0, json.dumps(data) if text else
+                                               json.dumps(data).encode(), "")  # fmt: skip
+        return done
+
+    engine.run = changed
+    with pytest.raises(eng.EngineError, match="not the partition chosen") as e:
+        engine.install()
+    assert not e.value.touched and written(system) == []
+
+
+def test_the_summary_says_what_the_engine_cannot_write_yet():
+    machine = BesideWindows()
+    survey = machines.survey(machine.disks())
+    plan = plans.new_plan()
+    plans.set_disk(plan, "nvme-Demo_SSD_512_0002", "manual", survey=survey)
+    plans.set_partitions(plan, survey, EFI_AND_SYSTEM)
+    assert layout.problems(plan, survey) == []
+    plans.set_partitions(plan, survey, [*EFI_AND_SYSTEM, {"use": "home", "size": GIB}])
+    assert [p["code"] for p in layout.problems(plan, survey)] == [layout.LATER_HOME_SWAP]
+    plans.set_partitions(
+        plan,
+        survey,
+        [
+            {"use": "efi", "size": 512 * MIB},
+            {"use": "system", "partition": "p-old", "format": True},
+        ],
+    )
+    assert [p["code"] for p in layout.problems(plan, survey)] == [layout.NEW_EFI_BESIDE_EFI]
+    plan["disk"]["layout"] = "replace"
+    assert layout.problems(plan, survey) == []

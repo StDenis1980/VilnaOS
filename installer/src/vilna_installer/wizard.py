@@ -25,7 +25,7 @@ from vilna_mcp_installer import machine as machines
 from vilna_mcp_installer import plan as plans
 
 from vilna_installer import conversation as conv
-from vilna_installer import start
+from vilna_installer import layout, start
 
 GiB = plans.GiB
 MiB = plans.MiB
@@ -193,6 +193,16 @@ USE_TEXT = {
     "swap": USE_SWAP,
 }
 
+# What this version's engine cannot write yet (``layout.problems``).
+HOME_SWAP_LATER = (
+    "This version installs only the EFI and the system partition. Leave home folders and "
+    "swap unused for now."
+)
+NEW_EFI_BESIDE_EFI = (
+    "The disk has an EFI system partition already. Choose it (formatted or not) instead "
+    "of a new one."
+)
+
 # The validator's codes (vilna_mcp_installer.plan) in words for the person.
 PROBLEM_TEXT = {
     "wifi_password": "Type the Wi-Fi password and connect.",
@@ -222,6 +232,8 @@ PROBLEM_TEXT = {
     "partition_twice": "A partition is chosen twice.",
     "one_home": "Choose at most one partition for home folders.",
     "one_swap": "Choose at most one swap partition.",
+    layout.LATER_HOME_SWAP: HOME_SWAP_LATER,
+    layout.NEW_EFI_BESIDE_EFI: NEW_EFI_BESIDE_EFI,
     "later_stage": "This comes in a later version of Vilna.",
     "bitlocker_recovery_key": BITLOCKER_KEY,
     "reserved_username": TAKEN_USERNAME,
@@ -678,7 +690,14 @@ class Wizard:
     # the end
 
     def report(self) -> dict[str, Any]:
-        return plans.validate(self.plan, self.survey(), stage=self.stage)
+        survey = self.survey()
+        report = plans.validate(self.plan, survey, stage=self.stage)
+        # What the plan allows but this version's engine cannot write yet: said
+        # here, not after the person confirmed (KLX laptop, 23.11.2026).
+        later = layout.problems(self.plan, survey)
+        if later:
+            report = {**report, "valid": False, "problems": [*report["problems"], *later]}
+        return report
 
     def to_do(self, report: dict[str, Any] | None = None) -> list[dict[str, str]]:
         """What still blocks the plan here; the Herkos screen settles the rest."""

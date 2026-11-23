@@ -55,7 +55,7 @@ from typing import Any
 from vilna_mcp_installer import machine as machines
 from vilna_mcp_installer import plan as plans
 
-from vilna_installer import confirm, encryption
+from vilna_installer import confirm, encryption, layout
 from vilna_installer.encryption import EncryptionError, Step
 
 # Where the live medium keeps the Vilna disk image and the model. OBS wraps
@@ -85,6 +85,11 @@ WORK = Path("/run/vilna-install")
 NM_CONNECTIONS = Path("/etc/NetworkManager/system-connections")
 
 ESP_TYPE = "c12a7328-f81f-11d2-ba4b-00a0c93ec93b"
+# The discoverable root partition type for x86-64, which repart gives the system.
+ROOT_TYPE = "4f68bce3-e8cd-4db1-96e7-fbcaf984b709"
+# A partition the person freed for the system gives back this much less room
+# at most: repart aligns the new one, so it may not start where the old one did.
+FREED_SLACK = 16 << 20
 BOOT_ENTRY = "Vilna Boot Manager"
 # Groups the account joins: wheel gives sudo and polkit admin (Vilna-release).
 GROUPS = "wheel"
@@ -289,10 +294,10 @@ def preflight(
     for problem in report["problems"]:
         out.append(f"the plan check says: {problem.get('code')}")
     disk = plan.get("disk") or {}
-    if disk.get("layout") != "replace":
-        # The partition editor's plans go through the same validator, but this
-        # engine writes only «Erase the whole disk» so far (see README).
-        out.append("only «Erase the whole disk» can be installed by this version")
+    if disk.get("layout") not in ("replace", "manual"):
+        out.append("only «Erase the whole disk» or the partition editor's layout can be installed")
+    for problem in layout.problems(plan, survey):
+        out.append(problem["message"])
     target = next((d for d in survey.get("disks", []) if d.get("id") == disk.get("target")), None)
     if target is None:
         out.append("the chosen disk is not there any more")
@@ -341,8 +346,8 @@ def output(run: Run, *argv: str) -> str:
 def partitions(run: Run, device: str) -> list[dict[str, Any]]:
     """The partitions of ``device`` (a disk or a loop device), from lsblk."""
     text = output(
-        run, "lsblk", "--json", "--paths", "-o", "NAME,TYPE,PARTTYPE,PARTLABEL,FSTYPE,UUID",
-        device,
+        run, "lsblk", "--json", "--paths", "-o",
+        "NAME,TYPE,PARTTYPE,PARTLABEL,PARTUUID,FSTYPE,UUID", device,
     )  # fmt: skip
     try:
         tree = json.loads(text)
@@ -365,13 +370,66 @@ def image_partitions(parts: list[dict[str, Any]]) -> tuple[str, str]:
     return esp, root
 
 
-def new_partitions(parts: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, Any]]:
-    """The two partitions repart made (labels from ``encryption.repart_definitions``)."""
-    esp = next((p for p in parts if p.get("partlabel") == "ESP"), None)
+def new_partitions(
+    parts: list[dict[str, Any]], *, esp: bool = True
+) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """The partitions repart made (labels from ``encryption.repart_definitions``).
+
+    ``esp`` False: a manual layout with an existing EFI partition; repart made
+    only the system.
+    """
+    new_esp = next((p for p in parts if p.get("partlabel") == "ESP"), None) if esp else None
     root = next((p for p in parts if p.get("partlabel") == "vilna"), None)
-    if esp is None or root is None:
+    if root is None or (esp and new_esp is None):
         raise EngineError("systemd-repart did not make the ESP and the system partition")
-    return esp, root
+    return new_esp, root
+
+
+def partition_number(name: str) -> str:
+    """``8`` of ``/dev/nvme0n1p8`` or ``/dev/sda8``, for sfdisk."""
+    found = re.search(r"(\d+)$", name)
+    if not found:
+        raise EngineError(f"{name} has no partition number")
+    return found.group(1)
+
+
+def manual_sizes(chosen: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """``encryption.repart_definitions`` arguments for the person's EFI and system choice."""
+    efi, system = chosen["efi"], chosen["system"]
+    out: dict[str, Any] = {"esp_size": False if efi.get("device") else int(efi["size"])}
+    if system.get("device"):
+        # The system goes where the freed partition was: nothing smaller fits.
+        out["root_min"] = max(int(system["size"]) - FREED_SLACK, 1 << 20) // 4096 * 4096
+    else:
+        out["root_min"] = out["root_max"] = int(system["size"]) // 4096 * 4096
+    return out
+
+
+def manual_steps(disk: str, chosen: dict[str, dict[str, Any]]) -> list[Step]:
+    """Before repart: free the system partition, format the EFI one if the person said so."""
+    out: list[Step] = []
+    system, efi = chosen["system"], chosen["efi"]
+    if system.get("device"):
+        dev = system["device"]
+        out += [
+            Step("forget what was on the system partition", ("wipefs", "--all", "--force", dev)),
+            Step(
+                "free the system partition's space",
+                ("sfdisk", "--delete", disk, partition_number(dev)),
+            ),
+        ]
+    if efi.get("device") and efi.get("format"):
+        dev = efi["device"]
+        out += [
+            Step("forget what was on the EFI partition", ("wipefs", "--all", "--force", dev)),
+            Step(
+                "mark it as an EFI system partition",
+                ("sfdisk", "--part-type", disk, partition_number(dev), ESP_TYPE),
+            ),
+            Step("format the EFI partition", ("mkfs.vfat", "-F", "32", "-n", "EFI", dev)),
+        ]
+    out.append(Step("wait for the disk", ("udevadm", "settle")))
+    return out
 
 
 def subvolume_mounts(fstab: str) -> list[tuple[str, str]]:
@@ -545,6 +603,7 @@ class Engine:
         self.stage = stage
         self.root = work / "root"
         self.key_file: Path | None = None
+        self.chosen: dict[str, dict[str, Any]] | None = None
         self._undo: list[list[str]] = []  # what to unmount and close, last first
         self._snapshot_rw = False
 
@@ -605,7 +664,61 @@ class Engine:
         disk = next(d for d in disks if d.id == target)
         # The survey found it through /dev/disk/by-id a moment ago.
         self.disk = _safe(disk.path, r"/dev/[A-Za-z0-9_./-]+", "disk")
+        self.target = disk
+        # Read before anything is written: a refusal leaves the disk as it was.
+        self.chosen = (
+            self.manual_partitions(plan) if plan["disk"].get("layout") == "manual" else None
+        )
         return plan
+
+    def manual_partitions(self, plan: dict[str, Any]) -> dict[str, dict[str, Any]]:
+        """The person's EFI and system choice, each with ``device`` (existing) or ``size`` (new).
+
+        Checked against the disk as it is now, before anything is written: the
+        partition is still the one the person saw (its PARTUUID), it is not
+        mounted, and no other partition looks like an earlier Vilna system,
+        which repart would take for its own instead of making a new one.
+        """
+        known = {p.id: p for p in self.target.partitions}
+        now = partitions(self.run, self.disk)
+        by_name = {p.get("name"): p for p in now}
+        chosen: dict[str, dict[str, Any]] = {}
+        for item in layout.items(plan):
+            use = item.get("use")
+            if use not in ("efi", "system"):
+                raise EngineError(layout.MESSAGES[layout.LATER_HOME_SWAP])
+            if item.get("partition") is None:
+                chosen[use] = {"size": item.get("size")}
+                continue
+            part = known.get(item["partition"])
+            if part is None:
+                raise EngineError(f"the partition {item['partition']!r} is not on the disk now")
+            device = _safe(f"/dev/{part.name}", r"/dev/[A-Za-z0-9_./-]+", "partition")
+            seen = by_name.get(device)
+            if seen is None or (seen.get("partuuid") and seen["partuuid"] != part.id):
+                raise EngineError(f"{part.name} is not the partition chosen in the editor any more")
+            if part.mounted:
+                raise EngineError(f"{part.name} is in use (mounted); unmount it and try again")
+            chosen[use] = {
+                "device": device,
+                "size": part.size,
+                "format": item.get("format") is True,
+            }
+        if "efi" not in chosen or "system" not in chosen:
+            raise EngineError("the layout needs one EFI and one system partition")
+        freed = chosen["system"].get("device")
+        for p in now:
+            if p.get("name") == freed:
+                continue
+            if (p.get("parttype") or "").lower() == ROOT_TYPE or p.get("partlabel") == "vilna":
+                raise EngineError(
+                    f"{p.get('name')} holds an earlier Vilna system; choose it for the system "
+                    "(it is then erased) or erase the whole disk"
+                )
+            esp_like = (p.get("parttype") or "").lower() == ESP_TYPE or p.get("partlabel") == "ESP"
+            if not chosen["efi"].get("device") and esp_like:
+                raise EngineError(layout.MESSAGES[layout.NEW_EFI_BESIDE_EFI])
+        return chosen
 
     def _steps(self, todo: list[Step]) -> None:
         def secret(name: str) -> str | None:
@@ -637,25 +750,39 @@ class Engine:
         self._cmd("wait for the image's partitions", "udevadm", "settle")
         _img_esp, img_root = image_partitions(partitions(self.run, loop))
 
+        chosen = self.chosen
+        manual = chosen is not None
+        if chosen is not None:
+            definitions = encryption.repart_definitions(
+                method, copy_blocks=img_root, **manual_sizes(chosen)
+            )
+        else:
+            definitions = encryption.repart_definitions(method, copy_blocks=img_root)
+
         self.progress.go("layout")
         defs = self.work / "repart.d"
         defs.mkdir(exist_ok=True, mode=0o700)
         for old in defs.glob("*.conf"):
             old.unlink()
-        for name, text in encryption.repart_definitions(method, copy_blocks=img_root).items():
+        for name, text in definitions.items():
             (defs / name).write_text(text, encoding="utf-8")
-        # Whatever was on the disk goes first: with the old partition table
-        # gone the kernel lets go of the old partitions, which systemd-repart
-        # otherwise finds busy (an installation over an earlier one).
-        todo = [
-            Step("forget what was on the disk", ("wipefs", "--all", "--force", self.disk)),
-            Step("wait for the disk", ("udevadm", "settle")),
-        ]
+        if chosen is not None:
+            todo = manual_steps(self.disk, chosen)
+        else:
+            # Whatever was on the disk goes first: with the old partition table
+            # gone the kernel lets go of the old partitions, which systemd-repart
+            # otherwise finds busy (an installation over an earlier one).
+            todo = [
+                Step("forget what was on the disk", ("wipefs", "--all", "--force", self.disk)),
+                Step("wait for the disk", ("udevadm", "settle")),
+            ]
+        # A manual layout keeps the partition table and everything not chosen.
+        empty = "refuse" if manual else "force"
         if method != "none":
             self.key_file = encryption.make_key_file(self.work / "keys")
             todo += encryption.before_layout()
         todo.append(
-            encryption.repart_command(self.disk, defs, self.key_file)
+            encryption.repart_command(self.disk, defs, self.key_file, empty=empty)
             if self.key_file
             else Step(
                 "lay out the disk",
@@ -663,7 +790,7 @@ class Engine:
                     "systemd-repart",
                     "--no-pager",
                     "--pretty=no",
-                    "--empty=force",
+                    f"--empty={empty}",
                     "--dry-run=no",
                     f"--definitions={defs}",
                     self.disk,
@@ -674,7 +801,11 @@ class Engine:
         self._steps(todo)
 
         self.progress.go("open")
-        esp, part = new_partitions(partitions(self.run, self.disk))
+        if chosen is not None and chosen["efi"].get("device"):
+            _new_esp, part = new_partitions(partitions(self.run, self.disk), esp=False)
+            esp = {"name": chosen["efi"]["device"]}
+        else:
+            esp, part = new_partitions(partitions(self.run, self.disk))
         self.esp = esp
         self.crypt_part = part["name"]
         # repart sets the GPT attribute "grow file system" (bit 59) even with
