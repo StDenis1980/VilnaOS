@@ -30,19 +30,644 @@ msgstr "Další jazyky"
 msgid "Search for a language"
 msgstr "Hledat jazyk"
 
-# The privacy step and crash reports (ADR 0018 section 3).
-msgid "Privacy"
-msgstr "Soukromí"
+msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the right and change any item yourself."
+msgstr "Jsem Gloxi a pomohu vám nainstalovat Vilna. Na disku se nic nezmění, dokud plán nepotvrdíte; vidíte ho vpravo a kteroukoli položku můžete změnit sami."
+
+msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
+msgstr "V jakých jazycích píšete? Přidám i jejich rozložení klávesnice, například ukrajinštinu a angličtinu."
+
+msgid "Gloxi cannot start on this computer right now. You can go on without the assistant: the steps are the same, and what you chose stays in the plan."
+msgstr "Gloxi se teď na tomto počítači nemůže spustit. Můžete pokračovat bez asistenta: kroky jsou stejné a to, co jste už vybrali, v plánu zůstane."
+
+msgid "Gloxi did not answer. Try again, or go on without the assistant."
+msgstr "Gloxi neodpověděl. Zkuste to znovu, nebo pokračujte bez asistenta."
+
+msgid "Gloxi is thinking…"
+msgstr "Gloxi přemýšlí…"
+
+msgid "Send"
+msgstr "Odeslat"
+
+msgid "Message to Gloxi"
+msgstr "Zpráva pro Gloxi"
+
+msgid "Change"
+msgstr "Změnit"
+
+msgid "Plan"
+msgstr "Plán"
+
+msgid "Not decided yet"
+msgstr "Zatím nerozhodnuto"
+
+msgid "Check and confirm the plan"
+msgstr "Zkontrolovat a potvrdit plán"
+
+msgid "Wi-Fi password for {name}"
+msgstr "Heslo k Wi-Fi pro {name}"
+
+msgid "Connect"
+msgstr "Připojit"
+
+msgid "Connecting…"
+msgstr "Připojuji…"
+
+msgid "Could not connect. Check the password and try again."
+msgstr "Nelze se připojit. Zkontrolujte heslo a zkuste to znovu."
+
+msgid "Password for {name}"
+msgstr "Heslo pro {name}"
+
+msgid "Repeat the password"
+msgstr "Zopakujte heslo"
+
+msgid "The passwords are not the same."
+msgstr "Hesla se neshodují."
+
+msgid "At least 8 characters."
+msgstr "Alespoň 8 znaků."
+
+msgid "Passphrase for the disk"
+msgstr "Heslová fráze k disku"
+
+msgid "Save"
+msgstr "Uložit"
+
+msgid "Gloxi does not see what you type here."
+msgstr "Gloxi nevidí, co sem píšete."
+
+msgid "entered"
+msgstr "zadáno"
+
+msgid "Without a network"
+msgstr "Bez sítě"
+
+msgid "Cable"
+msgstr "Kabel"
+
+msgid "Erase the whole disk"
+msgstr "Smazat celý disk"
+
+msgid "Manual layout"
+msgstr "Ruční rozdělení"
+
+msgid "Encrypted, with a recovery key"
+msgstr "Šifrováno, s klíčem pro obnovení"
+
+msgid "Encrypted with a passphrase"
+msgstr "Šifrováno heslovou frází"
+
+msgid "Not encrypted"
+msgstr "Nešifrováno"
 
 msgid "Cloud model off until the first login"
 msgstr "Cloudový model vypnutý do prvního přihlášení"
 
-msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
-msgstr "Gloxi běží přímo na tomto počítači a to, co mu řeknete, zůstává tady. Cloudový model je teď vypnutý; můžete si ho vybrat po prvním přihlášení a pak brána soukromí skryje jména a čísla dřív, než cokoli opustí počítač."
+msgid "Languages and keyboard"
+msgstr "Jazyky a klávesnice"
+
+msgid "Network"
+msgstr "Síť"
+
+msgid "Disk"
+msgstr "Disk"
+
+msgid "Encryption"
+msgstr "Šifrování"
+
+msgid "Account"
+msgstr "Účet"
+
+msgid "Time and region"
+msgstr "Čas a oblast"
+
+msgid "Privacy"
+msgstr "Soukromí"
+
+msgid "Gloxi is waking up… The first start from the USB stick can take a few minutes. You can also go on without the assistant."
+msgstr "Gloxi se probouzí… První spuštění z USB disku může trvat několik minut. Můžete také pokračovat bez asistenta."
+
+msgid "Shall we connect to a network now? It is not needed: everything for installing is already on the USB stick. Name your Wi-Fi network, or say that we go on without a network."
+msgstr "Připojíme se teď k síti? Není to nutné: vše potřebné k instalaci už je na USB disku. Řekněte název své sítě Wi-Fi, nebo řekněte, že pokračujeme bez sítě."
+
+msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
+msgstr "Co uděláme s diskem? Navrhuji smazat celý disk a nainstalovat Vilna; druhou možností je vlastní rozdělení v editoru oddílů."
+
+msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
+msgstr "Klíč pro obnovení dobře uschovejte: bez něj nikdo, ani vy, disk neotevře, pokud se v tomto počítači něco změní."
+
+msgid "What is your name? From it I will suggest a login name and a name for the computer."
+msgstr "Jak se jmenujete? Podle jména navrhnu přihlašovací jméno a název počítače."
+
+msgid "I suggest the time zone {timezone} and the date and number formats of {region}. Is that right? If not, name your city or country."
+msgstr "Navrhuji časové pásmo {timezone} a formáty data a čísel podle „{region}“. Souhlasí to? Pokud ne, řekněte své město nebo zemi."
 
 msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
 msgstr "Gloxi běží přímo na tomto počítači a to, co mu řeknete, zůstává tady. Cloudový model je teď vypnutý; můžete si ho vybrat po prvním přihlášení a pak brána soukromí skryje jména a čísla dřív, než cokoli opustí počítač. Jedna otázka tady patří jen vám, proto za vás neodpovídám: vyberte níže."
 
+# The classic wizard without the assistant (wizard.py).
+
+msgid "Summary"
+msgstr "Shrnutí"
+
+msgid "Step {number} of {count}: {title}"
+msgstr "Krok {number} z {count}: {title}"
+
+msgid "Back"
+msgstr "Zpět"
+
+msgid "Next"
+msgstr "Další"
+
+msgid "Which languages do you write in? The first one chosen is the main language."
+msgstr "V jakých jazycích píšete? První vybraný je hlavní jazyk."
+
+msgid "Main language"
+msgstr "Hlavní jazyk"
+
+msgid "Keyboard layouts"
+msgstr "Rozložení klávesnice"
+
+msgid "Another keyboard layout"
+msgstr "Další rozložení klávesnice"
+
+msgid "None"
+msgstr "Žádné"
+
+msgid "A network is not needed: everything for installing is already on the USB stick."
+msgstr "Síť není potřeba: vše potřebné k instalaci už je na USB disku."
+
+msgid "Wi-Fi networks"
+msgstr "Sítě Wi-Fi"
+
+msgid "Look for networks again"
+msgstr "Hledat sítě znovu"
+
+msgid "No Wi-Fi networks found."
+msgstr "Nebyly nalezeny žádné sítě Wi-Fi."
+
+msgid "Connected"
+msgstr "Připojeno"
+
+msgid "Choose the disk for Vilna and what to do with it."
+msgstr "Vyberte disk pro Vilna a co s ním udělat."
+
+msgid "Disks"
+msgstr "Disky"
+
+msgid "What to do with the disk"
+msgstr "Co udělat s diskem"
+
+msgid "Erase the whole disk and install Vilna"
+msgstr "Smazat celý disk a nainstalovat Vilna"
+
+msgid "Choose the partitions yourself in the partition editor"
+msgstr "Vybrat oddíly sami v editoru oddílů"
+
+msgid "Empty"
+msgstr "Prázdný"
+
+msgid "{size} free"
+msgstr "volno {size}"
+
+msgid "Everything on this disk will be erased: {what}."
+msgstr "Vše na tomto disku bude smazáno: {what}."
+
+msgid "Open the partition editor"
+msgstr "Otevřít editor oddílů"
+
+msgid "Partition editor"
+msgstr "Editor oddílů"
+
+msgid "Choose what each partition is for. Partitions you do not use stay as they are. New partitions go into the largest free space."
+msgstr "Vyberte, k čemu který oddíl slouží. Oddíly, které nepoužijete, zůstanou, jak jsou. Nové oddíly se vytvoří v největším volném místě."
+
+msgid "Partitions on the disk"
+msgstr "Oddíly na disku"
+
+msgid "New partitions"
+msgstr "Nové oddíly"
+
+msgid "Add a partition"
+msgstr "Přidat oddíl"
+
+msgid "Remove"
+msgstr "Odebrat"
+
+msgid "Suggest a layout"
+msgstr "Navrhnout rozdělení"
+
+msgid "Use"
+msgstr "Účel"
+
+msgid "Format (erase)"
+msgstr "Formátovat (smazat)"
+
+msgid "Size, GiB"
+msgstr "Velikost, GiB"
+
+msgid "Not used, keep"
+msgstr "Nepoužívat, ponechat"
+
+msgid "EFI system partition"
+msgstr "Systémový oddíl EFI"
+
+msgid "System"
+msgstr "Systém"
+
+msgid "Home folders"
+msgstr "Domovské složky"
+
+msgid "Swap"
+msgstr "Odkládací prostor (swap)"
+
+msgid "Partitions chosen: {count}"
+msgstr "Vybrané oddíly: {count}"
+
+msgid "Encryption keeps your files safe if the computer or the disk is lost or stolen."
+msgstr "Šifrování chrání vaše soubory, pokud počítač nebo disk ztratíte nebo vám je ukradnou."
+
+msgid "The disk opens by itself on this computer; a recovery key opens it if something changes. Recommended."
+msgstr "Disk se na tomto počítači otevírá sám; klíč pro obnovení ho otevře, pokud se něco změní. Doporučeno."
+
+msgid "This computer has no TPM 2.0 chip, so this way is not available."
+msgstr "Tento počítač nemá čip TPM 2.0, proto tato možnost není dostupná."
+
+msgid "You type the passphrase every time the computer starts."
+msgstr "Heslovou frázi zadáváte při každém spuštění počítače."
+
+msgid "Anyone who has the disk can read your files."
+msgstr "Kdokoli, kdo má disk, může číst vaše soubory."
+
+msgid "The next screen shows the recovery key; keep it safe."
+msgstr "Další obrazovka ukáže klíč pro obnovení; dobře ho uschovejte."
+
+msgid "Your name"
+msgstr "Vaše jméno"
+
+msgid "Login name"
+msgstr "Přihlašovací jméno"
+
+msgid "Computer name"
+msgstr "Název počítače"
+
+msgid "Time zone"
+msgstr "Časové pásmo"
+
+msgid "Date and number formats"
+msgstr "Formáty data a čísel"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi běží přímo na tomto počítači a to, co mu řeknete, zůstává tady. Cloudový model je teď vypnutý; můžete si ho vybrat po prvním přihlášení a pak brána soukromí skryje jména a čísla dřív, než cokoli opustí počítač."
+
+msgid "What happens to the disk"
+msgstr "Co se stane s diskem"
+
+msgid "Still to do"
+msgstr "Ještě zbývá"
+
+msgid "The plan is ready. The next screen, from Herkos, shows exactly what will change."
+msgstr "Plán je hotový. Další obrazovka, od Herkosu, přesně ukáže, co se změní."
+
+msgid "Fill in this step."
+msgstr "Vyplňte tento krok."
+
+msgid "{name} ({size}{what}) will be erased"
+msgstr "{name} ({size}{what}) bude smazán"
+
+msgid "{name} ({size}{what}) stays as it is"
+msgstr "{name} ({size}{what}) zůstane, jak je"
+
+msgid "{name} ({size}) is used as {use}, its files stay"
+msgstr "{name} ({size}) se použije jako „{use}“, jeho soubory zůstanou"
+
+msgid "A new partition of {size} is created{use}"
+msgstr "Vytvoří se nový oddíl o velikosti {size}{use}"
+
+msgid "Partitions are chosen in the partition editor"
+msgstr "Oddíly se vybírají v editoru oddílů"
+
+msgid "Type your name."
+msgstr "Zadejte své jméno."
+
+msgid "Choose a disk."
+msgstr "Vyberte disk."
+
+msgid "Choose one of the options."
+msgstr "Vyberte jednu z možností."
+
+msgid "Connect to the Wi-Fi network first, or choose another way."
+msgstr "Nejdřív se připojte k síti Wi-Fi, nebo zvolte jiný způsob."
+
+msgid "Type the Wi-Fi password and connect."
+msgstr "Zadejte heslo k Wi-Fi a připojte se."
+
+msgid "Type the password for the account."
+msgstr "Zadejte heslo k účtu."
+
+msgid "Type the passphrase for the disk."
+msgstr "Zadejte heslovou frázi k disku."
+
+msgid "The disks changed (a disk added or removed?). Choose the disk again."
+msgstr "Disky se změnily (přidán nebo odebrán disk?). Vyberte disk znovu."
+
+# The summary of the plan and the Herkos confirmation screen (step 12).
+
+msgid "{n} GiB"
+msgstr "{n} GiB"
+
+msgid "{n} MiB"
+msgstr "{n} MiB"
+
+msgid "Erased: {what}"
+msgstr "Bude smazáno: {what}"
+
+msgid "Formatted for {use}, everything on it erased: {what}"
+msgstr "Bude naformátováno pro {use}, vše na něm smazáno: {what}"
+
+msgid "Kept as it is: {what}"
+msgstr "Zůstane, jak je: {what}"
+
+msgid "Shrunk to {to}: {what}"
+msgstr "Bude zmenšeno na {to}: {what}"
+
+msgid "Used for {use} without formatting: {what}"
+msgstr "Použije se pro {use} bez formátování: {what}"
+
+msgid "New: Vilna, {size}"
+msgstr "Nový: Vilna, {size}"
+
+msgid "New: Vilna, {size}, encrypted"
+msgstr "Nový: Vilna, {size}, šifrovaný"
+
+msgid "New partition for {use}: {size}"
+msgstr "Nový oddíl pro {use}: {size}"
+
+msgid "Your own layout of {disk}"
+msgstr "Vlastní rozdělení disku {disk}"
+
+msgid "{model} ({name}, {size})"
+msgstr "{model} ({name}, {size})"
+
+msgid "Disk {name}, {size}"
+msgstr "Disk {name}, {size}"
+
+msgid "encrypted with {kind}"
+msgstr "šifrováno pomocí {kind}"
+
+msgid "unknown contents"
+msgstr "neznámý obsah"
+
+msgid "empty"
+msgstr "prázdný"
+
+msgid "the boot partition (EFI)"
+msgstr "zaváděcí oddíl (EFI)"
+
+msgid "the system"
+msgstr "systém"
+
+msgid "home folders"
+msgstr "domovské složky"
+
+msgid "swap"
+msgstr "odkládací prostor (swap)"
+
+msgid "The disks changed since they were looked at (a USB stick put in or taken out?). Choose the disk again."
+msgstr "Disky se od kontroly změnily (zasunut nebo vytažen USB disk?). Vyberte disk znovu."
+
+msgid "The chosen disk is not in the computer now. Choose the disk again."
+msgstr "Vybraný disk teď v počítači není. Vyberte disk znovu."
+
+msgid "This is the USB stick Vilna is running from. Choose another disk."
+msgstr "Z tohoto USB disku teď běží Vilna. Vyberte jiný disk."
+
+msgid "This disk is read-only. Choose another disk."
+msgstr "Tento disk je jen pro čtení. Vyberte jiný disk."
+
+msgid "There is not enough room: Vilna needs at least 40 GiB."
+msgstr "Nedostatek místa: Vilna potřebuje alespoň 40 GiB."
+
+msgid "There is not enough free space for these partitions."
+msgstr "Pro tyto oddíly není dost volného místa."
+
+msgid "The EFI system partition needs at least 256 MiB."
+msgstr "Systémový oddíl EFI potřebuje alespoň 256 MiB."
+
+msgid "This disk has RAID, LVM or a filesystem Vilna does not know: only the partition editor can use it."
+msgstr "Na tomto disku je RAID, LVM nebo souborový systém, který Vilna nezná: použít ho lze jen v editoru oddílů."
+
+msgid "Choose the partitions in the partition editor."
+msgstr "Vyberte oddíly v editoru oddílů."
+
+msgid "Choose exactly one EFI system partition."
+msgstr "Vyberte právě jeden systémový oddíl EFI."
+
+msgid "Choose exactly one partition for the system."
+msgstr "Vyberte právě jeden oddíl pro systém."
+
+msgid "The system and swap partitions are always formatted."
+msgstr "Oddíly systému a odkládacího prostoru se vždy formátují."
+
+msgid "This partition is not an EFI system partition; format it or choose another."
+msgstr "Tento oddíl není systémový oddíl EFI; naformátujte ho, nebo vyberte jiný."
+
+msgid "This partition cannot be kept for home folders; format it or choose another."
+msgstr "Tento oddíl nelze ponechat pro domovské složky; naformátujte ho, nebo vyberte jiný."
+
+msgid "Only a Linux partition can be kept for home folders; format it."
+msgstr "Pro domovské složky lze ponechat jen oddíl Linux; tento naformátujte."
+
+msgid "A partition is chosen twice."
+msgstr "Jeden oddíl je vybrán dvakrát."
+
+msgid "Choose at most one partition for home folders."
+msgstr "Vyberte nejvýš jeden oddíl pro domovské složky."
+
+msgid "Choose at most one swap partition."
+msgstr "Vyberte nejvýš jeden odkládací oddíl."
+
+msgid "This comes in a later version of Vilna."
+msgstr "Tohle přijde v některé z dalších verzí Vilna."
+
+msgid "A login name starts with a Latin letter and has only small Latin letters, digits, «-» and «_»."
+msgstr "Přihlašovací jméno začíná latinským písmenem a obsahuje jen malá latinská písmena, číslice, „-“ a „_“."
+
+msgid "The system already uses this login name; choose another."
+msgstr "Systém už toto přihlašovací jméno používá; zvolte jiné."
+
+msgid "A computer name has only small Latin letters, digits and «-»."
+msgstr "Název počítače obsahuje jen malá latinská písmena, číslice a „-“."
+
+msgid "Worth knowing"
+msgstr "Dobré vědět"
+
+msgid "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its recovery key (48 digits) once. Save the key before going on: it is in your Microsoft account or on the printout you made."
+msgstr "Windows na tomto disku používá BitLocker. Po instalaci Vilna může Windows jednou požádat o svůj klíč pro obnovení (48 číslic). Než budete pokračovat, klíč si uložte: najdete ho ve svém účtu Microsoft nebo na výtisku, který jste si udělali."
+
+msgid "The chosen disk cannot be written to."
+msgstr "Na vybraný disk nelze zapisovat."
+
+msgid "The disk is too small: Vilna needs at least 40 GiB."
+msgstr "Disk je příliš malý: Vilna potřebuje alespoň 40 GiB."
+
+msgid "The disk has RAID, LVM or a filesystem Vilna does not know: only your own layout in the partition editor is possible."
+msgstr "Na disku je RAID, LVM nebo souborový systém, který Vilna nezná: možné je jen vlastní rozdělení v editoru oddílů."
+
+msgid "This way of installing comes in a later version of Vilna."
+msgstr "Tento způsob instalace přijde v některé z dalších verzí Vilna."
+
+msgid "Make the layout in the partition editor first."
+msgstr "Nejdřív vytvořte rozdělení v editoru oddílů."
+
+msgid "The Wi-Fi password is not entered yet."
+msgstr "Heslo k Wi-Fi ještě není zadané."
+
+msgid "The account password is not entered yet."
+msgstr "Heslo k účtu ještě není zadané."
+
+msgid "The disk passphrase is not entered yet."
+msgstr "Heslová fráze k disku ještě není zadaná."
+
+msgid "There is not enough free space for Vilna on the disk."
+msgstr "Na disku není dost volného místa pro Vilna."
+
+msgid "This computer has no TPM 2.0 chip that can keep the disk key. Choose encryption with a passphrase instead."
+msgstr "Tento počítač nemá čip TPM 2.0, který by uchoval klíč disku. Zvolte místo toho šifrování heslovou frází."
+
+msgid "Without encryption anyone who has the disk can read your files."
+msgstr "Bez šifrování může kdokoli, kdo má disk, číst vaše soubory."
+
+msgid "The chosen disk is removable, such as a USB disk."
+msgstr "Vybraný disk je vyměnitelný, například USB disk."
+
+msgid "The plan cannot be installed yet: {message}"
+msgstr "Plán zatím nelze nainstalovat: {message}"
+
+msgid "Not decided yet: {parts}"
+msgstr "Zatím nerozhodnuto: {parts}"
+
+msgid "Herkos"
+msgstr "Herkos"
+
+msgid "Confirm the installation"
+msgstr "Potvrďte instalaci"
+
+msgid "Check what will happen. Nothing has changed on the disks yet; after you confirm, Vilna is installed and this cannot be undone."
+msgstr "Zkontrolujte, co se stane. Na discích se zatím nic nezměnilo; po potvrzení se Vilna nainstaluje a nepůjde to vrátit."
+
+msgid "What happens to the disks"
+msgstr "Co se stane s disky"
+
+msgid "The plan"
+msgstr "Plán"
+
+msgid "What has to be fixed first"
+msgstr "Co je třeba nejdřív opravit"
+
+msgid "The plan cannot be installed yet. Go back and change it:"
+msgstr "Plán zatím nelze nainstalovat. Vraťte se a změňte ho:"
+
+msgid "Note"
+msgstr "Upozornění"
+
+msgid "Recovery key"
+msgstr "Klíč pro obnovení"
+
+msgid "Write this key down or take a photo of it, and keep it away from the computer. You need it if the disk does not open by itself: after a change of the hardware or of Secure Boot, or when you forget the passphrase. Nobody else has it, not even Vilna."
+msgstr "Tento klíč si zapište nebo vyfoťte a uchovávejte ho mimo počítač. Budete ho potřebovat, pokud se disk neotevře sám: po změně hardwaru nebo Secure Boot, nebo když zapomenete heslovou frázi. Nikdo jiný ho nemá, ani Vilna."
+
+msgid "To show that you saved it, type the last group of the key (8 letters):"
+msgstr "Na potvrzení, že je klíč uložený, zadejte jeho poslední skupinu (8 písmen):"
+
+msgid "The last group of the recovery key"
+msgstr "Poslední skupina klíče pro obnovení"
+
+msgid "That is not the last group. Look at the key again."
+msgstr "To není poslední skupina. Podívejte se na klíč znovu."
+
+msgid "Right. The key is saved."
+msgstr "Správně. Klíč je uložený."
+
+msgid "Recovery key, letter by letter: {key}"
+msgstr "Klíč pro obnovení, písmeno po písmenu: {key}"
+
+msgid "I understand that everything on {disk} is erased"
+msgstr "Rozumím, že vše na {disk} bude smazáno"
+
+msgid "I understand that the partitions marked above are erased"
+msgstr "Rozumím, že výše označené oddíly budou smazány"
+
+msgid "Back to the plan"
+msgstr "Zpět k plánu"
+
+msgid "Erase and install"
+msgstr "Smazat a nainstalovat"
+
+msgid "Install"
+msgstr "Nainstalovat"
+
+msgid "Read the changes first…"
+msgstr "Nejdřív si přečtěte změny…"
+
+msgid "The disks changed while this screen was open. Go back and choose the disk again."
+msgstr "Disky se změnily, zatímco byla tato obrazovka otevřená. Vraťte se a vyberte disk znovu."
+
+msgid "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its buttons."
+msgstr "Tuto obrazovku zobrazuje Herkos, ne Gloxi. Gloxi nemůže mačkat její tlačítka."
+
+msgid "Installing Vilna"
+msgstr "Instalace Vilna"
+
+msgid "This takes a few minutes. Do not switch the computer off and do not pull out the stick."
+msgstr "Potrvá to několik minut. Nevypínejte počítač a nevytahujte USB disk."
+
+msgid "Vilna is installed"
+msgstr "Vilna je nainstalovaná"
+
+msgid "Take out the stick Vilna started from, then restart the computer. Vilna starts from the disk."
+msgstr "Vytáhněte USB disk, ze kterého se Vilna spustila, a restartujte počítač. Vilna se spustí z disku."
+
+msgid "The installation stopped"
+msgstr "Instalace se zastavila"
+
+msgid "Nothing on the disk has changed yet. You can close this window and try again."
+msgstr "Na disku se zatím nic nezměnilo. Toto okno můžete zavřít a zkusit to znovu."
+
+msgid "The disk was already partly written: Vilna will not start from it, and what was on it before is erased. Close this window and start the installation again."
+msgstr "Disk už je částečně zapsaný: Vilna se z něj nespustí a to, co na něm bylo dřív, je smazané. Zavřete toto okno a začněte instalaci znovu."
+
+msgid "Restart"
+msgstr "Restartovat"
+
+msgid "Close"
+msgstr "Zavřít"
+
+msgid "What went wrong (for a bug report):"
+msgstr "Co se pokazilo (pro hlášení chyby):"
+
+msgid "Checking the plan and the disk"
+msgstr "Kontrola plánu a disku"
+
+msgid "Writing Vilna to the disk"
+msgstr "Zápis Vilna na disk"
+
+msgid "Opening the new system"
+msgstr "Otevírání nového systému"
+
+msgid "Copying Gloxi's model"
+msgstr "Kopírování modelu Gloxi"
+
+msgid "Setting up languages, time and your account"
+msgstr "Nastavení jazyků, času a vašeho účtu"
+
+msgid "Setting up start-up and encryption"
+msgstr "Nastavení spouštění a šifrování"
+
+msgid "Finishing"
+msgstr "Dokončování"
+
+# The privacy step and crash reports (ADR 0018 section 3).
 msgid "If a program crashes, send us a crash report?"
 msgstr "Když program spadne, poslat nám hlášení o pádu?"
 
@@ -75,6 +700,51 @@ msgstr "Vyberte odpověď ohledně hlášení o pádech."
 
 msgid "Crash reports: {answer}"
 msgstr "Hlášení o pádech: {answer}"
+
+msgid "Recovery key. It is only drawn on the screen, so that other programs cannot read it. Press «Read the key aloud» to hear it."
+msgstr "Klíč pro obnovení. Je jen nakreslený na obrazovce, aby ho jiné programy nemohly přečíst. Stiskněte „Přečíst klíč nahlas“, abyste ho uslyšeli."
+
+msgid "Read the key aloud"
+msgstr "Přečíst klíč nahlas"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Stiskněte tlačítko sami, klávesnicí nebo myší: Herkos nepřijímá stisky od jiných programů."
+
+msgid "Connected to Wi-Fi."
+msgstr "Připojeno k Wi-Fi."
+
+msgid "The password is saved."
+msgstr "Heslo je uložené."
+
+msgid "The passphrase is saved."
+msgstr "Heslová fráze je uložená."
+
+msgid "Type the Wi-Fi password into the protected field below. I do not see it."
+msgstr "Zadejte heslo k Wi-Fi do chráněného pole níže. Nevidím ho."
+
+msgid "Type the password for your account into the protected field below, twice. I do not see it."
+msgstr "Zadejte heslo ke svému účtu do chráněného pole níže, dvakrát. Nevidím ho."
+
+msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
+msgstr "Zadejte heslovou frázi k disku do chráněného pole níže, dvakrát. Nevidím ji."
+
+msgid "This computer is already connected to the network, so I keep that connection; you can change it in the plan."
+msgstr "Tento počítač už je připojený k síti, takže toto připojení ponechám; v plánu ho můžete změnit."
+
+msgid "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; the other way is your own layout in the partition editor. Use the whole disk?"
+msgstr "Disk pro Vilna má {size} GB a je prázdný. Navrhuji ho celý dát Vilna; druhou možností je vlastní rozdělení v editoru oddílů. Použít celý disk?"
+
+msgid "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it completely and installing Vilna: everything on it will be lost. The other way is your own layout in the partition editor. Erase this disk?"
+msgstr "Disk pro Vilna má {size} GB a obsahuje {what}. Navrhuji ho úplně smazat a nainstalovat Vilna: vše, co na něm je, se ztratí. Druhou možností je vlastní rozdělení v editoru oddílů. Smazat tento disk?"
+
+msgid "files"
+msgstr "soubory"
+
+msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. For more protection if the computer is stolen, the disk can also ask for a PIN at every start. You can also type a passphrase at every start, or not encrypt the disk."
+msgstr "Mám nový systém zašifrovat? Navrhuji šifrování s klíčem pro obnovení: na tomto počítači se disk otevírá sám a klíč ho otevře, pokud se něco změní. Pro lepší ochranu při krádeži může disk také při každém spuštění chtít PIN. Můžete také při každém spuštění zadávat heslovou frázi, nebo disk nešifrovat."
+
+msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
+msgstr "Mám nový systém zašifrovat? Tento počítač nemá čip TPM, takže by se disk otevíral heslovou frází, kterou zadáváte při každém spuštění. Bez šifrování může kdokoli s tímto diskem číst vaše soubory."
 
 msgid "Switch to the dark theme"
 msgstr "Přepnout na tmavý motiv"
@@ -123,6 +793,30 @@ msgstr "Přihlašujete se jen v aplikaci samotného poskytovatele: Vilna a Gloxi
 
 msgid "Choose an answer about the VPN."
 msgstr "Vyberte odpověď ohledně VPN."
+
+msgid "Encrypted, with a PIN at every start"
+msgstr "Šifrováno, s PIN při každém spuštění"
+
+msgid "Start PIN (6 to 20 digits)"
+msgstr "PIN pro spuštění (6 až 20 číslic)"
+
+msgid "The PIN is 6 to 20 digits, nothing else."
+msgstr "PIN má 6 až 20 číslic, nic jiného."
+
+msgid "The PIN is saved."
+msgstr "PIN je uložený."
+
+msgid "Type the start PIN, 6 to 20 digits, into the protected field below, twice. I do not see it."
+msgstr "Zadejte PIN pro spuštění, 6 až 20 číslic, do chráněného pole níže, dvakrát. Nevidím ho."
+
+msgid "Like the first way, plus a PIN of 6 to 20 digits at every start: a stolen computer does not even reach the login screen."
+msgstr "Jako první možnost, navíc PIN o 6–20 číslicích při každém spuštění: ukradený počítač se nedostane ani na přihlašovací obrazovku."
+
+msgid "Type the start PIN for the disk."
+msgstr "Zadejte PIN pro spuštění disku."
+
+msgid "The start PIN is not entered yet."
+msgstr "PIN pro spuštění ještě není zadaný."
 
 msgid "Getting to know each other"
 msgstr "Seznámení"

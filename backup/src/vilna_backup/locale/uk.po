@@ -218,7 +218,6 @@ msgstr "Налаштування"
 msgid "What to keep"
 msgstr "Що зберігати"
 
-
 msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
 msgstr "Шифруються на цьому комп'ютері. Без ключа їх ніхто не прочитає, навіть ми."
 

@@ -30,19 +30,644 @@ msgstr "Alte limbi"
 msgid "Search for a language"
 msgstr "Caută o limbă"
 
-# The privacy step and crash reports (ADR 0018 section 3).
-msgid "Privacy"
-msgstr "Confidențialitate"
+msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the right and change any item yourself."
+msgstr "Sunt Gloxi și vă ajut să instalați Vilna. Pe disc nu se schimbă nimic până nu confirmați planul; îl vedeți în dreapta și puteți schimba singur orice punct."
+
+msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
+msgstr "În ce limbi scrieți? Voi adăuga și aranjamentele lor de tastatură, de exemplu ucraineană și engleză."
+
+msgid "Gloxi cannot start on this computer right now. You can go on without the assistant: the steps are the same, and what you chose stays in the plan."
+msgstr "Gloxi nu poate porni acum pe acest calculator. Puteți continua fără asistent: pașii sunt aceiași, iar ce ați ales rămâne în plan."
+
+msgid "Gloxi did not answer. Try again, or go on without the assistant."
+msgstr "Gloxi nu a răspuns. Încercați din nou sau continuați fără asistent."
+
+msgid "Gloxi is thinking…"
+msgstr "Gloxi se gândește…"
+
+msgid "Send"
+msgstr "Trimite"
+
+msgid "Message to Gloxi"
+msgstr "Mesaj pentru Gloxi"
+
+msgid "Change"
+msgstr "Schimbați"
+
+msgid "Plan"
+msgstr "Plan"
+
+msgid "Not decided yet"
+msgstr "Încă nedecis"
+
+msgid "Check and confirm the plan"
+msgstr "Verificați și confirmați planul"
+
+msgid "Wi-Fi password for {name}"
+msgstr "Parola Wi-Fi pentru {name}"
+
+msgid "Connect"
+msgstr "Conectați"
+
+msgid "Connecting…"
+msgstr "Se conectează…"
+
+msgid "Could not connect. Check the password and try again."
+msgstr "Conectarea nu a reușit. Verificați parola și încercați din nou."
+
+msgid "Password for {name}"
+msgstr "Parola pentru {name}"
+
+msgid "Repeat the password"
+msgstr "Repetați parola"
+
+msgid "The passwords are not the same."
+msgstr "Parolele nu coincid."
+
+msgid "At least 8 characters."
+msgstr "Cel puțin 8 caractere."
+
+msgid "Passphrase for the disk"
+msgstr "Fraza-parolă pentru disc"
+
+msgid "Save"
+msgstr "Salvați"
+
+msgid "Gloxi does not see what you type here."
+msgstr "Gloxi nu vede ce tastați aici."
+
+msgid "entered"
+msgstr "introdusă"
+
+msgid "Without a network"
+msgstr "Fără rețea"
+
+msgid "Cable"
+msgstr "Cablu"
+
+msgid "Erase the whole disk"
+msgstr "Ștergeți tot discul"
+
+msgid "Manual layout"
+msgstr "Partiționare manuală"
+
+msgid "Encrypted, with a recovery key"
+msgstr "Criptat, cu cheie de recuperare"
+
+msgid "Encrypted with a passphrase"
+msgstr "Criptat cu o frază-parolă"
+
+msgid "Not encrypted"
+msgstr "Necriptat"
 
 msgid "Cloud model off until the first login"
 msgstr "Modelul din cloud oprit până la prima autentificare"
 
-msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
-msgstr "Gloxi lucrează direct pe acest calculator, iar ce îi spuneți rămâne aici. Un model din cloud este oprit acum; îl puteți alege după prima autentificare, iar atunci poarta de confidențialitate ascunde nume și numere înainte ca ceva să părăsească calculatorul."
+msgid "Languages and keyboard"
+msgstr "Limbi și tastatură"
+
+msgid "Network"
+msgstr "Rețea"
+
+msgid "Disk"
+msgstr "Disc"
+
+msgid "Encryption"
+msgstr "Criptare"
+
+msgid "Account"
+msgstr "Cont"
+
+msgid "Time and region"
+msgstr "Ora și regiunea"
+
+msgid "Privacy"
+msgstr "Confidențialitate"
+
+msgid "Gloxi is waking up… The first start from the USB stick can take a few minutes. You can also go on without the assistant."
+msgstr "Gloxi se trezește… Prima pornire de pe stick-ul USB poate dura câteva minute. Puteți și să continuați fără asistent."
+
+msgid "Shall we connect to a network now? It is not needed: everything for installing is already on the USB stick. Name your Wi-Fi network, or say that we go on without a network."
+msgstr "Ne conectăm acum la o rețea? Nu este necesar: tot ce trebuie pentru instalare este deja pe stick-ul USB. Spuneți numele rețelei Wi-Fi sau spuneți că mergem mai departe fără rețea."
+
+msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
+msgstr "Ce facem cu discul? Vă propun să ștergem tot discul și să instalăm Vilna; cealaltă cale este propria partiționare în editorul de partiții."
+
+msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
+msgstr "Păstrați cheia de recuperare în siguranță: fără ea nimeni, nici chiar dumneavoastră, nu va putea deschide discul dacă ceva se schimbă în acest calculator."
+
+msgid "What is your name? From it I will suggest a login name and a name for the computer."
+msgstr "Cum vă numiți? Pornind de la nume, voi propune un nume de utilizator și un nume pentru calculator."
+
+msgid "I suggest the time zone {timezone} and the date and number formats of {region}. Is that right? If not, name your city or country."
+msgstr "Propun fusul orar {timezone} și formatele de dată și număr pentru „{region}”. E corect? Dacă nu, spuneți orașul sau țara dumneavoastră."
 
 msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
 msgstr "Gloxi lucrează direct pe acest calculator, iar ce îi spuneți rămâne aici. Un model din cloud este oprit acum; îl puteți alege după prima autentificare, iar atunci poarta de confidențialitate ascunde nume și numere înainte ca ceva să părăsească calculatorul. O întrebare de aici este doar a dumneavoastră, așa că nu răspund în locul dumneavoastră: alegeți mai jos."
 
+# The classic wizard without the assistant (wizard.py).
+
+msgid "Summary"
+msgstr "Rezumat"
+
+msgid "Step {number} of {count}: {title}"
+msgstr "Pasul {number} din {count}: {title}"
+
+msgid "Back"
+msgstr "Înapoi"
+
+msgid "Next"
+msgstr "Înainte"
+
+msgid "Which languages do you write in? The first one chosen is the main language."
+msgstr "În ce limbi scrieți? Prima aleasă este limba principală."
+
+msgid "Main language"
+msgstr "Limba principală"
+
+msgid "Keyboard layouts"
+msgstr "Aranjamente de tastatură"
+
+msgid "Another keyboard layout"
+msgstr "Alt aranjament de tastatură"
+
+msgid "None"
+msgstr "Niciunul"
+
+msgid "A network is not needed: everything for installing is already on the USB stick."
+msgstr "Nu este nevoie de rețea: tot ce trebuie pentru instalare este deja pe stick-ul USB."
+
+msgid "Wi-Fi networks"
+msgstr "Rețele Wi-Fi"
+
+msgid "Look for networks again"
+msgstr "Căutați din nou rețele"
+
+msgid "No Wi-Fi networks found."
+msgstr "Nu s-a găsit nicio rețea Wi-Fi."
+
+msgid "Connected"
+msgstr "Conectat"
+
+msgid "Choose the disk for Vilna and what to do with it."
+msgstr "Alegeți discul pentru Vilna și ce să faceți cu el."
+
+msgid "Disks"
+msgstr "Discuri"
+
+msgid "What to do with the disk"
+msgstr "Ce să faceți cu discul"
+
+msgid "Erase the whole disk and install Vilna"
+msgstr "Ștergeți tot discul și instalați Vilna"
+
+msgid "Choose the partitions yourself in the partition editor"
+msgstr "Alegeți singur partițiile în editorul de partiții"
+
+msgid "Empty"
+msgstr "Gol"
+
+msgid "{size} free"
+msgstr "{size} liberi"
+
+msgid "Everything on this disk will be erased: {what}."
+msgstr "Tot ce este pe acest disc va fi șters: {what}."
+
+msgid "Open the partition editor"
+msgstr "Deschideți editorul de partiții"
+
+msgid "Partition editor"
+msgstr "Editor de partiții"
+
+msgid "Choose what each partition is for. Partitions you do not use stay as they are. New partitions go into the largest free space."
+msgstr "Alegeți la ce servește fiecare partiție. Partițiile pe care nu le folosiți rămân cum sunt. Partițiile noi merg în cel mai mare spațiu liber."
+
+msgid "Partitions on the disk"
+msgstr "Partițiile de pe disc"
+
+msgid "New partitions"
+msgstr "Partiții noi"
+
+msgid "Add a partition"
+msgstr "Adăugați o partiție"
+
+msgid "Remove"
+msgstr "Eliminați"
+
+msgid "Suggest a layout"
+msgstr "Propuneți o partiționare"
+
+msgid "Use"
+msgstr "Utilizare"
+
+msgid "Format (erase)"
+msgstr "Formatare (ștergere)"
+
+msgid "Size, GiB"
+msgstr "Dimensiune, GiB"
+
+msgid "Not used, keep"
+msgstr "Nefolosită, păstrați"
+
+msgid "EFI system partition"
+msgstr "Partiție de sistem EFI"
+
+msgid "System"
+msgstr "Sistem"
+
+msgid "Home folders"
+msgstr "Dosare personale"
+
+msgid "Swap"
+msgstr "Swap (memorie de schimb)"
+
+msgid "Partitions chosen: {count}"
+msgstr "Partiții alese: {count}"
+
+msgid "Encryption keeps your files safe if the computer or the disk is lost or stolen."
+msgstr "Criptarea vă protejează fișierele dacă pierdeți calculatorul sau discul ori dacă vă sunt furate."
+
+msgid "The disk opens by itself on this computer; a recovery key opens it if something changes. Recommended."
+msgstr "Discul se deschide singur pe acest calculator; o cheie de recuperare îl deschide dacă ceva se schimbă. Recomandat."
+
+msgid "This computer has no TPM 2.0 chip, so this way is not available."
+msgstr "Acest calculator nu are cip TPM 2.0, deci această variantă nu este disponibilă."
+
+msgid "You type the passphrase every time the computer starts."
+msgstr "Tastați fraza-parolă la fiecare pornire a calculatorului."
+
+msgid "Anyone who has the disk can read your files."
+msgstr "Oricine are discul vă poate citi fișierele."
+
+msgid "The next screen shows the recovery key; keep it safe."
+msgstr "Ecranul următor afișează cheia de recuperare; păstrați-o în siguranță."
+
+msgid "Your name"
+msgstr "Numele dumneavoastră"
+
+msgid "Login name"
+msgstr "Nume de utilizator"
+
+msgid "Computer name"
+msgstr "Numele calculatorului"
+
+msgid "Time zone"
+msgstr "Fus orar"
+
+msgid "Date and number formats"
+msgstr "Formate de dată și număr"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi lucrează direct pe acest calculator, iar ce îi spuneți rămâne aici. Un model din cloud este oprit acum; îl puteți alege după prima autentificare, iar atunci poarta de confidențialitate ascunde nume și numere înainte ca ceva să părăsească calculatorul."
+
+msgid "What happens to the disk"
+msgstr "Ce se întâmplă cu discul"
+
+msgid "Still to do"
+msgstr "Mai este de făcut"
+
+msgid "The plan is ready. The next screen, from Herkos, shows exactly what will change."
+msgstr "Planul este gata. Ecranul următor, de la Herkos, arată exact ce se va schimba."
+
+msgid "Fill in this step."
+msgstr "Completați acest pas."
+
+msgid "{name} ({size}{what}) will be erased"
+msgstr "{name} ({size}{what}) va fi șters"
+
+msgid "{name} ({size}{what}) stays as it is"
+msgstr "{name} ({size}{what}) rămâne cum este"
+
+msgid "{name} ({size}) is used as {use}, its files stay"
+msgstr "{name} ({size}) este folosit ca „{use}”, fișierele de pe el rămân"
+
+msgid "A new partition of {size} is created{use}"
+msgstr "Se creează o partiție nouă de {size}{use}"
+
+msgid "Partitions are chosen in the partition editor"
+msgstr "Partițiile se aleg în editorul de partiții"
+
+msgid "Type your name."
+msgstr "Tastați-vă numele."
+
+msgid "Choose a disk."
+msgstr "Alegeți un disc."
+
+msgid "Choose one of the options."
+msgstr "Alegeți una dintre variante."
+
+msgid "Connect to the Wi-Fi network first, or choose another way."
+msgstr "Conectați-vă mai întâi la rețeaua Wi-Fi sau alegeți altă cale."
+
+msgid "Type the Wi-Fi password and connect."
+msgstr "Tastați parola Wi-Fi și conectați-vă."
+
+msgid "Type the password for the account."
+msgstr "Tastați parola contului."
+
+msgid "Type the passphrase for the disk."
+msgstr "Tastați fraza-parolă pentru disc."
+
+msgid "The disks changed (a disk added or removed?). Choose the disk again."
+msgstr "Discurile s-au schimbat (s-a adăugat sau s-a scos un disc?). Alegeți din nou discul."
+
+# The summary of the plan and the Herkos confirmation screen (step 12).
+
+msgid "{n} GiB"
+msgstr "{n} GiB"
+
+msgid "{n} MiB"
+msgstr "{n} MiB"
+
+msgid "Erased: {what}"
+msgstr "Va fi șters: {what}"
+
+msgid "Formatted for {use}, everything on it erased: {what}"
+msgstr "Va fi formatat pentru {use}, tot ce conține va fi șters: {what}"
+
+msgid "Kept as it is: {what}"
+msgstr "Rămâne cum este: {what}"
+
+msgid "Shrunk to {to}: {what}"
+msgstr "Va fi micșorat la {to}: {what}"
+
+msgid "Used for {use} without formatting: {what}"
+msgstr "Folosit pentru {use} fără formatare: {what}"
+
+msgid "New: Vilna, {size}"
+msgstr "Nou: Vilna, {size}"
+
+msgid "New: Vilna, {size}, encrypted"
+msgstr "Nou: Vilna, {size}, criptat"
+
+msgid "New partition for {use}: {size}"
+msgstr "Partiție nouă pentru {use}: {size}"
+
+msgid "Your own layout of {disk}"
+msgstr "Partiționarea proprie a discului {disk}"
+
+msgid "{model} ({name}, {size})"
+msgstr "{model} ({name}, {size})"
+
+msgid "Disk {name}, {size}"
+msgstr "Disc {name}, {size}"
+
+msgid "encrypted with {kind}"
+msgstr "criptat cu {kind}"
+
+msgid "unknown contents"
+msgstr "conținut necunoscut"
+
+msgid "empty"
+msgstr "gol"
+
+msgid "the boot partition (EFI)"
+msgstr "partiția de pornire (EFI)"
+
+msgid "the system"
+msgstr "sistem"
+
+msgid "home folders"
+msgstr "dosarele personale"
+
+msgid "swap"
+msgstr "swap"
+
+msgid "The disks changed since they were looked at (a USB stick put in or taken out?). Choose the disk again."
+msgstr "Discurile s-au schimbat de când au fost verificate (s-a introdus sau s-a scos un stick USB?). Alegeți din nou discul."
+
+msgid "The chosen disk is not in the computer now. Choose the disk again."
+msgstr "Discul ales nu mai este în calculator. Alegeți din nou discul."
+
+msgid "This is the USB stick Vilna is running from. Choose another disk."
+msgstr "Acesta este stick-ul USB de pe care rulează Vilna. Alegeți alt disc."
+
+msgid "This disk is read-only. Choose another disk."
+msgstr "Acest disc este doar pentru citire. Alegeți alt disc."
+
+msgid "There is not enough room: Vilna needs at least 40 GiB."
+msgstr "Nu este destul spațiu: Vilna are nevoie de cel puțin 40 GiB."
+
+msgid "There is not enough free space for these partitions."
+msgstr "Nu este destul spațiu liber pentru aceste partiții."
+
+msgid "The EFI system partition needs at least 256 MiB."
+msgstr "Partiția de sistem EFI are nevoie de cel puțin 256 MiB."
+
+msgid "This disk has RAID, LVM or a filesystem Vilna does not know: only the partition editor can use it."
+msgstr "Acest disc are RAID, LVM sau un sistem de fișiere pe care Vilna nu îl cunoaște: doar editorul de partiții îl poate folosi."
+
+msgid "Choose the partitions in the partition editor."
+msgstr "Alegeți partițiile în editorul de partiții."
+
+msgid "Choose exactly one EFI system partition."
+msgstr "Alegeți exact o partiție de sistem EFI."
+
+msgid "Choose exactly one partition for the system."
+msgstr "Alegeți exact o partiție pentru sistem."
+
+msgid "The system and swap partitions are always formatted."
+msgstr "Partițiile de sistem și de swap sunt formatate întotdeauna."
+
+msgid "This partition is not an EFI system partition; format it or choose another."
+msgstr "Această partiție nu este o partiție de sistem EFI; formatați-o sau alegeți alta."
+
+msgid "This partition cannot be kept for home folders; format it or choose another."
+msgstr "Această partiție nu poate fi păstrată pentru dosarele personale; formatați-o sau alegeți alta."
+
+msgid "Only a Linux partition can be kept for home folders; format it."
+msgstr "Doar o partiție Linux poate fi păstrată pentru dosarele personale; formatați-o pe aceasta."
+
+msgid "A partition is chosen twice."
+msgstr "O partiție este aleasă de două ori."
+
+msgid "Choose at most one partition for home folders."
+msgstr "Alegeți cel mult o partiție pentru dosarele personale."
+
+msgid "Choose at most one swap partition."
+msgstr "Alegeți cel mult o partiție de swap."
+
+msgid "This comes in a later version of Vilna."
+msgstr "Aceasta vine într-o versiune ulterioară a Vilna."
+
+msgid "A login name starts with a Latin letter and has only small Latin letters, digits, «-» and «_»."
+msgstr "Un nume de utilizator începe cu o literă latină și are doar litere latine mici, cifre, „-” și „_”."
+
+msgid "The system already uses this login name; choose another."
+msgstr "Sistemul folosește deja acest nume de utilizator; alegeți altul."
+
+msgid "A computer name has only small Latin letters, digits and «-»."
+msgstr "Un nume de calculator are doar litere latine mici, cifre și „-”."
+
+msgid "Worth knowing"
+msgstr "Bine de știut"
+
+msgid "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its recovery key (48 digits) once. Save the key before going on: it is in your Microsoft account or on the printout you made."
+msgstr "Windows de pe acest disc folosește BitLocker. După instalarea Vilna, Windows poate cere o dată cheia de recuperare (48 de cifre). Salvați cheia înainte de a continua: se află în contul dumneavoastră Microsoft sau pe foaia tipărită pe care ați făcut-o."
+
+msgid "The chosen disk cannot be written to."
+msgstr "Pe discul ales nu se poate scrie."
+
+msgid "The disk is too small: Vilna needs at least 40 GiB."
+msgstr "Discul este prea mic: Vilna are nevoie de cel puțin 40 GiB."
+
+msgid "The disk has RAID, LVM or a filesystem Vilna does not know: only your own layout in the partition editor is possible."
+msgstr "Discul are RAID, LVM sau un sistem de fișiere pe care Vilna nu îl cunoaște: este posibilă doar partiționarea proprie în editorul de partiții."
+
+msgid "This way of installing comes in a later version of Vilna."
+msgstr "Acest mod de instalare vine într-o versiune ulterioară a Vilna."
+
+msgid "Make the layout in the partition editor first."
+msgstr "Faceți mai întâi partiționarea în editorul de partiții."
+
+msgid "The Wi-Fi password is not entered yet."
+msgstr "Parola Wi-Fi nu este introdusă încă."
+
+msgid "The account password is not entered yet."
+msgstr "Parola contului nu este introdusă încă."
+
+msgid "The disk passphrase is not entered yet."
+msgstr "Fraza-parolă pentru disc nu este introdusă încă."
+
+msgid "There is not enough free space for Vilna on the disk."
+msgstr "Pe disc nu este destul spațiu liber pentru Vilna."
+
+msgid "This computer has no TPM 2.0 chip that can keep the disk key. Choose encryption with a passphrase instead."
+msgstr "Acest calculator nu are un cip TPM 2.0 care să păstreze cheia discului. Alegeți în schimb criptarea cu frază-parolă."
+
+msgid "Without encryption anyone who has the disk can read your files."
+msgstr "Fără criptare, oricine are discul vă poate citi fișierele."
+
+msgid "The chosen disk is removable, such as a USB disk."
+msgstr "Discul ales este amovibil, de exemplu un disc USB."
+
+msgid "The plan cannot be installed yet: {message}"
+msgstr "Planul nu poate fi instalat încă: {message}"
+
+msgid "Not decided yet: {parts}"
+msgstr "Încă nedecis: {parts}"
+
+msgid "Herkos"
+msgstr "Herkos"
+
+msgid "Confirm the installation"
+msgstr "Confirmați instalarea"
+
+msgid "Check what will happen. Nothing has changed on the disks yet; after you confirm, Vilna is installed and this cannot be undone."
+msgstr "Verificați ce se va întâmpla. Pe discuri nu s-a schimbat încă nimic; după confirmare, Vilna se instalează și acest lucru nu poate fi anulat."
+
+msgid "What happens to the disks"
+msgstr "Ce se întâmplă cu discurile"
+
+msgid "The plan"
+msgstr "Planul"
+
+msgid "What has to be fixed first"
+msgstr "Ce trebuie corectat mai întâi"
+
+msgid "The plan cannot be installed yet. Go back and change it:"
+msgstr "Planul nu poate fi instalat încă. Reveniți și schimbați-l:"
+
+msgid "Note"
+msgstr "Atenție"
+
+msgid "Recovery key"
+msgstr "Cheie de recuperare"
+
+msgid "Write this key down or take a photo of it, and keep it away from the computer. You need it if the disk does not open by itself: after a change of the hardware or of Secure Boot, or when you forget the passphrase. Nobody else has it, not even Vilna."
+msgstr "Notați această cheie sau fotografiați-o și păstrați-o departe de calculator. Veți avea nevoie de ea dacă discul nu se deschide singur: după o schimbare a componentelor sau a Secure Boot, ori dacă uitați fraza-parolă. Nimeni altcineva nu o are, nici măcar Vilna."
+
+msgid "To show that you saved it, type the last group of the key (8 letters):"
+msgstr "Ca să confirmați că ați salvat-o, tastați ultimul grup al cheii (8 litere):"
+
+msgid "The last group of the recovery key"
+msgstr "Ultimul grup al cheii de recuperare"
+
+msgid "That is not the last group. Look at the key again."
+msgstr "Acesta nu este ultimul grup. Uitați-vă din nou la cheie."
+
+msgid "Right. The key is saved."
+msgstr "Corect. Cheia este salvată."
+
+msgid "Recovery key, letter by letter: {key}"
+msgstr "Cheia de recuperare, literă cu literă: {key}"
+
+msgid "I understand that everything on {disk} is erased"
+msgstr "Înțeleg că tot ce este pe {disk} va fi șters"
+
+msgid "I understand that the partitions marked above are erased"
+msgstr "Înțeleg că partițiile marcate mai sus vor fi șterse"
+
+msgid "Back to the plan"
+msgstr "Înapoi la plan"
+
+msgid "Erase and install"
+msgstr "Ștergeți și instalați"
+
+msgid "Install"
+msgstr "Instalați"
+
+msgid "Read the changes first…"
+msgstr "Citiți mai întâi schimbările…"
+
+msgid "The disks changed while this screen was open. Go back and choose the disk again."
+msgstr "Discurile s-au schimbat cât acest ecran a fost deschis. Reveniți și alegeți din nou discul."
+
+msgid "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its buttons."
+msgstr "Acest ecran este afișat de Herkos, nu de Gloxi. Gloxi nu îi poate apăsa butoanele."
+
+msgid "Installing Vilna"
+msgstr "Se instalează Vilna"
+
+msgid "This takes a few minutes. Do not switch the computer off and do not pull out the stick."
+msgstr "Durează câteva minute. Nu opriți calculatorul și nu scoateți stick-ul."
+
+msgid "Vilna is installed"
+msgstr "Vilna este instalat"
+
+msgid "Take out the stick Vilna started from, then restart the computer. Vilna starts from the disk."
+msgstr "Scoateți stick-ul de pe care a pornit Vilna, apoi reporniți calculatorul. Vilna pornește de pe disc."
+
+msgid "The installation stopped"
+msgstr "Instalarea s-a oprit"
+
+msgid "Nothing on the disk has changed yet. You can close this window and try again."
+msgstr "Pe disc nu s-a schimbat încă nimic. Puteți închide această fereastră și încerca din nou."
+
+msgid "The disk was already partly written: Vilna will not start from it, and what was on it before is erased. Close this window and start the installation again."
+msgstr "Discul a fost deja scris parțial: Vilna nu va porni de pe el, iar ce era pe el înainte este șters. Închideți această fereastră și începeți din nou instalarea."
+
+msgid "Restart"
+msgstr "Reporniți"
+
+msgid "Close"
+msgstr "Închideți"
+
+msgid "What went wrong (for a bug report):"
+msgstr "Ce nu a mers (pentru un raport de eroare):"
+
+msgid "Checking the plan and the disk"
+msgstr "Se verifică planul și discul"
+
+msgid "Writing Vilna to the disk"
+msgstr "Se scrie Vilna pe disc"
+
+msgid "Opening the new system"
+msgstr "Se deschide sistemul nou"
+
+msgid "Copying Gloxi's model"
+msgstr "Se copiază modelul Gloxi"
+
+msgid "Setting up languages, time and your account"
+msgstr "Se configurează limbile, ora și contul dumneavoastră"
+
+msgid "Setting up start-up and encryption"
+msgstr "Se configurează pornirea și criptarea"
+
+msgid "Finishing"
+msgstr "Se finalizează"
+
+# The privacy step and crash reports (ADR 0018 section 3).
 msgid "If a program crashes, send us a crash report?"
 msgstr "Dacă un program se blochează, ne trimiteți un raport despre blocare?"
 
@@ -75,6 +700,51 @@ msgstr "Alegeți un răspuns despre rapoartele de blocare."
 
 msgid "Crash reports: {answer}"
 msgstr "Rapoarte despre blocări: {answer}"
+
+msgid "Recovery key. It is only drawn on the screen, so that other programs cannot read it. Press «Read the key aloud» to hear it."
+msgstr "Cheie de recuperare. Este doar desenată pe ecran, ca alte programe să nu o poată citi. Apăsați „Citiți cheia cu voce tare” ca s-o auziți."
+
+msgid "Read the key aloud"
+msgstr "Citiți cheia cu voce tare"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Apăsați butonul chiar dumneavoastră, cu tastatura sau cu mouse-ul: Herkos nu acceptă apăsări de la alte programe."
+
+msgid "Connected to Wi-Fi."
+msgstr "Conectat la Wi-Fi."
+
+msgid "The password is saved."
+msgstr "Parola este salvată."
+
+msgid "The passphrase is saved."
+msgstr "Fraza-parolă este salvată."
+
+msgid "Type the Wi-Fi password into the protected field below. I do not see it."
+msgstr "Tastați parola Wi-Fi în câmpul protejat de mai jos. Eu nu o văd."
+
+msgid "Type the password for your account into the protected field below, twice. I do not see it."
+msgstr "Tastați parola contului dumneavoastră în câmpul protejat de mai jos, de două ori. Eu nu o văd."
+
+msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
+msgstr "Tastați fraza-parolă pentru disc în câmpul protejat de mai jos, de două ori. Eu nu o văd."
+
+msgid "This computer is already connected to the network, so I keep that connection; you can change it in the plan."
+msgstr "Acest calculator este deja conectat la rețea, deci păstrez această conexiune; o puteți schimba în plan."
+
+msgid "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; the other way is your own layout in the partition editor. Use the whole disk?"
+msgstr "Discul pentru Vilna are {size} GB și este gol. Vă propun să-l dăm în întregime Vilna; cealaltă cale este propria partiționare în editorul de partiții. Folosim tot discul?"
+
+msgid "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it completely and installing Vilna: everything on it will be lost. The other way is your own layout in the partition editor. Erase this disk?"
+msgstr "Discul pentru Vilna are {size} GB și conține {what}. Vă propun să-l ștergem complet și să instalăm Vilna: tot ce este pe el se va pierde. Cealaltă cale este propria partiționare în editorul de partiții. Ștergem acest disc?"
+
+msgid "files"
+msgstr "fișiere"
+
+msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. For more protection if the computer is stolen, the disk can also ask for a PIN at every start. You can also type a passphrase at every start, or not encrypt the disk."
+msgstr "Criptez sistemul nou? Vă propun criptarea cu cheie de recuperare: pe acest calculator discul se deschide singur, iar cheia îl deschide dacă ceva se schimbă. Pentru mai multă protecție în caz de furt, discul poate cere și un PIN la fiecare pornire. Puteți și să tastați o frază-parolă la fiecare pornire sau să nu criptați discul."
+
+msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
+msgstr "Criptez sistemul nou? Acest calculator nu are cip TPM, deci discul s-ar deschide cu o frază-parolă pe care o tastați la fiecare pornire. Fără criptare, oricine are discul vă poate citi fișierele."
 
 msgid "Switch to the dark theme"
 msgstr "Treci la tema întunecată"
@@ -123,6 +793,30 @@ msgstr "Vă autentificați doar în aplicația furnizorului însuși: Vilna și 
 
 msgid "Choose an answer about the VPN."
 msgstr "Alegeți un răspuns despre VPN."
+
+msgid "Encrypted, with a PIN at every start"
+msgstr "Criptat, cu PIN la fiecare pornire"
+
+msgid "Start PIN (6 to 20 digits)"
+msgstr "PIN de pornire (6–20 de cifre)"
+
+msgid "The PIN is 6 to 20 digits, nothing else."
+msgstr "PIN-ul are între 6 și 20 de cifre, nimic altceva."
+
+msgid "The PIN is saved."
+msgstr "PIN-ul este salvat."
+
+msgid "Type the start PIN, 6 to 20 digits, into the protected field below, twice. I do not see it."
+msgstr "Tastați PIN-ul de pornire, de 6–20 de cifre, în câmpul protejat de mai jos, de două ori. Eu nu îl văd."
+
+msgid "Like the first way, plus a PIN of 6 to 20 digits at every start: a stolen computer does not even reach the login screen."
+msgstr "Ca prima variantă, plus un PIN de 6–20 de cifre la fiecare pornire: un calculator furat nu ajunge nici măcar la ecranul de autentificare."
+
+msgid "Type the start PIN for the disk."
+msgstr "Tastați PIN-ul de pornire pentru disc."
+
+msgid "The start PIN is not entered yet."
+msgstr "PIN-ul de pornire nu este introdus încă."
 
 msgid "Getting to know each other"
 msgstr "Să facem cunoștință"

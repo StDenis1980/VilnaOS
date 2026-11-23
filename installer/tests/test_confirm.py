@@ -93,8 +93,9 @@ def test_summary_knows_the_manual_layouts_changes():
     ]
 
 
-def test_every_new_text_is_translated_to_ukrainian():
-    catalog = start.catalog("uk")
+@pytest.mark.parametrize("code", [c for c in start.CODES if c != "en"])
+def test_every_new_text_is_translated(code):
+    catalog = start.catalog(code)
     assert [t for t in (*summary.TEXTS, *confirm.TEXTS) if t not in catalog] == []
 
 

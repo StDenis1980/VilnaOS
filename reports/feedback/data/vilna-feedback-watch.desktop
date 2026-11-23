@@ -5,6 +5,14 @@
 Type=Application
 Name=Crash report notifications
 Name[uk]=Сповіщення про звіти про збої
+Name[es]=Notificaciones de informes de fallos
+Name[pl]=Powiadomienia o raportach awarii
+Name[de]=Benachrichtigungen zu Absturzberichten
+Name[fr]=Notifications des rapports de plantage
+Name[it]=Notifiche dei rapporti sui crash
+Name[ro]=Notificări despre rapoartele de eroare
+Name[cs]=Oznámení o hlášeních pádů
+Name[lt]=Pranešimai apie strigčių ataskaitas
 Exec=vilna-feedback --watch
 Icon=mail-send-symbolic
 NoDisplay=true

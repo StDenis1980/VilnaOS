@@ -1,0 +1,787 @@
+# Polish translation of Herkos.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# Window and terminal
+msgid "Herkos: permission"
+msgstr "Herkos: uprawnienie"
+
+msgid "Herkos: Gloxi asks for permission"
+msgstr "Herkos: Gloxi prosi o pozwolenie"
+
+msgid "Gloxi's reason: "
+msgstr "Uzasadnienie Gloxi: "
+
+msgid "… and {n} more"
+msgstr "… i jeszcze {n}"
+
+msgid "Can be undone."
+msgstr "Można cofnąć."
+
+msgid "Cannot be undone."
+msgstr "Nie można cofnąć."
+
+msgid "Riskier than usual: {why}."
+msgstr "Bardziej ryzykowne niż zwykle: {why}."
+
+msgid "Untrusted content came from: {src}"
+msgstr "Niezaufana treść pochodzi z: {src}"
+
+msgid "Exactly this will be done:"
+msgstr "Zostanie wykonane dokładnie to:"
+
+msgid "Deny"
+msgstr "Odmów"
+
+msgid "Allow once"
+msgstr "Zezwól raz"
+
+msgid "Allow for this session"
+msgstr "Zezwól na tę sesję"
+
+msgid "Always allow"
+msgstr "Zezwalaj zawsze"
+
+msgid "[o] allow once"
+msgstr "[o] zezwól raz"
+
+msgid "[s] allow for this session"
+msgstr "[s] zezwól na tę sesję"
+
+msgid "[a] always allow"
+msgstr "[a] zezwalaj zawsze"
+
+msgid "[n] deny"
+msgstr "[n] odmów"
+
+msgid "Allowed."
+msgstr "Zezwolono."
+
+msgid "Denied."
+msgstr "Odmówiono."
+
+msgid "No answer: denied."
+msgstr "Brak odpowiedzi: odmówiono."
+
+# Why an action is riskier (policy)
+msgid "the tool has no Herkos manifest"
+msgstr "narzędzie nie ma manifestu Herkosa"
+
+msgid "the program changed this action since it was allowed"
+msgstr "program zmienił to działanie, odkąd zostało dozwolone"
+
+msgid "the program describes this action at too great a length"
+msgstr "program opisuje to działanie zbyt obszernie"
+
+msgid "Let Gloxi use this program: {program}"
+msgstr "Pozwól Gloxi używać tego programu: {program}"
+
+msgid "the tool describes this operation as riskier"
+msgstr "narzędzie opisuje tę operację jako bardziej ryzykowną"
+
+msgid "untrusted content is in the conversation"
+msgstr "w rozmowie jest niezaufana treść"
+
+msgid "content read earlier {kinds}"
+msgstr "wcześniej przeczytana treść {kinds}"
+
+msgid "it touches something outside the allowed folders"
+msgstr "dotyczy czegoś poza dozwolonymi folderami"
+
+msgid "it touches more than {n} items at once"
+msgstr "dotyczy naraz więcej niż {n} elementów"
+
+msgid "it cannot be undone"
+msgstr "nie można tego cofnąć"
+
+msgid "Herkos cannot tell which of the program's commands this runs"
+msgstr "Herkos nie potrafi ustalić, które polecenie programu to uruchamia"
+
+msgid "the manifest gives no level for the program's command {commands}"
+msgstr "manifest nie podaje poziomu dla polecenia programu {commands}"
+
+msgid "data leaves this device"
+msgstr "dane opuszczają to urządzenie"
+
+msgid "it sends data to an address that came from untrusted content"
+msgstr "wysyła dane pod adres pochodzący z niezaufanej treści"
+
+# Keros findings
+msgid "asks the assistant to ignore its instructions"
+msgstr "prosi asystenta o zignorowanie jego instrukcji"
+
+msgid "tries to give the assistant a new role or new instructions"
+msgstr "próbuje nadać asystentowi nową rolę lub nowe instrukcje"
+
+msgid "contains chat-template or system markers"
+msgstr "zawiera znaczniki szablonu czatu lub systemu"
+
+msgid "contains text hidden from people (HTML/CSS)"
+msgstr "zawiera tekst ukryty przed ludźmi (HTML/CSS)"
+
+msgid "contains a link that could carry data away"
+msgstr "zawiera link, który mógłby wynieść dane"
+
+msgid "contains invisible or direction-changing characters"
+msgstr "zawiera niewidoczne znaki lub znaki zmieniające kierunek tekstu"
+
+msgid "the local check found text addressed to the assistant"
+msgstr "lokalna kontrola znalazła tekst skierowany do asystenta"
+
+# Tool operations (manifest summaries)
+msgid "List a folder"
+msgstr "Wyświetlić zawartość folderu"
+
+msgid "Search files by name and text"
+msgstr "Szukać plików po nazwie i treści"
+
+msgid "Read a file"
+msgstr "Przeczytać plik"
+
+msgid "Create a file"
+msgstr "Utworzyć plik"
+
+msgid "Change a file"
+msgstr "Zmienić plik"
+
+msgid "Delete a file"
+msgstr "Usunąć plik"
+
+msgid "Undo an earlier change to a file"
+msgstr "Cofnąć wcześniejszą zmianę w pliku"
+
+msgid "Undo an earlier change from a snapshot"
+msgstr "Cofnąć wcześniejszą zmianę z migawki"
+
+# Backups (org.vilna.mcp.backup)
+msgid "See whether backups are on and how the last one went"
+msgstr "Sprawdzić, czy kopie są włączone i jak poszła ostatnia"
+
+msgid "List the backups"
+msgstr "Wyświetlić listę kopii"
+
+msgid "See how much space the folders take"
+msgstr "Sprawdzić, ile miejsca zajmują foldery"
+
+msgid "Make a backup now"
+msgstr "Zrobić kopię teraz"
+
+msgid "Change how often backups are made"
+msgstr "Zmienić, jak często są robione kopie"
+
+msgid "Change what goes into backups"
+msgstr "Zmienić, co trafia do kopii"
+
+msgid "Bring a backup back into a new folder"
+msgstr "Przywrócić kopię do nowego folderu"
+
+msgid "Choose where backups are kept"
+msgstr "Wybrać, gdzie przechowywać kopie"
+
+msgid "Bring files back over the current ones"
+msgstr "Przywrócić pliki w miejsce obecnych"
+
+msgid "Delete backups"
+msgstr "Usunąć kopie"
+
+msgid "Move backups to another place"
+msgstr "Przenieść kopie w inne miejsce"
+
+msgid "Replace the backup keys"
+msgstr "Wymienić klucze kopii"
+
+msgid "Protect backups after a device was stolen"
+msgstr "Chronić kopie po kradzieży urządzenia"
+
+# The «Дозволи» window (permissions_window.py, permissions_view.py)
+
+msgid "All"
+msgstr "Wszystko"
+
+msgid "Allowed, but the tool failed"
+msgstr "Zezwolono, ale narzędzie zawiodło"
+
+msgid "Always"
+msgstr "Zawsze"
+
+msgid "January"
+msgstr "stycznia"
+
+msgid "February"
+msgstr "lutego"
+
+msgid "March"
+msgstr "marca"
+
+msgid "April"
+msgstr "kwietnia"
+
+msgid "May"
+msgstr "maja"
+
+msgid "June"
+msgstr "czerwca"
+
+msgid "July"
+msgstr "lipca"
+
+msgid "August"
+msgstr "sierpnia"
+
+msgid "September"
+msgstr "września"
+
+msgid "October"
+msgstr "października"
+
+msgid "November"
+msgstr "listopada"
+
+msgid "December"
+msgstr "grudnia"
+
+msgid "Backups"
+msgstr "Kopie"
+
+msgid "Cancel"
+msgstr "Anuluj"
+
+msgid "Changes can be undone for 30 days. The journal cannot be altered."
+msgstr "Zmiany można cofnąć przez 30 dni. Dziennika nie można zmienić."
+
+msgid "Done"
+msgstr "Gotowe"
+
+msgid "Done, then undone"
+msgstr "Zrobione, potem cofnięte"
+
+msgid "Files"
+msgstr "Pliki"
+
+msgid "Gloxi asked to {what}"
+msgstr "Gloxi prosił o: {what}"
+
+msgid "Gloxi asks before it changes anything. Here is what you allowed without asking again; take back anything you no longer want."
+msgstr "Gloxi pyta, zanim cokolwiek zmieni. Oto na co pozwolono bez ponownego pytania; wycofaj wszystko, czego już nie chcesz."
+
+msgid "Gloxi brought a backup back into a new folder"
+msgstr "Gloxi przywrócił kopię do nowego folderu"
+
+msgid "Gloxi brought back an earlier version of a file"
+msgstr "Gloxi przywrócił wcześniejszą wersję pliku"
+
+msgid "Gloxi brought back files from a snapshot"
+msgstr "Gloxi przywrócił pliki z migawki"
+
+msgid "Gloxi looked at the saved states of the system"
+msgstr "Gloxi przejrzał zapisane stany systemu"
+
+msgid "Gloxi returned the system to a saved state"
+msgstr "Gloxi przywrócił system do zapisanego stanu"
+
+msgid "Gloxi undid a return of the system to a saved state"
+msgstr "Gloxi cofnął przywrócenie systemu do zapisanego stanu"
+
+msgid "Gloxi changed a file"
+msgstr "Gloxi zmienił plik"
+
+msgid "Gloxi changed how often backups are made"
+msgstr "Gloxi zmienił, jak często są robione kopie"
+
+msgid "Gloxi changed what goes into backups"
+msgstr "Gloxi zmienił, co trafia do kopii"
+
+msgid "Gloxi checked the backups"
+msgstr "Gloxi sprawdził kopie"
+
+msgid "Gloxi created a file"
+msgstr "Gloxi utworzył plik"
+
+msgid "Gloxi deleted a file"
+msgstr "Gloxi usunął plik"
+
+msgid "Gloxi listed the backups"
+msgstr "Gloxi wyświetlił listę kopii"
+
+msgid "Gloxi looked at how much space the folders take"
+msgstr "Gloxi sprawdził, ile miejsca zajmują foldery"
+
+msgid "Gloxi looked into a folder"
+msgstr "Gloxi zajrzał do folderu"
+
+msgid "Gloxi read a file"
+msgstr "Gloxi przeczytał plik"
+
+msgid "Gloxi searched files"
+msgstr "Gloxi przeszukał pliki"
+
+msgid "Gloxi started a backup"
+msgstr "Gloxi rozpoczął kopię"
+
+msgid "Gloxi will ask you again before it does this: {what}."
+msgstr "Gloxi znów zapyta cię, zanim to zrobi: {what}."
+
+msgid "Gloxi will ask you each time."
+msgstr "Gloxi będzie pytać za każdym razem."
+
+msgid "Gloxi's reason"
+msgstr "Uzasadnienie Gloxi"
+
+msgid "Herkos did not allow it"
+msgstr "Herkos na to nie pozwolił"
+
+msgid "Herkos is not answering: {why}"
+msgstr "Herkos nie odpowiada: {why}"
+
+msgid "Journal"
+msgstr "Dziennik"
+
+msgid "No answer recorded"
+msgstr "Nie zapisano odpowiedzi"
+
+msgid "No permissions"
+msgstr "Brak uprawnień"
+
+msgid "Nobody answered in time"
+msgstr "Nikt nie odpowiedział na czas"
+
+msgid "Not allowed at all"
+msgstr "W ogóle niedozwolone"
+
+msgid "Not assessed"
+msgstr "Nie oceniono"
+
+msgid "Not undone: you said no."
+msgstr "Nie cofnięto: twoja odmowa."
+
+msgid "Not undone: {why}"
+msgstr "Nie cofnięto: {why}"
+
+msgid "Nothing here yet"
+msgstr "Na razie nic tu nie ma"
+
+msgid "Permission revoked."
+msgstr "Uprawnienie wycofane."
+
+msgid "Permissions"
+msgstr "Uprawnienia"
+
+msgid "Programs"
+msgstr "Programy"
+
+msgid "Refresh"
+msgstr "Odśwież"
+
+msgid "Revoke"
+msgstr "Wycofaj"
+
+msgid "Revoke this permission?"
+msgstr "Wycofać to uprawnienie?"
+
+msgid "Risk level {level}"
+msgstr "Poziom ryzyka {level}"
+
+msgid "There is nothing left to undo for this action."
+msgstr "Dla tego działania nie ma już nic do cofnięcia."
+
+msgid "Today"
+msgstr "Dzisiaj"
+
+msgid "Undo"
+msgstr "Cofnij"
+
+msgid "Undone. The earlier version is back."
+msgstr "Cofnięto. Wcześniejsza wersja wróciła."
+
+msgid "Until the session ends"
+msgstr "Do końca sesji"
+
+msgid "What"
+msgstr "Co"
+
+msgid "When Gloxi does something for you, it shows up here."
+msgstr "Gdy Gloxi zrobi coś dla ciebie, pojawi się to tutaj."
+
+msgid "Yesterday"
+msgstr "Wczoraj"
+
+msgid "You said no"
+msgstr "Twoja odmowa"
+
+msgid "{day} {month}"
+msgstr "{day} {month}"
+
+msgid "{how} · in {where}"
+msgstr "{how} · w {where}"
+
+msgid "{name} and {n} more"
+msgstr "{name} i jeszcze {n}"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Sprawdzić ustawienia pulpitu"
+
+msgid "Switch between the light and the dark style"
+msgstr "Przełączyć między jasnym a ciemnym stylem"
+
+msgid "Change the accent colour"
+msgstr "Zmienić kolor akcentu"
+
+msgid "Change the text size"
+msgstr "Zmienić rozmiar tekstu"
+
+msgid "Change night light"
+msgstr "Zmienić ustawienia światła nocnego"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Włączyć lub wyłączyć tryb Nie przeszkadzać"
+
+msgid "Change the volume"
+msgstr "Zmienić głośność"
+
+msgid "Mute or unmute the sound"
+msgstr "Wyciszyć lub włączyć dźwięk"
+
+msgid "Play sound through another output"
+msgstr "Odtwarzać dźwięk przez inne wyjście"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Cofnąć wcześniejszą zmianę ustawień"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Wyświetlić listę kalendarzy"
+
+msgid "Read the calendar"
+msgstr "Przeczytać kalendarz"
+
+msgid "Search the calendar"
+msgstr "Szukać w kalendarzu"
+
+msgid "Add an event to the calendar"
+msgstr "Dodać wydarzenie do kalendarza"
+
+msgid "Change an event in the calendar"
+msgstr "Zmienić wydarzenie w kalendarzu"
+
+msgid "Delete an event from the calendar"
+msgstr "Usunąć wydarzenie z kalendarza"
+
+msgid "Undo an earlier change to the calendar"
+msgstr "Cofnąć wcześniejszą zmianę w kalendarzu"
+
+# Mail (org.vilna.mcp.mail, ADR 0030)
+msgid "List the mail accounts"
+msgstr "Wyświetlić konta pocztowe"
+
+msgid "List the mail folders"
+msgstr "Wyświetlić foldery poczty"
+
+msgid "List messages in a folder"
+msgstr "Wyświetlić wiadomości w folderze"
+
+msgid "Search the mail"
+msgstr "Przeszukać pocztę"
+
+msgid "Read a message"
+msgstr "Przeczytać wiadomość"
+
+msgid "Save a message as a draft without sending it"
+msgstr "Zapisać wiadomość jako wersję roboczą bez wysyłania"
+
+msgid "Send a message"
+msgstr "Wysłać wiadomość"
+
+msgid "Remove a draft Gloxi saved"
+msgstr "Usunąć wersję roboczą zapisaną przez Gloxi"
+
+msgid "See whether Gloxi may reach the internet"
+msgstr "Sprawdzić, czy Gloxi może łączyć się z internetem"
+
+msgid "Let Gloxi reach the internet for the cloud model"
+msgstr "Pozwolić Gloxi łączyć się z internetem dla modelu w chmurze"
+
+msgid "Let Gloxi reach only this computer"
+msgstr "Pozwolić Gloxi łączyć się tylko z tym komputerem"
+
+msgid "See the saved states of the system"
+msgstr "Wyświetlić zapisane stany systemu"
+
+msgid "Return the whole system to a saved state, after a restart"
+msgstr "Przywrócić cały system do zapisanego stanu, po ponownym uruchomieniu"
+
+msgid "Undo a return of the system to a saved state"
+msgstr "Cofnąć przywrócenie systemu do zapisanego stanu"
+
+msgid "Gloxi looked at the VPN kill switch and the DNS"
+msgstr "Gloxi sprawdził wyłącznik awaryjny VPN i DNS"
+
+msgid "Gloxi turned on the VPN kill switch"
+msgstr "Gloxi włączył wyłącznik awaryjny VPN"
+
+msgid "Gloxi turned off the VPN kill switch"
+msgstr "Gloxi wyłączył wyłącznik awaryjny VPN"
+
+msgid "Gloxi let a local network through the VPN kill switch"
+msgstr "Gloxi przepuścił sieć lokalną przez wyłącznik awaryjny VPN"
+
+msgid "Gloxi stopped letting a local network through the VPN kill switch"
+msgstr "Gloxi przestał przepuszczać sieć lokalną przez wyłącznik awaryjny VPN"
+
+msgid "Gloxi opened the VPN kill switch to sign in to a Wi-Fi network"
+msgstr "Gloxi otworzył wyłącznik awaryjny VPN, aby zalogować się do sieci Wi-Fi"
+
+msgid "Gloxi changed the encrypted DNS"
+msgstr "Gloxi zmienił szyfrowany DNS"
+
+msgid "See the state of the VPN kill switch and the DNS"
+msgstr "Sprawdzić stan wyłącznika awaryjnego VPN i DNS"
+
+msgid "Turn on the VPN kill switch"
+msgstr "Włączyć wyłącznik awaryjny VPN"
+
+msgid "Turn off the VPN kill switch"
+msgstr "Wyłączyć wyłącznik awaryjny VPN"
+
+msgid "Let a local network through the VPN kill switch"
+msgstr "Przepuścić sieć lokalną przez wyłącznik awaryjny VPN"
+
+msgid "Stop letting a local network through the VPN kill switch"
+msgstr "Przestać przepuszczać sieć lokalną przez wyłącznik awaryjny VPN"
+
+msgid "Open the VPN kill switch for 5 minutes to sign in to a Wi-Fi network"
+msgstr "Otworzyć wyłącznik awaryjny VPN na 5 minut, aby zalogować się do sieci Wi-Fi"
+
+msgid "Choose the encrypted DNS: Quad9 or Mullvad"
+msgstr "Wybrać szyfrowany DNS: Quad9 lub Mullvad"
+
+msgid "Start the service of the chosen VPN provider and keep it on after a restart"
+msgstr "Uruchomić usługę wybranego dostawcy VPN i pozostawić ją włączoną po ponownym uruchomieniu"
+
+msgid "Gloxi started the service of the VPN provider"
+msgstr "Gloxi uruchomił usługę dostawcy VPN"
+
+# The Herkos window: the level chip, the Keros warning, R4 (design wave 2)
+msgid "R0 · no questions"
+msgstr "R0 · bez pytań"
+
+msgid "R1 · reads your data"
+msgstr "R1 · czyta Twoje dane"
+
+msgid "R2 · can be undone"
+msgstr "R2 · można cofnąć"
+
+msgid "R3 · hard to undo"
+msgstr "R3 · trudno cofnąć"
+
+msgid "R4 · cannot be undone"
+msgstr "R4 · nie można cofnąć"
+
+msgid "Suspicious content"
+msgstr "Podejrzana treść"
+
+msgid "Allow only if you asked for exactly this yourself."
+msgstr "Zezwalaj tylko wtedy, gdy właśnie o to prosisz."
+
+msgid "I have read exactly what will be done"
+msgstr "Rozumiem, co dokładnie zostanie zrobione"
+
+# Інструмент «програми» (vilna-mcp-apps, ADR 0012)
+msgid "Look for apps on Flathub and in Vilna's repository"
+msgstr "Szukać aplikacji we Flathubie i w repozytorium Vilna"
+
+msgid "See what an app is and what it may reach"
+msgstr "Sprawdzić, czym jest aplikacja i do czego będzie mieć dostęp"
+
+msgid "See the installed apps"
+msgstr "Wyświetlić zainstalowane aplikacje"
+
+msgid "Install an app for everybody on this computer"
+msgstr "Zainstalować aplikację dla wszystkich na tym komputerze"
+
+msgid "Update apps"
+msgstr "Zaktualizować aplikacje"
+
+msgid "Remove an app (its data stays)"
+msgstr "Usunąć aplikację (jej dane zostają)"
+
+msgid "Undo an install or a removal of an app"
+msgstr "Cofnąć instalację lub usunięcie aplikacji"
+
+msgid "Add a source of apps"
+msgstr "Dodać źródło aplikacji"
+
+msgid "Install an app from a .flatpakref or .flatpak file"
+msgstr "Zainstalować aplikację z pliku .flatpakref lub .flatpak"
+
+msgid "Open an installed app"
+msgstr "Otworzyć zainstalowaną aplikację"
+
+# Що діалог Herkos показує про програму перед встановленням
+msgid "App"
+msgstr "Aplikacja"
+
+msgid "Developer"
+msgstr "Twórca"
+
+msgid "Verified"
+msgstr "Zweryfikowano"
+
+msgid "In Recommended by Vilna"
+msgstr "W „Polecane przez Vilna”"
+
+msgid "Source"
+msgstr "Źródło"
+
+msgid "Download"
+msgstr "Pobierz"
+
+msgid "License"
+msgstr "Licencja"
+
+msgid "Can reach"
+msgstr "Będzie mieć dostęp do"
+
+msgid "preview"
+msgstr "opis"
+
+msgid "yes"
+msgstr "tak"
+
+msgid "a Vilna app"
+msgstr "aplikacja Vilna"
+
+msgid "no: Flathub has not checked who makes it"
+msgstr "nie: Flathub nie sprawdził, kto ją tworzy"
+
+msgid "no: Vilna has not checked this app"
+msgstr "nie: Vilna nie sprawdziła tej aplikacji"
+
+msgid "not given"
+msgstr "nie podano"
+
+msgid "unknown"
+msgstr "nieznane"
+
+msgid "only its own files"
+msgstr "tylko własnych plików"
+
+msgid "all files on the computer"
+msgstr "wszystkich plików na komputerze"
+
+msgid "the system's programs and libraries"
+msgstr "programów i bibliotek systemu"
+
+msgid "the system's settings (/etc)"
+msgstr "ustawień systemu (/etc)"
+
+msgid "your whole home folder"
+msgstr "całego Twojego katalogu domowego"
+
+msgid "the X11 display (can see other X11 windows)"
+msgstr "ekranu X11 (może widzieć inne okna X11)"
+
+msgid "every program on your session bus"
+msgstr "każdego programu na magistrali Twojej sesji"
+
+msgid "every service on the system bus"
+msgstr "każdej usługi na magistrali systemowej"
+
+msgid "your SSH keys (through the agent)"
+msgstr "Twoich kluczy SSH (przez agenta)"
+
+msgid "smart cards"
+msgstr "kart inteligentnych"
+
+msgid "printers"
+msgstr "drukarek"
+
+msgid "your GPG keys (through the agent)"
+msgstr "Twoich kluczy GPG (przez agenta)"
+
+msgid "all devices (camera, microphone, USB…)"
+msgstr "wszystkich urządzeń (kamera, mikrofon, USB…)"
+
+msgid "input devices"
+msgstr "urządzeń wejściowych"
+
+msgid "the internet and local network"
+msgstr "internetu i sieci lokalnej"
+
+msgid "its permissions could not be read"
+msgstr "nie udało się odczytać jej uprawnień"
+
+msgid "the folder {path}"
+msgstr "folderu {path}"
+
+msgid "{what} (read only)"
+msgstr "{what} (tylko odczyt)"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Naciśnij przycisk samodzielnie, klawiaturą lub myszą: Herkos nie przyjmuje naciśnięć od innych programów."
+
+msgid "See which devices can open the backups"
+msgstr "Sprawdzić, które urządzenia mogą otwierać kopie"
+
+msgid "Block a device from the backups"
+msgstr "Zablokować urządzeniu dostęp do kopii"
+
+msgid "Let a new device open the backups"
+msgstr "Pozwolić nowemu urządzeniu otwierać kopie"
+
+msgid "See the battery charge"
+msgstr "Sprawdzić poziom naładowania baterii"
+
+msgid "Show a notification from Gloxi"
+msgstr "Pokazać powiadomienie od Gloxi"
+
+msgid "See what the music and video players are playing"
+msgstr "Sprawdzić, co odtwarzają odtwarzacze muzyki i wideo"
+
+msgid "Play, pause or skip in a music or video player"
+msgstr "Odtworzyć, wstrzymać lub przełączyć w odtwarzaczu muzyki lub wideo"
+
+msgid "Lock the screen"
+msgstr "Zablokować ekran"
+
+msgid "See which apps may use the camera, microphone, location and more"
+msgstr "Sprawdzić, które aplikacje mogą używać kamery, mikrofonu, lokalizacji i innych"
+
+msgid "Take a permission away from an app"
+msgstr "Odebrać aplikacji uprawnienie"
+
+msgid "Give an app a permission"
+msgstr "Nadać aplikacji uprawnienie"
+
+msgid "Put an app's permissions back as they were"
+msgstr "Przywrócić uprawnienia aplikacji do poprzedniego stanu"
+
+msgid "See the open windows of other apps"
+msgstr "Wyświetlić otwarte okna innych aplikacji"
+
+msgid "Read a window of another app"
+msgstr "Odczytać okno innej aplikacji"
+
+msgid "Say which app, window and button an action is about"
+msgstr "Wskazać, której aplikacji, okna i przycisku dotyczy działanie"
+
+msgid "Press a button or menu item in another app"
+msgstr "Nacisnąć przycisk lub pozycję menu w innej aplikacji"
+
+msgid "Replace the text in a field of another app"
+msgstr "Zastąpić tekst w polu innej aplikacji"
+
+msgid "Put back the text a field had before"
+msgstr "Przywrócić tekst, który był wcześniej w polu"
+
+msgid "Window"
+msgstr "Okno"
+
+msgid "Control"
+msgstr "Element"
+
+msgid "Text now"
+msgstr "Tekst teraz"

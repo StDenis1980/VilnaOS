@@ -30,9 +30,6 @@ msgstr "Інші мови"
 msgid "Search for a language"
 msgstr "Пошук мови"
 
-# The conversation with Gloxi (steps 1–13). New texts are in uk only for now;
-# the other eight languages fall back to English until they are translated.
-
 msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the right and change any item yourself."
 msgstr "Я Gloxi, допоможу встановити Vilna. Нічого на диску не зміниться, доки ви не підтвердите план; його видно праворуч, і будь-який пункт можна змінити самостійно."
 
@@ -513,8 +510,6 @@ msgstr "Варто знати"
 
 msgid "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its recovery key (48 digits) once. Save the key before going on: it is in your Microsoft account or on the printout you made."
 msgstr "Windows на цьому диску використовує BitLocker. Після встановлення Vilna Windows може один раз попросити ключ відновлення (48 цифр). Збережіть ключ, перш ніж продовжити: він є у вашому обліковому записі Microsoft або на роздруківці, яку ви зробили."
-
-msgstr "З цієї флешки зараз працює Vilna. Виберіть інший диск."
 
 msgid "The chosen disk cannot be written to."
 msgstr "На вибраний диск не можна записувати."
