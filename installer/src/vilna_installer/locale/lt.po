@@ -30,19 +30,644 @@ msgstr "Kitos kalbos"
 msgid "Search for a language"
 msgstr "Ieškoti kalbos"
 
-# The privacy step and crash reports (ADR 0018 section 3).
-msgid "Privacy"
-msgstr "Privatumas"
+msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the right and change any item yourself."
+msgstr "Aš Gloxi, padėsiu įdiegti Vilna. Diske niekas nepasikeis, kol nepatvirtinsite plano; jį matote dešinėje ir bet kurį punktą galite pakeisti patys."
+
+msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
+msgstr "Kokiomis kalbomis rašote? Pridėsiu ir jų klaviatūros išdėstymus, pavyzdžiui, ukrainiečių ir anglų."
+
+msgid "Gloxi cannot start on this computer right now. You can go on without the assistant: the steps are the same, and what you chose stays in the plan."
+msgstr "Gloxi dabar negali pasileisti šiame kompiuteryje. Galite tęsti be asistento: žingsniai tie patys, o tai, ką jau pasirinkote, lieka plane."
+
+msgid "Gloxi did not answer. Try again, or go on without the assistant."
+msgstr "Gloxi neatsakė. Bandykite dar kartą arba tęskite be asistento."
+
+msgid "Gloxi is thinking…"
+msgstr "Gloxi galvoja…"
+
+msgid "Send"
+msgstr "Siųsti"
+
+msgid "Message to Gloxi"
+msgstr "Žinutė Gloxi"
+
+msgid "Change"
+msgstr "Keisti"
+
+msgid "Plan"
+msgstr "Planas"
+
+msgid "Not decided yet"
+msgstr "Dar nenuspręsta"
+
+msgid "Check and confirm the plan"
+msgstr "Patikrinti ir patvirtinti planą"
+
+msgid "Wi-Fi password for {name}"
+msgstr "„Wi-Fi“ slaptažodis tinklui {name}"
+
+msgid "Connect"
+msgstr "Prijungti"
+
+msgid "Connecting…"
+msgstr "Jungiamasi…"
+
+msgid "Could not connect. Check the password and try again."
+msgstr "Nepavyko prisijungti. Patikrinkite slaptažodį ir bandykite dar kartą."
+
+msgid "Password for {name}"
+msgstr "Slaptažodis naudotojui {name}"
+
+msgid "Repeat the password"
+msgstr "Pakartokite slaptažodį"
+
+msgid "The passwords are not the same."
+msgstr "Slaptažodžiai nesutampa."
+
+msgid "At least 8 characters."
+msgstr "Ne mažiau kaip 8 simboliai."
+
+msgid "Passphrase for the disk"
+msgstr "Disko slaptafrazė"
+
+msgid "Save"
+msgstr "Išsaugoti"
+
+msgid "Gloxi does not see what you type here."
+msgstr "Gloxi nemato, ką čia įvedate."
+
+msgid "entered"
+msgstr "įvesta"
+
+msgid "Without a network"
+msgstr "Be tinklo"
+
+msgid "Cable"
+msgstr "Kabelis"
+
+msgid "Erase the whole disk"
+msgstr "Ištrinti visą diską"
+
+msgid "Manual layout"
+msgstr "Rankinis skaidymas"
+
+msgid "Encrypted, with a recovery key"
+msgstr "Šifruota, su atkūrimo raktu"
+
+msgid "Encrypted with a passphrase"
+msgstr "Šifruota slaptafraze"
+
+msgid "Not encrypted"
+msgstr "Nešifruota"
 
 msgid "Cloud model off until the first login"
 msgstr "Debesijos modelis išjungtas iki pirmojo prisijungimo"
 
-msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
-msgstr "Gloxi veikia tiesiog šiame kompiuteryje, ir tai, ką jam sakote, lieka čia. Debesijos modelis dabar išjungtas; jį galėsite pasirinkti po pirmojo prisijungimo, ir tada privatumo šliuzas paslėps vardus ir numerius, prieš bet kam paliekant kompiuterį."
+msgid "Languages and keyboard"
+msgstr "Kalbos ir klaviatūra"
+
+msgid "Network"
+msgstr "Tinklas"
+
+msgid "Disk"
+msgstr "Diskas"
+
+msgid "Encryption"
+msgstr "Šifravimas"
+
+msgid "Account"
+msgstr "Paskyra"
+
+msgid "Time and region"
+msgstr "Laikas ir regionas"
+
+msgid "Privacy"
+msgstr "Privatumas"
+
+msgid "Gloxi is waking up… The first start from the USB stick can take a few minutes. You can also go on without the assistant."
+msgstr "Gloxi bunda… Pirmasis paleidimas iš USB atmintuko gali užtrukti kelias minutes. Taip pat galite tęsti be asistento."
+
+msgid "Shall we connect to a network now? It is not needed: everything for installing is already on the USB stick. Name your Wi-Fi network, or say that we go on without a network."
+msgstr "Ar prisijungsime prie tinklo dabar? To nereikia: viskas, ko reikia diegimui, jau yra USB atmintuke. Pasakykite savo „Wi-Fi“ tinklo pavadinimą arba pasakykite, kad tęsiame be tinklo."
+
+msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
+msgstr "Ką darysime su disku? Siūlau ištrinti visą diską ir įdiegti Vilna; kitas būdas – savas skaidymas skaidinių rengyklėje."
+
+msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
+msgstr "Atkūrimo raktą laikykite saugiai: be jo niekas, net jūs, neatidarys disko, jei šiame kompiuteryje kas nors pasikeis."
+
+msgid "What is your name? From it I will suggest a login name and a name for the computer."
+msgstr "Koks jūsų vardas? Pagal jį pasiūlysiu prisijungimo vardą ir kompiuterio pavadinimą."
+
+msgid "I suggest the time zone {timezone} and the date and number formats of {region}. Is that right? If not, name your city or country."
+msgstr "Siūlau laiko juostą {timezone} ir datų bei skaičių formatus pagal „{region}“. Ar tinka? Jei ne, pasakykite savo miestą ar šalį."
 
 msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
 msgstr "Gloxi veikia tiesiog šiame kompiuteryje, ir tai, ką jam sakote, lieka čia. Debesijos modelis dabar išjungtas; jį galėsite pasirinkti po pirmojo prisijungimo, ir tada privatumo šliuzas paslėps vardus ir numerius, prieš bet kam paliekant kompiuterį. Vienas klausimas čia yra tik jūsų, todėl už jus neatsakau: pasirinkite žemiau."
 
+# The classic wizard without the assistant (wizard.py).
+
+msgid "Summary"
+msgstr "Santrauka"
+
+msgid "Step {number} of {count}: {title}"
+msgstr "{number} žingsnis iš {count}: {title}"
+
+msgid "Back"
+msgstr "Atgal"
+
+msgid "Next"
+msgstr "Toliau"
+
+msgid "Which languages do you write in? The first one chosen is the main language."
+msgstr "Kokiomis kalbomis rašote? Pirmoji pasirinkta yra pagrindinė kalba."
+
+msgid "Main language"
+msgstr "Pagrindinė kalba"
+
+msgid "Keyboard layouts"
+msgstr "Klaviatūros išdėstymai"
+
+msgid "Another keyboard layout"
+msgstr "Dar vienas klaviatūros išdėstymas"
+
+msgid "None"
+msgstr "Nėra"
+
+msgid "A network is not needed: everything for installing is already on the USB stick."
+msgstr "Tinklo nereikia: viskas, ko reikia diegimui, jau yra USB atmintuke."
+
+msgid "Wi-Fi networks"
+msgstr "„Wi-Fi“ tinklai"
+
+msgid "Look for networks again"
+msgstr "Ieškoti tinklų dar kartą"
+
+msgid "No Wi-Fi networks found."
+msgstr "„Wi-Fi“ tinklų nerasta."
+
+msgid "Connected"
+msgstr "Prijungta"
+
+msgid "Choose the disk for Vilna and what to do with it."
+msgstr "Pasirinkite diską Vilna ir ką su juo daryti."
+
+msgid "Disks"
+msgstr "Diskai"
+
+msgid "What to do with the disk"
+msgstr "Ką daryti su disku"
+
+msgid "Erase the whole disk and install Vilna"
+msgstr "Ištrinti visą diską ir įdiegti Vilna"
+
+msgid "Choose the partitions yourself in the partition editor"
+msgstr "Skaidinius pasirinkti patiems skaidinių rengyklėje"
+
+msgid "Empty"
+msgstr "Tuščias"
+
+msgid "{size} free"
+msgstr "laisva {size}"
+
+msgid "Everything on this disk will be erased: {what}."
+msgstr "Viskas šiame diske bus ištrinta: {what}."
+
+msgid "Open the partition editor"
+msgstr "Atidaryti skaidinių rengyklę"
+
+msgid "Partition editor"
+msgstr "Skaidinių rengyklė"
+
+msgid "Choose what each partition is for. Partitions you do not use stay as they are. New partitions go into the largest free space."
+msgstr "Pasirinkite, kam skirtas kiekvienas skaidinys. Nenaudojami skaidiniai lieka tokie, kokie yra. Nauji skaidiniai kuriami didžiausioje laisvoje vietoje."
+
+msgid "Partitions on the disk"
+msgstr "Skaidiniai diske"
+
+msgid "New partitions"
+msgstr "Nauji skaidiniai"
+
+msgid "Add a partition"
+msgstr "Pridėti skaidinį"
+
+msgid "Remove"
+msgstr "Pašalinti"
+
+msgid "Suggest a layout"
+msgstr "Pasiūlyti skaidymą"
+
+msgid "Use"
+msgstr "Paskirtis"
+
+msgid "Format (erase)"
+msgstr "Formatuoti (ištrinti)"
+
+msgid "Size, GiB"
+msgstr "Dydis, GiB"
+
+msgid "Not used, keep"
+msgstr "Nenaudojamas, palikti"
+
+msgid "EFI system partition"
+msgstr "EFI sistemos skaidinys"
+
+msgid "System"
+msgstr "Sistema"
+
+msgid "Home folders"
+msgstr "Namų aplankai"
+
+msgid "Swap"
+msgstr "Sukeitimų skaidinys (swap)"
+
+msgid "Partitions chosen: {count}"
+msgstr "Pasirinkta skaidinių: {count}"
+
+msgid "Encryption keeps your files safe if the computer or the disk is lost or stolen."
+msgstr "Šifravimas saugo jūsų failus, jei kompiuteris ar diskas pasimeta arba yra pavagiamas."
+
+msgid "The disk opens by itself on this computer; a recovery key opens it if something changes. Recommended."
+msgstr "Diskas šiame kompiuteryje atsidaro pats; atkūrimo raktas jį atidarys, jei kas nors pasikeis. Rekomenduojama."
+
+msgid "This computer has no TPM 2.0 chip, so this way is not available."
+msgstr "Šiame kompiuteryje nėra TPM 2.0 lusto, todėl šis būdas negalimas."
+
+msgid "You type the passphrase every time the computer starts."
+msgstr "Slaptafrazę įvedate kiekvieną kartą įjungus kompiuterį."
+
+msgid "Anyone who has the disk can read your files."
+msgstr "Bet kas, turintis diską, gali perskaityti jūsų failus."
+
+msgid "The next screen shows the recovery key; keep it safe."
+msgstr "Kitame ekrane bus parodytas atkūrimo raktas; laikykite jį saugiai."
+
+msgid "Your name"
+msgstr "Jūsų vardas"
+
+msgid "Login name"
+msgstr "Prisijungimo vardas"
+
+msgid "Computer name"
+msgstr "Kompiuterio pavadinimas"
+
+msgid "Time zone"
+msgstr "Laiko juosta"
+
+msgid "Date and number formats"
+msgstr "Datų ir skaičių formatai"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi veikia tiesiog šiame kompiuteryje, ir tai, ką jam sakote, lieka čia. Debesijos modelis dabar išjungtas; jį galėsite pasirinkti po pirmojo prisijungimo, ir tada privatumo šliuzas paslėps vardus ir numerius, prieš bet kam paliekant kompiuterį."
+
+msgid "What happens to the disk"
+msgstr "Kas nutiks diskui"
+
+msgid "Still to do"
+msgstr "Dar liko padaryti"
+
+msgid "The plan is ready. The next screen, from Herkos, shows exactly what will change."
+msgstr "Planas paruoštas. Kitas Herkos ekranas tiksliai parodys, kas pasikeis."
+
+msgid "Fill in this step."
+msgstr "Užpildykite šį žingsnį."
+
+msgid "{name} ({size}{what}) will be erased"
+msgstr "{name} ({size}{what}) bus ištrintas"
+
+msgid "{name} ({size}{what}) stays as it is"
+msgstr "{name} ({size}{what}) lieka toks, koks yra"
+
+msgid "{name} ({size}) is used as {use}, its files stay"
+msgstr "{name} ({size}) naudojamas kaip „{use}“, jo failai lieka"
+
+msgid "A new partition of {size} is created{use}"
+msgstr "Sukuriamas naujas {size} skaidinys{use}"
+
+msgid "Partitions are chosen in the partition editor"
+msgstr "Skaidiniai pasirenkami skaidinių rengyklėje"
+
+msgid "Type your name."
+msgstr "Įveskite savo vardą."
+
+msgid "Choose a disk."
+msgstr "Pasirinkite diską."
+
+msgid "Choose one of the options."
+msgstr "Pasirinkite vieną iš variantų."
+
+msgid "Connect to the Wi-Fi network first, or choose another way."
+msgstr "Pirmiausia prisijunkite prie „Wi-Fi“ tinklo arba pasirinkite kitą būdą."
+
+msgid "Type the Wi-Fi password and connect."
+msgstr "Įveskite „Wi-Fi“ slaptažodį ir prisijunkite."
+
+msgid "Type the password for the account."
+msgstr "Įveskite paskyros slaptažodį."
+
+msgid "Type the passphrase for the disk."
+msgstr "Įveskite disko slaptafrazę."
+
+msgid "The disks changed (a disk added or removed?). Choose the disk again."
+msgstr "Diskai pasikeitė (pridėtas ar ištrauktas diskas?). Pasirinkite diską dar kartą."
+
+# The summary of the plan and the Herkos confirmation screen (step 12).
+
+msgid "{n} GiB"
+msgstr "{n} GiB"
+
+msgid "{n} MiB"
+msgstr "{n} MiB"
+
+msgid "Erased: {what}"
+msgstr "Bus ištrinta: {what}"
+
+msgid "Formatted for {use}, everything on it erased: {what}"
+msgstr "Bus suformatuota kaip {use}, viskas joje ištrinta: {what}"
+
+msgid "Kept as it is: {what}"
+msgstr "Lieka kaip yra: {what}"
+
+msgid "Shrunk to {to}: {what}"
+msgstr "Bus sumažinta iki {to}: {what}"
+
+msgid "Used for {use} without formatting: {what}"
+msgstr "Naudojama kaip {use} be formatavimo: {what}"
+
+msgid "New: Vilna, {size}"
+msgstr "Nauja: Vilna, {size}"
+
+msgid "New: Vilna, {size}, encrypted"
+msgstr "Nauja: Vilna, {size}, šifruota"
+
+msgid "New partition for {use}: {size}"
+msgstr "Naujas skaidinys ({use}): {size}"
+
+msgid "Your own layout of {disk}"
+msgstr "Savas disko {disk} skaidymas"
+
+msgid "{model} ({name}, {size})"
+msgstr "{model} ({name}, {size})"
+
+msgid "Disk {name}, {size}"
+msgstr "Diskas {name}, {size}"
+
+msgid "encrypted with {kind}"
+msgstr "šifruota su {kind}"
+
+msgid "unknown contents"
+msgstr "nežinomas turinys"
+
+msgid "empty"
+msgstr "tuščias"
+
+msgid "the boot partition (EFI)"
+msgstr "paleidimo skaidinys (EFI)"
+
+msgid "the system"
+msgstr "sistema"
+
+msgid "home folders"
+msgstr "namų aplankai"
+
+msgid "swap"
+msgstr "sukeitimų skaidinys (swap)"
+
+msgid "The disks changed since they were looked at (a USB stick put in or taken out?). Choose the disk again."
+msgstr "Diskai pasikeitė po patikrinimo (įkištas ar ištrauktas USB atmintukas?). Pasirinkite diską dar kartą."
+
+msgid "The chosen disk is not in the computer now. Choose the disk again."
+msgstr "Pasirinkto disko dabar kompiuteryje nėra. Pasirinkite diską dar kartą."
+
+msgid "This is the USB stick Vilna is running from. Choose another disk."
+msgstr "Iš šio USB atmintuko dabar veikia Vilna. Pasirinkite kitą diską."
+
+msgid "This disk is read-only. Choose another disk."
+msgstr "Šis diskas tik skaitomas. Pasirinkite kitą diską."
+
+msgid "There is not enough room: Vilna needs at least 40 GiB."
+msgstr "Per mažai vietos: Vilna reikia bent 40 GiB."
+
+msgid "There is not enough free space for these partitions."
+msgstr "Šiems skaidiniams nepakanka laisvos vietos."
+
+msgid "The EFI system partition needs at least 256 MiB."
+msgstr "EFI sistemos skaidiniui reikia bent 256 MiB."
+
+msgid "This disk has RAID, LVM or a filesystem Vilna does not know: only the partition editor can use it."
+msgstr "Šiame diske yra RAID, LVM ar failų sistema, kurios Vilna nežino: jį naudoti galima tik skaidinių rengyklėje."
+
+msgid "Choose the partitions in the partition editor."
+msgstr "Pasirinkite skaidinius skaidinių rengyklėje."
+
+msgid "Choose exactly one EFI system partition."
+msgstr "Pasirinkite lygiai vieną EFI sistemos skaidinį."
+
+msgid "Choose exactly one partition for the system."
+msgstr "Pasirinkite lygiai vieną skaidinį sistemai."
+
+msgid "The system and swap partitions are always formatted."
+msgstr "Sistemos ir sukeitimų skaidiniai visada formatuojami."
+
+msgid "This partition is not an EFI system partition; format it or choose another."
+msgstr "Šis skaidinys nėra EFI sistemos skaidinys; suformatuokite jį arba pasirinkite kitą."
+
+msgid "This partition cannot be kept for home folders; format it or choose another."
+msgstr "Šio skaidinio negalima palikti namų aplankams; suformatuokite jį arba pasirinkite kitą."
+
+msgid "Only a Linux partition can be kept for home folders; format it."
+msgstr "Namų aplankams galima palikti tik Linux skaidinį; suformatuokite šį."
+
+msgid "A partition is chosen twice."
+msgstr "Vienas skaidinys pasirinktas du kartus."
+
+msgid "Choose at most one partition for home folders."
+msgstr "Pasirinkite ne daugiau kaip vieną skaidinį namų aplankams."
+
+msgid "Choose at most one swap partition."
+msgstr "Pasirinkite ne daugiau kaip vieną sukeitimų skaidinį."
+
+msgid "This comes in a later version of Vilna."
+msgstr "Tai bus vėlesnėje Vilna versijoje."
+
+msgid "A login name starts with a Latin letter and has only small Latin letters, digits, «-» and «_»."
+msgstr "Prisijungimo vardas prasideda lotyniška raide ir turi tik mažąsias lotyniškas raides, skaitmenis, „-“ ir „_“."
+
+msgid "The system already uses this login name; choose another."
+msgstr "Sistema jau naudoja šį prisijungimo vardą; pasirinkite kitą."
+
+msgid "A computer name has only small Latin letters, digits and «-»."
+msgstr "Kompiuterio pavadinimas turi tik mažąsias lotyniškas raides, skaitmenis ir „-“."
+
+msgid "Worth knowing"
+msgstr "Verta žinoti"
+
+msgid "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its recovery key (48 digits) once. Save the key before going on: it is in your Microsoft account or on the printout you made."
+msgstr "Šiame diske esanti Windows naudoja BitLocker. Įdiegus Vilna, Windows gali vieną kartą paprašyti savo atkūrimo rakto (48 skaitmenys). Prieš tęsdami išsaugokite raktą: jis yra jūsų Microsoft paskyroje arba jūsų atsispausdintame lape."
+
+msgid "The chosen disk cannot be written to."
+msgstr "Į pasirinktą diską rašyti negalima."
+
+msgid "The disk is too small: Vilna needs at least 40 GiB."
+msgstr "Diskas per mažas: Vilna reikia bent 40 GiB."
+
+msgid "The disk has RAID, LVM or a filesystem Vilna does not know: only your own layout in the partition editor is possible."
+msgstr "Diske yra RAID, LVM ar failų sistema, kurios Vilna nežino: galimas tik savas skaidymas skaidinių rengyklėje."
+
+msgid "This way of installing comes in a later version of Vilna."
+msgstr "Šis diegimo būdas bus vėlesnėje Vilna versijoje."
+
+msgid "Make the layout in the partition editor first."
+msgstr "Pirmiausia sukurkite skaidymą skaidinių rengyklėje."
+
+msgid "The Wi-Fi password is not entered yet."
+msgstr "„Wi-Fi“ slaptažodis dar neįvestas."
+
+msgid "The account password is not entered yet."
+msgstr "Paskyros slaptažodis dar neįvestas."
+
+msgid "The disk passphrase is not entered yet."
+msgstr "Disko slaptafrazė dar neįvesta."
+
+msgid "There is not enough free space for Vilna on the disk."
+msgstr "Diske nepakanka laisvos vietos Vilna."
+
+msgid "This computer has no TPM 2.0 chip that can keep the disk key. Choose encryption with a passphrase instead."
+msgstr "Šiame kompiuteryje nėra TPM 2.0 lusto, kuris galėtų saugoti disko raktą. Vietoj to pasirinkite šifravimą slaptafraze."
+
+msgid "Without encryption anyone who has the disk can read your files."
+msgstr "Be šifravimo bet kas, turintis diską, gali perskaityti jūsų failus."
+
+msgid "The chosen disk is removable, such as a USB disk."
+msgstr "Pasirinktas diskas yra keičiamasis, pavyzdžiui, USB diskas."
+
+msgid "The plan cannot be installed yet: {message}"
+msgstr "Plano dar negalima įdiegti: {message}"
+
+msgid "Not decided yet: {parts}"
+msgstr "Dar nenuspręsta: {parts}"
+
+msgid "Herkos"
+msgstr "Herkos"
+
+msgid "Confirm the installation"
+msgstr "Patvirtinkite diegimą"
+
+msgid "Check what will happen. Nothing has changed on the disks yet; after you confirm, Vilna is installed and this cannot be undone."
+msgstr "Patikrinkite, kas nutiks. Diskuose kol kas niekas nepakeista; jums patvirtinus, Vilna bus įdiegta ir to atšaukti nebus galima."
+
+msgid "What happens to the disks"
+msgstr "Kas nutiks diskams"
+
+msgid "The plan"
+msgstr "Planas"
+
+msgid "What has to be fixed first"
+msgstr "Ką pirmiausia reikia ištaisyti"
+
+msgid "The plan cannot be installed yet. Go back and change it:"
+msgstr "Plano dar negalima įdiegti. Grįžkite ir jį pakeiskite:"
+
+msgid "Note"
+msgstr "Atkreipkite dėmesį"
+
+msgid "Recovery key"
+msgstr "Atkūrimo raktas"
+
+msgid "Write this key down or take a photo of it, and keep it away from the computer. You need it if the disk does not open by itself: after a change of the hardware or of Secure Boot, or when you forget the passphrase. Nobody else has it, not even Vilna."
+msgstr "Užsirašykite šį raktą arba jį nufotografuokite ir laikykite atskirai nuo kompiuterio. Jo prireiks, jei diskas neatsidarys pats: pakeitus aparatinę įrangą ar Secure Boot arba pamiršus slaptafrazę. Daugiau niekas jo neturi, net Vilna."
+
+msgid "To show that you saved it, type the last group of the key (8 letters):"
+msgstr "Kad patvirtintumėte, jog raktas išsaugotas, įveskite paskutinę jo grupę (8 raidės):"
+
+msgid "The last group of the recovery key"
+msgstr "Paskutinė atkūrimo rakto grupė"
+
+msgid "That is not the last group. Look at the key again."
+msgstr "Tai ne paskutinė grupė. Pažiūrėkite į raktą dar kartą."
+
+msgid "Right. The key is saved."
+msgstr "Teisingai. Raktas išsaugotas."
+
+msgid "Recovery key, letter by letter: {key}"
+msgstr "Atkūrimo raktas, raidė po raidės: {key}"
+
+msgid "I understand that everything on {disk} is erased"
+msgstr "Suprantu, kad viskas diske {disk} bus ištrinta"
+
+msgid "I understand that the partitions marked above are erased"
+msgstr "Suprantu, kad aukščiau pažymėti skaidiniai bus ištrinti"
+
+msgid "Back to the plan"
+msgstr "Grįžti į planą"
+
+msgid "Erase and install"
+msgstr "Ištrinti ir įdiegti"
+
+msgid "Install"
+msgstr "Įdiegti"
+
+msgid "Read the changes first…"
+msgstr "Pirmiausia perskaitykite pakeitimus…"
+
+msgid "The disks changed while this screen was open. Go back and choose the disk again."
+msgstr "Kol šis ekranas buvo atidarytas, diskai pasikeitė. Grįžkite ir pasirinkite diską dar kartą."
+
+msgid "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its buttons."
+msgstr "Šį ekraną rodo Herkos, ne Gloxi. Gloxi negali spausti jo mygtukų."
+
+msgid "Installing Vilna"
+msgstr "Diegiama Vilna"
+
+msgid "This takes a few minutes. Do not switch the computer off and do not pull out the stick."
+msgstr "Tai užtruks kelias minutes. Neišjunkite kompiuterio ir neištraukite atmintuko."
+
+msgid "Vilna is installed"
+msgstr "Vilna įdiegta"
+
+msgid "Take out the stick Vilna started from, then restart the computer. Vilna starts from the disk."
+msgstr "Ištraukite atmintuką, iš kurio paleista Vilna, ir paleiskite kompiuterį iš naujo. Vilna pasileis iš disko."
+
+msgid "The installation stopped"
+msgstr "Diegimas sustojo"
+
+msgid "Nothing on the disk has changed yet. You can close this window and try again."
+msgstr "Diske kol kas niekas nepasikeitė. Galite uždaryti šį langą ir bandyti dar kartą."
+
+msgid "The disk was already partly written: Vilna will not start from it, and what was on it before is erased. Close this window and start the installation again."
+msgstr "Į diską jau iš dalies įrašyta: Vilna iš jo nepasileis, o tai, kas jame buvo anksčiau, ištrinta. Uždarykite šį langą ir pradėkite diegimą iš naujo."
+
+msgid "Restart"
+msgstr "Paleisti iš naujo"
+
+msgid "Close"
+msgstr "Uždaryti"
+
+msgid "What went wrong (for a bug report):"
+msgstr "Kas nepavyko (pranešimui apie klaidą):"
+
+msgid "Checking the plan and the disk"
+msgstr "Tikrinamas planas ir diskas"
+
+msgid "Writing Vilna to the disk"
+msgstr "Vilna įrašoma į diską"
+
+msgid "Opening the new system"
+msgstr "Atidaroma nauja sistema"
+
+msgid "Copying Gloxi's model"
+msgstr "Kopijuojamas Gloxi modelis"
+
+msgid "Setting up languages, time and your account"
+msgstr "Nustatomos kalbos, laikas ir jūsų paskyra"
+
+msgid "Setting up start-up and encryption"
+msgstr "Nustatomas paleidimas ir šifravimas"
+
+msgid "Finishing"
+msgstr "Baigiama"
+
+# The privacy step and crash reports (ADR 0018 section 3).
 msgid "If a program crashes, send us a crash report?"
 msgstr "Jei programa užstrigs, siųsti mums strigties ataskaitą?"
 
@@ -75,6 +700,51 @@ msgstr "Pasirinkite atsakymą dėl strigčių ataskaitų."
 
 msgid "Crash reports: {answer}"
 msgstr "Strigčių ataskaitos: {answer}"
+
+msgid "Recovery key. It is only drawn on the screen, so that other programs cannot read it. Press «Read the key aloud» to hear it."
+msgstr "Atkūrimo raktas. Jis tik nupieštas ekrane, kad kitos programos negalėtų jo perskaityti. Paspauskite „Perskaityti raktą balsu“, kad jį išgirstumėte."
+
+msgid "Read the key aloud"
+msgstr "Perskaityti raktą balsu"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Mygtuką paspauskite patys, klaviatūra ar pele: Herkos nepriima paspaudimų iš kitų programų."
+
+msgid "Connected to Wi-Fi."
+msgstr "Prisijungta prie „Wi-Fi“."
+
+msgid "The password is saved."
+msgstr "Slaptažodis išsaugotas."
+
+msgid "The passphrase is saved."
+msgstr "Slaptafrazė išsaugota."
+
+msgid "Type the Wi-Fi password into the protected field below. I do not see it."
+msgstr "Įveskite „Wi-Fi“ slaptažodį į apsaugotą lauką žemiau. Aš jo nematau."
+
+msgid "Type the password for your account into the protected field below, twice. I do not see it."
+msgstr "Įveskite savo paskyros slaptažodį į apsaugotą lauką žemiau, du kartus. Aš jo nematau."
+
+msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
+msgstr "Įveskite disko slaptafrazę į apsaugotą lauką žemiau, du kartus. Aš jos nematau."
+
+msgid "This computer is already connected to the network, so I keep that connection; you can change it in the plan."
+msgstr "Šis kompiuteris jau prijungtas prie tinklo, todėl palieku šį ryšį; jį galite pakeisti plane."
+
+msgid "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; the other way is your own layout in the partition editor. Use the whole disk?"
+msgstr "Vilna skirtas diskas turi {size} GB ir yra tuščias. Siūlau jį visą atiduoti Vilna; kitas būdas – savas skaidymas skaidinių rengyklėje. Naudoti visą diską?"
+
+msgid "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it completely and installing Vilna: everything on it will be lost. The other way is your own layout in the partition editor. Erase this disk?"
+msgstr "Vilna skirtas diskas turi {size} GB, jame yra {what}. Siūlau jį visiškai ištrinti ir įdiegti Vilna: viskas, kas jame yra, bus prarasta. Kitas būdas – savas skaidymas skaidinių rengyklėje. Ištrinti šį diską?"
+
+msgid "files"
+msgstr "failų"
+
+msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. For more protection if the computer is stolen, the disk can also ask for a PIN at every start. You can also type a passphrase at every start, or not encrypt the disk."
+msgstr "Ar šifruoti naująją sistemą? Siūlau šifravimą su atkūrimo raktu: šiame kompiuteryje diskas atsidaro pats, o raktas jį atidarys, jei kas nors pasikeis. Kad būtumėte geriau apsaugoti vagystės atveju, diskas gali dar ir prašyti PIN kodo kiekvieną kartą paleidžiant. Taip pat galite kiekvieną kartą paleisdami įvesti slaptafrazę arba diską nešifruoti."
+
+msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
+msgstr "Ar šifruoti naująją sistemą? Šiame kompiuteryje nėra TPM lusto, todėl diskas atsidarytų slaptafraze, kurią įvedate kiekvieną kartą paleisdami. Be šifravimo bet kas, turintis diską, gali perskaityti jūsų failus."
 
 msgid "Switch to the dark theme"
 msgstr "Perjungti į tamsią temą"
@@ -124,6 +794,30 @@ msgstr "Prisijungiate tik paties teikėjo programoje: Vilna ir Gloxi niekada nem
 msgid "Choose an answer about the VPN."
 msgstr "Pasirinkite atsakymą dėl VPN."
 
+msgid "Encrypted, with a PIN at every start"
+msgstr "Šifruota, su PIN kodu kiekvieną kartą paleidžiant"
+
+msgid "Start PIN (6 to 20 digits)"
+msgstr "Paleidimo PIN kodas (nuo 6 iki 20 skaitmenų)"
+
+msgid "The PIN is 6 to 20 digits, nothing else."
+msgstr "PIN kodas – tai nuo 6 iki 20 skaitmenų, nieko daugiau."
+
+msgid "The PIN is saved."
+msgstr "PIN kodas išsaugotas."
+
+msgid "Type the start PIN, 6 to 20 digits, into the protected field below, twice. I do not see it."
+msgstr "Įveskite paleidimo PIN kodą, nuo 6 iki 20 skaitmenų, į apsaugotą lauką žemiau, du kartus. Aš jo nematau."
+
+msgid "Like the first way, plus a PIN of 6 to 20 digits at every start: a stolen computer does not even reach the login screen."
+msgstr "Kaip pirmasis būdas, ir dar 6–20 skaitmenų PIN kodas kiekvieną kartą paleidžiant: pavogtas kompiuteris nepasieks net prisijungimo ekrano."
+
+msgid "Type the start PIN for the disk."
+msgstr "Įveskite disko paleidimo PIN kodą."
+
+msgid "The start PIN is not entered yet."
+msgstr "Paleidimo PIN kodas dar neįvestas."
+
 msgid "Getting to know each other"
 msgstr "Susipažinkime"
 
@@ -138,3 +832,21 @@ msgstr "{n} žingsnis iš {total}"
 
 msgid "Installation"
 msgstr "Diegimas"
+
+msgid "Conversation with Gloxi"
+msgstr "Pokalbis su Gloxi"
+
+msgid "Password-protected"
+msgstr "Apsaugotas slaptažodžiu"
+
+msgid "New partition {n}"
+msgstr "Naujas skaidinys {n}"
+
+msgid "Password"
+msgstr "Slaptažodis"
+
+msgid "This version installs only the EFI and the system partition. Leave home folders and swap unused for now."
+msgstr "Ši versija įdiegia tik EFI ir sistemos skaidinius. Namų aplankus ir sukeitimų skaidinį kol kas palikite nenaudojamus."
+
+msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
+msgstr "Diske jau yra EFI sistemos skaidinys. Pasirinkite jį (formatuotą ar ne) vietoj naujo."

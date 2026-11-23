@@ -1,0 +1,787 @@
+# Czech translation of Herkos.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: cs\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# Window and terminal
+msgid "Herkos: permission"
+msgstr "Herkos: oprávnění"
+
+msgid "Herkos: Gloxi asks for permission"
+msgstr "Herkos: Gloxi žádá o svolení"
+
+msgid "Gloxi's reason: "
+msgstr "Zdůvodnění od Gloxi: "
+
+msgid "… and {n} more"
+msgstr "… a {n} dalších"
+
+msgid "Can be undone."
+msgstr "Lze vrátit zpět."
+
+msgid "Cannot be undone."
+msgstr "Nelze vrátit zpět."
+
+msgid "Riskier than usual: {why}."
+msgstr "Riskantnější než obvykle: {why}."
+
+msgid "Untrusted content came from: {src}"
+msgstr "Nedůvěryhodný obsah pochází z: {src}"
+
+msgid "Exactly this will be done:"
+msgstr "Provede se přesně toto:"
+
+msgid "Deny"
+msgstr "Zamítnout"
+
+msgid "Allow once"
+msgstr "Povolit jednou"
+
+msgid "Allow for this session"
+msgstr "Povolit pro toto sezení"
+
+msgid "Always allow"
+msgstr "Vždy povolit"
+
+msgid "[o] allow once"
+msgstr "[o] povolit jednou"
+
+msgid "[s] allow for this session"
+msgstr "[s] povolit pro toto sezení"
+
+msgid "[a] always allow"
+msgstr "[a] vždy povolit"
+
+msgid "[n] deny"
+msgstr "[n] zamítnout"
+
+msgid "Allowed."
+msgstr "Povoleno."
+
+msgid "Denied."
+msgstr "Zamítnuto."
+
+msgid "No answer: denied."
+msgstr "Bez odpovědi: zamítnuto."
+
+# Why an action is riskier (policy)
+msgid "the tool has no Herkos manifest"
+msgstr "nástroj nemá manifest Herkos"
+
+msgid "the program changed this action since it was allowed"
+msgstr "program tuto akci změnil od chvíle, kdy byla povolena"
+
+msgid "the program describes this action at too great a length"
+msgstr "program tuto akci popisuje příliš dlouze"
+
+msgid "Let Gloxi use this program: {program}"
+msgstr "Dovolit Gloxi používat tento program: {program}"
+
+msgid "the tool describes this operation as riskier"
+msgstr "nástroj tuto operaci popisuje jako riskantnější"
+
+msgid "untrusted content is in the conversation"
+msgstr "v konverzaci je nedůvěryhodný obsah"
+
+msgid "content read earlier {kinds}"
+msgstr "dříve přečtený obsah {kinds}"
+
+msgid "it touches something outside the allowed folders"
+msgstr "týká se něčeho mimo povolené složky"
+
+msgid "it touches more than {n} items at once"
+msgstr "týká se více než {n} položek najednou"
+
+msgid "it cannot be undone"
+msgstr "nelze to vrátit zpět"
+
+msgid "Herkos cannot tell which of the program's commands this runs"
+msgstr "Herkos nedokáže určit, který příkaz programu se tím spouští"
+
+msgid "the manifest gives no level for the program's command {commands}"
+msgstr "manifest neuvádí úroveň pro příkaz programu {commands}"
+
+msgid "data leaves this device"
+msgstr "data opouštějí toto zařízení"
+
+msgid "it sends data to an address that came from untrusted content"
+msgstr "posílá data na adresu, která pochází z nedůvěryhodného obsahu"
+
+# Keros findings
+msgid "asks the assistant to ignore its instructions"
+msgstr "žádá asistenta, aby ignoroval své pokyny"
+
+msgid "tries to give the assistant a new role or new instructions"
+msgstr "snaží se asistentovi dát novou roli nebo nové pokyny"
+
+msgid "contains chat-template or system markers"
+msgstr "obsahuje značky šablony chatu nebo systému"
+
+msgid "contains text hidden from people (HTML/CSS)"
+msgstr "obsahuje text skrytý před lidmi (HTML/CSS)"
+
+msgid "contains a link that could carry data away"
+msgstr "obsahuje odkaz, který by mohl vynést data"
+
+msgid "contains invisible or direction-changing characters"
+msgstr "obsahuje neviditelné znaky nebo znaky měnící směr textu"
+
+msgid "the local check found text addressed to the assistant"
+msgstr "místní kontrola našla text určený asistentovi"
+
+# Tool operations (manifest summaries)
+msgid "List a folder"
+msgstr "Vypsat složku"
+
+msgid "Search files by name and text"
+msgstr "Hledat soubory podle názvu a textu"
+
+msgid "Read a file"
+msgstr "Přečíst soubor"
+
+msgid "Create a file"
+msgstr "Vytvořit soubor"
+
+msgid "Change a file"
+msgstr "Změnit soubor"
+
+msgid "Delete a file"
+msgstr "Smazat soubor"
+
+msgid "Undo an earlier change to a file"
+msgstr "Vrátit dřívější změnu souboru"
+
+msgid "Undo an earlier change from a snapshot"
+msgstr "Vrátit dřívější změnu ze snímku"
+
+# Backups (org.vilna.mcp.backup)
+msgid "See whether backups are on and how the last one went"
+msgstr "Zjistit, zda jsou zálohy zapnuté a jak dopadla poslední"
+
+msgid "List the backups"
+msgstr "Vypsat zálohy"
+
+msgid "See how much space the folders take"
+msgstr "Zjistit, kolik místa zabírají složky"
+
+msgid "Make a backup now"
+msgstr "Zálohovat hned"
+
+msgid "Change how often backups are made"
+msgstr "Změnit, jak často se zálohuje"
+
+msgid "Change what goes into backups"
+msgstr "Změnit, co se zálohuje"
+
+msgid "Bring a backup back into a new folder"
+msgstr "Vrátit zálohu do nové složky"
+
+msgid "Choose where backups are kept"
+msgstr "Vybrat, kde se zálohy ukládají"
+
+msgid "Bring files back over the current ones"
+msgstr "Vrátit soubory přes současné"
+
+msgid "Delete backups"
+msgstr "Smazat zálohy"
+
+msgid "Move backups to another place"
+msgstr "Přesunout zálohy jinam"
+
+msgid "Replace the backup keys"
+msgstr "Vyměnit klíče záloh"
+
+msgid "Protect backups after a device was stolen"
+msgstr "Ochránit zálohy po krádeži zařízení"
+
+# The «Дозволи» window (permissions_window.py, permissions_view.py)
+
+msgid "All"
+msgstr "Vše"
+
+msgid "Allowed, but the tool failed"
+msgstr "Povoleno, ale nástroj selhal"
+
+msgid "Always"
+msgstr "Vždy"
+
+msgid "January"
+msgstr "ledna"
+
+msgid "February"
+msgstr "února"
+
+msgid "March"
+msgstr "března"
+
+msgid "April"
+msgstr "dubna"
+
+msgid "May"
+msgstr "května"
+
+msgid "June"
+msgstr "června"
+
+msgid "July"
+msgstr "července"
+
+msgid "August"
+msgstr "srpna"
+
+msgid "September"
+msgstr "září"
+
+msgid "October"
+msgstr "října"
+
+msgid "November"
+msgstr "listopadu"
+
+msgid "December"
+msgstr "prosince"
+
+msgid "Backups"
+msgstr "Zálohy"
+
+msgid "Cancel"
+msgstr "Zrušit"
+
+msgid "Changes can be undone for 30 days. The journal cannot be altered."
+msgstr "Změny lze vrátit zpět po dobu 30 dnů. Deník nelze pozměnit."
+
+msgid "Done"
+msgstr "Hotovo"
+
+msgid "Done, then undone"
+msgstr "Hotovo, pak vráceno"
+
+msgid "Files"
+msgstr "Soubory"
+
+msgid "Gloxi asked to {what}"
+msgstr "Gloxi žádal: {what}"
+
+msgid "Gloxi asks before it changes anything. Here is what you allowed without asking again; take back anything you no longer want."
+msgstr "Gloxi se ptá, než cokoli změní. Tady je, co jste povolili bez dalšího ptaní; odvolejte vše, co už nechcete."
+
+msgid "Gloxi brought a backup back into a new folder"
+msgstr "Gloxi vrátil zálohu do nové složky"
+
+msgid "Gloxi brought back an earlier version of a file"
+msgstr "Gloxi vrátil dřívější verzi souboru"
+
+msgid "Gloxi brought back files from a snapshot"
+msgstr "Gloxi vrátil soubory ze snímku"
+
+msgid "Gloxi looked at the saved states of the system"
+msgstr "Gloxi si prohlédl uložené stavy systému"
+
+msgid "Gloxi returned the system to a saved state"
+msgstr "Gloxi vrátil systém do uloženého stavu"
+
+msgid "Gloxi undid a return of the system to a saved state"
+msgstr "Gloxi zrušil návrat systému do uloženého stavu"
+
+msgid "Gloxi changed a file"
+msgstr "Gloxi změnil soubor"
+
+msgid "Gloxi changed how often backups are made"
+msgstr "Gloxi změnil, jak často se zálohuje"
+
+msgid "Gloxi changed what goes into backups"
+msgstr "Gloxi změnil, co se zálohuje"
+
+msgid "Gloxi checked the backups"
+msgstr "Gloxi zkontroloval zálohy"
+
+msgid "Gloxi created a file"
+msgstr "Gloxi vytvořil soubor"
+
+msgid "Gloxi deleted a file"
+msgstr "Gloxi smazal soubor"
+
+msgid "Gloxi listed the backups"
+msgstr "Gloxi vypsal zálohy"
+
+msgid "Gloxi looked at how much space the folders take"
+msgstr "Gloxi zjistil, kolik místa zabírají složky"
+
+msgid "Gloxi looked into a folder"
+msgstr "Gloxi se podíval do složky"
+
+msgid "Gloxi read a file"
+msgstr "Gloxi přečetl soubor"
+
+msgid "Gloxi searched files"
+msgstr "Gloxi prohledal soubory"
+
+msgid "Gloxi started a backup"
+msgstr "Gloxi spustil zálohu"
+
+msgid "Gloxi will ask you again before it does this: {what}."
+msgstr "Gloxi se vás znovu zeptá, než udělá toto: {what}."
+
+msgid "Gloxi will ask you each time."
+msgstr "Gloxi se vás zeptá pokaždé."
+
+msgid "Gloxi's reason"
+msgstr "Zdůvodnění od Gloxi"
+
+msgid "Herkos did not allow it"
+msgstr "Herkos to nepovolil"
+
+msgid "Herkos is not answering: {why}"
+msgstr "Herkos neodpovídá: {why}"
+
+msgid "Journal"
+msgstr "Deník"
+
+msgid "No answer recorded"
+msgstr "Žádná zaznamenaná odpověď"
+
+msgid "No permissions"
+msgstr "Žádná oprávnění"
+
+msgid "Nobody answered in time"
+msgstr "Nikdo neodpověděl včas"
+
+msgid "Not allowed at all"
+msgstr "Vůbec nepovoleno"
+
+msgid "Not assessed"
+msgstr "Neposouzeno"
+
+msgid "Not undone: you said no."
+msgstr "Nevráceno: odmítli jste."
+
+msgid "Not undone: {why}"
+msgstr "Nevráceno: {why}"
+
+msgid "Nothing here yet"
+msgstr "Zatím tu nic není"
+
+msgid "Permission revoked."
+msgstr "Oprávnění odvoláno."
+
+msgid "Permissions"
+msgstr "Oprávnění"
+
+msgid "Programs"
+msgstr "Programy"
+
+msgid "Refresh"
+msgstr "Obnovit"
+
+msgid "Revoke"
+msgstr "Odvolat"
+
+msgid "Revoke this permission?"
+msgstr "Odvolat toto oprávnění?"
+
+msgid "Risk level {level}"
+msgstr "Úroveň rizika {level}"
+
+msgid "There is nothing left to undo for this action."
+msgstr "U této akce už není co vracet."
+
+msgid "Today"
+msgstr "Dnes"
+
+msgid "Undo"
+msgstr "Vrátit zpět"
+
+msgid "Undone. The earlier version is back."
+msgstr "Vráceno. Dřívější verze je zpět."
+
+msgid "Until the session ends"
+msgstr "Do konce sezení"
+
+msgid "What"
+msgstr "Co"
+
+msgid "When Gloxi does something for you, it shows up here."
+msgstr "Když pro vás Gloxi něco udělá, objeví se to tady."
+
+msgid "Yesterday"
+msgstr "Včera"
+
+msgid "You said no"
+msgstr "Odmítli jste"
+
+msgid "{day} {month}"
+msgstr "{day}. {month}"
+
+msgid "{how} · in {where}"
+msgstr "{how} · v {where}"
+
+msgid "{name} and {n} more"
+msgstr "{name} a {n} dalších"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Zobrazit nastavení pracovního prostředí"
+
+msgid "Switch between the light and the dark style"
+msgstr "Přepnout mezi světlým a tmavým stylem"
+
+msgid "Change the accent colour"
+msgstr "Změnit barvu zvýraznění"
+
+msgid "Change the text size"
+msgstr "Změnit velikost textu"
+
+msgid "Change night light"
+msgstr "Změnit noční světlo"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Zapnout nebo vypnout Nerušit"
+
+msgid "Change the volume"
+msgstr "Změnit hlasitost"
+
+msgid "Mute or unmute the sound"
+msgstr "Ztlumit nebo zapnout zvuk"
+
+msgid "Play sound through another output"
+msgstr "Přehrávat zvuk přes jiný výstup"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Vrátit dřívější změnu nastavení"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Vypsat kalendáře"
+
+msgid "Read the calendar"
+msgstr "Přečíst kalendář"
+
+msgid "Search the calendar"
+msgstr "Hledat v kalendáři"
+
+msgid "Add an event to the calendar"
+msgstr "Přidat událost do kalendáře"
+
+msgid "Change an event in the calendar"
+msgstr "Změnit událost v kalendáři"
+
+msgid "Delete an event from the calendar"
+msgstr "Smazat událost z kalendáře"
+
+msgid "Undo an earlier change to the calendar"
+msgstr "Vrátit dřívější změnu v kalendáři"
+
+# Mail (org.vilna.mcp.mail, ADR 0030)
+msgid "List the mail accounts"
+msgstr "Vypsat poštovní účty"
+
+msgid "List the mail folders"
+msgstr "Vypsat poštovní složky"
+
+msgid "List messages in a folder"
+msgstr "Vypsat zprávy ve složce"
+
+msgid "Search the mail"
+msgstr "Hledat v poště"
+
+msgid "Read a message"
+msgstr "Přečíst zprávu"
+
+msgid "Save a message as a draft without sending it"
+msgstr "Uložit zprávu jako koncept bez odeslání"
+
+msgid "Send a message"
+msgstr "Odeslat zprávu"
+
+msgid "Remove a draft Gloxi saved"
+msgstr "Odstranit koncept, který uložil Gloxi"
+
+msgid "See whether Gloxi may reach the internet"
+msgstr "Zjistit, zda Gloxi smí na internet"
+
+msgid "Let Gloxi reach the internet for the cloud model"
+msgstr "Pustit Gloxi na internet kvůli cloudovému modelu"
+
+msgid "Let Gloxi reach only this computer"
+msgstr "Dovolit Gloxi spojení jen s tímto počítačem"
+
+msgid "See the saved states of the system"
+msgstr "Zobrazit uložené stavy systému"
+
+msgid "Return the whole system to a saved state, after a restart"
+msgstr "Vrátit celý systém do uloženého stavu, po restartu"
+
+msgid "Undo a return of the system to a saved state"
+msgstr "Zrušit návrat systému do uloženého stavu"
+
+msgid "Gloxi looked at the VPN kill switch and the DNS"
+msgstr "Gloxi si prohlédl nouzový vypínač VPN a DNS"
+
+msgid "Gloxi turned on the VPN kill switch"
+msgstr "Gloxi zapnul nouzový vypínač VPN"
+
+msgid "Gloxi turned off the VPN kill switch"
+msgstr "Gloxi vypnul nouzový vypínač VPN"
+
+msgid "Gloxi let a local network through the VPN kill switch"
+msgstr "Gloxi pustil místní síť přes nouzový vypínač VPN"
+
+msgid "Gloxi stopped letting a local network through the VPN kill switch"
+msgstr "Gloxi už nepouští místní síť přes nouzový vypínač VPN"
+
+msgid "Gloxi opened the VPN kill switch to sign in to a Wi-Fi network"
+msgstr "Gloxi otevřel nouzový vypínač VPN kvůli přihlášení k síti Wi-Fi"
+
+msgid "Gloxi changed the encrypted DNS"
+msgstr "Gloxi změnil šifrované DNS"
+
+msgid "See the state of the VPN kill switch and the DNS"
+msgstr "Zobrazit stav nouzového vypínače VPN a DNS"
+
+msgid "Turn on the VPN kill switch"
+msgstr "Zapnout nouzový vypínač VPN"
+
+msgid "Turn off the VPN kill switch"
+msgstr "Vypnout nouzový vypínač VPN"
+
+msgid "Let a local network through the VPN kill switch"
+msgstr "Pustit místní síť přes nouzový vypínač VPN"
+
+msgid "Stop letting a local network through the VPN kill switch"
+msgstr "Přestat pouštět místní síť přes nouzový vypínač VPN"
+
+msgid "Open the VPN kill switch for 5 minutes to sign in to a Wi-Fi network"
+msgstr "Otevřít nouzový vypínač VPN na 5 minut kvůli přihlášení k síti Wi-Fi"
+
+msgid "Choose the encrypted DNS: Quad9 or Mullvad"
+msgstr "Zvolit šifrované DNS: Quad9 nebo Mullvad"
+
+msgid "Start the service of the chosen VPN provider and keep it on after a restart"
+msgstr "Spustit službu zvoleného poskytovatele VPN a nechat ji zapnutou i po restartu"
+
+msgid "Gloxi started the service of the VPN provider"
+msgstr "Gloxi spustil službu poskytovatele VPN"
+
+# The Herkos window: the level chip, the Keros warning, R4 (design wave 2)
+msgid "R0 · no questions"
+msgstr "R0 · bez ptaní"
+
+msgid "R1 · reads your data"
+msgstr "R1 · čte vaše data"
+
+msgid "R2 · can be undone"
+msgstr "R2 · lze vrátit"
+
+msgid "R3 · hard to undo"
+msgstr "R3 · těžko vratné"
+
+msgid "R4 · cannot be undone"
+msgstr "R4 · nevratné"
+
+msgid "Suspicious content"
+msgstr "Podezřelý obsah"
+
+msgid "Allow only if you asked for exactly this yourself."
+msgstr "Povolte jen tehdy, pokud jste přesně o tohle požádali sami."
+
+msgid "I have read exactly what will be done"
+msgstr "Rozumím, co přesně se udělá"
+
+# Інструмент «програми» (vilna-mcp-apps, ADR 0012)
+msgid "Look for apps on Flathub and in Vilna's repository"
+msgstr "Hledat aplikace na Flathubu a v repozitáři Vilna"
+
+msgid "See what an app is and what it may reach"
+msgstr "Zjistit, co je aplikace zač a k čemu bude mít přístup"
+
+msgid "See the installed apps"
+msgstr "Zobrazit nainstalované aplikace"
+
+msgid "Install an app for everybody on this computer"
+msgstr "Nainstalovat aplikaci pro všechny na tomto počítači"
+
+msgid "Update apps"
+msgstr "Aktualizovat aplikace"
+
+msgid "Remove an app (its data stays)"
+msgstr "Odebrat aplikaci (její data zůstanou)"
+
+msgid "Undo an install or a removal of an app"
+msgstr "Vrátit instalaci nebo odebrání aplikace"
+
+msgid "Add a source of apps"
+msgstr "Přidat zdroj aplikací"
+
+msgid "Install an app from a .flatpakref or .flatpak file"
+msgstr "Nainstalovat aplikaci ze souboru .flatpakref nebo .flatpak"
+
+msgid "Open an installed app"
+msgstr "Otevřít nainstalovanou aplikaci"
+
+# Що діалог Herkos показує про програму перед встановленням
+msgid "App"
+msgstr "Aplikace"
+
+msgid "Developer"
+msgstr "Vývojář"
+
+msgid "Verified"
+msgstr "Ověřeno"
+
+msgid "In Recommended by Vilna"
+msgstr "V „Doporučeno Vilna“"
+
+msgid "Source"
+msgstr "Zdroj"
+
+msgid "Download"
+msgstr "Stáhnout"
+
+msgid "License"
+msgstr "Licence"
+
+msgid "Can reach"
+msgstr "Přístup"
+
+msgid "preview"
+msgstr "popis"
+
+msgid "yes"
+msgstr "ano"
+
+msgid "a Vilna app"
+msgstr "aplikace Vilna"
+
+msgid "no: Flathub has not checked who makes it"
+msgstr "ne: Flathub neověřil, kdo ji vyvíjí"
+
+msgid "no: Vilna has not checked this app"
+msgstr "ne: Vilna tuto aplikaci neověřila"
+
+msgid "not given"
+msgstr "neuvedeno"
+
+msgid "unknown"
+msgstr "neznámé"
+
+msgid "only its own files"
+msgstr "jen vlastní soubory"
+
+msgid "all files on the computer"
+msgstr "všechny soubory v počítači"
+
+msgid "the system's programs and libraries"
+msgstr "programy a knihovny systému"
+
+msgid "the system's settings (/etc)"
+msgstr "nastavení systému (/etc)"
+
+msgid "your whole home folder"
+msgstr "celá vaše domovská složka"
+
+msgid "the X11 display (can see other X11 windows)"
+msgstr "obrazovka X11 (může vidět jiná okna X11)"
+
+msgid "every program on your session bus"
+msgstr "každý program na sběrnici vaší relace"
+
+msgid "every service on the system bus"
+msgstr "každá služba na systémové sběrnici"
+
+msgid "your SSH keys (through the agent)"
+msgstr "vaše klíče SSH (přes agenta)"
+
+msgid "smart cards"
+msgstr "čipové karty"
+
+msgid "printers"
+msgstr "tiskárny"
+
+msgid "your GPG keys (through the agent)"
+msgstr "vaše klíče GPG (přes agenta)"
+
+msgid "all devices (camera, microphone, USB…)"
+msgstr "všechna zařízení (kamera, mikrofon, USB…)"
+
+msgid "input devices"
+msgstr "vstupní zařízení"
+
+msgid "the internet and local network"
+msgstr "internet a místní síť"
+
+msgid "its permissions could not be read"
+msgstr "její oprávnění nelze přečíst"
+
+msgid "the folder {path}"
+msgstr "složka {path}"
+
+msgid "{what} (read only)"
+msgstr "{what} (jen ke čtení)"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Stiskněte tlačítko sami, klávesnicí nebo myší: Herkos nepřijímá stisky od jiných programů."
+
+msgid "See which devices can open the backups"
+msgstr "Zobrazit, která zařízení mohou otevřít zálohy"
+
+msgid "Block a device from the backups"
+msgstr "Zablokovat zařízení pro zálohy"
+
+msgid "Let a new device open the backups"
+msgstr "Dovolit novému zařízení otevřít zálohy"
+
+msgid "See the battery charge"
+msgstr "Zobrazit stav baterie"
+
+msgid "Show a notification from Gloxi"
+msgstr "Zobrazit oznámení od Gloxi"
+
+msgid "See what the music and video players are playing"
+msgstr "Zjistit, co hrají přehrávače hudby a videa"
+
+msgid "Play, pause or skip in a music or video player"
+msgstr "Přehrát, pozastavit nebo přeskočit v přehrávači hudby či videa"
+
+msgid "Lock the screen"
+msgstr "Zamknout obrazovku"
+
+msgid "See which apps may use the camera, microphone, location and more"
+msgstr "Zobrazit, které aplikace smějí používat kameru, mikrofon, polohu a další"
+
+msgid "Take a permission away from an app"
+msgstr "Odebrat aplikaci oprávnění"
+
+msgid "Give an app a permission"
+msgstr "Udělit aplikaci oprávnění"
+
+msgid "Put an app's permissions back as they were"
+msgstr "Vrátit oprávnění aplikace, jak byla"
+
+msgid "See the open windows of other apps"
+msgstr "Zobrazit otevřená okna jiných aplikací"
+
+msgid "Read a window of another app"
+msgstr "Přečíst okno jiné aplikace"
+
+msgid "Say which app, window and button an action is about"
+msgstr "Říct, o kterou aplikaci, okno a tlačítko jde"
+
+msgid "Press a button or menu item in another app"
+msgstr "Stisknout tlačítko nebo položku nabídky v jiné aplikaci"
+
+msgid "Replace the text in a field of another app"
+msgstr "Nahradit text v poli jiné aplikace"
+
+msgid "Put back the text a field had before"
+msgstr "Vrátit text, který pole mělo předtím"
+
+msgid "Window"
+msgstr "Okno"
+
+msgid "Control"
+msgstr "Prvek"
+
+msgid "Text now"
+msgstr "Aktuální text"

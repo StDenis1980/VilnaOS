@@ -1,0 +1,34 @@
+[Icon Theme]
+Name=Vilna
+Comment=Vilna folders, trash, drives and Vilna symbolic icons; everything else from Adwaita
+Inherits=Adwaita,hicolor
+Example=folder
+Directories=scalable/places,scalable/devices,symbolic/status,symbolic/actions
+
+[scalable/places]
+Context=Places
+Size=128
+MinSize=8
+MaxSize=512
+Type=Scalable
+
+[scalable/devices]
+Context=Devices
+Size=128
+MinSize=8
+MaxSize=512
+Type=Scalable
+
+[symbolic/status]
+Context=Status
+Size=16
+MinSize=8
+MaxSize=512
+Type=Scalable
+
+[symbolic/actions]
+Context=Actions
+Size=16
+MinSize=8
+MaxSize=512
+Type=Scalable

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Translations (ADR 0009): catalogues up to date, Ukrainian complete and used."""
+"""Translations (ADR 0009): catalogues up to date, every main language complete and used."""
 
 from __future__ import annotations
 
@@ -40,9 +40,16 @@ def test_ukrainian_is_used():
     assert uk.gettext("[local]") == "[локально]"
 
 
-def test_untranslated_language_falls_back_to_english():
-    es = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=["es"])
-    assert es.gettext(HELP) == HELP
+@pytest.mark.parametrize("lang", ["es", "pl", "de", "fr", "it", "ro", "cs", "lt"])
+def test_every_main_language_is_used(lang):
+    t = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=[lang])
+    assert t.gettext(HELP) != HELP
+    assert "/vpn" in t.gettext(HELP)
+
+
+def test_a_language_without_a_catalogue_falls_back_to_english():
+    pt = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=["pt"], fallback=True)
+    assert pt.gettext(HELP) == HELP
 
 
 def test_mo_round_trip(tmp_path):

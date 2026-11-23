@@ -44,14 +44,20 @@ def used_messages() -> set[str]:
     return found
 
 
-def test_every_message_is_translated_to_ukrainian():
-    catalog = i18n.load(["uk"])
+# ADR 0009: the ten languages of Vilna; English is the msgid.
+LANGUAGES = ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
+
+
+@pytest.mark.parametrize("lang", LANGUAGES)
+def test_every_message_is_translated(lang):
+    catalog = i18n.load([lang])
     missing = sorted(m for m in used_messages() if m not in catalog)
     assert missing == []
 
 
-def test_placeholders_survive_translation():
-    for msgid, msgstr in i18n.load(["uk"]).items():
+@pytest.mark.parametrize("lang", LANGUAGES)
+def test_placeholders_survive_translation(lang):
+    for msgid, msgstr in i18n.load([lang]).items():
         assert set(re.findall(r"\{\w+\}", msgid)) == set(re.findall(r"\{\w+\}", msgstr)), msgid
 
 

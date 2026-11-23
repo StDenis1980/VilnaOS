@@ -161,6 +161,11 @@ TARBALLS: dict[str, Tarball] = {
         extension_version("shell-extension/vilna@stdenis1980.github.io"),
         extra=(("LICENSE", "LICENSE"),),
     ),
+    "vilna-icon-theme": Tarball(
+        "docs/design/icons/system",
+        file_version("docs/design/icons/system/VERSION"),
+        extra=(("LICENSE", "LICENSE"),),
+    ),
     "vilna-sound-themes": Tarball(
         "sounds",
         file_version("sounds/VERSION"),

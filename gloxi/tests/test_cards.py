@@ -154,3 +154,30 @@ def test_empty_panel_offers_starts():
     from gloxi.gui.cards import starter_prompts
 
     assert len(starter_prompts()) == 3
+
+
+def test_vilna_icons_ship_and_match_the_design_source():
+    """The model's place and the microphone use Vilna icons shipped in data/icons."""
+    from gloxi.gui import switcher
+
+    icons = Path(style.icon_dir() or "") / "hicolor" / "symbolic" / "apps"
+    theme = REPO / "docs" / "design" / "icons" / "system" / "Vilna" / "symbolic"
+    names = set(switcher.ICONS.values()) | {"vilna-mic-symbolic"}
+    for name in names:
+        shipped = icons / f"{name}.svg"
+        assert shipped.is_file(), f"{name}.svg missing from {icons}/"
+        sources = list(theme.glob(f"*/{name}.svg"))
+        if theme.exists():  # only in a checkout of the whole repository
+            assert len(sources) == 1, f"{name} is not in the Vilna icon theme"
+            assert shipped.read_bytes() == sources[0].read_bytes(), (
+                f"copy {sources[0].relative_to(REPO)} to {icons}/"
+            )
+
+
+def test_switcher_icon_follows_the_tag():
+    from gloxi.gui import switcher
+
+    assert switcher.icon("local") == "vilna-local-symbolic"
+    assert switcher.icon("cloud") == "vilna-cloud-symbolic"
+    assert switcher.icon("auto") == "vilna-model-symbolic"
+    assert switcher.icon("strange") == switcher.icon("local")

@@ -260,8 +260,8 @@ def test_every_problem_the_wizard_can_meet_has_words():
     assert codes - set(wiz.PROBLEM_TEXT) - wiz.LATER_SCREEN - other == set()
 
 
-@pytest.mark.parametrize("code", ["uk"])
-def test_every_new_text_is_in_ukrainian(code):
+@pytest.mark.parametrize("code", [c for c in start.CODES if c != "en"])
+def test_every_new_text_is_translated(code):
     catalog = start.catalog(code)
     assert [t for t in wiz.TEXTS if t not in catalog] == []
 

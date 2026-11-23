@@ -203,3 +203,22 @@ def test_the_installer_gets_the_answer_and_keeps_the_key(tmp_path):
     outcome = confirm.parse(out)
     assert not outcome.confirmed
     assert plans.load(path)["confirmed_by_user"] is False
+
+
+def test_the_screen_reader_hears_whether_the_key_group_is_right(tmp_path, monkeypatch):
+    """The note under the field changed silently (item 34)."""
+    from vilna_installer import a11y
+
+    said = []
+    monkeypatch.setattr(a11y, "announce", lambda _widget, text, **_kw: said.append(text))
+    path = tmp_path / "plan.json"
+    full_plan(path)
+    win, _got, key = screen(path)
+    win.entry.set_text(encryption.groups(key)[6])
+    assert said == [win._(confirm.KEY_WRONG)]
+    win.entry.insert_text("x", -1)  # one more letter, the same note: said once
+    assert said == [win._(confirm.KEY_WRONG)]
+    win.entry.set_text(encryption.groups(key)[7])
+    assert said[-1] == win._(confirm.KEY_OK)
+    win.install.emit("clicked")  # not a real press
+    assert said[-1] == win._(confirm.NOT_REAL)

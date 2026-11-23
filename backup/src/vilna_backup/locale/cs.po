@@ -1,0 +1,510 @@
+# Czech translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: cs\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "TB"
+msgstr "TB"
+
+msgid "Backups are on"
+msgstr "Zálohy jsou zapnuté"
+
+msgid "Choose where to keep the backups."
+msgstr "Vyberte, kam zálohy ukládat."
+
+msgid "recommended"
+msgstr "doporučeno"
+
+msgid "{day} {month} at {time}"
+msgstr "{day}. {month} v {time}"
+
+msgid "Backing up…"
+msgstr "Zálohuje se…"
+
+msgid "Backups are off"
+msgstr "Zálohy jsou vypnuté"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Zapněte je, aby byly vaše soubory v bezpečí."
+
+msgid "The last backup failed"
+msgstr "Poslední záloha selhala"
+
+msgid "Settings only"
+msgstr "Jen nastavení"
+
+msgid "Settings and documents"
+msgstr "Nastavení a dokumenty"
+
+msgid "The whole home folder"
+msgstr "Celá domovská složka"
+
+msgid "Chosen by you"
+msgstr "Vybráno vámi"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Nastavení, Gloxi, Herkos, hesla"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "Navíc Dokumenty, Plocha a Obrázky"
+
+msgid "Everything except caches and Downloads"
+msgstr "Vše kromě mezipaměti a Stažených"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Složky vybrané s Gloxi nebo v terminálu"
+
+msgid "Every hour"
+msgstr "Každou hodinu"
+
+msgid "Every day"
+msgstr "Každý den"
+
+msgid "Every week"
+msgstr "Každý týden"
+
+msgid "Off"
+msgstr "Vypnuto"
+
+msgid "today at {time}"
+msgstr "dnes v {time}"
+
+msgid "yesterday at {time}"
+msgstr "včera v {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Poslední záloha {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Vyberte složku na externím disku."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Zadejte adresu serveru: sftp:user@host:/folder, s3:https://… nebo rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Pro složku na tomto počítači vyberte externí disk."
+
+msgid "This server needs a login and a password."
+msgstr "Tento server vyžaduje přihlašovací jméno a heslo."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "Hotovo {percent} %"
+
+msgid "No backup yet · {schedule}"
+msgstr "Zatím žádná záloha · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "Souborů: {n}"
+
+msgid "The server address is not right: {why}"
+msgstr "Adresa serveru není správná: {why}"
+
+msgid "Vilna cloud"
+msgstr "Vilna cloud"
+
+msgid "In the EU · coming later"
+msgstr "V EU · připravujeme"
+
+msgid "External disk"
+msgstr "Externí disk"
+
+msgid "No folder chosen yet"
+msgstr "Zatím není vybraná složka"
+
+msgid "Your own server"
+msgstr "Vlastní server"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 nebo REST"
+
+msgid "Turn on backups"
+msgstr "Zapnout zálohy"
+
+msgid "Recovery sheet"
+msgstr "List pro obnovení"
+
+msgid "Backups"
+msgstr "Zálohy"
+
+msgid "What to keep in backups?"
+msgstr "Co zálohovat?"
+
+msgid "Where"
+msgstr "Kam"
+
+msgid "Choose…"
+msgstr "Vybrat…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Adresa, např. sftp:ja@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Přihlašovací jméno (S3 a REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Heslo (S3 a REST)"
+
+msgid "How often"
+msgstr "Jak často"
+
+msgid "Back up"
+msgstr "Zálohovat"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Zálohy se šifrují na tomto počítači. Bez klíče je nikdo nepřečte, ani my."
+
+msgid "Later"
+msgstr "Později"
+
+msgid "Next"
+msgstr "Další"
+
+msgid "Folder for backups on the external disk"
+msgstr "Složka pro zálohy na externím disku"
+
+msgid "Type the key from your sheet"
+msgstr "Zadejte klíč ze svého listu"
+
+msgid "Start again with another place"
+msgstr "Začít znovu s jiným místem"
+
+msgid "Confirm and turn on"
+msgstr "Potvrdit a zapnout"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Zapište si tento klíč na papír a uchovávejte ho mimo počítač. Pokud tento počítač ztratíte, otevře vaše zálohy jen tento klíč. My ho neznáme a nemůžeme ho poslat znovu."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "Klíč se zobrazuje jen teď. Písmena I, L, O a U se nikdy nepoužívají."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Zálohy zůstanou vypnuté, dokud znovu nezadáte klíč pro obnovení ze svého listu. Zobrazil se jednou, při nastavení místa."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "Nemáte list? Začněte znovu s jiným místem: vytvoří se nový klíč."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Zálohy jsou zapnuté. První záloha začala."
+
+msgid "Back up now"
+msgstr "Zálohovat hned"
+
+msgid "Settings"
+msgstr "Nastavení"
+
+msgid "What to keep"
+msgstr "Co zálohovat"
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Šifrováno na tomto počítači. Bez klíče je nikdo nepřečte, ani my."
+
+msgid "Cannot read the state of backups"
+msgstr "Stav záloh nelze načíst"
+
+msgid "Where to put the restored files"
+msgstr "Kam uložit obnovené soubory"
+
+msgid "Cannot list the backups"
+msgstr "Zálohy nelze vypsat"
+
+msgid "Restore…"
+msgstr "Obnovit…"
+
+msgid "No backups yet"
+msgstr "Zatím žádné zálohy"
+
+msgid "A backup is already running."
+msgstr "Záloha už probíhá."
+
+msgid "Restored from backup {stamp}"
+msgstr "Obnoveno ze zálohy {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "Obnovuje se {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "Zálohy se nepodařilo nastavit: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "To není ten klíč: {why}"
+
+msgid "Could not start: {why}"
+msgstr "Nepodařilo se spustit: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "Obnoveno souborů: {n} do {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "Obnovení se nepodařilo: {why}"
+
+msgid "January"
+msgstr "ledna"
+
+msgid "February"
+msgstr "února"
+
+msgid "March"
+msgstr "března"
+
+msgid "April"
+msgstr "dubna"
+
+msgid "May"
+msgstr "května"
+
+msgid "June"
+msgstr "června"
+
+msgid "July"
+msgstr "července"
+
+msgid "August"
+msgstr "srpna"
+
+msgid "September"
+msgstr "září"
+
+msgid "October"
+msgstr "října"
+
+msgid "November"
+msgstr "listopadu"
+
+msgid "December"
+msgstr "prosince"
+
+msgid "Disk"
+msgstr "Disk"
+
+msgid "Vilna server"
+msgstr "Server Vilna"
+
+msgid "Already have backups?"
+msgstr "Už máte zálohy?"
+
+msgid "Back"
+msgstr "Zpět"
+
+msgid "Bring back"
+msgstr "Vrátit"
+
+msgid "Bring back {n} files?"
+msgstr "Vrátit soubory ({n})?"
+
+msgid "Bring them back…"
+msgstr "Vrátit je…"
+
+msgid "Bring your files back now?"
+msgstr "Vrátit vaše soubory teď?"
+
+msgid "Cancel"
+msgstr "Zrušit"
+
+msgid "Checking which files would change…"
+msgstr "Zjišťuji, které soubory by se změnily…"
+
+msgid "Connect"
+msgstr "Připojit"
+
+msgid "Connect this computer to the backups you made before. You need the place of the backups and the key from your recovery sheet. Nothing on this computer changes until you choose what to bring back."
+msgstr "Připojte tento počítač k zálohám, které jste dělali dříve. Potřebujete místo záloh a klíč z listu pro obnovení. Na tomto počítači se nic nezmění, dokud nevyberete, co vrátit."
+
+msgid "Could not open the backups: {why}"
+msgstr "Zálohy nelze otevřít: {why}"
+
+msgid "Could not turn on: {why}"
+msgstr "Nelze zapnout: {why}"
+
+msgid "Files changed while you were reading the list; nothing was replaced. Try again."
+msgstr "Soubory se změnily, zatímco jste četli seznam; nic nebylo nahrazeno. Zkuste to znovu."
+
+msgid "Files from the latest backup come back into your home folder. First you see which files would change. Then turn backups on to keep this computer safe too."
+msgstr "Soubory z poslední zálohy se vrátí do vaší domovské složky. Nejdřív uvidíte, které soubory by se změnily. Pak zapněte zálohy, abyste chránili i tento počítač."
+
+msgid "Files made after the backup stay. Your passwords and keys on this computer stay."
+msgstr "Soubory vytvořené po záloze zůstanou. Vaše hesla a klíče na tomto počítači také zůstanou."
+
+msgid "Into a new folder, nothing on this computer is replaced. Over your files, files changed since the backup get their old version back; you see the list first."
+msgstr "Do nové složky: na tomto počítači se nic nenahradí. Přes vaše soubory: soubory změněné od zálohy dostanou zpět starou verzi; seznam uvidíte předem."
+
+msgid "Into a new folder…"
+msgstr "Do nové složky…"
+
+msgid "Keep system secrets in backups?"
+msgstr "Ukládat systémová tajemství do záloh?"
+
+msgid "Keep them"
+msgstr "Ukládat"
+
+msgid "Nothing is replaced."
+msgstr "Nic se nenahrazuje."
+
+msgid "Old saved passwords came back as a separate key ring."
+msgstr "Stará uložená hesla se vrátila jako samostatná klíčenka."
+
+msgid "On a new computer, with your recovery sheet"
+msgstr "Na novém počítači, s listem pro obnovení"
+
+msgid "Over my files…"
+msgstr "Přes moje soubory…"
+
+msgid "Replace files"
+msgstr "Nahradit soubory"
+
+msgid "Replace {n} files with their versions from the backup?"
+msgstr "Nahradit soubory ({n}) jejich verzemi ze zálohy?"
+
+msgid "Restore from backups"
+msgstr "Obnovení ze záloh"
+
+msgid "Restore from backups made before"
+msgstr "Obnovit ze záloh vytvořených dříve"
+
+msgid "Restore into a new folder, or over your files after seeing which ones change."
+msgstr "Obnovujte do nové složky, nebo přes své soubory poté, co uvidíte, které se změní."
+
+msgid "Restore the backup made {title}?"
+msgstr "Obnovit zálohu vytvořenou {title}?"
+
+msgid "Restored: {files} files back, {replaced} replaced."
+msgstr "Obnoveno: vrácené soubory: {files}, nahrazené: {replaced}."
+
+msgid "Restoring…"
+msgstr "Obnovuji…"
+
+msgid "Saved passwords from the key ring, online accounts, and SSH and GPG keys go into the backups, encrypted like everything else. Whoever has your recovery key can open them, so keep the sheet safe."
+msgstr "Uložená hesla z klíčenky, online účty a klíče SSH a GPG se dostanou do záloh, šifrované jako všechno ostatní. Kdo má váš klíč pro obnovení, může je otevřít, proto list dobře uschovejte."
+
+msgid "Saved passwords, online accounts, SSH and GPG keys"
+msgstr "Uložená hesla, online účty, klíče SSH a GPG"
+
+msgid "System secrets"
+msgstr "Systémová tajemství"
+
+msgid "These files were changed after the backup and get their old version:"
+msgstr "Tyto soubory se po záloze změnily a dostanou zpět starou verzi:"
+
+msgid "This computer can now use your backups."
+msgstr "Tento počítač teď může používat vaše zálohy."
+
+msgid "Turn on"
+msgstr "Zapnout"
+
+msgid "Where are your backups?"
+msgstr "Kde jsou vaše zálohy?"
+
+msgid "Your files are already as in this backup"
+msgstr "Vaše soubory už jsou jako v této záloze"
+
+msgid "{n} files that are missing now come back."
+msgstr "Vrátí se soubory, které teď chybějí: {n}."
+
+msgid "…and {n} more"
+msgstr "…a dalších {n}"
+
+msgid "Add a device"
+msgstr "Přidat zařízení"
+
+msgid "Added {when}"
+msgstr "Přidáno {when}"
+
+msgid "Block"
+msgstr "Zablokovat"
+
+msgid "Block «{name}»?"
+msgstr "Zablokovat „{name}“?"
+
+msgid "Block…"
+msgstr "Zablokovat…"
+
+msgid "Cannot list the devices"
+msgstr "Seznam zařízení nelze načíst"
+
+msgid "Code for a new device"
+msgstr "Kód pro nové zařízení"
+
+msgid "Could not block: {why}"
+msgstr "Nelze zablokovat: {why}"
+
+msgid "Could not make a code: {why}"
+msgstr "Kód nelze vytvořit: {why}"
+
+msgid "Delete the old copy yourself: {place}"
+msgstr "Starou kopii smažte sami: {place}"
+
+msgid "Done"
+msgstr "Hotovo"
+
+msgid "Each device has its own key. Block a lost or stolen one."
+msgstr "Každé zařízení má vlastní klíč. Zablokujte ztracené nebo ukradené."
+
+msgid "It can no longer open or add to the backups, and forgets its key the next time it tries. Files on it stay as they are. If it was stolen, the backups also get a new key and you get a new recovery sheet."
+msgstr "Už nebude moci zálohy otevřít ani do nich nic přidat a při příštím pokusu svůj klíč zapomene. Soubory na něm zůstanou, jak jsou. Pokud bylo ukradeno, zálohy navíc dostanou nový klíč a vy nový list pro obnovení."
+
+msgid "It was stolen"
+msgstr "Bylo ukradeno"
+
+msgid "Key from your sheet, or a code from your other device"
+msgstr "Klíč z listu, nebo kód z vašeho jiného zařízení"
+
+msgid "Moving the backups under a new key…"
+msgstr "Přesouvám zálohy pod nový klíč…"
+
+msgid "My devices"
+msgstr "Moje zařízení"
+
+msgid "On a computer that already makes backups, open Backups and choose «Add a device»: it shows a code valid for 15 minutes."
+msgstr "Na počítači, který už zálohuje, otevřete Zálohy a zvolte „Přidat zařízení“: zobrazí kód platný 15 minut."
+
+msgid "On the new computer, open Backups, choose «Restore from backups made before» and type this code there. It works once, until {when}. Do not tell it to anyone."
+msgstr "Na novém počítači otevřete Zálohy, zvolte „Obnovit ze záloh vytvořených dříve“ a zadejte tam tento kód. Funguje jednou, do {when}. Nikomu ho neříkejte."
+
+msgid "Opens the backups if every device is lost"
+msgstr "Otevře zálohy, pokud se ztratí všechna zařízení"
+
+msgid "Protect"
+msgstr "Ochránit"
+
+msgid "Protect the backups after the theft?"
+msgstr "Ochránit zálohy po krádeži?"
+
+msgid "The backups were not moved: {why}"
+msgstr "Zálohy nebyly přesunuty: {why}"
+
+msgid "The stolen device may know the key of the backups. Vilna moves every backup under a new key and deletes the old copy; this can take a while. Then you write down a new recovery sheet, and your other devices connect again with a code."
+msgstr "Ukradené zařízení může znát klíč záloh. Vilna přesune všechny zálohy pod nový klíč a smaže starou kopii; může to chvíli trvat. Pak si zapíšete nový list pro obnovení a ostatní zařízení znovu připojíte kódem."
+
+msgid "This device · added {when}"
+msgstr "Toto zařízení · přidáno {when}"
+
+msgid "Valid until {when}"
+msgstr "Platí do {when}"
+
+msgid "Withdraw the code"
+msgstr "Zrušit kód"
+
+msgid "«{name}» is blocked."
+msgstr "„{name}“ je zablokováno."

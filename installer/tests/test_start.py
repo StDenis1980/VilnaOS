@@ -24,6 +24,17 @@ def test_every_text_is_translated(code):
     assert start.Texts(code)(start.RELEASE_CHIP).count("Blavet") == 1
 
 
+@pytest.mark.parametrize("code", [c for c in start.CODES if c not in ("en", "uk")])
+def test_every_language_has_every_ukrainian_text_with_its_placeholders(code):
+    """ADR 0009: all ten languages from the alpha; uk.po is the list of texts."""
+    catalog = start.catalog(code)
+    for msgid in start.catalog("uk"):
+        assert msgid in catalog, msgid
+        assert sorted(re.findall(r"\{\w*\}", msgid)) == sorted(
+            re.findall(r"\{\w*\}", catalog[msgid])
+        ), msgid
+
+
 def test_english_is_the_msgid_and_unknown_texts_stay_english():
     assert start.Texts("en")(start.WELCOME) == "Welcome to Vilna"
     assert start.Texts("uk")("Something new") == "Something new"

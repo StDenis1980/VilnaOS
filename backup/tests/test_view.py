@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import ast
+import re
 import time
 from importlib import resources
 from pathlib import Path
@@ -148,11 +149,16 @@ def _msgids() -> set[str]:
     return ids
 
 
-def test_every_window_text_has_a_ukrainian_translation():
-    po = resources.files("vilna_backup.locale") / "uk.po"
+@pytest.mark.parametrize("lang", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
+def test_every_window_text_is_translated(lang):
+    """ADR 0009: the ten languages of Vilna; English is the msgid."""
+    po = resources.files("vilna_backup.locale") / f"{lang}.po"
     catalog = i18n.parse_po(po.read_text(encoding="utf-8"))
     missing = sorted(_msgids() - catalog.keys())
     assert not missing, missing
+    fields = re.compile(r"\{\w*\}")
+    for msgid, msgstr in catalog.items():
+        assert sorted(fields.findall(msgid)) == sorted(fields.findall(msgstr)), msgid
 
 
 def test_ukrainian():

@@ -325,6 +325,38 @@ def test_gloxi_speaks_beside_its_owl_and_steps_show_progress(plan_path):
     assert 0 <= win.progress.get_fraction() <= 1
 
 
+def test_the_screen_reader_hears_gloxi_and_what_went_wrong(plan_path, monkeypatch):
+    """Gloxi's reply appears where the focus is not: it was never said (item 34)."""
+    from vilna_installer import a11y
+
+    said = []
+    monkeypatch.setattr(a11y, "announce", lambda _widget, text, **_kw: said.append(text))
+    talk = Talk(plan_path)
+    win = window(plan_path, talk=talk)
+    assert spin(lambda: "Hello" in said)
+    win.entry.set_text("erase it")
+    win._on_send()
+    assert win._(conv.THINKING) in said
+    assert spin(lambda: "Erase it, then." in said)
+    assert "erase it" not in said  # the person's own words are not read back
+    win._card("user_password", plans.load(plan_path))
+    (card,) = cards(win)
+    first, second = [e for e in _all(card, Gtk.PasswordEntry)]
+    first.set_text("short")
+    second.set_text("short")
+    buttons(card)[-1].emit("clicked")
+    assert said[-1] == win._(conv.SHORT)
+
+
+def _all(widget, kind):
+    out = [widget] if isinstance(widget, kind) else []
+    child = widget.get_first_child()
+    while child is not None:
+        out += _all(child, kind)
+        child = child.get_next_sibling()
+    return out
+
+
 @pytest.mark.parametrize("code", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
 def test_steps_panel_texts_are_translated(code):
     from vilna_installer import start

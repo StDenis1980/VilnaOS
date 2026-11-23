@@ -203,7 +203,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.voice: voice_session.VoiceController | None = None
         self.chime = Chime()
         self.mic_button = Gtk.Button(
-            icon_name="audio-input-microphone-symbolic",
+            icon_name="vilna-mic-symbolic",
             tooltip_text=_("Speak instead of typing (Ctrl+M)"),
             visible=False,
         )
@@ -598,7 +598,7 @@ class ChatWindow(Adw.ApplicationWindow):
         if listening:
             self.chime.listening()
         self.mic_button.set_icon_name(
-            "media-record-symbolic" if listening else "audio-input-microphone-symbolic"
+            "media-record-symbolic" if listening else "vilna-mic-symbolic"
         )
         self.mic_button.set_tooltip_text(
             _("Listening… press again to finish (Esc to cancel)")
@@ -704,7 +704,11 @@ class ChatWindow(Adw.ApplicationWindow):
         detail.add_css_class("dim-label")
         words.append(detail)
         row.append(words)
-        chip = Gtk.Label(label=switcher.tag(choice.mode), valign=Gtk.Align.START)
+        chip = Gtk.Box(spacing=4, valign=Gtk.Align.START)
+        where = Gtk.Image.new_from_icon_name(switcher.icon(choice.mode))
+        where.set_accessible_role(Gtk.AccessibleRole.PRESENTATION)  # the tag says it
+        chip.append(where)
+        chip.append(Gtk.Label(label=switcher.tag(choice.mode)))
         chip.add_css_class("vilna-tag")
         chip.add_css_class(choice.mode)
         row.append(chip)
@@ -731,9 +735,14 @@ class ChatWindow(Adw.ApplicationWindow):
         """Brief 10.3, item 7: the earlier messages go to the cloud only if the person says so."""
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         card.add_css_class("vilna-consent-card")
+        head = Gtk.Box(spacing=8)
+        cloud = Gtk.Image.new_from_icon_name("vilna-cloud-symbolic")
+        cloud.set_accessible_role(Gtk.AccessibleRole.PRESENTATION)
+        head.append(cloud)
         title = Gtk.Label(label=_("Send the conversation to the cloud?"), xalign=0, wrap=True)
         title.add_css_class("heading")
-        card.append(title)
+        head.append(title)
+        card.append(head)
         card.append(
             Gtk.Label(
                 label=_(
