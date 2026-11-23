@@ -835,3 +835,18 @@ msgstr "Instalace"
 
 msgid "Conversation with Gloxi"
 msgstr "Rozhovor s Gloxi"
+
+msgid "Password-protected"
+msgstr "Chráněná heslem"
+
+msgid "New partition {n}"
+msgstr "Nový oddíl {n}"
+
+msgid "Password"
+msgstr "Heslo"
+
+msgid "This version installs only the EFI and the system partition. Leave home folders and swap unused for now."
+msgstr "Tato verze instaluje jen oddíl EFI a systémový oddíl. Domovské složky a odkládací prostor zatím nechte nepoužité."
+
+msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
+msgstr "Na disku už je systémový oddíl EFI. Vyberte ho (s formátováním nebo bez) místo nového."
