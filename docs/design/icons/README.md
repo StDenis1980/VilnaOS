@@ -12,3 +12,5 @@
 Кожен значок має пару `-symbolic.svg` 16×16 одним кольором: GNOME сам перефарбовує її під тему. Повний значок має розмір 128×128 і ставиться в `hicolor/scalable/apps`, а symbolic — у `hicolor/symbolic/apps`.
 
 Gloxi уже бере свої значки з `gloxi/data/icons/`, Копії — у пакеті `vilna-backup` (вікно `vilna-backup-gui`). Значки Встановлення і Дозволів підуть у пакети цих програм, коли в них з'явиться вікно.
+
+Теки, кошик, диски і symbolic-значки Gloxi та Herkos — у темі значків Vilna: [`system/`](system/README.md).

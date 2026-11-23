@@ -1,0 +1,20 @@
+[Icon Theme]
+Name=Vilna Classic
+Comment=Vilna folders, trash and drives drawn as real objects; symbolic icons from Vilna
+Inherits=Vilna,Adwaita,hicolor
+Example=folder
+Directories=scalable/places,scalable/devices
+
+[scalable/places]
+Context=Places
+Size=256
+MinSize=8
+MaxSize=512
+Type=Scalable
+
+[scalable/devices]
+Context=Devices
+Size=256
+MinSize=8
+MaxSize=512
+Type=Scalable
