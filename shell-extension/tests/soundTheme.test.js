@@ -34,7 +34,7 @@ test('the schema, the sound themes and the generator agree', () => {
     const choices = [...schema.matchAll(/<choice value="([a-z]+)"\/>/g)].map(m => m[1]);
     for (const theme of SOUND_THEMES)
         assert.ok(choices.includes(theme), theme);
-    const maker = fs.readFileSync(new URL('../../obs/packages/vilna-sound-themes/make_sounds.py', import.meta.url), 'utf8');
+    const maker = fs.readFileSync(new URL('../../sounds/make_sounds.py', import.meta.url), 'utf8');
     const motifs = maker.slice(maker.indexOf('MOTIFS'), maker.indexOf('# Theme names'));
     const events = [...motifs.matchAll(/^ {4}"([a-z0-9-]+)": \(/gm)].map(m => m[1]);
     assert.deepEqual(events, SOUND_EVENTS);

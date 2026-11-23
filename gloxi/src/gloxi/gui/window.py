@@ -28,6 +28,7 @@ from gloxi.gui import (  # noqa: E402
 )
 from gloxi.gui import shell as vilna_shell  # noqa: E402
 from gloxi.gui.cards import card_view, starter_prompts  # noqa: E402
+from gloxi.gui.chime import Chime  # noqa: E402
 from gloxi.gui.controller import ChatController, ModelSetup  # noqa: E402
 from gloxi.gui.panel import OwlState, OwlStates, PanelPrefs  # noqa: E402
 from gloxi.gui.remote import RemoteController, ServiceError  # noqa: E402
@@ -200,6 +201,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.send_button.connect("clicked", self._on_send)
         # Voice (ADR 0015): press and speak; Stop while an answer is read aloud.
         self.voice: voice_session.VoiceController | None = None
+        self.chime = Chime()
         self.mic_button = Gtk.Button(
             icon_name="audio-input-microphone-symbolic",
             tooltip_text=_("Speak instead of typing (Ctrl+M)"),
@@ -593,6 +595,8 @@ class ChatWindow(Adw.ApplicationWindow):
     @_idle
     def set_listening(self, listening: bool) -> None:
         self._owl(lambda s: s.set_mic(listening))
+        if listening:
+            self.chime.listening()
         self.mic_button.set_icon_name(
             "media-record-symbolic" if listening else "audio-input-microphone-symbolic"
         )
@@ -1053,11 +1057,14 @@ class ChatWindow(Adw.ApplicationWindow):
             self._answer_label.get_parent().get_parent().set_visible(False)
         if self._answer_label is not None and self._answer_text and self.voice is not None:
             self.voice.speak(self._answer_text)
+        if self._answer_label is not None and self._answer_text:
+            self.chime.answered(self.is_active())
         self._answer_label = None
 
     @_idle
     def show_error(self, text: str) -> None:
         self._owl(OwlStates.failed)
+        self.chime.failed()
         self.toasts.add_toast(Adw.Toast(title=text, timeout=6))
 
     @_idle

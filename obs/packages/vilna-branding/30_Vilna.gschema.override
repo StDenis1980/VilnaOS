@@ -82,7 +82,7 @@ audible-bell=false
 
 [org.gnome.desktop.sound]
 event-sounds=true
-theme-name='freedesktop'
+theme-name='vilna-wood'
 
 [org.gnome.settings-daemon.plugins.housekeeping]
 ignore-paths=['/boot/efi']
