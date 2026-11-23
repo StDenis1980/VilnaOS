@@ -13,7 +13,7 @@ gi = pytest.importorskip("gi")
 try:
     gi.require_version("Gtk", "4.0")
     gi.require_version("Adw", "1")
-    from gi.repository import Adw, GLib, Gtk
+    from gi.repository import Adw, Gdk, GLib, Gtk
 except (ImportError, ValueError):
     pytest.skip("GTK 4 or libadwaita is missing", allow_module_level=True)
 if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")) or not Gtk.init_check():
@@ -22,7 +22,7 @@ if not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")) or not G
 from vilna_mcp_installer import plan as plans  # noqa: E402
 from vilna_mcp_installer.machine import DemoMachine  # noqa: E402
 
-from vilna_installer import chat, confirm, start, welcome, wizard_window  # noqa: E402
+from vilna_installer import a11y, chat, confirm, start, welcome, wizard_window  # noqa: E402
 from vilna_installer import wizard as wiz  # noqa: E402
 
 Adw.init()
@@ -252,3 +252,46 @@ def test_tpm_with_a_pin_keeps_the_pin_in_the_vault_only(plan_path):
     assert enc == {"method": "tpm2-pin", "pin": "entered"}
     assert "246810" not in plan_path.read_text()
     assert win.secrets.take("pin") == "246810"
+
+
+def _press(check, keyval):
+    """What the key controller of a choice gets for an arrow key."""
+    return a11y._arrow(None, keyval, 0, Gdk.ModifierType(0), check)
+
+
+def test_the_arrows_reach_every_choice_after_one_is_made(plan_path):
+    """With one way chosen, GTK left the others out of Tab and the arrows (item 34)."""
+    win = window(plan_path)
+    win.wizard.tpm = lambda: True
+    win.go("encryption", strict=False)
+    win.present()
+    assert spin(lambda: win.get_mapped())
+    checks = [c for c in _all(win, Gtk.CheckButton) if c.get_parent() is not None]
+    assert all(c.get_accessible_role() == Gtk.AccessibleRole.RADIO for c in checks)
+    first = next(c for c in checks if c.get_active())
+    spin(lambda: False, 0.3)
+    reached, here = [], first
+    for _ in range(len(checks)):
+        assert _press(here, Gdk.KEY_Down)
+        here = win.get_focus()
+        reached.append(here)
+    assert set(reached) == set(checks)  # every way, and round again to the first
+    assert here is first and first.get_active()  # moving chose nothing
+    assert _press(first, Gdk.KEY_Up) and win.get_focus() is checks[-1]
+    assert not _press(first, Gdk.KEY_Tab)  # Tab stays GTK's own
+
+
+def test_a_wifi_network_can_be_chosen_after_without_a_network(plan_path):
+    win = window(plan_path)
+    win.go("network", strict=False)
+    win.present()
+    radios = lambda: [c for c in _all(win, Gtk.CheckButton) if c.get_parent() is not None]  # noqa: E731
+    assert spin(lambda: len(radios()) > 1)
+    offline, *networks = radios()
+    assert offline.get_active()
+    networks[0].set_active(True)
+    assert not offline.get_active()
+    offline.set_active(True)
+    assert not any(n.get_active() for n in networks)
+    win.step(+1)
+    assert plans.load(plan_path)["network"] == {"mode": "offline"}

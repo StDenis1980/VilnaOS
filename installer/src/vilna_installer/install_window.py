@@ -23,7 +23,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_installer import confirm, release, style  # noqa: E402
+from vilna_installer import a11y, confirm, release, style  # noqa: E402
 from vilna_installer import engine as eng  # noqa: E402
 from vilna_installer.branch import Branch  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
@@ -45,6 +45,7 @@ class InstallWindow(Adw.ApplicationWindow):
         self.progress_path = plan_path.with_name("progress.json")
         self.on_end = on_end
         self.ended = False
+        self.said: str | None = None  # the step last said to the screen reader
         self.set_title(_(eng.TITLE))
         self.set_default_size(720, 560)
         self.connect("close-request", lambda *_a: not self.ended)
@@ -118,6 +119,9 @@ class InstallWindow(Adw.ApplicationWindow):
                 mark = "✓"
             elif key == phase and state == "running":
                 mark, reached = "…", True
+                if self.said != key:  # each step once, as it begins
+                    self.said = key
+                    a11y.announce(self.rows[key], text)
             elif key == phase:
                 mark, reached = "✗", True
             else:

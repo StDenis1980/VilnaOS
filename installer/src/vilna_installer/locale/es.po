@@ -832,3 +832,6 @@ msgstr "Paso {n} de {total}"
 
 msgid "Installation"
 msgstr "Instalación"
+
+msgid "Conversation with Gloxi"
+msgstr "Conversación con Gloxi"

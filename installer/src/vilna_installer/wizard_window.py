@@ -32,7 +32,7 @@ from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import machine as machines  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import chat, confirm_window, install_window, start, style  # noqa: E402
+from vilna_installer import a11y, chat, confirm_window, install_window, start, style  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer import wizard as wiz  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
@@ -58,16 +58,18 @@ def _once(fn: Callable[[], Any]) -> Callable[[], bool]:
     return run
 
 
-def announce(widget: Gtk.Widget, text: str) -> None:
-    """Say it to the screen reader (GTK 4.14+); the text is on the screen as well."""
-    if hasattr(widget, "announce"):
-        widget.announce(text, Gtk.AccessibleAnnouncementPriority.MEDIUM)
+announce = a11y.announce
 
 
 def plain_row(cls=Adw.ActionRow, **kwargs: Any) -> Adw.PreferencesRow:
-    """A row whose title and subtitle are never read as Pango markup."""
+    """A row whose title and subtitle are never read as Pango markup.
+
+    The screen reader reads its subtitle too (``a11y.follow_subtitle``).
+    """
     row = cls(**kwargs)
     row.set_use_markup(False)
+    if isinstance(row, Adw.ActionRow):
+        a11y.follow_subtitle(row)
     return row
 
 
@@ -82,13 +84,13 @@ def radio_row(
     row = plain_row(title=title)
     if subtitle:
         row.set_subtitle(subtitle)
-    check = Gtk.CheckButton(valign=Gtk.Align.CENTER, group=group)
-    check.leader = group  # the leader is in no window: keep it alive with the group
-    check.update_property([Gtk.AccessibleProperty.LABEL], [title])
-    if subtitle:
-        check.update_property([Gtk.AccessibleProperty.DESCRIPTION], [subtitle])
+    check = a11y.radio(group, valign=Gtk.Align.CENTER)
     row.add_prefix(check)
     row.set_activatable_widget(check)
+    a11y.label(check, title)
+    # The subtitle is what the choice means («erases Windows»): read it with
+    # the button, also when it changes.
+    a11y.follow_subtitle(row, check)
     # One stop per choice, on the radio button, which says its role and state:
     # a focusable row too meant two Tab stops, and the row read neither.
     row.set_focusable(False)
@@ -166,11 +168,13 @@ class PartitionEditor(Adw.Dialog):
         add.add_css_class("flat")
         add.connect("clicked", self._on_add)
         new.set_header_suffix(add)
+        number = 0
         for row in self.rows:
             if row.partition is not None:
                 self._existing_row(existing, row, parts.get(row.partition, {}))
             else:
-                self._new_rows(new, row)
+                number += 1
+                self._new_rows(new, row, number)
         self._groups = [lead, existing, new] if parts else [lead, new]
         for group in self._groups:
             self.page.add(group)
@@ -181,7 +185,7 @@ class PartitionEditor(Adw.Dialog):
         combo = plain_row(Adw.ComboRow, title=title, model=self._uses(True))
         combo.set_selected(USES.index(row.use))
         fmt = Adw.SwitchRow(title=_(wiz.FORMAT), active=row.format)
-        fmt.update_property([Gtk.AccessibleProperty.LABEL], [f"{_(wiz.FORMAT)}: {title}"])
+        a11y.label(fmt, f"{_(wiz.FORMAT)}: {title}")
 
         def sync(*_args: Any) -> None:
             row.use = USES[combo.get_selected()]
@@ -198,19 +202,27 @@ class PartitionEditor(Adw.Dialog):
         group.add(combo)
         group.add(fmt)
 
-    def _new_rows(self, group, row: wiz.EditorRow) -> None:
+    def _new_rows(self, group, row: wiz.EditorRow, number: int = 1) -> None:
         _ = self._
+        # Several new partitions look alike: the screen reader says which one.
+        which = _(wiz.NEW_PARTITION).format(n=number)
         combo = Adw.ComboRow(title=_(wiz.USE), model=self._uses(False))
         combo.set_selected(USES.index(row.use) - 1 if row.use else 1)
+        a11y.label(combo, f"{which}: {_(wiz.USE)}")
         top = max(self.disk.get("size", 0) // wiz.GiB, 1)
-        spin = Adw.SpinRow.new_with_range(0.5, top, 1)
-        spin.set_title(_(wiz.SIZE_GIB))
+        # A spin button of its own: Adw.SpinRow reads as its number («0.5»), not its title.
+        size_row = plain_row(title=_(wiz.SIZE_GIB))
+        spin = Gtk.SpinButton.new_with_range(0.5, top, 1)
+        spin.set_valign(Gtk.Align.CENTER)
         spin.set_digits(1)
         spin.set_value(round(row.size / wiz.GiB, 1))
+        size_row.add_suffix(spin)
+        size_row.set_activatable_widget(spin)
+        a11y.label(spin, f"{which}: {_(wiz.SIZE_GIB)}")
         remove = Gtk.Button(icon_name="list-remove-symbolic", valign=Gtk.Align.CENTER)
         remove.add_css_class("flat")
         remove.set_tooltip_text(_(wiz.REMOVE))
-        remove.update_property([Gtk.AccessibleProperty.LABEL], [_(wiz.REMOVE)])
+        a11y.label(remove, f"{_(wiz.REMOVE)}: {which}")
         combo.add_suffix(remove)
 
         def sync(*_args: Any) -> None:
@@ -222,7 +234,7 @@ class PartitionEditor(Adw.Dialog):
         remove.connect("clicked", self._on_remove, row)
         sync()
         group.add(combo)
-        group.add(spin)
+        group.add(size_row)
 
     def _on_add(self, _button: Gtk.Button) -> None:
         self.rows.append(wiz.EditorRow("home", None, True, 0))
@@ -394,10 +406,12 @@ class WizardWindow(Adw.ApplicationWindow):
             (box.add_css_class if current else box.remove_css_class)("vilna-step-current")
             finished = key != "summary" and self.wizard.done(key)
             done.set_opacity(1.0 if finished else 0.0)
-            row.update_property(
-                [Gtk.AccessibleProperty.LABEL],
-                [self._(wiz.section_title(key)) + (" ✓" if finished else "")],
-            )
+            name = self._(wiz.section_title(key))
+            if current:  # the highlight in words: «Step 3 of 9: Disk»
+                name = self._(wiz.STEP_OF).format(
+                    number=wiz.STEPS.index(key) + 1, count=len(wiz.STEPS), title=name
+                )
+            a11y.label(row, name + (" ✓" if finished else ""))
 
     def _show_error(self, text: str) -> None:
         self.error.set_label(text)
@@ -483,9 +497,10 @@ class WizardWindow(Adw.ApplicationWindow):
         for loc, name in choices:
             row = plain_row(title=name)
             check = Gtk.CheckButton(valign=Gtk.Align.CENTER, active=loc in order)
-            check.update_property([Gtk.AccessibleProperty.LABEL], [name])
             row.add_prefix(check)
             row.set_activatable_widget(check)
+            a11y.label(check, name)
+            row.set_focusable(False)  # one Tab stop per language, on the check box
 
             def toggled(button: Gtk.CheckButton, loc: str = loc) -> None:
                 if button.get_active() and loc not in order:
@@ -528,7 +543,12 @@ class WizardWindow(Adw.ApplicationWindow):
         connect = Gtk.Button(label=_(conv.CONNECT), valign=Gtk.Align.CENTER)
         connect.add_css_class("suggested-action")
         password.add_suffix(connect)
-        state: dict[str, Any] = {"rows": [], "chosen": None}
+        # The Wi-Fi networks are a group of their own, kept apart from «Without a
+        # network» by hand: in one group with it, only the chosen button was a Tab
+        # stop and the arrows stopped at the end of the first list, so no Wi-Fi
+        # network could be reached from the keyboard.
+        wifi_leader = radio_group()
+        state: dict[str, Any] = {"rows": [], "checks": [], "chosen": None}
         if plan_net.get("mode") == "wired" and wired is not None:
             wired.set_active(True)
         elif plan_net.get("mode") != "wifi":
@@ -538,9 +558,24 @@ class WizardWindow(Adw.ApplicationWindow):
             net = self.wizard.plan.get("network") or {}
             return net.get("wifi") == ssid and net.get("secret") == plans.ENTERED
 
+        def no_wifi(button: Gtk.CheckButton) -> None:
+            if not button.get_active():
+                return
+            for check in state["checks"]:
+                check.set_active(False)
+            state["chosen"] = None
+            password.set_visible(False)
+
+        offline.connect("toggled", no_wifi)
+        if wired is not None:
+            wired.connect("toggled", no_wifi)
+
         def chose(button: Gtk.CheckButton, net: dict[str, Any]) -> None:
             if not button.get_active():
                 return
+            for way in (offline, wired):
+                if way is not None:
+                    way.set_active(False)
             state["chosen"] = net
             need = net["secured"] and not connected(net["ssid"])
             password.set_title(_(conv.WIFI_PASSWORD).format(name=net["ssid"]))
@@ -551,21 +586,30 @@ class WizardWindow(Adw.ApplicationWindow):
         def show(networks: list[dict[str, Any]]) -> bool:
             for row in state["rows"]:
                 wifi.remove(row)
-            state["rows"] = []
+            state["rows"], state["checks"] = [], []
             if not networks:
                 empty = plain_row(title=_(wiz.NO_WIFI))
                 wifi.add(empty)
                 state["rows"].append(empty)
             for net in networks:
-                sub = f"{net['signal']} %" + (
-                    f" · {_(wiz.CONNECTED)}" if connected(net["ssid"]) else ""
+                # The lock icon in words too: the screen reader does not see the icon.
+                sub = " · ".join(
+                    [f"{net['signal']} %"]
+                    + ([_(wiz.SECURED)] if net["secured"] else [])
+                    + ([_(wiz.CONNECTED)] if connected(net["ssid"]) else [])
                 )
-                row, check = radio_row(net["ssid"], sub, leader)
+                row, check = radio_row(net["ssid"], sub, wifi_leader)
                 if net["secured"]:
-                    row.add_suffix(Gtk.Image(icon_name="network-wireless-encrypted-symbolic"))
+                    row.add_suffix(
+                        Gtk.Image(
+                            icon_name="network-wireless-encrypted-symbolic",
+                            accessible_role=Gtk.AccessibleRole.PRESENTATION,
+                        )
+                    )
                 check.connect("toggled", chose, net)
                 wifi.add(row)
                 state["rows"].append(row)
+                state["checks"].append(check)
                 if plan_net.get("mode") == "wifi" and plan_net.get("wifi") == net["ssid"]:
                     check.set_active(True)
             if password.get_parent() is not None:
@@ -796,7 +840,7 @@ class WizardWindow(Adw.ApplicationWindow):
         name = Adw.EntryRow(title=_(wiz.FULL_NAME), text=user.get("full_name", ""))
         login = Adw.EntryRow(title=_(wiz.USERNAME), text=user.get("username", ""))
         host = Adw.EntryRow(title=_(wiz.HOSTNAME), text=user.get("hostname", ""))
-        title = _(conv.PASSWORD).format(name="").strip()
+        title = _(wiz.PASSWORD_TITLE)  # «Password for {name}» with no name read «Password for»
         if user.get("password") == plans.ENTERED:
             title = f"{title} · {_(conv.ENTERED_TEXT)}"
         first, second = password_rows(title, _(conv.REPEAT))

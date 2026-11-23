@@ -62,10 +62,37 @@ def _in_thread(work: Callable[[], Any], done: Callable[[Any, Exception | None], 
 
 def _risk(level: str | None) -> Gtk.Label:
     label = Gtk.Label(label=level or "—", valign=Gtk.Align.CENTER)
+    # «R2» alone means nothing when read aloud.
+    said = _("Risk level {level}").format(level=level) if level else _("Not assessed")
+    label.update_property([Gtk.AccessibleProperty.LABEL], [said])
     label.add_css_class("vilna-risk")
     if level and len(level) == 2 and level[0] == "R" and level[1] in "01234":
         label.add_css_class(f"vilna-r{level[1]}")
     return label
+
+
+def _describe(widget: Gtk.Widget, text: str) -> None:
+    """``text`` as the accessible description.
+
+    Adw.ActionRow points at its subtitle with *described-by*, which AT-SPI
+    reads as an empty description (GTK 4.14): Orca read «Change a file» and
+    not «Always · in Documents».
+    """
+    widget.reset_relation(Gtk.AccessibleRelation.DESCRIBED_BY)
+    widget.update_property([Gtk.AccessibleProperty.DESCRIPTION], [text])
+
+
+def _announce(widget: Gtk.Widget, text: str) -> None:
+    if text and hasattr(widget, "announce"):  # GTK 4.14+
+        widget.announce(text, Gtk.AccessibleAnnouncementPriority.MEDIUM)
+
+
+def _info_row(title: str, subtitle: str) -> Adw.ActionRow:
+    row = Adw.ActionRow(
+        title=GLib.markup_escape_text(title), subtitle=GLib.markup_escape_text(subtitle)
+    )
+    _describe(row, subtitle)
+    return row
 
 
 def _clear(box: Gtk.Box) -> None:
@@ -148,17 +175,22 @@ class JournalPage(Gtk.Box):
             undo = Gtk.Button(label=_("Undo"), valign=Gtk.Align.CENTER)
             undo.connect("clicked", lambda _b, aid=a.action_id: self.window.undo(aid))
             row.add_suffix(undo)
-        if a.reason:
-            row.add_row(
-                Adw.ActionRow(title=_("Gloxi's reason"), subtitle=GLib.markup_escape_text(a.reason))
+            # Every row has an «Undo»: the screen reader says which change. The
+            # row labels its suffix with *labelled-by*, which wins over a label.
+            undo.reset_relation(Gtk.AccessibleRelation.LABELLED_BY)
+            undo.update_property(
+                [Gtk.AccessibleProperty.LABEL],
+                [f"{_('Undo')}: {view.title(a, self.window.registry)}"],
             )
+        if a.reason:
+            row.add_row(_info_row(_("Gloxi's reason"), a.reason))
         if a.resources:
             text = "\n".join(a.resources[:10])
             if a.resource_count > 10:
                 text += "\n" + _("… and {n} more").format(n=a.resource_count - 10)
-            row.add_row(Adw.ActionRow(title=_("What"), subtitle=GLib.markup_escape_text(text)))
+            row.add_row(_info_row(_("What"), text))
         risk = _("Risk level {level}").format(level=a.level) if a.level else _("Not assessed")
-        row.add_row(Adw.ActionRow(title=risk, subtitle=view.outcome_text(a)))
+        row.add_row(_info_row(risk, view.outcome_text(a)))
         return row
 
 
@@ -195,16 +227,20 @@ class PermissionsPage(Gtk.Box):
                 continue
             group = Adw.PreferencesGroup(title=title)
             for p in items:
+                what = view.permission_title(p, self.window.registry)
                 row = Adw.ActionRow(
-                    title=GLib.markup_escape_text(view.permission_title(p, self.window.registry)),
+                    title=GLib.markup_escape_text(what),
                     subtitle=GLib.markup_escape_text(view.permission_subtitle(p)),
                 )
+                _describe(row, view.permission_subtitle(p))
                 row.add_prefix(_risk(p.level))
                 revoke = Gtk.Button(label=_("Revoke"), valign=Gtk.Align.CENTER)
                 revoke.add_css_class("flat")
                 revoke.add_css_class("error")
                 revoke.connect("clicked", lambda _b, perm=p: self.window.revoke(perm))
                 row.add_suffix(revoke)
+                revoke.reset_relation(Gtk.AccessibleRelation.LABELLED_BY)  # see «Undo»
+                revoke.update_property([Gtk.AccessibleProperty.LABEL], [f"{_('Revoke')}: {what}"])
                 group.add(row)
             self._add(group)
 
@@ -270,6 +306,8 @@ class PermissionsWindow(Adw.ApplicationWindow):
             self.busy = False
             if error is not None:
                 self.banner.set_title(_("Herkos is not answering: {why}").format(why=error))
+                if not self.banner.get_revealed():
+                    _announce(self.banner, self.banner.get_title())
                 self.banner.set_revealed(True)
                 return
             self.banner.set_revealed(False)
@@ -281,6 +319,7 @@ class PermissionsWindow(Adw.ApplicationWindow):
 
     def toast(self, text: str) -> None:
         self.toasts.add_toast(Adw.Toast(title=GLib.markup_escape_text(text), timeout=5))
+        _announce(self.toasts, text)  # a toast appears away from the focus
 
     def undo(self, action_id: str) -> None:
         # Herkos asks in its own window; this one only waits for the answer.

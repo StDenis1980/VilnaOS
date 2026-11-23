@@ -203,7 +203,14 @@ def main() -> int:
     def build(app: Adw.Application) -> None:
         style.install()
         level = risk_level(question)
-        win = Adw.Window(application=app, title=_("Herkos: permission"), modal=True)
+        # A dialog to the screen reader: Orca reads the question when the window
+        # opens, not only the button that has the focus.
+        win = Adw.Window(
+            application=app,
+            title=_("Herkos: permission"),
+            modal=True,
+            accessible_role=Gtk.AccessibleRole.DIALOG,
+        )
         win.set_default_size(480, -1)
         win.connect("close-request", lambda *_: finish("deny") or False)
         gate = real_input.RealInput()
@@ -224,7 +231,9 @@ def main() -> int:
         title.set_hexpand(True)
         head.append(title)
         chip = Gtk.Box(spacing=6, valign=Gtk.Align.START)
-        chip.append(Gtk.Image.new_from_icon_name(RISK_ICONS[level]))
+        shape = Gtk.Image.new_from_icon_name(RISK_ICONS[level])
+        shape.set_accessible_role(Gtk.AccessibleRole.PRESENTATION)  # the words say it
+        chip.append(shape)
         chip.append(Gtk.Label(label=_(RISK_LABELS[level])))
         chip.add_css_class("vilna-risk")
         chip.add_css_class(level.lower())
@@ -279,6 +288,10 @@ def main() -> int:
                 finish(choice)
             else:
                 not_real.set_visible(True)
+                if hasattr(not_real, "announce"):  # GTK 4.14+
+                    not_real.announce(
+                        not_real.get_label(), Gtk.AccessibleAnnouncementPriority.MEDIUM
+                    )
 
         default = deny = Gtk.Button(label=_("Deny"))
         if needs_acknowledgement(question):
