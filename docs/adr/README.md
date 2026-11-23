@@ -14,7 +14,7 @@
 | [0008](0008-default-local-model.md) | Локальна модель за замовчуванням: Qwen3 4B Q4_K_M без «роздумів» | Прийнято |
 | [0009](0009-languages.md) | Основні мови: uk, en, es, pl, de, fr, it, ro, cs, lt; решта через Weblate | Прийнято |
 | [0010](0010-keros-local-model.md) | Класифікатор Keros — та сама локальна модель, що й у Gloxi; лише на пристрої, лише підвищує ризик | Прийнято |
-| [0011](0011-default-office-suite.md) | Офісний пакет за замовчуванням: Tinta Office (Flatpak) замість LibreOffice, Thunderbird, Papers | Прийнято |
+| [0011](0011-default-office-suite.md) | Офісний пакет за замовчуванням: Tinta Office (Flatpak) замість LibreOffice, Thunderbird, Papers; в альфі остаточно (23.11.2026) | Прийнято |
 | [0012](0012-recommended-apps-and-install-via-gloxi.md) | Добірка «Рекомендовано Vilna» в GNOME Software і встановлення програм через Gloxi (R3 у Herkos) | Прийнято |
 | [0013](0013-herkos-rust.md) | Системний Herkos на Rust: один сервіс `herkosd` для всіх людей, вікно підтвердження в сеансі, заміна Herkos-lite після кроку 4 | Прийнято |
 | [0014](0014-remote-wipe.md) | Віддалене стирання вкраденого пристрою: R4 з паролем, наказ підписує пристрій людини, затримка зі скасуванням, криптографічне стирання LUKS | Прийнято |
