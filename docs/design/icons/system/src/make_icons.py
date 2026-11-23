@@ -68,10 +68,18 @@ def trash(full: bool) -> str:
 
 
 DEVICES = {
-    "drive-harddisk": (f'<rect x="14" y="44" width="100" height="52" rx="12" fill="{NIGHT}"/>'
-        '<rect x="14" y="38" width="100" height="52" rx="12" fill="url(#f)"/>'
-        f'<rect x="24" y="74" width="80" height="6" rx="3" fill="{CREAM}" opacity=".5"/>'
-        f'<circle cx="96" cy="54" r="5" fill="{GOLD}"/>'),
+    # Жорсткий диск відкритий: корпус, пластина з доріжками, золотий важіль головки.
+    "drive-harddisk": (f'<rect x="20" y="16" width="88" height="102" rx="12" fill="{NIGHT}"/>'
+        '<rect x="20" y="12" width="88" height="102" rx="12" fill="url(#f)"/>'
+        f'<g fill="{NIGHT}" opacity=".55"><circle cx="30" cy="22" r="3"/><circle cx="98" cy="22" r="3"/>'
+        '<circle cx="30" cy="104" r="3"/><circle cx="98" cy="104" r="3"/></g>'
+        f'<circle cx="62" cy="52" r="33" fill="{CREAM}"/>'
+        f'<circle cx="62" cy="52" r="25" fill="none" stroke="{BLUE_XL}" stroke-width="2"/>'
+        f'<circle cx="62" cy="52" r="16" fill="none" stroke="{BLUE_XL}" stroke-width="2"/>'
+        f'<circle cx="62" cy="52" r="6" fill="{NIGHT}"/>'
+        f'<path d="M92 102 L70 64" stroke="{NIGHT}" stroke-width="9" stroke-linecap="round" opacity=".35"/>'
+        '<path d="M92 100 L70 62" stroke="url(#g)" stroke-width="8" stroke-linecap="round"/>'
+        f'<circle cx="92" cy="100" r="8" fill="{GOLD}"/><circle cx="92" cy="100" r="3" fill="{NIGHT}"/>'),
     "drive-removable-media": (f'<rect x="50" y="12" width="28" height="22" rx="3" fill="{CREAM}"/>'
         f'<rect x="56" y="18" width="5" height="6" fill="{NIGHT}"/><rect x="67" y="18" width="5" height="6" fill="{NIGHT}"/>'
         f'<rect x="38" y="34" width="52" height="84" rx="12" fill="{NIGHT}"/>'
