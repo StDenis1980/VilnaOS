@@ -59,6 +59,11 @@
       <summary>Wi-Fi networks the VPN offer was shown for</summary>
       <description>Connection UUIDs of the shared Wi-Fi networks (those with a login page) after whose login the Shell already offered a VPN, so that it offers once per network. Clear the list to see the offer again.</description>
     </key>
+    <key name="rollback-noticed" type="s">
+      <default>''</default>
+      <summary>Failed snapshot whose automatic rollback was already shown</summary>
+      <description>After an update fails its boot health check and Vilna goes back to a snapshot that worked, the Shell shows one notification. This is the number of the failed snapshot it was shown for, so that it is shown once. Clear it to see the notification again.</description>
+    </key>
     <key name="window-motion" enum="org.gnome.shell.extensions.vilna.WindowMotion">
       <default>'vilna'</default>
       <summary>How windows move</summary>

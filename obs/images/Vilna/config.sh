@@ -14,6 +14,42 @@ echo "Configure image: [${kiwi_iname:-Vilna}]"
 systemctl preset-all
 systemctl set-default graphical.target
 
+# GDM through its own systemd unit, not openSUSE's display-manager-legacy.
+# The gdm package in Tumbleweed (51.1, 2026-10) ships no gdm.service, so
+# the presets only enable display-manager-legacy.service (xdm): Type=forking
+# with PIDFile=/run/displaymanager.pid, which its wrapper links only after
+# gdm forks. gdm stays in the foreground, the link never appears, and after
+# 90 s systemd marks the unit failed; all that time Plymouth holds the
+# screen (Conflicts=plymouth-quit), so the first boot showed the boot log and
+# a black screen and later boots a long firmware logo (S7 on the laptop,
+# 2026-11-22). The unit below follows GNOME's gdm.service.in. It is written
+# only when the package has none, so a gdm that ships its own wins.
+if [ ! -e /usr/lib/systemd/system/gdm.service ]; then
+    cat >/usr/lib/systemd/system/gdm.service <<'UNIT'
+[Unit]
+Description=GNOME Display Manager
+Conflicts=getty@tty1.service plymouth-quit.service
+After=getty@tty1.service plymouth-quit.service
+After=rc-local.service plymouth-start.service systemd-user-sessions.service
+OnFailure=plymouth-quit.service
+
+[Service]
+ExecStart=/usr/sbin/gdm
+KillMode=mixed
+Restart=always
+IgnoreSIGPIPE=no
+BusName=org.gnome.DisplayManager
+EnvironmentFile=-/etc/locale.conf
+ExecReload=/bin/kill -SIGHUP $MAINPID
+KeyringMode=shared
+
+[Install]
+Alias=display-manager.service
+UNIT
+fi
+systemctl disable display-manager-legacy.service || true
+systemctl enable gdm.service
+
 # The disk is ready-made by KIWI, not installed by Aeon's tik: if any
 # repart.d from Aeon's packages is still present, systemd-repart must
 # not try to repartition the disk we booted from (first-boot failure

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Nov 20 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.15
+- health-last-working leaves a note in /var/lib/misc/vilna-auto-rollback
+  (failed and restored snapshot, time) that the Vilna Shell extension
+  turns into one notification after the next login
+
+-------------------------------------------------------------------
 Thu Nov 19 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.14

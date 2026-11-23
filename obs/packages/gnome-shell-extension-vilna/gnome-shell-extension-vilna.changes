@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Nov 20 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.8: one notification after an automatic rollback of an update
+  (rollbackNotice.js, lib/rollbackNotice.js): reads the note that
+  vilna-health-last-working leaves in /var/lib/misc/vilna-auto-rollback,
+  once per failed snapshot (new key rollback-noticed) and only for a
+  rollback of the last 14 days. In the ten languages of Vilna.
+
+-------------------------------------------------------------------
 Wed Nov 18 14:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.7: MeteoAlarm weather warnings on the weather card
