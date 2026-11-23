@@ -12,14 +12,23 @@
 
 Стиль тек: задня стінка нічна синя `#1F345C`, аркуш кремовий `#F2E8D5`, передня стінка — градієнт синього `#5B8CFF → #2D6BFF`, по верхньому краю золота смуга `#F5C24A → #F0963A`, емблема кремова. Symbolic-значки мають 16×16 і один колір, як в Adwaita: GNOME сам перефарбовує їх під світлу й темну тему. Рівні ризику: R0 — порожній щит, R1–R3 — одна, дві, три крапки, R4 — повний щит.
 
+## Vilna Classic
+
+Друга тема на вибір (`Vilna-Classic`, прохання Denys 23.11.2026): ті самі теки, кошик і диски, але як справжні предмети в стилі старих настільних систем. Теки скляні, з папером усередині й витисненою емблемою, кошик металевий, диск сталевий з дзеркальною пластиною, і під кожним предметом м'яка тінь. Значки 256×256 малює `src/make_classic.py`. Symbolic-значки тема бере з Vilna (`Inherits=Vilna,Adwaita,hicolor`). За замовчуванням стоїть плоска Vilna, а Classic вмикається так:
+
+```sh
+gsettings set org.gnome.desktop.interface icon-theme 'Vilna-Classic'
+```
+
 ## Як змінити
 
 Значки малює код, руками SVG не правимо:
 
 ```sh
 cd docs/design/icons/system
-python3 src/make_icons.py Vilna     # перемалювати тему
-python3 src/check_icons.py Vilna    # те саме, що %check пакета
+python3 src/make_icons.py Vilna                    # перемалювати Vilna
+python3 src/make_classic.py Vilna-Classic          # перемалювати Vilna Classic
+python3 src/check_icons.py Vilna Vilna-Classic     # те саме, що %check пакета
 ```
 
 `check_icons.py` перевіряє, що закомічені файли збігаються з генератором, `index.theme` перелічує всі теки й успадковує Adwaita, а symbolic-значки мають один колір. Він працює в `%check` пакета, тож CI пакетів OBS ловить розбіжності.
