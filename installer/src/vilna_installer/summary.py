@@ -67,6 +67,8 @@ PROBLEMS = {
     ),
     "later_stage": "This way of installing comes in a later version of Vilna.",
     "manual_needs_editor": "Make the layout in the partition editor first.",
+    "manual_home_swap_later": wiz.HOME_SWAP_LATER,
+    "manual_new_efi_beside_efi": wiz.NEW_EFI_BESIDE_EFI,
     "wifi_password": "The Wi-Fi password is not entered yet.",
     "user_password": "The account password is not entered yet.",
     "passphrase": "The disk passphrase is not entered yet.",

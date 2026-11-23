@@ -490,6 +490,12 @@ msgstr "Виберіть не більше одного розділу для д
 msgid "Choose at most one swap partition."
 msgstr "Виберіть не більше одного розділу підкачки."
 
+msgid "This version installs only the EFI and the system partition. Leave home folders and swap unused for now."
+msgstr "Ця версія ставить лише розділ EFI і системний розділ. Домашні теки й підкачку поки лишіть невикористаними."
+
+msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
+msgstr "На диску вже є системний розділ EFI. Виберіть його (з форматуванням чи без) замість нового."
+
 msgid "This comes in a later version of Vilna."
 msgstr "Це буде в наступних версіях Vilna."
 
