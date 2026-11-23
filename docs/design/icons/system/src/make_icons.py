@@ -144,7 +144,8 @@ SYMBOLIC = {
     },
     "actions": {
         "vilna-consent": '<path d="M2 8.5 L6 12.5 L14 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
-        "vilna-key": '<path d="M5 3 A4 4 0 0 1 8.7 8.5 L14 8.5 V11 H12 V13 H10 V11 H8.7 A4 4 0 1 1 5 3Z M5 5.5 A1.5 1.5 0 1 0 5.01 5.5Z" fill-rule="evenodd"/>',
+        # Ключ по діагоналі: кільце з отвором угорі ліворуч, стрижень і два зубці.
+        "vilna-key": '<g transform="rotate(45 5.2 5.2)"><path d="M5.2 1.4 A3.8 3.8 0 0 1 8.85 4.2 H16 V6.2 H15.9 V8 H14.5 V6.2 H13.8 V8 H12.4 V6.2 H8.85 A3.8 3.8 0 1 1 5.2 1.4Z M5.2 3.6 A1.6 1.6 0 1 0 5.21 3.6Z" fill-rule="evenodd"/></g>',
         "vilna-model": '<path d="M8 1 L14 4.5 V11.5 L8 15 L2 11.5 V4.5Z M8 3.3 L4 5.6 L8 7.9 L12 5.6Z M3.8 7.2 V10.5 L7 12.4 V9.1Z M9 9.1 V12.4 L12.2 10.5 V7.2Z" fill-rule="evenodd"/>',
         "vilna-mic": '<rect x="5.5" y="1" width="5" height="9" rx="2.5"/><path d="M3 7.5 A5 5 0 0 0 13 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="7.2" y="12" width="1.6" height="3"/>',
     },
