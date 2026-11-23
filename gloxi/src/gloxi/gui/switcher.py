@@ -20,6 +20,13 @@ SECTIONS = (
     ("cloud", N_("In the cloud")),
 )
 TAGS = {"auto": N_("recommended"), "local": N_("local"), "cloud": N_("cloud")}
+# Where the words go, as a Vilna symbolic icon (docs/design/icons/system,
+# shipped in gloxi/data/icons/hicolor): a model chosen for you, this computer, the cloud.
+ICONS = {
+    "auto": "vilna-model-symbolic",
+    "local": "vilna-local-symbolic",
+    "cloud": "vilna-cloud-symbolic",
+}
 
 
 @dataclass(frozen=True)
@@ -43,6 +50,11 @@ def sections(choices: list[ModelChoice]) -> list[Section]:
 
 def tag(mode: str) -> str:
     return _(TAGS.get(mode, "local"))
+
+
+def icon(mode: str) -> str:
+    """The icon beside a model's tag; an unknown mode reads as local, like its tag."""
+    return ICONS.get(mode, ICONS["local"])
 
 
 def switch_note(choice: ModelChoice) -> str:

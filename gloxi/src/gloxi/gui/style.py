@@ -14,6 +14,21 @@ from importlib import resources
 STYLE_FILES = ("vilna.css", "vilna-dark.css")
 
 
+def icon_dir() -> str | None:
+    """The Vilna symbolic icons shipped with this package (docs/design/icons/system).
+
+    The folder is added to GTK's icon search path, so the icons show on any
+    desktop; on Vilna the Vilna icon theme has the same files. They sit in
+    hicolor/symbolic/apps under it: GTK recolours a symbolic icon only when it
+    is found in a theme folder, not as a loose file in the search path.
+    """
+    try:
+        path = resources.files("gloxi") / "data" / "icons"
+        return str(path) if path.is_dir() else None
+    except (OSError, ValueError, TypeError):
+        return None
+
+
 def stylesheet(name: str) -> str:
     """The text of one of the shared style files, or "" if it is missing."""
     try:
@@ -31,6 +46,9 @@ def install() -> None:
     display = Gdk.Display.get_default()
     if display is None:
         return
+    icons = icon_dir()
+    if icons:
+        Gtk.IconTheme.get_for_display(display).add_search_path(icons)
     base = Gtk.CssProvider()
     base.load_from_string(stylesheet("vilna.css"))
     dark = Gtk.CssProvider()
