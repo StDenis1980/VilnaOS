@@ -76,3 +76,19 @@ def test_enter_presses_the_safest_button_for_the_level():
     tainted = {**plain, "level": "R2", "taint_sources": ["web"]}
     assert default_choice(tainted) == "deny"
     assert default_choice({"level": "R2", "choices": ["session"]}) == "deny"
+
+
+def test_risk_icons_ship_and_match_the_design_source():
+    """Each level's shield is in data/icons, the same file as in the Vilna icon theme."""
+    from herkos.dialog import RISK_ICONS
+
+    icons = Path(style.icon_dir() or "") / "hicolor" / "symbolic" / "apps"
+    theme = REPO / "docs" / "design" / "icons" / "system" / "Vilna" / "symbolic" / "status"
+    for name in RISK_ICONS.values():
+        shipped = icons / f"{name}.svg"
+        assert shipped.is_file(), f"{name}.svg missing from {icons}/"
+        source = theme / f"{name}.svg"
+        if source.exists():  # only in a checkout of the whole repository
+            assert shipped.read_bytes() == source.read_bytes(), (
+                f"copy {source.relative_to(REPO)} to {icons}/"
+            )

@@ -97,15 +97,15 @@ RISK_LABELS = {
     "R4": "R4 · cannot be undone",
 }  # translated when shown
 
-# A shape for each level, so the chip reads without colour (design system by
-# Dmytro Sizmin): circle, shield, undo arrow, triangle, stop sign. These are
-# standard symbolic icon names of the GNOME icon theme.
+# A shape for each level, so the chip reads without colour: the Herkos shield
+# with no, one, two or three dots, and a full shield for R4. The Vilna icons
+# (docs/design/icons/system), shipped in data/icons/hicolor (style.icon_dir).
 RISK_ICONS = {
-    "R0": "media-record-symbolic",
-    "R1": "security-high-symbolic",
-    "R2": "edit-undo-symbolic",
-    "R3": "dialog-warning-symbolic",
-    "R4": "process-stop-symbolic",
+    "R0": "vilna-risk-0-symbolic",
+    "R1": "vilna-risk-1-symbolic",
+    "R2": "vilna-risk-2-symbolic",
+    "R3": "vilna-risk-3-symbolic",
+    "R4": "vilna-risk-4-symbolic",
 }
 
 
