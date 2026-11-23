@@ -42,7 +42,7 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import confirm_window, install_window, start, style, summary  # noqa: E402
+from vilna_installer import a11y, confirm_window, install_window, start, style, summary  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
@@ -182,7 +182,8 @@ GROUPS = (
 )
 STEP_OF = "Step {n} of {total}"
 INSTALLATION = "Installation"
-TEXTS = (GROUP_INTRO, GROUP_DISK, GROUP_YOU, STEP_OF, INSTALLATION)
+CONVERSATION = "Conversation with Gloxi"  # the chat's name for the screen reader
+TEXTS = (GROUP_INTRO, GROUP_DISK, GROUP_YOU, STEP_OF, INSTALLATION, CONVERSATION)
 OWLS = Path(__file__).resolve().parent / "data" / "owl"
 
 
@@ -235,7 +236,13 @@ class ChatWindow(Adw.ApplicationWindow):
         header.pack_start(style.theme_button(_))
 
         # The chat
-        self.list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        # A group with a name: a scrolled window's own name is not read (GTK 4.14).
+        self.list = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=10,
+            accessible_role=Gtk.AccessibleRole.GROUP,
+        )
+        a11y.label(self.list, _(CONVERSATION))
         self.list.set_margin_top(18)
         self.list.set_margin_bottom(18)
         self.list.set_margin_start(24)
@@ -268,7 +275,12 @@ class ChatWindow(Adw.ApplicationWindow):
         panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, width_request=340)
         panel.set_hexpand(False)
         panel.add_css_class("vilna-plan")
-        steps = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        steps = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=4,
+            accessible_role=Gtk.AccessibleRole.GROUP,
+        )
+        a11y.label(steps, _(conv.PLAN))
         steps.add_css_class("vilna-steps-card")
         top = Gtk.Box(spacing=10)
         self.owl = self._owl("waiting", 36)
@@ -463,6 +475,9 @@ class ChatWindow(Adw.ApplicationWindow):
             column.append(label)
             row.append(column)
             self.list.append(row)
+            # Gloxi's words appear where the focus is not: say them (the chat
+            # has no live region in GTK 4).
+            a11y.announce(label, text)
         GLib.idle_add(self._scroll_down)
 
     def _divider(self, section: str) -> None:
@@ -672,7 +687,7 @@ class ChatWindow(Adw.ApplicationWindow):
         value = first.get_text()
         if need == "wifi_password":
             ssid = (plans.load(self.plan_path).get("network") or {}).get("wifi", "")
-            note.set_label(_(conv.CONNECTING))
+            self._note(note, _(conv.CONNECTING))
             button.set_sensitive(False)
 
             def work() -> None:
@@ -683,20 +698,25 @@ class ChatWindow(Adw.ApplicationWindow):
             return
         if need == "pin":
             if not plans.PIN_RE.match(value):
-                note.set_label(_(conv.BAD_PIN))
+                self._note(note, _(conv.BAD_PIN))
                 return
         elif len(value) < MIN_PASSWORD:
-            note.set_label(_(conv.SHORT))
+            self._note(note, _(conv.SHORT))
             return
         if second is not None and second.get_text() != value:
-            note.set_label(_(conv.MISMATCH))
+            self._note(note, _(conv.MISMATCH))
             return
         self._secret_done(need, card, note, button, True, value)
+
+    def _note(self, note: Gtk.Label, text: str) -> None:
+        """What went wrong with a protected field: shown under it and said aloud."""
+        note.set_label(text)
+        a11y.announce(note, text)
 
     def _secret_done(self, need, card, note, button, ok, value) -> bool:
         _ = self._
         if not ok:
-            note.set_label(_(conv.CONNECT_FAILED))
+            self._note(note, _(conv.CONNECT_FAILED))
             button.set_sensitive(True)
             return False
         which = {
@@ -742,6 +762,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.busy = True
         self._set_owl("thinking")
         self.thinking.set_visible(True)
+        a11y.announce(self.thinking, self.thinking.get_label())
         self.send.set_sensitive(False)
         conversation = self.conversation
 

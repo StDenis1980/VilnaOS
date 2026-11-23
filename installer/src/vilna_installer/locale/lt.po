@@ -138,3 +138,6 @@ msgstr "{n} žingsnis iš {total}"
 
 msgid "Installation"
 msgstr "Diegimas"
+
+msgid "Conversation with Gloxi"
+msgstr "Pokalbis su Gloxi"

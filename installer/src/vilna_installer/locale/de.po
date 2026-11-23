@@ -138,3 +138,6 @@ msgstr "Schritt {n} von {total}"
 
 msgid "Installation"
 msgstr "Installation"
+
+msgid "Conversation with Gloxi"
+msgstr "Gespräch mit Gloxi"

@@ -423,6 +423,8 @@ class Welcome(Adw.ApplicationWindow):
         self.chip.set_label(_(start.RELEASE_CHIP))
         self.lead.set_label(_(start.LEAD))
         self.reader_label.set_label(_(start.SCREEN_READER))
+        # A button with an icon and a label inside has no name of its own.
+        self.reader.update_property([Gtk.AccessibleProperty.LABEL], [_(start.SCREEN_READER)])
         self.theme.relabel()
         self.without.set_label(_(start.WITHOUT))
         self.with_gloxi.set_label(_(start.WITH_GLOXI))

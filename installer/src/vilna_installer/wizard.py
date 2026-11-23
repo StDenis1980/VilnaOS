@@ -60,6 +60,7 @@ WIFI_NETWORKS = "Wi-Fi networks"
 SCAN_AGAIN = "Look for networks again"
 NO_WIFI = "No Wi-Fi networks found."
 CONNECTED = "Connected"
+SECURED = "Password-protected"
 DISK_LEAD = "Choose the disk for Vilna and what to do with it."
 DISKS = "Disks"
 WHAT_TO_DO = "What to do with the disk"
@@ -82,6 +83,8 @@ SUGGEST = "Suggest a layout"
 USE = "Use"
 FORMAT = "Format (erase)"
 SIZE_GIB = "Size, GiB"
+# What the screen reader says for a new partition's use, size and «Remove» (several look alike).
+NEW_PARTITION = "New partition {n}"
 NOT_USED = "Not used, keep"
 USE_EFI = "EFI system partition"
 USE_SYSTEM = "System"
@@ -95,6 +98,7 @@ TPM_HINT = (
 )
 NO_TPM = "This computer has no TPM 2.0 chip, so this way is not available."
 PASSPHRASE_HINT = "You type the passphrase every time the computer starts."
+PASSWORD_TITLE = "Password"
 PIN_HINT = (
     "Like the first way, plus a PIN of 6 to 20 digits at every start: a stolen computer "
     "does not even reach the login screen."
@@ -248,6 +252,7 @@ TEXTS = (
     SCAN_AGAIN,
     NO_WIFI,
     CONNECTED,
+    SECURED,
     DISK_LEAD,
     DISKS,
     WHAT_TO_DO,
@@ -267,6 +272,8 @@ TEXTS = (
     USE,
     FORMAT,
     SIZE_GIB,
+    NEW_PARTITION,
+    PASSWORD_TITLE,
     NOT_USED,
     USE_EFI,
     USE_SYSTEM,

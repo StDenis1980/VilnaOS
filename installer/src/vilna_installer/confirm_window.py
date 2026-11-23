@@ -41,7 +41,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_installer import confirm, encryption, real_input, speech, style  # noqa: E402
+from vilna_installer import a11y, confirm, encryption, real_input, speech, style  # noqa: E402
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
@@ -93,6 +93,8 @@ def _row(title: str, subtitle: str | None = None, icon: str | None = None) -> Ad
     row = Adw.ActionRow(title=GLib.markup_escape_text(title), title_lines=0, subtitle_lines=0)
     if subtitle:
         row.set_subtitle(GLib.markup_escape_text(subtitle))
+    # The screen reader reads the value with the title (the plan's «Disk: Erase…»).
+    a11y.describe(row, subtitle)
     if icon:
         row.add_prefix(Gtk.Image(icon_name=icon, accessible_role=Gtk.AccessibleRole.PRESENTATION))
     return row
@@ -110,7 +112,9 @@ class ConfirmWindow(Adw.ApplicationWindow):
         tpm: bool | None,
         finish: Callable[[confirm.Outcome], None],
     ) -> None:
-        super().__init__(application=app)
+        # A dialog to the screen reader: Orca reads its text when it opens, not
+        # only the field that has the focus.
+        super().__init__(application=app, accessible_role=Gtk.AccessibleRole.DIALOG)
         self.plan_path, self.machine, self.stage = plan_path, machine, stage
         self.finish = finish
         self.shown_at = time.monotonic()
@@ -267,6 +271,7 @@ class ConfirmWindow(Adw.ApplicationWindow):
         """A press that came from a program, not from the person: say what to do."""
         self.waiting.set_label(self._(confirm.NOT_REAL))
         self.waiting.set_visible(True)
+        a11y.announce(self.waiting, self.waiting.get_label())
 
     def _focus_first(self) -> bool:
         (self.entry or self.back).grab_focus()
@@ -284,15 +289,18 @@ class ConfirmWindow(Adw.ApplicationWindow):
         _ = self._
         typed = entry.get_text()
         self.key_ok = encryption.check_group(self.key, typed, confirm.CHECK_GROUP)
+        before = self.key_note.get_label()
         if self.key_ok:
             self.key_note.set_label(_(confirm.KEY_OK))
         elif len(encryption.normalize(typed)) >= encryption.GROUP:
             self.key_note.set_label(_(confirm.KEY_WRONG))
         else:
             self.key_note.set_label("")
-        self.key_note.update_property(
-            [Gtk.AccessibleProperty.DESCRIPTION], [self.key_note.get_label()]
-        )
+        note = self.key_note.get_label()
+        # Read with the field when it has the focus again, and said once when it changes.
+        a11y.describe(entry, note)
+        if note and note != before:
+            a11y.announce(entry, note)
         self._update()
 
     def ready(self) -> bool:

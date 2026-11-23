@@ -837,3 +837,15 @@ msgstr "Крок {n} з {total}"
 
 msgid "Installation"
 msgstr "Встановлення"
+
+msgid "Conversation with Gloxi"
+msgstr "Розмова з Gloxi"
+
+msgid "Password-protected"
+msgstr "Захищена паролем"
+
+msgid "New partition {n}"
+msgstr "Новий розділ {n}"
+
+msgid "Password"
+msgstr "Пароль"

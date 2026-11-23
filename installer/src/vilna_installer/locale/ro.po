@@ -138,3 +138,6 @@ msgstr "Pasul {n} din {total}"
 
 msgid "Installation"
 msgstr "Instalare"
+
+msgid "Conversation with Gloxi"
+msgstr "Conversație cu Gloxi"
