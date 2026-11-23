@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Sun Nov 22 22:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- GDM starts through its own gdm.service instead of openSUSE's
+  display-manager-legacy, which waited 90 s for a PID file that gdm
+  never writes and kept Plymouth on the screen all that time
+
+-------------------------------------------------------------------
 Mon Nov 16 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - First image for the installer: the Vilna system as a raw disk without
