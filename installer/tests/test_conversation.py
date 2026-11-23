@@ -457,8 +457,8 @@ def test_the_steps_follow_installer_md():
             ), name
 
 
-@pytest.mark.parametrize("code", ["uk"])
-def test_every_new_text_is_in_ukrainian(code):
+@pytest.mark.parametrize("code", [c for c in start.CODES if c != "en"])
+def test_every_new_text_is_translated(code):
     catalog = start.catalog(code)
     assert [t for t in conv.TEXTS if t not in catalog] == []
 

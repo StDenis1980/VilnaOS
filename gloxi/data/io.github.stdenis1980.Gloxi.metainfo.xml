@@ -8,6 +8,14 @@
   <name>Gloxi</name>
   <summary>AI assistant that acts only with your permission</summary>
   <summary xml:lang="uk">AI-асистент, який діє лише з вашого дозволу</summary>
+  <summary xml:lang="es">Asistente de IA que actúa solo con tu permiso</summary>
+  <summary xml:lang="pl">Asystent AI, który działa tylko za Twoją zgodą</summary>
+  <summary xml:lang="de">KI-Assistent, der nur mit Ihrer Erlaubnis handelt</summary>
+  <summary xml:lang="fr">Assistant IA qui n’agit qu’avec votre permission</summary>
+  <summary xml:lang="it">Assistente IA che agisce solo con il tuo permesso</summary>
+  <summary xml:lang="ro">Asistent AI care acționează doar cu permisiunea dumneavoastră</summary>
+  <summary xml:lang="cs">Asistent AI, který jedná jen s vaším svolením</summary>
+  <summary xml:lang="lt">DI asistentas, kuris veikia tik jums leidus</summary>
 
   <description>
     <p>
@@ -18,15 +26,87 @@
       Gloxi — асистент Vilna OS. Він говорить із малою мовною моделлю на вашому
       комп'ютері, тож за замовчуванням ніщо з написаного вами його не покидає.
     </p>
+    <p xml:lang="es">
+      Gloxi es el asistente de Vilna OS. Habla con un modelo de lenguaje
+      pequeño en tu propio ordenador, así que, de forma predeterminada, nada
+      de lo que escribes sale de él.
+    </p>
+    <p xml:lang="pl">
+      Gloxi to asystent systemu Vilna OS. Rozmawia z małym modelem językowym
+      na Twoim własnym komputerze, więc domyślnie nic z tego, co piszesz, go
+      nie opuszcza.
+    </p>
+    <p xml:lang="de">
+      Gloxi ist der Assistent von Vilna OS. Er spricht mit einem kleinen
+      Sprachmodell auf Ihrem eigenen Computer, daher verlässt standardmäßig
+      nichts, was Sie schreiben, den Computer.
+    </p>
+    <p xml:lang="fr">
+      Gloxi est l’assistant de Vilna OS. Il dialogue avec un petit modèle de
+      langage sur votre propre ordinateur : par défaut, rien de ce que vous
+      écrivez n’en sort.
+    </p>
+    <p xml:lang="it">
+      Gloxi è l'assistente di Vilna OS. Parla con un piccolo modello
+      linguistico sul tuo computer, quindi di norma nulla di ciò che scrivi
+      ne esce.
+    </p>
+    <p xml:lang="ro">
+      Gloxi este asistentul Vilna OS. Vorbește cu un model lingvistic mic de
+      pe propriul dumneavoastră calculator, deci implicit nimic din ce
+      scrieți nu iese din el.
+    </p>
+    <p xml:lang="cs">
+      Gloxi je asistent systému Vilna OS. Mluví s malým jazykovým modelem ve
+      vašem vlastním počítači, takže ve výchozím stavu nic z toho, co
+      napíšete, počítač neopustí.
+    </p>
+    <p xml:lang="lt">
+      Gloxi – Vilna OS asistentas. Jis kalbasi su mažu kalbos modeliu jūsų
+      paties kompiuteryje, todėl pagal numatytuosius nustatymus niekas, ką
+      rašote, jo nepalieka.
+    </p>
     <ul>
       <li>Chats with a local model through llama.cpp or any OpenAI-compatible server</li>
       <li xml:lang="uk">Розмова з локальною моделлю через llama.cpp або будь-який OpenAI-сумісний сервер</li>
+      <li xml:lang="es">Conversa con un modelo local a través de llama.cpp o de cualquier servidor compatible con OpenAI</li>
+      <li xml:lang="pl">Rozmawia z lokalnym modelem przez llama.cpp lub dowolny serwer zgodny z OpenAI</li>
+      <li xml:lang="de">Chattet mit einem lokalen Modell über llama.cpp oder einen beliebigen OpenAI-kompatiblen Server</li>
+      <li xml:lang="fr">Discute avec un modèle local via llama.cpp ou tout serveur compatible OpenAI</li>
+      <li xml:lang="it">Conversa con un modello locale tramite llama.cpp o qualsiasi server compatibile con OpenAI</li>
+      <li xml:lang="ro">Conversează cu un model local prin llama.cpp sau orice server compatibil OpenAI</li>
+      <li xml:lang="cs">Konverzuje s místním modelem přes llama.cpp nebo jakýkoli server kompatibilní s OpenAI</li>
+      <li xml:lang="lt">Kalbasi su vietiniu modeliu per llama.cpp ar bet kurį su OpenAI suderinamą serverį</li>
       <li>If you turn the cloud on with your own key, personal data is masked before it leaves</li>
       <li xml:lang="uk">Якщо ви вмикаєте хмару власним ключем, особисті дані маскуються, перш ніж покинуть комп'ютер</li>
+      <li xml:lang="es">Si activas la nube con tu propia clave, los datos personales se enmascaran antes de salir</li>
+      <li xml:lang="pl">Jeśli włączysz chmurę własnym kluczem, dane osobowe są maskowane, zanim opuszczą komputer</li>
+      <li xml:lang="de">Wenn Sie die Cloud mit Ihrem eigenen Schlüssel einschalten, werden persönliche Daten maskiert, bevor sie den Computer verlassen</li>
+      <li xml:lang="fr">Si vous activez le cloud avec votre propre clé, les données personnelles sont masquées avant de partir</li>
+      <li xml:lang="it">Se attivi il cloud con la tua chiave, i dati personali vengono mascherati prima di uscire</li>
+      <li xml:lang="ro">Dacă porniți cloudul cu propria cheie, datele personale sunt mascate înainte să plece</li>
+      <li xml:lang="cs">Pokud zapnete cloud vlastním klíčem, osobní údaje se před odesláním zamaskují</li>
+      <li xml:lang="lt">Jei debesį įjungiate savo raktu, asmens duomenys užmaskuojami prieš išsiunčiant</li>
       <li>Works only in the folders you choose, and only through Herkos, which asks you first</li>
       <li xml:lang="uk">Працює лише в теках, які ви обрали, і лише через Herkos, який спершу питає вас</li>
+      <li xml:lang="es">Trabaja solo en las carpetas que eliges, y solo a través de Herkos, que antes te pregunta</li>
+      <li xml:lang="pl">Działa tylko w wybranych przez Ciebie folderach i tylko przez Herkosa, który najpierw pyta</li>
+      <li xml:lang="de">Arbeitet nur in den Ordnern, die Sie wählen, und nur über Herkos, der Sie vorher fragt</li>
+      <li xml:lang="fr">Travaille seulement dans les dossiers que vous choisissez, et seulement via Herkos, qui vous demande d’abord</li>
+      <li xml:lang="it">Lavora solo nelle cartelle che scegli, e solo tramite Herkos, che prima ti chiede</li>
+      <li xml:lang="ro">Lucrează doar în dosarele pe care le alegeți și doar prin Herkos, care vă întreabă mai întâi</li>
+      <li xml:lang="cs">Pracuje jen ve složkách, které vyberete, a jen přes Herkos, který se nejdřív zeptá</li>
+      <li xml:lang="lt">Dirba tik jūsų pasirinktuose aplankuose ir tik per Herkos, kuris pirmiausia jūsų klausia</li>
       <li>Changes a few GNOME settings when you ask: light or dark style, night light, text size, do not disturb and sound, each with undo</li>
       <li xml:lang="uk">На ваше прохання змінює кілька налаштувань GNOME: світлий чи темний стиль, нічне світло, розмір тексту, «Не турбувати» і звук, кожне можна скасувати</li>
+      <li xml:lang="es">Cambia algunos ajustes de GNOME cuando se lo pides: estilo claro u oscuro, luz nocturna, tamaño del texto, no molestar y sonido, cada uno con opción de deshacer</li>
+      <li xml:lang="pl">Na Twoją prośbę zmienia kilka ustawień GNOME: jasny lub ciemny styl, światło nocne, rozmiar tekstu, „Nie przeszkadzać” i dźwięk, każde z możliwością cofnięcia</li>
+      <li xml:lang="de">Ändert auf Wunsch einige GNOME-Einstellungen: heller oder dunkler Stil, Nachtlicht, Textgröße, „Nicht stören“ und Ton, jeweils rückgängig machbar</li>
+      <li xml:lang="fr">Modifie quelques réglages de GNOME à votre demande : style clair ou sombre, éclairage nocturne, taille du texte, ne pas déranger et son, chacun annulable</li>
+      <li xml:lang="it">Cambia alcune impostazioni di GNOME quando glielo chiedi: stile chiaro o scuro, luce notturna, dimensione del testo, non disturbare e audio, ognuna annullabile</li>
+      <li xml:lang="ro">La cerere, schimbă câteva setări GNOME: stil luminos sau întunecat, lumină de noapte, mărimea textului, „Nu deranjați” și sunet, fiecare cu anulare</li>
+      <li xml:lang="cs">Na požádání změní několik nastavení GNOME: světlý nebo tmavý styl, noční světlo, velikost textu, „Nerušit“ a zvuk, každé lze vrátit</li>
+      <li xml:lang="lt">Paprašius pakeičia kelis GNOME nustatymus: šviesų ar tamsų stilių, naktinę šviesą, teksto dydį, „Netrukdyti“ ir garsą, kiekvieną galima atšaukti</li>
     </ul>
     <p>
       In this package Herkos runs in the same sandbox as Gloxi. That is weaker
@@ -42,8 +122,75 @@
       налаштувань GNOME (dconf) і до звукового сервера; тримати Gloxi в межах
       свого списку налаштувань може лише Herkos-lite.
     </p>
+    <p xml:lang="es">
+      En este paquete, Herkos funciona en el mismo entorno aislado que
+      Gloxi. Es una protección más débil que en Vilna OS, donde Herkos es un
+      servicio del sistema separado de tu sesión. Para los ajustes, este
+      paquete puede acceder al almacén de ajustes de GNOME (dconf) y al
+      servidor de sonido; solo Herkos-lite mantiene a Gloxi dentro de los
+      ajustes de su lista.
+    </p>
+    <p xml:lang="pl">
+      W tym pakiecie Herkos działa w tej samej piaskownicy co Gloxi. To
+      słabsza ochrona niż w Vilna OS, gdzie Herkos jest usługą systemową
+      oddzieloną od Twojej sesji. Ze względu na ustawienia ten pakiet ma
+      dostęp do magazynu ustawień GNOME (dconf) i serwera dźwięku; tylko
+      Herkos-lite ogranicza Gloxi do ustawień z jego listy.
+    </p>
+    <p xml:lang="de">
+      In diesem Paket läuft Herkos in derselben Sandbox wie Gloxi. Das ist
+      schwächer als in Vilna OS, wo Herkos ein von Ihrer Sitzung getrennter
+      Systemdienst ist. Für die Einstellungen kann dieses Paket auf den
+      GNOME-Einstellungsspeicher (dconf) und den Soundserver zugreifen; nur
+      Herkos-lite hält Gloxi bei den Einstellungen seiner Liste.
+    </p>
+    <p xml:lang="fr">
+      Dans ce paquet, Herkos fonctionne dans le même bac à sable que Gloxi.
+      C’est plus faible que dans Vilna OS, où Herkos est un service système
+      séparé de votre session. Pour les réglages, ce paquet peut accéder au
+      magasin de réglages de GNOME (dconf) et au serveur de son ; seul
+      Herkos-lite limite Gloxi aux réglages de sa liste.
+    </p>
+    <p xml:lang="it">
+      In questo pacchetto Herkos gira nella stessa sandbox di Gloxi. È una
+      protezione più debole che in Vilna OS, dove Herkos è un servizio di
+      sistema separato dalla tua sessione. Per le impostazioni, questo
+      pacchetto può accedere all'archivio delle impostazioni di GNOME
+      (dconf) e al server audio; solo Herkos-lite limita Gloxi alle
+      impostazioni del suo elenco.
+    </p>
+    <p xml:lang="ro">
+      În acest pachet, Herkos rulează în aceeași zonă izolată ca Gloxi. Este
+      o protecție mai slabă decât în Vilna OS, unde Herkos este un serviciu
+      de sistem separat de sesiunea dumneavoastră. Pentru setări, acest
+      pachet poate accesa depozitul de setări GNOME (dconf) și serverul de
+      sunet; doar Herkos-lite îl ține pe Gloxi în limitele setărilor din
+      lista sa.
+    </p>
+    <p xml:lang="cs">
+      V tomto balíčku běží Herkos ve stejném izolovaném prostředí jako
+      Gloxi. To je slabší než ve Vilna OS, kde je Herkos systémová služba
+      oddělená od vaší relace. Kvůli nastavení má tento balíček přístup k
+      úložišti nastavení GNOME (dconf) a ke zvukovému serveru; Gloxi drží
+      jen u nastavení ze svého seznamu pouze Herkos-lite.
+    </p>
+    <p xml:lang="lt">
+      Šiame pakete Herkos veikia toje pačioje smėlio dėžėje kaip Gloxi. Tai
+      silpnesnė apsauga nei Vilna OS, kur Herkos yra sistemos tarnyba,
+      atskirta nuo jūsų seanso. Dėl nustatymų šis paketas turi prieigą prie
+      GNOME nustatymų saugyklos (dconf) ir garso serverio; Gloxi savo sąrašo
+      nustatymų ribose laiko tik Herkos-lite.
+    </p>
     <p>This is a preview for testers.</p>
     <p xml:lang="uk">Це попередня версія для тестувальників.</p>
+    <p xml:lang="es">Esta es una versión preliminar para personas que prueban.</p>
+    <p xml:lang="pl">To wersja zapoznawcza dla testerów.</p>
+    <p xml:lang="de">Dies ist eine Vorschau für Testerinnen und Tester.</p>
+    <p xml:lang="fr">Ceci est une préversion pour les testeurs.</p>
+    <p xml:lang="it">Questa è un'anteprima per chi fa i test.</p>
+    <p xml:lang="ro">Aceasta este o versiune de previzualizare pentru testeri.</p>
+    <p xml:lang="cs">Toto je zkušební verze pro testery.</p>
+    <p xml:lang="lt">Tai išankstinė versija testuotojams.</p>
   </description>
 
   <launchable type="desktop-id">io.github.stdenis1980.Gloxi.desktop</launchable>

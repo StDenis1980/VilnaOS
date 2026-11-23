@@ -1,0 +1,510 @@
+# Lithuanian translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: lt\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "TB"
+msgstr "TB"
+
+msgid "Backups are on"
+msgstr "Atsarginės kopijos įjungtos"
+
+msgid "Choose where to keep the backups."
+msgstr "Pasirinkite, kur laikyti kopijas."
+
+msgid "recommended"
+msgstr "rekomenduojama"
+
+msgid "{day} {month} at {time}"
+msgstr "{month} {day} d. {time}"
+
+msgid "Backing up…"
+msgstr "Daroma kopija…"
+
+msgid "Backups are off"
+msgstr "Atsarginės kopijos išjungtos"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Įjunkite jas, kad jūsų failai būtų saugūs."
+
+msgid "The last backup failed"
+msgstr "Paskutinė kopija nepavyko"
+
+msgid "Settings only"
+msgstr "Tik nustatymai"
+
+msgid "Settings and documents"
+msgstr "Nustatymai ir dokumentai"
+
+msgid "The whole home folder"
+msgstr "Visas namų aplankas"
+
+msgid "Chosen by you"
+msgstr "Pasirinkta jūsų"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Nustatymai, Gloxi, Herkos, slaptažodžiai"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "Taip pat Dokumentai, Darbalaukis ir Paveikslėliai"
+
+msgid "Everything except caches and Downloads"
+msgstr "Viskas, išskyrus podėlį ir Atsisiuntimus"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Aplankai, pasirinkti su Gloxi ar terminale"
+
+msgid "Every hour"
+msgstr "Kas valandą"
+
+msgid "Every day"
+msgstr "Kasdien"
+
+msgid "Every week"
+msgstr "Kas savaitę"
+
+msgid "Off"
+msgstr "Išjungta"
+
+msgid "today at {time}"
+msgstr "šiandien {time}"
+
+msgid "yesterday at {time}"
+msgstr "vakar {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Paskutinė kopija {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Pasirinkite aplanką išoriniame diske."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Įveskite serverio adresą: sftp:user@host:/folder, s3:https://… arba rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Aplankui šiame kompiuteryje pasirinkite išorinį diską."
+
+msgid "This server needs a login and a password."
+msgstr "Šiam serveriui reikia prisijungimo vardo ir slaptažodžio."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "Atlikta {percent} %"
+
+msgid "No backup yet · {schedule}"
+msgstr "Kopijų dar nėra · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "Failų: {n}"
+
+msgid "The server address is not right: {why}"
+msgstr "Serverio adresas neteisingas: {why}"
+
+msgid "Vilna cloud"
+msgstr "Vilna debesis"
+
+msgid "In the EU · coming later"
+msgstr "ES · bus vėliau"
+
+msgid "External disk"
+msgstr "Išorinis diskas"
+
+msgid "No folder chosen yet"
+msgstr "Aplankas dar nepasirinktas"
+
+msgid "Your own server"
+msgstr "Jūsų serveris"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 arba REST"
+
+msgid "Turn on backups"
+msgstr "Įjungti atsargines kopijas"
+
+msgid "Recovery sheet"
+msgstr "Atkūrimo lapas"
+
+msgid "Backups"
+msgstr "Atsarginės kopijos"
+
+msgid "What to keep in backups?"
+msgstr "Ką laikyti kopijose?"
+
+msgid "Where"
+msgstr "Kur"
+
+msgid "Choose…"
+msgstr "Pasirinkti…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Adresas, pvz., sftp:as@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Prisijungimo vardas (S3 ir REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Slaptažodis (S3 ir REST)"
+
+msgid "How often"
+msgstr "Kaip dažnai"
+
+msgid "Back up"
+msgstr "Daryti kopiją"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Kopijos užšifruojamos šiame kompiuteryje. Be rakto niekas jų neperskaitys, net ir mes."
+
+msgid "Later"
+msgstr "Vėliau"
+
+msgid "Next"
+msgstr "Toliau"
+
+msgid "Folder for backups on the external disk"
+msgstr "Kopijų aplankas išoriniame diske"
+
+msgid "Type the key from your sheet"
+msgstr "Įveskite raktą iš savo lapo"
+
+msgid "Start again with another place"
+msgstr "Pradėti iš naujo su kita vieta"
+
+msgid "Confirm and turn on"
+msgstr "Patvirtinti ir įjungti"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Užsirašykite šį raktą ant popieriaus ir laikykite atskirai nuo kompiuterio. Jei šis kompiuteris bus prarastas, tik šis raktas atvers jūsų kopijas. Mes jo nežinome ir negalime atsiųsti iš naujo."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "Raktas rodomas tik dabar. Raidės I, L, O ir U niekada nenaudojamos."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Kopijos liks išjungtos, kol iš savo lapo vėl neįvesite atkūrimo rakto. Jis buvo parodytas vieną kartą, kai buvo nustatoma vieta."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "Neturite lapo? Pradėkite iš naujo su kita vieta: bus sukurtas naujas raktas."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Atsarginės kopijos įjungtos. Pirmoji kopija prasidėjo."
+
+msgid "Back up now"
+msgstr "Daryti kopiją dabar"
+
+msgid "Settings"
+msgstr "Nustatymai"
+
+msgid "What to keep"
+msgstr "Ką laikyti"
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Užšifruota šiame kompiuteryje. Be rakto niekas jų neperskaitys, net ir mes."
+
+msgid "Cannot read the state of backups"
+msgstr "Nepavyksta nuskaityti kopijų būsenos"
+
+msgid "Where to put the restored files"
+msgstr "Kur dėti atkurtus failus"
+
+msgid "Cannot list the backups"
+msgstr "Nepavyksta parodyti kopijų sąrašo"
+
+msgid "Restore…"
+msgstr "Atkurti…"
+
+msgid "No backups yet"
+msgstr "Kopijų dar nėra"
+
+msgid "A backup is already running."
+msgstr "Kopija jau daroma."
+
+msgid "Restored from backup {stamp}"
+msgstr "Atkurta iš kopijos {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "Atkuriama: {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "Nepavyko nustatyti kopijų: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "Tai ne tas raktas: {why}"
+
+msgid "Could not start: {why}"
+msgstr "Nepavyko pradėti: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "Atkurta failų: {n}, į {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "Nepavyko atkurti: {why}"
+
+msgid "January"
+msgstr "sausio"
+
+msgid "February"
+msgstr "vasario"
+
+msgid "March"
+msgstr "kovo"
+
+msgid "April"
+msgstr "balandžio"
+
+msgid "May"
+msgstr "gegužės"
+
+msgid "June"
+msgstr "birželio"
+
+msgid "July"
+msgstr "liepos"
+
+msgid "August"
+msgstr "rugpjūčio"
+
+msgid "September"
+msgstr "rugsėjo"
+
+msgid "October"
+msgstr "spalio"
+
+msgid "November"
+msgstr "lapkričio"
+
+msgid "December"
+msgstr "gruodžio"
+
+msgid "Disk"
+msgstr "Diskas"
+
+msgid "Vilna server"
+msgstr "Vilna serveris"
+
+msgid "Already have backups?"
+msgstr "Jau turite kopijų?"
+
+msgid "Back"
+msgstr "Atgal"
+
+msgid "Bring back"
+msgstr "Grąžinti"
+
+msgid "Bring back {n} files?"
+msgstr "Grąžinti failus ({n})?"
+
+msgid "Bring them back…"
+msgstr "Grąžinti juos…"
+
+msgid "Bring your files back now?"
+msgstr "Grąžinti jūsų failus dabar?"
+
+msgid "Cancel"
+msgstr "Atšaukti"
+
+msgid "Checking which files would change…"
+msgstr "Tikrinama, kurie failai pasikeistų…"
+
+msgid "Connect"
+msgstr "Prijungti"
+
+msgid "Connect this computer to the backups you made before. You need the place of the backups and the key from your recovery sheet. Nothing on this computer changes until you choose what to bring back."
+msgstr "Prijunkite šį kompiuterį prie anksčiau padarytų kopijų. Reikės kopijų vietos ir rakto iš atkūrimo lapo. Šiame kompiuteryje niekas nepasikeis, kol nepasirinksite, ką grąžinti."
+
+msgid "Could not open the backups: {why}"
+msgstr "Nepavyko atidaryti kopijų: {why}"
+
+msgid "Could not turn on: {why}"
+msgstr "Nepavyko įjungti: {why}"
+
+msgid "Files changed while you were reading the list; nothing was replaced. Try again."
+msgstr "Kol skaitėte sąrašą, failai pasikeitė, todėl niekas nepakeista. Bandykite dar kartą."
+
+msgid "Files from the latest backup come back into your home folder. First you see which files would change. Then turn backups on to keep this computer safe too."
+msgstr "Failai iš paskutinės kopijos grįš į jūsų namų aplanką. Pirmiausia pamatysite, kurie failai pasikeistų. Tada įjunkite kopijas, kad apsaugotumėte ir šį kompiuterį."
+
+msgid "Files made after the backup stay. Your passwords and keys on this computer stay."
+msgstr "Po kopijos sukurti failai lieka. Slaptažodžiai ir raktai šiame kompiuteryje taip pat lieka."
+
+msgid "Into a new folder, nothing on this computer is replaced. Over your files, files changed since the backup get their old version back; you see the list first."
+msgstr "Į naują aplanką: šiame kompiuteryje niekas nepakeičiama. Ant jūsų failų: po kopijos pakeisti failai atgauna senąją versiją; sąrašą pamatysite iš anksto."
+
+msgid "Into a new folder…"
+msgstr "Į naują aplanką…"
+
+msgid "Keep system secrets in backups?"
+msgstr "Laikyti sistemos paslaptis kopijose?"
+
+msgid "Keep them"
+msgstr "Laikyti"
+
+msgid "Nothing is replaced."
+msgstr "Niekas nepakeičiama."
+
+msgid "Old saved passwords came back as a separate key ring."
+msgstr "Seni išsaugoti slaptažodžiai grįžo kaip atskira raktinė."
+
+msgid "On a new computer, with your recovery sheet"
+msgstr "Naujame kompiuteryje, su atkūrimo lapu"
+
+msgid "Over my files…"
+msgstr "Ant mano failų…"
+
+msgid "Replace files"
+msgstr "Pakeisti failus"
+
+msgid "Replace {n} files with their versions from the backup?"
+msgstr "Pakeisti failus ({n}) jų versijomis iš kopijos?"
+
+msgid "Restore from backups"
+msgstr "Atkūrimas iš kopijų"
+
+msgid "Restore from backups made before"
+msgstr "Atkurti iš anksčiau padarytų kopijų"
+
+msgid "Restore into a new folder, or over your files after seeing which ones change."
+msgstr "Atkurkite į naują aplanką arba ant savo failų, prieš tai pamatę, kurie pasikeis."
+
+msgid "Restore the backup made {title}?"
+msgstr "Atkurti kopiją, padarytą {title}?"
+
+msgid "Restored: {files} files back, {replaced} replaced."
+msgstr "Atkurta: grąžinta failų: {files}, pakeista: {replaced}."
+
+msgid "Restoring…"
+msgstr "Atkuriama…"
+
+msgid "Saved passwords from the key ring, online accounts, and SSH and GPG keys go into the backups, encrypted like everything else. Whoever has your recovery key can open them, so keep the sheet safe."
+msgstr "Išsaugoti slaptažodžiai iš raktinės, internetinės paskyros ir SSH bei GPG raktai pateks į kopijas, užšifruoti kaip ir visa kita. Kas turi jūsų atkūrimo raktą, gali juos atidaryti, todėl saugokite lapą."
+
+msgid "Saved passwords, online accounts, SSH and GPG keys"
+msgstr "Išsaugoti slaptažodžiai, internetinės paskyros, SSH ir GPG raktai"
+
+msgid "System secrets"
+msgstr "Sistemos paslaptys"
+
+msgid "These files were changed after the backup and get their old version:"
+msgstr "Šie failai pakeisti po kopijos ir atgaus senąją versiją:"
+
+msgid "This computer can now use your backups."
+msgstr "Dabar šis kompiuteris gali naudotis jūsų kopijomis."
+
+msgid "Turn on"
+msgstr "Įjungti"
+
+msgid "Where are your backups?"
+msgstr "Kur jūsų kopijos?"
+
+msgid "Your files are already as in this backup"
+msgstr "Jūsų failai jau tokie, kaip šioje kopijoje"
+
+msgid "{n} files that are missing now come back."
+msgstr "Grįš failai, kurių dabar trūksta: {n}."
+
+msgid "…and {n} more"
+msgstr "…ir dar {n}"
+
+msgid "Add a device"
+msgstr "Pridėti įrenginį"
+
+msgid "Added {when}"
+msgstr "Pridėtas {when}"
+
+msgid "Block"
+msgstr "Užblokuoti"
+
+msgid "Block «{name}»?"
+msgstr "Užblokuoti „{name}“?"
+
+msgid "Block…"
+msgstr "Užblokuoti…"
+
+msgid "Cannot list the devices"
+msgstr "Nepavyko gauti įrenginių sąrašo"
+
+msgid "Code for a new device"
+msgstr "Kodas naujam įrenginiui"
+
+msgid "Could not block: {why}"
+msgstr "Nepavyko užblokuoti: {why}"
+
+msgid "Could not make a code: {why}"
+msgstr "Nepavyko sukurti kodo: {why}"
+
+msgid "Delete the old copy yourself: {place}"
+msgstr "Senąją kopiją ištrinkite patys: {place}"
+
+msgid "Done"
+msgstr "Atlikta"
+
+msgid "Each device has its own key. Block a lost or stolen one."
+msgstr "Kiekvienas įrenginys turi savo raktą. Užblokuokite pamestą ar pavogtą."
+
+msgid "It can no longer open or add to the backups, and forgets its key the next time it tries. Files on it stay as they are. If it was stolen, the backups also get a new key and you get a new recovery sheet."
+msgstr "Jis nebegalės atidaryti kopijų ar ką nors prie jų pridėti, o kitą kartą bandydamas pamirš savo raktą. Failai jame liks tokie, kokie yra. Jei jis buvo pavogtas, kopijos dar gaus naują raktą, o jūs – naują atkūrimo lapą."
+
+msgid "It was stolen"
+msgstr "Jis buvo pavogtas"
+
+msgid "Key from your sheet, or a code from your other device"
+msgstr "Raktas iš lapo arba kodas iš kito jūsų įrenginio"
+
+msgid "Moving the backups under a new key…"
+msgstr "Kopijos perkeliamos po nauju raktu…"
+
+msgid "My devices"
+msgstr "Mano įrenginiai"
+
+msgid "On a computer that already makes backups, open Backups and choose «Add a device»: it shows a code valid for 15 minutes."
+msgstr "Kompiuteryje, kuris jau daro kopijas, atidarykite Atsargines kopijas ir pasirinkite „Pridėti įrenginį“: jis parodys 15 minučių galiojantį kodą."
+
+msgid "On the new computer, open Backups, choose «Restore from backups made before» and type this code there. It works once, until {when}. Do not tell it to anyone."
+msgstr "Naujame kompiuteryje atidarykite Atsargines kopijas, pasirinkite „Atkurti iš anksčiau padarytų kopijų“ ir ten įveskite šį kodą. Jis veiks vieną kartą, iki {when}. Niekam jo nesakykite."
+
+msgid "Opens the backups if every device is lost"
+msgstr "Atidaro kopijas, jei pamesti visi įrenginiai"
+
+msgid "Protect"
+msgstr "Apsaugoti"
+
+msgid "Protect the backups after the theft?"
+msgstr "Apsaugoti kopijas po vagystės?"
+
+msgid "The backups were not moved: {why}"
+msgstr "Kopijos neperkeltos: {why}"
+
+msgid "The stolen device may know the key of the backups. Vilna moves every backup under a new key and deletes the old copy; this can take a while. Then you write down a new recovery sheet, and your other devices connect again with a code."
+msgstr "Pavogtas įrenginys gali žinoti kopijų raktą. Vilna perkels visas kopijas po nauju raktu ir ištrins senąją kopiją; tai gali užtrukti. Tada užsirašysite naują atkūrimo lapą, o kitus savo įrenginius vėl prijungsite kodu."
+
+msgid "This device · added {when}"
+msgstr "Šis įrenginys · pridėtas {when}"
+
+msgid "Valid until {when}"
+msgstr "Galioja iki {when}"
+
+msgid "Withdraw the code"
+msgstr "Atšaukti kodą"
+
+msgid "«{name}» is blocked."
+msgstr "„{name}“ užblokuotas."

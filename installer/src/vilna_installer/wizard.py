@@ -44,8 +44,8 @@ STEPS = (
     "summary",
 )
 
-# Texts (msgids of locale/*.po). New ones are in uk only for now; the
-# translation thread adds the other eight.
+# Texts (msgids of locale/*.po). A new one needs all nine translations
+# (ADR 0009); the tests fail without them.
 SUMMARY = "Summary"
 STEP_OF = "Step {number} of {count}: {title}"
 BACK = "Back"

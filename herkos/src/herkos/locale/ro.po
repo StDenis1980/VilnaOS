@@ -1,0 +1,787 @@
+# Romanian translation of Herkos.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: ro\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+# Window and terminal
+msgid "Herkos: permission"
+msgstr "Herkos: permisiune"
+
+msgid "Herkos: Gloxi asks for permission"
+msgstr "Herkos: Gloxi cere permisiunea"
+
+msgid "Gloxi's reason: "
+msgstr "Motivul lui Gloxi: "
+
+msgid "… and {n} more"
+msgstr "… și încă {n}"
+
+msgid "Can be undone."
+msgstr "Poate fi anulat."
+
+msgid "Cannot be undone."
+msgstr "Nu poate fi anulat."
+
+msgid "Riskier than usual: {why}."
+msgstr "Mai riscant decât de obicei: {why}."
+
+msgid "Untrusted content came from: {src}"
+msgstr "Conținut nesigur provenit de la: {src}"
+
+msgid "Exactly this will be done:"
+msgstr "Se va face exact acest lucru:"
+
+msgid "Deny"
+msgstr "Refuzați"
+
+msgid "Allow once"
+msgstr "Permiteți o dată"
+
+msgid "Allow for this session"
+msgstr "Permiteți pentru această sesiune"
+
+msgid "Always allow"
+msgstr "Permiteți mereu"
+
+msgid "[o] allow once"
+msgstr "[o] permiteți o dată"
+
+msgid "[s] allow for this session"
+msgstr "[s] permiteți pentru această sesiune"
+
+msgid "[a] always allow"
+msgstr "[a] permiteți mereu"
+
+msgid "[n] deny"
+msgstr "[n] refuzați"
+
+msgid "Allowed."
+msgstr "Permis."
+
+msgid "Denied."
+msgstr "Refuzat."
+
+msgid "No answer: denied."
+msgstr "Niciun răspuns: refuzat."
+
+# Why an action is riskier (policy)
+msgid "the tool has no Herkos manifest"
+msgstr "instrumentul nu are manifest Herkos"
+
+msgid "the program changed this action since it was allowed"
+msgstr "programul a schimbat această acțiune de când a fost permisă"
+
+msgid "the program describes this action at too great a length"
+msgstr "programul descrie această acțiune prea pe larg"
+
+msgid "Let Gloxi use this program: {program}"
+msgstr "Permiteți lui Gloxi să folosească acest program: {program}"
+
+msgid "the tool describes this operation as riskier"
+msgstr "instrumentul descrie această operație ca fiind mai riscantă"
+
+msgid "untrusted content is in the conversation"
+msgstr "în conversație există conținut nesigur"
+
+msgid "content read earlier {kinds}"
+msgstr "conținutul citit anterior {kinds}"
+
+msgid "it touches something outside the allowed folders"
+msgstr "atinge ceva din afara dosarelor permise"
+
+msgid "it touches more than {n} items at once"
+msgstr "atinge mai mult de {n} elemente deodată"
+
+msgid "it cannot be undone"
+msgstr "nu poate fi anulat"
+
+msgid "Herkos cannot tell which of the program's commands this runs"
+msgstr "Herkos nu își poate da seama ce comandă a programului rulează aceasta"
+
+msgid "the manifest gives no level for the program's command {commands}"
+msgstr "manifestul nu dă un nivel pentru comanda {commands} a programului"
+
+msgid "data leaves this device"
+msgstr "datele părăsesc acest dispozitiv"
+
+msgid "it sends data to an address that came from untrusted content"
+msgstr "trimite date la o adresă care a venit din conținut nesigur"
+
+# Keros findings
+msgid "asks the assistant to ignore its instructions"
+msgstr "cere asistentului să-și ignore instrucțiunile"
+
+msgid "tries to give the assistant a new role or new instructions"
+msgstr "încearcă să dea asistentului un rol nou sau instrucțiuni noi"
+
+msgid "contains chat-template or system markers"
+msgstr "conține marcaje de șablon de chat sau de sistem"
+
+msgid "contains text hidden from people (HTML/CSS)"
+msgstr "conține text ascuns de oameni (HTML/CSS)"
+
+msgid "contains a link that could carry data away"
+msgstr "conține un link care ar putea scoate date"
+
+msgid "contains invisible or direction-changing characters"
+msgstr "conține caractere invizibile sau care schimbă direcția textului"
+
+msgid "the local check found text addressed to the assistant"
+msgstr "verificarea locală a găsit text adresat asistentului"
+
+# Tool operations (manifest summaries)
+msgid "List a folder"
+msgstr "Listarea unui dosar"
+
+msgid "Search files by name and text"
+msgstr "Căutarea fișierelor după nume și text"
+
+msgid "Read a file"
+msgstr "Citirea unui fișier"
+
+msgid "Create a file"
+msgstr "Crearea unui fișier"
+
+msgid "Change a file"
+msgstr "Modificarea unui fișier"
+
+msgid "Delete a file"
+msgstr "Ștergerea unui fișier"
+
+msgid "Undo an earlier change to a file"
+msgstr "Anularea unei modificări anterioare a unui fișier"
+
+msgid "Undo an earlier change from a snapshot"
+msgstr "Anularea unei modificări anterioare dintr-un instantaneu"
+
+# Backups (org.vilna.mcp.backup)
+msgid "See whether backups are on and how the last one went"
+msgstr "Verificarea dacă copiile sunt activate și cum a decurs ultima"
+
+msgid "List the backups"
+msgstr "Listarea copiilor de siguranță"
+
+msgid "See how much space the folders take"
+msgstr "Verificarea spațiului ocupat de dosare"
+
+msgid "Make a backup now"
+msgstr "Facerea unei copii acum"
+
+msgid "Change how often backups are made"
+msgstr "Schimbarea frecvenței copiilor"
+
+msgid "Change what goes into backups"
+msgstr "Schimbarea a ceea ce intră în copii"
+
+msgid "Bring a backup back into a new folder"
+msgstr "Readucerea unei copii într-un dosar nou"
+
+msgid "Choose where backups are kept"
+msgstr "Alegerea locului unde sunt păstrate copiile"
+
+msgid "Bring files back over the current ones"
+msgstr "Readucerea fișierelor peste cele actuale"
+
+msgid "Delete backups"
+msgstr "Ștergerea copiilor"
+
+msgid "Move backups to another place"
+msgstr "Mutarea copiilor în alt loc"
+
+msgid "Replace the backup keys"
+msgstr "Înlocuirea cheilor copiilor"
+
+msgid "Protect backups after a device was stolen"
+msgstr "Protejarea copiilor după furtul unui dispozitiv"
+
+# The «Дозволи» window (permissions_window.py, permissions_view.py)
+
+msgid "All"
+msgstr "Toate"
+
+msgid "Allowed, but the tool failed"
+msgstr "Permis, dar instrumentul a eșuat"
+
+msgid "Always"
+msgstr "Mereu"
+
+msgid "January"
+msgstr "ianuarie"
+
+msgid "February"
+msgstr "februarie"
+
+msgid "March"
+msgstr "martie"
+
+msgid "April"
+msgstr "aprilie"
+
+msgid "May"
+msgstr "mai"
+
+msgid "June"
+msgstr "iunie"
+
+msgid "July"
+msgstr "iulie"
+
+msgid "August"
+msgstr "august"
+
+msgid "September"
+msgstr "septembrie"
+
+msgid "October"
+msgstr "octombrie"
+
+msgid "November"
+msgstr "noiembrie"
+
+msgid "December"
+msgstr "decembrie"
+
+msgid "Backups"
+msgstr "Copii de siguranță"
+
+msgid "Cancel"
+msgstr "Anulare"
+
+msgid "Changes can be undone for 30 days. The journal cannot be altered."
+msgstr "Modificările pot fi anulate timp de 30 de zile. Jurnalul nu poate fi modificat."
+
+msgid "Done"
+msgstr "Gata"
+
+msgid "Done, then undone"
+msgstr "Făcut, apoi anulat"
+
+msgid "Files"
+msgstr "Fișiere"
+
+msgid "Gloxi asked to {what}"
+msgstr "Gloxi a cerut: {what}"
+
+msgid "Gloxi asks before it changes anything. Here is what you allowed without asking again; take back anything you no longer want."
+msgstr "Gloxi întreabă înainte de a schimba ceva. Iată ce ați permis fără a mai fi întrebat; retrageți tot ce nu mai doriți."
+
+msgid "Gloxi brought a backup back into a new folder"
+msgstr "Gloxi a readus o copie într-un dosar nou"
+
+msgid "Gloxi brought back an earlier version of a file"
+msgstr "Gloxi a readus o versiune anterioară a unui fișier"
+
+msgid "Gloxi brought back files from a snapshot"
+msgstr "Gloxi a readus fișiere dintr-un instantaneu"
+
+msgid "Gloxi looked at the saved states of the system"
+msgstr "Gloxi s-a uitat la stările salvate ale sistemului"
+
+msgid "Gloxi returned the system to a saved state"
+msgstr "Gloxi a readus sistemul la o stare salvată"
+
+msgid "Gloxi undid a return of the system to a saved state"
+msgstr "Gloxi a anulat o readucere a sistemului la o stare salvată"
+
+msgid "Gloxi changed a file"
+msgstr "Gloxi a modificat un fișier"
+
+msgid "Gloxi changed how often backups are made"
+msgstr "Gloxi a schimbat frecvența copiilor"
+
+msgid "Gloxi changed what goes into backups"
+msgstr "Gloxi a schimbat ce intră în copii"
+
+msgid "Gloxi checked the backups"
+msgstr "Gloxi a verificat copiile"
+
+msgid "Gloxi created a file"
+msgstr "Gloxi a creat un fișier"
+
+msgid "Gloxi deleted a file"
+msgstr "Gloxi a șters un fișier"
+
+msgid "Gloxi listed the backups"
+msgstr "Gloxi a listat copiile"
+
+msgid "Gloxi looked at how much space the folders take"
+msgstr "Gloxi a verificat cât spațiu ocupă dosarele"
+
+msgid "Gloxi looked into a folder"
+msgstr "Gloxi s-a uitat într-un dosar"
+
+msgid "Gloxi read a file"
+msgstr "Gloxi a citit un fișier"
+
+msgid "Gloxi searched files"
+msgstr "Gloxi a căutat fișiere"
+
+msgid "Gloxi started a backup"
+msgstr "Gloxi a pornit o copie"
+
+msgid "Gloxi will ask you again before it does this: {what}."
+msgstr "Gloxi vă va întreba din nou înainte de a face asta: {what}."
+
+msgid "Gloxi will ask you each time."
+msgstr "Gloxi vă va întreba de fiecare dată."
+
+msgid "Gloxi's reason"
+msgstr "Motivul lui Gloxi"
+
+msgid "Herkos did not allow it"
+msgstr "Herkos nu a permis"
+
+msgid "Herkos is not answering: {why}"
+msgstr "Herkos nu răspunde: {why}"
+
+msgid "Journal"
+msgstr "Jurnal"
+
+msgid "No answer recorded"
+msgstr "Niciun răspuns înregistrat"
+
+msgid "No permissions"
+msgstr "Nicio permisiune"
+
+msgid "Nobody answered in time"
+msgstr "Nimeni nu a răspuns la timp"
+
+msgid "Not allowed at all"
+msgstr "Nepermis deloc"
+
+msgid "Not assessed"
+msgstr "Neevaluat"
+
+msgid "Not undone: you said no."
+msgstr "Neanulat: ați refuzat."
+
+msgid "Not undone: {why}"
+msgstr "Neanulat: {why}"
+
+msgid "Nothing here yet"
+msgstr "Încă nimic aici"
+
+msgid "Permission revoked."
+msgstr "Permisiune retrasă."
+
+msgid "Permissions"
+msgstr "Permisiuni"
+
+msgid "Programs"
+msgstr "Programe"
+
+msgid "Refresh"
+msgstr "Reîmprospătare"
+
+msgid "Revoke"
+msgstr "Retrageți"
+
+msgid "Revoke this permission?"
+msgstr "Retrageți această permisiune?"
+
+msgid "Risk level {level}"
+msgstr "Nivel de risc {level}"
+
+msgid "There is nothing left to undo for this action."
+msgstr "Pentru această acțiune nu mai e nimic de anulat."
+
+msgid "Today"
+msgstr "Azi"
+
+msgid "Undo"
+msgstr "Anulați"
+
+msgid "Undone. The earlier version is back."
+msgstr "Anulat. Versiunea anterioară a revenit."
+
+msgid "Until the session ends"
+msgstr "Până la sfârșitul sesiunii"
+
+msgid "What"
+msgstr "Ce"
+
+msgid "When Gloxi does something for you, it shows up here."
+msgstr "Când Gloxi face ceva pentru dumneavoastră, apare aici."
+
+msgid "Yesterday"
+msgstr "Ieri"
+
+msgid "You said no"
+msgstr "Ați refuzat"
+
+msgid "{day} {month}"
+msgstr "{day} {month}"
+
+msgid "{how} · in {where}"
+msgstr "{how} · în {where}"
+
+msgid "{name} and {n} more"
+msgstr "{name} și încă {n}"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Vizualizarea setărilor desktopului"
+
+msgid "Switch between the light and the dark style"
+msgstr "Comutarea între stilul luminos și cel întunecat"
+
+msgid "Change the accent colour"
+msgstr "Schimbarea culorii de accent"
+
+msgid "Change the text size"
+msgstr "Schimbarea mărimii textului"
+
+msgid "Change night light"
+msgstr "Schimbarea luminii de noapte"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Activarea sau dezactivarea modului Nu deranjați"
+
+msgid "Change the volume"
+msgstr "Schimbarea volumului"
+
+msgid "Mute or unmute the sound"
+msgstr "Oprirea sau pornirea sunetului"
+
+msgid "Play sound through another output"
+msgstr "Redarea sunetului pe altă ieșire"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Anularea unei modificări anterioare a setărilor"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Listarea calendarelor"
+
+msgid "Read the calendar"
+msgstr "Citirea calendarului"
+
+msgid "Search the calendar"
+msgstr "Căutarea în calendar"
+
+msgid "Add an event to the calendar"
+msgstr "Adăugarea unui eveniment în calendar"
+
+msgid "Change an event in the calendar"
+msgstr "Modificarea unui eveniment din calendar"
+
+msgid "Delete an event from the calendar"
+msgstr "Ștergerea unui eveniment din calendar"
+
+msgid "Undo an earlier change to the calendar"
+msgstr "Anularea unei modificări anterioare din calendar"
+
+# Mail (org.vilna.mcp.mail, ADR 0030)
+msgid "List the mail accounts"
+msgstr "Listarea conturilor de e-mail"
+
+msgid "List the mail folders"
+msgstr "Listarea dosarelor de e-mail"
+
+msgid "List messages in a folder"
+msgstr "Listarea mesajelor dintr-un dosar"
+
+msgid "Search the mail"
+msgstr "Căutarea în e-mail"
+
+msgid "Read a message"
+msgstr "Citirea unui mesaj"
+
+msgid "Save a message as a draft without sending it"
+msgstr "Salvarea unui mesaj ca ciornă fără a-l trimite"
+
+msgid "Send a message"
+msgstr "Trimiterea unui mesaj"
+
+msgid "Remove a draft Gloxi saved"
+msgstr "Eliminarea unei ciorne salvate de Gloxi"
+
+msgid "See whether Gloxi may reach the internet"
+msgstr "Verificarea dacă Gloxi poate accesa internetul"
+
+msgid "Let Gloxi reach the internet for the cloud model"
+msgstr "Permiterea accesului Gloxi la internet pentru modelul din cloud"
+
+msgid "Let Gloxi reach only this computer"
+msgstr "Permiterea ca Gloxi să comunice doar cu acest calculator"
+
+msgid "See the saved states of the system"
+msgstr "Vizualizarea stărilor salvate ale sistemului"
+
+msgid "Return the whole system to a saved state, after a restart"
+msgstr "Readucerea întregului sistem la o stare salvată, după repornire"
+
+msgid "Undo a return of the system to a saved state"
+msgstr "Anularea unei readuceri a sistemului la o stare salvată"
+
+msgid "Gloxi looked at the VPN kill switch and the DNS"
+msgstr "Gloxi s-a uitat la întrerupătorul de urgență al VPN-ului și la DNS"
+
+msgid "Gloxi turned on the VPN kill switch"
+msgstr "Gloxi a activat întrerupătorul de urgență al VPN-ului"
+
+msgid "Gloxi turned off the VPN kill switch"
+msgstr "Gloxi a dezactivat întrerupătorul de urgență al VPN-ului"
+
+msgid "Gloxi let a local network through the VPN kill switch"
+msgstr "Gloxi a lăsat o rețea locală să treacă prin întrerupătorul de urgență al VPN-ului"
+
+msgid "Gloxi stopped letting a local network through the VPN kill switch"
+msgstr "Gloxi nu mai lasă o rețea locală să treacă prin întrerupătorul de urgență al VPN-ului"
+
+msgid "Gloxi opened the VPN kill switch to sign in to a Wi-Fi network"
+msgstr "Gloxi a deschis întrerupătorul de urgență al VPN-ului pentru autentificarea într-o rețea Wi-Fi"
+
+msgid "Gloxi changed the encrypted DNS"
+msgstr "Gloxi a schimbat DNS-ul criptat"
+
+msgid "See the state of the VPN kill switch and the DNS"
+msgstr "Vizualizarea stării întrerupătorului de urgență al VPN-ului și a DNS-ului"
+
+msgid "Turn on the VPN kill switch"
+msgstr "Activarea întrerupătorului de urgență al VPN-ului"
+
+msgid "Turn off the VPN kill switch"
+msgstr "Dezactivarea întrerupătorului de urgență al VPN-ului"
+
+msgid "Let a local network through the VPN kill switch"
+msgstr "Lăsarea unei rețele locale să treacă prin întrerupătorul de urgență al VPN-ului"
+
+msgid "Stop letting a local network through the VPN kill switch"
+msgstr "Oprirea trecerii unei rețele locale prin întrerupătorul de urgență al VPN-ului"
+
+msgid "Open the VPN kill switch for 5 minutes to sign in to a Wi-Fi network"
+msgstr "Deschiderea întrerupătorului de urgență al VPN-ului pentru 5 minute, pentru autentificarea într-o rețea Wi-Fi"
+
+msgid "Choose the encrypted DNS: Quad9 or Mullvad"
+msgstr "Alegerea DNS-ului criptat: Quad9 sau Mullvad"
+
+msgid "Start the service of the chosen VPN provider and keep it on after a restart"
+msgstr "Pornirea serviciului furnizorului VPN ales și păstrarea lui activ după repornire"
+
+msgid "Gloxi started the service of the VPN provider"
+msgstr "Gloxi a pornit serviciul furnizorului VPN"
+
+# The Herkos window: the level chip, the Keros warning, R4 (design wave 2)
+msgid "R0 · no questions"
+msgstr "R0 · fără întrebări"
+
+msgid "R1 · reads your data"
+msgstr "R1 · citește datele dumneavoastră"
+
+msgid "R2 · can be undone"
+msgstr "R2 · se poate anula"
+
+msgid "R3 · hard to undo"
+msgstr "R3 · greu de anulat"
+
+msgid "R4 · cannot be undone"
+msgstr "R4 · ireversibil"
+
+msgid "Suspicious content"
+msgstr "Conținut suspect"
+
+msgid "Allow only if you asked for exactly this yourself."
+msgstr "Permiteți doar dacă ați cerut chiar dumneavoastră exact acest lucru."
+
+msgid "I have read exactly what will be done"
+msgstr "Am citit exact ce se va face"
+
+# Інструмент «програми» (vilna-mcp-apps, ADR 0012)
+msgid "Look for apps on Flathub and in Vilna's repository"
+msgstr "Căutarea aplicațiilor pe Flathub și în depozitul Vilna"
+
+msgid "See what an app is and what it may reach"
+msgstr "Vizualizarea a ce este o aplicație și la ce are acces"
+
+msgid "See the installed apps"
+msgstr "Vizualizarea aplicațiilor instalate"
+
+msgid "Install an app for everybody on this computer"
+msgstr "Instalarea unei aplicații pentru toți utilizatorii acestui calculator"
+
+msgid "Update apps"
+msgstr "Actualizarea aplicațiilor"
+
+msgid "Remove an app (its data stays)"
+msgstr "Eliminarea unei aplicații (datele ei rămân)"
+
+msgid "Undo an install or a removal of an app"
+msgstr "Anularea instalării sau eliminării unei aplicații"
+
+msgid "Add a source of apps"
+msgstr "Adăugarea unei surse de aplicații"
+
+msgid "Install an app from a .flatpakref or .flatpak file"
+msgstr "Instalarea unei aplicații dintr-un fișier .flatpakref sau .flatpak"
+
+msgid "Open an installed app"
+msgstr "Deschiderea unei aplicații instalate"
+
+# Що діалог Herkos показує про програму перед встановленням
+msgid "App"
+msgstr "Aplicație"
+
+msgid "Developer"
+msgstr "Dezvoltator"
+
+msgid "Verified"
+msgstr "Verificat"
+
+msgid "In Recommended by Vilna"
+msgstr "În „Recomandat de Vilna”"
+
+msgid "Source"
+msgstr "Sursă"
+
+msgid "Download"
+msgstr "Descărcare"
+
+msgid "License"
+msgstr "Licență"
+
+msgid "Can reach"
+msgstr "Are acces la"
+
+msgid "preview"
+msgstr "descriere"
+
+msgid "yes"
+msgstr "da"
+
+msgid "a Vilna app"
+msgstr "o aplicație Vilna"
+
+msgid "no: Flathub has not checked who makes it"
+msgstr "nu: Flathub nu a verificat cine o face"
+
+msgid "no: Vilna has not checked this app"
+msgstr "nu: Vilna nu a verificat această aplicație"
+
+msgid "not given"
+msgstr "nespecificat"
+
+msgid "unknown"
+msgstr "necunoscut"
+
+msgid "only its own files"
+msgstr "doar propriile fișiere"
+
+msgid "all files on the computer"
+msgstr "toate fișierele de pe calculator"
+
+msgid "the system's programs and libraries"
+msgstr "programele și bibliotecile sistemului"
+
+msgid "the system's settings (/etc)"
+msgstr "setările sistemului (/etc)"
+
+msgid "your whole home folder"
+msgstr "tot dosarul dumneavoastră personal"
+
+msgid "the X11 display (can see other X11 windows)"
+msgstr "afișajul X11 (poate vedea alte ferestre X11)"
+
+msgid "every program on your session bus"
+msgstr "orice program de pe magistrala sesiunii"
+
+msgid "every service on the system bus"
+msgstr "orice serviciu de pe magistrala sistemului"
+
+msgid "your SSH keys (through the agent)"
+msgstr "cheile dumneavoastră SSH (prin agent)"
+
+msgid "smart cards"
+msgstr "carduri inteligente"
+
+msgid "printers"
+msgstr "imprimante"
+
+msgid "your GPG keys (through the agent)"
+msgstr "cheile dumneavoastră GPG (prin agent)"
+
+msgid "all devices (camera, microphone, USB…)"
+msgstr "toate dispozitivele (cameră, microfon, USB…)"
+
+msgid "input devices"
+msgstr "dispozitive de intrare"
+
+msgid "the internet and local network"
+msgstr "internetul și rețeaua locală"
+
+msgid "its permissions could not be read"
+msgstr "permisiunile ei nu au putut fi citite"
+
+msgid "the folder {path}"
+msgstr "dosarul {path}"
+
+msgid "{what} (read only)"
+msgstr "{what} (doar citire)"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Apăsați butonul chiar dumneavoastră, cu tastatura sau cu mouse-ul: Herkos nu acceptă apăsări de la alte programe."
+
+msgid "See which devices can open the backups"
+msgstr "Vizualizarea dispozitivelor care pot deschide copiile"
+
+msgid "Block a device from the backups"
+msgstr "Blocarea unui dispozitiv pentru copii"
+
+msgid "Let a new device open the backups"
+msgstr "Permiterea unui dispozitiv nou să deschidă copiile"
+
+msgid "See the battery charge"
+msgstr "Vizualizarea nivelului bateriei"
+
+msgid "Show a notification from Gloxi"
+msgstr "Afișarea unei notificări de la Gloxi"
+
+msgid "See what the music and video players are playing"
+msgstr "Vizualizarea a ce redau playerele de muzică și video"
+
+msgid "Play, pause or skip in a music or video player"
+msgstr "Redarea, pauza sau saltul într-un player de muzică sau video"
+
+msgid "Lock the screen"
+msgstr "Blocarea ecranului"
+
+msgid "See which apps may use the camera, microphone, location and more"
+msgstr "Vizualizarea aplicațiilor care pot folosi camera, microfonul, locația și altele"
+
+msgid "Take a permission away from an app"
+msgstr "Retragerea unei permisiuni a unei aplicații"
+
+msgid "Give an app a permission"
+msgstr "Acordarea unei permisiuni unei aplicații"
+
+msgid "Put an app's permissions back as they were"
+msgstr "Readucerea permisiunilor unei aplicații cum erau"
+
+msgid "See the open windows of other apps"
+msgstr "Vizualizarea ferestrelor deschise ale altor aplicații"
+
+msgid "Read a window of another app"
+msgstr "Citirea unei ferestre a altei aplicații"
+
+msgid "Say which app, window and button an action is about"
+msgstr "Indicarea aplicației, ferestrei și butonului la care se referă o acțiune"
+
+msgid "Press a button or menu item in another app"
+msgstr "Apăsarea unui buton sau a unui element de meniu în altă aplicație"
+
+msgid "Replace the text in a field of another app"
+msgstr "Înlocuirea textului dintr-un câmp al altei aplicații"
+
+msgid "Put back the text a field had before"
+msgstr "Readucerea textului pe care îl avea un câmp"
+
+msgid "Window"
+msgstr "Fereastră"
+
+msgid "Control"
+msgstr "Element"
+
+msgid "Text now"
+msgstr "Text acum"

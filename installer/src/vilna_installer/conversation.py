@@ -83,8 +83,8 @@ ENGLISH_NAMES = {
     "lt": "Lithuanian",
 }
 
-# Fixed texts (msgids of locale/*.po). New ones are in uk only for now; the
-# translation thread adds the other eight.
+# Fixed texts (msgids of locale/*.po). A new one needs all nine translations
+# (ADR 0009); the tests fail without them.
 INTRO = (
     "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you "
     "confirm the plan; you can see it on the right and change any item yourself."
