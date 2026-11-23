@@ -285,6 +285,8 @@ class Mailbox:
             "read_message": {
                 **header,
                 "to": [ACCOUNT],
+                # As vilna_mcp_mail.mail.Mail.read_message: the account it read.
+                "account": ACCOUNT,
                 "date": "2026-11-16T09:12:00+01:00",
                 "message_id": MESSAGE_ID,
                 "text": text,

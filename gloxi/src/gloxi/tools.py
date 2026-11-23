@@ -30,6 +30,7 @@ import tomllib
 import unicodedata
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
+from email.utils import parseaddr
 from functools import cache
 from gettext import gettext as _
 from pathlib import Path
@@ -241,6 +242,8 @@ class FileTools:
         self._chosen: list[str] = []
         self._asked: dict[str, int] = {}
         self._queries = 0
+        # What the mail program said in this conversation (``_MailSeen``).
+        self._mail = _MailSeen()
 
     # -- offering -------------------------------------------------------------
 
@@ -292,6 +295,7 @@ class FileTools:
         self._offer = tuple(n for n in OPERATIONS if n in names)
         self._programs = _program_operations(listed or [])
         self._chosen, self._asked = [], {}
+        self._mail = _MailSeen()
         return self._offer
 
     def set_roots(self, roots: Sequence[Path]) -> None:
@@ -404,7 +408,14 @@ class FileTools:
         draft, send = names.get((MAIL_TOOL, "save_draft")), names.get((MAIL_TOOL, "send"))
         if draft is None:
             return ""
-        out = (
+        out = ""
+        read = names.get((MAIL_TOOL, "read_message"))
+        if read is not None:
+            out += (
+                f"\n\nBefore {read}, find the email with the listing or search functions "
+                "and use the uid they give."
+            )
+        out += (
             f"\n\nTo prepare an answer to an email, save it with {draft}: from the address "
             "the email was sent to, to its sender, with in_reply_to set to its message_id, "
             "in the language of the email. "
@@ -496,6 +507,8 @@ class FileTools:
         tool = op.tool if isinstance(op, ProgramOperation) else FILES_TOOL
         if self._lost:
             return _unavailable(op.name, where, "the connection to Herkos was lost")
+        if tool == MAIL_TOOL and op.name in ("save_draft", "send"):
+            arguments = self._mail.fill(arguments)
         try:
             if self._client is None:
                 self._client = self._connect()
@@ -515,7 +528,27 @@ class FileTools:
             return _unavailable(op.name, where, str(exc))
         except HerkosError as exc:
             return _error(op.name, where, f"Herkos refused the request: {exc}")
+        if tool == MAIL_TOOL and isinstance(answer, dict) and answer.get("code") == "allowed":
+            self._mail.note(op.name, answer.get("result"))
         return _from_answer(op, where, answer, tool)
+
+    def reads_outside(self, name: str) -> bool:
+        """Whether a function brings in content from outside (an email, a file):
+        what the model does with it has to wait until it has seen it."""
+        program = self._programs.get(name)
+        if program is not None:
+            return program.external
+        op = OPERATIONS.get(name.removeprefix("files_")) if name.startswith("files_") else None
+        return op is not None and op.external
+
+    def not_yet(self, name: str, read: str) -> ToolOutcome:
+        """A call made in the same answer as ``read``, before the model saw what
+        it brought: not run (chat.Conversation), so that an event is not made
+        with a date the model guessed before reading the email."""
+        program = self._programs.get(name)
+        op_name = program.name if program is not None else name.removeprefix("files_")
+        message = f"not run: it was asked before the result of {read} came; call it again now"
+        return _error(op_name, None, message)
 
     def _absolute(self, raw: str) -> Path | None:
         text = raw.strip()
@@ -643,6 +676,58 @@ def _unavailable(operation: str, path: str | None, detail: str) -> ToolOutcome:
     payload = {"status": "denied", "code": "herkos_unavailable", "message": message}
     payload["note"] = DENIED_NOTE
     return ToolOutcome(operation, path, "denied", "herkos_unavailable", detail, _json(payload))
+
+
+class _MailSeen:
+    """The accounts and the email the mail program gave in this conversation.
+
+    Local models leave out or make up what an answer to an email needs: the
+    account it is sent from and the message_id it answers (gloxi-bench --tasks
+    mail, 2026-11-23: neither Qwen3 4B nor Ministral 3 8B ever called
+    list_accounts). Gloxi fills them from what the program itself said, never
+    from the email's text, and Herkos still shows the person every argument
+    before the draft is saved or sent.
+    """
+
+    def __init__(self) -> None:
+        self.accounts: list[str] = []
+        self.account = ""  # the account of the email read last
+        self.sender = ""
+        self.message_id = ""
+
+    def note(self, operation: str, result: Any) -> None:
+        if not isinstance(result, dict):
+            return
+        if operation == "list_accounts":
+            for a in result.get("accounts") or ():
+                address = a.get("address") or a.get("email") if isinstance(a, dict) else None
+                if isinstance(address, str) and address and address not in self.accounts:
+                    self.accounts.append(address)
+        elif operation == "read_message":
+            account, message_id = result.get("account"), result.get("message_id")
+            sender = parseaddr(str(result.get("from") or ""))[1]
+            if isinstance(account, str) and account:
+                self.account = account
+                if account not in self.accounts:
+                    self.accounts.append(account)
+            self.sender = sender.casefold()
+            self.message_id = message_id if isinstance(message_id, str) else ""
+
+    def fill(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        out = dict(arguments)
+        account = out.get("account")
+        known = [a.casefold() for a in self.accounts]
+        if not isinstance(account, str) or account.casefold() not in known:
+            if self.account:
+                out["account"] = self.account
+            elif len(self.accounts) == 1:
+                out["account"] = self.accounts[0]
+        to = out.get("to")
+        to = [to] if isinstance(to, str) else to if isinstance(to, list) else []
+        answers = any(parseaddr(str(t))[1].casefold() == self.sender for t in to)
+        if self.message_id and self.sender and answers and not out.get("in_reply_to"):
+            out["in_reply_to"] = self.message_id
+        return out
 
 
 def _error(operation: str, path: str | None, message: str) -> ToolOutcome:

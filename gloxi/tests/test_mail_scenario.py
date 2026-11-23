@@ -209,3 +209,71 @@ def report_of(lang, calls):
     from gloxi.bench.mail_scenario import Outcome
 
     return report([Outcome(lang, "?", "", 1.0, calls, check(lang, calls, ""))])
+
+
+def test_gloxi_fills_the_account_and_in_reply_to_a_model_left_out():
+    # What Qwen3 4B and Ministral 3 8B did on KLX (2026-11-23): no
+    # list_accounts, an account made up or none, and no in_reply_to.
+    mailbox = Mailbox("uk", FakeHerkos.LISTED + vilna_programs())
+    made_up = {k: v for k, v in draft("uk").items() if k != "in_reply_to"}
+    made_up["account"] = "user@example.com"
+    server = ScriptedLlamaServer(
+        [("mail_list_messages", args(limit=5, reason="r"))],
+        [("mail_read_message", args(uid=41, reason="r"))],
+        [("calendar_create_event", args(**EVENT, reason="r"))],
+        [("mail_save_draft", args(**made_up, reason="r"))],
+        DONE["uk"],
+    )
+    conv = conversation(server, FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    assert ask(conv, REQUESTS["uk"][1]) == DONE["uk"]
+    # From what the mail program said (the account it read), not the email's text.
+    assert mailbox.calls[-1]["arguments"] == draft("uk")
+    assert check("uk", mailbox.calls, DONE["uk"]) == []
+
+
+def test_a_reply_to_someone_else_gets_no_in_reply_to_and_a_known_account_stays():
+    mailbox = Mailbox("en", FakeHerkos.LISTED + vilna_programs())
+    other = {**draft("en"), "account": "work@example.org", "to": ["ivan@example.net"]}
+    del other["in_reply_to"]
+    server = ScriptedLlamaServer(
+        [("mail_list_accounts", args(reason="r"))],
+        [("mail_read_message", args(uid=41, reason="r"))],
+        [("mail_save_draft", args(**other, reason="r"))],
+        DONE["en"],
+    )
+    conv = conversation(server, FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    ask(conv, REQUESTS["en"][0])
+    # work@ is not an account the program gave: the one the email came to.
+    assert mailbox.calls[-1]["arguments"] == {**other, "account": ACCOUNT}
+
+    mailbox.calls.clear()
+    conv.tools._mail.accounts.append("work@example.org")
+    conv.tools.call("mail_save_draft", json.dumps(other), user_turn=2)
+    assert mailbox.calls[-1]["arguments"] == other
+
+
+def test_an_event_asked_in_the_same_answer_as_the_read_waits_for_the_email():
+    # Ministral 3 8B read the email and added the event at once, with the day
+    # after "today" instead of the day in the email.
+    mailbox = Mailbox("de", FakeHerkos.LISTED + vilna_programs())
+    guessed = {**EVENT, "start": "2026-11-18T09:00", "end": "2026-11-18T10:00"}
+    server = ScriptedLlamaServer(
+        [("mail_list_messages", args(limit=5, reason="r"))],
+        [
+            ("mail_read_message", args(uid=41, reason="r")),
+            ("calendar_create_event", args(**guessed, reason="r")),
+        ],
+        [("calendar_create_event", args(**EVENT, reason="r"))],
+        [("mail_save_draft", args(**draft("de"), reason="r"))],
+        DONE["de"],
+    )
+    conv = conversation(server, FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    assert ask(conv, REQUESTS["de"][0]) == DONE["de"]
+    events = [c["arguments"] for c in mailbox.calls if c["operation"] == "create_event"]
+    assert events == [EVENT]
+    waited = json.loads(server.requests[2]["messages"][-1]["content"])
+    assert waited["status"] == "error" and "mail_read_message" in waited["message"]
+    assert check("de", mailbox.calls, DONE["de"]) == []
