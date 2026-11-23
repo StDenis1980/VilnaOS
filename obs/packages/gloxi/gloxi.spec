@@ -88,6 +88,8 @@ for unit in gloxi@.socket gloxi@.service vilna-llm.service \
             vilna-mcp-gloxi-network@.service; do
   install -Dm0644 systemd/$unit %{buildroot}%{_unitdir}/$unit
 done
+install -Dm0644 systemd/system.slice.d/50-vilna-llm.conf \
+  %{buildroot}%{_unitdir}/system.slice.d/50-vilna-llm.conf
 install -Dm0644 systemd/gloxi.sysusers %{buildroot}%{_sysusersdir}/gloxi.conf
 install -d %{buildroot}%{_datadir}/vilna/models
 
@@ -120,6 +122,8 @@ install -d %{buildroot}%{_datadir}/vilna/models
 %{_unitdir}/vilna-people-sync.service
 %{_unitdir}/vilna-people-sync.path
 %{_unitdir}/vilna-mcp-gloxi-network@.service
+%dir %{_unitdir}/system.slice.d
+%{_unitdir}/system.slice.d/50-vilna-llm.conf
 %{_sysusersdir}/gloxi.conf
 %dir %{_datadir}/vilna
 %dir %{_datadir}/vilna/models

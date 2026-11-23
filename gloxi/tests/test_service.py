@@ -405,9 +405,23 @@ def test_the_local_model_keeps_idle_slots_cached():
 
 def test_the_local_model_keeps_its_weights_in_memory():
     # On 8 GB the browser pushed the weights out and the first answer took
-    # 17 s instead of 6.5 s (image/docs/low-memory-check.md).
+    # 36 s instead of 6.8 s (image/docs/low-memory-check.md).
     unit = Path(__file__).resolve().parents[1] / "systemd" / "vilna-llm.service"
     assert "\nMemoryLow=5G\n" in unit.read_text()
+
+
+def test_system_slice_lets_the_model_keep_its_protection():
+    # cgroup v2 protects a unit only up to its parent slice, and system.slice
+    # has memory.low=0: without this drop-in MemoryLow=5G of vilna-llm did
+    # nothing on Build16.22 (memory.events "low 0").
+    systemd = Path(__file__).resolve().parents[1] / "systemd"
+    unit = (systemd / "vilna-llm.service").read_text()
+    assert "\nSlice=" not in unit
+    drop_in = (systemd / "system.slice.d" / "50-vilna-llm.conf").read_text()
+    assert "\n[Slice]\nMemoryLow=5G\n" in drop_in
+    spec_path = Path(__file__).resolve().parents[2] / "obs" / "packages" / "gloxi" / "gloxi.spec"
+    spec = spec_path.read_text()
+    assert "%{_unitdir}/system.slice.d/50-vilna-llm.conf" in spec
 
 
 # -- text.translate (the weather warnings of the Shell extension) -------------------
