@@ -1,0 +1,8 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Plays the desktop-login sound of the sound theme once after login
+# (vilna-login-sound.desktop). canberra-gtk-play ignores GNOME's switch
+# for event sounds, so check it first; a sound switched off in the theme
+# (.disabled) is skipped by libcanberra itself.
+gsettings get org.gnome.desktop.sound event-sounds 2>/dev/null | grep -qx true || exit 0
+exec canberra-gtk-play -i desktop-login -d Vilna

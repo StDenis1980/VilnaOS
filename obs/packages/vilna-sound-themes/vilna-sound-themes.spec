@@ -43,6 +43,7 @@ install -d %{buildroot}%{_datadir}/sounds
 cp -a themes/vilna-* %{buildroot}%{_datadir}/sounds/
 find %{buildroot}%{_datadir}/sounds -type d -exec chmod 0755 {} +
 find %{buildroot}%{_datadir}/sounds -type f -exec chmod 0644 {} +
+install -D -m 0755 vilna-login-sound %{buildroot}%{_libexecdir}/vilna-login-sound
 install -D -m 0644 vilna-login-sound.desktop %{buildroot}%{_sysconfdir}/xdg/autostart/vilna-login-sound.desktop
 
 %check
@@ -59,6 +60,7 @@ done
 %doc SOURCES.md
 %dir %{_datadir}/sounds
 %{_datadir}/sounds/vilna-*
+%{_libexecdir}/vilna-login-sound
 %dir %{_sysconfdir}/xdg/autostart
 %config %{_sysconfdir}/xdg/autostart/vilna-login-sound.desktop
 
