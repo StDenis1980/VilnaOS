@@ -835,3 +835,18 @@ msgstr "Diegimas"
 
 msgid "Conversation with Gloxi"
 msgstr "Pokalbis su Gloxi"
+
+msgid "Password-protected"
+msgstr "Apsaugotas slaptažodžiu"
+
+msgid "New partition {n}"
+msgstr "Naujas skaidinys {n}"
+
+msgid "Password"
+msgstr "Slaptažodis"
+
+msgid "This version installs only the EFI and the system partition. Leave home folders and swap unused for now."
+msgstr "Ši versija įdiegia tik EFI ir sistemos skaidinius. Namų aplankus ir sukeitimų skaidinį kol kas palikite nenaudojamus."
+
+msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
+msgstr "Diske jau yra EFI sistemos skaidinys. Pasirinkite jį (formatuotą ar ne) vietoj naujo."

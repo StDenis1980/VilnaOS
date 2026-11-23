@@ -835,3 +835,18 @@ msgstr "Installation"
 
 msgid "Conversation with Gloxi"
 msgstr "Conversation avec Gloxi"
+
+msgid "Password-protected"
+msgstr "Protégé par mot de passe"
+
+msgid "New partition {n}"
+msgstr "Nouvelle partition {n}"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "This version installs only the EFI and the system partition. Leave home folders and swap unused for now."
+msgstr "Cette version n’installe que la partition EFI et la partition système. Laissez pour l’instant les dossiers personnels et le swap inutilisés."
+
+msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
+msgstr "Le disque a déjà une partition système EFI. Choisissez-la (formatée ou non) au lieu d’en créer une nouvelle."
