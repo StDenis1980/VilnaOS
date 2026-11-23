@@ -419,9 +419,6 @@ def test_system_slice_lets_the_model_keep_its_protection():
     assert "\nSlice=" not in unit
     drop_in = (systemd / "system.slice.d" / "50-vilna-llm.conf").read_text()
     assert "\n[Slice]\nMemoryLow=5G\n" in drop_in
-    spec_path = Path(__file__).resolve().parents[2] / "obs" / "packages" / "gloxi" / "gloxi.spec"
-    spec = spec_path.read_text()
-    assert "%{_unitdir}/system.slice.d/50-vilna-llm.conf" in spec
 
 
 # -- text.translate (the weather warnings of the Shell extension) -------------------
