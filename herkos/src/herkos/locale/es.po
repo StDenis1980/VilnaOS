@@ -785,3 +785,12 @@ msgstr "Elemento"
 
 msgid "Text now"
 msgstr "Texto actual"
+
+msgid "Turn one event sound on or off"
+msgstr "Activar o desactivar un sonido de evento"
+
+msgid "Turn all event sounds on or off"
+msgstr "Activar o desactivar todos los sonidos de eventos"
+
+msgid "Choose the sound theme"
+msgstr "Elegir el tema de sonido"

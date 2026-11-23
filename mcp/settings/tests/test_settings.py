@@ -236,3 +236,72 @@ def test_flatpak_schema_works_with_gsettings(tmp_path, monkeypatch):
     out = s.set_night_light(enabled=True, from_hour=21, temperature=3000)
     assert out["before"]["night_light_temperature"] == 2700
     assert backend.get(COLOR, "night-light-schedule-from") == 21.0
+
+
+# -- sound theme and event sounds --------------------------------------------------
+
+
+def test_turn_one_sound_off_and_undo(settings):
+    out = settings.set_sound("device-added", False)
+    assert settings.get()["values"]["disabled_sounds"] == ["device-added"]
+    settings.set_sound("bell", False)
+    # Kept in a fixed order, so the same choice is always the same value.
+    assert settings.get()["values"]["disabled_sounds"] == ["bell", "device-added"]
+    settings.set_sound("device-added", True)
+    assert settings.get()["values"]["disabled_sounds"] == ["bell"]
+    settings.restore(**out["undo_arguments"])
+    assert settings.get()["values"]["disabled_sounds"] == []
+
+
+def test_theme_and_all_sounds(settings):
+    out = settings.set_sound_theme("bell")
+    assert settings.get()["values"]["sound_theme"] == "bell"
+    assert out["undo_arguments"] == {"values": {"sound_theme": "wood"}}
+    settings.set_event_sounds(False)
+    assert settings.get()["values"]["event_sounds"] is False
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda s: s.set_sound("../../etc/passwd", False),
+        lambda s: s.set_sound("bell", "off"),
+        lambda s: s.set_sound_theme("techno"),
+        lambda s: s.set_event_sounds(1),
+        lambda s: s.restore({"disabled_sounds": ["bell", "bell"]}),
+        lambda s: s.restore({"disabled_sounds": ["nope"]}),
+        lambda s: s.restore({"disabled_sounds": "bell"}),
+    ],
+)
+def test_bad_sound_settings_change_nothing(settings, call):
+    before = {
+        k: (list(v) if isinstance(v, list) else v) for k, v in settings.backend.values.items()
+    }
+    with pytest.raises(SettingsError):
+        call(settings)
+    assert settings.backend.values == before
+
+
+def test_sound_events_match_the_shell_extension():
+    from vilna_mcp_settings.settings import SOUND_EVENTS, SOUND_THEMES
+
+    js = (
+        Path(__file__).resolve().parents[3]
+        / "shell-extension"
+        / "vilna@stdenis1980.github.io"
+        / "lib"
+        / "soundTheme.js"
+    )
+    if not js.exists():
+        pytest.skip("not in the repository (the package is built alone)")
+    js = js.read_text(encoding="utf-8")
+    for name in (*SOUND_EVENTS, *SOUND_THEMES):
+        assert f"'{name}'" in js, name
+
+
+def test_server_turns_a_sound_off():
+    server = Server(Settings(demo_backend(), demo_sound()))
+    out = server.call("set_sound", {"event": "trash-empty", "enabled": False})
+    assert out["isError"] is False
+    assert out["structuredContent"]["changed"] == {"disabled_sounds": ["trash-empty"]}
+    assert server.call("set_sound", {"event": "x", "enabled": False})["isError"] is True

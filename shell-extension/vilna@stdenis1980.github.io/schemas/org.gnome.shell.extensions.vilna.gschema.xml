@@ -104,5 +104,25 @@
       <summary>Warning zones of the weather place</summary>
       <description>Latitude and longitude of the weather place and the MeteoAlarm zones (EMMA_ID) it lies in, found on this computer. Cleared or stale: found again.</description>
     </key>
+    <key name="sound-theme" type="s">
+      <choices>
+        <choice value="wood"/>
+        <choice value="bell"/>
+        <choice value="water"/>
+        <choice value="air"/>
+        <choice value="birds"/>
+        <choice value="glass"/>
+        <choice value="star"/>
+        <choice value="freedesktop"/>
+      </choices>
+      <default>'wood'</default>
+      <summary>Sound theme</summary>
+      <description>The Vilna sound theme for event sounds, or GNOME's own (freedesktop). The default is provisional until every theme is ready.</description>
+    </key>
+    <key name="disabled-sounds" type="as">
+      <default>[]</default>
+      <summary>Sounds turned off</summary>
+      <description>Event sounds (freedesktop names, such as device-added) that stay silent whatever the theme. All sounds off is org.gnome.desktop.sound event-sounds.</description>
+    </key>
   </schema>
 </schemalist>

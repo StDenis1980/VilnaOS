@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.16
+Version:        0.17
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -58,6 +58,7 @@ Requires:       gnome-shell-extension-vilna
 Requires:       gnome-initial-setup
 Requires:       polkit
 Requires:       sound-theme-freedesktop
+Requires:       vilna-sound-themes
 Requires:       sudo
 Requires:       system-group-wheel
 Requires:       transactional-update

@@ -1,0 +1,7 @@
+-------------------------------------------------------------------
+Mon Nov 23 22:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.1
+- Seven sound themes (wood, bell, water, air, birds, glass, star),
+  18 events each, including the login sound and the Gloxi and Herkos
+  signals; the login sound plays once after login (autostart)

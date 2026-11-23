@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Vilna login sound
+Comment=Plays the desktop-login sound of the sound theme once after login
+Exec=/usr/libexec/vilna-login-sound
+OnlyShowIn=GNOME;
+NoDisplay=true
+X-GNOME-Autostart-Phase=Application

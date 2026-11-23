@@ -166,6 +166,11 @@ TARBALLS: dict[str, Tarball] = {
         file_version("docs/design/icons/system/VERSION"),
         extra=(("LICENSE", "LICENSE"),),
     ),
+    "vilna-sound-themes": Tarball(
+        "sounds",
+        file_version("sounds/VERSION"),
+        extra=(("LICENSE", "LICENSE"), ("LICENSES/CC-BY-SA-4.0.txt", "LICENSE.CC-BY-SA-4.0")),
+    ),
     "plymouth-branding-Vilna": Tarball(
         "image/plymouth",
         file_version("image/plymouth/VERSION"),

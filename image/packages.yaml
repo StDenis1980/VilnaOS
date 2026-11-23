@@ -84,6 +84,7 @@ vilna:
     - {name: vilna-locale,                 license: GPL-3.0-or-later, status: planned}
     - {name: vilna-backgrounds,            license: GPL-3.0-or-later, status: obs}      # шпалери: 7 пар, «Сонце» за замовчуванням
     - {name: vilna-icon-theme,             license: GPL-3.0-or-later, status: obs}      # тема значків Vilna поверх Adwaita: теки, кошик, диски, symbolic Gloxi/Herkos
+    - {name: vilna-sound-themes,           license: CC-BY-SA-4.0,     status: obs}      # 7 звукових тем, «Дерево» поки за замовчуванням
   enable_services: [herkosd.socket, vilna-flatpak-defaults.service]  # user: herkos-agent.service; Gloxi has no system service yet
 
 flatpak_defaults:

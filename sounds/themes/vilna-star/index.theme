@@ -1,0 +1,16 @@
+[Sound Theme]
+Name=Vilna Star
+Name[uk]=Vilna Зірка
+Name[es]=Vilna Estrella
+Name[pl]=Vilna Gwiazda
+Name[de]=Vilna Stern
+Name[fr]=Vilna Étoile
+Name[it]=Vilna Stella
+Name[ro]=Vilna Stea
+Name[cs]=Vilna Hvězda
+Name[lt]=Vilna Žvaigždė
+Inherits=freedesktop
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

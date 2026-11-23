@@ -1,0 +1,16 @@
+[Sound Theme]
+Name=Vilna Wood
+Name[uk]=Vilna Дерево
+Name[es]=Vilna Madera
+Name[pl]=Vilna Drewno
+Name[de]=Vilna Holz
+Name[fr]=Vilna Bois
+Name[it]=Vilna Legno
+Name[ro]=Vilna Lemn
+Name[cs]=Vilna Dřevo
+Name[lt]=Vilna Medis
+Inherits=freedesktop
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

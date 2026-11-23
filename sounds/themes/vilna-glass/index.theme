@@ -1,0 +1,16 @@
+[Sound Theme]
+Name=Vilna Glass
+Name[uk]=Vilna Скло
+Name[es]=Vilna Cristal
+Name[pl]=Vilna Szkło
+Name[de]=Vilna Glas
+Name[fr]=Vilna Verre
+Name[it]=Vilna Vetro
+Name[ro]=Vilna Sticlă
+Name[cs]=Vilna Sklo
+Name[lt]=Vilna Stiklas
+Inherits=freedesktop
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Nov 23 22:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.17
+- Sound theme vilna-wood by default (vilna-sound-themes, provisional
+  until all themes are chosen); the Vilna Shell extension then keeps
+  the person's theme and switched-off sounds in vilna-user
+
+-------------------------------------------------------------------
 Mon Nov 23 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.16

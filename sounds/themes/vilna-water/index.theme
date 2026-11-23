@@ -1,0 +1,16 @@
+[Sound Theme]
+Name=Vilna Water
+Name[uk]=Vilna Вода
+Name[es]=Vilna Agua
+Name[pl]=Vilna Woda
+Name[de]=Vilna Wasser
+Name[fr]=Vilna Eau
+Name[it]=Vilna Acqua
+Name[ro]=Vilna Apă
+Name[cs]=Vilna Voda
+Name[lt]=Vilna Vanduo
+Inherits=freedesktop
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

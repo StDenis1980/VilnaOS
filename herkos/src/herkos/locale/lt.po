@@ -785,3 +785,12 @@ msgstr "Elementas"
 
 msgid "Text now"
 msgstr "Dabartinis tekstas"
+
+msgid "Turn one event sound on or off"
+msgstr "Įjungti arba išjungti vieną įvykio garsą"
+
+msgid "Turn all event sounds on or off"
+msgstr "Įjungti arba išjungti visus įvykių garsus"
+
+msgid "Choose the sound theme"
+msgstr "Pasirinkti garsų temą"
