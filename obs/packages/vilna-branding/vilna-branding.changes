@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Nov 23 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.16
+- gnome-branding-Vilna: the Vilna icon theme by default
+  (icon-theme='Vilna', requires vilna-icon-theme)
+
+-------------------------------------------------------------------
 Fri Nov 20 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.15

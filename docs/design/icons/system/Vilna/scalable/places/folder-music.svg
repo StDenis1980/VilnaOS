@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+<title>folder-music</title>
+<defs>
+ <linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B8CFF"/><stop offset="1" stop-color="#2D6BFF"/></linearGradient>
+ <linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F5C24A"/><stop offset="1" stop-color="#F0963A"/></linearGradient>
+</defs>
+<path d="M12 30 Q12 22 20 22 H48 Q54 22 57 27 L60 32 H108 Q116 32 116 40 V100 H12Z" fill="#1F345C"/><rect x="18" y="36" width="92" height="20" rx="4" fill="#F2E8D5"/><path d="M10 52 Q10 46 16 46 H112 Q118 46 118 52 V102 Q118 110 110 110 H18 Q10 110 10 102Z" fill="#1F4FC2"/><path d="M10 50 Q10 44 16 44 H112 Q118 44 118 50 V98 Q118 106 110 106 H18 Q10 106 10 98Z" fill="url(#f)"/><path d="M10 50 Q10 44 16 44 H112 Q118 44 118 50 V52 Q90 47 64 50 Q38 53 10 49Z" fill="url(#g)"/><g fill="#F2E8D5" opacity=".92"><path d="M58 62 L80 57 V88 A7 7 0 1 1 75 81 V67 L63 70 V92 A7 7 0 1 1 58 85Z"/></g></svg>

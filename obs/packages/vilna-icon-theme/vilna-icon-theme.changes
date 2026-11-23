@@ -1,0 +1,7 @@
+-------------------------------------------------------------------
+Mon Nov 23 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.1: first package: the Vilna icon theme (Inherits=Adwaita,hicolor)
+  with folders, trash and drives in the colours of the Vilna logo and
+  13 symbolic icons of Gloxi and Herkos. Drawn by
+  docs/design/icons/system/src/make_icons.py.
