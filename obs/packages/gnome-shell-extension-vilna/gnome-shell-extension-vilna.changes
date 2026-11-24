@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Tue Nov 24 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.9: the Gloxi side panel (stage B of the Gloxi window, gloxiPanel.js,
+  lib/gloxiPanel.js): the Shell draws Gloxi in the strip at the right
+  edge, as a client of gloxid next to the Gloxi window: the owl's state,
+  the conversation and its history, a field to write. Opened and closed
+  by a button in the top bar, Super+G (new key gloxi-panel-key), Escape
+  and Gloxi over D-Bus (GloxiPanelOpen, interface version 3); kept open
+  or closed across logins (gloxi-panel-open). Still off by default
+  (gloxi-dock). Owl pictures by Dmytro Sizmin, CC-BY-SA-4.0. In the ten
+  languages of Vilna.
+
+-------------------------------------------------------------------
 Fri Nov 20 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.8: one notification after an automatic rollback of an update

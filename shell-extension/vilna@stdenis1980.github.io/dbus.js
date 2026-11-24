@@ -14,7 +14,8 @@ import {PANEL_SIZES} from './lib/geometry.js';
 export const BUS_NAME = 'io.github.stdenis1980.VilnaShell';
 export const OBJECT_PATH = '/io/github/stdenis1980/VilnaShell';
 // 2: GloxiPanelEdge and GloxiPanelSize (stage A of the Gloxi window).
-export const INTERFACE_VERSION = 2;
+// 3: GloxiPanelOpen (stage B: the side panel the Shell draws).
+export const INTERFACE_VERSION = 3;
 
 const INTERFACE_XML = `
 <node>
@@ -25,6 +26,7 @@ const INTERFACE_XML = `
     <property name="GloxiDock" type="b" access="readwrite"/>
     <property name="GloxiPanelEdge" type="b" access="readwrite"/>
     <property name="GloxiPanelSize" type="s" access="readwrite"/>
+    <property name="GloxiPanelOpen" type="b" access="readwrite"/>
   </interface>
 </node>`;
 
@@ -37,6 +39,8 @@ const PROPERTIES = {
     GloxiPanelEdge: ['gloxi-panel-edge', true, 'b'],
     // The one string: anything but the schema's sizes is ignored.
     GloxiPanelSize: ['gloxi-panel-size', true, 's'],
+    // Opens or closes the side panel; does nothing while gloxi-dock is off.
+    GloxiPanelOpen: ['gloxi-panel-open', true, 'b'],
 };
 
 function read(settings, key, type) {
