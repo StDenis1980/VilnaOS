@@ -21,8 +21,11 @@ export function clampIconSize(size) {
     return Math.min(ICON_SIZE_MAX, Math.max(ICON_SIZE_MIN, n));
 }
 
-// Places: the top edge is the top bar's.
-export const POSITIONS = ['BOTTOM', 'LEFT', 'RIGHT'];
+// Places: the top edge is the top bar's and the right edge is Gloxi's side
+// panel (dock.js, a strut). Dash to Dock centres a bottom dock in the work
+// area, so it stays left of an open panel; a dock on the right would sit on
+// top of the panel, so it is not offered.
+export const POSITIONS = ['BOTTOM', 'LEFT'];
 
 // How the dock hides, as Dash to Dock's three keys.
 export const HIDE_MODES = ['never', 'windows', 'always'];
@@ -164,7 +167,7 @@ const TEXT = {
             'Place and hiding', 'Place', 'Hide the dock', 'Springy icons',
             'Icons grow under the pointer, spring back when clicked and sway while you move one',
             'The dock is not installed'],
-        positions: ['Bottom', 'Left', 'Right'],
+        positions: ['Bottom', 'Left'],
         hides: ['Never', 'When a window covers it', 'Always, show at the edge'],
     },
     uk: {
@@ -172,7 +175,7 @@ const TEXT = {
             'Місце і приховування', 'Місце', 'Ховати док', 'Пружні значки',
             'Значки ростуть під вказівником, пружинять після клацання і гойдаються, поки ви переставляєте інший',
             'Док не встановлено'],
-        positions: ['Знизу', 'Ліворуч', 'Праворуч'],
+        positions: ['Знизу', 'Ліворуч'],
         hides: ['Ніколи', 'Коли його закриває вікно', 'Завжди, показувати біля краю'],
     },
     es: {
@@ -180,7 +183,7 @@ const TEXT = {
             '0 %: cristal opaco, 100 %: solo los iconos', 'Posición y ocultación', 'Posición', 'Ocultar el dock',
             'Iconos elásticos', 'Los iconos crecen bajo el puntero, rebotan al hacer clic y se balancean mientras mueve otro',
             'El dock no está instalado'],
-        positions: ['Abajo', 'Izquierda', 'Derecha'],
+        positions: ['Abajo', 'Izquierda'],
         hides: ['Nunca', 'Cuando una ventana lo tapa', 'Siempre, mostrar en el borde'],
     },
     pl: {
@@ -188,7 +191,7 @@ const TEXT = {
             '0% — pełne szkło, 100% — tylko ikony', 'Położenie i ukrywanie', 'Położenie', 'Ukrywaj dok',
             'Sprężyste ikony', 'Ikony rosną pod wskaźnikiem, odskakują po kliknięciu i kołyszą się, gdy przesuwasz inną',
             'Dok nie jest zainstalowany'],
-        positions: ['Na dole', 'Po lewej', 'Po prawej'],
+        positions: ['Na dole', 'Po lewej'],
         hides: ['Nigdy', 'Gdy zasłania go okno', 'Zawsze, pokazuj przy krawędzi'],
     },
     de: {
@@ -196,7 +199,7 @@ const TEXT = {
             '0 % volles Glas, 100 % nur die Symbole', 'Ort und Ausblenden', 'Ort', 'Dock ausblenden',
             'Federnde Symbole', 'Symbole wachsen unter dem Zeiger, federn beim Klicken zurück und wiegen sich, während Sie ein anderes verschieben',
             'Das Dock ist nicht installiert'],
-        positions: ['Unten', 'Links', 'Rechts'],
+        positions: ['Unten', 'Links'],
         hides: ['Nie', 'Wenn ein Fenster es verdeckt', 'Immer, am Rand zeigen'],
     },
     fr: {
@@ -204,7 +207,7 @@ const TEXT = {
             '0 % verre plein, 100 % seulement les icônes', 'Position et masquage', 'Position', 'Masquer le dock',
             'Icônes élastiques', 'Les icônes grandissent sous le pointeur, rebondissent au clic et oscillent pendant que vous en déplacez une autre',
             'Le dock n’est pas installé'],
-        positions: ['En bas', 'À gauche', 'À droite'],
+        positions: ['En bas', 'À gauche'],
         hides: ['Jamais', 'Quand une fenêtre le couvre', 'Toujours, afficher au bord'],
     },
     it: {
@@ -212,7 +215,7 @@ const TEXT = {
             '0% vetro pieno, 100% solo le icone', 'Posizione e scomparsa', 'Posizione', 'Nascondi il dock',
             'Icone elastiche', 'Le icone crescono sotto il puntatore, rimbalzano al clic e oscillano mentre ne sposti un’altra',
             'Il dock non è installato'],
-        positions: ['In basso', 'A sinistra', 'A destra'],
+        positions: ['In basso', 'A sinistra'],
         hides: ['Mai', 'Quando una finestra lo copre', 'Sempre, mostra sul bordo'],
     },
     ro: {
@@ -220,7 +223,7 @@ const TEXT = {
             '0% sticlă plină, 100% doar pictogramele', 'Loc și ascundere', 'Loc', 'Ascunde docul',
             'Pictograme elastice', 'Pictogramele cresc sub indicator, revin elastic la clic și se leagănă cât mutați alta',
             'Docul nu este instalat'],
-        positions: ['Jos', 'Stânga', 'Dreapta'],
+        positions: ['Jos', 'Stânga'],
         hides: ['Niciodată', 'Când o fereastră îl acoperă', 'Mereu, arată la margine'],
     },
     cs: {
@@ -228,7 +231,7 @@ const TEXT = {
             '0 % plné sklo, 100 % jen ikony', 'Umístění a skrývání', 'Umístění', 'Skrývat dok',
             'Pružné ikony', 'Ikony rostou pod ukazatelem, po kliknutí pruží a pohupují se, když přesouváte jinou',
             'Dok není nainstalován'],
-        positions: ['Dole', 'Vlevo', 'Vpravo'],
+        positions: ['Dole', 'Vlevo'],
         hides: ['Nikdy', 'Když ho zakryje okno', 'Vždy, ukázat u okraje'],
     },
     lt: {
@@ -236,7 +239,7 @@ const TEXT = {
             '0 % – vientisas stiklas, 100 % – tik piktogramos', 'Vieta ir slėpimas', 'Vieta', 'Slėpti doką',
             'Spyruokliuojančios piktogramos', 'Piktogramos padidėja po žymekliu, spyruokliuoja spustelėjus ir siūbuoja, kol perkeliate kitą',
             'Dokas neįdiegtas'],
-        positions: ['Apačioje', 'Kairėje', 'Dešinėje'],
+        positions: ['Apačioje', 'Kairėje'],
         hides: ['Niekada', 'Kai jį uždengia langas', 'Visada, rodyti prie krašto'],
     },
 };

@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
 Tue Nov 24 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
-- 0.10: the dock page (prefs.js, lib/dock.js): place, icon size
+- 0.10: the dock page (prefs.js, lib/dock.js): place (bottom or left;
+  the right edge is the Gloxi side panel's), icon size
   32-80 px and hiding (Dash to Dock's own keys), transparency of the
   glass 0-100 % (new key dock-transparency, 8 % by default) and springy
   icons (new key dock-icon-motion): an icon grows under the pointer,
