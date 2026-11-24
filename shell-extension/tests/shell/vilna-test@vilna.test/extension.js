@@ -537,30 +537,120 @@ async function locked() {
     entry.destroy();
 }
 
-// The dock's Vilna colours (colorScheme.js and stylesheet.css). Dash to
-// Dock is not installed here: a stand-in with its names takes the styles.
-async function dockColours() {
+// The dock's Vilna colours (colorScheme.js, dockLook.js, lib/dock.js) and
+// its springy icons (dockMotion.js). Dash to Dock is not installed here: a
+// stand-in with its names and shape takes the styles and the motion.
+function fakeDock(side) {
+    const container = new St.Widget({name: 'dashtodockContainer', style_class: side, layout_manager: new Clutter.BinLayout()});
+    const dash = new St.Widget({name: 'dash', layout_manager: new Clutter.BinLayout()});
+    const background = new St.Widget({style_class: 'dash-background'});
+    const dashContainer = new St.BoxLayout({name: 'dashtodockDashContainer'});
+    const boxContainer = new St.BoxLayout({name: 'dashtodockBoxContainer'});
+    const box = new St.BoxLayout();
+    dash.add_child(background);
+    dash.add_child(dashContainer);
+    dashContainer.add_child(boxContainer);
+    boxContainer.add_child(box);
+    container.add_child(dash);
+    const icons = [];
+    for (let i = 0; i < 3; i++) {
+        const button = new St.Button({track_hover: true, reactive: true});
+        button.icon = new St.Widget({style_class: 'overview-icon', width: 48, height: 48});
+        button.set_child(button.icon);
+        const item = new St.Bin({child: button});
+        box.add_child(item);
+        icons.push(button);
+    }
+    Main.uiGroup.add_child(container);
+    return {container, background, icons};
+}
+
+const dockParts = () => Main.extensionManager.lookup(UUID)?.stateObj?._userParts ?? [];
+const theDockMotion = () => dockParts().find(p => p.constructor.name === 'DockMotion') ?? null;
+
+async function dockColours(settings) {
     const iface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
     const classes = () => ['vilna-light', 'vilna-dark'].filter(c => Main.uiGroup.has_style_class_name(c));
-    const container = new St.Widget({name: 'dashtodockContainer', style_class: 'bottom'});
-    const dash = new St.Widget({name: 'dash'});
-    const background = new St.Widget({style_class: 'dash-background'});
-    dash.add_child(background);
-    container.add_child(dash);
-    Main.uiGroup.add_child(container);
-    const colour = () => background.get_theme_node().get_background_color().to_string();
+    let {container, background} = fakeDock('bottom');
+    const colour = () => background.get_theme_node().get_background_color();
+    const rgb = () => [colour().red, colour().green, colour().blue];
 
     iface.set_string('color-scheme', 'default');
     await waitFor(() => classes().length === 1 && classes()[0] === 'vilna-light');
     check('dock: light style by default', classes(), ['vilna-light']);
-    check('dock: cream glass in the light style', colour(), '#fffcf6dc');
+    check('dock: cream glass in the light style', rgb(), [255, 252, 246]);
+    const solid = colour().alpha;
+    check('dock: the glass is nearly solid by default', solid > 200 && solid < 255, true);
     iface.set_string('color-scheme', 'prefer-dark');
     await waitFor(() => classes()[0] === 'vilna-dark');
     check('dock: dark style follows the setting', classes(), ['vilna-dark']);
-    check('dock: night glass in the dark style', colour(), '#0e1a2ed1');
+    check('dock: night glass in the dark style', rgb(), [14, 26, 46]);
+
+    // Transparency: more of it, less of the glass; 100 % leaves none.
+    settings.set_int('dock-transparency', 50);
+    check('dock: more transparent at 50 %', await waitFor(() => colour().alpha < solid && colour().alpha > 0), true);
+    settings.set_int('dock-transparency', 100);
+    check('dock: no glass at 100 %', await waitFor(() => colour().alpha === 0), true);
+    settings.set_int('dock-transparency', 0);
+    check('dock: solid at 0 %', await waitFor(() => colour().alpha === 255), true);
+    settings.reset('dock-transparency');
+    await waitFor(() => colour().alpha === solid);
+
+    // Every side takes the glass, not only the bottom.
+    container.destroy();
+    const column = () => widgetsRoot()?.x ?? null;
+    const alone = column();
+    ({container, background} = fakeDock('left'));
+    check('dock: night glass on the left too', rgb(), [14, 26, 46]);
+    check('dock: widgets keep to the right of a dock on the left',
+        await waitFor(() => column() !== null && column() >= alone + container.width), true);
+    container.destroy();
+    check('dock: widgets back at the edge without it', await waitFor(() => column() === alone), true);
+
     iface.set_string('color-scheme', 'default');
     await waitFor(() => classes()[0] === 'vilna-light');
     check('dock: back to light', classes(), ['vilna-light']);
+}
+
+async function dockIcons(settings) {
+    // GNOME Shell turns animations off when it draws in software.
+    const softwareOnly = !St.Settings.get().enable_animations;
+    if (softwareOnly)
+        St.Settings.get().uninhibit_animations();
+    const {container, icons} = fakeDock('bottom');
+    const motion = theDockMotion();
+    const [a, b] = icons;
+    check('icons: the motion follows the stand-in', await waitFor(() => motion?.stateOf(a) === 'still'), true);
+
+    a.hover = true;
+    check('icons: an icon grows under the pointer', await waitFor(() => a.icon.scale_x > 1.05, 2000), true);
+    check('icons: it grows from the dock edge, upwards', [a.icon.pivot_point.x, a.icon.pivot_point.y], [0.5, 1]);
+    check('icons: the others stay as they are', b.icon.scale_x, 1);
+    a.hover = false;
+    check('icons: and settles when the pointer leaves', await waitFor(() => a.icon.scale_x === 1, 2000), true);
+
+    Main.overview.emit('item-drag-begin', a);
+    check('icons: the others sway while one is dragged',
+        await waitFor(() => motion.stateOf(b) === 'jiggle' && b.icon.rotation_angle_z !== 0, 2000), true);
+    check('icons: the dragged one does not', motion.stateOf(a) !== 'jiggle' && a.icon.rotation_angle_z === 0, true);
+    Main.overview.emit('item-drag-end');
+    check('icons: still after the drag', await waitFor(() => b.icon.rotation_angle_z === 0, 2000), true);
+
+    settings.set_string('dock-icon-motion', 'off');
+    a.hover = true;
+    await sleep(400);
+    check('icons: off by the setting', a.icon.scale_x, 1);
+    a.hover = false;
+    settings.reset('dock-icon-motion');
+
+    St.Settings.get().inhibit_animations();
+    a.hover = true;
+    await sleep(400);
+    check('icons: none with animations off', a.icon.scale_x, 1);
+    a.hover = false;
+    St.Settings.get().uninhibit_animations();
+    if (softwareOnly)
+        St.Settings.get().inhibit_animations();
     container.destroy();
 }
 
@@ -746,7 +836,8 @@ async function run() {
         await loginBackground();
         return;
     }
-    await dockColours();
+    await dockColours(vilnaSettings());
+    await dockIcons(vilnaSettings());
     await widgets();
     await locked();
     await windows();
