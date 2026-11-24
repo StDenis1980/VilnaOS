@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 24 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-llm.service runs the local model on the graphics chip through
+  Vulkan (--n-gpu-layers 99, Requires: libggml-vulkan, group render, Mesa
+  shader cache in /var/cache/vilna-llm). Iris Xe, Qwen3 4B: prompt 44 ->
+  141 tok/s, writing ~8.4 tok/s as before, ~1.15 GB more memory.
+
+-------------------------------------------------------------------
 Mon Nov 23 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - system.slice.d/50-vilna-llm.conf gives system.slice MemoryLow=5G, so the
