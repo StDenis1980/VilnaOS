@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
-    PANEL_COMPACT_HEIGHT, PANEL_MIN_HEIGHT, dockStrip, dockWidth, drawsOwnLayoutHint, indicatorAnchor,
-    indicatorPosition, monitorAt, panelRect,
+    PANEL_COMPACT_HEIGHT, PANEL_MIN_HEIGHT, dockMonitor, dockStrip, dockWidth, drawsOwnLayoutHint,
+    indicatorAnchor, indicatorPosition, monitorAt, panelRect,
 } from '../vilna@stdenis1980.github.io/lib/geometry.js';
 
 const fhd = {x: 0, y: 0, width: 1920, height: 1080};
@@ -115,4 +115,11 @@ test('the installer draws its own layout hint', () => {
     assert.ok(drawsOwnLayoutHint('io.github.stdenis1980.VilnaInstaller.Confirm'));
     assert.ok(!drawsOwnLayoutHint('org.gnome.Settings'));
     assert.ok(!drawsOwnLayoutHint(null));
+});
+
+test('the Gloxi strip opens where the person works, else on the primary monitor', () => {
+    assert.equal(dockMonitor([1, 0], 2, 0), 1);
+    assert.equal(dockMonitor([undefined, 1], 2, 0), 1);
+    assert.equal(dockMonitor([5, -1, 0.5, null], 2, 0), 0);
+    assert.equal(dockMonitor([], 3, 2), 2);
 });

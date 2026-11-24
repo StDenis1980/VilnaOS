@@ -37,6 +37,19 @@ export function indicatorPosition(cursor, size, monitor, gap = 6) {
     return {x: Math.round(x), y: Math.round(y)};
 }
 
+/**
+ * Which monitor the Gloxi strip opens on: the first of the candidates that
+ * is a monitor now (the focused window's, then the pointer's), else the
+ * primary one.
+ */
+export function dockMonitor(candidates, count, primary) {
+    for (const i of candidates) {
+        if (Number.isInteger(i) && i >= 0 && i < count)
+            return i;
+    }
+    return primary;
+}
+
 /** Width of the Gloxi strip on a monitor of this width. */
 export function dockWidth(monitorWidth, size = 'one-sixth') {
     const fraction = DOCK_FRACTIONS[size] ?? DOCK_FRACTIONS['one-sixth'];

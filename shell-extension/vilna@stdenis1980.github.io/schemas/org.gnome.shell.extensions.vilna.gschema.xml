@@ -53,7 +53,7 @@
     <key name="gloxi-dock" type="b">
       <default>false</default>
       <summary>Gloxi as a side panel of the Shell (experimental)</summary>
-      <description>Show Gloxi as a panel the Shell draws in a strip at the right edge of the primary monitor, like a dock: maximised windows and notifications stay out of it. The panel talks to gloxid, the Gloxi service; a button in the top bar and Gloxi's own key open and close it.</description>
+      <description>Show Gloxi as a panel the Shell draws in a strip at the right edge of the monitor the person works on, like a dock: maximised windows and notifications stay out of it. The panel talks to gloxid, the Gloxi service; a button in the top bar and Gloxi's own key open and close it.</description>
     </key>
     <key name="gloxi-panel-key" type="as">
       <default>['&lt;Super&gt;g']</default>

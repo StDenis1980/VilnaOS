@@ -4,6 +4,7 @@
 // next to the Vilna extension, drives it, and writes PASS/FAIL lines to
 // $VILNA_TEST_OUT. Never installed outside the test.
 
+import Atk from 'gi://Atk';
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -409,6 +410,10 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     check('side panel: the field\'s name starts with what it shows',
         Boolean(view.entry.accessible_name) && view.entry.hint_text.startsWith(view.entry.accessible_name), true);
 
+    // What Orca would read: the list's ATK notifications (AT-SPI Announcement).
+    const heard = [];
+    const listAccessible = view._list.get_accessible();
+    const hearing = listAccessible.connect('notification', (_a, words, politeness) => heard.push([words, politeness]));
     view.entry.set_text('Увімкни темну тему');
     await press(Clutter.KEY_Return);
     check('side panel: Enter sends, the answer streams in',
@@ -416,6 +421,10 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
             view.chat.lines.slice(2).map(l => `${l.kind}: ${l.text}`),
         ['user: Увімкни темну тему', 'gloxi: Готово: темну тему ввімкнено.', 'action: Settings: dark theme']);
     check('side panel: the field is empty again', view.entry.get_text(), '');
+    // The card as soon as the action is done, the answer once it is finished.
+    check('side panel: a screen reader hears the card, then the whole answer once',
+        heard.map(([w]) => w), ['Settings: dark theme · Done', 'Gloxi: Готово: темну тему ввімкнено.']);
+    check('side panel: politely', heard.every(([, p]) => p === Atk.Live.POLITE), true);
     check('side panel: the owl is ready again, and says so', [view.chat.state, Boolean(view.actor.accessible_description)],
         ['idle', true]);
     check('side panel: the owl picture is there', view._owl.gicon?.get_file?.().query_exists(null) ?? false, true);
@@ -449,6 +458,8 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     check('side panel: and gets no banner', [reminder.acknowledged, Main.messageTray._notification === reminder,
         Main.messageTray._notificationQueue?.includes(reminder) ?? false], [true, false, false]);
     check('side panel: it stays in the notification list', gloxiSource.notifications.includes(reminder), true);
+    check('side panel: a screen reader hears it instead of the banner', heard.at(-1)?.[0], 'Нагадування: Зустріч о 15:00');
+    listAccessible.disconnect(hearing);
 
     settings.set_string('gloxi-dock-size', 'one-third');
     await sleep(800);
@@ -479,6 +490,51 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     check('side panel: and opens it', settings.get_boolean('gloxi-panel-open'), true);
     await sleep(300);
     check('side panel: a new panel says hello again', panelRequests.filter(r => r.method === 'hello').length >= 2, true);
+
+    // A second monitor: the panel opens where the focused window is, and
+    // only that monitor gives up the strip, also on the edge between them.
+    if (Main.layoutManager.monitors.length > 1) {
+        settings.set_boolean('gloxi-panel-open', false);
+        await sleep(800);
+        const second = Main.layoutManager.monitors[1];
+        const away = findWindow(OTHER);
+        if (Meta.MaximizeFlags)
+            away.unmaximize(Meta.MaximizeFlags.BOTH);
+        else
+            away.unmaximize();
+        away.move_to_monitor(1);
+        away.activate(global.get_current_time());
+        await sleep(500);
+        // What Super+G and the top-bar button call (both checked above). Not
+        // the key itself: by now the layout is 'ua', which has no keysym g
+        // for the virtual keyboard to send; a real keyboard sends the key.
+        theDock().toggle();
+        await sleep(800);
+        const strip = dockPanel();
+        const area = Main.layoutManager.getWorkAreaForMonitor(1);
+        check('second monitor: the panel opens on the focused window\'s monitor',
+            Boolean(strip) && [strip[0] > second.x, strip[0] + strip[2], strip[3]],
+            [true, second.x + second.width, second.height]);
+        check('second monitor: its work area stops at the strip, the primary keeps all of its width',
+            [area.x + area.width, workArea()[2]], [strip?.[0], mw]);
+        if (Meta.MaximizeFlags)
+            away.maximize(Meta.MaximizeFlags.BOTH);
+        else
+            away.maximize();
+        await sleep(800);
+        const r = away.get_frame_rect();
+        check('second monitor: a maximised window there stays left of the strip',
+            [r.x >= second.x, r.x + r.width <= (strip?.[0] ?? 0)], [true, true]);
+        check('second monitor: ready to type there too', panelFocused(), true);
+        await press(Clutter.KEY_Escape);
+        await sleep(600);
+        check('second monitor: closed, the space comes back',
+            [settings.get_boolean('gloxi-panel-open'), Main.layoutManager.getWorkAreaForMonitor(1).width],
+            [false, second.width]);
+        away.move_to_monitor(0);
+        settings.set_boolean('gloxi-panel-open', true);
+        await sleep(800);
+    }
 
     settings.set_boolean('gloxi-dock', false);
     await sleep(800);

@@ -76,6 +76,9 @@ EXTRACT_PROMPT = (
     "The user asked you to add a meeting from an email to their calendar and to "
     "prepare an answer to the email. Answer with one JSON object only:\n"
     "- title: a short name for the meeting, in the language of the user's message;\n"
+    "- weekday: the day of the week of the meeting in English (Monday…Sunday), empty "
+    "when the email names no day;\n"
+    "- day_of_month: the number of that day in its month, 0 when the email does not say;\n"
     "- date: the day of the meeting as YYYY-MM-DD, counted from the day the email "
     "was sent when it says 'tomorrow' or 'on Friday'; empty when the email names no day;\n"
     "- start_time: when it starts, HH:MM on a 24-hour clock; empty when not said;\n"
@@ -96,13 +99,27 @@ EXTRACT_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
         "title": {"type": "string"},
+        # Before the date: a small model writes "Friday" and "27" right more
+        # often than "2026-11-27" (Qwen3 4B put 3 of 20 events on the 25th or
+        # 26th, 2026-11-24). Gloxi fixes the date by them (``_fixed_day``).
+        "weekday": {"type": "string", "enum": ["", *_WEEKDAYS]},
+        "day_of_month": {"type": "integer"},
         "date": {"type": "string"},
         "start_time": {"type": "string"},
         "end_time": {"type": "string"},
         "location": {"type": "string"},
         "reply": {"type": "string"},
     },
-    "required": ["title", "date", "start_time", "end_time", "location", "reply"],
+    "required": [
+        "title",
+        "weekday",
+        "day_of_month",
+        "date",
+        "start_time",
+        "end_time",
+        "location",
+        "reply",
+    ],
 }
 
 # What Gloxi says at the end, in the language of the person's message.
@@ -413,6 +430,7 @@ def _checked(answer: dict[str, Any], *, fallback_title: str) -> Facts:
 
     title = text("title", MAX_TITLE) or fallback_title[:MAX_TITLE]
     day, start_time, end_time = text("date", 10), text("start_time", 5), text("end_time", 5)
+    day = _fixed_day(day, text("weekday", 10), answer.get("day_of_month"))
     start = end = ""
     if _DAY.match(day) and _TIME.match(start_time):
         try:
@@ -427,6 +445,35 @@ def _checked(answer: dict[str, Any], *, fallback_title: str) -> Facts:
                     ends = later
             start, end = begins.strftime("%Y-%m-%dT%H:%M"), ends.strftime("%Y-%m-%dT%H:%M")
     return Facts(title, start, end, text("location", MAX_TITLE), text("reply", MAX_REPLY))
+
+
+# How far from the model's date the day it named may be: a week each way.
+MAX_SHIFT = 7
+
+
+def _fixed_day(day: str, weekday: str, day_of_month: Any) -> str:
+    """The model's date, moved to the nearest day that is the weekday and the
+    day of the month it also gave: "Friday", 27 and "2026-11-25" make
+    2026-11-27. Unchanged when they do not fit any day near it."""
+    if not _DAY.match(day):
+        return day
+    try:
+        given = date.fromisoformat(day)
+    except ValueError:
+        return day
+    wanted = _WEEKDAYS.index(weekday) if weekday in _WEEKDAYS else None
+    number = day_of_month if isinstance(day_of_month, int) and 1 <= day_of_month <= 31 else None
+    if wanted is None and number is None:
+        return day
+
+    def fits(d: date) -> bool:
+        return (wanted is None or d.weekday() == wanted) and (number is None or d.day == number)
+
+    for shift in range(MAX_SHIFT + 1):
+        for d in (given + timedelta(days=shift), given - timedelta(days=shift)):
+            if fits(d):
+                return d.isoformat()
+    return day
 
 
 def _reply_address(email: dict[str, Any]) -> str:
