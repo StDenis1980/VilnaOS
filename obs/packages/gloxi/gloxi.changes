@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 24 18:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- vilna-llm.service and system.slice: MemoryLow=65% of the RAM instead of a
+  fixed 5G. On 6 GB the fixed 5G left the rest of the system ~1 GB and the
+  Live installer stalled (PSI full 47 %, 4.5 % with 65 %); on 8 GB 65 % is
+  ~5 GB and as good as before (VM, 24.11.2026).
+
+-------------------------------------------------------------------
 Tue Nov 24 20:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - vilna-llm.service runs the local model on the graphics chip through
