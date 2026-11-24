@@ -86,6 +86,8 @@ CSS = """
     border: 1px solid alpha(@view_fg_color, 0.14); }
 .vilna-glass { background-color: alpha(@window_bg_color, 0.72);
     border: 1px solid alpha(@view_fg_color, 0.14); font-weight: 700; padding: 10px 18px; }
+/* The theme button sits over the ornament: opaque, so its beads do not show through. */
+.vilna-theme.vilna-glass { background-color: @window_bg_color; padding: 10px; }
 .vilna-lang:checked { background-color: @accent_bg_color; color: @accent_fg_color;
     border-color: transparent; }
 .vilna-other { font-weight: 700; border-radius: 12px; padding: 6px 16px;

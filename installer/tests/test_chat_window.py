@@ -374,3 +374,25 @@ def test_owls_ship_and_match_the_design_source():
             source = design / shipped.name
             if source.exists():
                 assert shipped.read_bytes() == source.read_bytes()
+
+
+def _labels(widget):
+    return [w.get_label() for w in _all(widget, Gtk.Label)]
+
+
+def test_password_card_without_a_user_name_is_not_cut_off(plan_path):
+    """Build12.19 in a VM: the card read «Password for» with nothing after it."""
+    win = window(plan_path, talk=Talk(plan_path))
+    plan = plans.load(plan_path)
+    plan["user"] = {}
+    win._card("user_password", plan)
+    (card,) = cards(win)
+    labels = _labels(card)
+    assert win._(conv.PASSWORD_ALONE) in labels
+    assert not any(label.rstrip().endswith("for") for label in labels if label)
+
+
+def test_the_greeting_puts_the_plan_where_it_is():
+    """The plan panel is on the left; the greeting said «on the right»."""
+    assert "on the left" in conv.INTRO
+    assert "on the right" not in conv.INTRO

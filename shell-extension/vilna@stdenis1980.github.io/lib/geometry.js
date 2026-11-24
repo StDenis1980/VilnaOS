@@ -118,3 +118,25 @@ export function panelRect(workArea, size, current, margin = PANEL_MARGIN) {
     const y = kind === 'compact' ? wa.y + wa.height - m - height : wa.y + m;
     return {x, y, width, height};
 }
+
+/**
+ * Where the layout indicator is anchored while focus stays in one password
+ * field: the first cursor place in it, where its text starts. Typing moves
+ * the cursor along the same line and the indicator stays put (Denys,
+ * 2026-11-24: «it must sit in one place and not slide away»). A cursor on
+ * another line is another field: the anchor moves there.
+ */
+export function indicatorAnchor(anchor, cursor) {
+    if (!cursor)
+        return anchor ?? null;
+    if (anchor && finite(anchor.y) === finite(cursor.y) &&
+        finite(anchor.height) === finite(cursor.height))
+        return anchor;
+    return cursor;
+}
+
+/** The Vilna installer's windows draw the layout under their own fields. */
+export function drawsOwnLayoutHint(wmClass) {
+    return typeof wmClass === 'string' &&
+        wmClass.startsWith('io.github.stdenis1980.VilnaInstaller');
+}

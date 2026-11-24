@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Tue Nov 24 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Fixes from the VM check of Build12.19: Gloxi's greeting says the
+  plan is on the left, where the steps panel is (it said «on the
+  right»); the password card without a user name yet reads «Password»,
+  not «Password for»; the rounded message bar shows the focus itself,
+  without the entry's square ring; the theme button on the welcome
+  screen is opaque, so the ornament's beads do not show through it.
+- The keyboard layout of a password field («en») is shown by the
+  installer itself, right under the field at its left edge, in the
+  window's colours (layout_hint.py): it never moves while typing and
+  is readable in the light theme. Every password field: conversation,
+  wizard (account, encryption, Wi-Fi) and the Herkos screen.
+
+-------------------------------------------------------------------
 Tue Nov 24 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - TPM2 first boot: keep the enrollment credentials and fail

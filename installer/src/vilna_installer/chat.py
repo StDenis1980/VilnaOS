@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The conversation window: chat with Gloxi on the left, the plan on the right.
+"""The conversation window: the plan on the left, chat with Gloxi on the right.
 
     vilna-installer-chat [--plan PATH] [--window] [--demo empty|windows]
 
@@ -42,7 +42,15 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import a11y, confirm_window, install_window, start, style, summary  # noqa: E402
+from vilna_installer import (  # noqa: E402
+    a11y,
+    confirm_window,
+    install_window,
+    layout_hint,
+    start,
+    style,
+    summary,
+)
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
@@ -83,7 +91,10 @@ CSS = """
 .vilna-seed.leaf { min-width: 12px; background-color: @vilna_orange; }
 .vilna-composer { padding: 6px 6px 6px 14px; border-radius: 999px;
     background-color: @card_bg_color; border: 1px solid alpha(@view_fg_color, 0.15); }
-.vilna-composer entry { background: none; box-shadow: none; }
+.vilna-composer entry { background: none; box-shadow: none; outline: none; }
+/* The rounded bar shows the focus itself, so the entry's square ring does not. */
+.vilna-composer:focus-within { border-color: @accent_color;
+    box-shadow: 0 0 0 1px @accent_color; }
 """
 
 
@@ -567,7 +578,8 @@ class ChatWindow(Adw.ApplicationWindow):
         if need == "wifi_password":
             title = _(conv.WIFI_PASSWORD).format(name=(plan.get("network") or {}).get("wifi"))
         elif need == "user_password":
-            title = _(conv.PASSWORD).format(name=user.get("username", ""))
+            username = user.get("username") or ""
+            title = _(conv.PASSWORD).format(name=username) if username else _(conv.PASSWORD_ALONE)
         elif need == "pin":
             title = _(conv.PIN)
         else:
@@ -584,6 +596,8 @@ class ChatWindow(Adw.ApplicationWindow):
             second.set_property("placeholder-text", _(conv.REPEAT))
             second.update_property([Gtk.AccessibleProperty.LABEL], [_(conv.REPEAT)])
             card.append(second)
+        # Right under the fields, at their left edge: it never moves (layout_hint.py).
+        card.append(layout_hint.hint(_))
         note = Gtk.Label(label=_(conv.NOT_SEEN), xalign=0, wrap=True)
         note.add_css_class("dim-label")
         card.append(note)

@@ -30,8 +30,8 @@ msgstr "Kitos kalbos"
 msgid "Search for a language"
 msgstr "Ieškoti kalbos"
 
-msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the right and change any item yourself."
-msgstr "Aš Gloxi, padėsiu įdiegti Vilna. Diske niekas nepasikeis, kol nepatvirtinsite plano; jį matote dešinėje ir bet kurį punktą galite pakeisti patys."
+msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the left and change any item yourself."
+msgstr "Aš Gloxi, padėsiu įdiegti Vilna. Diske niekas nepasikeis, kol nepatvirtinsite plano; jį matote kairėje ir bet kurį punktą galite pakeisti patys."
 
 msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
 msgstr "Kokiomis kalbomis rašote? Pridėsiu ir jų klaviatūros išdėstymus, pavyzdžiui, ukrainiečių ir anglų."
@@ -850,3 +850,6 @@ msgstr "Ši versija įdiegia tik EFI ir sistemos skaidinius. Namų aplankus ir s
 
 msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
 msgstr "Diske jau yra EFI sistemos skaidinys. Pasirinkite jį (formatuotą ar ne) vietoj naujo."
+
+msgid "Keyboard layout: {name}"
+msgstr "Klaviatūros išdėstymas: {name}"

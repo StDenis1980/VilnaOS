@@ -30,8 +30,8 @@ msgstr "Inne języki"
 msgid "Search for a language"
 msgstr "Szukaj języka"
 
-msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the right and change any item yourself."
-msgstr "Jestem Gloxi, pomogę zainstalować Vilna. Nic na dysku się nie zmieni, dopóki nie potwierdzisz planu; widać go po prawej i każdy punkt możesz zmienić samodzielnie."
+msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the left and change any item yourself."
+msgstr "Jestem Gloxi, pomogę zainstalować Vilna. Nic na dysku się nie zmieni, dopóki nie potwierdzisz planu; widać go po lewej i każdy punkt możesz zmienić samodzielnie."
 
 msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
 msgstr "W jakich językach piszesz? Dodam też ich układy klawiatury, na przykład ukraiński i angielski."
@@ -850,3 +850,6 @@ msgstr "Ta wersja instaluje tylko partycję EFI i partycję systemową. Katalogi
 
 msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
 msgstr "Na dysku jest już partycja systemowa EFI. Wybierz ją (z formatowaniem lub bez) zamiast nowej."
+
+msgid "Keyboard layout: {name}"
+msgstr "Układ klawiatury: {name}"

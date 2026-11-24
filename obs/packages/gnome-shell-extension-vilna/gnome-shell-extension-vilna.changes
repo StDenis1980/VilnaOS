@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Nov 24 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The layout indicator of a password field stays where the field's
+  text starts, under it; typing no longer moves it (a cursor on
+  another line, the next field, moves it there). The Vilna installer
+  draws the layout under its own fields, so the floating indicator is
+  not shown over its windows.
+
+-------------------------------------------------------------------
 Tue Nov 24 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.12: the Gloxi side panel reads new lines to a screen reader (ATK

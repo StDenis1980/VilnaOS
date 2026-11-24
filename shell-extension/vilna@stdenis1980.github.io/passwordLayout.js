@@ -23,7 +23,7 @@ import * as Keyboard from 'resource:///org/gnome/shell/ui/status/keyboard.js';
 
 import {nextSource} from './lib/inputSources.js';
 import {PasswordSession} from './lib/passwordSession.js';
-import {indicatorPosition, monitorAt} from './lib/geometry.js';
+import {drawsOwnLayoutHint, indicatorAnchor, indicatorPosition, monitorAt} from './lib/geometry.js';
 
 function sourcesOf(manager) {
     return Object.values(manager?.inputSources ?? {})
@@ -52,9 +52,11 @@ export class PasswordLayout {
         this._connect(this._im, 'notify::content-purpose', queue);
         this._connect(this._im, 'input-panel-state', queue);
         this._connect(this._im, 'cursor-location-changed', (_im, rect) => {
-            this._cursor = rect
+            const cursor = rect
                 ? {x: rect.get_x(), y: rect.get_y(), width: rect.get_width(), height: rect.get_height()}
                 : null;
+            // Anchored where the field's text starts: typing does not move it.
+            this._cursor = indicatorAnchor(this._cursor, cursor);
             this._queueSync();
         });
         this._connect(this._manager, 'current-source-changed', () => this._updateIndicator());
@@ -168,6 +170,14 @@ export class PasswordLayout {
 
     _updateIndicator() {
         if (!this._session.active) {
+            if (this._indicator)
+                this._indicator.visible = false;
+            return;
+        }
+        // The installer draws the layout under its own fields, in a fixed
+        // place (installer/src/vilna_installer/layout_hint.py): a second,
+        // floating one there would only be in the way.
+        if (drawsOwnLayoutHint(global.display.focus_window?.get_wm_class?.())) {
             if (this._indicator)
                 this._indicator.visible = false;
             return;
