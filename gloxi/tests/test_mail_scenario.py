@@ -41,6 +41,10 @@ FIND = {"mail_list_messages", "mail_search_messages"}
 NEEDED = {"mail_read_message", "calendar_create_event", "mail_save_draft"}
 
 
+def mail_scenario_subject(lang):
+    return LETTERS[lang][0]
+
+
 def offered(listed, text):
     t = FileTools(Connector(FakeHerkos(listed=FakeHerkos.LISTED + listed)), [])
     t.definitions()  # as warm() does before the first message
@@ -303,12 +307,28 @@ def test_a_read_herkos_did_not_run_is_not_no_email(code):
     assert ask(conv, REQUESTS["lt"][0]).startswith(f"{say['event_failed']} {say[code]}")
 
 
+def test_a_mail_program_error_is_not_no_email():
+    # The VM check after PR #224: the program failed at the first step, and
+    # Gloxi said there was no such email.
+    mailbox, _, conv = flow("pl", {"uid": 41})
+    mailbox.refuse, mailbox.refuse_code = {"list_messages"}, "tool_error"
+    say = mail_flow.SAY["pl"]
+    assert ask(conv, REQUESTS["pl"][0]) == f"{say['not_read']} {say['tool_error']}"
+
+
+def test_after_no_answer_in_time_gloxi_does_not_offer_to_ask_again():
+    # Decision of 2026-11-24: the person asks again if they want to.
+    for lang, say in mail_flow.SAY.items():
+        told = say["denied_timeout"]
+        assert "?" not in told and told.count(".") == 1, (lang, told)
+
+
 @pytest.mark.parametrize("lang", list(REQUESTS))
 def test_what_gloxi_says_is_in_the_language_of_the_message(lang):
     say = mail_flow.SAY[lang]
     for key in ("no_mail", "no_time", "event_failed", "draft_failed"):
         assert _lang_ok(say[key], lang), (lang, key, say[key])
-    for code in ("denied_user", "denied_timeout", "denied_error"):
+    for code in ("denied_user", "denied_timeout", "denied_error", "tool_error"):
         told = f"{say['not_read']} {say[code]}"
         assert _lang_ok(told, lang), (lang, code, told)
     told = say["event"].format(title="Marta", when="27.11.2026, 15:00")
@@ -438,6 +458,52 @@ def test_a_made_up_domain_and_in_reply_to_are_put_right_before_the_send():
     other = {**draft("en"), "to": ["ola@example.net"], "in_reply_to": "<x1@example.net>"}
     conv.tools.call("mail_save_draft", json.dumps(other), user_turn=1)
     assert mailbox.calls[-1]["arguments"] == other
+
+
+def test_a_letter_more_in_the_senders_name_is_the_sender():
+    # Qwen3 4B, lt, in the VM check after PR #224: martas@ for marta@. The R4
+    # window would have shown another person's address with no in_reply_to.
+    mailbox = Mailbox("lt", FakeHerkos.LISTED + vilna_programs())
+    conv = conversation(ScriptedLlamaServer("Gerai."), FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    conv.tools.call("mail_read_message", json.dumps({"uid": 41, "reason": "r"}), user_turn=1)
+    for slip in ("martas@example.com", "mart@example.com", "marte@example.com"):
+        sent = {k: v for k, v in draft("lt").items() if k != "in_reply_to"}
+        conv.tools.call("mail_save_draft", json.dumps({**sent, "to": [slip]}), user_turn=1)
+        assert mailbox.calls[-1]["arguments"] == draft("lt"), slip
+    # Someone on the email, or two letters away, is a person and stays.
+    mailbox.reply_to = "Marto <marto@example.com>"
+    conv.tools.call("mail_read_message", json.dumps({"uid": 41, "reason": "r"}), user_turn=2)
+    for person in ("marto@example.com", "marina@example.com"):
+        other = {**draft("lt"), "to": [person], "in_reply_to": "<x1@example.net>"}
+        conv.tools.call("mail_save_draft", json.dumps(other), user_turn=2)
+        assert mailbox.calls[-1]["arguments"] == other, person
+
+
+def test_the_subject_without_re_becomes_the_answers():
+    # The VM check after PR #224: the original subject without "Re:" stayed.
+    mailbox = Mailbox("en", FakeHerkos.LISTED + vilna_programs())
+    conv = conversation(ScriptedLlamaServer("Done."), FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    conv.tools.call("mail_read_message", json.dumps({"uid": 41, "reason": "r"}), user_turn=1)
+    original = mail_scenario_subject("en")
+    bare = {**draft("en"), "subject": original}
+    conv.tools.call("mail_save_draft", json.dumps(bare), user_turn=1)
+    assert mailbox.calls[-1]["arguments"]["subject"] == f"Re: {original}"
+
+
+def test_a_send_with_the_quotes_changed_still_takes_the_draft_out():
+    # Ministral 3 8B, 2 of 8 conversations in the VM check after PR #224:
+    # «» became "" in the text sent, and the draft stayed in Drafts.
+    mailbox = Mailbox("uk", FakeHerkos.LISTED + vilna_programs())
+    conv = conversation(ScriptedLlamaServer("Готово."), FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    conv.tools.call("mail_read_message", json.dumps({"uid": 41, "reason": "r"}), user_turn=1)
+    saved = {**draft("uk"), "text": "Добре, буду в «Каві» о 15:00.\n\nОля"}
+    conv.tools.call("mail_save_draft", json.dumps(saved), user_turn=1)
+    copied = {**saved, "text": 'Добре, буду в "Каві" о 15:00.\nОля'}
+    conv.tools.call("mail_send", json.dumps(copied), user_turn=2)
+    assert mailbox.calls[-1]["arguments"]["replaces_draft"] == "<d1.gloxi@example.org>"
 
 
 def test_an_event_asked_in_the_same_answer_as_the_read_waits_for_the_email():
