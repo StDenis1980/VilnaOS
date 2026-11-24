@@ -54,7 +54,7 @@ dbus-run-session -- bash -c '
     gsettings set org.gnome.shell disable-user-extensions false
     gsettings set org.gnome.shell enabled-extensions "[\"vilna@stdenis1980.github.io\", \"vilna-test@vilna.test\"]"
     gsettings set org.gnome.shell welcome-dialog-last-shown-version "999"
-    args=(--headless --wayland --no-x11 --virtual-monitor 1920x1080)
+    args=(--headless --wayland --no-x11 --virtual-monitor 1920x1080 --virtual-monitor 1280x1024)
     [[ $VILNA_TEST_MODE == gdm ]] && args+=(--mode=gdm)
     gnome-shell "${args[@]}" >"$HOME/shell.log" 2>&1 &
     shell=$!

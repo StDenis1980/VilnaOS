@@ -100,3 +100,43 @@ test('only Gloxi\'s own notification source counts', () => {
     for (const other of ['io.github.stdenis1980.Gloxi.HerkosDialog', 'org.gnome.Calendar', null, undefined, 5])
         assert.ok(!isGloxiSource(other), String(other));
 });
+
+const said = (chat, focused) => chat.takeNews(focused).map(n => [n.line.text, n.urgent]);
+
+test('a screen reader hears a finished answer once, whole, when it was asked here', () => {
+    const chat = new PanelChat();
+    chat.asking();
+    feed(chat, {event: 'user_message', text: 'привіт'}, {event: 'start_answer', label: 'x'},
+        {event: 'append_answer', piece: 'При'});
+    assert.deepEqual(said(chat, false), []);
+    feed(chat, {event: 'append_answer', piece: 'віт'}, {event: 'finish_answer'});
+    assert.deepEqual(said(chat, false), [['Привіт', false]]);
+    assert.deepEqual(said(chat, false), []);
+});
+
+test('an answer to a question from the window is read only in the panel\'s focus', () => {
+    const fromWindow = () => {
+        const chat = new PanelChat();
+        feed(chat, {event: 'user_message', text: 'q'}, {event: 'start_answer', label: 'x'},
+            {event: 'append_answer', piece: 'a'}, {event: 'finish_answer'},
+            {event: 'action', card: {status: 'done', program: 'Files', operation: 'move'}});
+        return chat;
+    };
+    assert.deepEqual(said(fromWindow(), false), []);
+    assert.equal(said(fromWindow(), true).length, 2);
+});
+
+test('errors and notifications are always read, errors at once', () => {
+    const chat = new PanelChat();
+    chat.notice('Нагадування', 'Зустріч');
+    feed(chat, {event: 'error', text: 'model gone'});
+    assert.deepEqual(said(chat, false), [['Нагадування: Зустріч', false], ['model gone', true]]);
+});
+
+test('a card Keros warned about or that failed interrupts; history is never read', () => {
+    const chat = new PanelChat();
+    chat.loadHistory([{role: 'assistant', text: 'old'}]);
+    chat.apply({event: 'action', card: {status: 'done', program: 'Files', operation: 'move', warnings: ['x']}});
+    chat.apply({event: 'action', card: {status: 'done', program: 'Files', operation: 'copy'}});
+    assert.deepEqual(said(chat, true), [['Files: move', true], ['Files: copy', false]]);
+});

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 24 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.12: the Gloxi side panel reads new lines to a screen reader (ATK
+  notification, AT-SPI Announcement): a finished answer whole, cards,
+  errors and the Gloxi notifications it shows instead of banners. It
+  opens on the monitor the person works on, not only the primary one.
+
+-------------------------------------------------------------------
 Tue Nov 24 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.11: the dock page (prefs.js, lib/dock.js): place (bottom or left;

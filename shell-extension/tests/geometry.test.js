@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
-    PANEL_COMPACT_HEIGHT, PANEL_MIN_HEIGHT, dockStrip, dockWidth, indicatorPosition, monitorAt, panelRect,
+    PANEL_COMPACT_HEIGHT, PANEL_MIN_HEIGHT, dockMonitor, dockStrip, dockWidth, indicatorPosition, monitorAt, panelRect,
 } from '../vilna@stdenis1980.github.io/lib/geometry.js';
 
 const fhd = {x: 0, y: 0, width: 1920, height: 1080};
@@ -89,4 +89,11 @@ test('panel: junk does not throw and stays finite', () => {
     }
     // An unknown size falls back to a sixth.
     assert.deepEqual(panelRect(wa, 'half', null), panelRect(wa, 'one-sixth', null));
+});
+
+test('the Gloxi strip opens where the person works, else on the primary monitor', () => {
+    assert.equal(dockMonitor([1, 0], 2, 0), 1);
+    assert.equal(dockMonitor([undefined, 1], 2, 0), 1);
+    assert.equal(dockMonitor([5, -1, 0.5, null], 2, 0), 0);
+    assert.equal(dockMonitor([], 3, 2), 2);
 });

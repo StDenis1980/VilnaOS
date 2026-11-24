@@ -11,9 +11,11 @@
 // lib/gloxiPanel.js has the logic and the words; this file only draws and
 // talks to the socket.
 
+import Atk from 'gi://Atk';
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
 import Pango from 'gi://Pango';
 import Shell from 'gi://Shell';
@@ -327,11 +329,15 @@ export class PanelView {
             return;
         if (!await this._connect())
             return;
+        this._chat.asking();
         try {
             const result = await this._client.call('chat.submit', {text});
             if (result.accepted)
                 this._entry.set_text('');
+            else
+                this._chat.asking(false);
         } catch (e) {
+            this._chat.asking(false);
             this._chat.apply({event: 'error', text: e.message});
             this._render();
         }
@@ -406,6 +412,25 @@ export class PanelView {
         this._empty.visible = this._chat.lines.length === 0;
         this._showState();
         this._scrollToEnd();
+        this._speak();
+    }
+
+    // St has no live regions: new lines are handed to the screen reader as
+    // an ATK notification (AT-SPI Announcement, which Orca reads), from the
+    // message list. Read whole, once an answer is finished, not word by word.
+    _speak() {
+        const focused = this.actor.contains(global.stage.get_key_focus());
+        const news = this._chat.takeNews(focused);
+        if (!news.length)
+            return;
+        const accessible = this._list.get_accessible?.();
+        if (!accessible || !GObject.signal_lookup('notification', accessible.constructor.$gtype))
+            return;
+        for (const {line, urgent} of news) {
+            const actor = this._actors.get(line);
+            const words = actor?.accessible_name || this._lineText(line);
+            accessible.emit('notification', words, urgent ? Atk.Live.ASSERTIVE : Atk.Live.POLITE);
+        }
     }
 
     _scrollToEnd() {
