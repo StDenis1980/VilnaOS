@@ -239,3 +239,23 @@ def test_broken_mail_does_not_break_reading():
 
 def test_html_text_ignores_broken_markup():
     assert html_text("<p>a<p>b</div><").startswith("a\nb")
+
+
+def test_sending_a_reply_takes_its_own_draft_out_of_drafts(box):
+    reply = {
+        "account": DEMO_ACCOUNT,
+        "to": ["marta@example.com"],
+        "subject": "Re: Lunch on Friday?",
+        "text": "Yes.",
+    }
+    saved = box.save_draft(**reply)
+    assert [m["subject"] for m in box.list_messages(folder="Drafts")["messages"]] == [
+        "Re: Lunch on Friday?"
+    ]
+    out = box.send(**reply, replaces_draft=saved["message_id"])
+    assert out["sent"] is True and out["draft_removed"] is True
+    assert box.list_messages(folder="Drafts")["messages"] == []
+    # Only a draft Gloxi wrote; what is sent is built from the arguments alone.
+    with pytest.raises(MailError, match="replaces_draft"):
+        box.send(**reply, replaces_draft="<demo2@example.net>")
+    assert box.send(**reply, replaces_draft=saved["message_id"])["draft_removed"] is False

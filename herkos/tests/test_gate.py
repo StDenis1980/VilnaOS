@@ -53,6 +53,13 @@ def test_no_answer_in_time_is_not_a_no(tmp_path):
     assert env.files.calls == []
 
 
+def test_a_question_nobody_saw_is_not_a_no_of_theirs(tmp_path):
+    env = Env(tmp_path, Answer.FAILED)
+    out = env.gate.handle(request(env, "read", env.docs / "a.txt"), SessionState())
+    assert not out.allowed and out.code == "denied_error"
+    assert env.files.calls == []
+
+
 def test_unknown_tool_and_operation_are_denied(env):
     s = SessionState()
     out = env.gate.handle(request(env, "read", tool="org.example.none"), s)
@@ -133,7 +140,7 @@ def test_crashing_dialog_is_deny(tmp_path):
 
     env = Env(tmp_path, boom)
     out = env.gate.handle(request(env, "read", env.docs / "a"), SessionState())
-    assert out.code == "denied_user"
+    assert not out.allowed and out.code == "denied_error"  # nobody said no
 
 
 def test_tool_error_is_reported(tmp_path):

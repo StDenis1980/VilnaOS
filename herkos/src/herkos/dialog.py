@@ -205,10 +205,10 @@ def main() -> int:
     try:
         question = json.loads(sys.stdin.read())
     except ValueError:
-        print("deny")
+        print("failed")
         return 1
     if not isinstance(question, dict):
-        print("deny")
+        print("failed")
         return 1
     import gi
 
@@ -218,7 +218,9 @@ def main() -> int:
 
     from herkos import real_input, style
 
-    answer = ["deny"]
+    # Until the person answers: a window that never showed is no "no" of
+    # theirs (VM check 2026-11-24: it was logged as denied_user).
+    answer = ["failed"]
     from gi.repository import Gio
 
     # One window per question: never ask the bus for a name (NON_UNIQUE).

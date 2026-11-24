@@ -84,10 +84,12 @@ def test_no_and_nonsense_are_no(setup):
     herkos, agent, client = setup
     path = herkos.docs / "a.txt"
     path.write_text("x", encoding="utf-8")
-    for answer in ("deny", "yes", ""):
+    # Nonsense or no answer is a "no" too, but not the person's (VM check
+    # 2026-11-24): denied_error.
+    for answer, code in (("deny", "denied_user"), ("yes", "denied_error"), ("", "denied_error")):
         agent.answer(answer)
         r = files(client, "read", path)
-        assert (r["decision"], r["code"]) == ("denied", "denied_user"), answer
+        assert (r["decision"], r["code"]) == ("denied", code), answer
         assert "result" not in r
     # "always" is not offered outside the allowed folders: it counts as no.
     outside = herkos.docs.parent / "outside.txt"
