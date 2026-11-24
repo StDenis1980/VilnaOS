@@ -705,3 +705,81 @@ def test_the_conversation_is_kept_for_a_problem_report(plan_path):
         assert c.log_path.stat().st_mode & 0o777 == 0o600
     finally:
         tools.close()
+
+
+def at_encryption(c, plan_path):
+    c.state.passed.update({"intro", "survey", "old_files", "old_encrypted"})
+    p = plans.load(plan_path)
+    p["locale"] = {"languages": ["uk_UA.UTF-8"], "keyboards": ["ua", "us"]}
+    p["network"] = {"mode": "offline"}
+    p["disk"] = {"target": "x", "layout": "replace"}
+    plans.save(p, plan_path)
+    c.refresh()
+    assert c.current().key == "encryption"
+
+
+# «,tp ibahedfyyz» is «без шифрування» typed in the English layout.
+@pytest.mark.parametrize(
+    "answer", ["без шифрування", "Не шифруй.", ",tp ibahedfyyz", "No encryption, please"]
+)
+def test_without_encryption_is_saved_without_the_model(plan_path, answer):
+    """Build12.26: to «без шифрування» the model saved a passphrase and asked for it."""
+    c, model, tools = make(plan_path, "empty", [call("plan_set_encryption", method="passphrase")])
+    texts = start.Texts("uk")
+    try:
+        at_encryption(c, plan_path)
+        reply = c.send(answer)
+        assert c.plan["disk"]["encryption"] == {"method": "none"}
+        assert reply.needs == [] and reply.step.key == "user"
+        assert reply.text == texts(conv.NO_ENCRYPTION) + "\n\n" + texts(conv.USER_QUESTION)
+        assert model.seen == []  # the model was not asked
+    finally:
+        tools.close()
+
+
+def test_a_bare_no_to_the_encryption_question_means_none(plan_path):
+    c, model, tools = make(plan_path, "empty")
+    try:
+        at_encryption(c, plan_path)
+        c.history.append({"role": "assistant", "content": c.question(c.current())})
+        c.send("ні")
+        assert c.plan["disk"]["encryption"] == {"method": "none"}
+    finally:
+        tools.close()
+
+
+def test_a_question_about_no_encryption_goes_to_the_model(plan_path):
+    c, model, tools = make(plan_path, "empty", "Без шифрування файли може прочитати будь-хто.")
+    try:
+        at_encryption(c, plan_path)
+        reply = c.send("а що буде без шифрування?")
+        assert reply.step.key == "encryption" and len(model.seen) == 1
+        assert not (c.plan.get("disk") or {}).get("encryption")
+    finally:
+        tools.close()
+
+
+def test_the_notes_gloxi_echoes_never_reach_the_chat(plan_path):
+    """Build12.26: «<installer-notes> Step 8 of 13: Encrypting … </installer-notes>» in the chat."""
+    leaked = (
+        f"{conv.NOTES_START}\nStep 8 of 13: Encrypting the new system.\n"
+        f"Reply in Ukrainian.\n{conv.NOTES_END}\n\nРаджу шифрування з ключем відновлення."
+    )
+    c, model, tools = make(plan_path, "empty", leaked, f"{conv.NOTES_START}\nStep 8 of 13")
+    try:
+        at_encryption(c, plan_path)
+        assert c.send("а як краще?").text == "Раджу шифрування з ключем відновлення."
+        # Only notes, cut off: the step's own question instead.
+        assert c.send("а як краще?").text == c.question(c.current())
+    finally:
+        tools.close()
+
+
+def test_ukrainian_replies_are_told_to_keep_off_russian_words(plan_path):
+    c, model, tools = make(plan_path, "empty", "Добре.")
+    try:
+        at_encryption(c, plan_path)
+        c.send("розкажи")
+        assert "never Russian" in model.last_system
+    finally:
+        tools.close()
