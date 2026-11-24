@@ -16,8 +16,11 @@ Source0:        %{name}-%{version}.tar.gz
 # Sounds a theme leaves out come from GNOME's default theme.
 Requires:       sound-theme-freedesktop
 # The login sound: vilna-login-sound.desktop in the autostart folder.
-Requires:       /usr/bin/canberra-gtk-play
-Requires:       /usr/bin/gsettings
+# Packages, not files: OBS resolves a file dependency only with a
+# FileProvides line in the project config, which openSUSE:Factory has not
+# for these files (Vilna-Live was unresolvable).
+Requires:       canberra-gtk-play
+Requires:       glib2-tools
 BuildRequires:  desktop-file-utils
 BuildArch:      noarch
 
