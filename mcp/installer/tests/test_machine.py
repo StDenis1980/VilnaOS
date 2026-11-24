@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: Apache-2.0
 """The real computer's programs: their output is read untranslated."""
 
 from __future__ import annotations
