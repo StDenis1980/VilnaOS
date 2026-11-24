@@ -257,6 +257,13 @@ def vilna_programs(only: set[str] | None = None) -> list[dict[str, Any]]:
     return listed
 
 
+# Two other emails in the inbox: a newsletter and an old receipt.
+OTHERS = (
+    {"uid": 42, "from": "Lumen Weekly <news@lumen.example>", "subject": "Lumen Weekly #47"},
+    {"uid": 40, "from": "Shop <orders@shop.example>", "subject": "Order 5531"},
+)
+
+
 class Mailbox:
     """Stands in for Herkos (``gloxi.tools.HerkosLike``): one mailbox with
     Marta's email, a calendar, and a person who says no to every send."""
@@ -265,6 +272,9 @@ class Mailbox:
         self.lang = lang
         self.listed = listed
         self.calls: list[dict[str, Any]] = []
+        # For tests: a Reply-To on Marta's email, and operations the person refuses.
+        self.reply_to = ""
+        self.refuse: set[str] = set()
 
     def tools(self) -> list[dict[str, Any]]:
         return self.listed
@@ -280,11 +290,22 @@ class Mailbox:
         results: dict[str, Any] = {
             "list_accounts": {"accounts": [{"address": ACCOUNT, "name": "Ola"}]},
             "list_folders": {"folders": [{"name": "INBOX", "unread": 1}]},
-            "list_messages": {"messages": [{**header, "date": "2026-11-16", "unread": True}]},
+            # As vilna_mcp_mail: newest first, with the account. Marta's is
+            # not the newest, so the model has to choose (gloxi.mail_flow).
+            "list_messages": {
+                "account": ACCOUNT,
+                "messages": [
+                    {**OTHERS[0], "date": "2026-11-16", "unread": True},
+                    {**header, "date": "2026-11-16", "unread": True},
+                    {**OTHERS[1], "date": "2026-11-15", "unread": False},
+                ],
+            },
             "search_messages": {"messages": [{**header, "date": "2026-11-16"}]},
             "read_message": {
                 **header,
                 "to": [ACCOUNT],
+                # As vilna_mcp_mail.mail.Mail.read_message: the account it read.
+                "account": ACCOUNT,
                 "date": "2026-11-16T09:12:00+01:00",
                 "message_id": MESSAGE_ID,
                 "text": text,
@@ -301,6 +322,10 @@ class Mailbox:
                 "code": "denied_user",
                 "message": "the person said no",
             }
+        if self.reply_to:
+            results["read_message"]["reply_to"] = self.reply_to
+        if op in self.refuse:
+            return {"decision": "denied", "code": "denied_user", "message": "the person said no"}
         if op not in results:
             return {"decision": "denied", "code": "tool_error", "message": f"no {op} here"}
         external = op in ("list_messages", "search_messages", "read_message")

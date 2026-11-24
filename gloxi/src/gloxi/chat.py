@@ -7,6 +7,7 @@ import threading
 from collections.abc import Callable, Iterator
 from datetime import date
 
+from gloxi import mail_flow
 from gloxi.llm import Message, ModelError, ToolCall
 from gloxi.router import Route, Router, Target
 from gloxi.tools import FileTools, ToolOutcome
@@ -166,6 +167,21 @@ class Conversation:
             request[0] = {"role": "system", "content": request[0]["content"] + tools.prompt()}
 
         parts: list[str] = []
+        if tools and mail_flow.wants(tools, text):
+            # Milestone В3 as fixed steps: the model only reads and writes.
+            flow = mail_flow.MailFlow(
+                tools,
+                self.router.complete_local,
+                today=self.today(),
+                user_turn=self.user_turn,
+                on_tool=self.on_tool,
+            )
+            for piece in flow.run(text):
+                parts.append(piece)
+                yield piece
+            self.history.append(pending)
+            self.history.append({"role": "assistant", "content": "".join(parts)})
+            return
         for round_ in range(MAX_TOOL_ROUNDS + 1):
             # The last round offers no tools, so the model has to answer in words.
             offered = tools.definitions(text) if tools and round_ < MAX_TOOL_ROUNDS else None
@@ -187,10 +203,19 @@ class Conversation:
                     "tool_calls": [c.as_message_part() for c in calls],
                 }
             )
+            # A model may read an email and, in the same answer, add the event
+            # it has not seen yet, with a date it guessed (gloxi-bench --tasks
+            # mail, 2026-11-23). After a read, the rest waits for the next round.
+            read: str | None = None
             for call in calls:
-                outcome = tools.call(call.name, call.arguments, user_turn=self.user_turn)
-                if self.on_tool:
-                    self.on_tool(outcome)
+                if read is not None and not tools.reads_outside(call.name):
+                    outcome = tools.not_yet(call.name, read)
+                else:
+                    outcome = tools.call(call.name, call.arguments, user_turn=self.user_turn)
+                    if outcome.status == "done" and tools.reads_outside(call.name):
+                        read = call.name
+                    if self.on_tool:
+                        self.on_tool(outcome)
                 request.append(
                     {"role": "tool", "tool_call_id": call.id, "content": outcome.for_model}
                 )

@@ -99,10 +99,21 @@ class ChatClient:
         except httpx.HTTPError:
             return False
 
-    def complete(self, messages: Sequence[Message]) -> str:
-        """Return the whole reply at once."""
+    def complete(self, messages: Sequence[Message], schema: dict | None = None) -> str:
+        """Return the whole reply at once.
+
+        ``schema``: a JSON schema the reply must follow. llama-server turns it
+        into a grammar, so even a small model answers with that JSON object
+        and nothing else (gloxi.mail_flow).
+        """
+        payload = self._payload(messages, False)
+        if schema is not None:
+            payload["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {"name": "answer", "schema": schema, "strict": True},
+            }
         try:
-            response = self._http.post("/chat/completions", json=self._payload(messages, False))
+            response = self._http.post("/chat/completions", json=payload)
         except httpx.TransportError as exc:
             raise ModelUnavailable(self._unavailable_text(exc)) from exc
         _raise_for_status(response)
