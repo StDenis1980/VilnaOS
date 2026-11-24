@@ -281,6 +281,27 @@ def test_the_arrows_reach_every_choice_after_one_is_made(plan_path):
     assert not _press(first, Gdk.KEY_Tab)  # Tab stays GTK's own
 
 
+def test_tab_reaches_every_choice_after_one_is_made(plan_path):
+    """In the live image (Build12.19) the arrows went past them to «Back»: Tab is the way left."""
+    win = window(plan_path)
+    win.wizard.tpm = lambda: True
+    win.go("encryption", strict=False)
+    win.present()
+    assert spin(lambda: win.get_mapped())
+    spin(lambda: False, 0.3)
+    checks = [c for c in _all(win, Gtk.CheckButton) if c.get_mapped()]
+    assert len(checks) == 4
+    first = next(c for c in checks if c.get_active())
+    first.grab_focus()
+    reached = []
+    for _ in range(12):
+        win.emit("move-focus", Gtk.DirectionType.TAB_FORWARD)
+        spin(lambda: False, 0.05)
+        reached.append(win.get_focus())
+    assert set(checks) - {first} <= set(reached)
+    assert first.get_active()  # Tab chose nothing
+
+
 def test_a_wifi_network_can_be_chosen_after_without_a_network(plan_path):
     win = window(plan_path)
     win.go("network", strict=False)

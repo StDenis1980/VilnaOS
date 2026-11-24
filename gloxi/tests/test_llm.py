@@ -19,6 +19,20 @@ def test_complete_returns_reply_and_sends_model():
     assert server.requests[0]["stream"] is False
 
 
+def test_complete_holds_the_answer_to_a_schema():
+    schema = {"type": "object", "properties": {"uid": {"type": "integer"}}, "required": ["uid"]}
+    server = FakeLlamaServer('{"uid": 41}')
+    with ChatClient(ENDPOINT, transport=server.transport()) as client:
+        assert client.complete(MESSAGES, schema) == '{"uid": 41}'
+        client.complete(MESSAGES)
+    fmt = server.requests[0]["response_format"]
+    assert fmt == {
+        "type": "json_schema",
+        "json_schema": {"name": "answer", "schema": schema, "strict": True},
+    }
+    assert "response_format" not in server.requests[1]
+
+
 def test_stream_joins_to_full_reply():
     server = FakeLlamaServer("Це довша відповідь з кількох шматків.")
     with ChatClient(ENDPOINT, transport=server.transport()) as client:

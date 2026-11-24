@@ -13,6 +13,7 @@ import St from 'gi://St';
 
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 import * as Keyboard from 'resource:///org/gnome/shell/ui/status/keyboard.js';
 
 const UUID = 'vilna@stdenis1980.github.io';
@@ -436,6 +437,19 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     await shot('gloxi-side-panel-dark');
     iface.reset('color-scheme');
 
+    // Gloxi's own notifications: in the panel while it is open, no banner.
+    const gloxiSource = new MessageTray.Source({
+        title: 'Gloxi', policy: new MessageTray.NotificationApplicationPolicy('io.github.stdenis1980.Gloxi'),
+    });
+    Main.messageTray.add(gloxiSource);
+    const reminder = new MessageTray.Notification({source: gloxiSource, title: 'Нагадування', body: 'Зустріч о 15:00'});
+    gloxiSource.addNotification(reminder);
+    await sleep(300);
+    check('side panel: a Gloxi notification shows in it', view.chat.lines.at(-1), {kind: 'notice', text: 'Нагадування: Зустріч о 15:00'});
+    check('side panel: and gets no banner', [reminder.acknowledged, Main.messageTray._notification === reminder,
+        Main.messageTray._notificationQueue?.includes(reminder) ?? false], [true, false, false]);
+    check('side panel: it stays in the notification list', gloxiSource.notifications.includes(reminder), true);
+
     settings.set_string('gloxi-dock-size', 'one-third');
     await sleep(800);
     check('strip: one third', dockPanel(), [1280, top, 640, mh - top]);
@@ -449,6 +463,11 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     check('side panel: Escape closes it and gives the space back',
         [settings.get_boolean('gloxi-panel-open'), workArea()[2]], [false, mw]);
     check('side panel: no focus left in it', panelFocused(), false);
+    const later = new MessageTray.Notification({source: gloxiSource, title: 'Gloxi', body: 'Готово'});
+    gloxiSource.addNotification(later);
+    await sleep(300);
+    check('side panel: closed, a Gloxi notification is a banner again', later.acknowledged, false);
+    gloxiSource.destroy();
     check('side panel: the strip is gone after sliding out', await waitFor(() => dockPanel() === null, 2000), true);
 
     await setShellProperty('GloxiPanelOpen', new GLib.Variant('b', true));
