@@ -509,8 +509,7 @@ def test_the_local_model_keeps_idle_slots_cached():
 def test_the_local_model_reads_the_prompt_on_the_graphics_chip():
     # On the processor Gloxi reads ~44 tokens a second, and a turn with a long
     # prompt waited 20-30 s; Vulkan on Iris Xe reads 141 (24.11.2026).
-    root = Path(__file__).resolve().parents[2]
-    unit = (root / "gloxi" / "systemd" / "vilna-llm.service").read_text()
+    unit = (Path(__file__).resolve().parents[1] / "systemd" / "vilna-llm.service").read_text()
     exec_start = unit.split("ExecStart=", 1)[1].split("\nWorkingDirectory=", 1)[0]
     assert "--n-gpu-layers 99" in exec_start
     # Without the group the sandboxed user cannot open /dev/dri/renderD*.
@@ -518,8 +517,14 @@ def test_the_local_model_reads_the_prompt_on_the_graphics_chip():
     assert "\nCacheDirectory=vilna-llm\n" in unit
     assert "\nEnvironment=XDG_CACHE_HOME=%C/vilna-llm\n" in unit
     assert unit.count("\nMemoryLow=5G\n") == 1
-    spec = (root / "obs" / "packages" / "gloxi" / "gloxi.spec").read_text()
-    assert "\nRequires:       libggml-vulkan\n" in spec
+
+
+GLOXI_SPEC = Path(__file__).resolve().parents[2] / "obs" / "packages" / "gloxi" / "gloxi.spec"
+
+
+@pytest.mark.skipif(not GLOXI_SPEC.is_file(), reason="needs the repository's obs/")
+def test_the_package_brings_the_vulkan_backend():
+    assert "\nRequires:       libggml-vulkan\n" in GLOXI_SPEC.read_text()
 
 
 def test_the_local_model_keeps_its_weights_in_memory():
