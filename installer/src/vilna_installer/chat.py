@@ -42,7 +42,15 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import a11y, confirm_window, install_window, start, style, summary  # noqa: E402
+from vilna_installer import (  # noqa: E402
+    a11y,
+    confirm_window,
+    install_window,
+    layout_hint,
+    start,
+    style,
+    summary,
+)
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
@@ -588,6 +596,8 @@ class ChatWindow(Adw.ApplicationWindow):
             second.set_property("placeholder-text", _(conv.REPEAT))
             second.update_property([Gtk.AccessibleProperty.LABEL], [_(conv.REPEAT)])
             card.append(second)
+        # Right under the fields, at their left edge: it never moves (layout_hint.py).
+        card.append(layout_hint.hint(_))
         note = Gtk.Label(label=_(conv.NOT_SEEN), xalign=0, wrap=True)
         note.add_css_class("dim-label")
         card.append(note)

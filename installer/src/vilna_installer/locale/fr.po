@@ -850,3 +850,6 @@ msgstr "Cette version n’installe que la partition EFI et la partition système
 
 msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
 msgstr "Le disque a déjà une partition système EFI. Choisissez-la (formatée ou non) au lieu d’en créer une nouvelle."
+
+msgid "Keyboard layout: {name}"
+msgstr "Disposition du clavier : {name}"

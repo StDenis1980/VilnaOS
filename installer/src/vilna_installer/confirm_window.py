@@ -41,7 +41,15 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk  # noqa: E402
 
-from vilna_installer import a11y, confirm, encryption, real_input, speech, style  # noqa: E402
+from vilna_installer import (  # noqa: E402
+    a11y,
+    confirm,
+    encryption,
+    layout_hint,
+    real_input,
+    speech,
+    style,
+)
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
 
@@ -255,6 +263,8 @@ class ConfirmWindow(Adw.ApplicationWindow):
         self.entry.update_property([Gtk.AccessibleProperty.LABEL], [_(confirm.KEY_FIELD)])
         self.entry.connect("changed", self._on_key)
         box.append(self.entry)
+        # Right under the field, at its left edge, in the window's colours (layout_hint.py).
+        box.append(layout_hint.hint(_))
         self.key_note = Gtk.Label(xalign=0, wrap=True)
         box.append(self.key_note)
         group.add(box)

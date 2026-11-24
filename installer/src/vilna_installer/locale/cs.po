@@ -850,3 +850,6 @@ msgstr "Tato verze instaluje jen oddíl EFI a systémový oddíl. Domovské slo�
 
 msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
 msgstr "Na disku už je systémový oddíl EFI. Vyberte ho (s formátováním nebo bez) místo nového."
+
+msgid "Keyboard layout: {name}"
+msgstr "Rozložení klávesnice: {name}"

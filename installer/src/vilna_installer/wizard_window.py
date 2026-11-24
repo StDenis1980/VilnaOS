@@ -28,11 +28,19 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
+from gi.repository import Adw, Gdk, GLib, GObject, Gtk  # noqa: E402
 from vilna_mcp_installer import machine as machines  # noqa: E402
 from vilna_mcp_installer import plan as plans  # noqa: E402
 
-from vilna_installer import a11y, chat, confirm_window, install_window, start, style  # noqa: E402
+from vilna_installer import (  # noqa: E402
+    a11y,
+    chat,
+    confirm_window,
+    install_window,
+    layout_hint,
+    start,
+    style,
+)
 from vilna_installer import conversation as conv  # noqa: E402
 from vilna_installer import wizard as wiz  # noqa: E402
 from vilna_installer.vault import Vault  # noqa: E402
@@ -101,6 +109,23 @@ def password_rows(title: str, repeat: str) -> tuple[Adw.PasswordEntryRow, Adw.Pa
     first = Adw.PasswordEntryRow(title=title)
     second = Adw.PasswordEntryRow(title=repeat)
     return first, second
+
+
+def hint_row(texts: Callable[[str], str], under: Gtk.Widget) -> Gtk.ListBoxRow:
+    """The keyboard layout right under a password row, at its left edge (layout_hint.py).
+
+    A row of the same list, so it stays where it is while the person types;
+    shown and hidden with the row it is under.
+    """
+    row = Gtk.ListBoxRow(activatable=False, selectable=False, focusable=False)
+    hint = layout_hint.hint(texts)
+    hint.set_margin_start(12)
+    hint.set_margin_top(4)
+    hint.set_margin_bottom(4)
+    row.set_child(hint)
+    row.add_css_class("vilna-layout-hint-row")
+    under.bind_property("visible", row, "visible", GObject.BindingFlags.SYNC_CREATE)
+    return row
 
 
 def _group(title: str = "", description: str = "") -> Adw.PreferencesGroup:
@@ -543,6 +568,7 @@ class WizardWindow(Adw.ApplicationWindow):
         connect = Gtk.Button(label=_(conv.CONNECT), valign=Gtk.Align.CENTER)
         connect.add_css_class("suggested-action")
         password.add_suffix(connect)
+        password_hint = hint_row(_, password)
         # The Wi-Fi networks are a group of their own, kept apart from «Without a
         # network» by hand: in one group with it, only the chosen button was a Tab
         # stop and the arrows stopped at the end of the first list, so no Wi-Fi
@@ -612,9 +638,10 @@ class WizardWindow(Adw.ApplicationWindow):
                 state["checks"].append(check)
                 if plan_net.get("mode") == "wifi" and plan_net.get("wifi") == net["ssid"]:
                     check.set_active(True)
-            if password.get_parent() is not None:
-                wifi.remove(password)
-            wifi.add(password)
+            for kept in (password, password_hint):
+                if kept.get_parent() is not None:
+                    wifi.remove(kept)
+                wifi.add(kept)
             return False
 
         def scan(*_args: Any) -> None:
@@ -782,7 +809,9 @@ class WizardWindow(Adw.ApplicationWindow):
         pass_row, passphrase = radio_row(_(conv.ENCRYPT_PASS), _(wiz.PASSPHRASE_HINT), leader)
         none_row, none = radio_row(_(conv.NOT_ENCRYPTED), _(wiz.NONE_HINT), leader)
         first, second = password_rows(_(conv.PASSPHRASE), _(conv.REPEAT))
-        for row in (tpm_row, pin_row, pin_first, pin_second, pass_row, first, second, none_row):
+        rows = (tpm_row, pin_row, pin_first, pin_second, hint_row(_, pin_second))
+        rows += (pass_row, first, second, hint_row(_, second), none_row)
+        for row in rows:
             group.add(row)
         note = _group(description=_(wiz.KEY_NEXT))
         method = enc.get("method") or ("tpm2" if tpm_ok else "passphrase")
@@ -844,7 +873,7 @@ class WizardWindow(Adw.ApplicationWindow):
         if user.get("password") == plans.ENTERED:
             title = f"{title} · {_(conv.ENTERED_TEXT)}"
         first, second = password_rows(title, _(conv.REPEAT))
-        for row in (name, login, host, first, second):
+        for row in (name, login, host, first, second, hint_row(_, second)):
             group.add(row)
         touched = {"login": bool(user.get("username")), "host": bool(user.get("hostname"))}
         filling = {"now": False}

@@ -850,3 +850,6 @@ msgstr "Diese Version installiert nur die EFI- und die Systempartition. Lassen S
 
 msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
 msgstr "Der Datenträger hat bereits eine EFI-Systempartition. Wählen Sie diese (formatiert oder nicht) statt einer neuen."
+
+msgid "Keyboard layout: {name}"
+msgstr "Tastaturbelegung: {name}"

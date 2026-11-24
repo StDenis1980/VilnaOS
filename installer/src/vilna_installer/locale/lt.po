@@ -850,3 +850,6 @@ msgstr "Ši versija įdiegia tik EFI ir sistemos skaidinius. Namų aplankus ir s
 
 msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
 msgstr "Diske jau yra EFI sistemos skaidinys. Pasirinkite jį (formatuotą ar ne) vietoj naujo."
+
+msgid "Keyboard layout: {name}"
+msgstr "Klaviatūros išdėstymas: {name}"

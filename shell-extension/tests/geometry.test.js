@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
-    PANEL_COMPACT_HEIGHT, PANEL_MIN_HEIGHT, dockStrip, dockWidth, indicatorPosition, monitorAt, panelRect,
+    PANEL_COMPACT_HEIGHT, PANEL_MIN_HEIGHT, dockStrip, dockWidth, drawsOwnLayoutHint, indicatorAnchor,
+    indicatorPosition, monitorAt, panelRect,
 } from '../vilna@stdenis1980.github.io/lib/geometry.js';
 
 const fhd = {x: 0, y: 0, width: 1920, height: 1080};
@@ -15,26 +16,23 @@ test('the monitor under a point', () => {
     assert.equal(monitorAt([], 0, 0), null);
 });
 
-test('the indicator sits right of the cursor, on its line', () => {
+test('the indicator sits below the cursor', () => {
     const cursor = {x: 500, y: 300, width: 1, height: 20};
-    // Not below it: there it covered the next password field.
-    assert.deepEqual(indicatorPosition(cursor, {width: 40, height: 24}, fhd), {x: 507, y: 298});
+    assert.deepEqual(indicatorPosition(cursor, {width: 40, height: 24}, fhd), {x: 500, y: 326});
 });
 
 test('the indicator stays on screen', () => {
     const size = {width: 40, height: 24};
-    // Right edge: below the cursor instead.
-    assert.deepEqual(indicatorPosition({x: 1900, y: 100, width: 1, height: 20}, size, fhd), {x: 1880, y: 126});
-    // Right and bottom edges: above the cursor.
-    assert.deepEqual(indicatorPosition({x: 1900, y: 1070, width: 1, height: 8}, size, fhd), {x: 1880, y: 1040});
-    // Top edge.
-    assert.deepEqual(indicatorPosition({x: 10, y: 0, width: 1, height: 8}, size, fhd), {x: 17, y: 0});
+    // Bottom edge: it goes above the cursor.
+    assert.deepEqual(indicatorPosition({x: 10, y: 1070, width: 1, height: 8}, size, fhd), {x: 10, y: 1040});
+    // Right edge.
+    assert.deepEqual(indicatorPosition({x: 1910, y: 100, width: 1, height: 20}, size, fhd), {x: 1880, y: 126});
 });
 
 test('junk cursor values do not throw', () => {
     const p = indicatorPosition({x: NaN, y: Infinity}, {width: -3}, fhd);
     assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y));
-    assert.deepEqual(indicatorPosition(null, null, null), {x: 6, y: 0});
+    assert.deepEqual(indicatorPosition(null, null, null), {x: 0, y: 6});
 });
 
 test('strip width: a sixth or a third, at least 320 px, at most half', () => {
@@ -92,4 +90,29 @@ test('panel: junk does not throw and stays finite', () => {
     }
     // An unknown size falls back to a sixth.
     assert.deepEqual(panelRect(wa, 'half', null), panelRect(wa, 'one-sixth', null));
+});
+
+test('typing does not move the indicator: it stays where the text starts', () => {
+    const start = {x: 300, y: 200, width: 1, height: 18};
+    let anchor = indicatorAnchor(null, start);
+    for (const x of [309, 318, 327, 336])
+        anchor = indicatorAnchor(anchor, {x, y: 200, width: 1, height: 18});
+    assert.deepEqual(anchor, start);
+    // Deleting back does not move it either.
+    assert.deepEqual(indicatorAnchor(anchor, {x: 300, y: 200, width: 1, height: 18}), start);
+});
+
+test('the next field moves the anchor there', () => {
+    const first = {x: 300, y: 200, width: 1, height: 18};
+    const next = {x: 300, y: 258, width: 1, height: 18};
+    assert.deepEqual(indicatorAnchor(first, next), next);
+    assert.deepEqual(indicatorAnchor(first, null), first);
+    assert.equal(indicatorAnchor(null, null), null);
+});
+
+test('the installer draws its own layout hint', () => {
+    assert.ok(drawsOwnLayoutHint('io.github.stdenis1980.VilnaInstaller'));
+    assert.ok(drawsOwnLayoutHint('io.github.stdenis1980.VilnaInstaller.Confirm'));
+    assert.ok(!drawsOwnLayoutHint('org.gnome.Settings'));
+    assert.ok(!drawsOwnLayoutHint(null));
 });

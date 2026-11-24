@@ -850,3 +850,6 @@ msgstr "Новий розділ {n}"
 
 msgid "Password"
 msgstr "Пароль"
+
+msgid "Keyboard layout: {name}"
+msgstr "Розкладка клавіатури: {name}"
