@@ -141,6 +141,8 @@ def facts(lang, **change):
     """What a good model takes from Marta's email (step 3)."""
     out = {
         "title": "Marta",
+        "weekday": "Friday",
+        "day_of_month": 27,
         "date": "2026-11-27",
         "start_time": "15:00",
         "end_time": "",
@@ -262,7 +264,9 @@ def test_the_end_time_location_and_a_reply_to_address_are_used():
     [("27.11.2026", "15:00", ""), ("2026-11-27", "3 pm", ""), ("2026-02-30", "15:00", "")],
 )
 def test_a_day_or_time_gloxi_cannot_read_adds_no_event(date_, start, end):
-    mailbox, _, conv = flow("en", {"uid": 41}, facts("en", date=date_, start_time=start))
+    mailbox, _, conv = flow(
+        "en", {"uid": 41}, facts("en", date=date_, start_time=start, weekday="", day_of_month=0)
+    )
     answer = ask(conv, REQUESTS["en"][0])
     assert "create_event" not in [c["operation"] for c in mailbox.calls]
     assert mail_flow.SAY["en"]["no_time"] in answer
@@ -398,3 +402,29 @@ def test_a_model_that_is_not_running_is_said_as_for_any_message():
         ask(conv, REQUESTS["en"][0])
     assert [c["operation"] for c in mailbox.calls] == ["list_messages"]
     assert conv.history == []
+
+
+@pytest.mark.parametrize(
+    ("given", "weekday", "number", "fixed"),
+    [
+        # What Qwen3 4B wrote on KLX (2026-11-24) for "Friday 27 November".
+        ("2026-11-25", "Friday", 27, "2026-11-27"),
+        ("2026-11-26", "Friday", 27, "2026-11-27"),
+        ("2026-11-25", "Friday", 0, "2026-11-27"),
+        ("2026-11-25", "", 27, "2026-11-27"),
+        ("2026-11-27", "Friday", 27, "2026-11-27"),
+        ("2026-11-30", "Friday", 4, "2026-12-04"),
+        # Nothing near fits both: the model's date stays.
+        ("2026-11-25", "Friday", 3, "2026-11-25"),
+        ("2026-11-25", "", 0, "2026-11-25"),
+        ("", "Friday", 27, ""),
+    ],
+)
+def test_the_weekday_and_the_day_of_month_fix_the_date(given, weekday, number, fixed):
+    assert mail_flow._fixed_day(given, weekday, number) == fixed
+
+
+def test_a_wrong_date_with_the_right_weekday_still_makes_the_right_event():
+    mailbox, _, conv = flow("lt", {"uid": 41}, facts("lt", date="2026-11-25"))
+    ask(conv, REQUESTS["lt"][0])
+    assert mailbox.calls[2]["arguments"] == EVENT
