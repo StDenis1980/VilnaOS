@@ -22,14 +22,15 @@ export class DockLook {
         this._settings = settings;
         this._file = null;
         this._serial = 0;
-        this._settingsId = 0;
+        this._settingsIds = [];
         this._themeId = 0;
         this._theme = null;
     }
 
     enable() {
         Main.uiGroup.add_style_class_name(DOCK_CLASS);
-        this._settingsId = this._settings.connect('changed::dock-transparency', () => this._load());
+        this._settingsIds = ['dock-transparency', 'dock-icon-motion'].map(key =>
+            this._settings.connect(`changed::${key}`, () => this._load()));
         this._context = St.ThemeContext.get_for_stage(global.stage);
         // A new theme (a reload, or another Shell theme) drops the
         // stylesheets loaded into the old one. Loading a stylesheet emits
@@ -49,11 +50,12 @@ export class DockLook {
     }
 
     disable() {
-        if (this._settingsId)
-            this._settings.disconnect(this._settingsId);
+        for (const id of this._settingsIds ?? [])
+            this._settings.disconnect(id);
+        this._settingsIds = [];
         if (this._themeId)
             this._context.disconnect(this._themeId);
-        this._settingsId = this._themeId = 0;
+        this._themeId = 0;
         this._unload();
         this._context = null;
         this._theme = null;
@@ -74,7 +76,8 @@ export class DockLook {
         const file = Gio.File.new_for_path(GLib.build_filenamev([dir, `dock-${++this._serial}.css`]));
         try {
             GLib.mkdir_with_parents(dir, 0o700);
-            file.replace_contents(new TextEncoder().encode(dockStylesheet(this._settings.get_int('dock-transparency'))),
+            file.replace_contents(new TextEncoder().encode(dockStylesheet(this._settings.get_int('dock-transparency'),
+                {springy: this._settings.get_string('dock-icon-motion') === 'spring'})),
                 null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
             this._unload();
             this._theme = theme;

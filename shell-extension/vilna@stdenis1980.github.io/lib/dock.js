@@ -72,11 +72,15 @@ const SIDES = ['bottom', 'left', 'right', 'top'];
 
 const rgba = ([r, g, b], a) => `rgba(${r}, ${g}, ${b}, ${Math.round(a * 1000) / 1000})`;
 
-// The stylesheet dockLook.js loads. Its selectors carry .vilna-dock (put on
+// The stylesheet dockLook.js loads. springy: the icons move under the
+// pointer (dock-icon-motion = spring); then the tinted square behind the
+// icon under the pointer and the one with the focused window go, so that
+// nothing fights the motion; the running dots still say which app has
+// windows, and keyboard focus keeps the theme's own outline. Its selectors carry .vilna-dock (put on
 // Main.uiGroup with the scheme class) and the side class, so that they
 // outrank Dash to Dock's own (#dashtodockContainer.bottom #dash …) on
 // every side the dock can take.
-export function dockStylesheet(transparency) {
+export function dockStylesheet(transparency, {springy = false} = {}) {
     const a = glassAlpha(transparency);
     const rules = [];
     for (const [scheme, c] of Object.entries(SCHEMES)) {
@@ -91,7 +95,9 @@ export function dockStylesheet(transparency) {
                 `${dash} .dash-item-container .overview-tile.focused .overview-icon`,
                 `${dash} .dash-item-container .overview-tile:hover .overview-icon`,
                 `${dash} .dash-item-container .show-apps:hover .overview-icon`,
-            ].join(',\n') + ` {\n  background-color: ${rgba(c.hover, c.hover[3])};\n}`);
+                `${dash} .dash-item-container .show-apps:checked .overview-icon`,
+            ].join(',\n') + ` {\n  background-color: ${springy ? 'transparent' : rgba(c.hover, c.hover[3])};\n` +
+                `${springy ? '  border: none;\n  box-shadow: none;\n' : ''}}`);
         }
     }
     return `/* Made by the Vilna extension (lib/dock.js); do not edit. */\n${rules.join('\n\n')}\n`;

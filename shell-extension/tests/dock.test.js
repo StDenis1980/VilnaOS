@@ -82,3 +82,9 @@ test('the schema has the keys the dock code reads', () => {
     for (const key of ['dock-transparency', 'dock-icon-motion'])
         assert.match(schema, new RegExp(`<key name="${key}"`));
 });
+
+test('with springy icons the square under the pointer goes', () => {
+    const hoverRule = css => css.split('\n\n').find(r => r.includes('.vilna-dock.vilna-light #dashtodockContainer.bottom #dash .dash-item-container .overview-tile:hover'));
+    assert.match(hoverRule(dockStylesheet(8, {springy: true})), /background-color: transparent/);
+    assert.doesNotMatch(hoverRule(dockStylesheet(8)), /transparent/);
+});
