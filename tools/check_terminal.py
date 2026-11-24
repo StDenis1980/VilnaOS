@@ -132,6 +132,16 @@ def check() -> list[str]:
         errors.append("patterns-vilna does not require ptyxis")
     if re.search(r"^Requires:\s+gnome-console", pattern, re.M):
         errors.append("patterns-vilna still requires gnome-console")
+    term = sections.get("org.gnome.desktop.default-applications.terminal", {})
+    if term.get("exec", "").strip("'") != "ptyxis":
+        errors.append("org.gnome.desktop.default-applications.terminal: exec is not 'ptyxis'")
+    keys = sections.get("org.gnome.settings-daemon.plugins.media-keys", {})
+    if "'<Super>Return'" not in keys.get("terminal", ""):
+        errors.append("media-keys terminal does not include <Super>Return")
+    if any(".custom-keybindings." in name for name in sections):
+        # A custom keybinding sits at a path of a relocatable schema: an
+        # override of that path is silently ignored (VM test, Build12.26).
+        errors.append("a custom keybinding in the override is ignored; use media-keys terminal")
     if "kgx" in OVERRIDE.read_text(encoding="utf-8"):
         errors.append("30_Vilna.gschema.override still starts kgx (GNOME Console)")
     return errors
