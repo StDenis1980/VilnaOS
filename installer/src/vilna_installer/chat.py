@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The conversation window: chat with Gloxi on the left, the plan on the right.
+"""The conversation window: the plan on the left, chat with Gloxi on the right.
 
     vilna-installer-chat [--plan PATH] [--window] [--demo empty|windows]
 
@@ -83,7 +83,10 @@ CSS = """
 .vilna-seed.leaf { min-width: 12px; background-color: @vilna_orange; }
 .vilna-composer { padding: 6px 6px 6px 14px; border-radius: 999px;
     background-color: @card_bg_color; border: 1px solid alpha(@view_fg_color, 0.15); }
-.vilna-composer entry { background: none; box-shadow: none; }
+.vilna-composer entry { background: none; box-shadow: none; outline: none; }
+/* The rounded bar shows the focus itself, so the entry's square ring does not. */
+.vilna-composer:focus-within { border-color: @accent_color;
+    box-shadow: 0 0 0 1px @accent_color; }
 """
 
 
@@ -567,7 +570,8 @@ class ChatWindow(Adw.ApplicationWindow):
         if need == "wifi_password":
             title = _(conv.WIFI_PASSWORD).format(name=(plan.get("network") or {}).get("wifi"))
         elif need == "user_password":
-            title = _(conv.PASSWORD).format(name=user.get("username", ""))
+            username = user.get("username") or ""
+            title = _(conv.PASSWORD).format(name=username) if username else _(conv.PASSWORD_ALONE)
         elif need == "pin":
             title = _(conv.PIN)
         else:

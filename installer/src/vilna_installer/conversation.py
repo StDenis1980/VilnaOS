@@ -87,7 +87,7 @@ ENGLISH_NAMES = {
 # (ADR 0009); the tests fail without them.
 INTRO = (
     "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you "
-    "confirm the plan; you can see it on the right and change any item yourself."
+    "confirm the plan; you can see it on the left and change any item yourself."
 )
 FIRST_QUESTION = (
     "Which languages do you write in? I will add their keyboard layouts too, for example "
@@ -193,6 +193,7 @@ CONNECT = "Connect"
 CONNECTING = "Connecting…"
 CONNECT_FAILED = "Could not connect. Check the password and try again."
 PASSWORD = "Password for {name}"
+PASSWORD_ALONE = "Password"  # no user name yet: «Password for» alone reads cut off
 REPEAT = "Repeat the password"
 MISMATCH = "The passwords are not the same."
 SHORT = "At least 8 characters."
@@ -288,6 +289,7 @@ TEXTS = (
     CONNECTING,
     CONNECT_FAILED,
     PASSWORD,
+    PASSWORD_ALONE,
     REPEAT,
     MISMATCH,
     SHORT,
@@ -1096,7 +1098,7 @@ class Conversation:
                         said.append(self.texts(KEEP_KEY))
                     return "\n\n".join([*said, question])
                 note = MOVED_ON
-        # Out of rounds: say what was done, the plan on the right shows the rest.
+        # Out of rounds: say what was done, the plan on the left shows the rest.
         return reply.text.strip() or self.texts(MODEL_FAILED)
 
     def _window(self) -> list[dict[str, Any]]:

@@ -19,18 +19,26 @@ export function monitorAt(monitors, x, y) {
 }
 
 /**
- * Where the layout indicator goes: just below the text cursor, kept inside
- * the monitor; above the cursor when there is no room below.
+ * Where the layout indicator goes: right of the text cursor, on its line,
+ * so it never covers the next field below (VM test of Build12.19,
+ * 2026-11-24: below the cursor it lay over «Repeat the password»). When
+ * there is no room on the right it goes below the cursor, or above it at
+ * the bottom edge; always inside the monitor.
  */
 export function indicatorPosition(cursor, size, monitor, gap = 6) {
     const cx = finite(cursor?.x), cy = finite(cursor?.y);
+    const cw = Math.max(0, finite(cursor?.width));
     const ch = Math.max(0, finite(cursor?.height));
     const w = Math.max(0, finite(size?.width)), h = Math.max(0, finite(size?.height));
-    let x = cx, y = cy + ch + gap;
+    let x = cx + cw + gap, y = cy + (ch - h) / 2;
     if (monitor) {
         const right = monitor.x + monitor.width, bottom = monitor.y + monitor.height;
-        if (y + h > bottom)
-            y = cy - gap - h;
+        if (x + w > right) {
+            x = cx;
+            y = cy + ch + gap;
+            if (y + h > bottom)
+                y = cy - gap - h;
+        }
         x = Math.min(Math.max(x, monitor.x), right - w);
         y = Math.min(Math.max(y, monitor.y), bottom - h);
     }

@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Nov 24 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Fixes from the VM check of Build12.19: Gloxi's greeting says the
+  plan is on the left, where the steps panel is (it said «on the
+  right»); the password card without a user name yet reads «Password»,
+  not «Password for»; the rounded message bar shows the focus itself,
+  without the entry's square ring; the theme button on the welcome
+  screen is opaque, so the ornament's beads do not show through it.
+
+-------------------------------------------------------------------
 Fri Nov 20 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The conversation with Gloxi looks like Dmytro Sizmin's «Розмова

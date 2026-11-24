@@ -15,23 +15,26 @@ test('the monitor under a point', () => {
     assert.equal(monitorAt([], 0, 0), null);
 });
 
-test('the indicator sits below the cursor', () => {
+test('the indicator sits right of the cursor, on its line', () => {
     const cursor = {x: 500, y: 300, width: 1, height: 20};
-    assert.deepEqual(indicatorPosition(cursor, {width: 40, height: 24}, fhd), {x: 500, y: 326});
+    // Not below it: there it covered the next password field.
+    assert.deepEqual(indicatorPosition(cursor, {width: 40, height: 24}, fhd), {x: 507, y: 298});
 });
 
 test('the indicator stays on screen', () => {
     const size = {width: 40, height: 24};
-    // Bottom edge: it goes above the cursor.
-    assert.deepEqual(indicatorPosition({x: 10, y: 1070, width: 1, height: 8}, size, fhd), {x: 10, y: 1040});
-    // Right edge.
-    assert.deepEqual(indicatorPosition({x: 1910, y: 100, width: 1, height: 20}, size, fhd), {x: 1880, y: 126});
+    // Right edge: below the cursor instead.
+    assert.deepEqual(indicatorPosition({x: 1900, y: 100, width: 1, height: 20}, size, fhd), {x: 1880, y: 126});
+    // Right and bottom edges: above the cursor.
+    assert.deepEqual(indicatorPosition({x: 1900, y: 1070, width: 1, height: 8}, size, fhd), {x: 1880, y: 1040});
+    // Top edge.
+    assert.deepEqual(indicatorPosition({x: 10, y: 0, width: 1, height: 8}, size, fhd), {x: 17, y: 0});
 });
 
 test('junk cursor values do not throw', () => {
     const p = indicatorPosition({x: NaN, y: Infinity}, {width: -3}, fhd);
     assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y));
-    assert.deepEqual(indicatorPosition(null, null, null), {x: 0, y: 6});
+    assert.deepEqual(indicatorPosition(null, null, null), {x: 6, y: 0});
 });
 
 test('strip width: a sixth or a third, at least 320 px, at most half', () => {
