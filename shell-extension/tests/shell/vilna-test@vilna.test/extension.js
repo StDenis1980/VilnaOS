@@ -8,6 +8,7 @@ import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -322,10 +323,102 @@ async function windows() {
     const [mx, mw, mh] = [0, 1920, 1080];
     check('monitor is 1920x1080', [Main.layoutManager.primaryMonitor.width, Main.layoutManager.primaryMonitor.height], [mw, mh]);
     const top = workArea()[1];
-    settings.set_boolean('gloxi-dock', true);
+    await sidePanel(settings, [mx, mw, mh, top]);
+    findWindow(GLOXI).minimize();
     await sleep(800);
+    check('motion: minimise in 450 ms', lastEase(GLOXI), [450, Mode.EASE_IN_OUT_CUBIC]);
+    findWindow(GLOXI).unminimize();
+    await sleep(800);
+    check('motion: unminimise in 450 ms', lastEase(GLOXI), [450, Mode.EASE_IN_OUT_CUBIC]);
+    check('motion: shown window settled', [findWindow(GLOXI).get_compositor_private()?.opacity,
+        findWindow(GLOXI).get_compositor_private()?.scale_x], [255, 1]);
+    findWindow(GLOXI).delete(global.get_current_time());
+    await sleep(1500);
+    check('motion: close in 196 ms', lastEase(GLOXI), [196, Mode.EASE_IN_CUBIC]);
+}
+
+const theDock = () => Main.extensionManager.lookup(UUID)?.stateObj?._userParts
+    ?.find(p => p.constructor.name === 'Dock') ?? null;
+
+// A whole-screen picture for the design review, when VILNA_TEST_SHOTS names
+// a folder (tests/shell/run.sh passes it on).
+async function shot(name) {
+    const dir = GLib.getenv('VILNA_TEST_SHOTS');
+    if (!dir)
+        return;
+    await sleep(600);
+    const file = Gio.File.new_for_path(`${dir}/${name}.png`);
+    const stream = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
+    const shooter = new Shell.Screenshot();
+    await new Promise(resolve => shooter.screenshot(false, stream, (s, result) => {
+        try {
+            s.screenshot_finish(result);
+        } catch (e) {
+            console.warn(`vilna test: no screenshot: ${e.message}`);
+        }
+        stream.close(null);
+        resolve();
+    }));
+}
+
+// Stage B: the side panel the Shell draws in the strip, talking to gloxid.
+async function sidePanel(settings, [mx, mw, mh, top]) {
+    const seat = Clutter.get_default_backend().get_default_seat();
+    const keyboard = seat.create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
+    const pointer = seat.create_virtual_device(Clutter.InputDeviceType.POINTER_DEVICE);
+    const press = async (...keys) => {
+        for (const k of keys)
+            keyboard.notify_keyval(GLib.get_monotonic_time(), k, Clutter.KeyState.PRESSED);
+        for (const k of [...keys].reverse())
+            keyboard.notify_keyval(GLib.get_monotonic_time(), k, Clutter.KeyState.RELEASED);
+        await sleep(400);
+    };
+    const click = async actor => {
+        const [x, y] = actor.get_transformed_position();
+        const [w, h] = actor.get_transformed_size();
+        pointer.notify_absolute_motion(GLib.get_monotonic_time(), x + w / 2, y + h / 2);
+        await sleep(300);
+        pointer.notify_button(GLib.get_monotonic_time(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.PRESSED);
+        await sleep(100);
+        pointer.notify_button(GLib.get_monotonic_time(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.RELEASED);
+        await sleep(600);
+    };
+    const panelFocused = () => Boolean(theDock()?.panel?.contains(global.stage.get_key_focus()));
+    const dock = theDock();
+
+    settings.set_boolean('gloxi-dock', true);
+    await sleep(500);
+    check('side panel: closed until opened', [dockPanel(), workArea()[2]], [null, mw]);
+    const button = Main.panel.statusArea['vilna-gloxi-panel'];
+    check('side panel: a button in the top bar with a name', Boolean(button?.accessible_name), true);
+
+    findWindow(OTHER).activate(global.get_current_time());
+    await sleep(300);
+    await press(Clutter.KEY_Super_L, Clutter.KEY_g);
+    await sleep(600);
+    check('side panel: Super+G opens it', settings.get_boolean('gloxi-panel-open'), true);
     check('strip: work area without it', workArea(), [mx, top, 1600, mh - top]);
     check('strip: panel below the top bar', dockPanel(), [1600, top, 320, mh - top]);
+    const view = dock.view;
+    check('side panel: said hello to gloxid as the panel', panelRequests[0]?.params?.client ?? null, 'panel');
+    check('side panel: the kept conversation, only what was said',
+        await waitFor(() => view.chat.lines.length === 2, 3000) && view.chat.lines.map(l => `${l.kind}: ${l.text}`),
+        ['user: Що сьогодні?', 'gloxi: О 15:00 зустріч з Дмитром.']);
+    check('side panel: ready to type', panelFocused(), true);
+    check('side panel: the field\'s name starts with what it shows',
+        Boolean(view.entry.accessible_name) && view.entry.hint_text.startsWith(view.entry.accessible_name), true);
+
+    view.entry.set_text('Увімкни темну тему');
+    await press(Clutter.KEY_Return);
+    check('side panel: Enter sends, the answer streams in',
+        await waitFor(() => view.chat.lines.length === 5 && !view.chat.busy, 3000) &&
+            view.chat.lines.slice(2).map(l => `${l.kind}: ${l.text}`),
+        ['user: Увімкни темну тему', 'gloxi: Готово: темну тему ввімкнено.', 'action: Settings: dark theme']);
+    check('side panel: the field is empty again', view.entry.get_text(), '');
+    check('side panel: the owl is ready again, and says so', [view.chat.state, Boolean(view.actor.accessible_description)],
+        ['idle', true]);
+    check('side panel: the owl picture is there', view._owl.gicon?.get_file?.().query_exists(null) ?? false, true);
+
     const other = findWindow(OTHER);
     if (Meta.MaximizeFlags)
         other.maximize(Meta.MaximizeFlags.BOTH); // GNOME 46-48
@@ -337,24 +430,42 @@ async function windows() {
     Main.notify('Vilna test', 'Banner');
     await sleep(800);
     check('strip: banners laid out left of it', Main.messageTray.width, 1600);
+    await shot('gloxi-side-panel-light');
+    const iface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
+    iface.set_string('color-scheme', 'prefer-dark');
+    await shot('gloxi-side-panel-dark');
+    iface.reset('color-scheme');
+
     settings.set_string('gloxi-dock-size', 'one-third');
     await sleep(800);
     check('strip: one third', dockPanel(), [1280, top, 640, mh - top]);
-    findWindow(GLOXI).minimize();
+    settings.set_string('gloxi-dock-size', 'one-sixth');
+    await sleep(500);
+
+    view.focus();
+    await sleep(200);
+    await press(Clutter.KEY_Escape);
+    await sleep(500);
+    check('side panel: Escape closes it and gives the space back',
+        [settings.get_boolean('gloxi-panel-open'), workArea()[2]], [false, mw]);
+    check('side panel: no focus left in it', panelFocused(), false);
+    check('side panel: the strip is gone after sliding out', await waitFor(() => dockPanel() === null, 2000), true);
+
+    await setShellProperty('GloxiPanelOpen', new GLib.Variant('b', true));
     await sleep(800);
-    check('motion: minimise in 450 ms', lastEase(GLOXI), [450, Mode.EASE_IN_OUT_CUBIC]);
-    check('strip: released while Gloxi is minimised', dockPanel(), null);
-    findWindow(GLOXI).unminimize();
-    await sleep(800);
-    check('motion: unminimise in 450 ms', lastEase(GLOXI), [450, Mode.EASE_IN_OUT_CUBIC]);
-    check('motion: shown window settled', [findWindow(GLOXI).get_compositor_private()?.opacity,
-        findWindow(GLOXI).get_compositor_private()?.scale_x], [255, 1]);
-    check('strip: back when Gloxi is shown', Boolean(dockPanel()), true);
-    findWindow(GLOXI).delete(global.get_current_time());
-    await sleep(1500);
-    check('motion: close in 196 ms', lastEase(GLOXI), [196, Mode.EASE_IN_CUBIC]);
-    check('strip: released when Gloxi closes', [dockPanel(), workArea()[2]], [null, mw]);
+    check('side panel: Gloxi opens it over D-Bus', Boolean(dockPanel()), true);
+    await click(button);
+    check('side panel: the top-bar button closes it', settings.get_boolean('gloxi-panel-open'), false);
+    await click(button);
+    check('side panel: and opens it', settings.get_boolean('gloxi-panel-open'), true);
+    await sleep(300);
+    check('side panel: a new panel says hello again', panelRequests.filter(r => r.method === 'hello').length >= 2, true);
+
     settings.set_boolean('gloxi-dock', false);
+    await sleep(800);
+    check('side panel: off, no strip and no button',
+        [dockPanel(), workArea()[2], Boolean(Main.panel.statusArea['vilna-gloxi-panel'])], [null, mw, false]);
+    settings.reset('gloxi-panel-open');
 }
 
 const theWidgets = () => Main.extensionManager.lookup(UUID)?.stateObj?._userParts
@@ -623,10 +734,35 @@ async function run() {
     await skyMotion();
 }
 
-// A stand-in for gloxid's text.translate (gloxi/docs/service-protocol.md)
-// on GLOXI_SERVICE_SOCKET: it answers "[uk] " + the text and keeps the
-// requests, so the checks see what the weather card asked.
+// A stand-in for gloxid (gloxi/docs/service-protocol.md) on
+// GLOXI_SERVICE_SOCKET. text.translate answers "[uk] " + the text and keeps
+// the requests, so the checks see what the weather card asked. The side
+// panel's hello gets a short history, and chat.submit an answer streamed
+// as events, as gloxid sends them.
 const gloxiRequests = [];
+const panelRequests = [];
+const PANEL_HISTORY = [{role: 'user', text: 'Що сьогодні?'}, {role: 'tool', text: 'never shown'},
+    {role: 'assistant', text: 'О 15:00 зустріч з Дмитром.'}];
+function fakeAnswer(request) {
+    if (request.method === 'text.translate') {
+        gloxiRequests.push(request);
+        // An event first, as a busy gloxid may send: it is not the answer.
+        return [{event: 'busy', busy: false},
+            {id: request.id, result: {text: `[${request.params.language}] ${request.params.text}`}}];
+    }
+    panelRequests.push(request);
+    if (request.method === 'hello')
+        return [{id: request.id, result: {protocol: 2, version: 'test', state: {busy: false}, history: PANEL_HISTORY}}];
+    if (request.method === 'chat.submit') {
+        return [{id: request.id, result: {accepted: true}}, {event: 'busy', busy: true},
+            {event: 'user_message', text: request.params.text}, {event: 'start_answer', label: 'On this computer'},
+            {event: 'append_answer', piece: 'Готово: '}, {event: 'append_answer', piece: 'темну тему ввімкнено.'},
+            {event: 'action', card: {status: 'done', program: 'Settings', operation: 'dark theme'}},
+            {event: 'finish_answer'}, {event: 'busy', busy: false}];
+    }
+    return [{id: request.id, error: {code: 'unknown_method', message: request.method}}];
+}
+
 function fakeGloxid() {
     const path = GLib.getenv('GLOXI_SERVICE_SOCKET');
     if (!path)
@@ -635,20 +771,20 @@ function fakeGloxid() {
     service.add_address(Gio.UnixSocketAddress.new(path), Gio.SocketType.STREAM, Gio.SocketProtocol.DEFAULT, null);
     service.connect('incoming', (_s, conn) => {
         const input = new Gio.DataInputStream({base_stream: conn.get_input_stream()});
-        input.read_line_async(GLib.PRIORITY_DEFAULT, null, (_i, result) => {
+        const next = () => input.read_line_async(GLib.PRIORITY_DEFAULT, null, (_i, result) => {
             try {
                 const [line] = input.read_line_finish_utf8(result);
-                const request = JSON.parse(line);
-                gloxiRequests.push(request);
-                // An event first, as a busy gloxid may send: it is not the answer.
-                const lines = [{event: 'busy', busy: false},
-                    {id: request.id, result: {text: `[${request.params.language}] ${request.params.text}`}}];
+                if (line === null)
+                    return;
+                const lines = fakeAnswer(JSON.parse(line));
                 conn.get_output_stream().write_all(new TextEncoder().encode(
                     lines.map(l => `${JSON.stringify(l)}\n`).join('')), null);
+                next();
             } catch (e) {
                 console.warn(`vilna fake gloxid: ${e.message}`);
             }
         });
+        next();
         return true;
     });
     service.start();

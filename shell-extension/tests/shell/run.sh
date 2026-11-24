@@ -36,6 +36,8 @@ if [[ $mode == gdm ]]; then
 fi
 
 export HOME=$work/home GSETTINGS_BACKEND=keyfile VILNA_TEST_OUT=$work/result.txt
+# Pictures of the Gloxi side panel, when VILNA_TEST_SHOTS names a folder.
+export VILNA_TEST_SHOTS=${VILNA_TEST_SHOTS:-}
 export VILNA_TEST_MODE=$mode VILNA_TEST_HERE=$here
 # Widgets: the weather comes from this file instead of Open-Meteo, and the
 # clock is in Madrid, so the default place is that capital.

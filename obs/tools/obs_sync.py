@@ -159,7 +159,8 @@ TARBALLS: dict[str, Tarball] = {
     "gnome-shell-extension-vilna": Tarball(
         "shell-extension",
         extension_version("shell-extension/vilna@stdenis1980.github.io"),
-        extra=(("LICENSE", "LICENSE"),),
+        # The owl of the Gloxi panel is Dmytro Sizmin's (CC-BY-SA-4.0, LICENSING.md).
+        extra=(("LICENSE", "LICENSE"), ("LICENSES/CC-BY-SA-4.0.txt", "LICENSE.CC-BY-SA-4.0")),
     ),
     "vilna-icon-theme": Tarball(
         "docs/design/icons/system",
