@@ -44,10 +44,14 @@ logo='/usr/share/pixmaps/distribution-logos/vilna-logo-login.svg'
 # in the person's session, not on the login screen.
 [org.gnome.shell]
 enabled-extensions=['vilna@stdenis1980.github.io', 'dash-to-dock@micxgx.gmail.com']
-favorite-apps=['io.github.stdenis1980.Gloxi.desktop', 'org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Software.desktop']
+favorite-apps=['io.github.stdenis1980.Gloxi.desktop', 'org.mozilla.firefox.desktop', 'org.gnome.Nautilus.desktop', 'io.github.stdenis1980.ibercorreo.desktop', 'io.github.stdenis1980.tintatexto.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Software.desktop']
 
 # The dock (Dash to Dock, gnome-shell-extension-dash-to-dock): at the
-# bottom, 48 px icons, Gloxi first (favorite-apps above). It stays on an
+# bottom, 48 px icons, pinned Gloxi, Firefox, Files, Tinta Correo, Tinta
+# Texto, the terminal and Software (favorite-apps above; one that is not
+# installed is skipped). The Vilna extension's Dock page changes the
+# place, the size (32-80 px), the hiding, the transparency of the glass
+# (8 % by default, like the terminal) and the springy icons. It stays on an
 # empty desktop and slides away when the focused app's window covers it.
 # Its look comes from the Vilna extension's stylesheet, so upstream's
 # theme and colour options stay off. A click shows the app, a second

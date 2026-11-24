@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // (з) Preferences of the Vilna extension: the desktop widgets, the
-// place for the weather and the sounds (theme, and each sound on or off).
+// place for the weather, the sounds (theme, and each sound on or off) and
+// the dock (place, icon size, hiding, transparency, springy icons).
 // The weather is for the capital of
 // the system's country and nothing about the person's location leaves
 // the computer. To change it the person either types a town (only that
@@ -21,6 +22,11 @@ import {
 } from './lib/widgets.js';
 import {DISCLAIMER, SITE_URL, alertText} from './lib/alerts.js';
 import {SOUND_EVENTS, SOUND_THEMES, soundText} from './lib/soundTheme.js';
+import {
+    HIDE_MODES, ICON_SIZE_MAX, ICON_SIZE_MIN, ICON_SIZE_STEP, POSITIONS, clampIconSize, dockText, hideKeys, hideMode,
+} from './lib/dock.js';
+
+const DOCK_SCHEMA = 'org.gnome.shell.extensions.dash-to-dock';
 
 const APP_ID = 'org.gnome.Shell.Extensions';
 
@@ -204,6 +210,119 @@ export default class VilnaPreferences extends ExtensionPreferences {
         page.add(alerts);
 
         window.add(this._soundsPage(settings));
+        window.add(this._dockPage(settings));
+    }
+
+    // The dock (lib/dock.js): its place, icon size and hiding are Dash to
+    // Dock's own keys; the transparency and the springy icons are Vilna's.
+    _dockPage(settings) {
+        const d = dockText(GLib.get_language_names());
+        const page = new Adw.PreferencesPage({title: d.page, icon_name: 'user-desktop-symbolic'});
+        const source = Gio.SettingsSchemaSource.get_default();
+        const dock = source?.lookup(DOCK_SCHEMA, true) ? new Gio.Settings({schema_id: DOCK_SCHEMA}) : null;
+        const ids = [];
+        const timeouts = new Set();
+        page.connect('destroy', () => {
+            ids.forEach(([object, id]) => object.disconnect(id));
+            timeouts.forEach(id => GLib.source_remove(id));
+        });
+
+        // A slider in a row, named after the row for screen readers. The
+        // value is written a moment after the last move, so that the Shell
+        // does not rebuild the dock at every step.
+        const sliderRow = (title, subtitle, min, max, step, get, set, unit) => {
+            const row = new Adw.ActionRow({title, subtitle});
+            const scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, min, max, step);
+            scale.set({hexpand: true, width_request: 220, valign: Gtk.Align.CENTER, draw_value: true, digits: 0});
+            scale.set_format_value_func((_s, value) => `${Math.round(value)}${unit}`);
+            scale.update_property([Gtk.AccessibleProperty.LABEL], [title]);
+            for (let v = min; v <= max; v += (max - min) / 4)
+                scale.add_mark(Math.round(v), Gtk.PositionType.BOTTOM, null);
+            scale.set_value(get());
+            let pending = 0;
+            scale.connect('value-changed', () => {
+                if (pending)
+                    GLib.source_remove(pending);
+                timeouts.delete(pending);
+                pending = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 150, () => {
+                    timeouts.delete(pending);
+                    pending = 0;
+                    const value = Math.round(scale.get_value() / step) * step;
+                    if (value !== get())
+                        set(value);
+                    return GLib.SOURCE_REMOVE;
+                });
+                timeouts.add(pending);
+            });
+            row.add_suffix(scale);
+            row.activatable_widget = scale;
+            return [row, scale];
+        };
+
+        const look = new Adw.PreferencesGroup({title: d.groupLook});
+        const [transparencyRow, transparency] = sliderRow(d.transparency, d.transparencyHint, 0, 100, 1,
+            () => settings.get_int('dock-transparency'), v => settings.set_int('dock-transparency', v), ' %');
+        ids.push([settings, settings.connect('changed::dock-transparency',
+            () => transparency.set_value(settings.get_int('dock-transparency')))]);
+        look.add(transparencyRow);
+        if (dock) {
+            const [sizeRow, size] = sliderRow(d.size, d.sizeHint, ICON_SIZE_MIN, ICON_SIZE_MAX, ICON_SIZE_STEP,
+                () => clampIconSize(dock.get_int('dash-max-icon-size')),
+                v => dock.set_int('dash-max-icon-size', clampIconSize(v)), ' px');
+            ids.push([dock, dock.connect('changed::dash-max-icon-size',
+                () => size.set_value(clampIconSize(dock.get_int('dash-max-icon-size'))))]);
+            look.add(sizeRow);
+        }
+        const motion = new Adw.SwitchRow({title: d.motion, subtitle: d.motionHint});
+        motion.active = settings.get_string('dock-icon-motion') === 'spring';
+        motion.connect('notify::active', () => {
+            const value = motion.active ? 'spring' : 'off';
+            if (settings.get_string('dock-icon-motion') !== value)
+                settings.set_string('dock-icon-motion', value);
+        });
+        ids.push([settings, settings.connect('changed::dock-icon-motion',
+            () => (motion.active = settings.get_string('dock-icon-motion') === 'spring'))]);
+        look.add(motion);
+        page.add(look);
+
+        const place = new Adw.PreferencesGroup({title: d.groupPlace, description: dock ? '' : d.missing});
+        place.sensitive = Boolean(dock);
+        const position = new Adw.ComboRow({title: d.position, model: Gtk.StringList.new(POSITIONS.map(p => d.positions[p]))});
+        const hide = new Adw.ComboRow({title: d.hide, model: Gtk.StringList.new(HIDE_MODES.map(m => d.hides[m]))});
+        if (dock) {
+            const showPosition = () => {
+                const i = POSITIONS.indexOf(dock.get_string('dock-position'));
+                position.selected = i < 0 ? 0 : i;
+            };
+            const showHide = () => {
+                hide.selected = HIDE_MODES.indexOf(hideMode({
+                    dockFixed: dock.get_boolean('dock-fixed'), intellihide: dock.get_boolean('intellihide'),
+                }));
+            };
+            showPosition();
+            showHide();
+            position.connect('notify::selected', () => {
+                const value = POSITIONS[position.selected];
+                if (value && value !== dock.get_string('dock-position'))
+                    dock.set_string('dock-position', value);
+            });
+            hide.connect('notify::selected', () => {
+                const mode = HIDE_MODES[hide.selected];
+                if (!mode || mode === hideMode({
+                    dockFixed: dock.get_boolean('dock-fixed'), intellihide: dock.get_boolean('intellihide'),
+                }))
+                    return;
+                for (const [key, value] of Object.entries(hideKeys(mode)))
+                    dock.set_boolean(key, value);
+            });
+            ids.push([dock, dock.connect('changed::dock-position', showPosition)]);
+            for (const key of ['dock-fixed', 'intellihide'])
+                ids.push([dock, dock.connect(`changed::${key}`, showHide)]);
+        }
+        place.add(position);
+        place.add(hide);
+        page.add(place);
+        return page;
     }
 
     // Sounds (sounds.js, lib/soundTheme.js): the theme, all event sounds on

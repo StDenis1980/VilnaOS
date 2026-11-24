@@ -206,6 +206,15 @@ export class Widgets {
         this._syncBackup();
 
         this._monitorsId = Main.layoutManager.connect('monitors-changed', () => this._place());
+        // A dock on the left (dock-position LEFT) would cover the column:
+        // follow the docks Dash to Dock builds and keep to the right of one.
+        this._docks = new Map();
+        this._dockIds = [
+            Main.uiGroup.connect('child-added', (_g, actor) => this._watchDock(actor)),
+            Main.uiGroup.connect('child-removed', (_g, actor) => this._forgetDock(actor)),
+        ];
+        for (const actor of Main.uiGroup.get_children())
+            this._watchDock(actor);
         this._overviewIds = [
             Main.overview.connect('showing', () => (this._root.visible = false)),
             Main.overview.connect('hidden', () => (this._root.visible = true)),
@@ -226,6 +235,11 @@ export class Widgets {
         this._session?.abort();
         this._session = null;
         Main.layoutManager.disconnect(this._monitorsId);
+        this._dockIds.forEach(id => Main.uiGroup.disconnect(id));
+        this._dockIds = [];
+        for (const [dock, ids] of this._docks)
+            ids.forEach(id => dock.disconnect(id));
+        this._docks.clear();
         for (const id of this._overviewIds)
             Main.overview.disconnect(id);
         this._wallClock.disconnect(this._clockIds[0]);
@@ -248,13 +262,43 @@ export class Widgets {
         this._root = null;
     }
 
+    _watchDock(actor) {
+        if (actor?.name !== 'dashtodockContainer' || this._docks.has(actor))
+            return;
+        this._docks.set(actor, [
+            actor.connect('notify::width', () => this._place()),
+            actor.connect('notify::x', () => this._place()),
+            actor.connect('notify::style-class', () => this._place()),
+        ]);
+        this._place();
+    }
+
+    _forgetDock(actor) {
+        const ids = this._docks?.get(actor);
+        if (!ids)
+            return;
+        ids.forEach(id => actor.disconnect(id));
+        this._docks.delete(actor);
+        this._place();
+    }
+
+    // Width of a dock on the left edge of the monitor, or 0.
+    _leftDock(monitor) {
+        let width = 0;
+        for (const dock of this._docks?.keys() ?? []) {
+            if (dock.has_style_class_name('left') && dock.x >= monitor.x && dock.x < monitor.x + monitor.width / 2)
+                width = Math.max(width, dock.x - monitor.x + dock.width);
+        }
+        return width;
+    }
+
     _place() {
         const monitor = Main.layoutManager.primaryMonitor;
         if (!monitor || !this._root)
             return;
         // New monitors bring new wallpapers; stay above them.
         this._root.get_parent()?.set_child_above_sibling(this._root, null);
-        this._root.set_position(monitor.x + MARGIN, monitor.y + Main.panel.height + MARGIN);
+        this._root.set_position(monitor.x + this._leftDock(monitor) + MARGIN, monitor.y + Main.panel.height + MARGIN);
     }
 
     _tick() {

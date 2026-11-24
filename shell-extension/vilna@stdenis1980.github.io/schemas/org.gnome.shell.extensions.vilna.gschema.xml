@@ -19,6 +19,11 @@
     <value nick="gnome" value="2"/>
   </enum>
 
+  <enum id="org.gnome.shell.extensions.vilna.DockIconMotion">
+    <value nick="spring" value="0"/>
+    <value nick="off" value="1"/>
+  </enum>
+
   <schema id="org.gnome.shell.extensions.vilna" path="/org/gnome/shell/extensions/vilna/">
     <key name="password-latin-layout" type="b">
       <default>true</default>
@@ -73,6 +78,17 @@
       <default>true</default>
       <summary>Rubber windows while dragging</summary>
       <description>A dragged window bends a little and springs back when let go. Only with the vilna window motion and with animations on.</description>
+    </key>
+    <key name="dock-transparency" type="i">
+      <range min="0" max="100"/>
+      <default>8</default>
+      <summary>Transparency of the dock</summary>
+      <description>How much of the desktop shows through the glass of the dock, in percent: 0 solid, 100 only the icons. The default matches the terminal's 92 % opacity.</description>
+    </key>
+    <key name="dock-icon-motion" enum="org.gnome.shell.extensions.vilna.DockIconMotion">
+      <default>'spring'</default>
+      <summary>How dock icons move</summary>
+      <description>spring: an icon grows a little under the pointer, sinks when pressed and springs back, breathes while its app starts, and the others sway while one is dragged. off: icons keep still. Nothing moves with animations off in Settings or with the reduced window motion.</description>
     </key>
     <key name="widgets" type="b">
       <default>true</default>
