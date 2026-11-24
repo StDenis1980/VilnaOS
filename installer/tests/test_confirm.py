@@ -373,3 +373,39 @@ def test_the_first_initrd_can_read_a_virtio_keyboard():
     assert dracut[-1].remove
     build = next(i for i, s in enumerate(todo) if "mkinitrd" in s.argv)
     assert todo.index(dracut[0]) < build < todo.index(dracut[-1])
+
+
+def test_the_credentials_go_only_once_the_tpm_has_sealed():
+    # sdbootutil-enroll ended with success with another TPM, sealed nothing,
+    # and the credentials went (VM test of Build12.19, 24.11.2026).
+    todo = encryption.steps(
+        "tpm2",
+        crypt_part="/dev/vda2",
+        crypt_uuid="0b0e8c5a-1111-4222-8333-944455556666",
+        root_uuid="7c7c7c7c-1111-4222-8333-944455556666",
+        root="/mnt",
+        key_file=Path("/run/k"),
+    )
+    dropin = next(s for s in todo if s.path == encryption.ENROLL_DROPIN).text
+    posts = [line for line in dropin.splitlines() if line.startswith("ExecStartPost=")]
+    assert len(posts) == 2
+    check, remove = posts
+    assert "/dev/disk/by-uuid/0b0e8c5a-1111-4222-8333-944455556666" in check
+    assert "grep -q enrollment-key" in check and "exit 1" in check
+    assert remove.startswith("ExecStartPost=/usr/bin/rm -f ")
+
+
+def test_the_seal_check_fails_while_the_enrollment_key_is_there(tmp_path):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    command = encryption.not_sealed_check("0b0e8c5a-1111-4222-8333-944455556666")
+    inner = command.split("'", 1)[1].rsplit("'", 1)[0]
+    for tokens, code in (('{"tokens":{"0":{"type":"enrollment-key"}}}', 1),
+                         ('{"tokens":{"0":{"type":"systemd-tpm2"}}}', 0)):  # fmt: skip
+        fake = bin_dir / "cryptsetup"
+        fake.write_text(f"#!/bin/sh\necho '{tokens}'\n")
+        fake.chmod(0o755)
+        script = inner.replace("/usr/sbin/cryptsetup", str(fake)).replace("/usr/bin/grep", "grep")
+        assert subprocess.run(["sh", "-c", script], capture_output=True).returncode == code
+    with pytest.raises(ValueError):
+        encryption.not_sealed_check("$(rm -rf /)")

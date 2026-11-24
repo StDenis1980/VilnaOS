@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 24 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- TPM2 first boot: keep the enrollment credentials and fail
+  sdbootutil-enroll.service while the disk still has the enrollment
+  key. With another TPM the service skipped, ended with success and
+  the credentials went, so nothing was sealed and nobody saw it.
+
+-------------------------------------------------------------------
 Fri Nov 20 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The conversation with Gloxi looks like Dmytro Sizmin's «Розмова
