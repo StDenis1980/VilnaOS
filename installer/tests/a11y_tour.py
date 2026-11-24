@@ -114,7 +114,7 @@ def main() -> int:
         win.next.grab_focus()  # where the focus is after «Next»
         win.go(key, strict=False)
         spin(0.8)
-        record(f"wizard:{key}", win, tab=key in ("languages", "network"))
+        record(f"wizard:{key}", win, tab=key in ("languages", "network", "encryption"))
     w = win.wizard
     w.set_disk(w.disks()[0]["id"], "manual")
     editor = wizard_window.PartitionEditor(w, win._, lambda: None)

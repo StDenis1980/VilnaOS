@@ -167,6 +167,18 @@ def test_wifi_networks_are_in_the_tab_order(screens):
     assert "DemoHome" in order and "Without a network" in order
 
 
+def test_every_way_of_encryption_is_in_the_tab_order(screens):
+    """With one chosen in advance, Tab skipped the other three (VM, Build12.19)."""
+    order = [t and t["name"] for t in screens["wizard:encryption"]["tabs"]]
+    for way in (
+        "Encrypted, with a recovery key",
+        "Encrypted, with a PIN at every start",
+        "Encrypted with a passphrase",
+        "Not encrypted",
+    ):
+        assert way in order, way
+
+
 def test_the_summary_reads_the_value_of_each_line(screens):
     lines = [n for n in nodes(screens["wizard:summary"], "list item") if n["description"]]
     assert any(n["name"] == "Languages and keyboard" for n in lines)
