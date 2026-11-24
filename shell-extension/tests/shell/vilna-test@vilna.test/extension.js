@@ -385,7 +385,10 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
         pointer.notify_button(GLib.get_monotonic_time(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.RELEASED);
         await sleep(600);
     };
-    const panelFocused = () => Boolean(theDock()?.panel?.contains(global.stage.get_key_focus()));
+    const panelFocused = () => {
+        const focus = global.stage.get_key_focus();
+        return Boolean(focus && theDock()?.panel?.contains(focus));
+    };
     const dock = theDock();
 
     settings.set_boolean('gloxi-dock', true);
@@ -459,6 +462,16 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
         Main.messageTray._notificationQueue?.includes(reminder) ?? false], [true, false, false]);
     check('side panel: it stays in the notification list', gloxiSource.notifications.includes(reminder), true);
     check('side panel: a screen reader hears it instead of the banner', heard.at(-1)?.[0], 'Нагадування: Зустріч о 15:00');
+    // The same with the focus in a window, not in the panel (Build12.26:
+    // nothing was read then, and the panel stopped reading gloxid).
+    global.stage.set_key_focus(null);
+    findWindow(OTHER).activate(global.get_current_time());
+    await sleep(300);
+    const away = new MessageTray.Notification({source: gloxiSource, title: 'Нагадування', body: 'Обід о 13:00'});
+    gloxiSource.addNotification(away);
+    await sleep(300);
+    check('side panel: focus in a window, a Gloxi notification is still read, and no banner',
+        [panelFocused(), heard.at(-1)?.[0], away.acknowledged], [false, 'Нагадування: Обід о 13:00', true]);
     listAccessible.disconnect(hearing);
 
     settings.set_string('gloxi-dock-size', 'one-third');
