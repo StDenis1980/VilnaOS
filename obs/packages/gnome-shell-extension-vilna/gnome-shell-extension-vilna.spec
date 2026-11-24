@@ -12,7 +12,8 @@ Name:           gnome-shell-extension-vilna
 Version:        0.1
 Release:        0
 Summary:        Vilna integration for GNOME Shell
-License:        GPL-3.0-or-later
+# The owl pictures of the Gloxi panel (owl/) are Dmytro Sizmin's, CC-BY-SA-4.0.
+License:        GPL-3.0-or-later AND CC-BY-SA-4.0
 URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  glib2-tools
@@ -24,8 +25,9 @@ The GNOME Shell extension of Vilna OS. In password fields (login and lock
 screens, Wi-Fi, encrypted disks, administrator prompts and GTK password
 entries) it switches to a Latin keyboard layout, shows which layout is on
 and switches back afterwards. It keeps the Gloxi assistant above other
-windows, and the Herkos confirmation dialog always. It can reserve a strip
-of the screen for the Gloxi panel (experimental, off by default). It draws
+windows, and the Herkos confirmation dialog always. It can show Gloxi as a
+side panel at the right edge of the screen, in a strip kept free of other
+windows (experimental, off by default). It draws
 the dock (Dash to Dock) in the Vilna colours, light or dark with the style,
 and moves windows (open, close, minimise, drag) with the Vilna motion.
 Desktop widgets show the clock, Gloxi, today's events, the weather and
@@ -38,9 +40,10 @@ the state of backups.
 
 %install
 dest=%{buildroot}%{_datadir}/gnome-shell/extensions/%{uuid}
-install -d "$dest/lib"
+install -d "$dest/lib" "$dest/owl"
 install -m 0644 %{uuid}/metadata.json %{uuid}/stylesheet.css %{uuid}/*.js "$dest/"
 install -m 0644 %{uuid}/lib/*.js "$dest/lib/"
+install -m 0644 %{uuid}/owl/*.svg %{uuid}/owl/README.md "$dest/owl/"
 # System-wide schema: compiled by the glib2 file trigger, found by
 # Extension.getSettings() when the extension has no schemas/ folder.
 install -D -m 0644 %{uuid}/schemas/org.gnome.shell.extensions.vilna.gschema.xml \
@@ -50,7 +53,7 @@ install -D -m 0644 %{uuid}/schemas/org.gnome.shell.extensions.vilna.gschema.xml 
 glib-compile-schemas --strict --dry-run %{uuid}/schemas
 
 %files
-%license LICENSE
+%license LICENSE LICENSE.CC-BY-SA-4.0
 %doc README.md
 # OBS fails a package whose directories no package owns; gnome-shell
 # owns them only at runtime, so own them here as other extensions do.

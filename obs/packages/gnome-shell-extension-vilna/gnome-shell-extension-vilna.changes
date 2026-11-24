@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
-Tue Nov 24 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Tue Nov 24 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
-- 0.9: the dock page (prefs.js, lib/dock.js): place, icon size
+- 0.10: the dock page (prefs.js, lib/dock.js): place, icon size
   32-80 px and hiding (Dash to Dock's own keys), transparency of the
   glass 0-100 % (new key dock-transparency, 8 % by default) and springy
   icons (new key dock-icon-motion): an icon grows under the pointer,
@@ -9,6 +9,19 @@ Tue Nov 24 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   and the others sway while one is dragged (dockMotion.js). The glass
   is now styled on every side of the screen (dockLook.js), and the
   widgets keep to the right of a dock on the left. In the ten
+  languages of Vilna.
+
+-------------------------------------------------------------------
+Tue Nov 24 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.9: the Gloxi side panel (stage B of the Gloxi window, gloxiPanel.js,
+  lib/gloxiPanel.js): the Shell draws Gloxi in the strip at the right
+  edge, as a client of gloxid next to the Gloxi window: the owl's state,
+  the conversation and its history, a field to write. Opened and closed
+  by a button in the top bar, Super+G (new key gloxi-panel-key), Escape
+  and Gloxi over D-Bus (GloxiPanelOpen, interface version 3); kept open
+  or closed across logins (gloxi-panel-open). Still off by default
+  (gloxi-dock). Owl pictures by Dmytro Sizmin, CC-BY-SA-4.0. In the ten
   languages of Vilna.
 
 -------------------------------------------------------------------

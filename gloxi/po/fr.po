@@ -953,6 +953,10 @@ msgid "Gloxi sees only the folders you choose here, and every action in them goe
 msgstr "Gloxi ne voit que les dossiers que vous choisissez ici, et chaque action dedans passe par Herkos, qui vous demande d’abord."
 
 #: src/gloxi/gui/window.py
+msgid "Gloxi stays at the right edge; windows make room. Super+G opens and closes it"
+msgstr "Gloxi reste au bord droit ; les fenêtres lui laissent la place. Super+G l’ouvre et le ferme"
+
+#: src/gloxi/gui/window.py
 msgid "Herkos checks Gloxi's next actions more strictly."
 msgstr "Herkos vérifiera plus strictement les prochaines actions de Gloxi."
 
@@ -1065,6 +1069,10 @@ msgstr "Afficher Gloxi et parler d’un VPN"
 #: src/gloxi/gui/window.py
 msgid "Show Gloxi, or hide it if it is in front"
 msgstr "Afficher Gloxi, ou le masquer s’il est au premier plan"
+
+#: src/gloxi/gui/window.py
+msgid "Side panel of the desktop"
+msgstr "Panneau latéral du bureau"
 
 #: src/gloxi/gui/window.py
 msgid "Size"

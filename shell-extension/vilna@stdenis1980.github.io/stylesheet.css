@@ -22,10 +22,138 @@
   color: #f5c24a;
 }
 
-/* The strip reserved for the Gloxi panel (stage B scaffold). */
+/* The Gloxi side panel (stage B), drawn in the strip reserved for it.
+   Colours as the desktop widgets: cream glass in the light style, night
+   glass in the dark one; text at least 4.5:1 on both. */
 .vilna-gloxi-dock {
-  background-color: #1f345c; /* night #1F345C */
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: #fffcf6; /* cream */
+  border-left: 1px solid rgba(19, 33, 58, 0.12);
+  color: #13213a;
+}
+
+.vilna-dark .vilna-gloxi-dock {
+  background-color: #0e1a2e; /* night */
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  color: #eef1f7;
+}
+
+.vilna-gloxi-panel {
+  padding: 12px;
+  spacing: 10px;
+}
+
+.vilna-gloxi-header {
+  spacing: 10px;
+}
+
+.vilna-gloxi-title {
+  font-weight: bold;
+  font-size: 12pt;
+}
+
+.vilna-gloxi-state,
+.vilna-gloxi-caption,
+.vilna-gloxi-empty {
+  font-size: 9pt;
+  color: #4d5d7a; /* muted, 6.5:1 on cream */
+}
+
+.vilna-dark .vilna-gloxi-state,
+.vilna-dark .vilna-gloxi-caption,
+.vilna-dark .vilna-gloxi-empty {
+  color: #aab4c8; /* 8.4:1 on night */
+}
+
+.vilna-gloxi-empty {
+  font-size: 12pt;
+  padding-top: 24px;
+}
+
+.vilna-gloxi-messages {
+  spacing: 8px;
+  padding-right: 4px;
+}
+
+.vilna-gloxi-line {
+  padding: 8px 10px;
+  border-radius: 12px;
+  spacing: 2px;
+}
+
+.vilna-gloxi-line.user {
+  background-color: rgba(45, 107, 255, 0.12);
+  margin-left: 24px;
+}
+
+.vilna-gloxi-line.gloxi,
+.vilna-gloxi-line.action {
+  background-color: rgba(19, 33, 58, 0.06);
+  margin-right: 24px;
+}
+
+.vilna-dark .vilna-gloxi-line.gloxi,
+.vilna-dark .vilna-gloxi-line.action {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.vilna-gloxi-line.error {
+  border: 1px solid #b3261e;
+}
+
+.vilna-gloxi-line.note .vilna-gloxi-text {
+  font-size: 9pt;
+}
+
+.vilna-gloxi-caption.warning {
+  color: #8a5300; /* 6.2:1 on cream */
+}
+
+.vilna-dark .vilna-gloxi-caption.warning {
+  color: #ffc56b;
+}
+
+.vilna-gloxi-input {
+  spacing: 6px;
+}
+
+.vilna-gloxi-entry {
+  border-radius: 12px;
+  padding: 8px 10px;
+  background-color: #ffffff;
+  border: 1px solid rgba(19, 33, 58, 0.24);
+  color: #13213a;
+}
+
+.vilna-dark .vilna-gloxi-entry {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #eef1f7;
+}
+
+.vilna-gloxi-entry StLabel.hint-text {
+  color: #4d5d7a;
+}
+
+.vilna-dark .vilna-gloxi-entry StLabel.hint-text {
+  color: #aab4c8;
+}
+
+.vilna-gloxi-entry:focus {
+  border: 2px solid #2d6bff;
+}
+
+.vilna-gloxi-button {
+  border-radius: 99px;
+  padding: 8px;
+}
+
+.vilna-gloxi-button:hover,
+.vilna-gloxi-button:focus {
+  background-color: rgba(45, 107, 255, 0.16);
+}
+
+.vilna-gloxi-button:focus {
+  box-shadow: inset 0 0 0 2px #2d6bff;
 }
 
 /* The login screen (GDM). GNOME Shell always draws it dark; Vilna puts

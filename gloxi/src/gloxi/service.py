@@ -10,8 +10,10 @@ the person types. They talk over a Unix socket, one JSON object per line
 
 The service answers only the person it belongs to: the uid the kernel
 reports for the socket (``SO_PEERCRED``) must be the owner's, or root.
-One window at a time: a new connection takes over, the old one is told
-(``replaced``) and closed.
+One window and one side panel at a time (the panel is the one the Vilna
+Shell extension draws, stage B of the Gloxi window): both see the same
+conversation. A new window takes over from the old window, a new panel from
+the old panel; the old one is told (``replaced``) and closed.
 """
 
 from __future__ import annotations
@@ -34,7 +36,8 @@ from typing import Any
 from gloxi import __version__
 from gloxi.vpn_intro import CHOSEN
 
-PROTOCOL = 1
+# 2: hello takes "client": "panel" (the Shell's side panel beside the window).
+PROTOCOL = 2
 # A line longer than this is not a request: the connection is closed.
 MAX_LINE = 1 << 20
 # What the window may send as its language (LANGUAGE / LANG values).
@@ -48,6 +51,11 @@ MODES = ("auto", "local", "cloud")
 # warnings): a connection that makes only these is not a window, so it does
 # not take the events away from the Gloxi window that is open.
 NOT_A_WINDOW = frozenset({"text.translate"})
+# Who looks at the conversation: the Gloxi window, the Shell's side panel.
+CLIENTS = ("window", "panel")
+# Events that do something on the desktop (open a link, start an app): only
+# the client the person last wrote in gets them, so nothing opens twice.
+ONE_CLIENT = frozenset({"open_uri", "launch_app"})
 
 
 def service_socket(env: dict[str, str] | None = None) -> Path:
@@ -101,31 +109,60 @@ def _line(obj: dict) -> bytes:
 
 
 class EventView:
-    """A ChatView that sends every call to the window connected now."""
+    """A ChatView that sends every call to the clients connected now.
+
+    At most one window and one panel (CLIENTS). Every event goes to both,
+    except ONE_CLIENT events, which go only to the client that last made a
+    request (the one the person is using).
+    """
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self._conn: socket.socket | None = None
+        self._conns: dict[str, socket.socket] = {}
+        self._active: socket.socket | None = None
 
-    def attach(self, conn: socket.socket) -> socket.socket | None:
-        """Make ``conn`` the window; returns the one it replaces."""
+    def attach(self, conn: socket.socket, client: str = "window") -> socket.socket | None:
+        """Make ``conn`` the window (or the panel); returns the one it replaces."""
         with self._lock:
-            old, self._conn = self._conn, conn
+            old = self._conns.get(client)
+            self._conns[client] = conn
+            self._active = conn
         return old
 
     def detach(self, conn: socket.socket) -> None:
         with self._lock:
-            if self._conn is conn:
-                self._conn = None
+            for client, c in list(self._conns.items()):
+                if c is conn:
+                    del self._conns[client]
+            if self._active is conn:
+                self._active = next(iter(self._conns.values()), None)
+
+    def touch(self, conn: socket.socket) -> None:
+        """The person used ``conn``: it gets the ONE_CLIENT events now."""
+        with self._lock:
+            if conn in self._conns.values():
+                self._active = conn
 
     def send(self, obj: dict) -> None:
+        line = _line(obj)
         with self._lock:
-            if self._conn is None:
-                return  # nobody looking: the answer still lands in the history
-            try:
-                self._conn.sendall(_line(obj))
-            except OSError:
-                self._conn = None
+            if obj.get("event") in ONE_CLIENT:
+                targets = [self._active] if self._active is not None else []
+            else:
+                targets = list(self._conns.values())
+            # Nobody looking: the answer still lands in the history.
+            for conn in targets:
+                try:
+                    conn.sendall(line)
+                except OSError:
+                    self._drop(conn)
+
+    def _drop(self, conn: socket.socket) -> None:
+        for client, c in list(self._conns.items()):
+            if c is conn:
+                del self._conns[client]
+        if self._active is conn:
+            self._active = next(iter(self._conns.values()), None)
 
     def reply(self, conn: socket.socket, obj: dict) -> None:
         """A response to ``conn``, never in the middle of an event's bytes."""
@@ -133,8 +170,7 @@ class EventView:
             try:
                 conn.sendall(_line(obj))
             except OSError:
-                if self._conn is conn:
-                    self._conn = None
+                self._drop(conn)
 
     def _event(self, name: str, **data: Any) -> None:
         self.send({"event": name, **data})
@@ -170,6 +206,15 @@ class EventView:
 
     def launch_app(self, app_id: str) -> None:
         self._event("launch_app", app=app_id)
+
+
+def client_of(request: Any) -> str:
+    """Which client a first request makes of its connection: a panel says so in hello."""
+    if isinstance(request, dict) and request.get("method") == "hello":
+        params = request.get("params")
+        if isinstance(params, dict) and params.get("client") == "panel":
+            return "panel"
+    return "window"
 
 
 class RequestError(Exception):
@@ -230,6 +275,9 @@ class Service:
         }
 
     def _hello(self, params: dict) -> dict:
+        client = params.get("client", "window")
+        if client not in CLIENTS:
+            raise RequestError("bad_params", f"client must be one of {', '.join(CLIENTS)}")
         language = params.get("language")
         if language is not None:
             if not isinstance(language, str) or not LANGUAGE_RE.match(language):
@@ -375,9 +423,9 @@ class Service:
             finally:
                 self.view.detach(conn)
 
-    def _attach(self, conn: socket.socket) -> None:
-        """``conn`` becomes the window; the one before it is told and closed."""
-        old = self.view.attach(conn)
+    def _attach(self, conn: socket.socket, client: str = "window") -> None:
+        """``conn`` becomes the window (or the panel); the one before it is told and closed."""
+        old = self.view.attach(conn, client)
         if old is not None and old is not conn:
             try:
                 old.sendall(_line({"event": "replaced"}))
@@ -409,8 +457,10 @@ class Service:
                 else:
                     method = request.get("method") if isinstance(request, dict) else None
                     if not window and method not in NOT_A_WINDOW:
-                        self._attach(conn)
+                        self._attach(conn, client_of(request))
                         window = True
+                    elif window and isinstance(method, str) and method.startswith("chat."):
+                        self.view.touch(conn)
                     response = self.handle(request)
                 if response is not None:
                     self.view.reply(conn, response)

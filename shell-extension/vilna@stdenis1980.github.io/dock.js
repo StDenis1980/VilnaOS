@@ -1,103 +1,141 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// (c) Stage B of the Gloxi window, as a scaffold: a strip at the right edge
-// of the primary monitor reserved for the Gloxi panel, like a dock.
+// (c) Stage B of the Gloxi window: the side panel. A strip at the right edge
+// of the primary monitor is reserved like a dock, and the Shell draws the
+// Gloxi panel in it (gloxiPanel.js).
 //
 // The strip is a Shell actor registered as a strut, the same mechanism as
 // the top bar. GNOME then keeps maximised and tiled windows out of it, and
 // the notification banners, which are laid out in the work area, move left
-// of it by themselves. Off by default (gloxi-dock); shown while Gloxi runs.
+// of it by themselves. On with gloxi-dock (off by default); opened and closed
+// with gloxi-panel-open, which the top-bar button, the panel's own close
+// button, Escape, the key gloxi-panel-key (Super+G) and Gloxi itself (over
+// D-Bus, GloxiPanelOpen, when its own portal key got the press) change.
 //
-// The panel itself has to be drawn by the Shell inside this actor, as the
-// design brief says for stage B: Mutter keeps every normal window at least
-// 75 px inside the work area (constrain_partially_onscreen in constraints.c),
-// so the GTK window of Gloxi cannot sit in a strut. Checked in GNOME Shell 46.
+// The panel is drawn by the Shell, as the design brief says for stage B:
+// Mutter keeps every normal window at least 75 px inside the work area
+// (constrain_partially_onscreen in constraints.c), so the GTK window of
+// Gloxi cannot sit in a strut. Checked in GNOME Shell 46.
 //
-// Still to do for stage B: the panel's content, talking to Gloxi over D-Bus;
-// the slide-in animation; other monitors; Gloxi's messages in the panel.
+// Not yet: other monitors (the primary one only), Gloxi's notifications
+// in the panel while it is open.
 
+import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
 import {dockStrip} from './lib/geometry.js';
-import {findGloxiWindow} from './keepAbove.js';
+import {panelText} from './lib/gloxiPanel.js';
+import {PanelView} from './gloxiPanel.js';
+
+const SLIDE_MS = 250;
+
+// The top-bar button that opens and closes the panel.
+const PanelButton = GObject.registerClass(
+class VilnaGloxiPanelButton extends PanelMenu.Button {
+    _init(name, onToggle) {
+        super._init(0.5, name, true);
+        this.accessible_name = name;
+        this.add_child(new St.Icon({
+            icon_name: 'io.github.stdenis1980.Gloxi-symbolic',
+            fallback_icon_name: 'user-available-symbolic',
+            style_class: 'system-status-icon',
+        }));
+        this._onToggle = onToggle;
+    }
+
+    // On press, as the Shell's own top-bar menus open.
+    vfunc_event(event) {
+        const type = event.type();
+        if (type === Clutter.EventType.BUTTON_PRESS || type === Clutter.EventType.TOUCH_BEGIN) {
+            this._onToggle();
+            return Clutter.EVENT_STOP;
+        }
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    vfunc_key_press_event(event) {
+        const key = event.get_key_symbol();
+        if (key === Clutter.KEY_Return || key === Clutter.KEY_KP_Enter || key === Clutter.KEY_space) {
+            this._onToggle();
+            return Clutter.EVENT_STOP;
+        }
+        return Clutter.EVENT_PROPAGATE;
+    }
+});
+
+function animate() {
+    return St.Settings.get().enable_animations;
+}
 
 export class Dock {
-    constructor(settings) {
+    // dir: the extension's directory, for the owl pictures.
+    constructor(settings, dir) {
         this._settings = settings;
+        this._dir = dir;
         this._signals = [];
-        this._windowSignals = [];
-        this._window = null;
         this._panel = null;
-        this._idleId = 0;
+        this._view = null;
+        this._button = null;
+        this._returnTo = null;
+        this._starting = true;
+        this._keyBound = false;
     }
 
     enable() {
         const sync = () => this._sync();
         this._connect(this._settings, 'changed::gloxi-dock', sync);
         this._connect(this._settings, 'changed::gloxi-dock-size', sync);
+        this._connect(this._settings, 'changed::gloxi-panel-open', sync);
         this._connect(Main.layoutManager, 'monitors-changed', sync);
-        // A new window reports its app id a moment after it appears.
-        this._connect(global.display, 'window-created', () => this._queueSync());
         this._sync();
+        // Open at login because it was open before: no focus taken then.
+        this._starting = false;
     }
 
     disable() {
-        if (this._idleId) {
-            GLib.source_remove(this._idleId);
-            this._idleId = 0;
-        }
         for (const [object, id] of this._signals)
             object.disconnect(id);
         this._signals = [];
-        this._watch(null);
-        this._release();
+        this._release(false);
+        this._syncKey(false);
+        this._button?.destroy();
+        this._button = null;
     }
 
-    /** The actor the stage-B panel will be drawn into, or null. */
+    /** The strip's actor, or null. */
     get panel() {
         return this._panel;
+    }
+
+    /** What the panel shows, or null; for the headless test. */
+    get view() {
+        return this._view;
     }
 
     _connect(object, signal, handler) {
         this._signals.push([object, object.connect(signal, handler)]);
     }
 
-    _queueSync() {
-        if (this._idleId)
-            return;
-        this._idleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-            this._idleId = 0;
-            this._sync();
-            return GLib.SOURCE_REMOVE;
-        });
+    toggle() {
+        this._settings.set_boolean('gloxi-panel-open', !this._settings.get_boolean('gloxi-panel-open'));
     }
 
-    _watch(window) {
-        if (window === this._window)
-            return;
-        for (const id of this._windowSignals)
-            this._window.disconnect(id);
-        this._windowSignals = [];
-        this._window = window;
-        if (window) {
-            this._windowSignals = [
-                window.connect('notify::minimized', () => this._sync()),
-                window.connect('unmanaged', () => {
-                    this._watch(null);
-                    this._sync();
-                }),
-            ];
-        }
+    close() {
+        this._settings.set_boolean('gloxi-panel-open', false);
     }
 
     _sync() {
-        const window = this._settings.get_boolean('gloxi-dock') ? findGloxiWindow() : null;
-        this._watch(window);
+        const on = this._settings.get_boolean('gloxi-dock');
+        this._syncButton(on);
         const monitor = Main.layoutManager.primaryMonitor;
-        const strip = window && !window.minimized && monitor
+        const strip = on && this._settings.get_boolean('gloxi-panel-open') && monitor
             ? dockStrip(monitor,
                 Main.layoutManager.getWorkAreaForMonitor(Main.layoutManager.primaryIndex),
                 this._settings.get_string('gloxi-dock-size'))
@@ -105,27 +143,90 @@ export class Dock {
         if (strip)
             this._reserve(strip);
         else
-            this._release();
+            this._release(true);
+    }
+
+    _syncKey(on) {
+        if (on && !this._keyBound) {
+            Main.wm.addKeybinding('gloxi-panel-key', this._settings, Meta.KeyBindingFlags.NONE,
+                Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW, () => this.toggle());
+            this._keyBound = true;
+        } else if (!on && this._keyBound) {
+            Main.wm.removeKeybinding('gloxi-panel-key');
+            this._keyBound = false;
+        }
+    }
+
+    _syncButton(on) {
+        this._syncKey(on);
+        if (on && !this._button) {
+            this._button = new PanelButton(panelText(GLib.get_language_names()).indicator, () => this.toggle());
+            Main.panel.addToStatusArea('vilna-gloxi-panel', this._button, 0, 'right');
+        } else if (!on && this._button) {
+            this._button.destroy();
+            this._button = null;
+        }
     }
 
     _reserve({x, y, width, height}) {
-        if (!this._panel) {
+        const opening = !this._panel;
+        if (opening) {
             this._panel = new St.Widget({
                 name: 'vilnaGloxiDock',
                 style_class: 'vilna-gloxi-dock',
                 reactive: true,
+                layout_manager: new Clutter.BinLayout(),
             });
+            this._view = new PanelView(this._dir, () => this.close());
+            this._panel.add_child(this._view.actor);
             Main.layoutManager.addChrome(this._panel, {affectsStruts: true, trackFullscreen: true});
         }
         this._panel.set_position(x, y);
         this._panel.set_size(width, height);
+        this._button?.add_style_pseudo_class('checked');
+        if (!opening)
+            return;
+        if (animate()) {
+            this._panel.translation_x = width;
+            this._panel.ease({translation_x: 0, duration: SLIDE_MS, mode: Clutter.AnimationMode.EASE_OUT_QUINT});
+        }
+        if (!this._starting) {
+            // Opened by the person: ready to type, and back to the window
+            // they were in when it closes.
+            this._returnTo = global.display.focus_window;
+            const view = this._view;
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                if (this._view === view)
+                    view.focus();
+                return GLib.SOURCE_REMOVE;
+            });
+        }
     }
 
-    _release() {
+    _release(slide) {
         if (!this._panel)
             return;
-        Main.layoutManager.removeChrome(this._panel);
-        this._panel.destroy();
+        const panel = this._panel, view = this._view;
+        const hadFocus = panel.contains(global.stage.get_key_focus());
         this._panel = null;
+        this._view = null;
+        this._button?.remove_style_pseudo_class('checked');
+        // The strut goes at once: windows take the space back while it slides out.
+        Main.layoutManager.untrackChrome(panel);
+        const done = () => {
+            view.destroy();
+            panel.destroy();
+        };
+        if (slide && animate())
+            panel.ease({translation_x: panel.width, duration: SLIDE_MS, mode: Clutter.AnimationMode.EASE_IN_CUBIC, onStopped: done});
+        else
+            done();
+        const back = this._returnTo;
+        this._returnTo = null;
+        if (hadFocus) {
+            global.stage.set_key_focus(null);
+            if (back && !back.minimized && global.display.list_all_windows().includes(back))
+                back.activate(global.get_current_time());
+        }
     }
 }

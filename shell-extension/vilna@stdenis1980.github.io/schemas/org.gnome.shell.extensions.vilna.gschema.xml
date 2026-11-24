@@ -52,8 +52,18 @@
     </key>
     <key name="gloxi-dock" type="b">
       <default>false</default>
-      <summary>Reserve a strip of the screen for Gloxi (experimental)</summary>
-      <description>Reserve a strip at the right edge of the primary monitor for the Gloxi panel, like a dock: maximised windows and notifications stay out of it.</description>
+      <summary>Gloxi as a side panel of the Shell (experimental)</summary>
+      <description>Show Gloxi as a panel the Shell draws in a strip at the right edge of the primary monitor, like a dock: maximised windows and notifications stay out of it. The panel talks to gloxid, the Gloxi service; a button in the top bar and Gloxi's own key open and close it.</description>
+    </key>
+    <key name="gloxi-panel-key" type="as">
+      <default>['&lt;Super&gt;g']</default>
+      <summary>Key that opens and closes the Gloxi side panel</summary>
+      <description>While gloxi-dock is on, the Shell itself listens for this key, so it works before the Gloxi app has run in the session. The same key as Gloxi asks for through the GlobalShortcuts portal; whichever gets it, the panel opens or closes.</description>
+    </key>
+    <key name="gloxi-panel-open" type="b">
+      <default>false</default>
+      <summary>The Gloxi side panel is open</summary>
+      <description>Whether the side panel (gloxi-dock) is open now; it stays as it was after the next login.</description>
     </key>
     <key name="gloxi-dock-size" enum="org.gnome.shell.extensions.vilna.DockSize">
       <default>'one-sixth'</default>

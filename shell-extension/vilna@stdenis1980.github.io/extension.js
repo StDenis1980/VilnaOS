@@ -4,7 +4,7 @@
 //
 // It runs in three session modes:
 //  - user: everything (password layout, Gloxi above, Gloxi at the right
-//    edge, Gloxi strip, D-Bus, the VPN offer after a Wi-Fi login page,
+//    edge, the Gloxi side panel, D-Bus, the VPN offer after a Wi-Fi login page,
 //    the light or dark Vilna colours of the dock, its transparency and springy icons, Vilna's window motion and rubber windows, the desktop widgets,
 //    the sound theme, one notification after an automatic rollback of an update);
 //  - unlock-dialog: kept enabled while the screen is locked, so the
@@ -65,7 +65,7 @@ export default class VilnaExtension extends Extension {
         this._userParts = [
             new KeepAbove(this._settings),
             new PanelPlacement(this._settings),
-            new Dock(this._settings),
+            new Dock(this._settings, this.dir),
             new VilnaShellService(this._settings),
             new VpnOffer(this._settings),
             new RollbackNotice(this._settings),
