@@ -44,7 +44,8 @@ class ScriptedLlamaServer(FakeLlamaServer):
     """Answers each request with the next turn: text, or tool calls.
 
     A turn is a string, or a list of ``(name, arguments_json)`` tool calls.
-    Tool calls are streamed in fragments, the way llama-server does it.
+    Tool calls are streamed in fragments, the way llama-server does it. A
+    request that does not stream gets the turn whole; a dict, as JSON.
     """
 
     def __init__(self, *turns) -> None:
@@ -54,8 +55,14 @@ class ScriptedLlamaServer(FakeLlamaServer):
     def _handle(self, request: httpx.Request) -> httpx.Response:
         if request.url.path.endswith("/models"):
             return httpx.Response(200, json={"data": [{"id": "local"}]})
-        self.requests.append(json.loads(request.content))
+        body = json.loads(request.content)
+        self.requests.append(body)
         turn = self.turns.pop(0) if self.turns else "(no more turns)"
+        if not body.get("stream"):
+            # A whole answer (ChatClient.complete): a dict turn is sent as its JSON.
+            content = turn if isinstance(turn, str) else json.dumps(turn, ensure_ascii=False)
+            message = {"role": "assistant", "content": content}
+            return httpx.Response(200, json={"choices": [{"message": message}]})
         events = [{"choices": [{"delta": {"role": "assistant"}}]}]
         if isinstance(turn, str):
             events += [{"choices": [{"delta": {"content": turn}}]}]

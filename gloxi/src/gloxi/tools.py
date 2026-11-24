@@ -29,7 +29,7 @@ import re
 import tomllib
 import unicodedata
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from email.utils import parseaddr
 from functools import cache
 from gettext import gettext as _
@@ -146,6 +146,9 @@ class ToolOutcome:
     # The Keros rule ids of ``warnings``, in the same order: the window
     # translates them (gloxi.gui.cards); the descriptions stay for the model.
     warning_rules: tuple[str, ...] = ()
+    # What the program returned, for Gloxi's own fixed steps (gloxi.mail_flow);
+    # the model gets only ``for_model``.
+    result: Any = field(default=None, compare=False, repr=False)
 
     def summary(self) -> str:
         what = f"{self.label}: {self.operation}"
@@ -532,6 +535,13 @@ class FileTools:
             self._mail.note(op.name, answer.get("result"))
         return _from_answer(op, where, answer, tool)
 
+    def function_for(self, tool: str, operation: str) -> str | None:
+        """The function name Herkos's listing gave ``operation`` of ``tool``."""
+        for function, op in self._programs.items():
+            if op.tool == tool and op.name == operation:
+                return function
+        return None
+
     def reads_outside(self, name: str) -> bool:
         """Whether a function brings in content from outside (an email, a file):
         what the model does with it has to wait until it has seen it."""
@@ -634,8 +644,10 @@ def _from_answer(
         result = _fit(answer.get("result"))
         if not op.external:
             payload = {"status": "done", "result": result}
-            return ToolOutcome(op.name, path, "done", code, message, _json(payload))
-        return _external(op, path, code, message, result, answer.get("keros"), tool)
+            done = ToolOutcome(op.name, path, "done", code, message, _json(payload))
+            return replace(done, result=answer.get("result"))
+        outcome = _external(op, path, code, message, result, answer.get("keros"), tool)
+        return replace(outcome, result=answer.get("result"))
     if code == "tool_error":
         return _error(op.name, path, message or "the tool failed")
     note = TIMEOUT_NOTE if code == "denied_timeout" else DENIED_NOTE
