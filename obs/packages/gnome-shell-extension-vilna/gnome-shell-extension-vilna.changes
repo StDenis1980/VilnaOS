@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Nov 24 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Starts on GNOME Shell 51 again: St.BoxLayout there has no «vertical»
+  property, and the one throw put the whole extension in ERROR (no
+  widgets, no Gloxi button, no side panel; VM check of Build12.26).
+  Vertical boxes now use «orientation» where the Shell has it and
+  «vertical» on Shell 46 and 47 (vbox.js).
+
+-------------------------------------------------------------------
 Tue Nov 24 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The layout indicator of a password field stays where the field's

@@ -24,6 +24,7 @@ import St from 'gi://St';
 import {
     MAX_INPUT, PanelChat, helloLanguage, owlFile, panelText, requestLine, safeUri, stateText,
 } from './lib/gloxiPanel.js';
+import {verticalBox} from './vbox.js';
 
 const GLOXI_DESKTOP = 'io.github.stdenis1980.Gloxi.desktop';
 const CALL_SECONDS = 15;
@@ -204,14 +205,14 @@ export class PanelView {
 
     _build() {
         const t = this._t;
-        const box = new St.BoxLayout({vertical: true, style_class: 'vilna-gloxi-panel', x_expand: true, y_expand: true});
+        const box = verticalBox({style_class: 'vilna-gloxi-panel', x_expand: true, y_expand: true});
         box.name = 'vilnaGloxiPanel';
         box.accessible_name = t.indicator;
 
         const header = new St.BoxLayout({style_class: 'vilna-gloxi-header'});
         this._owl = new St.Icon({icon_size: 40, style_class: 'vilna-gloxi-owl'});
         header.add_child(this._owl);
-        const titles = new St.BoxLayout({vertical: true, x_expand: true, y_align: Clutter.ActorAlign.CENTER});
+        const titles = verticalBox({x_expand: true, y_align: Clutter.ActorAlign.CENTER});
         titles.add_child(new St.Label({text: 'Gloxi', style_class: 'vilna-gloxi-title'}));
         this._stateLabel = new St.Label({style_class: 'vilna-gloxi-state'});
         titles.add_child(this._stateLabel);
@@ -224,7 +225,7 @@ export class PanelView {
             style_class: 'vilna-gloxi-scroll', x_expand: true, y_expand: true,
             hscrollbar_policy: St.PolicyType.NEVER, vscrollbar_policy: St.PolicyType.AUTOMATIC,
         });
-        this._list = new St.BoxLayout({vertical: true, style_class: 'vilna-gloxi-messages', x_expand: true});
+        this._list = verticalBox({style_class: 'vilna-gloxi-messages', x_expand: true});
         this._list.accessible_name = t.messages;
         if (typeof this._scroll.set_child === 'function')
             this._scroll.set_child(this._list);
@@ -365,7 +366,7 @@ export class PanelView {
 
     _lineActor(line) {
         const t = this._t;
-        const box = new St.BoxLayout({vertical: true, style_class: `vilna-gloxi-line ${line.kind}`, x_expand: true});
+        const box = verticalBox({style_class: `vilna-gloxi-line ${line.kind}`, x_expand: true});
         if (line.caption)
             box.add_child(new St.Label({text: line.caption, style_class: 'vilna-gloxi-caption'}));
         const label = new St.Label({style_class: 'vilna-gloxi-text', x_expand: true});

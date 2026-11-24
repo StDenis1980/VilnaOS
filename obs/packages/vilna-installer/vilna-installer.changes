@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 24 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The keyboard layout under a password field is no longer dimmed: in
+  the light theme «en» was 3.2:1 on cream (VM check of Build12.26).
+
+-------------------------------------------------------------------
 Tue Nov 24 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Fixes from the VM check of Build12.19: Gloxi's greeting says the
