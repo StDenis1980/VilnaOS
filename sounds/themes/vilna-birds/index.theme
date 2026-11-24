@@ -1,0 +1,16 @@
+[Sound Theme]
+Name=Vilna Birds
+Name[uk]=Vilna Птахи
+Name[es]=Vilna Pájaros
+Name[pl]=Vilna Ptaki
+Name[de]=Vilna Vögel
+Name[fr]=Vilna Oiseaux
+Name[it]=Vilna Uccelli
+Name[ro]=Vilna Păsări
+Name[cs]=Vilna Ptáci
+Name[lt]=Vilna Paukščiai
+Inherits=freedesktop
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

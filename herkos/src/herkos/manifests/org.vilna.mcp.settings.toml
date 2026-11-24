@@ -57,6 +57,21 @@ level = "R2"
 summary = "Play sound through another output"
 undoable = true
 
+[operations.set_event_sounds]
+level = "R2"
+summary = "Turn all event sounds on or off"
+undoable = true
+
+[operations.set_sound_theme]
+level = "R2"
+summary = "Choose the sound theme"
+undoable = true
+
+[operations.set_sound]
+level = "R2"
+summary = "Turn one event sound on or off"
+undoable = true
+
 [operations.restore]
 level = "R2"
 summary = "Undo an earlier change to the settings"

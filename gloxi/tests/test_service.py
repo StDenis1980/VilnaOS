@@ -127,6 +127,109 @@ def test_a_new_window_takes_over(running):
     assert ("finish",) not in first_view.events
 
 
+class PanelClient:
+    """The Shell's side panel, as a raw client: hello with client=panel, events kept."""
+
+    def __init__(self, path):
+        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.sock.connect(str(path))
+        self.events: list[dict] = []
+        self.results: dict[int, dict] = {}
+        self._reader = threading.Thread(target=self._read, daemon=True)
+        self._reader.start()
+        self.send(1, "hello", {"client": "panel", "language": "uk_UA.UTF-8"})
+        assert wait_for(lambda: 1 in self.results)
+
+    def send(self, rid, method, params=None):
+        line = {"id": rid, "method": method, "params": params or {}}
+        self.sock.sendall((json.dumps(line) + "\n").encode())
+
+    def _read(self):
+        buf = b""
+        while True:
+            try:
+                chunk = self.sock.recv(65536)
+            except OSError:
+                return
+            if not chunk:
+                return
+            buf += chunk
+            while b"\n" in buf:
+                raw, buf = buf.split(b"\n", 1)
+                msg = json.loads(raw)
+                if "event" in msg:
+                    self.events.append(msg)
+                else:
+                    self.results[msg["id"]] = msg
+
+    def names(self):
+        return [e["event"] for e in self.events]
+
+    def close(self):
+        self.sock.close()
+
+
+def test_the_panel_and_the_window_see_the_same_conversation(running):
+    r = running()
+    remote, view = r.client()
+    panel = PanelClient(r.path)
+    assert panel.results[1]["result"]["protocol"] >= 2
+    panel.send(2, "chat.submit", {"text": "з панелі"})
+    assert wait_for(lambda: "finish_answer" in panel.names() and ("finish",) in view.events)
+    assert {"event": "user_message", "text": "з панелі"} in panel.events
+    assert ("user", "з панелі") in view.events
+    # Neither took the other's place.
+    assert "replaced" not in panel.names()
+    assert ("note", "Gloxi is open in another window.") not in view.events
+    # And the window still talks.
+    assert remote.submit("а з вікна?")
+    assert wait_for(lambda: {"event": "user_message", "text": "а з вікна?"} in panel.events)
+    panel.close()
+
+
+def test_a_new_panel_takes_over_from_the_old_panel_only(running):
+    r = running()
+    _remote, view = r.client()
+    first = PanelClient(r.path)
+    second = PanelClient(r.path)
+    assert wait_for(lambda: "replaced" in first.names())
+    assert "replaced" not in second.names()
+    assert ("note", "Gloxi is open in another window.") not in view.events
+    first.close()
+    second.close()
+
+
+def test_hello_refuses_an_unknown_client(running):
+    r = running()
+    [answer] = raw_exchange(
+        r.path, {"id": 1, "method": "hello", "params": {"client": "everything"}}
+    )
+    assert answer["error"]["code"] == "bad_params"
+
+
+def test_a_link_opens_only_where_the_person_last_wrote():
+    view = EventView()
+    window, window_far = socket.socketpair()
+    panel, panel_far = socket.socketpair()
+    for s in (window_far, panel_far):
+        s.settimeout(0.2)
+    view.attach(window, "window")
+    view.attach(panel, "panel")
+    view.touch(window)
+    view.open_uri("https://vilnaos.com/")
+    view.show_note("для обох")
+    got_window = window_far.recv(65536).decode()
+    got_panel = panel_far.recv(65536).decode()
+    assert "open_uri" in got_window and "для обох" in got_window
+    assert "open_uri" not in got_panel and "для обох" in got_panel
+    # The window goes away: the panel is the one now.
+    view.detach(window)
+    view.open_uri("https://vilnaos.com/")
+    assert "open_uri" in panel_far.recv(65536).decode()
+    for s in (window, window_far, panel, panel_far):
+        s.close()
+
+
 def test_somebody_else_gets_no_answer(running):
     # The tests may run as root, whom the service trusts; not here.
     r = running(owner_uid=os.getuid() + 12345, allow_root=False)
@@ -191,7 +294,7 @@ def test_the_window_hears_when_the_service_goes_away(running):
     remote, view = r.client()
     r.close()
     # Closing the listener does not end live connections: end it from the service side.
-    conn = r.view._conn
+    conn = r.view._conns["window"]
     conn.shutdown(socket.SHUT_RDWR)
     assert wait_for(lambda: any(e[0] == "error" for e in view.events))
     assert not remote.submit("є хто?")  # nothing to reconnect to
@@ -405,9 +508,20 @@ def test_the_local_model_keeps_idle_slots_cached():
 
 def test_the_local_model_keeps_its_weights_in_memory():
     # On 8 GB the browser pushed the weights out and the first answer took
-    # 17 s instead of 6.5 s (image/docs/low-memory-check.md).
+    # 36 s instead of 6.8 s (image/docs/low-memory-check.md).
     unit = Path(__file__).resolve().parents[1] / "systemd" / "vilna-llm.service"
     assert "\nMemoryLow=5G\n" in unit.read_text()
+
+
+def test_system_slice_lets_the_model_keep_its_protection():
+    # cgroup v2 protects a unit only up to its parent slice, and system.slice
+    # has memory.low=0: without this drop-in MemoryLow=5G of vilna-llm did
+    # nothing on Build16.22 (memory.events "low 0").
+    systemd = Path(__file__).resolve().parents[1] / "systemd"
+    unit = (systemd / "vilna-llm.service").read_text()
+    assert "\nSlice=" not in unit
+    drop_in = (systemd / "system.slice.d" / "50-vilna-llm.conf").read_text()
+    assert "\n[Slice]\nMemoryLow=5G\n" in drop_in
 
 
 # -- text.translate (the weather warnings of the Shell extension) -------------------

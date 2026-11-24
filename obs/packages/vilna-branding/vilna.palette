@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Vilna colours for the Ptyxis terminal (gnome-branding-Vilna). The
+# backgrounds are the wallpaper colours of 30_Vilna.gschema.override,
+# the others the role colours of docs/design/style/vilna.css; every
+# colour that prints text keeps 4.5:1 against its background
+# (tools/check_terminal.py checks it, also with the wallpaper
+# showing through).
+[Palette]
+Name=Vilna
+
+[Light]
+Foreground=#0E1A2E
+Background=#F7F0E3
+TitlebarBackground=#F7F0E3
+TitlebarForeground=#1F345C
+Cursor=#2D6BFF
+Color0=#0E1A2E
+Color1=#B01B30
+Color2=#1A7044
+Color3=#9A4413
+Color4=#1A4FCC
+Color5=#8A3AA8
+Color6=#0C626D
+Color7=#E5DCCB
+Color8=#4D5D7A
+Color9=#9E1427
+Color10=#15633C
+Color11=#87390C
+Color12=#1745B4
+Color13=#7A2F97
+Color14=#0B5F69
+Color15=#FFFFFF
+
+[Dark]
+Foreground=#F2E8D5
+Background=#0D1830
+TitlebarBackground=#0D1830
+TitlebarForeground=#F2E8D5
+Cursor=#F5C24A
+Color0=#0D1830
+Color1=#FF6B70
+Color2=#2FBF71
+Color3=#F0963A
+Color4=#7DA3FF
+Color5=#D79BFF
+Color6=#4FD2E0
+Color7=#C9C2B4
+Color8=#A9B6CC
+Color9=#FF8A8E
+Color10=#5BD993
+Color11=#F5C24A
+Color12=#A3BEFF
+Color13=#E6BBFF
+Color14=#86E3EC
+Color15=#FFFFFF

@@ -6,7 +6,7 @@
 #
 
 Name:           vilna-branding
-Version:        0.16
+Version:        0.18
 Release:        0
 Summary:        Vilna branding packages
 License:        GPL-3.0-or-later
@@ -32,6 +32,8 @@ Source17:       20-vilna-loader-preferred.snapper
 Source18:       vilna-health-last-working
 Source19:       50-vilna-last-working.conf
 Source20:       50-vilna-after-bless-boot.conf
+Source21:       vilna.palette
+Source22:       vilna-ptyxis.user-tmpfiles
 BuildRequires:  systemd-rpm-macros
 # They own /usr/etc/sudoers.d (0750) and /usr/share/polkit-1/rules.d (0555).
 # The files below go there, but the directories stay theirs: a %%dir of our
@@ -58,6 +60,9 @@ Requires:       gnome-shell-extension-vilna
 Requires:       gnome-initial-setup
 Requires:       polkit
 Requires:       sound-theme-freedesktop
+# The terminal whose profile and palette the override sets.
+Requires:       ptyxis
+Requires:       vilna-sound-themes
 Requires:       sudo
 Requires:       system-group-wheel
 Requires:       transactional-update
@@ -133,6 +138,8 @@ install -D -m 0755 %{SOURCE17} %{buildroot}%{_prefix}/lib/snapper/plugins/20-vil
 install -D -m 0755 %{SOURCE18} %{buildroot}%{_libexecdir}/vilna/health-last-working
 install -D -m 0644 %{SOURCE19} %{buildroot}%{_unitdir}/health-checker.service.d/50-vilna-last-working.conf
 install -D -m 0644 %{SOURCE20} %{buildroot}%{_unitdir}/sdbootutil-update-predictions.service.d/50-vilna-after-bless-boot.conf
+install -D -m 0644 %{SOURCE21} %{buildroot}%{_datadir}/vilna/ptyxis/vilna.palette
+install -D -m 0644 %{SOURCE22} %{buildroot}%{_datadir}/user-tmpfiles.d/vilna-ptyxis.conf
 
 %files -n gnome-branding-Vilna
 %dir %{_datadir}/glib-2.0
@@ -159,6 +166,10 @@ install -D -m 0644 %{SOURCE20} %{buildroot}%{_unitdir}/sdbootutil-update-predict
 %{_userunitdir}/distrobox-upgrade-all.timer
 %dir %{_userunitdir}/gnome-session-manager@gnome-initial-setup.service.d
 %{_userunitdir}/gnome-session-manager@gnome-initial-setup.service.d/50-vilna-stop.conf
+%dir %{_datadir}/vilna
+%dir %{_datadir}/vilna/ptyxis
+%{_datadir}/vilna/ptyxis/vilna.palette
+%{_datadir}/user-tmpfiles.d/vilna-ptyxis.conf
 
 %files -n systemd-presets-branding-Vilna
 %{_presetdir}/87-default-Vilna.preset

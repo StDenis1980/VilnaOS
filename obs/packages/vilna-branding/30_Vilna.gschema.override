@@ -85,7 +85,7 @@ audible-bell=false
 
 [org.gnome.desktop.sound]
 event-sounds=true
-theme-name='freedesktop'
+theme-name='vilna-wood'
 
 [org.gnome.settings-daemon.plugins.housekeeping]
 ignore-paths=['/boot/efi']
@@ -95,12 +95,30 @@ custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybin
 
 [org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom0]
 binding='<Super>Return'
-command='kgx'
-name='Console'
+command='ptyxis --new-window'
+name='Terminal'
 
-[org.gnome.desktop.applications.terminal.exec-arg]
-exec='kgx'
-exec-arg='-e'
+[org.gnome.desktop.applications.terminal]
+exec='ptyxis'
+exec-arg='--'
+
+# The terminal is Ptyxis, not GNOME Console: Console has no setting for
+# a see-through background (Denys asked for one, 2026-11-24). Everyone
+# starts in one profile, «Vilna»: the Vilna palette (vilna.palette,
+# copied to the person's palettes by user-tmpfiles.d/vilna-ptyxis.conf;
+# without it Ptyxis falls back to its GNOME palette) and the background
+# at 92 %, so the wallpaper shows through a little and the text keeps
+# 4.5:1 (tools/check_terminal.py). The window follows the light/dark
+# style. Ptyxis ▸ Preferences ▸ Profiles changes all of it per person.
+[org.gnome.Ptyxis]
+profile-uuids=['vilna']
+default-profile-uuid='vilna'
+interface-style='system'
+
+[org.gnome.Ptyxis.Profile]
+label='Vilna'
+palette='vilna'
+opacity=0.92
 
 [org.freedesktop.Tracker.Miner.Files]
 index-removable-devices=false

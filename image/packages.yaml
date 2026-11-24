@@ -55,6 +55,7 @@ vilna:
     - {name: gloxi-session,                license: GPL-3.0-or-later, status: obs}      # subpackage of gloxi
     - {name: gnome-shell-extension-vilna,  license: GPL-3.0-or-later, status: obs}      # shell-extension/: паролі EN, Gloxi поверх усіх, смуга під панель
     - {name: gnome-shell-extension-dash-to-dock, license: GPL-2.0-or-later, status: obs} # док, docs/design/desktop/README.md
+    - {name: ptyxis,                       license: GPL-3.0-or-later, status: upstream} # термінал замість GNOME Console: прозорий фон, профіль Vilna (docs/design/desktop/README.md)
     # Спільні компоненти
     - {name: python-vilna-privacy-gateway, license: Apache-2.0,       status: obs}
     - {name: vilna-mcp-files,              license: Apache-2.0,       status: obs}
@@ -84,6 +85,7 @@ vilna:
     - {name: vilna-locale,                 license: GPL-3.0-or-later, status: planned}
     - {name: vilna-backgrounds,            license: GPL-3.0-or-later, status: obs}      # шпалери: 7 пар, «Сонце» за замовчуванням
     - {name: vilna-icon-theme,             license: GPL-3.0-or-later, status: obs}      # тема значків Vilna поверх Adwaita: теки, кошик, диски, symbolic Gloxi/Herkos
+    - {name: vilna-sound-themes,           license: CC-BY-SA-4.0,     status: obs}      # 7 звукових тем, «Дерево» поки за замовчуванням
   enable_services: [herkosd.socket, vilna-flatpak-defaults.service]  # user: herkos-agent.service; Gloxi has no system service yet
 
 flatpak_defaults:

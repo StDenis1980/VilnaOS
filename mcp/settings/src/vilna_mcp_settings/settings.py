@@ -23,7 +23,7 @@ class SettingsError(Exception):
     """Something the caller can fix: a bad value or a key this GNOME lacks."""
 
 
-Value = bool | int | float | str
+Value = bool | int | float | str | list[str]
 
 
 @dataclass(frozen=True)
@@ -54,6 +54,14 @@ def _number(lo: float, hi: float) -> Callable[[Any], bool]:
     return check
 
 
+def _events(v: Any) -> bool:
+    return (
+        isinstance(v, list)
+        and len(v) == len(set(v))
+        and all(isinstance(e, str) and e in SOUND_EVENTS for e in v)
+    )
+
+
 def _whole(lo: int, hi: int) -> Callable[[Any], bool]:
     return lambda v: isinstance(v, int) and not isinstance(v, bool) and lo <= v <= hi
 
@@ -63,6 +71,33 @@ COLOR = "org.gnome.settings-daemon.plugins.color"
 NOTIFICATIONS = "org.gnome.desktop.notifications"
 # Not GSettings: volume and output live in PipeWire (sound.py).
 SOUND = "sound"
+DESKTOP_SOUND = "org.gnome.desktop.sound"
+# The Vilna Shell extension keeps the sound theme and the sounds turned off
+# one by one, and writes them as the person's sound theme (lib/soundTheme.js).
+SHELL = "org.gnome.shell.extensions.vilna"
+
+SOUND_THEMES = ("wood", "bell", "water", "air", "birds", "glass", "star", "freedesktop")
+# The events a Vilna sound theme has (sounds/, package vilna-sound-themes).
+SOUND_EVENTS = (
+    "message-new-instant",
+    "bell",
+    "dialog-warning",
+    "dialog-error",
+    "complete",
+    "screen-capture",
+    "audio-volume-change",
+    "device-added",
+    "device-removed",
+    "power-plug",
+    "power-unplug",
+    "battery-low",
+    "trash-empty",
+    "desktop-login",
+    "x-vilna-gloxi-listen",
+    "x-vilna-gloxi-done",
+    "x-vilna-gloxi-error",
+    "x-vilna-herkos-consent",
+)
 
 COLOR_SCHEMES = ("default", "prefer-dark", "prefer-light")
 # GNOME 47+ (org.gnome.desktop.interface accent-color).
@@ -91,6 +126,11 @@ KEYS: dict[str, Key] = {
     "muted": Key(SOUND, "muted", _boolean, "true or false"),
     "output": Key(
         SOUND, "output", lambda v: isinstance(v, str) and 0 < len(v) <= 256, "an output name"
+    ),
+    "event_sounds": Key(DESKTOP_SOUND, "event-sounds", _boolean, "true or false"),
+    "sound_theme": Key(SHELL, "sound-theme", _one_of(*SOUND_THEMES), str(SOUND_THEMES)),
+    "disabled_sounds": Key(
+        SHELL, "disabled-sounds", _events, f"a list of distinct events from {SOUND_EVENTS}"
     ),
 }
 
@@ -212,6 +252,27 @@ class Settings:
 
     def set_output(self, output: str) -> dict:
         return self._apply({"output": output})
+
+    def set_event_sounds(self, enabled: bool) -> dict:
+        """All event sounds on or off (the sounds of the theme, not the volume)."""
+        return self._apply({"event_sounds": enabled})
+
+    def set_sound_theme(self, theme: str) -> dict:
+        return self._apply({"sound_theme": theme})
+
+    def set_sound(self, event: str, enabled: bool) -> dict:
+        """Turn one event sound on or off, whatever the theme."""
+        if event not in SOUND_EVENTS:
+            raise SettingsError(f"'event' must be one of {list(SOUND_EVENTS)}")
+        if not isinstance(enabled, bool):
+            raise SettingsError("'enabled' must be true or false")
+        k = KEYS["disabled_sounds"]
+        current = self.backend.get(k.schema, k.key)
+        if current is None:
+            raise SettingsError("disabled_sounds is not available on this system")
+        # Keep the order of SOUND_EVENTS and drop names this version does not know.
+        off = (set(current) | {event}) if not enabled else (set(current) - {event})
+        return self._apply({"disabled_sounds": [e for e in SOUND_EVENTS if e in off]})
 
     def restore(self, values: Any) -> dict:
         """Put keys back as they were (the undo of an earlier change)."""

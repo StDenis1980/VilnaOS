@@ -785,3 +785,12 @@ msgstr "Prvek"
 
 msgid "Text now"
 msgstr "Aktuální text"
+
+msgid "Turn one event sound on or off"
+msgstr "Zapnout nebo vypnout jeden zvuk události"
+
+msgid "Turn all event sounds on or off"
+msgstr "Zapnout nebo vypnout všechny zvuky událostí"
+
+msgid "Choose the sound theme"
+msgstr "Vybrat zvukový motiv"

@@ -1,0 +1,14 @@
+-------------------------------------------------------------------
+Tue Nov 24 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Require the canberra-gtk-play and glib2-tools packages instead of
+  /usr/bin/canberra-gtk-play and /usr/bin/gsettings: OBS could not
+  resolve the file dependencies, so the images were unresolvable
+
+-------------------------------------------------------------------
+Mon Nov 23 22:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.1
+- Seven sound themes (wood, bell, water, air, birds, glass, star),
+  18 events each, including the login sound and the Gloxi and Herkos
+  signals; the login sound plays once after login (autostart)

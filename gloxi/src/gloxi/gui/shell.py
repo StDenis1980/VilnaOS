@@ -19,6 +19,8 @@ OBJECT_PATH = "/io/github/stdenis1980/VilnaShell"
 INTERFACE = "io.github.stdenis1980.VilnaShell1"
 # Interface version 2 has GloxiPanelEdge and GloxiPanelSize.
 PANEL_VERSION = 2
+# Version 3 has GloxiPanelOpen: the side panel the Shell draws (stage B).
+SIDE_PANEL_VERSION = 3
 TIMEOUT_MS = 500
 
 
@@ -76,6 +78,24 @@ class VilnaShell:
 
     def set_keep_above(self, on: bool) -> None:
         self.set("GloxiKeepAbove", GLib.Variant("b", bool(on)))
+
+    @property
+    def has_side_panel(self) -> bool:
+        """The Shell can draw Gloxi as its own side panel (talking to gloxid)."""
+        return self.version >= SIDE_PANEL_VERSION
+
+    @property
+    def side_panel(self) -> bool:
+        """The person uses the Shell's side panel instead of this window."""
+        return self.has_side_panel and bool(self.get("GloxiDock"))
+
+    def use_side_panel(self, on: bool) -> None:
+        if self.has_side_panel:
+            self.set("GloxiDock", GLib.Variant("b", bool(on)))
+            self.set("GloxiPanelOpen", GLib.Variant("b", bool(on)))
+
+    def toggle_side_panel(self) -> None:
+        self.set("GloxiPanelOpen", GLib.Variant("b", not bool(self.get("GloxiPanelOpen"))))
 
     def set_panel_size(self, size: str) -> None:
         if self.places_panel:

@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.15
+Version:        0.16
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -74,7 +74,7 @@ Requires:       gnome-desktop-lang
 Requires:       gdm-lang
 Requires:       nautilus-lang
 Requires:       gnome-software-lang
-Requires:       gnome-console-lang
+Requires:       ptyxis-lang
 Requires:       gtk4-lang
 Requires:       gtk3-lang
 Requires:       libadwaita-lang
@@ -157,7 +157,7 @@ Requires:       sudo
 Requires:       libgnomesu
 Requires:       samba
 Requires:       polkit-gnome
-Requires:       gnome-console
+Requires:       ptyxis
 Requires:       gnome-remote-desktop
 Requires:       nautilus-share
 Requires:       rpm

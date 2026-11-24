@@ -1,0 +1,16 @@
+[Sound Theme]
+Name=Vilna Bell
+Name[uk]=Vilna Дзвіночок
+Name[es]=Vilna Campanilla
+Name[pl]=Vilna Dzwonek
+Name[de]=Vilna Glöckchen
+Name[fr]=Vilna Clochette
+Name[it]=Vilna Campanella
+Name[ro]=Vilna Clopoțel
+Name[cs]=Vilna Zvoneček
+Name[lt]=Vilna Varpelis
+Inherits=freedesktop
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

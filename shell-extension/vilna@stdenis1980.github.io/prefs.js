@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// (з) Preferences of the Vilna extension: the desktop widgets and the
-// place for the weather. By default the weather is for the capital of
+// (з) Preferences of the Vilna extension: the desktop widgets, the
+// place for the weather and the sounds (theme, and each sound on or off).
+// The weather is for the capital of
 // the system's country and nothing about the person's location leaves
 // the computer. To change it the person either types a town (only that
 // text goes to Open-Meteo's search) or, after agreeing in a dialog, lets
@@ -19,6 +20,7 @@ import {
     geocodeUrl, homeCountry, languageOf, parseGeocode, roundForPrivacy, weatherPlace, widgetText,
 } from './lib/widgets.js';
 import {DISCLAIMER, SITE_URL, alertText} from './lib/alerts.js';
+import {SOUND_EVENTS, SOUND_THEMES, soundText} from './lib/soundTheme.js';
 
 const APP_ID = 'org.gnome.Shell.Extensions';
 
@@ -200,5 +202,81 @@ export default class VilnaPreferences extends ExtensionPreferences {
         source.connect('activated', () => Gio.AppInfo.launch_default_for_uri(SITE_URL, null));
         alerts.add(source);
         page.add(alerts);
+
+        window.add(this._soundsPage(settings));
+    }
+
+    // Sounds (sounds.js, lib/soundTheme.js): the theme, all event sounds on
+    // or off (GNOME's own switch), and each sound on or off.
+    _soundsPage(settings) {
+        const s = soundText(GLib.get_language_names());
+        const sound = new Gio.Settings({schema_id: 'org.gnome.desktop.sound'});
+        const page = new Adw.PreferencesPage({title: s.page, icon_name: 'audio-speakers-symbolic'});
+
+        const themeGroup = new Adw.PreferencesGroup({title: s.groupTheme});
+        const all = new Adw.SwitchRow({title: s.all, subtitle: s.allHint});
+        sound.bind('event-sounds', all, 'active', Gio.SettingsBindFlags.DEFAULT);
+        themeGroup.add(all);
+        const themes = new Adw.ComboRow({
+            title: s.theme,
+            model: Gtk.StringList.new(SOUND_THEMES.map(theme => s.themes[theme])),
+        });
+        const showTheme = () => {
+            const i = SOUND_THEMES.indexOf(settings.get_string('sound-theme'));
+            themes.selected = i < 0 ? 0 : i;
+        };
+        showTheme();
+        themes.connect('notify::selected', () => {
+            const theme = SOUND_THEMES[themes.selected];
+            if (theme && theme !== settings.get_string('sound-theme'))
+                settings.set_string('sound-theme', theme);
+        });
+        themeGroup.add(themes);
+        page.add(themeGroup);
+
+        const events = new Adw.PreferencesGroup({title: s.groupEvents, description: s.eventsHint});
+        sound.bind('event-sounds', events, 'sensitive', Gio.SettingsBindFlags.GET);
+        const rows = new Map();
+        for (const event of SOUND_EVENTS) {
+            const row = new Adw.SwitchRow({title: s.events[event]});
+            const play = new Gtk.Button({
+                icon_name: 'media-playback-start-symbolic', tooltip_text: s.play, valign: Gtk.Align.CENTER,
+            });
+            play.add_css_class('flat');
+            play.connect('clicked', () => {
+                // The sound as the person's theme plays it now.
+                try {
+                    Gio.Subprocess.new(['canberra-gtk-play', '-i', event], Gio.SubprocessFlags.NONE);
+                } catch (e) {
+                    logError(e, 'Vilna: cannot play the sound');
+                }
+            });
+            row.add_prefix(play);
+            row.connect('notify::active', () => {
+                const off = new Set(settings.get_strv('disabled-sounds'));
+                if (row.active)
+                    off.delete(event);
+                else
+                    off.add(event);
+                const next = SOUND_EVENTS.filter(e => off.has(e));
+                if (next.join() !== settings.get_strv('disabled-sounds').join())
+                    settings.set_strv('disabled-sounds', next);
+            });
+            rows.set(event, row);
+            events.add(row);
+        }
+        const showEvents = () => {
+            const off = new Set(settings.get_strv('disabled-sounds'));
+            for (const [event, row] of rows)
+                row.active = !off.has(event);
+        };
+        showEvents();
+        const ids = [
+            settings.connect('changed::sound-theme', showTheme),
+            settings.connect('changed::disabled-sounds', showEvents),
+        ];
+        page.connect('destroy', () => ids.forEach(id => settings.disconnect(id)));
+        page.add(events);
+        return page;
     }
 }

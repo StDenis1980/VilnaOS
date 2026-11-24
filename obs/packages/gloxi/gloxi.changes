@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Nov 23 23:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- system.slice.d/50-vilna-llm.conf gives system.slice MemoryLow=5G, so the
+  MemoryLow=5G of vilna-llm.service finally works: cgroup v2 protects a unit
+  only up to its parent slice (VM 8 GB, Build16.22: first word of Gloxi with
+  10 tabs 36 s -> 6.8 s, memory.events "low 0" before).
+
+-------------------------------------------------------------------
 Fri Nov 20 15:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The VPN chosen in the installer wizard now reaches Gloxi in Vilna: the

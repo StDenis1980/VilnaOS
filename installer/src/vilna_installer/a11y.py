@@ -16,10 +16,12 @@ and pinned by ``tests/test_a11y_live.py``:
 * once a choice of a group is made, GTK leaves only that button in the Tab
   order, and inside an ``Adw.PreferencesGroup`` the arrows did not move to the
   other buttons either: with «Encrypted, with a recovery key» chosen in
-  advance, the keyboard could not reach the other three ways. ``radio`` gives
-  every button of a group the arrow keys: they move the focus to the next or
-  the previous choice, and Space chooses it (moving alone changes nothing, so
-  arrowing past a Wi-Fi network or a disk has no effect of its own).
+  advance, the keyboard could not reach the other three ways. ``radio`` makes
+  every choice a Tab stop of its own (in the live image the arrows alone still
+  went past them to «Back») and gives it the arrow keys: they move the focus
+  to the next or the previous choice, and Space chooses it (moving alone
+  changes nothing, so arrowing past a Wi-Fi network or a disk has no effect
+  of its own).
 """
 
 from __future__ import annotations
@@ -66,17 +68,37 @@ def label(widget: Gtk.Widget, text: str) -> None:
     widget.update_property([Gtk.AccessibleProperty.LABEL], [text])
 
 
+class Radio(Gtk.CheckButton):
+    """A check button that is a Tab stop also when another choice of its group is made.
+
+    GTK lets only the chosen button of a group take the focus from Tab and
+    leaves the others to the arrow keys. In the live image (Build12.19, Orca,
+    Wayland) the arrows still went past the other ways of encryption to
+    «Back», so the keyboard and Orca could not reach them at all: every choice
+    is a Tab stop of its own now, as a widget without a group is.
+    """
+
+    __gtype_name__ = "VilnaRadio"
+
+    def do_focus(self, direction: Gtk.DirectionType) -> bool:
+        return Gtk.Widget.do_focus(self, direction)
+
+
 def radio(group: Gtk.CheckButton, **kwargs: Any) -> Gtk.CheckButton:
     """A check button that reads as a radio button, one choice of ``group``'s.
 
-    The arrow keys move between the choices of the group that are on the screen.
+    Each choice is a Tab stop (``Radio``), and the arrow keys move between the
+    choices of the group that are on the screen.
     """
-    check = Gtk.CheckButton(accessible_role=Gtk.AccessibleRole.RADIO, group=group, **kwargs)
+    check = Radio(accessible_role=Gtk.AccessibleRole.RADIO, group=group, **kwargs)
     check.leader = group  # the leader is in no window: keep it alive with the group
     if not hasattr(group, "members"):
         group.members = []
     group.members.append(check)
     keys = Gtk.EventControllerKey()
+    # Before the list the row is in and the window's own key bindings see the
+    # arrow: either would move the focus out of the group.
+    keys.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
     keys.connect("key-pressed", _arrow, check)
     check.add_controller(keys)
     return check
@@ -92,7 +114,9 @@ def _arrow(_controller, keyval: int, _code: int, state, check: Gtk.CheckButton) 
     # and those no longer in a window are forgotten.
     members = check.leader.members
     members[:] = [m for m in members if m.get_root() is not None]
-    shown = [m for m in members if m.get_mapped() and m.is_sensitive()]
+    # The button with the focus counts even when it cannot be chosen here
+    # (a way the computer has no TPM for, chosen in advance by the plan).
+    shown = [m for m in members if m is check or (m.get_mapped() and m.is_sensitive())]
     if check not in shown or len(shown) < 2:
         return False
     target = shown[(shown.index(check) + step) % len(shown)]

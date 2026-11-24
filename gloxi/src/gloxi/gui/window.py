@@ -28,6 +28,7 @@ from gloxi.gui import (  # noqa: E402
 )
 from gloxi.gui import shell as vilna_shell  # noqa: E402
 from gloxi.gui.cards import card_view, starter_prompts  # noqa: E402
+from gloxi.gui.chime import Chime  # noqa: E402
 from gloxi.gui.controller import ChatController, ModelSetup  # noqa: E402
 from gloxi.gui.panel import OwlState, OwlStates, PanelPrefs  # noqa: E402
 from gloxi.gui.remote import RemoteController, ServiceError  # noqa: E402
@@ -200,6 +201,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.send_button.connect("clicked", self._on_send)
         # Voice (ADR 0015): press and speak; Stop while an answer is read aloud.
         self.voice: voice_session.VoiceController | None = None
+        self.chime = Chime()
         self.mic_button = Gtk.Button(
             icon_name="vilna-mic-symbolic",
             tooltip_text=_("Speak instead of typing (Ctrl+M)"),
@@ -429,6 +431,24 @@ class ChatWindow(Adw.ApplicationWindow):
             self.above_row.set_active(self.shell.keep_above)
         self.above_row.connect("notify::active", self._on_keep_above)
         rows.append(self.above_row)
+        # Stage B: the Shell draws Gloxi as a side panel of its own, which
+        # talks to gloxid; so only in Vilna, with the service.
+        side = (
+            self.shell is not None
+            and self.shell.has_side_panel
+            and isinstance(self.controller, RemoteController)
+        )
+        self.side_panel_row = Adw.SwitchRow(
+            title=_("Side panel of the desktop"),
+            subtitle=_(
+                "Gloxi stays at the right edge; windows make room. Super+G opens and closes it"
+            ),
+            visible=side,
+        )
+        if side:
+            self.side_panel_row.set_active(self.shell.side_panel)
+        self.side_panel_row.connect("notify::active", self._on_side_panel)
+        rows.append(self.side_panel_row)
         box.append(rows)
 
         # Voice: off until the person turns it on (ADR 0015, section 2).
@@ -526,6 +546,15 @@ class ChatWindow(Adw.ApplicationWindow):
         if self.shell is not None:
             self.shell.set_keep_above(row.get_active())
 
+    def _on_side_panel(self, row, _pspec) -> None:
+        if self.shell is None or row.get_active() == self.shell.side_panel:
+            return
+        self.shell.use_side_panel(row.get_active())
+        if row.get_active():
+            # The conversation goes on in the panel; this window comes back
+            # with the panel's button «Open the Gloxi window».
+            self.set_visible(False)
+
     # -- voice (ADR 0015) ------------------------------------------------------
 
     def enable_voice(self, voice: voice_session.VoiceController) -> None:
@@ -593,6 +622,8 @@ class ChatWindow(Adw.ApplicationWindow):
     @_idle
     def set_listening(self, listening: bool) -> None:
         self._owl(lambda s: s.set_mic(listening))
+        if listening:
+            self.chime.listening()
         self.mic_button.set_icon_name(
             "media-record-symbolic" if listening else "vilna-mic-symbolic"
         )
@@ -1062,11 +1093,14 @@ class ChatWindow(Adw.ApplicationWindow):
             self._answer_label.get_parent().get_parent().set_visible(False)
         if self._answer_label is not None and self._answer_text and self.voice is not None:
             self.voice.speak(self._answer_text)
+        if self._answer_label is not None and self._answer_text:
+            self.chime.answered(self.is_active())
         self._answer_label = None
 
     @_idle
     def show_error(self, text: str) -> None:
         self._owl(OwlStates.failed)
+        self.chime.failed()
         self.toasts.add_toast(Adw.Toast(title=text, timeout=6))
 
     @_idle
@@ -1224,7 +1258,15 @@ class GloxiApp(Adw.Application):
             self._bind_shortcut()
 
     def toggle(self) -> None:
-        """Hide Gloxi when it is in front; otherwise bring it up, ready to type."""
+        """Hide Gloxi when it is in front; otherwise bring it up, ready to type.
+
+        With the Shell's side panel on (stage B), the key opens and closes
+        the panel instead, and this window stays as it is.
+        """
+        shell = vilna_shell.connect()
+        if shell is not None and shell.side_panel:
+            shell.toggle_side_panel()
+            return
         window = self.get_active_window()
         if window is not None and window.get_visible() and window.is_active():
             window.set_visible(False)  # the conversation stays as it is
