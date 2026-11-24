@@ -300,7 +300,8 @@ def main(argv: list[str] | None = None) -> int:
         "--undo-dir",
         type=Path,
         help="where events are kept for undo "
-        "(default: $XDG_STATE_HOME/vilna-mcp-calendar/undo; --demo: in memory)",
+        "(default: $STATE_DIRECTORY/undo, else $XDG_STATE_HOME/vilna-mcp-calendar/undo; "
+        "--demo: in memory)",
     )
     args = p.parse_args(argv)
     undo = DirUndo(args.undo_dir) if args.undo_dir is not None else None

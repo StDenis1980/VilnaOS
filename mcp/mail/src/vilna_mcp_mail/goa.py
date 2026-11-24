@@ -32,18 +32,25 @@ def _out(answer: Any) -> Any:
     return answer
 
 
+def _client() -> Any:
+    try:
+        return Goa.Client.new_sync(None)
+    except GLib.Error as e:
+        raise MailError(f"GNOME Online Accounts is not reachable: {e.message}") from e
+
+
 class GoaDirectory:
     def __init__(self) -> None:
-        try:
-            self._client = Goa.Client.new_sync(None)
-        except GLib.Error as e:
-            raise MailError(f"GNOME Online Accounts is not reachable: {e.message}") from e
+        self._client = _client()  # say at start when GOA is not there at all
         self._objects: dict[str, Any] = {}
 
     def accounts(self) -> list[Account]:
+        # A fresh client each time: the tool runs no GLib main loop, so one
+        # client made at start never learns of an account added after it.
+        client = self._client = _client()  # kept alive with its accounts
         out = []
         self._objects.clear()
-        for obj in self._client.get_accounts():
+        for obj in client.get_accounts():
             account, mail = obj.get_account(), obj.get_mail()
             if account is None or mail is None or account.props.mail_disabled:
                 continue

@@ -226,6 +226,72 @@ SAY: dict[str, dict[str, str]] = {
 }
 
 
+# Why each step runs, shown by Herkos when it asks the person (VM check
+# 2026-11-24: these were English in every language).
+WHY: dict[str, dict[str, str]] = {
+    "uk": {
+        "find": "Знайти лист, про який ти питаєш",
+        "read": "Прочитати лист, про який ти питаєш",
+        "event": "Додати в календар зустріч із листа",
+        "draft": "Зберегти відповідь у чернетках",
+    },
+    "en": {
+        "find": "Find the email you asked about",
+        "read": "Read the email you asked about",
+        "event": "Add the meeting from the email to your calendar",
+        "draft": "Save the answer as a draft",
+    },
+    "es": {
+        "find": "Buscar el correo por el que preguntas",
+        "read": "Leer el correo por el que preguntas",
+        "event": "Añadir a tu calendario la reunión del correo",
+        "draft": "Guardar la respuesta como borrador",
+    },
+    "pl": {
+        "find": "Znaleźć e-mail, o który pytasz",
+        "read": "Przeczytać e-mail, o który pytasz",
+        "event": "Dodać do kalendarza spotkanie z e-maila",
+        "draft": "Zapisać odpowiedź jako wersję roboczą",
+    },
+    "de": {
+        "find": "Die E-Mail finden, nach der du fragst",
+        "read": "Die E-Mail lesen, nach der du fragst",
+        "event": "Das Treffen aus der E-Mail in deinen Kalender eintragen",
+        "draft": "Die Antwort als Entwurf speichern",
+    },
+    "fr": {
+        "find": "Trouver l’e-mail dont tu parles",
+        "read": "Lire l’e-mail dont tu parles",
+        "event": "Ajouter à ton agenda le rendez-vous de l’e-mail",
+        "draft": "Enregistrer la réponse comme brouillon",
+    },
+    "it": {
+        "find": "Trovare l’email di cui chiedi",
+        "read": "Leggere l’email di cui chiedi",
+        "event": "Aggiungere al tuo calendario l’incontro dell’email",
+        "draft": "Salvare la risposta come bozza",
+    },
+    "ro": {
+        "find": "Găsește e-mailul despre care întrebi",
+        "read": "Citește e-mailul despre care întrebi",
+        "event": "Adaugă în calendar întâlnirea din e-mail",
+        "draft": "Salvează răspunsul ca ciornă",
+    },
+    "cs": {
+        "find": "Najít e-mail, na který se ptáš",
+        "read": "Přečíst e-mail, na který se ptáš",
+        "event": "Přidat do kalendáře schůzku z e-mailu",
+        "draft": "Uložit odpověď jako koncept",
+    },
+    "lt": {
+        "find": "Rasti laišką, apie kurį klausi",
+        "read": "Perskaityti laišką, apie kurį klausi",
+        "event": "Įtraukti į kalendorių susitikimą iš laiško",
+        "draft": "Išsaugoti atsakymą kaip juodraštį",
+    },
+}
+
+
 def wants(tools: FileTools, text: str) -> bool:
     """A message that asks for the whole scenario, in any of the ten languages,
     with the functions it needs listed: an email ("лист", "Марта написала"),
@@ -291,9 +357,11 @@ class MailFlow:
         self.today = today
         self.user_turn = user_turn
         self.on_tool = on_tool
+        self.why = WHY["en"]
 
     def run(self, text: str) -> Iterator[str]:
-        say = SAY[language(text)]
+        lang = language(text)
+        say, self.why = SAY[lang], WHY[lang]
         read = self._find(text)
         if read is None:
             yield say["no_mail"]
@@ -329,9 +397,7 @@ class MailFlow:
 
     def _find(self, text: str) -> ToolOutcome | None:
         """Steps 1–2: the email the person means, read."""
-        listing = self._call(
-            MAIL_TOOL, "list_messages", {"limit": LATEST}, "Find the email you asked about"
-        )
+        listing = self._call(MAIL_TOOL, "list_messages", {"limit": LATEST}, self.why["find"])
         result = listing.result if isinstance(listing.result, dict) else {}
         found = [m for m in result.get("messages") or () if isinstance(m, dict)]
         uids = [m["uid"] for m in found if isinstance(m.get("uid"), int) and m["uid"] > 0]
@@ -343,7 +409,7 @@ class MailFlow:
         arguments: dict[str, Any] = {"uid": uid}
         if isinstance(result.get("account"), str):
             arguments["account"] = result["account"]
-        read = self._call(MAIL_TOOL, "read_message", arguments, "Read the email you asked about")
+        read = self._call(MAIL_TOOL, "read_message", arguments, self.why["read"])
         if read.status != "done" or not isinstance(read.result, dict):
             return None
         return read
@@ -384,9 +450,7 @@ class MailFlow:
         arguments = {"title": facts.title, "start": facts.start, "end": facts.end}
         if facts.location:
             arguments["location"] = facts.location
-        return self._call(
-            CALENDAR_TOOL, "create_event", arguments, "Add the meeting from the email"
-        )
+        return self._call(CALENDAR_TOOL, "create_event", arguments, self.why["event"])
 
     def _draft(self, email: dict[str, Any], reply: str) -> ToolOutcome | None:
         to = _reply_address(email)
@@ -407,7 +471,7 @@ class MailFlow:
         }
         if isinstance(email.get("message_id"), str) and email["message_id"]:
             arguments["in_reply_to"] = email["message_id"]
-        return self._call(MAIL_TOOL, "save_draft", arguments, "Save the answer as a draft")
+        return self._call(MAIL_TOOL, "save_draft", arguments, self.why["draft"])
 
     def _json(self, messages: list[Message], schema: dict) -> dict | None:
         try:
