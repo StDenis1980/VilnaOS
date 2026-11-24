@@ -516,7 +516,7 @@ def test_the_local_model_reads_the_prompt_on_the_graphics_chip():
     assert "\nSupplementaryGroups=render\n" in unit
     assert "\nCacheDirectory=vilna-llm\n" in unit
     assert "\nEnvironment=XDG_CACHE_HOME=%C/vilna-llm\n" in unit
-    assert unit.count("\nMemoryLow=5G\n") == 1
+    assert unit.count("\nMemoryLow=65%\n") == 1
 
 
 GLOXI_SPEC = Path(__file__).resolve().parents[2] / "obs" / "packages" / "gloxi" / "gloxi.spec"
@@ -529,20 +529,25 @@ def test_the_package_brings_the_vulkan_backend():
 
 def test_the_local_model_keeps_its_weights_in_memory():
     # On 8 GB the browser pushed the weights out and the first answer took
-    # 36 s instead of 6.8 s (image/docs/low-memory-check.md).
+    # 36 s instead of 6.8 s (image/docs/low-memory-check.md). A share of the RAM,
+    # not a fixed size: a fixed 5G choked a 6 GB computer (PSI full 47 %).
     unit = Path(__file__).resolve().parents[1] / "systemd" / "vilna-llm.service"
-    assert "\nMemoryLow=5G\n" in unit.read_text()
+    assert "\nMemoryLow=65%\n" in unit.read_text()
 
 
 def test_system_slice_lets_the_model_keep_its_protection():
     # cgroup v2 protects a unit only up to its parent slice, and system.slice
-    # has memory.low=0: without this drop-in MemoryLow=5G of vilna-llm did
+    # has memory.low=0: without this drop-in MemoryLow of vilna-llm did
     # nothing on Build16.22 (memory.events "low 0").
     systemd = Path(__file__).resolve().parents[1] / "systemd"
     unit = (systemd / "vilna-llm.service").read_text()
     assert "\nSlice=" not in unit
     drop_in = (systemd / "system.slice.d" / "50-vilna-llm.conf").read_text()
-    assert "\n[Slice]\nMemoryLow=5G\n" in drop_in
+    assert "\n[Slice]\nMemoryLow=65%\n" in drop_in
+    # The slice must protect as much as the service asks for, no less.
+    service_low = unit.split("\nMemoryLow=", 1)[1].split("\n", 1)[0]
+    slice_low = drop_in.split("\nMemoryLow=", 1)[1].split("\n", 1)[0]
+    assert service_low == slice_low
 
 
 # -- text.translate (the weather warnings of the Shell extension) -------------------

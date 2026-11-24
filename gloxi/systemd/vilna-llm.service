@@ -46,13 +46,16 @@ WorkingDirectory=/usr/share/vilna/models
 # Keep the weights in memory when programs need it (image/docs/low-memory-check.md).
 # On 8 GB with Firefox open the kernel dropped the mapped weights and Gloxi read
 # them back from disk: the first word took 36 s with 10 tabs (VM, 8 GB,
-# Build16.22). With MemoryLow=5G here and on system.slice (Qwen3 4B takes
-# ~4.7 GB PSS) it took 6.8 s, and nothing was OOM-killed. This line alone does
+# Build16.22). With MemoryLow here and on system.slice (Qwen3 4B takes ~4.7 GB
+# PSS) it took 5.5-6.8 s, and nothing was OOM-killed. This line alone does
 # nothing: cgroup v2 protects a unit only up to its parent, so the drop-in
 # system.slice.d/50-vilna-llm.conf gives system.slice the same MemoryLow.
+# 65 % of the RAM, not a fixed 5G: on 8 GB it is ~5 GB, but on 6 GB a fixed 5G
+# left the rest of the system ~1 GB and the Live installer stalled (PSI full
+# 47 %); 65 % (3.8 GB there) gave 4.5 % (VM, Live Build12.26, 24.11.2026).
 # The protection is soft: the kernel still takes this memory when nothing else
 # is left, and it does not change whom the OOM killer picks.
-MemoryLow=5G
+MemoryLow=65%
 Restart=on-failure
 RestartSec=5
 
