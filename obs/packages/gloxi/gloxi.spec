@@ -38,6 +38,9 @@ Requires:       herkos-agent
 Requires:       shadow
 # The shared local model (vilna-llm.service).
 Requires:       llamacpp
+# It reads the prompt on the graphics chip (Vulkan), 3x faster than on the
+# processor; without a Vulkan device it stays on the processor.
+Requires:       libggml-vulkan
 # vilna-llm.service starts only when the weights are there.
 Recommends:     vilna-model-default
 %{?systemd_ordering}
