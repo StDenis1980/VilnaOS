@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -125,6 +126,7 @@ ENCRYPT_PASS_QUESTION = (
     "with a passphrase you type at every start. Without encryption, anyone with the disk "
     "can read your files."
 )
+NO_ENCRYPTION = "Fine, the disk will not be encrypted. You can change this in the plan."
 KEEP_KEY = (
     "Keep the recovery key safe: without it nobody, not even you, can open the disk if "
     "something in this computer changes."
@@ -270,6 +272,7 @@ TEXTS = (
     FILES,
     ENCRYPT_TPM_QUESTION,
     ENCRYPT_PASS_QUESTION,
+    NO_ENCRYPTION,
     KEEP_KEY,
     USER_QUESTION,
     TIME_QUESTION,
@@ -542,6 +545,41 @@ NOT_SAVED = (
     "person said what they want, call the function for it now. If not, ask what they want."
 )
 ENCRYPTED_METHODS = ("tpm2", "tpm2-pin", "passphrase")
+# «Do not encrypt» in the installer's languages, looked for inside the answer.
+NO_ENCRYPTION_WORDS = (
+    "без шифр",
+    "не шифр",
+    "шифрувати не",
+    "шифрування не треба",
+    "шифрування не потрібн",
+    "no encryption",
+    "without encryption",
+    "not encrypt",
+    "don't encrypt",
+    "unencrypted",
+    "bez szyfrowania",
+    "nie szyfruj",
+    "ohne verschlüsselung",
+    "nicht verschlüsseln",
+    "sin cifrar",
+    "sin cifrado",
+    "no cifrar",
+    "sans chiffrement",
+    "pas de chiffrement",
+    "ne pas chiffrer",
+    "senza crittografia",
+    "non cifrare",
+    "fără criptare",
+    "fara criptare",
+    "bez šifrování",
+    "nešifrovat",
+    "be šifravimo",
+    "nešifruoti",
+)
+# A bare «no» right after the fixed question «Shall I encrypt the new system?».
+NO_WORDS = frozenset(
+    ["ні", "не", "не треба", "no", "nope", "nie", "nein", "non", "ne", "nu", "não"]
+)
 QUESTION_MARKS = ("?", "？", "¿")
 # The encryption step on a computer without a TPM 2.0: the model recommended
 # TPM2 anyway, and only the Herkos screen stopped it (Build8.9).
@@ -555,6 +593,12 @@ AFTER_SECRET = (
     "The person has just done this in the installer window themselves; "
     "do not ask for it again. Go on with the current step."
 )
+# Build12.26 (VM, 2026-11-24): «свободного простору», «будь-хім», «буде замінятий»:
+# the small model drifts into Russian words, as Gloxi's chat saw too.
+NOT_RUSSIAN = {
+    "Ukrainian": "Use only Ukrainian words and grammar, never Russian ones "
+    "(«вільного місця», not «свободного простору»)."
+}
 # Named for the model when the plan holds the marker "entered" for them.
 ENTERED_NAMES = {
     "network": "the Wi-Fi password (the computer is connected)",
@@ -923,9 +967,53 @@ class Conversation:
                 f"\n\n(The installer: this looks typed in the wrong keyboard layout; in "
                 f"the Ukrainian layout it reads «{mistyped}».)"
             )
+        asked = self._last_said()
         self.history.append({"role": "user", "content": content})
         self._log("person", text, self.current().key)
+        if self._declines_encryption(text, mistyped, asked):
+            return self._without_encryption()
         return self._answer(fresh=True)
+
+    def _last_said(self) -> str:
+        last = next((m for m in reversed(self.history) if m["role"] == "assistant"), None)
+        return (last or {}).get("content") or ""
+
+    def _declines_encryption(self, text: str, mistyped: str | None, asked: str) -> bool:
+        """At the encryption step, the person said not to encrypt.
+
+        Build12.26 (VM, 2026-11-24): to «без шифрування» the model saved a passphrase
+        in all three runs and asked for it, so this answer does not go through it."""
+        if self.current().key != "encryption":
+            return False
+        for said in filter(None, (text, mistyped)):
+            low = " ".join(said.lower().split())
+            if any(mark in low for mark in QUESTION_MARKS):
+                continue
+            if any(no in low for no in NO_ENCRYPTION_WORDS):
+                return True
+            questions = (self.texts(ENCRYPT_TPM_QUESTION), self.texts(ENCRYPT_PASS_QUESTION))
+            if low.strip(".,!") in NO_WORDS and asked.endswith(questions):
+                return True
+        return False
+
+    def _without_encryption(self) -> Reply:
+        """Save «none» as the person said, then the next step's question."""
+        try:
+            ok, _ = self.tools.call("plan_set_encryption", {"method": "none"})
+        except ToolsError:
+            ok = False
+        if not ok:
+            return self._answer(fresh=True)
+        self.refresh()
+        if self.state.focus == "encryption":
+            self.state.focus = None
+        said = [self.texts(NO_ENCRYPTION)]
+        question = self.question(self.current())
+        if question:
+            said.append(question)
+        answer = "\n\n".join(said)
+        self.history.append({"role": "assistant", "content": answer})
+        return self._reply(answer)
 
     def resume(self, entered: str | None = None) -> Reply:
         """Go on without a new message: after a protected field (``entered`` names it:
@@ -1028,6 +1116,10 @@ class Conversation:
             return self._reply(self.texts(MODEL_FAILED), failed=True)
         finally:
             self._note = ""
+        answer = _spoken(answer)
+        if not answer:
+            # The model said nothing but the notes: the step's own question, if any.
+            answer = self.question(self.current()) or self.texts(MODEL_FAILED)
         answer = "\n\n".join([*self._said, answer])
         self.history.append({"role": "assistant", "content": answer})
         return self._reply(answer)
@@ -1127,6 +1219,8 @@ class Conversation:
             return None
         # The notes are English and come right before the answer; a small
         # model then drifted into English (S7 on KLX, 2026-11-17).
+        if self.reply_language in NOT_RUSSIAN:
+            parts.append(NOT_RUSSIAN[self.reply_language])
         parts.append(f"Reply in {self.reply_language}.")
         text = f"{NOTES_START}\n" + "\n\n".join(parts) + f"\n{NOTES_END}"
         return text, (context if context != known else "")
@@ -1333,6 +1427,19 @@ def wrong_layout(text: str) -> str | None:
     if not signs:
         return None
     return read
+
+
+# Build12.26 (VM, 2026-11-24): at the encryption step Gloxi wrote the whole
+# «<installer-notes> Step 8 of 13 … </installer-notes>» block into the chat.
+_NOTES_RE = re.compile(
+    re.escape(NOTES_START) + r".*?(?:" + re.escape(NOTES_END) + r"|\Z)", re.DOTALL
+)
+
+
+def _spoken(text: str) -> str:
+    """What the model said, without the installer's notes it echoed back."""
+    text = _NOTES_RE.sub("", text).replace(NOTES_END, "")
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
 def _without_notes(content: str) -> str:

@@ -153,6 +153,9 @@ msgstr "Připojíme se teď k síti? Není to nutné: vše potřebné k instalac
 msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
 msgstr "Co uděláme s diskem? Navrhuji smazat celý disk a nainstalovat Vilna; druhou možností je vlastní rozdělení v editoru oddílů."
 
+msgid "Fine, the disk will not be encrypted. You can change this in the plan."
+msgstr "Dobře, disk nebude šifrovaný. Změnit to můžete v plánu."
+
 msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
 msgstr "Klíč pro obnovení dobře uschovejte: bez něj nikdo, ani vy, disk neotevře, pokud se v tomto počítači něco změní."
 
