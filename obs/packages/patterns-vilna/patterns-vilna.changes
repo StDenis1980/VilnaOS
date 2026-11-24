@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 24 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.16: the terminal is Ptyxis (ptyxis, ptyxis-lang) instead of
+  GNOME Console, for a see-through background (gnome-branding-Vilna
+  0.18 sets its Vilna profile).
+
+-------------------------------------------------------------------
 Fri Nov 20 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.15: require vilna-mcp-desktop: the desktop, the portals' app

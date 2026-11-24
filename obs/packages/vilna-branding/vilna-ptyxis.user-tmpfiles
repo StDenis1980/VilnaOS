@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The Vilna palette for the Ptyxis terminal (30_Vilna.gschema.override):
+# Ptyxis reads palettes only from the person's own folder, so it is
+# copied there at login. «C» copies only when the file is missing, so a
+# palette the person changed stays theirs.
+d %h/.local/share/org.gnome.Ptyxis - - - -
+d %h/.local/share/org.gnome.Ptyxis/palettes - - - -
+C %h/.local/share/org.gnome.Ptyxis/palettes/vilna.palette - - - - /usr/share/vilna/ptyxis/vilna.palette

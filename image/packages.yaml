@@ -55,6 +55,7 @@ vilna:
     - {name: gloxi-session,                license: GPL-3.0-or-later, status: obs}      # subpackage of gloxi
     - {name: gnome-shell-extension-vilna,  license: GPL-3.0-or-later, status: obs}      # shell-extension/: паролі EN, Gloxi поверх усіх, смуга під панель
     - {name: gnome-shell-extension-dash-to-dock, license: GPL-2.0-or-later, status: obs} # док, docs/design/desktop/README.md
+    - {name: ptyxis,                       license: GPL-3.0-or-later, status: upstream} # термінал замість GNOME Console: прозорий фон, профіль Vilna (docs/design/desktop/README.md)
     # Спільні компоненти
     - {name: python-vilna-privacy-gateway, license: Apache-2.0,       status: obs}
     - {name: vilna-mcp-files,              license: Apache-2.0,       status: obs}
