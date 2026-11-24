@@ -1,10 +1,24 @@
 -------------------------------------------------------------------
-Tue Nov 24 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Tue Nov 24 15:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
-- 0.11: the Gloxi side panel reads new lines to a screen reader (ATK
+- 0.12: the Gloxi side panel reads new lines to a screen reader (ATK
   notification, AT-SPI Announcement): a finished answer whole, cards,
   errors and the Gloxi notifications it shows instead of banners. It
   opens on the monitor the person works on, not only the primary one.
+
+-------------------------------------------------------------------
+Tue Nov 24 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.11: the dock page (prefs.js, lib/dock.js): place (bottom or left;
+  the right edge is the Gloxi side panel's), icon size
+  32-80 px and hiding (Dash to Dock's own keys), transparency of the
+  glass 0-100 % (new key dock-transparency, 8 % by default) and springy
+  icons (new key dock-icon-motion): an icon grows under the pointer,
+  sinks when pressed and springs back, breathes while its app starts,
+  and the others sway while one is dragged (dockMotion.js). The glass
+  is now styled on every side of the screen (dockLook.js), and the
+  widgets keep to the right of a dock on the left. In the ten
+  languages of Vilna.
 
 -------------------------------------------------------------------
 Tue Nov 24 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

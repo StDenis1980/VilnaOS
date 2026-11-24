@@ -347,7 +347,11 @@ def steps(
         out.append(Step("add the recovery key", (*sdb, "--method=recovery-key", "enroll")))
     if method in WITH_TPM:
         out += first_boot_tpm2(
-            root, crypt_part=str(crypt_part), key_file=key_file, with_pin=method == "tpm2-pin"
+            root,
+            crypt_part=str(crypt_part),
+            crypt_uuid=str(crypt_uuid),
+            key_file=key_file,
+            with_pin=method == "tpm2-pin",
         )
     elif method == "passphrase":
         out.append(
@@ -383,7 +387,12 @@ def steps(
 
 
 def first_boot_tpm2(
-    root: str, *, crypt_part: str, key_file: Path | None, with_pin: bool = False
+    root: str,
+    *,
+    crypt_part: str,
+    crypt_uuid: str,
+    key_file: Path | None,
+    with_pin: bool = False,
 ) -> list[Step]:
     """TPM2 for the first boot to seal (see the module's text): what the live system leaves.
 
@@ -467,6 +476,12 @@ def first_boot_tpm2(
                 # enrollment key (VM test of milestone V2, Build12.2).
                 "RequiresMountsFor=/boot/efi\n"
                 "[Service]\n"
+                # sdbootutil-enroll ends with success also when it skipped:
+                # with another TPM (cleared, a disk moved) the credential
+                # does not decrypt, and nothing was sealed (VM test of
+                # Build12.19). Then the enrollment key is still on the disk:
+                # the unit fails and the credentials stay, to be seen.
+                f"ExecStartPost={not_sealed_check(crypt_uuid)}\n"
                 "ExecStartPost=/usr/bin/rm -f "
                 + " ".join(f"/{c}" for c in (*ENROLL_CREDENTIALS, ENROLL_PIN_CREDENTIAL))
                 + "\n"
@@ -476,6 +491,22 @@ def first_boot_tpm2(
             "seal with the TPM on the first boot", (*chroot, "systemctl", "enable", ENROLL_SERVICE)
         ),
     ]
+
+
+def not_sealed_check(crypt_uuid: str) -> str:
+    """A unit command that fails while the disk still has the enrollment key.
+
+    The first boot removes the token with the installer's key once it has
+    sealed the disk with the TPM, so the token left means it did not.
+    """
+    if not re.fullmatch(r"[0-9a-fA-F-]{8,64}", crypt_uuid):
+        raise ValueError(f"crypt_uuid {crypt_uuid!r} is not a UUID")
+    dump = f"/usr/sbin/cryptsetup luksDump --dump-json-metadata /dev/disk/by-uuid/{crypt_uuid}"
+    return (
+        f"/usr/bin/sh -c 'if {dump} | /usr/bin/grep -q enrollment-key; then "
+        'echo "The TPM did not seal the disk: the installer key is still there." >&2; '
+        "exit 1; fi'"
+    )
 
 
 def forget_keys() -> list[Step]:
