@@ -468,13 +468,31 @@ def parse_nmcli_wifi(text: str) -> list[dict[str, Any]]:
 # --- the machine ------------------------------------------------------------
 
 
+def untranslated_env(environ: dict[str, str] | None = None) -> dict[str, str]:
+    """The environment for programs whose output is read: C.UTF-8, no translation.
+
+    The installer shows GTK in the language the person chose (LANGUAGE), and
+    the live system may start in any of ten: what is parsed here («connected»,
+    «yes» from nmcli) must not depend on which.
+    """
+    env = dict(os.environ if environ is None else environ)
+    env.pop("LANGUAGE", None)
+    env["LC_ALL"] = "C.UTF-8"
+    return env
+
+
 class Machine:
     """The real computer the live system runs on."""
 
     def _run(self, *argv: str, timeout: float = 20) -> str:
         try:
             done = subprocess.run(
-                list(argv), capture_output=True, text=True, timeout=timeout, check=False
+                list(argv),
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False,
+                env=untranslated_env(),
             )
         except (OSError, subprocess.SubprocessError) as e:
             raise MachineError(f"{argv[0]} did not run: {e}") from e
