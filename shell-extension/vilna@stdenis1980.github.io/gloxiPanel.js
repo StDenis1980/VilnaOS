@@ -29,6 +29,15 @@ import {verticalBox} from './vbox.js';
 const GLOXI_DESKTOP = 'io.github.stdenis1980.Gloxi.desktop';
 const CALL_SECONDS = 15;
 
+/**
+ * Whether the keyboard focus is in this actor. With the focus in a window
+ * the stage has none, and contains(null) throws in GNOME Shell 51.
+ */
+export function hasKeyFocus(actor) {
+    const focus = global.stage.get_key_focus();
+    return focus !== null && actor.contains(focus);
+}
+
 // Where gloxid listens (gloxi/docs/service-protocol.md).
 export function gloxiSocket() {
     return GLib.getenv('GLOXI_SERVICE_SOCKET') ||
@@ -93,12 +102,18 @@ class GloxiClient {
             } catch {
                 message = null;
             }
-            if (message && typeof message === 'object' && 'id' in message && !('event' in message)) {
-                const waiting = this._pending.get(message.id);
-                this._pending.delete(message.id);
-                waiting?.(message);
-            } else if (message) {
-                this._onLine(message);
+            // A fault while showing one line must not stop the reading:
+            // the rest of the answer and every later event would be lost.
+            try {
+                if (message && typeof message === 'object' && 'id' in message && !('event' in message)) {
+                    const waiting = this._pending.get(message.id);
+                    this._pending.delete(message.id);
+                    waiting?.(message);
+                } else if (message) {
+                    this._onLine(message);
+                }
+            } catch (e) {
+                console.error(`Vilna Gloxi panel: ${e.message}\n${e.stack}`);
             }
             this._read();
         });
@@ -420,7 +435,7 @@ export class PanelView {
     // an ATK notification (AT-SPI Announcement, which Orca reads), from the
     // message list. Read whole, once an answer is finished, not word by word.
     _speak() {
-        const focused = this.actor.contains(global.stage.get_key_focus());
+        const focused = hasKeyFocus(this.actor);
         const news = this._chat.takeNews(focused);
         if (!news.length)
             return;

@@ -37,7 +37,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
 import {dockMonitor, dockStrip} from './lib/geometry.js';
 import {isGloxiSource, panelText} from './lib/gloxiPanel.js';
-import {PanelView} from './gloxiPanel.js';
+import {PanelView, hasKeyFocus} from './gloxiPanel.js';
 
 const SLIDE_MS = 250;
 
@@ -142,8 +142,14 @@ export class Dock {
         const id = source.connect('notification-added', (_s, notification) => {
             if (!this._view)
                 return;
-            this._view.notice(notification.title, notification.body ?? notification.bannerBodyText);
-            notification.acknowledged = true;
+            // No banner only once the panel shows it: if showing fails,
+            // the banner is the person's way to see it.
+            try {
+                this._view.notice(notification.title, notification.body ?? notification.bannerBodyText);
+                notification.acknowledged = true;
+            } catch (e) {
+                console.error(`Vilna Gloxi panel: ${e.message}\n${e.stack}`);
+            }
         });
         const gone = source.connect('destroy', () => {
             this._signals = this._signals.filter(([o]) => o !== source);
@@ -249,7 +255,7 @@ export class Dock {
         if (!this._panel)
             return;
         const panel = this._panel, view = this._view;
-        const hadFocus = panel.contains(global.stage.get_key_focus());
+        const hadFocus = hasKeyFocus(panel);
         this._panel = null;
         this._view = null;
         this._button?.remove_style_pseudo_class('checked');

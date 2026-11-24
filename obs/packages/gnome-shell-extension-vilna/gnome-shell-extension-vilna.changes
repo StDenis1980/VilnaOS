@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 24 18:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.13: the Gloxi side panel reads Gloxi notifications and answers
+  aloud with the focus in another window too; on GNOME Shell 51 that
+  threw, stopped the reading of gloxid mid-answer and left the
+  notification without a banner (VM check of Build12.26).
+
+-------------------------------------------------------------------
 Tue Nov 24 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Starts on GNOME Shell 51 again: St.BoxLayout there has no «vertical»
