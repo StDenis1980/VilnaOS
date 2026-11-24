@@ -48,6 +48,7 @@ from vilna_installer import (  # noqa: E402
     layout_hint,
     real_input,
     speech,
+    start,
     style,
 )
 from vilna_installer import conversation as conv  # noqa: E402
@@ -132,6 +133,7 @@ class ConfirmWindow(Adw.ApplicationWindow):
         real_input.watch_window(self, self.gate)
         _ = confirm.texts_for(confirm.plans.load(plan_path))
         self._ = _
+        start.gtk_language(_.code)
         checked = confirm.check(plan_path, machine, _, stage=stage, tpm=tpm)
         self.seen = checked.plan
         self.summary = checked.summary

@@ -18,6 +18,7 @@ from __future__ import annotations
 import ast
 import contextlib
 import json
+import locale
 import os
 import re
 import subprocess
@@ -129,6 +130,26 @@ class Texts:
 
     def __call__(self, message: str) -> str:
         return self._catalog.get(message, message)
+
+
+def gtk_language(language: str, environ: Any = None) -> None:
+    """GTK's and libadwaita's own words («Show Password») in the installer's language.
+
+    They come from glibc gettext, which reads LANGUAGE at every lookup, so
+    they follow the person's choice and not the live session's (English).
+    ``language`` is a code (``uk``) or a locale (``pt_BR.UTF-8``). Programs the
+    installer starts inherit it: those whose output it reads run in C.UTF-8
+    (``vilna_mcp_installer.machine``).
+    """
+    env = os.environ if environ is None else environ
+    code = language.split(".")[0].split("@")[0]
+    if not code:
+        return
+    env["LANGUAGE"] = code
+    if environ is None and hasattr(locale, "textdomain"):
+        # glibc keeps the words it has found until the domain is set again:
+        # without this, a second choice (Українська, then Polski) kept the first.
+        locale.textdomain(locale.textdomain(None))
 
 
 def default_language(environ: dict[str, str] | None = None) -> str:

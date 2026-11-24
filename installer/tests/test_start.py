@@ -70,6 +70,18 @@ def test_default_language(env, code):
     assert start.default_language(env) == code
 
 
+@pytest.mark.parametrize(
+    ("language", "expected"),
+    [("uk", "uk"), ("pt_BR.UTF-8", "pt_BR"), ("sr_RS@latin", "sr_RS"), ("", None)],
+)
+def test_gtk_speaks_the_language_chosen_in_the_installer(language, expected):
+    """«Show Password» stayed English in an English live session (VM, Build12.26)."""
+    env = {"LANG": "en_US.UTF-8"}
+    start.gtk_language(language, env)
+    assert env.get("LANGUAGE") == expected
+    assert env["LANG"] == "en_US.UTF-8"  # the locale itself (numbers, dates) is the session's
+
+
 def test_plan_starts_unconfirmed_and_rejects_unknown_languages(tmp_path):
     plan = start.start_plan("lt", True, False)
     assert plan == {

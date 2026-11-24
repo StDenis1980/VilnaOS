@@ -146,6 +146,7 @@ class Welcome(Adw.ApplicationWindow):
         super().__init__(application=app)
         self.plan_path = plan_path
         self.texts = start.Texts(language)
+        start.gtk_language(language)
         self.locale: str | None = None  # set only by «Other languages»
         self.own_name, self.translated_name = language_names()
         self.others: list[tuple[str, str]] | None = None
@@ -346,6 +347,7 @@ class Welcome(Adw.ApplicationWindow):
         if button.get_active():
             self.locale = None
             self.texts = start.Texts(code)
+            start.gtk_language(code)
             self._relabel()
 
     def _ui_locale(self) -> str:
@@ -410,6 +412,7 @@ class Welcome(Adw.ApplicationWindow):
             button.set_active(False)
         self.locale = loc
         self.texts = start.Texts(code)
+        start.gtk_language(loc)  # GTK has words in more languages than ours
         self._relabel()
 
     def _show_theme(self) -> None:

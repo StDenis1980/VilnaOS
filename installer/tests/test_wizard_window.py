@@ -327,6 +327,26 @@ def test_tab_goes_past_the_keyboard_layout_hint(plan_path):
     assert isinstance(win.get_focus().get_ancestor(Adw.PasswordEntryRow), Adw.PasswordEntryRow)
 
 
+def test_gtk_words_are_in_the_installers_language(tmp_path):
+    """«Show Password» stayed English in the English live session (VM, Build12.26)."""
+    start.gtk_language("uk")
+    if GLib.dgettext("libadwaita", "Show Password") == "Show Password":
+        pytest.skip("libadwaita has no Ukrainian here, or the locale is C")
+    start.gtk_language("en")  # a second choice is not kept from the first
+    assert GLib.dgettext("libadwaita", "Show Password") == "Show Password"
+    del os.environ["LANGUAGE"]
+    path = tmp_path / "plan.json"
+    start.write_plan(start.start_plan("uk", False, False), path)
+    win = window(path)
+    win.wizard.tpm = lambda: False
+    win.go("encryption", strict=False)
+    win.present()
+    assert spin(lambda: win.get_mapped())
+    spin(lambda: False, 0.3)
+    tips = {w.get_tooltip_text() for w in _all(win, Gtk.Widget) if w.get_mapped()}
+    assert "Show Password" not in tips
+
+
 def test_a_list_does_not_stop_at_the_hint():
     """libadwaita 1.5 put the hint under the list; newer ones keep it in, where Tab stopped."""
     win = Gtk.Window()

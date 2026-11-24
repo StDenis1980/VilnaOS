@@ -332,6 +332,7 @@ class WizardWindow(Adw.ApplicationWindow):
         self.confirmed: confirm_window.confirm.Outcome | None = None
         code = (self.wizard.plan.get("ui") or {}).get("language", "en")
         self._ = start.Texts(code if code in start.CODES else "en")
+        start.gtk_language(self._.code)
         _ = self._
         self.set_default_size(1280, 800)
         self.set_title(_(start.TITLE))
