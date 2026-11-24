@@ -4,6 +4,7 @@
 // next to the Vilna extension, drives it, and writes PASS/FAIL lines to
 // $VILNA_TEST_OUT. Never installed outside the test.
 
+import Atk from 'gi://Atk';
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -409,6 +410,10 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     check('side panel: the field\'s name starts with what it shows',
         Boolean(view.entry.accessible_name) && view.entry.hint_text.startsWith(view.entry.accessible_name), true);
 
+    // What Orca would read: the list's ATK notifications (AT-SPI Announcement).
+    const heard = [];
+    const listAccessible = view._list.get_accessible();
+    const hearing = listAccessible.connect('notification', (_a, words, politeness) => heard.push([words, politeness]));
     view.entry.set_text('Увімкни темну тему');
     await press(Clutter.KEY_Return);
     check('side panel: Enter sends, the answer streams in',
@@ -416,6 +421,10 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
             view.chat.lines.slice(2).map(l => `${l.kind}: ${l.text}`),
         ['user: Увімкни темну тему', 'gloxi: Готово: темну тему ввімкнено.', 'action: Settings: dark theme']);
     check('side panel: the field is empty again', view.entry.get_text(), '');
+    // The card as soon as the action is done, the answer once it is finished.
+    check('side panel: a screen reader hears the card, then the whole answer once',
+        heard.map(([w]) => w), ['Settings: dark theme · Done', 'Gloxi: Готово: темну тему ввімкнено.']);
+    check('side panel: politely', heard.every(([, p]) => p === Atk.Live.POLITE), true);
     check('side panel: the owl is ready again, and says so', [view.chat.state, Boolean(view.actor.accessible_description)],
         ['idle', true]);
     check('side panel: the owl picture is there', view._owl.gicon?.get_file?.().query_exists(null) ?? false, true);
@@ -449,6 +458,8 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     check('side panel: and gets no banner', [reminder.acknowledged, Main.messageTray._notification === reminder,
         Main.messageTray._notificationQueue?.includes(reminder) ?? false], [true, false, false]);
     check('side panel: it stays in the notification list', gloxiSource.notifications.includes(reminder), true);
+    check('side panel: a screen reader hears it instead of the banner', heard.at(-1)?.[0], 'Нагадування: Зустріч о 15:00');
+    listAccessible.disconnect(hearing);
 
     settings.set_string('gloxi-dock-size', 'one-third');
     await sleep(800);

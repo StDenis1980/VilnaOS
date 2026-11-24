@@ -74,6 +74,12 @@ export class PanelChat {
         this.error = false;
         this.offline = false;
         this._answer = null;
+        // For a screen reader: lines to read out, and whether the person
+        // asked from this panel (then the answer is read even after they
+        // moved away; one asked from the window is read by the window).
+        this._news = [];
+        this._asking = false;
+        this._mine = false;
     }
 
     get state() {
@@ -84,6 +90,31 @@ export class PanelChat {
         if (this.busy)
             return this._answer?.text ? 'answering' : 'thinking';
         return 'idle';
+    }
+
+    _tell(line, urgent = false, always = false) {
+        this._news.push({line, urgent, always});
+        if (this._news.length > MAX_MESSAGES)
+            this._news.splice(0, this._news.length - MAX_MESSAGES);
+    }
+
+    /** The person sent a question from the panel (before chat.submit). */
+    asking(on = true) {
+        this._asking = on;
+    }
+
+    /**
+     * What a screen reader should say now, oldest first, and forget it.
+     * Gloxi's words, notes and cards: when the panel has the focus or the
+     * question came from it. Errors and notifications always: a notification
+     * shown here has no banner that would be read instead.
+     */
+    takeNews(focused) {
+        const news = this._news.filter(n => n.always || focused || this._mine)
+            .filter(n => n.line.text || n.line.kind === 'action')
+            .map(({line, urgent}) => ({line, urgent}));
+        this._news = [];
+        return news;
     }
 
     _push(line) {
@@ -101,7 +132,7 @@ export class PanelChat {
         const t = text(title), b = text(body, MAX_TEXT);
         if (!t && !b)
             return false;
-        this._push({kind: 'notice', text: t && b ? `${t}: ${b}` : t || b});
+        this._tell(this._push({kind: 'notice', text: t && b ? `${t}: ${b}` : t || b}), false, true);
         return true;
     }
 
@@ -109,6 +140,7 @@ export class PanelChat {
     loadHistory(history) {
         this.lines = [];
         this._answer = null;
+        this._news = [];
         for (const m of Array.isArray(history) ? history.slice(-MAX_MESSAGES) : []) {
             if (m?.role === 'user' || m?.role === 'assistant') {
                 const t = text(m.text, MAX_TEXT);
@@ -125,6 +157,8 @@ export class PanelChat {
         switch (message.event) {
         case 'user_message':
             this.error = false;
+            this._mine = this._asking;
+            this._asking = false;
             this._push({kind: 'user', text: text(message.text, MAX_TEXT)});
             return true;
         case 'start_answer':
@@ -139,17 +173,19 @@ export class PanelChat {
             // An answer that never got a word is not left as an empty line.
             if (this._answer && !this._answer.text)
                 this.lines.splice(this.lines.indexOf(this._answer), 1);
+            else if (this._answer)
+                this._tell(this._answer);
             this._answer = null;
             return true;
         case 'busy':
             this.busy = Boolean(message.busy);
             return true;
         case 'note':
-            this._push({kind: 'note', text: text(message.text)});
+            this._tell(this._push({kind: 'note', text: text(message.text)}));
             return true;
         case 'error':
             this.error = true;
-            this._push({kind: 'error', text: text(message.text)});
+            this._tell(this._push({kind: 'error', text: text(message.text)}), true, true);
             return true;
         case 'action': {
             const card = message.card && typeof message.card === 'object' ? message.card : {};
@@ -157,7 +193,7 @@ export class PanelChat {
             const program = text(card.program), operation = text(card.operation);
             const title = program && operation ? `${program}: ${operation}` : program || operation;
             const warned = Array.isArray(card.warnings) && card.warnings.length > 0;
-            this._push({kind: 'action', text: title, status, warned});
+            this._tell(this._push({kind: 'action', text: title, status, warned}), warned || status !== 'done');
             return true;
         }
         default:
