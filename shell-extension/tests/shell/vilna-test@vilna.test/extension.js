@@ -491,6 +491,51 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     await sleep(300);
     check('side panel: a new panel says hello again', panelRequests.filter(r => r.method === 'hello').length >= 2, true);
 
+    // A second monitor: the panel opens where the focused window is, and
+    // only that monitor gives up the strip, also on the edge between them.
+    if (Main.layoutManager.monitors.length > 1) {
+        settings.set_boolean('gloxi-panel-open', false);
+        await sleep(800);
+        const second = Main.layoutManager.monitors[1];
+        const away = findWindow(OTHER);
+        if (Meta.MaximizeFlags)
+            away.unmaximize(Meta.MaximizeFlags.BOTH);
+        else
+            away.unmaximize();
+        away.move_to_monitor(1);
+        away.activate(global.get_current_time());
+        await sleep(500);
+        // What Super+G and the top-bar button call (both checked above). Not
+        // the key itself: by now the layout is 'ua', which has no keysym g
+        // for the virtual keyboard to send; a real keyboard sends the key.
+        theDock().toggle();
+        await sleep(800);
+        const strip = dockPanel();
+        const area = Main.layoutManager.getWorkAreaForMonitor(1);
+        check('second monitor: the panel opens on the focused window\'s monitor',
+            Boolean(strip) && [strip[0] > second.x, strip[0] + strip[2], strip[3]],
+            [true, second.x + second.width, second.height]);
+        check('second monitor: its work area stops at the strip, the primary keeps all of its width',
+            [area.x + area.width, workArea()[2]], [strip?.[0], mw]);
+        if (Meta.MaximizeFlags)
+            away.maximize(Meta.MaximizeFlags.BOTH);
+        else
+            away.maximize();
+        await sleep(800);
+        const r = away.get_frame_rect();
+        check('second monitor: a maximised window there stays left of the strip',
+            [r.x >= second.x, r.x + r.width <= (strip?.[0] ?? 0)], [true, true]);
+        check('second monitor: ready to type there too', panelFocused(), true);
+        await press(Clutter.KEY_Escape);
+        await sleep(600);
+        check('second monitor: closed, the space comes back',
+            [settings.get_boolean('gloxi-panel-open'), Main.layoutManager.getWorkAreaForMonitor(1).width],
+            [false, second.width]);
+        away.move_to_monitor(0);
+        settings.set_boolean('gloxi-panel-open', true);
+        await sleep(800);
+    }
+
     settings.set_boolean('gloxi-dock', false);
     await sleep(800);
     check('side panel: off, no strip and no button',

@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // (c) Stage B of the Gloxi window: the side panel. A strip at the right edge
-// of the primary monitor is reserved like a dock, and the Shell draws the
-// Gloxi panel in it (gloxiPanel.js).
+// of a monitor is reserved like a dock, and the Shell draws the Gloxi panel
+// in it (gloxiPanel.js). It opens on the monitor the person is working on
+// (the focused window's, else the pointer's; the primary one at login) and
+// stays there until it is closed or that monitor goes away.
 //
 // The strip is a Shell actor registered as a strut, the same mechanism as
 // the top bar. GNOME then keeps maximised and tiled windows out of it, and
@@ -20,7 +22,8 @@
 // While the panel is open, Gloxi's own notifications show in it instead of
 // as banners; they stay in the Shell's notification list as always.
 //
-// Not yet: other monitors (the primary one only).
+// A strut on an edge between two monitors works too (Mutter 46): windows on
+// that monitor keep out of the strip, those on the next one are not touched.
 
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
@@ -32,7 +35,7 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
-import {dockStrip} from './lib/geometry.js';
+import {dockMonitor, dockStrip} from './lib/geometry.js';
 import {isGloxiSource, panelText} from './lib/gloxiPanel.js';
 import {PanelView} from './gloxiPanel.js';
 
@@ -86,6 +89,7 @@ export class Dock {
         this._view = null;
         this._button = null;
         this._returnTo = null;
+        this._monitor = null; // the index the open panel is on
         this._starting = true;
         this._keyBound = false;
     }
@@ -158,16 +162,30 @@ export class Dock {
     _sync() {
         const on = this._settings.get_boolean('gloxi-dock');
         this._syncButton(on);
-        const monitor = Main.layoutManager.primaryMonitor;
-        const strip = on && this._settings.get_boolean('gloxi-panel-open') && monitor
-            ? dockStrip(monitor,
-                Main.layoutManager.getWorkAreaForMonitor(Main.layoutManager.primaryIndex),
+        const open = on && this._settings.get_boolean('gloxi-panel-open');
+        const index = open ? this._monitorIndex() : null;
+        const monitor = index === null ? null : Main.layoutManager.monitors[index];
+        const strip = monitor
+            ? dockStrip(monitor, Main.layoutManager.getWorkAreaForMonitor(index),
                 this._settings.get_string('gloxi-dock-size'))
             : null;
+        if (strip && this._panel && index !== this._monitor)
+            this._release(false); // its monitor went away: open again on another
+        this._monitor = strip ? index : null;
         if (strip)
             this._reserve(strip);
         else
             this._release(true);
+    }
+
+    // The monitor the panel is on, or the one it opens on now.
+    _monitorIndex() {
+        const count = Main.layoutManager.monitors.length;
+        if (this._panel && this._monitor !== null && this._monitor < count)
+            return this._monitor;
+        const candidates = this._starting ? []
+            : [global.display.focus_window?.get_monitor(), global.display.get_current_monitor()];
+        return dockMonitor(candidates, count, Main.layoutManager.primaryIndex);
     }
 
     _syncKey(on) {
