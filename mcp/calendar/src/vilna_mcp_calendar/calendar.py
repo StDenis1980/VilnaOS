@@ -237,6 +237,11 @@ class DirUndo:
 
     @classmethod
     def default(cls) -> DirUndo:
+        # Started by Herkos, the unit's StateDirectory= is the one folder the
+        # sandbox lets it write (ProtectHome=read-only keeps the home out).
+        given = os.environ.get("STATE_DIRECTORY", "").split(":")[0]
+        if given:
+            return cls(Path(given) / "undo")
         state = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
         return cls(Path(state) / "vilna-mcp-calendar" / "undo")
 
@@ -244,15 +249,21 @@ class DirUndo:
         return self.path / f"{token}.json" if _TOKEN.fullmatch(token) else None
 
     def save(self, record: dict) -> str:
-        self.path.mkdir(mode=0o700, parents=True, exist_ok=True)
-        self._prune()
-        token = secrets.token_hex(16)
-        target = self.path / f"{token}.json"
-        tmp = target.with_suffix(".tmp")
-        fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False)
-        os.replace(tmp, target)
+        try:
+            self.path.mkdir(mode=0o700, parents=True, exist_ok=True)
+            self._prune()
+            token = secrets.token_hex(16)
+            target = self.path / f"{token}.json"
+            tmp = target.with_suffix(".tmp")
+            fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(record, f, ensure_ascii=False)
+            os.replace(tmp, target)
+        except OSError as e:
+            raise CalendarError(
+                f"the calendar cannot keep what it needs to undo this change "
+                f"({e.strerror or e}); nothing was changed"
+            ) from e
         return token
 
     def load(self, token: str) -> dict | None:
@@ -411,7 +422,13 @@ class Calendars:
         target = self._target(calendar)
         draft, _ = _draft(now, None, title, start, end, all_day, days, location, description)
         uid = self.store.create(target.id, draft)
-        token = self.undo.save({"calendar": target.id, "uid": uid, "snapshot": None})
+        try:
+            token = self.undo.save({"calendar": target.id, "uid": uid, "snapshot": None})
+        except Exception:
+            # An event nobody can undo is not left behind: asked again, it
+            # would be made twice, and the answer would say it was not made.
+            self.store.remove(target.id, uid)
+            raise
         return {
             "created": self._item_now(target.id, uid, draft, now),
             "undo_arguments": {"token": token},

@@ -690,6 +690,9 @@ def _unavailable(operation: str, path: str | None, detail: str) -> ToolOutcome:
     return ToolOutcome(operation, path, "denied", "herkos_unavailable", detail, _json(payload))
 
 
+_MESSAGE_ID = re.compile(r"<[^<>@\s]+@[^<>@\s]+>")
+
+
 class _MailSeen:
     """The accounts and the email the mail program gave in this conversation.
 
@@ -735,11 +738,31 @@ class _MailSeen:
             elif len(self.accounts) == 1:
                 out["account"] = self.accounts[0]
         to = out.get("to")
+        # The sender's name at another domain (marta@example.org for
+        # marta@example.com, VM check 2026-11-24): a slip of the model, and one
+        # the person easily misses in the Herkos window.
+        if isinstance(to, str) and self._near_sender(to):
+            out["to"] = to = self.sender
+        elif isinstance(to, list):
+            out["to"] = to = [self.sender if self._near_sender(t) else t for t in to]
         to = [to] if isinstance(to, str) else to if isinstance(to, list) else []
         answers = any(parseaddr(str(t))[1].casefold() == self.sender for t in to)
+        given = out.get("in_reply_to")
+        if given is not None and not (isinstance(given, str) and _MESSAGE_ID.fullmatch(given)):
+            out.pop("in_reply_to")  # "..." or a made-up id is no Message-ID
         if self.message_id and self.sender and answers and not out.get("in_reply_to"):
             out["in_reply_to"] = self.message_id
         return out
+
+    def _near_sender(self, to: Any) -> bool:
+        if not isinstance(to, str):
+            return False
+        address = parseaddr(to)[1].casefold()
+        if not self.sender or not address or address == self.sender or "," in to:
+            return False
+        name, _, domain = address.rpartition("@")
+        sender_name, _, sender_domain = self.sender.rpartition("@")
+        return bool(name) and name == sender_name and domain != sender_domain
 
 
 def _error(operation: str, path: str | None, message: str) -> ToolOutcome:

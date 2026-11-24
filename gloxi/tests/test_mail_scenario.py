@@ -365,6 +365,39 @@ def test_a_reply_to_someone_else_gets_no_in_reply_to_and_a_known_account_stays()
     assert mailbox.calls[-1]["arguments"] == other
 
 
+@pytest.mark.parametrize("lang", sorted(REQUESTS))
+def test_herkos_is_told_why_in_the_language_of_the_request(lang):
+    mailbox, _, conv = flow(lang, {"uid": 41}, facts(lang))
+    ask(conv, REQUESTS[lang][0])
+    why = mail_flow.WHY[lang]
+    assert [c["reason"] for c in mailbox.calls] == [
+        why["find"],
+        why["read"],
+        why["event"],
+        why["draft"],
+    ]
+    assert set(mail_flow.WHY) == set(mail_flow.SAY)
+
+
+def test_a_made_up_domain_and_in_reply_to_are_put_right_before_the_send():
+    # The send in the VM check (2026-11-24): the sender's name at another
+    # domain and "..." for in_reply_to, shown to the person in the R4 window.
+    mailbox = Mailbox("en", FakeHerkos.LISTED + vilna_programs())
+    conv = conversation(ScriptedLlamaServer("Done."), FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    conv.tools.call("mail_read_message", json.dumps({"uid": 41, "reason": "r"}), user_turn=1)
+    slip = {**draft("en"), "to": "marta@example.org", "in_reply_to": "..."}
+    conv.tools.call("mail_save_draft", json.dumps(slip), user_turn=1)
+    assert mailbox.calls[-1]["arguments"] == {**draft("en"), "to": SENDER}
+    in_list = {**draft("en"), "to": ["Marta <marta@example.org>", "ivan@example.net"]}
+    conv.tools.call("mail_save_draft", json.dumps(in_list), user_turn=1)
+    assert mailbox.calls[-1]["arguments"]["to"] == [SENDER, "ivan@example.net"]
+    # Someone else with the same name stays, and so does a real Message-ID.
+    other = {**draft("en"), "to": ["ola@example.net"], "in_reply_to": "<x1@example.net>"}
+    conv.tools.call("mail_save_draft", json.dumps(other), user_turn=1)
+    assert mailbox.calls[-1]["arguments"] == other
+
+
 def test_an_event_asked_in_the_same_answer_as_the_read_waits_for_the_email():
     # Ministral 3 8B read the email and added the event at once, with the day
     # after "today" instead of the day in the email.

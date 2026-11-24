@@ -18,10 +18,14 @@ StandardError=journal
 # The tool stops when herkosd closes the connection; no restarts behind its back.
 Restart=no
 
-# Sandbox: no files to write, no network; only the session bus.
+# Sandbox: no network, only the session bus. The one folder it writes is
+# its own state folder, for undo (STATE_DIRECTORY): without it every new event
+# could not be undone, and the tool would take it back again.
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=read-only
+StateDirectory=vilna-mcp-calendar/%i
+StateDirectoryMode=0700
 PrivateTmp=yes
 PrivateDevices=yes
 PrivateNetwork=yes
