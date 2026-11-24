@@ -236,7 +236,8 @@ impl Agents {
     }
 
     /// Show the question on the person's screen and wait for the answer.
-    /// No agent, a broken one or an answer that was not offered: "no". No
+    /// An answer that was not offered: "no". No agent or a broken one:
+    /// [`Answer::Failed`], a "no" nobody saw. No
     /// answer in time: [`Answer::TimedOut`], which is a "no" too, but not the
     /// person's (Build14.24 reported it as "the user said no"). While the
     /// agent reports the screen locked or blank, the time does not count,
@@ -249,9 +250,9 @@ impl Agents {
                     Arc::clone(&l.pending),
                     Arc::clone(&l.away),
                 ),
-                None => return Answer::Deny,
+                None => return Answer::Failed,
             },
-            Err(_) => return Answer::Deny,
+            Err(_) => return Answer::Failed,
         };
         let id = format!("ask-{}", self.next.fetch_add(1, Ordering::Relaxed));
         let (tx, rx) = channel();
@@ -276,17 +277,13 @@ impl Agents {
                 return Answer::TimedOut;
             }
             // The agent went away or could not be reached.
-            Err(RecvTimeoutError::Disconnected) => return Answer::Deny,
+            Err(RecvTimeoutError::Disconnected) => return Answer::Failed,
         };
         let answer = reply
             .get("result")
             .and_then(|r| r.get("answer"))
-            .and_then(Value::as_str)
-            .and_then(Answer::parse);
-        match answer {
-            Some(a) if question.choices.contains(&a) => a,
-            _ => Answer::Deny,
-        }
+            .and_then(Value::as_str);
+        Answer::of_reply(answer, &question.choices)
     }
 }
 
@@ -810,8 +807,8 @@ mod tests {
     fn asks_the_person_through_their_agent() {
         let agents = Arc::new(Agents::default());
         let all = || vec![Answer::Once, Answer::Session, Answer::Always];
-        // No agent yet: "no".
-        assert_eq!(agents.ask(1000, &question(all()), 1.0), Answer::Deny);
+        // No agent yet: a "no" nobody saw.
+        assert_eq!(agents.ask(1000, &question(all()), 1.0), Answer::Failed);
 
         let seen = FakeAgent::start(&agents).answer("session");
         assert_eq!(agents.ask(1000, &question(all()), 5.0), Answer::Session);
@@ -819,7 +816,7 @@ mod tests {
         assert_eq!(q["method"], "herkos.agent.ask");
         assert_eq!(q["params"]["summary"], "Read a file");
         // Another person has no agent: their questions are not shown here.
-        assert_eq!(agents.ask(1001, &question(all()), 1.0), Answer::Deny);
+        assert_eq!(agents.ask(1001, &question(all()), 1.0), Answer::Failed);
 
         // Not offered: a "no".
         let seen = FakeAgent::start(&agents).answer("always");
@@ -829,6 +826,9 @@ mod tests {
         );
         seen.join().expect("agent");
         let seen = FakeAgent::start(&agents).answer("yes");
+        assert_eq!(agents.ask(1000, &question(all()), 5.0), Answer::Failed);
+        seen.join().expect("agent");
+        let seen = FakeAgent::start(&agents).answer("deny");
         assert_eq!(agents.ask(1000, &question(all()), 5.0), Answer::Deny);
         seen.join().expect("agent");
     }
@@ -897,7 +897,7 @@ mod tests {
         };
         let _ = fake.read();
         drop(fake);
-        assert_eq!(waiting.join().expect("ask"), Answer::Deny);
+        assert_eq!(waiting.join().expect("ask"), Answer::Failed);
         let start = std::time::Instant::now();
         while agents.links.lock().is_ok_and(|l| l.contains_key(&1000)) {
             assert!(

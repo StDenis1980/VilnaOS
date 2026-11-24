@@ -66,12 +66,12 @@ fn spawn(program: &Path) -> Option<std::process::Child> {
 impl Confirmer for Window {
     fn ask(&self, question: &Question, timeout: f64) -> Answer {
         let Some(mut child) = spawn(&self.program) else {
-            return Answer::Deny;
+            return Answer::Failed;
         };
         let (Some(mut stdin), Some(stdout)) = (child.stdin.take(), child.stdout.take()) else {
             let _ = child.kill();
             let _ = child.wait();
-            return Answer::Deny;
+            return Answer::Failed;
         };
         let input = serde_json::to_vec(&question.to_json()).unwrap_or_default();
         let (tx, rx) = channel();
@@ -89,15 +89,8 @@ impl Confirmer for Window {
         let Ok(out) = out else {
             return Answer::TimedOut;
         };
-        let last = out
-            .lines()
-            .map(str::trim)
-            .rfind(|l| !l.is_empty())
-            .unwrap_or("");
-        match Answer::parse(last) {
-            Some(a) if question.choices.contains(&a) => a,
-            _ => Answer::Deny,
-        }
+        let last = out.lines().map(str::trim).rfind(|l| !l.is_empty());
+        Answer::of_reply(last, &question.choices)
     }
 }
 
@@ -106,7 +99,7 @@ fn label(a: Answer) -> &'static str {
         Answer::Once => "[o] allow once",
         Answer::Session => "[s] allow for this session",
         Answer::Always => "[a] always allow",
-        Answer::Deny | Answer::TimedOut => "[n] deny",
+        Answer::Deny | Answer::TimedOut | Answer::Failed => "[n] deny",
     }
 }
 
@@ -167,11 +160,11 @@ impl Confirmer for Terminal {
             .custom_flags(i32::try_from(noctty).unwrap_or(0))
             .open("/dev/tty")
         else {
-            return Answer::Deny;
+            return Answer::Failed;
         };
         let _ = tty.write_all(render(question).as_bytes());
         let Ok(reader) = tty.try_clone() else {
-            return Answer::Deny;
+            return Answer::Failed;
         };
         let (tx, rx) = channel();
         thread::spawn(move || {
@@ -261,14 +254,20 @@ mod tests {
             says("noise", "cat >/dev/null; echo hello; echo session"),
             Answer::Session
         );
-        assert_eq!(says("bogus", "cat >/dev/null; echo yes"), Answer::Deny);
-        assert_eq!(says("silent", "cat >/dev/null"), Answer::Deny);
+        assert_eq!(says("no", "cat >/dev/null; echo deny"), Answer::Deny);
+        // No answer of the person's: a "no" nobody said (denied_error).
+        assert_eq!(says("bogus", "cat >/dev/null; echo yes"), Answer::Failed);
+        assert_eq!(says("silent", "cat >/dev/null"), Answer::Failed);
+        assert_eq!(
+            says("failed", "cat >/dev/null; echo failed"),
+            Answer::Failed
+        );
         // Not offered: "always" for an R4 action is a "no".
         let w = Window::new(&script("always", "cat >/dev/null; echo always"));
         assert_eq!(w.ask(&question(vec![Answer::Once]), 5.0), Answer::Deny);
         assert_eq!(
             Window::new(Path::new("/no/such/window")).ask(&question(all), 5.0),
-            Answer::Deny
+            Answer::Failed
         );
     }
 

@@ -37,11 +37,15 @@ def test_dialog_answer_outside_choices_is_deny():
 
 
 def test_dialog_garbage_crash_or_timeout_is_a_no():
-    assert fake("print('yes please')").ask(q(), timeout=10) is Answer.DENY
-    assert fake("raise SystemExit(3)").ask(q(), timeout=10) is Answer.DENY
+    # A window that gave no answer of the person's is a "no", but not theirs:
+    # Herkos reports denied_error (VM check 2026-11-24).
+    assert fake("print('yes please')").ask(q(), timeout=10) is Answer.FAILED
+    assert fake("raise SystemExit(3)").ask(q(), timeout=10) is Answer.FAILED
+    assert fake("print('failed')").ask(q(), timeout=10) is Answer.FAILED
+    assert fake("print('deny')").ask(q(), timeout=10) is Answer.DENY
     # No answer in time is its own "no": Herkos reports denied_timeout.
     assert fake("import time; time.sleep(5)").ask(q(), timeout=0.5) is Answer.TIMED_OUT
-    assert Dialog(["/nonexistent/dialog"]).ask(q(), timeout=1) is Answer.DENY
+    assert Dialog(["/nonexistent/dialog"]).ask(q(), timeout=1) is Answer.FAILED
 
 
 def test_question_json_has_no_surprises():
@@ -88,7 +92,7 @@ def test_a_handed_over_non_terminal_is_deny(tmp_path):
     from herkos.confirm import Terminal
 
     with open(tmp_path / "plain", "w+") as f:
-        assert Terminal(fd=f.fileno()).ask(q(), timeout=1) is Answer.DENY
+        assert Terminal(fd=f.fileno()).ask(q(), timeout=1) is Answer.FAILED
 
 
 def test_dialog_id_fits_the_flatpak_sandbox():

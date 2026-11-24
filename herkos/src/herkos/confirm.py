@@ -33,6 +33,9 @@ class Answer(Enum):
     # No answer before the timeout: a "no", but the person did not say no, so
     # Herkos reports it as denied_timeout. Never one of the offered choices.
     TIMED_OUT = "timed_out"
+    # The question could not be put at all (no window, no terminal): a "no"
+    # too, reported as denied_error, since nobody saw it.
+    FAILED = "failed"
 
 
 @dataclass(frozen=True)
@@ -217,12 +220,12 @@ class Terminal:
         try:
             if self.fd is not None:
                 if not os.isatty(self.fd):
-                    return Answer.DENY
+                    return Answer.FAILED
                 fd = os.dup(self.fd)
             else:
                 fd = os.open(self.tty_path, os.O_RDWR | os.O_NOCTTY)
         except OSError:
-            return Answer.DENY
+            return Answer.FAILED
         # A terminal cannot seek, so it gets a reader and a writer (not "r+").
         with (
             os.fdopen(fd, "r", encoding="utf-8") as reader,
@@ -280,12 +283,14 @@ class Dialog:
         except subprocess.TimeoutExpired:
             return Answer.TIMED_OUT  # run() kills the window on timeout
         except OSError:
-            return Answer.DENY
+            return Answer.FAILED
         lines = done.stdout.decode(errors="replace").strip().splitlines()
         try:
-            answer = Answer(lines[-1].strip()) if lines else Answer.DENY
+            answer = Answer(lines[-1].strip()) if lines else Answer.FAILED
         except ValueError:
-            return Answer.DENY
+            return Answer.FAILED
+        if answer in (Answer.DENY, Answer.FAILED):
+            return answer
         return answer if answer in question.choices else Answer.DENY
 
 

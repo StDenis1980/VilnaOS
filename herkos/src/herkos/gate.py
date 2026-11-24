@@ -469,7 +469,11 @@ class Gate:
             try:
                 answer = self.confirmer.ask(question, self.config.confirm_timeout)
             except Exception:  # a broken dialog is a "no"
-                answer = Answer.DENY
+                answer = Answer.FAILED
+        if answer is Answer.FAILED:
+            return Outcome(
+                action_id, False, a.level, "denied_error", "the question could not be shown"
+            )
         if answer is Answer.TIMED_OUT:
             return Outcome(
                 action_id, False, a.level, "denied_timeout", "the user did not answer in time"

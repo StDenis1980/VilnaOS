@@ -52,6 +52,11 @@ pub enum Answer {
     /// "no" like `Deny`, but the person did not say no, so Gloxi may offer to
     /// ask again (`denied_timeout`). Never one of the offered choices.
     TimedOut,
+    /// The question could not be put at all: no agent or window, or one that
+    /// gave no answer. A "no" too, but nobody saw it, so it is reported as
+    /// `denied_error`, not as the person's (VM check 2026-11-24). Never one of
+    /// the offered choices.
+    Failed,
 }
 
 impl Answer {
@@ -62,13 +67,30 @@ impl Answer {
             Answer::Session => "session",
             Answer::Always => "always",
             Answer::TimedOut => "timed_out",
+            Answer::Failed => "failed",
         }
     }
 
     pub fn parse(text: &str) -> Option<Answer> {
-        [Answer::Deny, Answer::Once, Answer::Session, Answer::Always]
-            .into_iter()
-            .find(|a| a.name() == text)
+        [
+            Answer::Deny,
+            Answer::Once,
+            Answer::Session,
+            Answer::Always,
+            Answer::Failed,
+        ]
+        .into_iter()
+        .find(|a| a.name() == text)
+    }
+
+    /// What a window or an agent said, against the choices it was offered:
+    /// one of them, the person's "no", or `Failed` for anything else.
+    pub fn of_reply(reply: Option<&str>, choices: &[Answer]) -> Answer {
+        match reply.and_then(Answer::parse) {
+            Some(a) if choices.contains(&a) => a,
+            Some(Answer::Failed) | None => Answer::Failed,
+            Some(_) => Answer::Deny,
+        }
     }
 }
 
@@ -1120,6 +1142,15 @@ impl Gate {
                 "the user did not answer in time".into(),
             ));
         }
+        if answer == Answer::Failed {
+            return Ok(Outcome::new(
+                id,
+                false,
+                Some(level),
+                "denied_error",
+                "the question could not be shown".into(),
+            ));
+        }
         if answer == Answer::Deny || !question.choices.contains(&answer) {
             return Ok(Outcome::new(
                 id,
@@ -2084,6 +2115,14 @@ pub(crate) mod tests {
         let mut s = Session::default();
         let o = g.handle(&files("read", &docs.join("a.txt")), &mut s);
         assert_eq!((o.allowed, o.code), (false, "denied_timeout"), "{o:?}");
+    }
+
+    #[test]
+    fn a_question_nobody_saw_is_not_a_no_of_theirs() {
+        let (g, docs) = gate("no-window", Answer::Failed);
+        let mut s = Session::default();
+        let o = g.handle(&files("read", &docs.join("a.txt")), &mut s);
+        assert_eq!((o.allowed, o.code), (false, "denied_error"), "{o:?}");
     }
 
     #[test]
