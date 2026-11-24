@@ -233,7 +233,7 @@ def test_denial_is_a_result_for_the_model():
     )
     data = json.loads(out.for_model)
     assert out.status == "denied"
-    assert data["code"] == "denied_user" and "not try the same action" in data["note"]
+    assert data["code"] == "denied_user" and "Do not try it again" in data["note"]
     assert "result" not in data
     assert out.summary() == "files: write /home/u/Documents/a (denied: the user said no)"
 
@@ -251,7 +251,7 @@ def test_no_answer_in_time_is_not_reported_as_a_refusal():
     )
     data = json.loads(out.for_model)
     assert out.status == "denied" and data["code"] == "denied_timeout"
-    assert "did not refuse" in data["note"] and "offer to ask again" in data["note"]
+    assert "did not refuse" in data["note"] and "Do not try it again or offer to" in data["note"]
 
 
 def test_keros_findings_become_warnings():
