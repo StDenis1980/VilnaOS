@@ -111,13 +111,32 @@ def password_rows(title: str, repeat: str) -> tuple[Adw.PasswordEntryRow, Adw.Pa
     return first, second
 
 
+class HintRow(Gtk.ListBoxRow):
+    """A row that is no stop of its own: Tab goes on through it to the next row.
+
+    A list stops at a row that takes no focus: in the VM (Build12.26) Tab went
+    from the passphrase rows to «Back», past «Not encrypted» under the hint.
+    """
+
+    __gtype_name__ = "VilnaHintRow"
+
+    def do_focus(self, direction: Gtk.DirectionType) -> bool:
+        back = direction in (Gtk.DirectionType.TAB_BACKWARD, Gtk.DirectionType.UP)
+        row = self.get_prev_sibling() if back else self.get_next_sibling()
+        while row is not None:
+            if row.get_visible() and row.child_focus(direction):
+                return True
+            row = row.get_prev_sibling() if back else row.get_next_sibling()
+        return False
+
+
 def hint_row(texts: Callable[[str], str], under: Gtk.Widget) -> Gtk.ListBoxRow:
     """The keyboard layout right under a password row, at its left edge (layout_hint.py).
 
     A row of the same list, so it stays where it is while the person types;
-    shown and hidden with the row it is under.
+    shown and hidden with the row it is under. Tab goes on past it (``HintRow``).
     """
-    row = Gtk.ListBoxRow(activatable=False, selectable=False, focusable=False)
+    row = HintRow(activatable=False, selectable=False, focusable=False)
     hint = layout_hint.hint(texts)
     hint.set_margin_start(12)
     hint.set_margin_top(4)

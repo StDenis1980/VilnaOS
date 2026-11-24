@@ -302,6 +302,58 @@ def test_tab_reaches_every_choice_after_one_is_made(plan_path):
     assert first.get_active()  # Tab chose nothing
 
 
+def test_tab_goes_past_the_keyboard_layout_hint(plan_path):
+    """Without a TPM the passphrase is chosen; Tab stopped at the hint under it (VM, Build12.26)."""
+    win = window(plan_path)
+    win.wizard.tpm = lambda: False
+    win.go("encryption", strict=False)
+    win.present()
+    assert spin(lambda: win.get_mapped())
+    spin(lambda: False, 0.3)
+    checks = [c for c in _all(win, Gtk.CheckButton) if c.get_mapped()]
+    chosen = next(c for c in checks if c.get_active())
+    last = checks[-1]
+    assert last is not chosen and last.is_sensitive()  # «Not encrypted», under the hint
+    chosen.grab_focus()
+    reached = []
+    for _ in range(8):
+        win.emit("move-focus", Gtk.DirectionType.TAB_FORWARD)
+        spin(lambda: False, 0.05)
+        reached.append(win.get_focus())
+    assert last in reached
+    last.grab_focus()
+    win.emit("move-focus", Gtk.DirectionType.TAB_BACKWARD)
+    spin(lambda: False, 0.05)
+    assert isinstance(win.get_focus().get_ancestor(Adw.PasswordEntryRow), Adw.PasswordEntryRow)
+
+
+def test_a_list_does_not_stop_at_the_hint():
+    """libadwaita 1.5 put the hint under the list; newer ones keep it in, where Tab stopped."""
+    win = Gtk.Window()
+    rows = Gtk.ListBox()
+    entry = Adw.PasswordEntryRow(title="Passphrase")
+    check = a11y.radio(wizard_window.radio_group(), label="Not encrypted")
+    after = Adw.ActionRow(title="Not encrypted")
+    after.add_prefix(check)
+    after.set_focusable(False)
+    for row in (entry, wizard_window.hint_row(start.Texts("en"), entry), after):
+        rows.append(row)
+    win.set_child(rows)
+    win.present()
+    assert spin(lambda: check.get_mapped())
+    entry.grab_focus()
+    reached = []
+    for _ in range(4):
+        win.emit("move-focus", Gtk.DirectionType.TAB_FORWARD)
+        spin(lambda: False, 0.05)
+        reached.append(win.get_focus())
+    assert check in reached
+    check.grab_focus()
+    win.emit("move-focus", Gtk.DirectionType.TAB_BACKWARD)
+    spin(lambda: False, 0.05)
+    assert win.get_focus().get_ancestor(Adw.PasswordEntryRow) is entry
+
+
 def test_a_wifi_network_can_be_chosen_after_without_a_network(plan_path):
     win = window(plan_path)
     win.go("network", strict=False)
