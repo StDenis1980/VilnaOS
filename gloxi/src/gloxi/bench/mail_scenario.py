@@ -275,6 +275,7 @@ class Mailbox:
         # For tests: a Reply-To on Marta's email, and operations the person refuses.
         self.reply_to = ""
         self.refuse: set[str] = set()
+        self.refuse_code = "denied_user"  # or denied_timeout, denied_error
 
     def tools(self) -> list[dict[str, Any]]:
         return self.listed
@@ -325,7 +326,7 @@ class Mailbox:
         if self.reply_to:
             results["read_message"]["reply_to"] = self.reply_to
         if op in self.refuse:
-            return {"decision": "denied", "code": "denied_user", "message": "the person said no"}
+            return {"decision": "denied", "code": self.refuse_code, "message": "not done"}
         if op not in results:
             return {"decision": "denied", "code": "tool_error", "message": f"no {op} here"}
         external = op in ("list_messages", "search_messages", "read_message")

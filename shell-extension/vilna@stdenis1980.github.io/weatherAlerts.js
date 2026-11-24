@@ -32,6 +32,7 @@ import {
     REFRESH_MINUTES, SITE_URL, alertLabel, alertText, alertsFor, feedUrl, parseCap, parseFeed, toNotify,
     translationTarget,
 } from './lib/alerts.js';
+import {verticalBox} from './vbox.js';
 
 Gio._promisify(Gio.Subprocess.prototype, 'communicate_utf8_async');
 Gio._promisify(Gio.SocketClient.prototype, 'connect_async');
@@ -104,7 +105,7 @@ export class WeatherAlerts {
         this._stateFile = GLib.build_filenamev([GLib.get_user_state_dir(), 'vilna', 'alerts-notified.json']);
         this._notified = this._loadNotified();
 
-        this.actor = new St.BoxLayout({vertical: true, x_expand: true, style_class: 'vilna-alerts', visible: false});
+        this.actor = verticalBox({x_expand: true, style_class: 'vilna-alerts', visible: false});
         this.actor.name = 'vilnaWeatherAlerts';
 
         this._monitor = Gio.NetworkMonitor.get_default();
@@ -379,7 +380,7 @@ export class WeatherAlerts {
         }
         const now = Date.now();
         for (const alert of alerts) {
-            const box = new St.BoxLayout({vertical: true, x_expand: true});
+            const box = verticalBox({x_expand: true});
             const when = alert.onset && alert.onset > now ? t.from.replace('%s', this._clock(alert.onset))
                 : t.until.replace('%s', this._clock(alert.expires));
             box.add_child(wrap(new St.Label({text: `${alertLabel(alert, t)} · ${when}`, style_class: 'vilna-alert-title'})));

@@ -115,7 +115,9 @@ def hint(texts: Callable[[str], str] = str, keyboard=None, settings=None):
     settings = settings if settings is not None else _settings()
     box = Gtk.Box(spacing=4, halign=Gtk.Align.START, visible=False)
     box.add_css_class("vilna-layout-hint")
-    box.add_css_class("dim-label")
+    # Not «dim-label»: dimmed, «en» was 3.2:1 on cream in the light theme
+    # (VM check of Build12.26), under the 4.5:1 small text needs. The
+    # caption size already sets it apart from the field.
     box.append(Gtk.Image(icon_name="input-keyboard-symbolic", pixel_size=12))
     label = Gtk.Label(xalign=0)
     label.add_css_class("caption")

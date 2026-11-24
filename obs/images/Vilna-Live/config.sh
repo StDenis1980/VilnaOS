@@ -167,13 +167,12 @@ cat >"$ext/extension.js" <<'JS'
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Vilna live image only (obs/images/Vilna-Live/config.sh).
 //
-// GNOME Shell 51 runs the startup animation into the overview whenever
-// the session mode has an overview (layout.js: "if
-// (Main.sessionMode.hasOverview) await
-// Main.overview.runStartupAnimation()"), and has no startInOverview to
-// turn it off (VM test 2 of 2026-11-09). So: no overview while the
-// shell starts up, the overview back once it has, and, if the overview
-// is shown all the same in the first seconds, hide it.
+// GNOME opens the overview at startup. Dash to Dock keeps it closed
+// (disable-overview-on-startup, 40_Vilna-Live.gschema.override): it
+// sets Main.sessionMode.hasOverview itself, so this one must not, or the
+// two fight over it and neither the dock nor the overview comes up (VM
+// test of Build12.26, 2026-11-24). If the overview is shown all the same
+// in the first seconds, hide it.
 import GLib from 'gi://GLib';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -182,13 +181,6 @@ const GRACE_SECONDS = 15;
 
 export default class VilnaLiveExtension extends Extension {
     enable() {
-        if (Main.layoutManager._startingUp) {
-            Main.sessionMode.hasOverview = false;
-            this._startup = Main.layoutManager.connect('startup-complete', () => {
-                Main.sessionMode.hasOverview = true;
-                this._disconnectStartup();
-            });
-        }
         this._hide();
         this._shown = Main.overview.connect('shown', () => this._hide());
         this._grace = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, GRACE_SECONDS, () => {
@@ -199,9 +191,6 @@ export default class VilnaLiveExtension extends Extension {
     }
 
     disable() {
-        if (this._startup)
-            Main.sessionMode.hasOverview = true;
-        this._disconnectStartup();
         this._disconnectShown();
         if (this._grace) {
             GLib.source_remove(this._grace);
@@ -217,13 +206,6 @@ export default class VilnaLiveExtension extends Extension {
             });
     }
 
-    _disconnectStartup() {
-        if (this._startup) {
-            Main.layoutManager.disconnect(this._startup);
-            this._startup = null;
-        }
-    }
-
     _disconnectShown() {
         if (this._shown) {
             Main.overview.disconnect(this._shown);
@@ -233,15 +215,23 @@ export default class VilnaLiveExtension extends Extension {
 }
 JS
 
-# Firefox (RPM, live image only) is in the dock; the build fails if its
-# desktop file has another name.
+# Firefox (RPM, live image only) and the terminal are in the dock; the
+# build fails if a desktop file has another name, or if the dock is
+# missing. Tinta Correo and Tinta Texto are Flatpaks, which the live
+# image does not carry (a Flatpak lands in the RAM overlay), so they are
+# pinned only on the installed system (30_Vilna.gschema.override).
 test -e /usr/share/applications/firefox.desktop
+test -e /usr/share/applications/org.gnome.Ptyxis.desktop
+test -e /usr/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/metadata.json
 cat >/usr/share/glib-2.0/schemas/40_Vilna-Live.gschema.override <<'GSCHEMA'
 # Vilna live image only (obs/images/Vilna-Live/config.sh); wins over
 # 30_Vilna.gschema.override.
 [org.gnome.shell]
-enabled-extensions=['vilna@stdenis1980.github.io', 'vilna-live@stdenis1980.github.io']
-favorite-apps=['io.github.stdenis1980.VilnaInstaller.desktop', 'io.github.stdenis1980.Gloxi.desktop', 'firefox.desktop', 'org.gnome.Nautilus.desktop']
+enabled-extensions=['vilna@stdenis1980.github.io', 'dash-to-dock@micxgx.gmail.com', 'vilna-live@stdenis1980.github.io']
+favorite-apps=['io.github.stdenis1980.VilnaInstaller.desktop', 'io.github.stdenis1980.Gloxi.desktop', 'firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop']
+
+[org.gnome.shell.extensions.dash-to-dock]
+disable-overview-on-startup=true
 
 [org.gnome.desktop.screensaver]
 lock-enabled=false

@@ -125,6 +125,11 @@ EXTRACT_SCHEMA: dict[str, Any] = {
 # What Gloxi says at the end, in the language of the person's message.
 SAY: dict[str, dict[str, str]] = {
     "uk": {
+        "not_read": "Пошту не прочитано.",
+        "denied_user": "Ти відмовив у вікні Herkos.",
+        "denied_timeout": "Ти не відповів у вікні Herkos вчасно, тож без тебе я нічого не робив. "
+        "Можу спитати ще раз.",
+        "denied_error": "Herkos не зміг показати вікно із запитом, тож тебе ніхто не питав.",
         "event": "Подію «{title}» додано в календар: {when}.",
         "event_failed": "Подію в календар не додано.",
         "no_time": "У листі немає дня й часу зустрічі, тож подію не додано.",
@@ -134,6 +139,11 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "Серед останніх листів у вхідних немає того, про який ти пишеш.",
     },
     "en": {
+        "not_read": "I did not read your mail.",
+        "denied_user": "You said no in the Herkos window.",
+        "denied_timeout": "Nobody answered the Herkos window in time, so I did nothing without "
+        "you. I can ask again.",
+        "denied_error": "Herkos could not show its window, so nobody asked you.",
         "event": "I added “{title}” to your calendar: {when}.",
         "event_failed": "The event was not added to your calendar.",
         "no_time": "The email does not name a day and time for the meeting, so I did not "
@@ -144,6 +154,11 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "I did not find the email you mean among the latest ones in your inbox.",
     },
     "es": {
+        "not_read": "No he leído tu correo.",
+        "denied_user": "Has dicho que no en la ventana de Herkos.",
+        "denied_timeout": "Nadie ha respondido a tiempo en la ventana de Herkos, así que no he "
+        "hecho nada sin ti. Puedo volver a preguntar.",
+        "denied_error": "Herkos no ha podido mostrar su ventana, así que nadie te ha preguntado.",
         "event": "He añadido «{title}» a tu calendario: {when}.",
         "event_failed": "El evento no se ha añadido a tu calendario.",
         "no_time": "El correo no dice el día y la hora de la reunión, así que no he añadido "
@@ -155,6 +170,11 @@ SAY: dict[str, dict[str, str]] = {
         "entrada.",
     },
     "pl": {
+        "not_read": "Nie przeczytałem twojej poczty.",
+        "denied_user": "Odmówiłeś w oknie Herkosa.",
+        "denied_timeout": "Nikt nie odpowiedział w oknie Herkosa na czas, więc nic nie zrobiłem "
+        "bez ciebie. Mogę zapytać jeszcze raz.",
+        "denied_error": "Herkos nie mógł pokazać swojego okna, więc nikt cię nie zapytał.",
         "event": "Wydarzenie „{title}” jest w twoim kalendarzu: {when}.",
         "event_failed": "Wydarzenie nie zostało dodane do kalendarza.",
         "no_time": "W wiadomości nie ma dnia i godziny spotkania, więc nie dodano wydarzenia.",
@@ -164,6 +184,11 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "Wśród ostatnich wiadomości w skrzynce odbiorczej nie ma tej, o której piszesz.",
     },
     "de": {
+        "not_read": "Ich habe deine Post nicht gelesen.",
+        "denied_user": "Du hast im Fenster von Herkos abgelehnt.",
+        "denied_timeout": "Niemand hat rechtzeitig im Fenster von Herkos geantwortet, also habe "
+        "ich ohne dich nichts getan. Ich kann noch einmal fragen.",
+        "denied_error": "Herkos konnte sein Fenster nicht zeigen, also hat dich niemand gefragt.",
         "event": "Der Termin „{title}“ ist in deinem Kalender: {when}.",
         "event_failed": "Der Termin ist nicht in deinem Kalender.",
         "no_time": "Die E-Mail nennt keinen Tag und keine Uhrzeit für das Treffen, deshalb "
@@ -175,6 +200,11 @@ SAY: dict[str, dict[str, str]] = {
         "nicht gefunden.",
     },
     "fr": {
+        "not_read": "Je n’ai pas lu ton courrier.",
+        "denied_user": "Tu as refusé dans la fenêtre de Herkos.",
+        "denied_timeout": "Personne n’a répondu à temps dans la fenêtre de Herkos, donc je n’ai "
+        "rien fait sans toi. Je peux te redemander.",
+        "denied_error": "Herkos n’a pas pu afficher sa fenêtre, donc personne ne t’a rien demandé.",
         "event": "C'est fait, « {title} » est dans ton agenda : {when}.",
         "event_failed": "Je n'ai pas ajouté l'événement à ton agenda.",
         "no_time": "Le message ne donne pas le jour et l'heure de la réunion, donc je n'ai "
@@ -186,6 +216,12 @@ SAY: dict[str, dict[str, str]] = {
         "boîte de réception.",
     },
     "it": {
+        "not_read": "Non ho letto la tua posta.",
+        "denied_user": "Hai detto di no nella finestra di Herkos.",
+        "denied_timeout": "Nessuno ha risposto in tempo nella finestra di Herkos, quindi non ho "
+        "fatto niente senza di te. Posso chiedere di nuovo.",
+        "denied_error": "Herkos non è riuscito a mostrare la sua finestra, quindi nessuno ti ha "
+        "chiesto niente.",
         "event": "Ho aggiunto «{title}» al tuo calendario: {when}.",
         "event_failed": "L'evento non è stato aggiunto al tuo calendario.",
         "no_time": "L'email non indica il giorno e l'ora dell'incontro, quindi non ho "
@@ -196,6 +232,11 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "Non ho trovato l'email che dici tra le ultime della posta in arrivo.",
     },
     "ro": {
+        "not_read": "Nu ți-am citit poșta.",
+        "denied_user": "Ai refuzat în fereastra Herkos.",
+        "denied_timeout": "Nimeni nu a răspuns la timp în fereastra Herkos, așa că nu am făcut "
+        "nimic fără tine. Pot să întreb din nou.",
+        "denied_error": "Herkos nu și-a putut arăta fereastra, așa că nimeni nu te-a întrebat.",
         "event": "Am adăugat „{title}” în calendarul tău: {when}.",
         "event_failed": "Evenimentul nu a fost adăugat în calendar.",
         "no_time": "Mesajul nu spune ziua și ora întâlnirii, așa că nu am adăugat un eveniment.",
@@ -206,6 +247,11 @@ SAY: dict[str, dict[str, str]] = {
         "intrare.",
     },
     "cs": {
+        "not_read": "Tvou poštu jsem nečetl.",
+        "denied_user": "V okně Herkosu jsi odmítl.",
+        "denied_timeout": "V okně Herkosu nikdo včas neodpověděl, takže jsem bez tebe nic "
+        "neudělal. Můžu se zeptat znovu.",
+        "denied_error": "Herkos nemohl ukázat své okno, takže se tě nikdo nezeptal.",
         "event": "Událost „{title}“ je v kalendáři: {when}.",
         "event_failed": "Událost se do kalendáře nepřidala.",
         "no_time": "Zpráva neuvádí den a čas schůzky, takže událost není v kalendáři.",
@@ -215,6 +261,11 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "Mezi posledními zprávami v doručené poště ta, o které píšeš, není.",
     },
     "lt": {
+        "not_read": "Tavo laiškų neskaičiau.",
+        "denied_user": "Herkos lange atsisakei.",
+        "denied_timeout": "Niekas laiku neatsakė Herkos lange, todėl be tavęs nieko nedariau. "
+        "Galiu paklausti dar kartą.",
+        "denied_error": "Herkos negalėjo parodyti savo lango, todėl tavęs niekas neklausė.",
         "event": "„{title}“ įtrauktas į tavo kalendorių: {when}.",
         "event_failed": "Įvykis į kalendorių neįtrauktas.",
         "no_time": "Laiške nėra susitikimo dienos ir laiko, todėl įvykis neįtrauktas.",
@@ -292,6 +343,10 @@ WHY: dict[str, dict[str, str]] = {
 }
 
 
+def _joined(first: str, second: str) -> str:
+    return f"{first} {second}" if second else first
+
+
 def wants(tools: FileTools, text: str) -> bool:
     """A message that asks for the whole scenario, in any of the ten languages,
     with the functions it needs listed: an email ("лист", "Марта написала"),
@@ -358,13 +413,16 @@ class MailFlow:
         self.user_turn = user_turn
         self.on_tool = on_tool
         self.why = WHY["en"]
+        self.stopped: ToolOutcome | None = None  # the first step Herkos did not run
 
     def run(self, text: str) -> Iterator[str]:
         lang = language(text)
         say, self.why = SAY[lang], WHY[lang]
+        self.stopped = None
         read = self._find(text)
         if read is None:
-            yield say["no_mail"]
+            why = self._why_not(say, self.stopped)
+            yield f"{say['not_read']} {why}" if why else say["no_mail"]
             return
         facts = self._facts(text, read)
         lines = []
@@ -375,15 +433,23 @@ class MailFlow:
             if event.status == "done":
                 lines.append(say["event"].format(title=facts.title, when=_when(facts.start)))
             else:
-                lines.append(say["event_failed"])
+                lines.append(_joined(say["event_failed"], self._why_not(say, event)))
         reply = facts.reply if facts is not None else ""
         draft = self._draft(read.result, reply) if reply else None
         if draft is not None and draft.status == "done":
             to = _reply_address(read.result)
             lines.append(say["draft"].format(to=to) + "\n\n" + reply)
         else:
-            lines.append(say["draft_failed"])
+            lines.append(_joined(say["draft_failed"], self._why_not(say, draft)))
         yield "\n\n".join(lines)
+
+    @staticmethod
+    def _why_not(say: dict[str, str], outcome: ToolOutcome | None) -> str:
+        """Why a step did not run, when Herkos said so: a "no", or no answer
+        in time, or a window that could not be shown are not "no email"."""
+        if outcome is None or outcome.status != "denied":
+            return ""
+        return say.get(outcome.code, "")
 
     # -- steps ----------------------------------------------------------------
 
@@ -393,6 +459,8 @@ class MailFlow:
         outcome = self.tools.call(name, raw, user_turn=self.user_turn)
         if self.on_tool:
             self.on_tool(outcome)
+        if outcome.status != "done" and self.stopped is None:
+            self.stopped = outcome
         return outcome
 
     def _find(self, text: str) -> ToolOutcome | None:

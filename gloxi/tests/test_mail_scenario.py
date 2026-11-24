@@ -289,11 +289,28 @@ def test_a_refused_event_still_gets_the_draft():
     assert answer.startswith(mail_flow.SAY["cs"]["event_failed"])
 
 
+@pytest.mark.parametrize("code", ["denied_user", "denied_timeout", "denied_error"])
+def test_a_read_herkos_did_not_run_is_not_no_email(code):
+    # The VM check (2026-11-24): a "no", no answer in time, or a window that
+    # never showed, and Gloxi said there was no such email.
+    mailbox, _, conv = flow("uk", {"uid": 41})
+    mailbox.refuse, mailbox.refuse_code = {"read_message"}, code
+    say = mail_flow.SAY["uk"]
+    assert ask(conv, REQUESTS["uk"][0]) == f"{say['not_read']} {say[code]}"
+    mailbox, _, conv = flow("lt", {"uid": 41}, facts("lt"))
+    mailbox.refuse, mailbox.refuse_code = {"create_event"}, code
+    say = mail_flow.SAY["lt"]
+    assert ask(conv, REQUESTS["lt"][0]).startswith(f"{say['event_failed']} {say[code]}")
+
+
 @pytest.mark.parametrize("lang", list(REQUESTS))
 def test_what_gloxi_says_is_in_the_language_of_the_message(lang):
     say = mail_flow.SAY[lang]
     for key in ("no_mail", "no_time", "event_failed", "draft_failed"):
         assert _lang_ok(say[key], lang), (lang, key, say[key])
+    for code in ("denied_user", "denied_timeout", "denied_error"):
+        told = f"{say['not_read']} {say[code]}"
+        assert _lang_ok(told, lang), (lang, code, told)
     told = say["event"].format(title="Marta", when="27.11.2026, 15:00")
     told += " " + say["draft"].format(to=SENDER)
     assert _lang_ok(told, lang), (lang, told)
@@ -363,6 +380,31 @@ def test_a_reply_to_someone_else_gets_no_in_reply_to_and_a_known_account_stays()
     conv.tools._mail.accounts.append("work@example.org")
     conv.tools.call("mail_save_draft", json.dumps(other), user_turn=2)
     assert mailbox.calls[-1]["arguments"] == other
+
+
+def test_a_send_after_the_draft_answers_the_email_and_takes_the_draft_out():
+    # The R4 test in the VM (2026-11-24): an id of the right form but made up,
+    # a subject of the model's own, and the saved draft left in Drafts.
+    mailbox = Mailbox("en", FakeHerkos.LISTED + vilna_programs())
+    conv = conversation(ScriptedLlamaServer("Done."), FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    conv.tools.call("mail_read_message", json.dumps({"uid": 41, "reason": "r"}), user_turn=1)
+    conv.tools.call("mail_save_draft", json.dumps(draft("en")), user_turn=1)
+    made_up = {**draft("en"), "subject": "Meeting", "in_reply_to": "<m41@example.org>"}
+    conv.tools.call("mail_send", json.dumps(made_up), user_turn=2)
+    assert mailbox.calls[-1]["operation"] == "send"
+    assert mailbox.calls[-1]["arguments"] == {
+        **draft("en"),
+        "replaces_draft": "<d1.gloxi@example.org>",
+    }
+    # Another text is a new message: the draft stays, the answer is still one.
+    changed = {**draft("en"), "text": "Sorry, Friday is out."}
+    conv.tools.call("mail_send", json.dumps(changed), user_turn=3)
+    assert mailbox.calls[-1]["arguments"] == changed
+    # "Re: Re:" or "RE:" is the same subject and stays as written.
+    again = {**draft("en"), "subject": "RE: " + draft("en")["subject"]}
+    conv.tools.call("mail_save_draft", json.dumps(again), user_turn=3)
+    assert mailbox.calls[-1]["arguments"]["subject"] == again["subject"]
 
 
 @pytest.mark.parametrize("lang", sorted(REQUESTS))

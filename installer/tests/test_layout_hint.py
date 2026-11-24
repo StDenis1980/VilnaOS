@@ -52,6 +52,7 @@ def test_the_hint_shows_the_layout_in_use_and_follows_a_switch():
     assert hint.get_visible()
     assert hint.label.get_label() == "uk"
     assert hint.get_halign() == Gtk.Align.START
+    assert not hint.has_css_class("dim-label")  # Build12.26: dimmed, 3.2:1 in the light theme
     keyboard.set_property("active-layout-index", 1)  # the Shell switched the field to Latin
     assert hint.label.get_label() == "en"
     assert hint.get_tooltip_text() == "Keyboard layout: English (US)"

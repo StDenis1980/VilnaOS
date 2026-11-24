@@ -120,7 +120,7 @@ class Agent:
         self.call("herkos.agent.register", {})
 
     def ask(self, ask_id: str, question: dict[str, Any]) -> None:
-        answer = "deny"
+        answer = "failed"  # no window, no answer of the person's: denied_error
         try:
             proc = subprocess.Popen(
                 self.window,
@@ -136,7 +136,7 @@ class Agent:
             try:
                 out, _ = proc.communicate(json.dumps(question).encode(), timeout=MAX_WAIT)
                 lines = out.decode(errors="replace").strip().splitlines()
-                answer = lines[-1].strip() if lines else "deny"
+                answer = lines[-1].strip() if lines else "failed"
             except subprocess.TimeoutExpired:
                 proc.kill()
                 proc.wait()
