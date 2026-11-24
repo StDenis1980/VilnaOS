@@ -1,10 +1,16 @@
 -------------------------------------------------------------------
-Tue Nov 24 11:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Tue Nov 24 14:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The layout indicator of a password field sits right of the text
   cursor, on its line, not below it: there it covered the next field
   («Repeat the password», VM check of Build12.19). At the right edge
   of the screen it still goes below the cursor.
+
+-------------------------------------------------------------------
+Tue Nov 24 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.10: while the Gloxi side panel is open, Gloxi's own notifications
+  show in it instead of as banners; they stay in the notification list.
 
 -------------------------------------------------------------------
 Tue Nov 24 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

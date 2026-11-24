@@ -167,6 +167,16 @@ class Router:
         if unresolved and unresolved("".join(answer)):
             yield "\n\n" + _(MISSING_VALUES_NOTE)
 
+    def complete_local(self, messages: Sequence[Message], schema: dict) -> str:
+        """One whole answer from the local model, as JSON that follows ``schema``.
+
+        Only the local model: what Gloxi asks this way (gloxi.mail_flow)
+        carries an email, which stays on this computer.
+        """
+        return self.secrets.conceal(
+            self.local.complete(self.secrets.mask_messages(messages, hint=False), schema)
+        )
+
     def stream_events(
         self, messages: Sequence[Message], route: Route, tools: Sequence[dict] | None = None
     ) -> Iterator[str | ToolCall]:

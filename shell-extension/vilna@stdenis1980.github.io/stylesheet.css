@@ -96,10 +96,15 @@
   background-color: rgba(255, 255, 255, 0.07);
 }
 
+.vilna-gloxi-line.notice {
+  border: 1px solid rgba(45, 107, 255, 0.5);
+}
+
 .vilna-gloxi-line.error {
   border: 1px solid #b3261e;
 }
 
+.vilna-gloxi-line.notice .vilna-gloxi-text,
 .vilna-gloxi-line.note .vilna-gloxi-text {
   font-size: 9pt;
 }

@@ -16,6 +16,13 @@ const MAX_FIELD = 300;
 
 // The owl's states as Dmytro Sizmin drew them (docs/design/owl-states/):
 // the panel's state → the picture.
+export const GLOXI_APP_ID = 'io.github.stdenis1980.Gloxi';
+
+/** Whether a notification source's app id (with or without .desktop) is Gloxi's. */
+export function isGloxiSource(appId) {
+    return typeof appId === 'string' && appId.replace(/\.desktop$/, '') === GLOXI_APP_ID;
+}
+
 export const OWL_PICTURES = {
     idle: 'waiting',
     thinking: 'thinking',
@@ -84,6 +91,18 @@ export class PanelChat {
         if (this.lines.length > MAX_MESSAGES)
             this.lines.splice(0, this.lines.length - MAX_MESSAGES);
         return line;
+    }
+
+    /**
+     * A notification Gloxi sent while the panel is open: it goes into the
+     * panel instead of a banner (it stays in the Shell's notification list).
+     */
+    notice(title, body) {
+        const t = text(title), b = text(body, MAX_TEXT);
+        if (!t && !b)
+            return false;
+        this._push({kind: 'notice', text: t && b ? `${t}: ${b}` : t || b});
+        return true;
     }
 
     /** gloxid's hello: the kept conversation, newest last. */
