@@ -17,8 +17,10 @@
 // (constrain_partially_onscreen in constraints.c), so the GTK window of
 // Gloxi cannot sit in a strut. Checked in GNOME Shell 46.
 //
-// Not yet: other monitors (the primary one only), Gloxi's notifications
-// in the panel while it is open.
+// While the panel is open, Gloxi's own notifications show in it instead of
+// as banners; they stay in the Shell's notification list as always.
+//
+// Not yet: other monitors (the primary one only).
 
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
@@ -31,7 +33,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
 import {dockStrip} from './lib/geometry.js';
-import {panelText} from './lib/gloxiPanel.js';
+import {isGloxiSource, panelText} from './lib/gloxiPanel.js';
 import {PanelView} from './gloxiPanel.js';
 
 const SLIDE_MS = 250;
@@ -94,6 +96,9 @@ export class Dock {
         this._connect(this._settings, 'changed::gloxi-dock-size', sync);
         this._connect(this._settings, 'changed::gloxi-panel-open', sync);
         this._connect(Main.layoutManager, 'monitors-changed', sync);
+        this._connect(Main.messageTray, 'source-added', (_t, source) => this._watchSource(source));
+        for (const source of Main.messageTray.getSources())
+            this._watchSource(source);
         this._sync();
         // Open at login because it was open before: no focus taken then.
         this._starting = false;
@@ -121,6 +126,25 @@ export class Dock {
 
     _connect(object, signal, handler) {
         this._signals.push([object, object.connect(signal, handler)]);
+    }
+
+    // Gloxi's notifications: a source of the Gloxi app (GTK notifications,
+    // the portal's, or libnotify with Gloxi's desktop entry).
+    _watchSource(source) {
+        if (!isGloxiSource(source?.policy?.id ?? source?.app?.get_id?.()))
+            return;
+        // notification-added comes before the tray asks for a banner, so an
+        // acknowledged notification gets none.
+        const id = source.connect('notification-added', (_s, notification) => {
+            if (!this._view)
+                return;
+            this._view.notice(notification.title, notification.body ?? notification.bannerBodyText);
+            notification.acknowledged = true;
+        });
+        const gone = source.connect('destroy', () => {
+            this._signals = this._signals.filter(([o]) => o !== source);
+        });
+        this._signals.push([source, id], [source, gone]);
     }
 
     toggle() {

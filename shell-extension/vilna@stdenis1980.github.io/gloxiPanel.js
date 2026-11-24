@@ -287,6 +287,12 @@ export class PanelView {
         return this._connecting;
     }
 
+    /** A Gloxi notification, shown here instead of as a banner. */
+    notice(title, body) {
+        if (this._chat.notice(title, body))
+            this._render();
+    }
+
     _onLost() {
         this._chat.offline = true;
         this._chat.busy = false;

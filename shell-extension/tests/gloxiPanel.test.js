@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
-    MAX_MESSAGES, PanelChat, checkTables, helloLanguage, owlFile, panelText, safeUri,
+    MAX_MESSAGES, PanelChat, checkTables, helloLanguage, isGloxiSource, owlFile, panelText, safeUri,
 } from '../vilna@stdenis1980.github.io/lib/gloxiPanel.js';
 
 const feed = (chat, ...events) => events.forEach(e => chat.apply(e));
@@ -85,4 +85,18 @@ test('every language has every word, and an unknown one gets English', () => {
     assert.deepEqual(checkTables(), []);
     assert.equal(panelText(['xx_XX', 'C']).send, panelText(['en']).send);
     assert.notEqual(panelText(['uk_UA.UTF-8']).send, panelText(['en']).send);
+});
+
+test('a Gloxi notification becomes one line in the panel; an empty one none', () => {
+    const chat = new PanelChat();
+    assert.ok(chat.notice('Нагадування', 'Зустріч о 15:00'));
+    assert.ok(!chat.notice('', ''));
+    assert.deepEqual(chat.lines, [{kind: 'notice', text: 'Нагадування: Зустріч о 15:00'}]);
+});
+
+test('only Gloxi\'s own notification source counts', () => {
+    assert.ok(isGloxiSource('io.github.stdenis1980.Gloxi'));
+    assert.ok(isGloxiSource('io.github.stdenis1980.Gloxi.desktop'));
+    for (const other of ['io.github.stdenis1980.Gloxi.HerkosDialog', 'org.gnome.Calendar', null, undefined, 5])
+        assert.ok(!isGloxiSource(other), String(other));
 });

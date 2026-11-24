@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 24 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.10: while the Gloxi side panel is open, Gloxi's own notifications
+  show in it instead of as banners; they stay in the notification list.
+
+-------------------------------------------------------------------
 Tue Nov 24 12:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.9: the Gloxi side panel (stage B of the Gloxi window, gloxiPanel.js,
