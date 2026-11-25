@@ -68,7 +68,10 @@ def test_nothing_known_hides_the_hint():
     assert not hint.get_visible()
 
 
-@pytest.mark.parametrize("code", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
+@pytest.mark.parametrize(
+    "code",
+    ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt", "ca", "ca@valencia", "gl", "eu", "pt"),
+)
 def test_hint_texts_are_translated(code):
     catalog = start.catalog(code)
     assert [t for t in layout_hint.TEXTS if t not in catalog] == []

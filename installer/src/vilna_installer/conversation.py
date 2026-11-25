@@ -82,9 +82,14 @@ ENGLISH_NAMES = {
     "ro": "Romanian",
     "cs": "Czech",
     "lt": "Lithuanian",
+    "ca": "Catalan",
+    "ca@valencia": "Valencian (the Valencian standard of Catalan)",
+    "gl": "Galician",
+    "eu": "Basque",
+    "pt": "European Portuguese",
 }
 
-# Fixed texts (msgids of locale/*.po). A new one needs all nine translations
+# Fixed texts (msgids of locale/*.po). A new one needs every translation
 # (ADR 0009); the tests fail without them.
 INTRO = (
     "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you "
@@ -1303,6 +1308,8 @@ class Conversation:
             if name == "disks_survey":
                 self.state.survey = data
                 data = _short_survey(data)
+            elif name == "locale_list":
+                data = _short_locales(data)
             text = json.dumps(data, ensure_ascii=False)[:MAX_DATA_CHARS]
             parts.append(f"{name}: " + (_external(text) if name in EXTERNAL else text))
         if step.key == "encryption":
@@ -1456,6 +1463,27 @@ def _external(text: str) -> str:
 def _compact(plan: dict[str, Any]) -> dict[str, Any]:
     """The plan without what the model does not need (and without the step-0 settings)."""
     return {k: v for k, v in plan.items() if k not in ("ui", "assistant", "version")}
+
+
+def _short_locales(listed: dict[str, Any]) -> dict[str, Any]:
+    """Each locale with its keyboard and time zone on one short line.
+
+    Fifteen languages as full objects filled the history of a small model at
+    the second step, and it was cut (and read again) a turn early.
+    """
+    rows = listed.get("languages")
+    if not isinstance(rows, list):
+        return listed
+    short = {}
+    for row in rows:
+        if isinstance(row, dict) and row.get("locale"):
+            short[row["locale"]] = ", ".join(
+                str(row[k]) for k in ("keyboard", "timezone") if row.get(k)
+            )
+    out = {"locale: keyboard, time zone": short}
+    if listed.get("note"):
+        out["note"] = listed["note"]
+    return out
 
 
 def _short_survey(survey: dict[str, Any]) -> dict[str, Any]:

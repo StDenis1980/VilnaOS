@@ -11,9 +11,25 @@ from vilna_installer import start
 SRC = Path(__file__).parent.parent / "src" / "vilna_installer"
 
 
-def test_the_ten_languages_of_adr_0009():
-    assert start.CODES == ("uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
-    assert len({lang.name for lang in start.LANGUAGES}) == 10
+def test_the_main_languages_of_adr_0009():
+    assert start.CODES == (
+        "uk",
+        "en",
+        "es",
+        "pl",
+        "de",
+        "fr",
+        "it",
+        "ro",
+        "cs",
+        "lt",
+        "ca",
+        "ca@valencia",
+        "gl",
+        "eu",
+        "pt",
+    )
+    assert len({lang.name for lang in start.LANGUAGES}) == 15
 
 
 @pytest.mark.parametrize("code", [c for c in start.CODES if c != "en"])
@@ -26,7 +42,7 @@ def test_every_text_is_translated(code):
 
 @pytest.mark.parametrize("code", [c for c in start.CODES if c not in ("en", "uk")])
 def test_every_language_has_every_ukrainian_text_with_its_placeholders(code):
-    """ADR 0009: all ten languages from the alpha; uk.po is the list of texts."""
+    """ADR 0009: all main languages from the alpha; uk.po is the list of texts."""
     catalog = start.catalog(code)
     for msgid in start.catalog("uk"):
         assert msgid in catalog, msgid
@@ -162,22 +178,22 @@ def test_other_languages_leave_out_the_ten_and_sort_by_own_name():
 
 
 def test_plan_for_another_language_says_it_is_not_translated():
-    plan = start.start_plan("pt", False, True, locale="pt_BR.UTF-8")
+    plan = start.start_plan("nl", False, True, locale="nl_NL.UTF-8")
     assert plan["ui"] == {
-        "language": "pt",
-        "locale": "pt_BR.UTF-8",
+        "language": "nl",
+        "locale": "nl_NL.UTF-8",
         "translated": False,
         "screen_reader": False,
     }
-    # A region of one of the ten languages keeps its translation.
+    # A region of one of the main languages keeps its translation.
     assert start.start_plan("de", False, True, locale="de_AT.UTF-8")["ui"]["translated"]
     with pytest.raises(ValueError, match="not in language"):
-        start.start_plan("pt", False, True, locale="de_AT.UTF-8")
+        start.start_plan("nl", False, True, locale="de_AT.UTF-8")
     with pytest.raises(ValueError, match="not a UTF-8 locale"):
-        start.start_plan("pt", False, True, locale="pt_BR.ISO-8859-1")
+        start.start_plan("nl", False, True, locale="nl_NL.ISO-8859-1")
 
 
-def test_the_menu_entry_is_named_in_the_ten_languages():
+def test_the_menu_entry_is_named_in_the_main_languages():
     desktop = (
         SRC.parent.parent / "data" / "io.github.stdenis1980.VilnaInstaller.desktop"
     ).read_text(encoding="utf-8")

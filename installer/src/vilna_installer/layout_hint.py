@@ -39,6 +39,8 @@ SHORT_OF_NAME = {
     "Romanian": "ro",
     "Czech": "cs",
     "Lithuanian": "lt",
+    "Catalan": "ca",
+    "Portuguese": "pt",
 }
 INPUT_SOURCES_SCHEMA = "org.gnome.desktop.input-sources"
 
