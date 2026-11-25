@@ -48,14 +48,18 @@ jobs:
           appstreamcli validate --no-net --explain thirdparty/claude-desktop/$APP.metainfo.xml
       - uses: flathub-infra/flatpak-github-actions/flatpak-builder@933e9e8ca36e85046ebca8e211f0785c6becac40
         with:
-          bundle: claude-desktop.flatpak
+          build-bundle: false
           manifest-path: thirdparty/claude-desktop/io.github.stdenis1980.ClaudeDesktop.yml
           cache-key: flatpak-builder-claude-${{ github.sha }}
           upload-artifact: false
       - name: Installing downloads Anthropic's .deb, checks it and unpacks the app
         run: |
           set -eu
-          flatpak install -y --noninteractive --bundle claude-desktop.flatpak
+          # A single-file bundle cannot carry extra-data ("Extra data missing in
+          # detached metadata"), so it installs from the OSTree repository
+          # flatpak-builder wrote, as it will from Vilna's repository.
+          flatpak remote-add --no-gpg-verify claude-check "file://$PWD/repo"
+          flatpak install -y --noninteractive claude-check "$APP"
           flatpak run --command=sh "$APP" -c '
             set -eu
             cd /app/extra/claude
