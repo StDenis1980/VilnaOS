@@ -329,8 +329,9 @@ def test_what_gloxi_says_is_in_the_language_of_the_message(lang):
     for key in ("no_mail", "no_time", "event_failed", "draft_failed"):
         assert _lang_ok(say[key], lang), (lang, key, say[key])
     for code in ("denied_user", "denied_timeout", "denied_error", "tool_error"):
-        told = f"{say['not_read']} {say[code]}"
-        assert _lang_ok(told, lang), (lang, code, told)
+        for first in ("not_read", "not_sent"):
+            told = f"{say[first]} {say[code]}"
+            assert _lang_ok(told, lang), (lang, code, told)
     told = say["event"].format(title="Marta", when="27.11.2026, 15:00")
     told += " " + say["draft"].format(to=SENDER)
     assert _lang_ok(told, lang), (lang, told)
@@ -504,6 +505,73 @@ def test_a_send_with_the_quotes_changed_still_takes_the_draft_out():
     copied = {**saved, "text": 'Добре, буду в "Каві" о 15:00.\nОля'}
     conv.tools.call("mail_send", json.dumps(copied), user_turn=2)
     assert mailbox.calls[-1]["arguments"]["replaces_draft"] == "<d1.gloxi@example.org>"
+
+
+SEND = {
+    "uk": "Надішли Марті мою відповідь",
+    "pl": "Wyślij Marcie moją odpowiedź",
+    "lt": "Išsiųsk Martai mano atsakymą",
+}
+
+
+@pytest.mark.parametrize(
+    ("lang", "code"),
+    [("uk", "denied_user"), ("pl", "denied_timeout"), ("lt", "denied_error")],
+)
+def test_a_send_herkos_did_not_run_is_told_in_fixed_words(lang, code):
+    # The VM check after PR #232: after a refused or unanswered send, 6 of 12
+    # answers were right; Ministral 3 8B passed the note on and offered to
+    # try again, and Qwen3 4B answered a Lithuanian request in English.
+    mailbox = Mailbox(lang, FakeHerkos.LISTED + vilna_programs())
+    mailbox.refuse, mailbox.refuse_code = {"send"}, code
+    server = ScriptedLlamaServer(
+        [("mail_read_message", args(uid=41, reason="r"))],
+        [("mail_send", args(**draft(lang), reason="r"))],
+        "Try again? I can send it once more.",
+    )
+    conv = conversation(server, FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    say = mail_flow.SAY[lang]
+    asked = SEND[lang]
+    assert not mail_flow.wants(conv.tools, asked)  # the model's own turn, not the fixed steps
+    assert ask(conv, asked) == f"{say['not_sent']} {say[code]}"
+    assert _lang_ok(f"{say['not_sent']} {say[code]}", lang)
+
+
+def test_a_send_of_the_draft_goes_to_the_drafts_people():
+    # Qwen3 4B, pl, both conversations of the VM check after PR #232: the
+    # draft to marta@, the send of it to marcia@, two letters away.
+    mailbox = Mailbox("pl", FakeHerkos.LISTED + vilna_programs())
+    conv = conversation(ScriptedLlamaServer("Gotowe."), FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    conv.tools.call("mail_read_message", json.dumps({"uid": 41, "reason": "r"}), user_turn=1)
+    conv.tools.call("mail_save_draft", json.dumps(draft("pl")), user_turn=1)
+    slip = {k: v for k, v in draft("pl").items() if k != "in_reply_to"}
+    conv.tools.call("mail_send", json.dumps({**slip, "to": ["marcia@example.com"]}), user_turn=2)
+    assert mailbox.calls[-1]["arguments"] == {
+        **draft("pl"),
+        "replaces_draft": "<d1.gloxi@example.org>",
+    }
+    # Another text is another email: its address stays as written.
+    other = {**slip, "to": ["marcia@example.com"], "text": "Zupełnie inna wiadomość."}
+    conv.tools.call("mail_send", json.dumps(other), user_turn=3)
+    assert mailbox.calls[-1]["arguments"]["to"] == ["marcia@example.com"]
+
+
+def test_an_address_the_person_wrote_is_theirs():
+    # The VM check after PR #232: "to martas@example.com, Marta's new
+    # address", and Gloxi made it marta@ without a word.
+    mailbox = Mailbox("uk", FakeHerkos.LISTED + vilna_programs())
+    conv = conversation(ScriptedLlamaServer("Готово."), FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    conv.tools.call("mail_read_message", json.dumps({"uid": 41, "reason": "r"}), user_turn=1)
+    conv.tools.call("mail_save_draft", json.dumps(draft("uk")), user_turn=1)
+    conv.tools.heard("Надішли на martas@example.com, це нова адреса Марти")
+    new = {**draft("uk"), "to": ["martas@example.com"]}
+    conv.tools.call("mail_save_draft", json.dumps(new), user_turn=2)
+    assert mailbox.calls[-1]["arguments"]["to"] == ["martas@example.com"]
+    conv.tools.call("mail_send", json.dumps(new), user_turn=2)
+    assert mailbox.calls[-1]["arguments"]["to"] == ["martas@example.com"]
 
 
 def test_an_event_asked_in_the_same_answer_as_the_read_waits_for_the_email():

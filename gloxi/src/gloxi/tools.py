@@ -557,6 +557,15 @@ class FileTools:
             self._mail.note(op.name, answer.get("result"), arguments)
         return _from_answer(op, where, answer, tool)
 
+    def heard(self, text: str) -> None:
+        """The person's own message: the addresses they wrote are theirs to choose."""
+        self._mail.heard(text)
+
+    def sends_mail(self, name: str) -> bool:
+        """Whether a function sends an email (R4: asked every time)."""
+        program = self._programs.get(name)
+        return program is not None and program.tool == MAIL_TOOL and program.name == "send"
+
     def function_for(self, tool: str, operation: str) -> str | None:
         """The function name Herkos's listing gave ``operation`` of ``tool``."""
         for function, op in self._programs.items():
@@ -744,9 +753,13 @@ class _MailSeen:
         self.account = ""  # the account of the email read last
         self.sender = ""
         self.others: set[str] = set()  # the other people on the email read
+        self.said: set[str] = set()  # the addresses the person wrote themselves
         self.message_id = ""
         self.subject = ""
         self.draft: dict[str, Any] = {}  # the reply saved last, with its message_id
+
+    def heard(self, text: str) -> None:
+        self.said |= {a.casefold() for a in _ADDRESS.findall(text)}
 
     def note(self, operation: str, result: Any, arguments: Any = None) -> None:
         if not isinstance(result, dict):
@@ -788,6 +801,15 @@ class _MailSeen:
                 out["account"] = self.account
             elif len(self.accounts) == 1:
                 out["account"] = self.accounts[0]
+        # A send of the draft saved: the draft's people, whom the person saw in
+        # its Herkos window, not ones the model wrote again (marcia@ for
+        # marta@, Qwen3 4B, pl, VM check after PR #232).
+        if operation == "send" and self._like_draft(out) and not self._chosen_by_person(out):
+            for k in ("to", "cc", "bcc"):
+                if self.draft.get(k):
+                    out[k] = self.draft[k]
+                else:
+                    out.pop(k, None)
         to = out.get("to")
         # The sender's name at another domain (marta@example.org for
         # marta@example.com, VM check 2026-11-24): a slip of the model, and one
@@ -831,20 +853,38 @@ class _MailSeen:
             value = [value] if isinstance(value, str) else value if isinstance(value, list) else []
             return {parseaddr(str(v))[1].casefold() for v in value}
 
-        # The model copies the draft with small changes: «» became "" in 2 of
-        # 8 conversations (Ministral 3 8B, VM check after PR #224). The person
-        # sees the text sent in the Herkos window; the draft it replaces is
-        # only Gloxi's own copy of it.
-        def words(value: Any) -> str:
-            return " ".join(str(value or "").translate(_QUOTES).casefold().split())
-
-        same_text = SequenceMatcher(None, words(message.get("text")), words(draft.get("text")))
         return (
             message.get("account") == draft.get("account")
             and message.get("in_reply_to") == draft.get("in_reply_to")
             and all(people(message.get(k)) == people(draft.get(k)) for k in ("to", "cc", "bcc"))
-            and same_text.ratio() >= 0.9
+            and self._like_draft(message)
         )
+
+    def _like_draft(self, message: dict[str, Any]) -> bool:
+        """The text is the draft's, maybe with small changes.
+
+        The model copies the draft with small changes: «» became "" in 2 of
+        8 conversations (Ministral 3 8B, VM check after PR #224). The person
+        sees the text sent in the Herkos window; the draft it replaces is
+        only Gloxi's own copy of it.
+        """
+        if not self.draft:
+            return False
+
+        def words(value: Any) -> str:
+            return " ".join(str(value or "").translate(_QUOTES).casefold().split())
+
+        text, draft = words(message.get("text")), words(self.draft.get("text"))
+        return bool(text) and SequenceMatcher(None, text, draft).ratio() >= 0.9
+
+    def _chosen_by_person(self, message: dict[str, Any]) -> bool:
+        """An address the person wrote, or someone else on the email: theirs."""
+        people = []
+        for k in ("to", "cc", "bcc"):
+            value = message.get(k)
+            people += value if isinstance(value, list) else [value] if value else []
+        found = {parseaddr(str(p))[1].casefold() for p in people}
+        return bool(found & (self.said | self.others))
 
     def _near_sender(self, to: Any) -> bool:
         if not isinstance(to, str):
@@ -853,6 +893,8 @@ class _MailSeen:
         if not self.sender or not address or address == self.sender or "," in to:
             return False
         if address in self.others:  # someone else on the email: a person, not a slip
+            return False
+        if address in self.said:  # the person wrote it: "Marta's new address is …"
             return False
         name, _, domain = address.rpartition("@")
         sender_name, _, sender_domain = self.sender.rpartition("@")
@@ -865,6 +907,7 @@ class _MailSeen:
         return domain == sender_domain and len(sender_name) >= 4 and _one_edit(name, sender_name)
 
 
+_ADDRESS = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 _QUOTES = str.maketrans({c: '"' for c in "«»“”„‟″"} | {c: "'" for c in "‘’‚‛′"})
 
 
