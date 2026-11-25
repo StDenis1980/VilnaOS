@@ -17,7 +17,8 @@
   <summary xml:lang="cs">AI asistent od Anthropicu, oficiální aplikace v balíčku Vilna</summary>
   <summary xml:lang="lt">„Anthropic“ DI asistentas, oficiali programa „Vilna“ pakete</summary>
 
-  <developer>
+  <!-- The app's developer (Anthropic), not the packager: the description says who packaged it. -->
+  <developer id="com.anthropic">
     <name>Anthropic</name>
   </developer>
 
@@ -61,7 +62,6 @@
   </requires>
   <categories>
     <category>Utility</category>
-    <category>Network</category>
   </categories>
   <content_rating type="oars-1.1"/>
 
