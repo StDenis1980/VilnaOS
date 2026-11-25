@@ -3,7 +3,7 @@
 
 - ``models``: what can be downloaded (speech recognition, voices), pinned by SHA-256.
 - ``store``: downloading after the person agrees, and unpacking safely.
-- ``language``: which of the ten languages a text is in, and the interface language.
+- ``language``: which of the main languages a text is in, and the interface language.
 - ``phonemes``: text to the sounds a voice is trained on (eSpeak NG, or letters).
 - ``speech``: what is read aloud (no passwords, no Markdown, no addresses).
 - ``stt``: speech to text with Parakeet TDT 0.6B v3 and the Silero VAD.

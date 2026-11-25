@@ -292,6 +292,94 @@ SAY: dict[str, dict[str, str]] = {
         "draft_failed": "Atsakymas neišsaugotas kaip juodraštis.",
         "no_mail": "Tarp paskutinių gautų laiškų nėra to, apie kurį rašai.",
     },
+    "ca": {
+        "not_sent": "El correu no s'ha enviat.",
+        "not_read": "No he llegit el teu correu.",
+        "denied_user": "Has dit que no a la finestra de Herkos.",
+        "denied_timeout": "Ningú no ha respost a temps a la finestra de Herkos, així que no he "
+        "fet res sense tu.",
+        "tool_error": "El programa de correu o el calendari ha donat un error.",
+        "denied_error": "Herkos no ha pogut mostrar la seva finestra, així que ningú no t'ha "
+        "preguntat res.",
+        "event": "He afegit «{title}» al teu calendari: {when}.",
+        "event_failed": "L'esdeveniment no s'ha afegit al teu calendari.",
+        "no_time": "El missatge no diu el dia ni l'hora de la reunió, així que no he afegit cap "
+        "esdeveniment.",
+        "draft": "La resposta per a {to} és als teus esborranys i no s'ha enviat: només "
+        "l'enviaré quan m'ho demanis. Aquí la tens:",
+        "draft_failed": "La resposta no s'ha desat com a esborrany.",
+        "no_mail": "No he trobat el correu que dius entre els últims de la safata d'entrada.",
+    },
+    "ca@valencia": {
+        "not_sent": "El correu no s'ha enviat.",
+        "not_read": "No he llegit el teu correu.",
+        "denied_user": "Has dit que no en la finestra de Herkos.",
+        "denied_timeout": "Ningú no ha respost a temps en la finestra de Herkos, així que no he "
+        "fet res sense tu.",
+        "tool_error": "El programa de correu o el calendari ha donat un error.",
+        "denied_error": "Herkos no ha pogut mostrar la seua finestra, així que ningú no t'ha "
+        "preguntat res.",
+        "event": "He afegit «{title}» al teu calendari: {when}.",
+        "event_failed": "L'esdeveniment no s'ha afegit al teu calendari.",
+        "no_time": "El missatge no diu el dia ni l'hora de la reunió, així que no he afegit cap "
+        "esdeveniment.",
+        "draft": "La resposta per a {to} està en els teus esborranys i no s'ha enviat: només "
+        "l'enviaré quan m'ho demanes. Ací la tens:",
+        "draft_failed": "La resposta no s'ha guardat com a esborrany.",
+        "no_mail": "No he trobat el correu que dius entre els últims de la safata d'entrada.",
+    },
+    "gl": {
+        "not_sent": "O correo non se enviou.",
+        "not_read": "Non lin o teu correo.",
+        "denied_user": "Dixeches que non na xanela de Herkos.",
+        "denied_timeout": "Ninguén respondeu a tempo na xanela de Herkos, así que non fixen nada "
+        "sen ti.",
+        "tool_error": "O programa de correo ou o calendario deu un erro.",
+        "denied_error": "Herkos non puido mostrar a súa xanela, así que ninguén che preguntou.",
+        "event": "Engadín «{title}» ao teu calendario: {when}.",
+        "event_failed": "O evento non se engadiu ao teu calendario.",
+        "no_time": "A mensaxe non indica o día nin a hora da reunión, así que non engadín ningún "
+        "evento.",
+        "draft": "A resposta para {to} está nos teus borradores e non se enviou: só a enviarei "
+        "cando mo pidas. Aquí a tes:",
+        "draft_failed": "A resposta non se gardou como borrador.",
+        "no_mail": "Non atopei o correo que dis entre os últimos da caixa de entrada.",
+    },
+    "eu": {
+        "not_sent": "Mezua ez da bidali.",
+        "not_read": "Ez dut zure posta irakurri.",
+        "denied_user": "Ezetz esan duzu Herkosen leihoan.",
+        "denied_timeout": "Inork ez du garaiz erantzun Herkosen leihoan; beraz, ez dut ezer egin "
+        "zu gabe.",
+        "tool_error": "Posta-programak edo egutegiak errore bat eman du.",
+        "denied_error": "Herkosek ezin izan du bere leihoa erakutsi; beraz, inork ez dizu galdetu.",
+        "event": "«{title}» zure egutegian gehitu dut: {when}.",
+        "event_failed": "Gertaera ez da zure egutegian gehitu.",
+        "no_time": "Mezuak ez du bileraren eguna eta ordua esaten; beraz, ez dut gertaerarik "
+        "gehitu.",
+        "draft": "{to} pertsonarentzako erantzuna zure zirriborroetan dago eta ez da bidali: "
+        "eskatzen didazunean bakarrik bidaliko dut. Hemen duzu:",
+        "draft_failed": "Erantzuna ez da zirriborro gisa gorde.",
+        "no_mail": "Ez dut aurkitu esaten duzun mezua sarrera-ontziko azkenen artean.",
+    },
+    "pt": {
+        "not_sent": "O e-mail não foi enviado.",
+        "not_read": "Não li o seu correio.",
+        "denied_user": "Disse que não na janela do Herkos.",
+        "denied_timeout": "Ninguém respondeu a tempo na janela do Herkos, por isso não fiz nada "
+        "sem a sua confirmação.",
+        "tool_error": "O programa de correio ou o calendário deu um erro.",
+        "denied_error": "O Herkos não conseguiu mostrar a janela, por isso ninguém lhe perguntou "
+        "nada.",
+        "event": "Adicionei «{title}» ao seu calendário: {when}.",
+        "event_failed": "O evento não foi adicionado ao seu calendário.",
+        "no_time": "A mensagem não indica o dia e a hora da reunião, por isso não adicionei "
+        "nenhum evento.",
+        "draft": "A resposta para {to} está nos seus rascunhos e não foi enviada: só a envio "
+        "quando pedir. Aqui está:",
+        "draft_failed": "A resposta não foi guardada como rascunho.",
+        "no_mail": "Não encontrei o e-mail que refere entre os últimos da caixa de entrada.",
+    },
 }
 
 
@@ -358,6 +446,36 @@ WHY: dict[str, dict[str, str]] = {
         "event": "Įtraukti į kalendorių susitikimą iš laiško",
         "draft": "Išsaugoti atsakymą kaip juodraštį",
     },
+    "ca": {
+        "find": "Trobar el correu pel qual preguntes",
+        "read": "Llegir el correu pel qual preguntes",
+        "event": "Afegir al teu calendari la reunió del correu",
+        "draft": "Desar la resposta com a esborrany",
+    },
+    "ca@valencia": {
+        "find": "Trobar el correu pel qual preguntes",
+        "read": "Llegir el correu pel qual preguntes",
+        "event": "Afegir al teu calendari la reunió del correu",
+        "draft": "Guardar la resposta com a esborrany",
+    },
+    "gl": {
+        "find": "Atopar o correo polo que preguntas",
+        "read": "Ler o correo polo que preguntas",
+        "event": "Engadir ao teu calendario a reunión do correo",
+        "draft": "Gardar a resposta como borrador",
+    },
+    "eu": {
+        "find": "Galdetzen duzun mezua aurkitu",
+        "read": "Galdetzen duzun mezua irakurri",
+        "event": "Mezuko bilera zure egutegian gehitu",
+        "draft": "Erantzuna zirriborro gisa gorde",
+    },
+    "pt": {
+        "find": "Encontrar o e-mail sobre o qual pergunta",
+        "read": "Ler o e-mail sobre o qual pergunta",
+        "event": "Adicionar ao calendário a reunião do e-mail",
+        "draft": "Guardar a resposta como rascunho",
+    },
 }
 
 
@@ -366,7 +484,7 @@ def _joined(first: str, second: str) -> str:
 
 
 def wants(tools: FileTools, text: str) -> bool:
-    """A message that asks for the whole scenario, in any of the ten languages,
+    """A message that asks for the whole scenario, in any of the main languages,
     with the functions it needs listed: an email ("лист", "Марта написала"),
     the calendar ("додай у календар", "зустріч") and an answer ("підготуй
     відповідь"), by the stems of ``program_words.toml``."""
@@ -388,20 +506,30 @@ def language(text: str) -> str:
 
     A rough guess from common words (``gloxi.bench.guess_language``); when it
     has nothing to go by, "â" and "î" without French letters mean Romanian,
-    and otherwise the interface language (ADR 0009) is used.
+    and otherwise the interface language (ADR 0009) is used. Catalan in a
+    Valencian interface is answered in Valencian: the guess cannot tell them
+    apart.
     """
     from gloxi.bench import guess_language
 
+    interface = _interface_language()
     found = guess_language(text)
     if found is None and re.search("[âîÂÎ]", text) and not re.search("[çœêèûÇŒÊÈÛ]", text):
         found = "ro"
-    if found is None:
-        for name in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
-            value = os.environ.get(name, "")
-            if value:
-                found = value.split(":")[0][:2].lower()
-                break
+    if found is None or (found == "ca" and interface == "ca@valencia"):
+        found = interface
     return found if found in SAY else "en"
+
+
+def _interface_language() -> str:
+    for name in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        value = os.environ.get(name, "")
+        if value:
+            first = value.split(":")[0].lower()
+            if first[:2] == "ca" and "@valencia" in first:
+                return "ca@valencia"
+            return first[:2]
+    return ""
 
 
 @dataclass

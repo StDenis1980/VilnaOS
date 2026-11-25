@@ -121,6 +121,11 @@ GOOD_REPLIES = {
     "ro": "Bună, Marta! Da, vineri la ora 15:00 îmi convine. Ne vedem atunci!",
     "cs": "Ahoj Marto! Ano, pátek v 15:00 mi vyhovuje. Uvidíme se!",
     "lt": "Labas, Marta! Taip, penktadienį 15:00 man tinka. Iki susitikimo!",
+    "ca": "Hola, Marta! Sí, divendres a les 15:00 em va bé. Ens veiem allà!",
+    "ca@valencia": "Hola, Marta! Sí, divendres a les 15:00 em va bé. Ens veiem allà!",
+    "gl": "Ola, Marta! Si, o venres ás 15:00 vaime ben. Vémonos alí!",
+    "eu": "Kaixo, Marta! Bai, ostiralean 15:00etan ondo datorkit. Han ikusiko gara!",
+    "pt": "Olá, Marta! Sim, sexta-feira às 15:00 dá-me jeito. Até lá!",
 }
 DONE = {
     "uk": "Готово: зустріч у календарі, а чернетка відповіді Марті лежить у «Чернетках».",
@@ -135,6 +140,12 @@ DONE = {
     "ro": "Gata: întâlnirea este în calendar, iar răspunsul pentru Marta este în ciorne.",
     "cs": "Hotovo: schůzka je v kalendáři a odpověď pro Martu je v konceptech.",
     "lt": "Atlikta: susitikimas yra kalendoriuje, o atsakymas Martai yra juodraščiuose.",
+    "ca": "Fet: la reunió és al teu calendari i la resposta a la Marta és als esborranys.",
+    "ca@valencia": "Fet: la reunió està en el teu calendari i la resposta a Marta està en "
+    "els esborranys.",
+    "gl": "Feito: a reunión está no teu calendario e a resposta a Marta está nos borradores.",
+    "eu": "Eginda: bilera zure egutegian dago eta Martarentzako erantzuna zirriborroetan.",
+    "pt": "Feito: a reunião está no seu calendário e a resposta à Marta está nos rascunhos.",
 }
 
 
@@ -154,6 +165,12 @@ def facts(lang, **change):
         "reply": GOOD_REPLIES[lang],
     }
     return out | change
+
+
+def valencian(monkeypatch, lang):
+    """Valencian is told from Catalan by the interface language only."""
+    if lang == "ca@valencia":
+        monkeypatch.setenv("LANGUAGE", "ca@valencia:ca")
 
 
 def flow(lang, *turns, listed=None):
@@ -197,7 +214,8 @@ def listing(programs):
 
 @pytest.mark.parametrize("lang", list(REQUESTS))
 @pytest.mark.parametrize("phrasing", [0, 1])
-def test_the_fixed_steps_go_through_herkos_and_send_nothing(lang, phrasing):
+def test_the_fixed_steps_go_through_herkos_and_send_nothing(monkeypatch, lang, phrasing):
+    valencian(monkeypatch, lang)
     request = REQUESTS[lang][phrasing]
     mailbox, server, conv = flow(lang, {"uid": 41}, facts(lang))
     answer = ask(conv, request)
@@ -324,7 +342,8 @@ def test_after_no_answer_in_time_gloxi_does_not_offer_to_ask_again():
 
 
 @pytest.mark.parametrize("lang", list(REQUESTS))
-def test_what_gloxi_says_is_in_the_language_of_the_message(lang):
+def test_what_gloxi_says_is_in_the_language_of_the_message(monkeypatch, lang):
+    valencian(monkeypatch, lang)
     say = mail_flow.SAY[lang]
     for key in ("no_mail", "no_time", "event_failed", "draft_failed"):
         assert _lang_ok(say[key], lang), (lang, key, say[key])
@@ -429,7 +448,8 @@ def test_a_send_after_the_draft_answers_the_email_and_takes_the_draft_out():
 
 
 @pytest.mark.parametrize("lang", sorted(REQUESTS))
-def test_herkos_is_told_why_in_the_language_of_the_request(lang):
+def test_herkos_is_told_why_in_the_language_of_the_request(monkeypatch, lang):
+    valencian(monkeypatch, lang)
     mailbox, _, conv = flow(lang, {"uid": 41}, facts(lang))
     ask(conv, REQUESTS[lang][0])
     why = mail_flow.WHY[lang]
