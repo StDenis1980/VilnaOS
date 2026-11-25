@@ -8,6 +8,7 @@
 | `vilna-backup.svg` | Копії | Три шари-копії і стрілка відновлення |
 | `vilna-installer.svg` | Встановлення | Ноутбук, стрілка вниз і смуга поступу |
 | `vilna-permissions.svg` | Дозволи (Herkos) | Щит, огорожа і галочка |
+| `obs/packages/ptyxis/vilna-terminal.svg` | Термінал (Ptyxis) | Нічне синє вікно, золотий знак `>` і курсор |
 
 Кожен значок має пару `-symbolic.svg` 16×16 одним кольором: GNOME сам перефарбовує її під тему. Повний значок має розмір 128×128 і ставиться в `hicolor/scalable/apps`, а symbolic — у `hicolor/symbolic/apps`.
 

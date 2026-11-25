@@ -5,7 +5,11 @@ from __future__ import annotations
 
 import pytest
 
-gi = pytest.importorskip("gi")
+# "gi.repository", not "gi": a package can leave gi/overrides without
+# PyGObject, and that bare "gi" has no require_version.
+pytest.importorskip("gi.repository", exc_type=ImportError)
+import gi  # noqa: E402
+
 gi.require_version("Gtk", "4.0")
 from gi.repository import GLib, GObject, Gtk  # noqa: E402
 
