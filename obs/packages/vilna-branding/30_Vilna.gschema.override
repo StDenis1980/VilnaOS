@@ -125,5 +125,36 @@ label='Vilna'
 palette='vilna'
 opacity=0.92
 
+# A right click pastes, as Denys asked (2026-11-25); Shift + right click
+# opens the context menu. Ptyxis has no such setting: the Vilna build of
+# Ptyxis (obs/packages/ptyxis, vilna-right-click-paste.patch) adds it as
+# org.vilna.Ptyxis, off unless set here.
+[org.vilna.Ptyxis]
+right-click-paste=true
+
+# Ptyxis's letter shortcuts also answer to the Ukrainian layout. GTK 4
+# matches a shortcut by the letter the key types, and with Українська on
+# Ctrl+Shift+C types «С», so copy, paste, new tab and the rest did nothing
+# (Denys, Build12.29, 2026-11-25). Each shortcut is therefore
+# «Latin|Cyrillic on the same key» (a GTK alternative trigger); the
+# Cyrillic letters are those of the ua layout, the same as ru for these
+# keys. tools/check_terminal.py checks that every letter shortcut has
+# its Cyrillic twin. Changing one in Ptyxis ▸ Preferences replaces both.
+[org.gnome.Ptyxis.Shortcuts]
+copy-clipboard='<ctrl><shift>c|<ctrl><shift>Cyrillic_es'
+paste-clipboard='<ctrl><shift>v|<ctrl><shift>Cyrillic_em'
+new-tab='<ctrl><shift>t|<ctrl><shift>Cyrillic_ie'
+new-window='<ctrl><shift>n|<ctrl><shift>Cyrillic_te'
+split-auto='<ctrl><alt>a|<ctrl><alt>Cyrillic_ef'
+split-horizontal='<ctrl><alt>d|<ctrl><alt>Cyrillic_ve'
+split-vertical='<ctrl><alt>r|<ctrl><alt>Cyrillic_ka'
+tab-overview='<ctrl><shift>o|<ctrl><shift>Cyrillic_shcha'
+go-to-terminal='<ctrl><shift>p|<ctrl><shift>Cyrillic_ze'
+search='<ctrl><shift>f|<ctrl><shift>Cyrillic_a'
+select-all='<ctrl><shift>a|<ctrl><shift>Cyrillic_ef'
+close-tab='<ctrl><shift>w|<ctrl><shift>Cyrillic_tse'
+close-window='<ctrl><shift>q|<ctrl><shift>Cyrillic_shorti'
+undo-close-tab='<ctrl><shift><alt>t|<ctrl><shift><alt>Cyrillic_ie'
+
 [org.freedesktop.Tracker.Miner.Files]
 index-removable-devices=false

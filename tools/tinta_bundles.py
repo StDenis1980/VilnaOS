@@ -5,6 +5,7 @@
     python3 tools/tinta_bundles.py check          # the pins agree with the image
     python3 tools/tinta_bundles.py downloads      # "URL SHA256 FILE" per line, for CI
     python3 tools/tinta_bundles.py apps           # "ID CLI VERSION" per line, for CI
+    python3 tools/tinta_bundles.py catalogue DIR  # every app is in the store's catalogue
 
 ``image/tinta-bundles.toml`` pins each app's release bundle by tag and
 SHA-256. ``check`` makes sure that file is well formed and that it, the
@@ -13,15 +14,22 @@ the "vilna" remote (obs/packages/vilna-flatpak-defaults/flatpaks-vilna.list)
 name the same apps, so an app cannot be in the image without a pinned,
 checked bundle, nor a bundle in the repository that the image never installs.
 ``downloads`` prints what CI fetches; CI checks every hash before it imports
-a bundle. Stdlib only; reads no network.
+a bundle. ``catalogue`` reads the "vilna" remote's app catalogue as Flatpak
+keeps it (``/var/lib/flatpak/appstream/vilna/x86_64/active``: appstream.xml
+and icons/), which is what GNOME Software shows: every pinned app must be
+there with a name, a summary, a launcher and an icon, or the store would not
+show it and a person who removed it could not install it again. Stdlib only;
+reads no network.
 """
 
 from __future__ import annotations
 
 import argparse
+import gzip
 import re
 import sys
 import tomllib
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -157,11 +165,69 @@ def agree(bundles: list[dict], image: list[str], first_boot: list[str]) -> list[
     return problems
 
 
+# The sizes GNOME Software asks for; Flatpak's catalogue has these two.
+ICON_SIZES = ("64x64", "128x128")
+
+
+def read_catalogue(folder: Path) -> ET.Element:
+    """The AppStream catalogue of a remote, as ``flatpak update --appstream`` keeps it."""
+    for name, opener in (("appstream.xml.gz", gzip.open), ("appstream.xml", open)):
+        path = folder / name
+        if path.is_file():
+            try:
+                with opener(path, "rb") as f:
+                    return ET.parse(f).getroot()
+            except (OSError, ET.ParseError, EOFError) as e:
+                raise BundleError(f"cannot read {path}: {e}") from e
+    raise BundleError(f"{folder}: no appstream.xml(.gz): was the catalogue fetched?")
+
+
+def in_catalogue(bundles: list[dict], root: ET.Element, folder: Path) -> list[str]:
+    """Why a pinned app would not show in the store, one line per problem."""
+    components = {}
+    for c in root.iter("component"):
+        cid = (c.findtext("id") or "").strip()
+        if cid:
+            components.setdefault(cid, c)
+    problems = []
+    for b in bundles:
+        app = b["id"]
+        c = components.get(app)
+        if c is None:
+            problems.append(
+                f"{app} ({b['name']}) is not in the catalogue: the store does not show it"
+            )
+            continue
+        if c.get("type") != "desktop-application":
+            problems.append(
+                f"{app}: type is {c.get('type')!r}, the store lists only desktop-application"
+            )
+        if not (c.findtext("name") or "").strip():
+            problems.append(f"{app}: no name")
+        if not (c.findtext("summary") or "").strip():
+            problems.append(f"{app}: no summary")
+        if (c.findtext("launchable") or "").strip() != f"{app}.desktop":
+            problems.append(f"{app}: no launchable {app}.desktop")
+        cached = {(i.text or "").strip() for i in c.findall("icon") if i.get("type") == "cached"}
+        if not cached:
+            problems.append(f"{app}: no cached icon")
+        for size in ICON_SIZES:
+            if not any((folder / "icons" / size / name).is_file() for name in cached):
+                problems.append(f"{app}: no {size} icon in {folder / 'icons' / size}")
+    return problems
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    p.add_argument("command", choices=["check", "downloads", "apps"])
+    p.add_argument("command", choices=["check", "downloads", "apps", "catalogue"])
+    p.add_argument(
+        "folder",
+        nargs="?",
+        type=Path,
+        help="catalogue: the remote's appstream folder (appstream.xml.gz and icons/)",
+    )
     p.add_argument("--bundles", type=Path, default=BUNDLES)
     p.add_argument("--packages", type=Path, default=PACKAGES_YAML)
     p.add_argument("--first-boot", type=Path, default=VILNA_LIST)
@@ -171,6 +237,10 @@ def main(argv: list[str] | None = None) -> int:
         problems = validate(bundles)
         if args.command == "check":
             problems += agree(bundles, image_tinta(args.packages), read_list(args.first_boot))
+        elif args.command == "catalogue" and not problems:
+            if args.folder is None:
+                p.error("catalogue needs the appstream folder")
+            problems += in_catalogue(bundles, read_catalogue(args.folder), args.folder)
     except (BundleError, OSError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
@@ -180,6 +250,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     if args.command == "check":
         print(f"{len(bundles)} Tinta Office bundles pinned, in the image and on first boot")
+    elif args.command == "catalogue":
+        print(f"{len(bundles)} Tinta Office apps in the store's catalogue, with icons")
     elif args.command == "downloads":
         for b in bundles:
             print(url(b), b["sha256"], b["file"])

@@ -167,6 +167,8 @@ class Conversation:
             request[0] = {"role": "system", "content": request[0]["content"] + tools.prompt()}
 
         parts: list[str] = []
+        if tools:
+            tools.heard(text)
         if tools and mail_flow.wants(tools, text):
             # Milestone В3 as fixed steps: the model only reads and writes.
             flow = mail_flow.MailFlow(
@@ -207,6 +209,7 @@ class Conversation:
             # it has not seen yet, with a date it guessed (gloxi-bench --tasks
             # mail, 2026-11-23). After a read, the rest waits for the next round.
             read: str | None = None
+            not_sent: ToolOutcome | None = None
             for call in calls:
                 if read is not None and not tools.reads_outside(call.name):
                     outcome = tools.not_yet(call.name, read)
@@ -216,9 +219,21 @@ class Conversation:
                         read = call.name
                     if self.on_tool:
                         self.on_tool(outcome)
+                    if tools.sends_mail(call.name) and outcome.status != "done":
+                        not_sent = not_sent or outcome
                 request.append(
                     {"role": "tool", "tool_call_id": call.id, "content": outcome.for_model}
                 )
+            if not_sent is not None:
+                # After a send Herkos did not run, the models passed Gloxi's
+                # note on to the person, offered to try again, or answered in
+                # English (6 of 12 right, VM check after PR #232): Gloxi says
+                # it in fixed words, as on the steps of mail_flow.
+                told = mail_flow.not_sent(text, not_sent)
+                told = f"\n\n{told}" if parts else told
+                parts.append(told)
+                yield told
+                break
         # Tool messages are not kept: file contents stay out of the history,
         # which a later message may send to the cloud.
         self.history.append(pending)

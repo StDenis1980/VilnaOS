@@ -151,8 +151,8 @@ export function parseGeocode(text) {
     });
 }
 
-// WMO weather codes -> one of eight kinds, each with an Adwaita icon. Two
-// more come from the wind and the heat (weatherScene).
+// WMO weather codes -> one of ten kinds, each with an Adwaita icon, and
+// how strong it is. Two more come from the wind and the heat (weatherScene).
 const KINDS = [
     ['clear', 'weather-clear-symbolic', 'weather-clear-night-symbolic'],
     ['cloudy', 'weather-few-clouds-symbolic', 'weather-few-clouds-night-symbolic'],
@@ -164,7 +164,17 @@ const KINDS = [
     ['storm', 'weather-storm-symbolic'],
     ['wind', 'weather-windy-symbolic'],
     ['heat', 'weather-clear-symbolic', 'weather-clear-night-symbolic'],
+    // Added after the first ten, so that their indexes stay.
+    ['hail', 'weather-storm-symbolic'],
+    ['ice', 'weather-showers-symbolic'],
 ];
+
+// How strong the rain, snow or storm is: 0 light, 1 moderate, 2 heavy.
+// The sky draws fewer or more drops and flakes for it.
+const STRENGTH = {
+    51: 0, 53: 1, 55: 2, 56: 0, 57: 2, 61: 0, 63: 1, 65: 2, 66: 1, 67: 2,
+    71: 0, 73: 1, 75: 2, 77: 0, 80: 0, 81: 1, 82: 2, 85: 0, 86: 2, 95: 1, 96: 1, 99: 2,
+};
 
 // Above these, a dry sky becomes windy (km/h) or hot (°C, as it feels).
 // 50 km/h gusts are where Spain's yellow wind warnings begin inland;
@@ -179,13 +189,15 @@ export function weatherKind(code, day = true) {
     else if (code === 1 || code === 2) i = 1;
     else if (code === 3) i = 2;
     else if (code === 45 || code === 48) i = 3;
-    else if (code >= 51 && code <= 57) i = 4;
-    else if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) i = 5;
+    else if (code === 56 || code === 57 || code === 66 || code === 67) i = 11; // freezing drizzle and rain
+    else if (code >= 51 && code <= 55) i = 4;
+    else if ((code >= 61 && code <= 65) || (code >= 80 && code <= 82)) i = 5;
     else if ((code >= 71 && code <= 77) || code === 85 || code === 86) i = 6;
-    else if (code >= 95 && code <= 99) i = 7;
+    else if (code === 96 || code === 99) i = 10; // a thunderstorm with hail
+    else if (code === 95) i = 7;
     else i = 2;
     const [kind, icon, night] = KINDS[i];
-    return {kind, index: i, icon: !day && night ? night : icon};
+    return {kind, index: i, icon: !day && night ? night : icon, strength: STRENGTH[code] ?? 1};
 }
 
 // The forecast -> what the card shows and draws: a weatherKind, where
@@ -194,7 +206,8 @@ export function weatherScene(forecast) {
     if (!forecast)
         return null;
     const base = weatherKind(forecast.code, forecast.day);
-    const pick = i => ({kind: KINDS[i][0], index: i, icon: !forecast.day && KINDS[i][2] ? KINDS[i][2] : KINDS[i][1]});
+    const pick = i => ({kind: KINDS[i][0], index: i, icon: !forecast.day && KINDS[i][2] ? KINDS[i][2] : KINDS[i][1],
+        strength: 1});
     const dry = base.index <= 2;
     const feels = forecast.feels ?? forecast.temp;
     if (dry && base.index <= 1 && finite(feels) && feels >= HOT)
@@ -249,109 +262,129 @@ export function askArgv(argv, question) {
 const KEYS = ['gloxi', 'help', 'askPlaceholder', 'chips', 'today', 'nothing', 'allDay', 'weather', 'noWeather',
     'chooseCity', 'kinds', 'backupOk', 'backupFailed', 'backupNone', 'last', 'prefsTitle', 'showWidgets',
     'showWeather', 'place', 'capital', 'search', 'searchHint', 'useMine', 'consentTitle', 'consentBody', 'send',
-    'cancel', 'backToCapital', 'notFound', 'locFailed', 'myPlace', 'dataBy'];
+    'cancel', 'backToCapital', 'notFound', 'locFailed', 'myPlace', 'dataBy', 'servicesOff', 'searchFailed'];
 
 const TEXT = {
     en: ['Gloxi', 'How can I help?', 'Ask Gloxi…', ['What’s on today?', 'Find a file', 'Set up Wi-Fi'],
         'Today · Calendar', 'Nothing planned', 'All day', 'Weather', 'No forecast yet', 'Choose a town',
-        ['Clear', 'Partly cloudy', 'Overcast', 'Fog', 'Drizzle', 'Rain', 'Snow', 'Thunderstorm', 'Windy', 'Hot'],
+        ['Clear', 'Partly cloudy', 'Overcast', 'Fog', 'Drizzle', 'Rain', 'Snow', 'Thunderstorm', 'Windy', 'Hot', 'Hail', 'Freezing rain'],
         'Backups: all saved', 'Backups: the last one failed', 'Backups are not set up',
         {today: 'Last: today at %s', yesterday: 'Last: yesterday at %s', on: 'Last: %s'},
         'Desktop widgets', 'Show the widgets', 'Show the weather', 'Place for the weather', '%s (the capital, by default)',
         'Search for a town', 'Only the text you type is sent to Open-Meteo.', 'Use my location', 'Send your location?',
         'Vilna will ask the system for your approximate location, rounded to about 10 km, and send it to Open-Meteo for the forecast. Nothing else is sent.',
         'Send', 'Cancel', 'Back to the capital', 'Nothing found', 'Could not find your location. Type a town instead.',
-        'My location', 'Weather data: Open-Meteo.com (CC BY 4.0)'],
+        'My location', 'Weather data: Open-Meteo.com (CC BY 4.0)',
+        'Location services are off in the system settings. Send turns them on; other apps will still have to ask you first.',
+        'Could not reach Open-Meteo. Check the connection and try again.'],
     uk: ['Gloxi', 'Чим допомогти?', 'Запитайте Gloxi…', ['Що сьогодні?', 'Знайди файл', 'Налаштуй Wi-Fi'],
         'Сьогодні · календар', 'Нічого не заплановано', 'Увесь день', 'Погода', 'Прогнозу ще немає', 'Оберіть місто',
-        ['Ясно', 'Мінлива хмарність', 'Хмарно', 'Туман', 'Мряка', 'Дощ', 'Сніг', 'Гроза', 'Вітряно', 'Спека'],
+        ['Ясно', 'Мінлива хмарність', 'Хмарно', 'Туман', 'Мряка', 'Дощ', 'Сніг', 'Гроза', 'Вітряно', 'Спека', 'Град', 'Ожеледь'],
         'Копії: усе збережено', 'Копії: остання не вдалася', 'Копії ще не налаштовано',
         {today: 'Остання сьогодні о %s', yesterday: 'Остання вчора о %s', on: 'Остання %s'},
         'Віджети стільниці', 'Показувати віджети', 'Показувати погоду', 'Місце для погоди', '%s (столиця, за замовчуванням)',
         'Пошук міста', 'В Open-Meteo йде лише текст, який ви вводите.', 'Моє розташування', 'Передати розташування?',
         'Vilna попросить у системи ваше приблизне розташування, округлене до близько 10 км, і передасть його Open-Meteo для прогнозу. Більше нічого не передається.',
         'Передати', 'Скасувати', 'Повернути столицю', 'Нічого не знайдено', 'Не вдалося визначити розташування. Введіть місто.',
-        'Моє розташування', 'Дані погоди: Open-Meteo.com (CC BY 4.0)'],
+        'Моє розташування', 'Дані погоди: Open-Meteo.com (CC BY 4.0)',
+        'Служби розташування в налаштуваннях системи вимкнено. «Передати» їх увімкне; інші програми однаково мусять спершу спитати вас.',
+        'Не вдалося зв’язатися з Open-Meteo. Перевірте з’єднання і спробуйте ще раз.'],
     es: ['Gloxi', '¿En qué te ayudo?', 'Pregunta a Gloxi…', ['¿Qué hay hoy?', 'Busca un archivo', 'Configura el wifi'],
         'Hoy · Calendario', 'Nada previsto', 'Todo el día', 'Tiempo', 'Aún no hay previsión', 'Elige una ciudad',
-        ['Despejado', 'Parcialmente nublado', 'Nublado', 'Niebla', 'Llovizna', 'Lluvia', 'Nieve', 'Tormenta', 'Viento', 'Calor'],
+        ['Despejado', 'Parcialmente nublado', 'Nublado', 'Niebla', 'Llovizna', 'Lluvia', 'Nieve', 'Tormenta', 'Viento', 'Calor', 'Granizo', 'Lluvia helada'],
         'Copias: todo guardado', 'Copias: la última falló', 'Las copias no están configuradas',
         {today: 'Última: hoy a las %s', yesterday: 'Última: ayer a las %s', on: 'Última: %s'},
         'Widgets del escritorio', 'Mostrar los widgets', 'Mostrar el tiempo', 'Lugar para el tiempo', '%s (la capital, por defecto)',
         'Buscar una ciudad', 'Solo se envía a Open-Meteo el texto que escribes.', 'Usar mi ubicación', '¿Enviar tu ubicación?',
         'Vilna pedirá al sistema tu ubicación aproximada, redondeada a unos 10 km, y la enviará a Open-Meteo para la previsión. No se envía nada más.',
         'Enviar', 'Cancelar', 'Volver a la capital', 'No se encontró nada', 'No se pudo encontrar tu ubicación. Escribe una ciudad.',
-        'Mi ubicación', 'Datos del tiempo: Open-Meteo.com (CC BY 4.0)'],
+        'Mi ubicación', 'Datos del tiempo: Open-Meteo.com (CC BY 4.0)',
+        'Los servicios de ubicación están desactivados en la configuración del sistema. «Enviar» los activa; las demás aplicaciones tendrán que preguntarte antes.',
+        'No se pudo conectar con Open-Meteo. Revisa la conexión e inténtalo de nuevo.'],
     pl: ['Gloxi', 'W czym pomóc?', 'Zapytaj Gloxi…', ['Co dziś?', 'Znajdź plik', 'Skonfiguruj Wi-Fi'],
         'Dziś · kalendarz', 'Nic nie zaplanowano', 'Cały dzień', 'Pogoda', 'Brak prognozy', 'Wybierz miasto',
-        ['Bezchmurnie', 'Częściowe zachmurzenie', 'Pochmurno', 'Mgła', 'Mżawka', 'Deszcz', 'Śnieg', 'Burza', 'Wietrznie', 'Upał'],
+        ['Bezchmurnie', 'Częściowe zachmurzenie', 'Pochmurno', 'Mgła', 'Mżawka', 'Deszcz', 'Śnieg', 'Burza', 'Wietrznie', 'Upał', 'Grad', 'Marznący deszcz'],
         'Kopie: wszystko zapisane', 'Kopie: ostatnia się nie udała', 'Kopie nie są skonfigurowane',
         {today: 'Ostatnia: dziś o %s', yesterday: 'Ostatnia: wczoraj o %s', on: 'Ostatnia: %s'},
         'Widżety pulpitu', 'Pokazuj widżety', 'Pokazuj pogodę', 'Miejsce dla pogody', '%s (stolica, domyślnie)',
         'Szukaj miasta', 'Do Open-Meteo trafia tylko wpisany tekst.', 'Użyj mojej lokalizacji', 'Wysłać lokalizację?',
         'Vilna poprosi system o przybliżoną lokalizację, zaokrągloną do około 10 km, i wyśle ją do Open-Meteo po prognozę. Nic więcej nie jest wysyłane.',
         'Wyślij', 'Anuluj', 'Wróć do stolicy', 'Nic nie znaleziono', 'Nie udało się ustalić lokalizacji. Wpisz miasto.',
-        'Moja lokalizacja', 'Dane pogodowe: Open-Meteo.com (CC BY 4.0)'],
+        'Moja lokalizacja', 'Dane pogodowe: Open-Meteo.com (CC BY 4.0)',
+        'Usługi lokalizacji są wyłączone w ustawieniach systemu. „Wyślij” je włączy; inne programy nadal muszą najpierw zapytać.',
+        'Nie udało się połączyć z Open-Meteo. Sprawdź połączenie i spróbuj ponownie.'],
     de: ['Gloxi', 'Wobei kann ich helfen?', 'Gloxi fragen …', ['Was steht heute an?', 'Datei finden', 'WLAN einrichten'],
         'Heute · Kalender', 'Nichts geplant', 'Ganztägig', 'Wetter', 'Noch keine Vorhersage', 'Ort wählen',
-        ['Klar', 'Teils bewölkt', 'Bedeckt', 'Nebel', 'Nieselregen', 'Regen', 'Schnee', 'Gewitter', 'Windig', 'Hitze'],
+        ['Klar', 'Teils bewölkt', 'Bedeckt', 'Nebel', 'Nieselregen', 'Regen', 'Schnee', 'Gewitter', 'Windig', 'Hitze', 'Hagel', 'Eisregen'],
         'Sicherungen: alles gesichert', 'Sicherungen: die letzte ist fehlgeschlagen', 'Sicherungen sind nicht eingerichtet',
         {today: 'Zuletzt: heute um %s', yesterday: 'Zuletzt: gestern um %s', on: 'Zuletzt: %s'},
         'Schreibtisch-Widgets', 'Widgets anzeigen', 'Wetter anzeigen', 'Ort für das Wetter', '%s (Hauptstadt, Standard)',
         'Ort suchen', 'An Open-Meteo geht nur der eingegebene Text.', 'Meinen Standort verwenden', 'Standort senden?',
         'Vilna fragt das System nach Ihrem ungefähren Standort, auf etwa 10 km gerundet, und sendet ihn für die Vorhersage an Open-Meteo. Sonst wird nichts gesendet.',
         'Senden', 'Abbrechen', 'Zurück zur Hauptstadt', 'Nichts gefunden', 'Standort nicht gefunden. Bitte einen Ort eingeben.',
-        'Mein Standort', 'Wetterdaten: Open-Meteo.com (CC BY 4.0)'],
+        'Mein Standort', 'Wetterdaten: Open-Meteo.com (CC BY 4.0)',
+        'Die Ortungsdienste sind in den Systemeinstellungen aus. „Senden“ schaltet sie ein; andere Programme müssen Sie trotzdem zuerst fragen.',
+        'Open-Meteo ist nicht erreichbar. Prüfen Sie die Verbindung und versuchen Sie es erneut.'],
     fr: ['Gloxi', 'Comment puis-je aider ?', 'Demander à Gloxi…', ['Quoi de prévu ?', 'Trouver un fichier', 'Configurer le Wi-Fi'],
         'Aujourd’hui · Agenda', 'Rien de prévu', 'Toute la journée', 'Météo', 'Pas encore de prévisions', 'Choisir une ville',
-        ['Dégagé', 'Partiellement nuageux', 'Couvert', 'Brouillard', 'Bruine', 'Pluie', 'Neige', 'Orage', 'Venteux', 'Chaleur'],
+        ['Dégagé', 'Partiellement nuageux', 'Couvert', 'Brouillard', 'Bruine', 'Pluie', 'Neige', 'Orage', 'Venteux', 'Chaleur', 'Grêle', 'Pluie verglaçante'],
         'Sauvegardes : tout est enregistré', 'Sauvegardes : la dernière a échoué', 'Les sauvegardes ne sont pas configurées',
         {today: 'Dernière : aujourd’hui à %s', yesterday: 'Dernière : hier à %s', on: 'Dernière : %s'},
         'Widgets du bureau', 'Afficher les widgets', 'Afficher la météo', 'Lieu pour la météo', '%s (la capitale, par défaut)',
         'Chercher une ville', 'Seul le texte saisi est envoyé à Open-Meteo.', 'Utiliser ma position', 'Envoyer votre position ?',
         'Vilna demandera au système votre position approximative, arrondie à environ 10 km, et l’enverra à Open-Meteo pour les prévisions. Rien d’autre n’est envoyé.',
         'Envoyer', 'Annuler', 'Revenir à la capitale', 'Aucun résultat', 'Position introuvable. Saisissez une ville.',
-        'Ma position', 'Données météo : Open-Meteo.com (CC BY 4.0)'],
+        'Ma position', 'Données météo : Open-Meteo.com (CC BY 4.0)',
+        'Les services de localisation sont désactivés dans les paramètres du système. « Envoyer » les active ; les autres applications devront toujours vous demander d’abord.',
+        'Impossible de joindre Open-Meteo. Vérifiez la connexion et réessayez.'],
     it: ['Gloxi', 'Come posso aiutarti?', 'Chiedi a Gloxi…', ['Cosa c’è oggi?', 'Trova un file', 'Configura il Wi-Fi'],
         'Oggi · Calendario', 'Niente in programma', 'Tutto il giorno', 'Meteo', 'Nessuna previsione', 'Scegli una città',
-        ['Sereno', 'Parzialmente nuvoloso', 'Coperto', 'Nebbia', 'Pioviggine', 'Pioggia', 'Neve', 'Temporale', 'Ventoso', 'Caldo'],
+        ['Sereno', 'Parzialmente nuvoloso', 'Coperto', 'Nebbia', 'Pioviggine', 'Pioggia', 'Neve', 'Temporale', 'Ventoso', 'Caldo', 'Grandine', 'Pioggia gelata'],
         'Copie: tutto salvato', 'Copie: l’ultima non è riuscita', 'Le copie non sono configurate',
         {today: 'Ultima: oggi alle %s', yesterday: 'Ultima: ieri alle %s', on: 'Ultima: %s'},
         'Widget del desktop', 'Mostra i widget', 'Mostra il meteo', 'Luogo per il meteo', '%s (la capitale, predefinita)',
         'Cerca una città', 'A Open-Meteo va solo il testo che scrivi.', 'Usa la mia posizione', 'Inviare la posizione?',
         'Vilna chiederà al sistema la tua posizione approssimativa, arrotondata a circa 10 km, e la invierà a Open-Meteo per le previsioni. Non viene inviato altro.',
         'Invia', 'Annulla', 'Torna alla capitale', 'Nessun risultato', 'Posizione non trovata. Scrivi una città.',
-        'La mia posizione', 'Dati meteo: Open-Meteo.com (CC BY 4.0)'],
+        'La mia posizione', 'Dati meteo: Open-Meteo.com (CC BY 4.0)',
+        'I servizi di localizzazione sono disattivati nelle impostazioni di sistema. «Invia» li attiva; le altre app dovranno comunque chiederti prima.',
+        'Impossibile raggiungere Open-Meteo. Controlla la connessione e riprova.'],
     ro: ['Gloxi', 'Cu ce te pot ajuta?', 'Întreabă-l pe Gloxi…', ['Ce e azi?', 'Găsește un fișier', 'Configurează Wi-Fi'],
         'Azi · Calendar', 'Nimic planificat', 'Toată ziua', 'Vremea', 'Încă nu există prognoză', 'Alege un oraș',
-        ['Senin', 'Parțial noros', 'Înnorat', 'Ceață', 'Burniță', 'Ploaie', 'Ninsoare', 'Furtună', 'Vânt', 'Caniculă'],
+        ['Senin', 'Parțial noros', 'Înnorat', 'Ceață', 'Burniță', 'Ploaie', 'Ninsoare', 'Furtună', 'Vânt', 'Caniculă', 'Grindină', 'Ploaie înghețată'],
         'Copii: totul salvat', 'Copii: ultima nu a reușit', 'Copiile nu sunt configurate',
         {today: 'Ultima: azi la %s', yesterday: 'Ultima: ieri la %s', on: 'Ultima: %s'},
         'Widgeturi pe desktop', 'Arată widgeturile', 'Arată vremea', 'Locul pentru vreme', '%s (capitala, implicit)',
         'Caută un oraș', 'La Open-Meteo ajunge doar textul pe care îl scrii.', 'Folosește locația mea', 'Trimiți locația?',
         'Vilna va cere sistemului locația ta aproximativă, rotunjită la circa 10 km, și o va trimite la Open-Meteo pentru prognoză. Nu se trimite nimic altceva.',
         'Trimite', 'Anulează', 'Înapoi la capitală', 'Nu s-a găsit nimic', 'Locația nu a putut fi găsită. Scrie un oraș.',
-        'Locația mea', 'Date meteo: Open-Meteo.com (CC BY 4.0)'],
+        'Locația mea', 'Date meteo: Open-Meteo.com (CC BY 4.0)',
+        'Serviciile de localizare sunt oprite în setările sistemului. „Trimite” le pornește; celelalte aplicații vor trebui totuși să te întrebe mai întâi.',
+        'Open-Meteo nu a putut fi contactat. Verifică conexiunea și încearcă din nou.'],
     cs: ['Gloxi', 'S čím pomoci?', 'Zeptejte se Gloxi…', ['Co je dnes?', 'Najdi soubor', 'Nastav Wi-Fi'],
         'Dnes · kalendář', 'Nic naplánováno', 'Celý den', 'Počasí', 'Zatím bez předpovědi', 'Vyberte město',
-        ['Jasno', 'Polojasno', 'Zataženo', 'Mlha', 'Mrholení', 'Déšť', 'Sníh', 'Bouřka', 'Větrno', 'Vedro'],
+        ['Jasno', 'Polojasno', 'Zataženo', 'Mlha', 'Mrholení', 'Déšť', 'Sníh', 'Bouřka', 'Větrno', 'Vedro', 'Kroupy', 'Mrznoucí déšť'],
         'Zálohy: vše uloženo', 'Zálohy: poslední se nezdařila', 'Zálohy nejsou nastavené',
         {today: 'Poslední: dnes v %s', yesterday: 'Poslední: včera v %s', on: 'Poslední: %s'},
         'Widgety plochy', 'Zobrazit widgety', 'Zobrazit počasí', 'Místo pro počasí', '%s (hlavní město, výchozí)',
         'Hledat město', 'Do Open-Meteo jde jen text, který napíšete.', 'Použít mou polohu', 'Odeslat polohu?',
         'Vilna požádá systém o vaši přibližnou polohu zaokrouhlenou asi na 10 km a pošle ji Open-Meteo kvůli předpovědi. Nic jiného se neposílá.',
         'Odeslat', 'Zrušit', 'Zpět na hlavní město', 'Nic nenalezeno', 'Polohu se nepodařilo zjistit. Napište město.',
-        'Moje poloha', 'Data o počasí: Open-Meteo.com (CC BY 4.0)'],
+        'Moje poloha', 'Data o počasí: Open-Meteo.com (CC BY 4.0)',
+        'Služby určování polohy jsou v nastavení systému vypnuté. „Odeslat“ je zapne; ostatní aplikace se vás i tak musí nejdřív zeptat.',
+        'Open-Meteo se nepodařilo kontaktovat. Zkontrolujte připojení a zkuste to znovu.'],
     lt: ['Gloxi', 'Kuo galiu padėti?', 'Klauskite Gloxi…', ['Kas šiandien?', 'Rask failą', 'Nustatyk „Wi-Fi“'],
         'Šiandien · kalendorius', 'Nieko nesuplanuota', 'Visą dieną', 'Orai', 'Prognozės dar nėra', 'Pasirinkite miestą',
-        ['Giedra', 'Nepastovus debesuotumas', 'Debesuota', 'Rūkas', 'Dulksna', 'Lietus', 'Sniegas', 'Perkūnija', 'Vėjuota', 'Karšta'],
+        ['Giedra', 'Nepastovus debesuotumas', 'Debesuota', 'Rūkas', 'Dulksna', 'Lietus', 'Sniegas', 'Perkūnija', 'Vėjuota', 'Karšta', 'Kruša', 'Lijundra'],
         'Kopijos: viskas išsaugota', 'Kopijos: paskutinė nepavyko', 'Kopijos nenustatytos',
         {today: 'Paskutinė: šiandien %s', yesterday: 'Paskutinė: vakar %s', on: 'Paskutinė: %s'},
         'Darbalaukio valdikliai', 'Rodyti valdiklius', 'Rodyti orus', 'Vieta orams', '%s (sostinė, numatytoji)',
         'Ieškoti miesto', 'Į Open-Meteo siunčiamas tik jūsų įvestas tekstas.', 'Naudoti mano vietą', 'Siųsti vietą?',
         'Vilna paprašys sistemos apytikslės jūsų vietos, suapvalintos iki maždaug 10 km, ir nusiųs ją Open-Meteo prognozei. Daugiau nieko nesiunčiama.',
         'Siųsti', 'Atšaukti', 'Grįžti į sostinę', 'Nieko nerasta', 'Nepavyko nustatyti vietos. Įveskite miestą.',
-        'Mano vieta', 'Orų duomenys: Open-Meteo.com (CC BY 4.0)'],
+        'Mano vieta', 'Orų duomenys: Open-Meteo.com (CC BY 4.0)',
+        'Vietos nustatymo paslaugos sistemos nustatymuose išjungtos. „Siųsti“ jas įjungs; kitos programos vis tiek turės pirmiausia jūsų paklausti.',
+        'Nepavyko susisiekti su Open-Meteo. Patikrinkite ryšį ir bandykite dar kartą.'],
 };
 
 export const LANGUAGES = Object.keys(TEXT);

@@ -317,6 +317,8 @@ class Mailbox:
             "create_event": {"id": "e7", "calendar": "personal"},
             "save_draft": {"folder": "Drafts", "message_id": "<d1.gloxi@example.org>"},
         }
+        if op in self.refuse:
+            return {"decision": "denied", "code": self.refuse_code, "message": "not done"}
         if op == "send":
             return {
                 "decision": "denied",
@@ -325,8 +327,6 @@ class Mailbox:
             }
         if self.reply_to:
             results["read_message"]["reply_to"] = self.reply_to
-        if op in self.refuse:
-            return {"decision": "denied", "code": self.refuse_code, "message": "not done"}
         if op not in results:
             return {"decision": "denied", "code": "tool_error", "message": f"no {op} here"}
         external = op in ("list_messages", "search_messages", "read_message")

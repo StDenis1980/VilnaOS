@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+<component type="desktop-application">
+  <id>io.github.stdenis1980.ClaudeDesktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary=https://www.anthropic.com/legal/consumer-terms</project_license>
+
+  <name>Claude</name>
+  <summary>Anthropic’s AI assistant, official app in a Vilna package</summary>
+  <summary xml:lang="uk">AI-асистент від Anthropic, офіційна програма в пакунку Vilna</summary>
+  <summary xml:lang="es">Asistente de IA de Anthropic, la app oficial en un paquete de Vilna</summary>
+  <summary xml:lang="pl">Asystent AI firmy Anthropic, oficjalna aplikacja w pakiecie Vilna</summary>
+  <summary xml:lang="de">KI-Assistent von Anthropic, die offizielle App in einem Vilna-Paket</summary>
+  <summary xml:lang="fr">Assistant IA d’Anthropic, l’application officielle dans un paquet Vilna</summary>
+  <summary xml:lang="it">Assistente IA di Anthropic, l’app ufficiale in un pacchetto Vilna</summary>
+  <summary xml:lang="ro">Asistentul AI de la Anthropic, aplicația oficială într-un pachet Vilna</summary>
+  <summary xml:lang="cs">AI asistent od Anthropicu, oficiální aplikace v balíčku Vilna</summary>
+  <summary xml:lang="lt">„Anthropic“ DI asistentas, oficiali programa „Vilna“ pakete</summary>
+
+  <!-- The packager, not Anthropic: with Anthropic's icon, "Anthropic" here
+       read as an official package in GNOME Software (VM check, PR #233). -->
+  <developer id="io.github.stdenis1980">
+    <name>Vilna OS (packaging of Anthropic’s app)</name>
+    <name xml:lang="uk">Vilna OS (пакунок програми Anthropic)</name>
+  </developer>
+
+  <description>
+    <p>
+      Claude is Anthropic’s AI assistant: chat, work with files and write code.
+      This package is not made by Anthropic. It is a small wrapper by Vilna OS:
+      when you install it, your computer downloads Anthropic’s own Linux app
+      from downloads.claude.ai and checks that it is exactly the published file.
+    </p>
+    <p xml:lang="uk">
+      Claude — AI-асистент від Anthropic: розмова, робота з файлами й код.
+      Цей пакунок зробила не Anthropic. Це невелика обгортка від Vilna OS:
+      під час встановлення ваш комп'ютер завантажує власну програму Anthropic
+      для Linux з downloads.claude.ai і перевіряє, що це саме опублікований файл.
+    </p>
+    <p>
+      Claude is proprietary software and works with an Anthropic account.
+      What you write goes to Anthropic’s servers under Anthropic’s terms.
+    </p>
+    <p xml:lang="uk">
+      Claude — невільна програма, працює з обліковим записом Anthropic.
+      Написане вами йде на сервери Anthropic за умовами Anthropic.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.stdenis1980.ClaudeDesktop.desktop</launchable>
+  <url type="homepage">https://claude.ai/download</url>
+  <url type="vcs-browser">https://github.com/StDenis1980/VilnaOS/tree/main/thirdparty/claude-desktop</url>
+  <url type="bugtracker">https://github.com/StDenis1980/VilnaOS/issues</url>
+
+  <provides>
+    <binary>claude-desktop</binary>
+  </provides>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <requires>
+    <internet>always</internet>
+  </requires>
+  <categories>
+    <category>Utility</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+
+    <release version="6.28899.6" date="2026-11-25"/>
+  </releases>
+</component>

@@ -125,6 +125,7 @@ EXTRACT_SCHEMA: dict[str, Any] = {
 # What Gloxi says at the end, in the language of the person's message.
 SAY: dict[str, dict[str, str]] = {
     "uk": {
+        "not_sent": "Лист не надіслано.",
         "not_read": "Пошту не прочитано.",
         "denied_user": "Ти відмовив у вікні Herkos.",
         "denied_timeout": "Ти не відповів у вікні Herkos вчасно, тож без тебе я нічого не робив.",
@@ -139,6 +140,7 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "Серед останніх листів у вхідних немає того, про який ти пишеш.",
     },
     "en": {
+        "not_sent": "The email was not sent.",
         "not_read": "I did not read your mail.",
         "denied_user": "You said no in the Herkos window.",
         "denied_timeout": "Nobody answered the Herkos window in time, so I did nothing without "
@@ -155,6 +157,7 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "I did not find the email you mean among the latest ones in your inbox.",
     },
     "es": {
+        "not_sent": "El correo no se ha enviado.",
         "not_read": "No he leído tu correo.",
         "denied_user": "Has dicho que no en la ventana de Herkos.",
         "denied_timeout": "Nadie ha respondido a tiempo en la ventana de Herkos, así que no he "
@@ -172,6 +175,7 @@ SAY: dict[str, dict[str, str]] = {
         "entrada.",
     },
     "pl": {
+        "not_sent": "Wiadomość nie została wysłana.",
         "not_read": "Nie przeczytałem twojej poczty.",
         "denied_user": "Odmówiłeś w oknie Herkosa.",
         "denied_timeout": "Nikt nie odpowiedział w oknie Herkosa na czas, więc nic nie zrobiłem "
@@ -187,6 +191,7 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "Wśród ostatnich wiadomości w skrzynce odbiorczej nie ma tej, o której piszesz.",
     },
     "de": {
+        "not_sent": "Die E-Mail wurde nicht gesendet.",
         "not_read": "Ich habe deine Post nicht gelesen.",
         "denied_user": "Du hast im Fenster von Herkos abgelehnt.",
         "denied_timeout": "Niemand hat rechtzeitig im Fenster von Herkos geantwortet, also habe "
@@ -204,6 +209,7 @@ SAY: dict[str, dict[str, str]] = {
         "nicht gefunden.",
     },
     "fr": {
+        "not_sent": "Le message n’a pas été envoyé.",
         "not_read": "Je n’ai pas lu ton courrier.",
         "denied_user": "Tu as refusé dans la fenêtre de Herkos.",
         "denied_timeout": "Personne n’a répondu à temps dans la fenêtre de Herkos, donc je n’ai "
@@ -221,6 +227,7 @@ SAY: dict[str, dict[str, str]] = {
         "boîte de réception.",
     },
     "it": {
+        "not_sent": "Non ho inviato la tua email.",
         "not_read": "Non ho letto la tua posta.",
         "denied_user": "Hai detto di no nella finestra di Herkos.",
         "denied_timeout": "Nessuno ha risposto in tempo nella finestra di Herkos, quindi non ho "
@@ -238,6 +245,7 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "Non ho trovato l'email che dici tra le ultime della posta in arrivo.",
     },
     "ro": {
+        "not_sent": "Mesajul nu a fost trimis.",
         "not_read": "Nu ți-am citit poșta.",
         "denied_user": "Ai refuzat în fereastra Herkos.",
         "denied_timeout": "Nimeni nu a răspuns la timp în fereastra Herkos, așa că nu am făcut "
@@ -254,6 +262,7 @@ SAY: dict[str, dict[str, str]] = {
         "intrare.",
     },
     "cs": {
+        "not_sent": "E-mail nebyl odeslán.",
         "not_read": "Tvou poštu jsem nečetl.",
         "denied_user": "V okně Herkosu jsi odmítl.",
         "denied_timeout": "V okně Herkosu nikdo včas neodpověděl, takže jsem bez tebe nic "
@@ -269,6 +278,7 @@ SAY: dict[str, dict[str, str]] = {
         "no_mail": "Mezi posledními zprávami v doručené poště ta, o které píšeš, není.",
     },
     "lt": {
+        "not_sent": "Laiškas neišsiųstas.",
         "not_read": "Tavo laiškų neskaičiau.",
         "denied_user": "Herkos lange atsisakei.",
         "denied_timeout": "Niekas laiku neatsakė Herkos lange, todėl be tavęs nieko nedariau.",
@@ -403,6 +413,14 @@ class Facts:
     end: str
     location: str
     reply: str
+
+
+def not_sent(text: str, outcome: ToolOutcome) -> str:
+    """What Gloxi says when an email was not sent: a "no", no answer in time,
+    a window that could not be shown or an error, in the language of ``text``."""
+    say = SAY[language(text)]
+    why = MailFlow._why_not(say, outcome)
+    return _joined(say["not_sent"], why)
 
 
 class MailFlow:
