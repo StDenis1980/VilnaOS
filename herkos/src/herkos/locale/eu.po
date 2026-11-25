@@ -1,0 +1,797 @@
+# Basque translation of Herkos.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: eu\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"X-Vilna-Review: not reviewed by a native speaker\n"
+
+# Window and terminal
+msgid "Herkos: permission"
+msgstr "Herkos: baimena"
+
+msgid "Herkos: Gloxi asks for permission"
+msgstr "Herkos: Gloxik baimena eskatzen du"
+
+msgid "Gloxi's reason: "
+msgstr "Gloxiren arrazoia: "
+
+msgid "… and {n} more"
+msgstr "… eta beste {n}"
+
+msgid "Can be undone."
+msgstr "Desegin daiteke."
+
+msgid "Cannot be undone."
+msgstr "Ezin da desegin."
+
+msgid "Riskier than usual: {why}."
+msgstr "Ohi baino arriskutsuagoa: {why}."
+
+msgid "Untrusted content came from: {src}"
+msgstr "Fidagarria ez den edukia hemendik dator: {src}"
+
+msgid "Exactly this will be done:"
+msgstr "Zehazki hau egingo da:"
+
+msgid "Deny"
+msgstr "Ukatu"
+
+msgid "Allow once"
+msgstr "Baimendu behin"
+
+msgid "Allow for this session"
+msgstr "Baimendu saio honetan"
+
+msgid "Always allow"
+msgstr "Baimendu beti"
+
+msgid "[o] allow once"
+msgstr "[o] baimendu behin"
+
+msgid "[s] allow for this session"
+msgstr "[s] baimendu saio honetan"
+
+msgid "[a] always allow"
+msgstr "[a] baimendu beti"
+
+msgid "[n] deny"
+msgstr "[n] ukatu"
+
+msgid "Allowed."
+msgstr "Baimenduta."
+
+msgid "Denied."
+msgstr "Ukatuta."
+
+msgid "No answer: denied."
+msgstr "Erantzunik ez: ukatuta."
+
+# Why an action is riskier (policy)
+msgid "the tool has no Herkos manifest"
+msgstr "tresnak ez du Herkos manifesturik"
+
+msgid "the program changed this action since it was allowed"
+msgstr "programak ekintza hau aldatu du baimendu zenetik"
+
+msgid "the program describes this action at too great a length"
+msgstr "programak luzeegi deskribatzen du ekintza hau"
+
+msgid "Let Gloxi use this program: {program}"
+msgstr "Utzi Gloxiri programa hau erabiltzen: {program}"
+
+msgid "the tool describes this operation as riskier"
+msgstr "tresnak eragiketa hau arriskutsuagotzat jotzen du"
+
+msgid "untrusted content is in the conversation"
+msgstr "fidagarria ez den edukia dago elkarrizketan"
+
+msgid "content read earlier {kinds}"
+msgstr "lehenago irakurritako edukia: {kinds}"
+
+msgid "it touches something outside the allowed folders"
+msgstr "baimendutako karpetetatik kanpoko zerbait ukitzen du"
+
+msgid "it touches more than {n} items at once"
+msgstr "{n} elementu baino gehiago ukitzen ditu aldi berean"
+
+msgid "it cannot be undone"
+msgstr "ezin da desegin"
+
+msgid "Herkos cannot tell which of the program's commands this runs"
+msgstr "Herkosek ezin du jakin honek programaren zein agindu exekutatzen duen"
+
+msgid "the manifest gives no level for the program's command {commands}"
+msgstr "manifestuak ez du mailarik ematen programaren {commands} aginduarentzat"
+
+msgid "data leaves this device"
+msgstr "datuak gailu honetatik ateratzen dira"
+
+msgid "it sends data to an address that came from untrusted content"
+msgstr "fidagarria ez den edukitik etorritako helbide batera bidaltzen ditu datuak"
+
+# Keros findings
+msgid "asks the assistant to ignore its instructions"
+msgstr "laguntzaileari bere argibideei jaramonik ez egiteko eskatzen dio"
+
+msgid "tries to give the assistant a new role or new instructions"
+msgstr "laguntzaileari rol berri bat edo argibide berriak ematen saiatzen da"
+
+msgid "contains chat-template or system markers"
+msgstr "txat-txantiloiaren edo sistemaren markak ditu"
+
+msgid "contains text hidden from people (HTML/CSS)"
+msgstr "pertsonei ezkutatutako testua du (HTML/CSS)"
+
+msgid "contains a link that could carry data away"
+msgstr "datuak eraman ditzakeen esteka bat du"
+
+msgid "contains invisible or direction-changing characters"
+msgstr "karaktere ikusezinak edo testuaren norabidea aldatzen dutenak ditu"
+
+msgid "the local check found text addressed to the assistant"
+msgstr "tokiko egiaztapenak laguntzaileari zuzendutako testua aurkitu du"
+
+# Tool operations (manifest summaries)
+msgid "List a folder"
+msgstr "Karpeta baten zerrenda"
+
+msgid "Search files by name and text"
+msgstr "Bilatu fitxategiak izenaren eta testuaren arabera"
+
+msgid "Read a file"
+msgstr "Irakurri fitxategi bat"
+
+msgid "Create a file"
+msgstr "Sortu fitxategi bat"
+
+msgid "Change a file"
+msgstr "Aldatu fitxategi bat"
+
+msgid "Delete a file"
+msgstr "Ezabatu fitxategi bat"
+
+msgid "Undo an earlier change to a file"
+msgstr "Desegin fitxategi bateko aurreko aldaketa bat"
+
+msgid "Undo an earlier change from a snapshot"
+msgstr "Desegin aurreko aldaketa bat argazki batetik"
+
+# Backups (org.vilna.mcp.backup)
+msgid "See whether backups are on and how the last one went"
+msgstr "Ikusi babeskopiak aktibatuta dauden eta azkena nola joan zen"
+
+msgid "List the backups"
+msgstr "Babeskopien zerrenda"
+
+msgid "See how much space the folders take"
+msgstr "Ikusi karpetek zenbat leku hartzen duten"
+
+msgid "Make a backup now"
+msgstr "Egin babeskopia orain"
+
+msgid "Change how often backups are made"
+msgstr "Aldatu babeskopiak zein maiztasunez egiten diren"
+
+msgid "Change what goes into backups"
+msgstr "Aldatu zer sartzen den babeskopietan"
+
+msgid "Bring a backup back into a new folder"
+msgstr "Berreskuratu babeskopia bat karpeta berri batean"
+
+msgid "Choose where backups are kept"
+msgstr "Aukeratu non gordetzen diren babeskopiak"
+
+msgid "Bring files back over the current ones"
+msgstr "Berreskuratu fitxategiak oraingoen gainean"
+
+msgid "Delete backups"
+msgstr "Ezabatu babeskopiak"
+
+msgid "Move backups to another place"
+msgstr "Eraman babeskopiak beste leku batera"
+
+msgid "Replace the backup keys"
+msgstr "Ordeztu babeskopien gakoak"
+
+msgid "Protect backups after a device was stolen"
+msgstr "Babestu babeskopiak gailu bat lapurtu ondoren"
+
+# The «Дозволи» window (permissions_window.py, permissions_view.py)
+
+msgid "All"
+msgstr "Guztia"
+
+msgid "Allowed, but the tool failed"
+msgstr "Baimenduta, baina tresnak huts egin du"
+
+msgid "Always"
+msgstr "Beti"
+
+msgid "January"
+msgstr "urtarrila"
+
+msgid "February"
+msgstr "otsaila"
+
+msgid "March"
+msgstr "martxoa"
+
+msgid "April"
+msgstr "apirila"
+
+msgid "May"
+msgstr "maiatza"
+
+msgid "June"
+msgstr "ekaina"
+
+msgid "July"
+msgstr "uztaila"
+
+msgid "August"
+msgstr "abuztua"
+
+msgid "September"
+msgstr "iraila"
+
+msgid "October"
+msgstr "urria"
+
+msgid "November"
+msgstr "azaroa"
+
+msgid "December"
+msgstr "abendua"
+
+msgid "Backups"
+msgstr "Babeskopiak"
+
+msgid "Cancel"
+msgstr "Utzi"
+
+msgid "Changes can be undone for 30 days. The journal cannot be altered."
+msgstr "Aldaketak 30 egunez desegin daitezke. Erregistroa ezin da aldatu."
+
+msgid "Done"
+msgstr "Eginda"
+
+msgid "Done, then undone"
+msgstr "Egin eta gero desegina"
+
+msgid "Files"
+msgstr "Fitxategiak"
+
+msgid "Gloxi asked to {what}"
+msgstr "Gloxik eskatu du: {what}"
+
+msgid "Gloxi asks before it changes anything. Here is what you allowed without asking again; take back anything you no longer want."
+msgstr "Gloxik galdetu egiten du ezer aldatu aurretik. Hemen dago berriro galdetu gabe baimendu duzuna; kendu jada nahi ez duzuna."
+
+msgid "Gloxi brought a backup back into a new folder"
+msgstr "Gloxik babeskopia bat berreskuratu du karpeta berri batean"
+
+msgid "Gloxi brought back an earlier version of a file"
+msgstr "Gloxik fitxategi baten aurreko bertsio bat berreskuratu du"
+
+msgid "Gloxi brought back files from a snapshot"
+msgstr "Gloxik fitxategiak berreskuratu ditu argazki batetik"
+
+msgid "Gloxi looked at the saved states of the system"
+msgstr "Gloxik sistemaren gordetako egoerak begiratu ditu"
+
+msgid "Gloxi returned the system to a saved state"
+msgstr "Gloxik sistema gordetako egoera batera itzuli du"
+
+msgid "Gloxi undid a return of the system to a saved state"
+msgstr "Gloxik desegin egin du sistema gordetako egoera batera itzultzea"
+
+msgid "Gloxi changed a file"
+msgstr "Gloxik fitxategi bat aldatu du"
+
+msgid "Gloxi changed how often backups are made"
+msgstr "Gloxik babeskopien maiztasuna aldatu du"
+
+msgid "Gloxi changed what goes into backups"
+msgstr "Gloxik aldatu du zer sartzen den babeskopietan"
+
+msgid "Gloxi checked the backups"
+msgstr "Gloxik babeskopiak egiaztatu ditu"
+
+msgid "Gloxi created a file"
+msgstr "Gloxik fitxategi bat sortu du"
+
+msgid "Gloxi deleted a file"
+msgstr "Gloxik fitxategi bat ezabatu du"
+
+msgid "Gloxi listed the backups"
+msgstr "Gloxik babeskopien zerrenda egin du"
+
+msgid "Gloxi looked at how much space the folders take"
+msgstr "Gloxik begiratu du karpetek zenbat leku hartzen duten"
+
+msgid "Gloxi looked into a folder"
+msgstr "Gloxik karpeta baten barrura begiratu du"
+
+msgid "Gloxi read a file"
+msgstr "Gloxik fitxategi bat irakurri du"
+
+msgid "Gloxi searched files"
+msgstr "Gloxik fitxategiak bilatu ditu"
+
+msgid "Gloxi started a backup"
+msgstr "Gloxik babeskopia bat hasi du"
+
+msgid "Gloxi will ask you again before it does this: {what}."
+msgstr "Gloxik berriro galdetuko dizu hau egin aurretik: {what}."
+
+msgid "Gloxi will ask you each time."
+msgstr "Gloxik aldi bakoitzean galdetuko dizu."
+
+msgid "Gloxi's reason"
+msgstr "Gloxiren arrazoia"
+
+msgid "Herkos did not allow it"
+msgstr "Herkosek ez du baimendu"
+
+msgid "Herkos is not answering: {why}"
+msgstr "Herkosek ez du erantzuten: {why}"
+
+msgid "Journal"
+msgstr "Erregistroa"
+
+msgid "No answer recorded"
+msgstr "Ez dago erantzunik erregistratuta"
+
+msgid "No permissions"
+msgstr "Baimenik ez"
+
+msgid "Nobody answered in time"
+msgstr "Inork ez du garaiz erantzun"
+
+msgid "Not allowed at all"
+msgstr "Inola ere ez baimendua"
+
+msgid "Not assessed"
+msgstr "Ebaluatu gabe"
+
+msgid "Not undone: you said no."
+msgstr "Ez da desegin: ezetz esan duzu."
+
+msgid "Not undone: {why}"
+msgstr "Ez da desegin: {why}"
+
+msgid "Nothing here yet"
+msgstr "Oraindik ez dago ezer"
+
+msgid "Permission revoked."
+msgstr "Baimena kendu da."
+
+msgid "Permissions"
+msgstr "Baimenak"
+
+msgid "Programs"
+msgstr "Programak"
+
+msgid "Refresh"
+msgstr "Freskatu"
+
+msgid "Revoke"
+msgstr "Kendu"
+
+msgid "Revoke this permission?"
+msgstr "Baimen hau kendu?"
+
+msgid "Risk level {level}"
+msgstr "{level}. arrisku-maila"
+
+msgid "There is nothing left to undo for this action."
+msgstr "Ez dago ezer desegiteko ekintza honetan."
+
+msgid "Today"
+msgstr "Gaur"
+
+msgid "Undo"
+msgstr "Desegin"
+
+msgid "Undone. The earlier version is back."
+msgstr "Desegin da. Aurreko bertsioa itzuli da."
+
+msgid "Until the session ends"
+msgstr "Saioa amaitu arte"
+
+msgid "What"
+msgstr "Zer"
+
+msgid "When Gloxi does something for you, it shows up here."
+msgstr "Gloxik zuretzat zerbait egiten duenean, hemen agertuko da."
+
+msgid "Yesterday"
+msgstr "Atzo"
+
+msgid "You said no"
+msgstr "Ezetz esan duzu"
+
+msgid "{day} {month}"
+msgstr "{month}ren {day}a"
+
+msgid "{how} · in {where}"
+msgstr "{how} · {where}"
+
+msgid "{name} and {n} more"
+msgstr "{name} eta beste {n}"
+
+# Settings (org.vilna.mcp.settings, ADR 0023)
+msgid "See the desktop settings"
+msgstr "Ikusi mahaigainaren ezarpenak"
+
+msgid "Switch between the light and the dark style"
+msgstr "Aldatu estilo argiaren eta ilunaren artean"
+
+msgid "Change the accent colour"
+msgstr "Aldatu nabarmentze-kolorea"
+
+msgid "Change the text size"
+msgstr "Aldatu testuaren tamaina"
+
+msgid "Change night light"
+msgstr "Aldatu gaueko argia"
+
+msgid "Turn Do Not Disturb on or off"
+msgstr "Aktibatu edo desaktibatu Ez molestatu"
+
+msgid "Change the volume"
+msgstr "Aldatu bolumena"
+
+msgid "Mute or unmute the sound"
+msgstr "Isilarazi edo aktibatu soinua"
+
+msgid "Play sound through another output"
+msgstr "Erreproduzitu soinua beste irteera batetik"
+
+msgid "Undo an earlier change to the settings"
+msgstr "Desegin ezarpenetako aurreko aldaketa bat"
+
+# Calendar (org.vilna.mcp.calendar, ADR 0023)
+msgid "List the calendars"
+msgstr "Egutegien zerrenda"
+
+msgid "Read the calendar"
+msgstr "Irakurri egutegia"
+
+msgid "Search the calendar"
+msgstr "Bilatu egutegian"
+
+msgid "Add an event to the calendar"
+msgstr "Gehitu gertaera bat egutegian"
+
+msgid "Change an event in the calendar"
+msgstr "Aldatu egutegiko gertaera bat"
+
+msgid "Delete an event from the calendar"
+msgstr "Ezabatu egutegiko gertaera bat"
+
+msgid "Undo an earlier change to the calendar"
+msgstr "Desegin egutegiko aurreko aldaketa bat"
+
+# Mail (org.vilna.mcp.mail, ADR 0030)
+msgid "List the mail accounts"
+msgstr "Ikusi posta-kontuak"
+
+msgid "List the mail folders"
+msgstr "Ikusi posta-karpetak"
+
+msgid "List messages in a folder"
+msgstr "Ikusi karpeta bateko mezuak"
+
+msgid "Search the mail"
+msgstr "Bilatu postan"
+
+msgid "Read a message"
+msgstr "Irakurri mezu bat"
+
+msgid "Save a message as a draft without sending it"
+msgstr "Gorde mezu bat zirriborro gisa, bidali gabe"
+
+msgid "Send a message"
+msgstr "Bidali mezu bat"
+
+msgid "Remove a draft Gloxi saved"
+msgstr "Kendu Gloxik gordetako zirriborro bat"
+
+msgid "See whether Gloxi may reach the internet"
+msgstr "Ikusi Gloxi internetera irten daitekeen"
+
+msgid "Let Gloxi reach the internet for the cloud model"
+msgstr "Utzi Gloxiri internetera irteten hodeiko eredurako"
+
+msgid "Let Gloxi reach only this computer"
+msgstr "Utzi Gloxiri ordenagailu honekin soilik komunikatzen"
+
+msgid "See the saved states of the system"
+msgstr "Ikusi sistemaren gordetako egoerak"
+
+msgid "Return the whole system to a saved state, after a restart"
+msgstr "Itzuli sistema osoa gordetako egoera batera, berrabiarazi ondoren"
+
+msgid "Undo a return of the system to a saved state"
+msgstr "Desegin sistema gordetako egoera batera itzultzea"
+
+msgid "Gloxi looked at the VPN kill switch and the DNS"
+msgstr "Gloxik VPNaren larrialdiko etengailua eta DNSa begiratu ditu"
+
+msgid "Gloxi turned on the VPN kill switch"
+msgstr "Gloxik VPNaren larrialdiko etengailua aktibatu du"
+
+msgid "Gloxi turned off the VPN kill switch"
+msgstr "Gloxik VPNaren larrialdiko etengailua desaktibatu du"
+
+msgid "Gloxi let a local network through the VPN kill switch"
+msgstr "Gloxik sare lokal bat utzi du pasatzen VPNaren larrialdiko etengailutik"
+
+msgid "Gloxi stopped letting a local network through the VPN kill switch"
+msgstr "Gloxik sare lokal bat VPNaren larrialdiko etengailutik pasatzen uzteari utzi dio"
+
+msgid "Gloxi opened the VPN kill switch to sign in to a Wi-Fi network"
+msgstr "Gloxik VPNaren larrialdiko etengailua ireki du Wi-Fi sare batean saioa hasteko"
+
+msgid "Gloxi changed the encrypted DNS"
+msgstr "Gloxik DNS zifratua aldatu du"
+
+msgid "See the state of the VPN kill switch and the DNS"
+msgstr "Ikusi VPNaren larrialdiko etengailuaren eta DNSaren egoera"
+
+msgid "Turn on the VPN kill switch"
+msgstr "Aktibatu VPNaren larrialdiko etengailua"
+
+msgid "Turn off the VPN kill switch"
+msgstr "Desaktibatu VPNaren larrialdiko etengailua"
+
+msgid "Let a local network through the VPN kill switch"
+msgstr "Utzi sare lokal bat pasatzen VPNaren larrialdiko etengailutik"
+
+msgid "Stop letting a local network through the VPN kill switch"
+msgstr "Utzi sare lokal bat VPNaren larrialdiko etengailutik pasatzen uzteari"
+
+msgid "Open the VPN kill switch for 5 minutes to sign in to a Wi-Fi network"
+msgstr "Ireki VPNaren larrialdiko etengailua 5 minutuz Wi-Fi sare batean saioa hasteko"
+
+msgid "Choose the encrypted DNS: Quad9 or Mullvad"
+msgstr "Aukeratu DNS zifratua: Quad9 edo Mullvad"
+
+msgid "Start the service of the chosen VPN provider and keep it on after a restart"
+msgstr "Abiarazi aukeratutako VPN hornitzailearen zerbitzua, eta mantendu aktibo berrabiarazi ondoren"
+
+msgid "Gloxi started the service of the VPN provider"
+msgstr "Gloxik VPN hornitzailearen zerbitzua abiarazi du"
+
+# The Herkos window: the level chip, the Keros warning, R4 (design wave 2)
+msgid "R0 · no questions"
+msgstr "R0 · galderarik gabe"
+
+msgid "R1 · reads your data"
+msgstr "R1 · zure datuak irakurtzen ditu"
+
+msgid "R2 · can be undone"
+msgstr "R2 · desegin daiteke"
+
+msgid "R3 · hard to undo"
+msgstr "R3 · desegiten zaila"
+
+msgid "R4 · cannot be undone"
+msgstr "R4 · ezin da desegin"
+
+msgid "Suspicious content"
+msgstr "Eduki susmagarria"
+
+msgid "Allow only if you asked for exactly this yourself."
+msgstr "Baimendu soilik zeuk zehazki hau eskatu baduzu."
+
+msgid "I have read exactly what will be done"
+msgstr "Zehazki egingo dena irakurri dut"
+
+# Інструмент «програми» (vilna-mcp-apps, ADR 0012)
+msgid "Look for apps on Flathub and in Vilna's repository"
+msgstr "Bilatu aplikazioak Flathub-en eta Vilnaren biltegian"
+
+msgid "See what an app is and what it may reach"
+msgstr "Ikusi zer den aplikazio bat eta zertara sar daitekeen"
+
+msgid "See the installed apps"
+msgstr "Ikusi instalatutako aplikazioak"
+
+msgid "Install an app for everybody on this computer"
+msgstr "Instalatu aplikazio bat ordenagailu honetako guztientzat"
+
+msgid "Update apps"
+msgstr "Eguneratu aplikazioak"
+
+msgid "Remove an app (its data stays)"
+msgstr "Kendu aplikazio bat (bere datuak geratzen dira)"
+
+msgid "Undo an install or a removal of an app"
+msgstr "Desegin aplikazio baten instalazioa edo kentzea"
+
+msgid "Add a source of apps"
+msgstr "Gehitu aplikazio-iturburu bat"
+
+msgid "Install an app from a .flatpakref or .flatpak file"
+msgstr "Instalatu aplikazio bat .flatpakref edo .flatpak fitxategi batetik"
+
+msgid "Open an installed app"
+msgstr "Ireki instalatutako aplikazio bat"
+
+# Що діалог Herkos показує про програму перед встановленням
+msgid "App"
+msgstr "Aplikazioa"
+
+msgid "Developer"
+msgstr "Garatzailea"
+
+msgid "Verified"
+msgstr "Egiaztatua"
+
+msgid "In Recommended by Vilna"
+msgstr "Vilnak gomendatuan"
+
+msgid "Source"
+msgstr "Iturburua"
+
+msgid "Download"
+msgstr "Deskarga"
+
+msgid "License"
+msgstr "Lizentzia"
+
+msgid "Can reach"
+msgstr "Sar daiteke hona"
+
+msgid "preview"
+msgstr "deskribapena"
+
+msgid "yes"
+msgstr "bai"
+
+msgid "a Vilna app"
+msgstr "Vilnaren aplikazio bat"
+
+msgid "no: Flathub has not checked who makes it"
+msgstr "ez: Flathub-ek ez du egiaztatu nork egiten duen"
+
+msgid "no: Vilna has not checked this app"
+msgstr "ez: Vilnak ez du aplikazio hau egiaztatu"
+
+msgid "not given"
+msgstr "adierazi gabe"
+
+msgid "unknown"
+msgstr "ezezaguna"
+
+msgid "only its own files"
+msgstr "bere fitxategiak soilik"
+
+msgid "all files on the computer"
+msgstr "ordenagailuko fitxategi guztiak"
+
+msgid "the system's programs and libraries"
+msgstr "sistemaren programak eta liburutegiak"
+
+msgid "the system's settings (/etc)"
+msgstr "sistemaren ezarpenak (/etc)"
+
+msgid "your whole home folder"
+msgstr "zure karpeta pertsonal osoa"
+
+msgid "the X11 display (can see other X11 windows)"
+msgstr "X11 pantaila (beste X11 leiho batzuk ikus ditzake)"
+
+msgid "every program on your session bus"
+msgstr "zure saio-busaren programa guztiak"
+
+msgid "every service on the system bus"
+msgstr "sistema-busaren zerbitzu guztiak"
+
+msgid "your SSH keys (through the agent)"
+msgstr "zure SSH gakoak (agentearen bidez)"
+
+msgid "smart cards"
+msgstr "txartel adimendunak"
+
+msgid "printers"
+msgstr "inprimagailuak"
+
+msgid "your GPG keys (through the agent)"
+msgstr "zure GPG gakoak (agentearen bidez)"
+
+msgid "all devices (camera, microphone, USB…)"
+msgstr "gailu guztiak (kamera, mikrofonoa, USB…)"
+
+msgid "input devices"
+msgstr "sarrerako gailuak"
+
+msgid "the internet and local network"
+msgstr "internet eta sare lokala"
+
+msgid "its permissions could not be read"
+msgstr "ezin izan dira bere baimenak irakurri"
+
+msgid "the folder {path}"
+msgstr "{path} karpeta"
+
+msgid "{what} (read only)"
+msgstr "{what} (irakurtzeko soilik)"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Sakatu botoia zeuk, teklatuarekin edo saguarekin: Herkosek ez ditu onartzen beste programen sakatzeak."
+
+msgid "See which devices can open the backups"
+msgstr "Ikusi zein gailuk ireki ditzaketen babeskopiak"
+
+msgid "Block a device from the backups"
+msgstr "Blokeatu gailu bat babeskopietarako"
+
+msgid "Let a new device open the backups"
+msgstr "Utzi gailu berri bati babeskopiak irekitzen"
+
+msgid "See the battery charge"
+msgstr "Ikusi bateriaren karga"
+
+msgid "Show a notification from Gloxi"
+msgstr "Erakutsi Gloxiren jakinarazpen bat"
+
+msgid "See what the music and video players are playing"
+msgstr "Ikusi musika- eta bideo-erreproduzitzaileek zer jotzen duten"
+
+msgid "Play, pause or skip in a music or video player"
+msgstr "Erreproduzitu, pausatu edo saltatu musika- edo bideo-erreproduzitzaile batean"
+
+msgid "Lock the screen"
+msgstr "Blokeatu pantaila"
+
+msgid "See which apps may use the camera, microphone, location and more"
+msgstr "Ikusi zein aplikaziok erabil ditzaketen kamera, mikrofonoa, kokapena eta gehiago"
+
+msgid "Take a permission away from an app"
+msgstr "Kendu baimen bat aplikazio bati"
+
+msgid "Give an app a permission"
+msgstr "Eman baimen bat aplikazio bati"
+
+msgid "Put an app's permissions back as they were"
+msgstr "Itzuli aplikazio baten baimenak lehen zeuden bezala"
+
+msgid "See the open windows of other apps"
+msgstr "Ikusi beste aplikazio batzuen leiho irekiak"
+
+msgid "Read a window of another app"
+msgstr "Irakurri beste aplikazio baten leiho bat"
+
+msgid "Say which app, window and button an action is about"
+msgstr "Adierazi ekintza bat zein aplikazio, leiho eta botoiri buruzkoa den"
+
+msgid "Press a button or menu item in another app"
+msgstr "Sakatu beste aplikazio bateko botoi edo menu-elementu bat"
+
+msgid "Replace the text in a field of another app"
+msgstr "Ordeztu beste aplikazio bateko eremu baten testua"
+
+msgid "Put back the text a field had before"
+msgstr "Itzuli eremu batek lehen zuen testua"
+
+msgid "Window"
+msgstr "Leihoa"
+
+msgid "Control"
+msgstr "Elementua"
+
+msgid "Text now"
+msgstr "Oraingo testua"
+
+msgid "Turn one event sound on or off"
+msgstr "Aktibatu edo desaktibatu gertaera-soinu bat"
+
+msgid "Turn all event sounds on or off"
+msgstr "Aktibatu edo desaktibatu gertaeren soinu guztiak"
+
+msgid "Choose the sound theme"
+msgstr "Aukeratu soinu-gaia"

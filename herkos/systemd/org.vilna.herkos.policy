@@ -37,6 +37,11 @@
     <description xml:lang="ro">Modificarea aplicațiilor acestui calculator prin Gloxi</description>
     <description xml:lang="cs">Změnit aplikace tohoto počítače přes Gloxi</description>
     <description xml:lang="lt">Keisti šio kompiuterio programas per Gloxi</description>
+    <description xml:lang="ca">Canviar les aplicacions d'aquest ordinador mitjançant Gloxi</description>
+    <description xml:lang="ca@valencia">Canviar les aplicacions d'este ordinador mitjançant Gloxi</description>
+    <description xml:lang="gl">Cambiar as aplicacións deste ordenador mediante Gloxi</description>
+    <description xml:lang="eu">Ordenagailu honetako aplikazioak aldatu Gloxiren bidez</description>
+    <description xml:lang="pt">Alterar as aplicações deste computador através do Gloxi</description>
     <message>Gloxi asked to install, update or remove an app for everybody on this computer. An administrator's password is needed.</message>
     <message xml:lang="uk">Gloxi просить встановити, оновити або видалити програму для всіх на цьому комп'ютері. Потрібен пароль адміністратора.</message>
     <message xml:lang="es">Gloxi pide instalar, actualizar o quitar una aplicación para todos en este ordenador. Se necesita la contraseña de un administrador.</message>
@@ -47,6 +52,11 @@
     <message xml:lang="ro">Gloxi cere să instaleze, să actualizeze sau să elimine o aplicație pentru toți pe acest calculator. Este nevoie de parola unui administrator.</message>
     <message xml:lang="cs">Gloxi žádá o instalaci, aktualizaci nebo odebrání aplikace pro všechny na tomto počítači. Je potřeba heslo správce.</message>
     <message xml:lang="lt">Gloxi prašo įdiegti, atnaujinti arba pašalinti programą visiems šio kompiuterio naudotojams. Reikia administratoriaus slaptažodžio.</message>
+    <message xml:lang="ca">Gloxi demana instal·lar, actualitzar o suprimir una aplicació per a tothom en aquest ordinador. Cal la contrasenya d'un administrador.</message>
+    <message xml:lang="ca@valencia">Gloxi demana instal·lar, actualitzar o suprimir una aplicació per a tothom en este ordinador. Cal la contrasenya d'un administrador.</message>
+    <message xml:lang="gl">Gloxi pide instalar, actualizar ou quitar unha aplicación para todos neste ordenador. Precísase o contrasinal dun administrador.</message>
+    <message xml:lang="eu">Gloxik ordenagailu honetako guztientzako aplikazio bat instalatu, eguneratu edo kentzea eskatu du. Administratzaile baten pasahitza behar da.</message>
+    <message xml:lang="pt">O Gloxi pediu para instalar, atualizar ou remover uma aplicação para todos neste computador. É necessária a palavra-passe de um administrador.</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -68,6 +78,11 @@
     <description xml:lang="ro">Readucerea întregului sistem la o stare salvată prin Gloxi</description>
     <description xml:lang="cs">Vrátit celý systém do uloženého stavu přes Gloxi</description>
     <description xml:lang="lt">Grąžinti visą sistemą į išsaugotą būseną per Gloxi</description>
+    <description xml:lang="ca">Tornar tot el sistema a un estat desat mitjançant Gloxi</description>
+    <description xml:lang="ca@valencia">Tornar tot el sistema a un estat guardat mitjançant Gloxi</description>
+    <description xml:lang="gl">Devolver todo o sistema a un estado gardado mediante Gloxi</description>
+    <description xml:lang="eu">Sistema osoa gordetako egoera batera itzuli Gloxiren bidez</description>
+    <description xml:lang="pt">Repor todo o sistema num estado guardado através do Gloxi</description>
     <message>Gloxi asked to return the whole system to a saved state after a restart. An administrator's password is needed.</message>
     <message xml:lang="uk">Gloxi просить повернути всю систему до збереженого стану після перезапуску. Потрібен пароль адміністратора.</message>
     <message xml:lang="es">Gloxi pide devolver todo el sistema a un estado guardado tras reiniciar. Se necesita la contraseña de un administrador.</message>
@@ -78,6 +93,11 @@
     <message xml:lang="ro">Gloxi cere readucerea întregului sistem la o stare salvată după o repornire. Este nevoie de parola unui administrator.</message>
     <message xml:lang="cs">Gloxi žádá o vrácení celého systému do uloženého stavu po restartu. Je potřeba heslo správce.</message>
     <message xml:lang="lt">Gloxi prašo po paleidimo iš naujo grąžinti visą sistemą į išsaugotą būseną. Reikia administratoriaus slaptažodžio.</message>
+    <message xml:lang="ca">Gloxi demana tornar tot el sistema a un estat desat després de reiniciar. Cal la contrasenya d'un administrador.</message>
+    <message xml:lang="ca@valencia">Gloxi demana tornar tot el sistema a un estat guardat després de reiniciar. Cal la contrasenya d'un administrador.</message>
+    <message xml:lang="gl">Gloxi pide devolver todo o sistema a un estado gardado tras reiniciar. Precísase o contrasinal dun administrador.</message>
+    <message xml:lang="eu">Gloxik sistema osoa gordetako egoera batera itzultzea eskatu du berrabiarazi ondoren. Administratzaile baten pasahitza behar da.</message>
+    <message xml:lang="pt">O Gloxi pediu para repor todo o sistema num estado guardado após reiniciar. É necessária a palavra-passe de um administrador.</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
@@ -101,6 +121,11 @@
     <description xml:lang="ro">Slăbirea protecției VPN a acestui calculator prin Gloxi</description>
     <description xml:lang="cs">Oslabit ochranu VPN tohoto počítače přes Gloxi</description>
     <description xml:lang="lt">Susilpninti šio kompiuterio VPN apsaugą per Gloxi</description>
+    <description xml:lang="ca">Afeblir la protecció VPN d'aquest ordinador mitjançant Gloxi</description>
+    <description xml:lang="ca@valencia">Afeblir la protecció VPN d'este ordinador mitjançant Gloxi</description>
+    <description xml:lang="gl">Debilitar a protección VPN deste ordenador mediante Gloxi</description>
+    <description xml:lang="eu">Ordenagailu honetako VPN babesa ahuldu Gloxiren bidez</description>
+    <description xml:lang="pt">Enfraquecer a proteção VPN deste computador através do Gloxi</description>
     <message>Gloxi asked to weaken the VPN protection for everybody on this computer.</message>
     <message xml:lang="uk">Gloxi просить послабити захист VPN для всіх на цьому комп'ютері.</message>
     <message xml:lang="es">Gloxi pide debilitar la protección VPN para todos en este ordenador.</message>
@@ -111,6 +136,11 @@
     <message xml:lang="ro">Gloxi cere slăbirea protecției VPN pentru toți pe acest calculator.</message>
     <message xml:lang="cs">Gloxi žádá o oslabení ochrany VPN pro všechny na tomto počítači.</message>
     <message xml:lang="lt">Gloxi prašo susilpninti VPN apsaugą visiems šio kompiuterio naudotojams.</message>
+    <message xml:lang="ca">Gloxi demana afeblir la protecció VPN per a tothom en aquest ordinador.</message>
+    <message xml:lang="ca@valencia">Gloxi demana afeblir la protecció VPN per a tothom en este ordinador.</message>
+    <message xml:lang="gl">Gloxi pide debilitar a protección VPN para todos neste ordenador.</message>
+    <message xml:lang="eu">Gloxik ordenagailu honetako guztientzako VPN babesa ahultzea eskatu du.</message>
+    <message xml:lang="pt">O Gloxi pediu para enfraquecer a proteção VPN para todos neste computador.</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
