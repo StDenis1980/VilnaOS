@@ -48,7 +48,7 @@ Vilna patch for pasting with a right click (org.vilna.Ptyxis).
 %autosetup -p1 -n ptyxis-%{upstream_version}
 
 %build
-%meson -Dpackage-version='%{version}'
+%meson
 %meson_build
 
 %install
