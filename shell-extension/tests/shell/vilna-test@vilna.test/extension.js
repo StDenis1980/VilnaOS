@@ -380,6 +380,9 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
         const [w, h] = actor.get_transformed_size();
         pointer.notify_absolute_motion(GLib.get_monotonic_time(), x + w / 2, y + h / 2);
         await sleep(300);
+        const picked = () => global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, x + w / 2, y + h / 2);
+        if (!await waitFor(() => actor.contains(picked()), 3000))
+            lines.push(`NOTE click: under the pointer ${picked()?.constructor?.name} ${picked()?.name} ${picked()?.style_class}, panel open ${theDock()?.panel !== null}`);
         pointer.notify_button(GLib.get_monotonic_time(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.PRESSED);
         await sleep(100);
         pointer.notify_button(GLib.get_monotonic_time(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.RELEASED);
@@ -528,10 +531,15 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     await setShellProperty('GloxiPanelOpen', new GLib.Variant('b', true));
     await sleep(800);
     check('side panel: Gloxi opens it over D-Bus', Boolean(dockPanel()), true);
+    // Wait for the state, not a set time: on a busy CI runner the virtual
+    // pointer's press can arrive after the pause, and the next click then
+    // looked like it had done nothing.
     await click(button);
-    check('side panel: the top-bar button closes it', settings.get_boolean('gloxi-panel-open'), false);
+    check('side panel: the top-bar button closes it',
+        await waitFor(() => !settings.get_boolean('gloxi-panel-open'), 3000), true);
     await click(button);
-    check('side panel: and opens it', settings.get_boolean('gloxi-panel-open'), true);
+    check('side panel: and opens it',
+        await waitFor(() => settings.get_boolean('gloxi-panel-open'), 3000), true);
     await sleep(300);
     check('side panel: a new panel says hello again', panelRequests.filter(r => r.method === 'hello').length >= 2, true);
 
