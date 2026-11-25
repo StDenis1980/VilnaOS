@@ -118,11 +118,12 @@ export class Sky {
         return this._frame !== 0;
     }
 
-    show(kind, day) {
-        if (kind === this._kind && day === this._day && this._sky)
+    show(kind, day, strength = 1) {
+        if (kind === this._kind && day === this._day && strength === this._strength && this._sky)
             return;
         this._kind = kind;
         this._day = day;
+        this._strength = strength;
         this._sky = null;
         this._resize();
         // Clutter tells nothing when an ancestor hides or shows, nor when
@@ -144,7 +145,7 @@ export class Sky {
         if (!this._kind || w < 2 || h < 2)
             return;
         if (!this._sky || this._sky.w !== w || this._sky.h !== h) {
-            this._sky = newSky(this._kind, this._day, w, h);
+            this._sky = newSky(this._kind, this._day, w, h, Math.random, this._strength);
             stepSky(this._sky, 0.25);
             this.actor.queue_repaint();
         }

@@ -151,8 +151,8 @@ export function parseGeocode(text) {
     });
 }
 
-// WMO weather codes -> one of eight kinds, each with an Adwaita icon. Two
-// more come from the wind and the heat (weatherScene).
+// WMO weather codes -> one of ten kinds, each with an Adwaita icon, and
+// how strong it is. Two more come from the wind and the heat (weatherScene).
 const KINDS = [
     ['clear', 'weather-clear-symbolic', 'weather-clear-night-symbolic'],
     ['cloudy', 'weather-few-clouds-symbolic', 'weather-few-clouds-night-symbolic'],
@@ -164,7 +164,17 @@ const KINDS = [
     ['storm', 'weather-storm-symbolic'],
     ['wind', 'weather-windy-symbolic'],
     ['heat', 'weather-clear-symbolic', 'weather-clear-night-symbolic'],
+    // Added after the first ten, so that their indexes stay.
+    ['hail', 'weather-storm-symbolic'],
+    ['ice', 'weather-showers-symbolic'],
 ];
+
+// How strong the rain, snow or storm is: 0 light, 1 moderate, 2 heavy.
+// The sky draws fewer or more drops and flakes for it.
+const STRENGTH = {
+    51: 0, 53: 1, 55: 2, 56: 0, 57: 2, 61: 0, 63: 1, 65: 2, 66: 1, 67: 2,
+    71: 0, 73: 1, 75: 2, 77: 0, 80: 0, 81: 1, 82: 2, 85: 0, 86: 2, 95: 1, 96: 1, 99: 2,
+};
 
 // Above these, a dry sky becomes windy (km/h) or hot (°C, as it feels).
 // 50 km/h gusts are where Spain's yellow wind warnings begin inland;
@@ -179,13 +189,15 @@ export function weatherKind(code, day = true) {
     else if (code === 1 || code === 2) i = 1;
     else if (code === 3) i = 2;
     else if (code === 45 || code === 48) i = 3;
-    else if (code >= 51 && code <= 57) i = 4;
-    else if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) i = 5;
+    else if (code === 56 || code === 57 || code === 66 || code === 67) i = 11; // freezing drizzle and rain
+    else if (code >= 51 && code <= 55) i = 4;
+    else if ((code >= 61 && code <= 65) || (code >= 80 && code <= 82)) i = 5;
     else if ((code >= 71 && code <= 77) || code === 85 || code === 86) i = 6;
-    else if (code >= 95 && code <= 99) i = 7;
+    else if (code === 96 || code === 99) i = 10; // a thunderstorm with hail
+    else if (code === 95) i = 7;
     else i = 2;
     const [kind, icon, night] = KINDS[i];
-    return {kind, index: i, icon: !day && night ? night : icon};
+    return {kind, index: i, icon: !day && night ? night : icon, strength: STRENGTH[code] ?? 1};
 }
 
 // The forecast -> what the card shows and draws: a weatherKind, where
@@ -194,7 +206,8 @@ export function weatherScene(forecast) {
     if (!forecast)
         return null;
     const base = weatherKind(forecast.code, forecast.day);
-    const pick = i => ({kind: KINDS[i][0], index: i, icon: !forecast.day && KINDS[i][2] ? KINDS[i][2] : KINDS[i][1]});
+    const pick = i => ({kind: KINDS[i][0], index: i, icon: !forecast.day && KINDS[i][2] ? KINDS[i][2] : KINDS[i][1],
+        strength: 1});
     const dry = base.index <= 2;
     const feels = forecast.feels ?? forecast.temp;
     if (dry && base.index <= 1 && finite(feels) && feels >= HOT)
@@ -254,7 +267,7 @@ const KEYS = ['gloxi', 'help', 'askPlaceholder', 'chips', 'today', 'nothing', 'a
 const TEXT = {
     en: ['Gloxi', 'How can I help?', 'Ask Gloxi…', ['What’s on today?', 'Find a file', 'Set up Wi-Fi'],
         'Today · Calendar', 'Nothing planned', 'All day', 'Weather', 'No forecast yet', 'Choose a town',
-        ['Clear', 'Partly cloudy', 'Overcast', 'Fog', 'Drizzle', 'Rain', 'Snow', 'Thunderstorm', 'Windy', 'Hot'],
+        ['Clear', 'Partly cloudy', 'Overcast', 'Fog', 'Drizzle', 'Rain', 'Snow', 'Thunderstorm', 'Windy', 'Hot', 'Hail', 'Freezing rain'],
         'Backups: all saved', 'Backups: the last one failed', 'Backups are not set up',
         {today: 'Last: today at %s', yesterday: 'Last: yesterday at %s', on: 'Last: %s'},
         'Desktop widgets', 'Show the widgets', 'Show the weather', 'Place for the weather', '%s (the capital, by default)',
@@ -266,7 +279,7 @@ const TEXT = {
         'Could not reach Open-Meteo. Check the connection and try again.'],
     uk: ['Gloxi', 'Чим допомогти?', 'Запитайте Gloxi…', ['Що сьогодні?', 'Знайди файл', 'Налаштуй Wi-Fi'],
         'Сьогодні · календар', 'Нічого не заплановано', 'Увесь день', 'Погода', 'Прогнозу ще немає', 'Оберіть місто',
-        ['Ясно', 'Мінлива хмарність', 'Хмарно', 'Туман', 'Мряка', 'Дощ', 'Сніг', 'Гроза', 'Вітряно', 'Спека'],
+        ['Ясно', 'Мінлива хмарність', 'Хмарно', 'Туман', 'Мряка', 'Дощ', 'Сніг', 'Гроза', 'Вітряно', 'Спека', 'Град', 'Ожеледь'],
         'Копії: усе збережено', 'Копії: остання не вдалася', 'Копії ще не налаштовано',
         {today: 'Остання сьогодні о %s', yesterday: 'Остання вчора о %s', on: 'Остання %s'},
         'Віджети стільниці', 'Показувати віджети', 'Показувати погоду', 'Місце для погоди', '%s (столиця, за замовчуванням)',
@@ -278,7 +291,7 @@ const TEXT = {
         'Не вдалося зв’язатися з Open-Meteo. Перевірте з’єднання і спробуйте ще раз.'],
     es: ['Gloxi', '¿En qué te ayudo?', 'Pregunta a Gloxi…', ['¿Qué hay hoy?', 'Busca un archivo', 'Configura el wifi'],
         'Hoy · Calendario', 'Nada previsto', 'Todo el día', 'Tiempo', 'Aún no hay previsión', 'Elige una ciudad',
-        ['Despejado', 'Parcialmente nublado', 'Nublado', 'Niebla', 'Llovizna', 'Lluvia', 'Nieve', 'Tormenta', 'Viento', 'Calor'],
+        ['Despejado', 'Parcialmente nublado', 'Nublado', 'Niebla', 'Llovizna', 'Lluvia', 'Nieve', 'Tormenta', 'Viento', 'Calor', 'Granizo', 'Lluvia helada'],
         'Copias: todo guardado', 'Copias: la última falló', 'Las copias no están configuradas',
         {today: 'Última: hoy a las %s', yesterday: 'Última: ayer a las %s', on: 'Última: %s'},
         'Widgets del escritorio', 'Mostrar los widgets', 'Mostrar el tiempo', 'Lugar para el tiempo', '%s (la capital, por defecto)',
@@ -290,7 +303,7 @@ const TEXT = {
         'No se pudo conectar con Open-Meteo. Revisa la conexión e inténtalo de nuevo.'],
     pl: ['Gloxi', 'W czym pomóc?', 'Zapytaj Gloxi…', ['Co dziś?', 'Znajdź plik', 'Skonfiguruj Wi-Fi'],
         'Dziś · kalendarz', 'Nic nie zaplanowano', 'Cały dzień', 'Pogoda', 'Brak prognozy', 'Wybierz miasto',
-        ['Bezchmurnie', 'Częściowe zachmurzenie', 'Pochmurno', 'Mgła', 'Mżawka', 'Deszcz', 'Śnieg', 'Burza', 'Wietrznie', 'Upał'],
+        ['Bezchmurnie', 'Częściowe zachmurzenie', 'Pochmurno', 'Mgła', 'Mżawka', 'Deszcz', 'Śnieg', 'Burza', 'Wietrznie', 'Upał', 'Grad', 'Marznący deszcz'],
         'Kopie: wszystko zapisane', 'Kopie: ostatnia się nie udała', 'Kopie nie są skonfigurowane',
         {today: 'Ostatnia: dziś o %s', yesterday: 'Ostatnia: wczoraj o %s', on: 'Ostatnia: %s'},
         'Widżety pulpitu', 'Pokazuj widżety', 'Pokazuj pogodę', 'Miejsce dla pogody', '%s (stolica, domyślnie)',
@@ -302,7 +315,7 @@ const TEXT = {
         'Nie udało się połączyć z Open-Meteo. Sprawdź połączenie i spróbuj ponownie.'],
     de: ['Gloxi', 'Wobei kann ich helfen?', 'Gloxi fragen …', ['Was steht heute an?', 'Datei finden', 'WLAN einrichten'],
         'Heute · Kalender', 'Nichts geplant', 'Ganztägig', 'Wetter', 'Noch keine Vorhersage', 'Ort wählen',
-        ['Klar', 'Teils bewölkt', 'Bedeckt', 'Nebel', 'Nieselregen', 'Regen', 'Schnee', 'Gewitter', 'Windig', 'Hitze'],
+        ['Klar', 'Teils bewölkt', 'Bedeckt', 'Nebel', 'Nieselregen', 'Regen', 'Schnee', 'Gewitter', 'Windig', 'Hitze', 'Hagel', 'Eisregen'],
         'Sicherungen: alles gesichert', 'Sicherungen: die letzte ist fehlgeschlagen', 'Sicherungen sind nicht eingerichtet',
         {today: 'Zuletzt: heute um %s', yesterday: 'Zuletzt: gestern um %s', on: 'Zuletzt: %s'},
         'Schreibtisch-Widgets', 'Widgets anzeigen', 'Wetter anzeigen', 'Ort für das Wetter', '%s (Hauptstadt, Standard)',
@@ -314,7 +327,7 @@ const TEXT = {
         'Open-Meteo ist nicht erreichbar. Prüfen Sie die Verbindung und versuchen Sie es erneut.'],
     fr: ['Gloxi', 'Comment puis-je aider ?', 'Demander à Gloxi…', ['Quoi de prévu ?', 'Trouver un fichier', 'Configurer le Wi-Fi'],
         'Aujourd’hui · Agenda', 'Rien de prévu', 'Toute la journée', 'Météo', 'Pas encore de prévisions', 'Choisir une ville',
-        ['Dégagé', 'Partiellement nuageux', 'Couvert', 'Brouillard', 'Bruine', 'Pluie', 'Neige', 'Orage', 'Venteux', 'Chaleur'],
+        ['Dégagé', 'Partiellement nuageux', 'Couvert', 'Brouillard', 'Bruine', 'Pluie', 'Neige', 'Orage', 'Venteux', 'Chaleur', 'Grêle', 'Pluie verglaçante'],
         'Sauvegardes : tout est enregistré', 'Sauvegardes : la dernière a échoué', 'Les sauvegardes ne sont pas configurées',
         {today: 'Dernière : aujourd’hui à %s', yesterday: 'Dernière : hier à %s', on: 'Dernière : %s'},
         'Widgets du bureau', 'Afficher les widgets', 'Afficher la météo', 'Lieu pour la météo', '%s (la capitale, par défaut)',
@@ -326,7 +339,7 @@ const TEXT = {
         'Impossible de joindre Open-Meteo. Vérifiez la connexion et réessayez.'],
     it: ['Gloxi', 'Come posso aiutarti?', 'Chiedi a Gloxi…', ['Cosa c’è oggi?', 'Trova un file', 'Configura il Wi-Fi'],
         'Oggi · Calendario', 'Niente in programma', 'Tutto il giorno', 'Meteo', 'Nessuna previsione', 'Scegli una città',
-        ['Sereno', 'Parzialmente nuvoloso', 'Coperto', 'Nebbia', 'Pioviggine', 'Pioggia', 'Neve', 'Temporale', 'Ventoso', 'Caldo'],
+        ['Sereno', 'Parzialmente nuvoloso', 'Coperto', 'Nebbia', 'Pioviggine', 'Pioggia', 'Neve', 'Temporale', 'Ventoso', 'Caldo', 'Grandine', 'Pioggia gelata'],
         'Copie: tutto salvato', 'Copie: l’ultima non è riuscita', 'Le copie non sono configurate',
         {today: 'Ultima: oggi alle %s', yesterday: 'Ultima: ieri alle %s', on: 'Ultima: %s'},
         'Widget del desktop', 'Mostra i widget', 'Mostra il meteo', 'Luogo per il meteo', '%s (la capitale, predefinita)',
@@ -338,7 +351,7 @@ const TEXT = {
         'Impossibile raggiungere Open-Meteo. Controlla la connessione e riprova.'],
     ro: ['Gloxi', 'Cu ce te pot ajuta?', 'Întreabă-l pe Gloxi…', ['Ce e azi?', 'Găsește un fișier', 'Configurează Wi-Fi'],
         'Azi · Calendar', 'Nimic planificat', 'Toată ziua', 'Vremea', 'Încă nu există prognoză', 'Alege un oraș',
-        ['Senin', 'Parțial noros', 'Înnorat', 'Ceață', 'Burniță', 'Ploaie', 'Ninsoare', 'Furtună', 'Vânt', 'Caniculă'],
+        ['Senin', 'Parțial noros', 'Înnorat', 'Ceață', 'Burniță', 'Ploaie', 'Ninsoare', 'Furtună', 'Vânt', 'Caniculă', 'Grindină', 'Ploaie înghețată'],
         'Copii: totul salvat', 'Copii: ultima nu a reușit', 'Copiile nu sunt configurate',
         {today: 'Ultima: azi la %s', yesterday: 'Ultima: ieri la %s', on: 'Ultima: %s'},
         'Widgeturi pe desktop', 'Arată widgeturile', 'Arată vremea', 'Locul pentru vreme', '%s (capitala, implicit)',
@@ -350,7 +363,7 @@ const TEXT = {
         'Open-Meteo nu a putut fi contactat. Verifică conexiunea și încearcă din nou.'],
     cs: ['Gloxi', 'S čím pomoci?', 'Zeptejte se Gloxi…', ['Co je dnes?', 'Najdi soubor', 'Nastav Wi-Fi'],
         'Dnes · kalendář', 'Nic naplánováno', 'Celý den', 'Počasí', 'Zatím bez předpovědi', 'Vyberte město',
-        ['Jasno', 'Polojasno', 'Zataženo', 'Mlha', 'Mrholení', 'Déšť', 'Sníh', 'Bouřka', 'Větrno', 'Vedro'],
+        ['Jasno', 'Polojasno', 'Zataženo', 'Mlha', 'Mrholení', 'Déšť', 'Sníh', 'Bouřka', 'Větrno', 'Vedro', 'Kroupy', 'Mrznoucí déšť'],
         'Zálohy: vše uloženo', 'Zálohy: poslední se nezdařila', 'Zálohy nejsou nastavené',
         {today: 'Poslední: dnes v %s', yesterday: 'Poslední: včera v %s', on: 'Poslední: %s'},
         'Widgety plochy', 'Zobrazit widgety', 'Zobrazit počasí', 'Místo pro počasí', '%s (hlavní město, výchozí)',
@@ -362,7 +375,7 @@ const TEXT = {
         'Open-Meteo se nepodařilo kontaktovat. Zkontrolujte připojení a zkuste to znovu.'],
     lt: ['Gloxi', 'Kuo galiu padėti?', 'Klauskite Gloxi…', ['Kas šiandien?', 'Rask failą', 'Nustatyk „Wi-Fi“'],
         'Šiandien · kalendorius', 'Nieko nesuplanuota', 'Visą dieną', 'Orai', 'Prognozės dar nėra', 'Pasirinkite miestą',
-        ['Giedra', 'Nepastovus debesuotumas', 'Debesuota', 'Rūkas', 'Dulksna', 'Lietus', 'Sniegas', 'Perkūnija', 'Vėjuota', 'Karšta'],
+        ['Giedra', 'Nepastovus debesuotumas', 'Debesuota', 'Rūkas', 'Dulksna', 'Lietus', 'Sniegas', 'Perkūnija', 'Vėjuota', 'Karšta', 'Kruša', 'Lijundra'],
         'Kopijos: viskas išsaugota', 'Kopijos: paskutinė nepavyko', 'Kopijos nenustatytos',
         {today: 'Paskutinė: šiandien %s', yesterday: 'Paskutinė: vakar %s', on: 'Paskutinė: %s'},
         'Darbalaukio valdikliai', 'Rodyti valdiklius', 'Rodyti orus', 'Vieta orams', '%s (sostinė, numatytoji)',

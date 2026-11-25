@@ -6,12 +6,12 @@ import {
     FPS, MAX_PARTICLES, newSky, seeded, shapeCount, skyColours, skyShapes, stepSky,
 } from '../vilna@stdenis1980.github.io/lib/weatherSky.js';
 
-const KINDS = ['clear', 'cloudy', 'overcast', 'fog', 'drizzle', 'rain', 'snow', 'storm', 'wind', 'heat'];
+const KINDS = ['clear', 'cloudy', 'overcast', 'fog', 'drizzle', 'rain', 'snow', 'storm', 'wind', 'heat', 'hail', 'ice'];
 const W = 340;
 const H = 130;
 
 const particles = sky => sky.drops.length + sky.flakes.length + sky.clouds.length + sky.fog.length +
-    sky.streaks.length + sky.stars.length + sky.shimmer.length;
+    sky.streaks.length + sky.stars.length + sky.shimmer.length + sky.pellets.length + sky.glints.length;
 
 test('every kind of weather has its own sky, readable by day and by night', () => {
     const seen = new Set();
@@ -43,11 +43,22 @@ test('each sky has the motion of its weather, and few enough shapes for weak gra
     assert.ok(sky('heat').shimmer.length > 0);
     assert.equal(sky('clear').stars.length, 0, 'no stars by day');
     assert.ok(newSky('clear', false, W, H, r).stars.length > 0, 'stars at night');
+    assert.ok(sky('hail').pellets.length > 0, 'hailstones');
+    assert.ok(sky('ice').glints.length > 0 && sky('ice').drops.length > 0, 'freezing rain and its glaze');
+    const heavy = kind => newSky(kind, true, W, H, r, 2);
+    const light = kind => newSky(kind, true, W, H, r, 0);
+    assert.ok(light('rain').drops.length < sky('rain').drops.length && sky('rain').drops.length < heavy('rain').drops.length);
+    assert.ok(light('snow').flakes.length < heavy('snow').flakes.length);
     for (const kind of KINDS) {
         for (const day of [true, false]) {
-            const s = newSky(kind, day, W, H, r);
-            assert.ok(particles(s) <= MAX_PARTICLES, kind);
-            assert.ok(skyShapes(s).length <= shapeCount(s), kind);
+            for (const strength of [0, 1, 2]) {
+                const s = newSky(kind, day, W, H, r, strength);
+                assert.ok(particles(s) <= MAX_PARTICLES, `${kind} ${strength}`);
+                for (let i = 0; i < 20 * FPS; i++) {
+                    stepSky(s, 1 / FPS);
+                    assert.ok(skyShapes(s).length <= shapeCount(s), kind);
+                }
+            }
         }
     }
     assert.ok(FPS > 0 && FPS <= 30);
@@ -62,7 +73,7 @@ test('a minute of motion keeps every particle on the card, and stays the same wi
             stepSky(b, 1 / FPS);
         }
         assert.deepEqual(skyShapes(a), skyShapes(b), kind);
-        for (const p of [...a.drops, ...a.flakes])
+        for (const p of [...a.drops, ...a.flakes, ...a.pellets])
             assert.ok(p.x > -40 && p.x < W + 40 && p.y > -40 && p.y < H + 40, `${kind} ${p.x},${p.y}`);
         for (const c of a.clouds)
             assert.ok(c.x > -150 && c.x < W + 150, kind);
@@ -94,6 +105,36 @@ test('a storm flashes now and then', () => {
     }
     assert.ok(flashes > 0 && flashes < 60 * FPS / 4, String(flashes));
     assert.ok(!skyShapes(newSky('rain', true, W, H, seeded(9))).some(s => s.op === 'flash'));
+});
+
+test('a clear night visibly twinkles, and a star falls now and then', () => {
+    const sky = newSky('clear', false, W, H, seeded(4));
+    const alphas = () => skyShapes(sky).filter(s => s.op === 'circle').map(s => s.colour[3]);
+    const before = alphas();
+    stepSky(sky, 1);
+    const after = alphas();
+    const change = Math.max(...before.map((a, i) => Math.abs(a - after[i])));
+    assert.ok(change > 0.3, `the stars change by ${change} in a second`);
+    let meteors = 0;
+    for (let i = 0; i < 60 * FPS; i++) {
+        stepSky(sky, 1 / FPS);
+        if (sky.meteor)
+            meteors++;
+    }
+    assert.ok(meteors > 0, 'a falling star within a minute');
+    assert.equal(newSky('clear', true, W, H, seeded(4)).meteor, null);
+});
+
+test('hailstones land and come back from the top', () => {
+    const sky = newSky('hail', true, W, H, seeded(2));
+    let bounced = false;
+    for (let i = 0; i < 10 * FPS; i++) {
+        stepSky(sky, 1 / FPS);
+        bounced ||= sky.pellets.some(p => p.bounce > 0);
+        for (const p of sky.pellets)
+            assert.ok(p.y <= H, String(p.y));
+    }
+    assert.ok(bounced);
 });
 
 test('junk sizes give a tiny sky, never a crash or a huge one', () => {

@@ -10,6 +10,11 @@ Wed Nov 25 20:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   Shell, where Soup was not promisified, so every search threw and
   showed «Nothing found» (Denys, Sagunto, 2026-11-25). A failed search
   now says Open-Meteo could not be reached.
+- The weather card tells hail (codes 96, 99) and freezing rain or
+  drizzle (56, 57, 66, 67) apart, with hailstones that hop on landing
+  and a glaze of ice with glints; light and heavy rain, snow and
+  showers draw fewer or more drops. A clear night twinkles more, a star
+  falls now and then (every 20-45 s), and the moon has seas (Denys).
 
 -------------------------------------------------------------------
 Tue Nov 24 18:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
