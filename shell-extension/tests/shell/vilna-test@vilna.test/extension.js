@@ -895,13 +895,17 @@ async function widgets() {
     check('clock: menu items', clockMenu?._getMenuItems().map(i => i.label?.text).filter(Boolean),
         ['Alarms', 'World clocks', 'Stopwatch', 'Timer', 'Date & time']);
     check('clock: the first item has the focus', clockMenu?._getMenuItems()[0]?.has_key_focus(), true);
-    const [cardX, cardY] = widget('vilnaClock')?.get_transformed_position() ?? [0, 0];
-    const cardBottom = cardY + (widget('vilnaClock')?.height ?? 0);
+    // Read both places inside the wait: right after the overview the card
+    // may not be laid out yet, and its place is then NaN.
+    const menuPlace = () => {
+        const card = widget('vilnaClock');
+        const [cardX, cardY] = card?.get_transformed_position() ?? [NaN, NaN];
+        const [x, y] = clockMenu?.actor.get_transformed_position() ?? [NaN, NaN];
+        return {ok: y + 20 >= cardY + (card?.height ?? 0) && x < cardX + (card?.width ?? 0) / 2,
+            got: [x, y, cardX, cardY, card?.width, card?.height]};
+    };
     check('clock: the menu opens below the card, in the column',
-        await waitFor(() => {
-            const [x, y] = clockMenu?.actor.get_transformed_position() ?? [0, 0];
-            return y + 20 >= cardBottom && x < cardX + (widget('vilnaClock')?.width ?? 0) / 2;
-        }, 2000) || [clockMenu?.actor.get_transformed_position(), cardX, cardBottom], true);
+        await waitFor(() => menuPlace().ok, 3000) || menuPlace().got, true);
     await shot('clock-menu-dark');
     clockMenu?.close();
     clockInterface.reset('color-scheme');
