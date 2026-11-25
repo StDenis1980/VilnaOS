@@ -12,6 +12,12 @@
 # to keep: follow Tumbleweed's version (_service) and check that it still
 # applies. "+vilnaN" keeps this build above Tumbleweed's of the same
 # version, so the image takes it.
+#
+# Built with -Dgeneric=terminal: upstream's own option that names the
+# program «Terminal» («Термінал» and so on from its translations) instead
+# of «Ptyxis», which says nothing to a person (Denys, 2026-11-25). The
+# app id stays org.gnome.Ptyxis, so settings and the dock are unchanged.
+# The icon is Vilna's own (vilna-terminal.svg, docs/design/icons).
 
 %global upstream_version 50.1
 
@@ -24,6 +30,8 @@ URL:            https://gitlab.gnome.org/chergert/ptyxis
 # Fetched by OBS from download.gnome.org and checked against its SHA-256 (_service).
 Source0:        ptyxis-%{upstream_version}.tar.xz
 Source1:        org.vilna.Ptyxis.gschema.xml
+Source2:        vilna-terminal.svg
+Source3:        vilna-terminal-symbolic.svg
 Patch0:         vilna-right-click-paste.patch
 BuildRequires:  c_compiler
 BuildRequires:  gettext-tools
@@ -48,17 +56,22 @@ Vilna patch for pasting with a right click (org.vilna.Ptyxis).
 %autosetup -p1 -n ptyxis-%{upstream_version}
 
 %build
-%meson
+%meson -Dgeneric=terminal
 %meson_build
 
 %install
 %meson_install
 install -Dm 0644 %{SOURCE1} %{buildroot}%{_datadir}/glib-2.0/schemas/org.vilna.Ptyxis.gschema.xml
+install -Dm 0644 %{SOURCE2} %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/org.gnome.Ptyxis.svg
+install -Dm 0644 %{SOURCE3} %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps/org.gnome.Ptyxis-symbolic.svg
 %find_lang %{name} %{?no_lang_C}
 
 %check
 glib-compile-schemas --strict --dry-run %{buildroot}%{_datadir}/glib-2.0/schemas
 grep -q 'org.vilna.Ptyxis' src/ptyxis-terminal.c
+grep -q '^Name=Terminal$' %{buildroot}%{_datadir}/applications/org.gnome.Ptyxis.desktop
+grep -q '^Name\[uk\]=Термінал$' %{buildroot}%{_datadir}/applications/org.gnome.Ptyxis.desktop
+cmp %{SOURCE2} %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/org.gnome.Ptyxis.svg
 
 %files
 %license COPYING
