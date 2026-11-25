@@ -450,7 +450,7 @@ export class Widgets {
         this._weatherIcon.visible = !scene;
         if (!scene)
             return;
-        this._sky.show(scene.kind, scene.day);
+        this._sky.show(scene.kind, scene.day, scene.strength);
         content.add_style_class_name('vilna-widget-on-sky');
         content.add_style_class_name(`vilna-sky-ink-${skyColours(scene.kind, scene.day).ink}`);
     }
