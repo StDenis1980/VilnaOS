@@ -71,7 +71,6 @@ grep -q 'org.vilna.Ptyxis' src/ptyxis-terminal.c
 %{_datadir}/glib-2.0/schemas/org.vilna.Ptyxis.gschema.xml
 %{_datadir}/icons/hicolor/*/apps/*Ptyxis*
 %{_datadir}/metainfo/*Ptyxis*.metainfo.xml
-%{_datadir}/ptyxis/
 %{_mandir}/man1/ptyxis.1%{?ext_man}
 
 %files lang -f %{name}.lang
