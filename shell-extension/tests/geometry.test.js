@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 
 import {
-    PANEL_COMPACT_HEIGHT, PANEL_MIN_HEIGHT, dockMonitor, dockStrip, dockWidth, drawsOwnLayoutHint,
+    PANEL_COMPACT_HEIGHT, PANEL_MIN_HEIGHT, clearOfStrip, dockMonitor, dockStrip, dockWidth, drawsOwnLayoutHint,
     indicatorAnchor, indicatorPosition, monitorAt, panelRect,
 } from '../vilna@stdenis1980.github.io/lib/geometry.js';
 
@@ -122,4 +122,23 @@ test('the Gloxi strip opens where the person works, else on the primary monitor'
     assert.equal(dockMonitor([undefined, 1], 2, 0), 1);
     assert.equal(dockMonitor([5, -1, 0.5, null], 2, 0), 0);
     assert.equal(dockMonitor([], 3, 2), 2);
+});
+
+test('a window under the Gloxi strip moves left of it, and narrows only when it must', () => {
+    const area = {x: 0, y: 32, width: 1920, height: 1048};
+    const strip = dockStrip(fhd, area);
+    const fits = clearOfStrip({x: 1000, y: 100, width: 800, height: 500}, strip, area);
+    assert.equal(fits.x + fits.width, strip.x);
+    assert.equal(fits.width, 800);
+    const wide = clearOfStrip({x: 200, y: 60, width: 1700, height: 900}, strip, area);
+    assert.ok(wide.x >= area.x && wide.x + wide.width <= strip.x && wide.width < 1700);
+    const fixed = clearOfStrip({x: 200, y: 60, width: 1700, height: 900}, strip, area, false);
+    assert.equal(fixed.width, 1700);
+    assert.ok(fixed.x < 200);
+    assert.equal(clearOfStrip({x: 100, y: 100, width: 800, height: 500}, strip, area), null);
+    // On the second monitor, the work area's left edge is that monitor's.
+    const area2 = {x: 1920, y: 0, width: 1280, height: 1024};
+    const strip2 = dockStrip(second, area2);
+    const there = clearOfStrip({x: 2000, y: 0, width: 1200, height: 600}, strip2, area2);
+    assert.ok(there.x >= second.x && there.x + there.width <= strip2.x);
 });

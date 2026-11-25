@@ -494,6 +494,37 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     gloxiSource.destroy();
     check('side panel: the strip is gone after sliding out', await waitFor(() => dockPanel() === null, 2000), true);
 
+    // A window that is not maximised: the strut alone leaves it under the
+    // panel (Build12.29), so the panel moves it out and back.
+    const loose = findWindow(OTHER);
+    if (Meta.MaximizeFlags)
+        loose.unmaximize(Meta.MaximizeFlags.BOTH);
+    else
+        loose.unmaximize();
+    await sleep(500);
+    loose.move_resize_frame(true, 1300, 200, 500, 400);
+    const placed = await waitFor(() => loose.get_frame_rect().x === 1300, 2000);
+    const rightOf = r => r.x + r.width;
+    settings.set_boolean('gloxi-panel-open', true);
+    await sleep(800);
+    const stripX = dockPanel()?.[0] ?? 0;
+    check('strip: a window under it moves left of it, same width',
+        placed && await waitFor(() => rightOf(loose.get_frame_rect()) <= stripX, 2000) &&
+            loose.get_frame_rect().width, 500);
+    settings.set_boolean('gloxi-panel-open', false);
+    check('strip: closed, the window goes back',
+        await waitFor(() => loose.get_frame_rect().x === 1300, 2000), true);
+    settings.set_boolean('gloxi-panel-open', true);
+    await sleep(800);
+    global.display.emit('grab-op-begin', loose, Meta.GrabOp.MOVING);
+    global.display.emit('grab-op-end', loose, Meta.GrabOp.MOVING);
+    const kept = loose.get_frame_rect().x;
+    settings.set_boolean('gloxi-panel-open', false);
+    await sleep(800);
+    check('strip: a window the person moved meanwhile stays where they left it',
+        [kept < 1300, loose.get_frame_rect().x], [true, kept]);
+    await waitFor(() => dockPanel() === null, 2000);
+
     await setShellProperty('GloxiPanelOpen', new GLib.Variant('b', true));
     await sleep(800);
     check('side panel: Gloxi opens it over D-Bus', Boolean(dockPanel()), true);

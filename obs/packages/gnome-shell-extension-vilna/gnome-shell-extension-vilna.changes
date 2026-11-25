@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 25 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.14: the Gloxi side panel moves windows it would cover left of it,
+  narrower only when they do not fit, and puts them back when it closes
+  unless the person moved, resized or maximised them meanwhile; the strut
+  moved only maximised and tiled windows (Build12.29).
+
+-------------------------------------------------------------------
 Tue Nov 24 18:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.13: the Gloxi side panel reads Gloxi notifications and answers
