@@ -61,7 +61,6 @@ done
 %files
 %license LICENSE LICENSE.CC-BY-SA-4.0
 %doc SOURCES.md
-%dir %{_datadir}/sounds
 %{_datadir}/sounds/vilna-*
 %{_libexecdir}/vilna-login-sound
 %dir %{_sysconfdir}/xdg/autostart
