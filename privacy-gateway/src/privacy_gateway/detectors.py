@@ -118,13 +118,14 @@ SECRET_LABEL_RE = _labelled(r"пароль|password|passwd|pin|PIN-код|api[ _
 #
 # A password word, then within a few words on the same line, a token that looks
 # like a password: letters with a digit or a symbol, or a PIN of digits. The
-# words cover the ten languages of ADR 0009. Ordinary words ("пароль від Wi-Fi
+# words cover the main languages of ADR 0009. Ordinary words ("пароль від Wi-Fi
 # сусіда") are left alone, so the model can still talk about passwords.
 
 PASSWORD_WORD_RE = re.compile(
     r"(?<!\w)(?:парол\w*|пін(?:-код\w*)?|pin(?:-код\w*|-code)?|password\w*|passwd|passphrase"
     r"|passcode|pwd|contraseñ\w*|clave|hasł\w*|hasl\w*|passwort\w*|kennwort\w*|mot de passe"
-    r"|mots de passe|parol\w*|hesl\w*|slaptažod\w*)(?!\w)",
+    r"|mots de passe|parol\w*|hesl\w*|slaptažod\w*|contrasenya\w*|contrasinal\w*|pasahitz\w*"
+    r"|palavras?-passe|senha\w*)(?!\w)",
     re.I,
 )
 PIN_WORD_RE = re.compile(r"(?i)pin|пін")
@@ -519,7 +520,10 @@ _OPERATOR = (
     r"|più|meno|moltiplicato\s+per|diviso\s+per|uguale\s+a"
     r"|ori|împărțit\s+la|egal\s+cu|egal"
     r"|mínus|krát|děleno|rovná\s+se"
-    r"|plius|kart|padalinti\s+iš|lygu)(?!\w))"
+    r"|plius|kart|padalinti\s+iš|lygu"
+    r"|més|menys|multiplicat\s+per|dividit\s+(?:per|entre)"
+    r"|máis|mais|vezes|dividido\s+por"
+    r"|gehi|ken|bider|zati|berdin)(?!\w))"
 )
 _OPERATOR_LEFT_RE = re.compile(rf"(?i)[\d)\]!]\s*{_OPERATOR}\s*$")
 _OPERATOR_RIGHT_RE = re.compile(rf"(?i)\s*{_OPERATOR}\s*[\d(\[]")
@@ -575,6 +579,9 @@ _KEY_WORD_RE = re.compile(
     # people
     r"|клієнт\w*|пацієнт\w*|особ\w*|громадян\w*|client\w*|cliente\w*|klient\w*|kunde\w*"
     r"|patient\w*|pacient\w*|pacjent\w*|paziente\w*|employee|працівник\w*|pracownik\w*"
+    # Catalan, Galician, Basque and Portuguese words the lines above miss
+    r"|nan|ifz|contribuinte\w*|utente\w*|zenbaki\w*|tel[èé]fon\w*|m[òó]bil\w*|telem[óo]vel\w*"
+    r"|trucar|truca\w*|truqu\w*|chama\w*|chame\w*|deitu\w*|ligue\w*|ligar|bezero\w*"
     r")(?!\w)"
 )
 _KEY_BEFORE = 40

@@ -131,6 +131,11 @@ def test_checksums():
         ("Moje heslo je Pes-7731", "Pes-7731"),
         ("Mano slaptažodis yra Liepa77", "Liepa77"),
         ("parola mea este Munte9!", "Munte9!"),
+        ("La meva contrasenya és Gat#Negre7", "Gat#Negre7"),
+        ("O meu contrasinal é Mar-Lugo42", "Mar-Lugo42"),
+        ("Nire pasahitza Itsaso_2026 da", "Itsaso_2026"),
+        ("A minha palavra-passe é Gato.Preto9", "Gato.Preto9"),
+        ("a senha do Wi-Fi é Lisboa#2026", "Lisboa#2026"),
     ],
 )
 def test_finds_passwords_in_a_sentence(text, secret):

@@ -113,6 +113,10 @@ def test_checks_reject_non_ascii_digits():
         "3 razy 38290376543",
         "38290376543 geteilt durch 2",
         "19 fois 38290376543",
+        "19 més 38290376543",
+        "38290376543 dividido por 3",
+        "38290376543 bider 2",
+        "3 vezes 38290376543",
     ],
 )
 def test_leaves_numbers_in_formulas(text):
@@ -168,6 +172,9 @@ def test_strict_mode_hides_bare_numbers(text):
         "90010112349, 39001011237",  # a list of IDs
         "клієнт 90010112349 просить довідку",  # a key word
         "передзвоніть 0671234567",
+        "truca'm al 0671234567",
+        "ligue para 0671234567",
+        "deitu 0671234567 zenbakira",
     ],
 )
 def test_bare_numbers_with_a_tie_are_hidden(text):
