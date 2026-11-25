@@ -32,11 +32,14 @@ finish-args:
   - --device=dri
   # Voice input and sounds.
   - --socket=pulseaudio
-  # Notifications, the tray icon and the sign-in token in the keyring
-  # (Electron's safeStorage goes through libsecret).
+  # Notifications and the sign-in token in the keyring. Without the secret
+  # service Electron's safeStorage falls back to plain text (seen in the VM).
+  # No tray: GNOME in Vilna has no StatusNotifierWatcher, so the app lives
+  # in GNOME's "Background Apps" when its window is closed.
   - --talk-name=org.freedesktop.Notifications
-  - --talk-name=org.kde.StatusNotifierWatcher
   - --talk-name=org.freedesktop.secrets
+  # Sleep and resume events; without it Chromium logs system bus errors.
+  - --system-talk-name=org.freedesktop.login1
   # Files the person downloads from a chat. Anything else comes in through the
   # file chooser portal, one file or folder at a time.
   - --filesystem=xdg-download

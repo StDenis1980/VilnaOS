@@ -17,9 +17,11 @@
   <summary xml:lang="cs">AI asistent od Anthropicu, oficiální aplikace v balíčku Vilna</summary>
   <summary xml:lang="lt">„Anthropic“ DI asistentas, oficiali programa „Vilna“ pakete</summary>
 
-  <!-- The app's developer (Anthropic), not the packager: the description says who packaged it. -->
-  <developer id="com.anthropic">
-    <name>Anthropic</name>
+  <!-- The packager, not Anthropic: with Anthropic's icon, "Anthropic" here
+       read as an official package in GNOME Software (VM check, PR #233). -->
+  <developer id="io.github.stdenis1980">
+    <name>Vilna OS (packaging of Anthropic’s app)</name>
+    <name xml:lang="uk">Vilna OS (пакунок програми Anthropic)</name>
   </developer>
 
   <description>
