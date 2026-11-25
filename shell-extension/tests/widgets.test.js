@@ -144,8 +144,8 @@ test('today: events still ahead, all-day first, at most three', () => {
     assert.deepEqual(todayEvents(null, now), []);
 });
 
-test('words in all ten languages, English as the fallback', () => {
-    assert.deepEqual(LANGUAGES.sort(), ['cs', 'de', 'en', 'es', 'fr', 'it', 'lt', 'pl', 'ro', 'uk']);
+test('words in all main languages, English as the fallback', () => {
+    assert.deepEqual(LANGUAGES.sort(), ['ca', 'ca@valencia', 'cs', 'de', 'en', 'es', 'eu', 'fr', 'gl', 'it', 'lt', 'pl', 'pt', 'ro', 'uk']);
     assert.deepEqual(checkTables(), []);
     for (const code of LANGUAGES) {
         const t = widgetText([code]);
@@ -155,5 +155,9 @@ test('words in all ten languages, English as the fallback', () => {
         assert.ok(t.dataBy.includes('Open-Meteo'), code);
     }
     assert.equal(widgetText(['uk_UA.UTF-8', 'uk', 'C']).help, 'Чим допомогти?');
+    // Valencian has its own words and does not fall back to Catalan (ADR 0009).
+    const valencian = widgetText(['ca_ES.UTF-8@valencia', 'ca_ES@valencia', 'ca@valencia', 'ca_ES', 'ca']);
+    assert.match(valencian.myPlace, /meua/);
+    assert.match(widgetText(['ca_ES.UTF-8', 'ca']).myPlace, /meva/);
     assert.equal(widgetText(['ja_JP', 'C']).help, 'How can I help?');
 });

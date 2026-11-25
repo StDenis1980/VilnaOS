@@ -251,6 +251,14 @@ const KEYS = ['gloxi', 'help', 'askPlaceholder', 'chips', 'today', 'nothing', 'a
     'showWeather', 'place', 'capital', 'search', 'searchHint', 'useMine', 'consentTitle', 'consentBody', 'send',
     'cancel', 'backToCapital', 'notFound', 'locFailed', 'myPlace', 'dataBy'];
 
+// The table's key for a GLib language name: "uk_UA.UTF-8" → "uk", and
+// Valencian, "ca_ES.UTF-8@valencia" → "ca@valencia" (ADR 0009).
+function languageCode(name) {
+    const s = String(name);
+    const code = s.split(/[_.@-]/)[0].toLowerCase();
+    return code === 'ca' && /@valencia/i.test(s) ? 'ca@valencia' : code;
+}
+
 const TEXT = {
     en: ['Gloxi', 'How can I help?', 'Ask Gloxi…', ['What’s on today?', 'Find a file', 'Set up Wi-Fi'],
         'Today · Calendar', 'Nothing planned', 'All day', 'Weather', 'No forecast yet', 'Choose a town',
@@ -352,13 +360,79 @@ const TEXT = {
         'Vilna paprašys sistemos apytikslės jūsų vietos, suapvalintos iki maždaug 10 km, ir nusiųs ją Open-Meteo prognozei. Daugiau nieko nesiunčiama.',
         'Siųsti', 'Atšaukti', 'Grįžti į sostinę', 'Nieko nerasta', 'Nepavyko nustatyti vietos. Įveskite miestą.',
         'Mano vieta', 'Orų duomenys: Open-Meteo.com (CC BY 4.0)'],
+    ca: ['Gloxi', 'En què et puc ajudar?', 'Pregunta a Gloxi…',
+        ['Què hi ha avui?', 'Busca un fitxer', 'Configura la wifi'], 'Avui · Calendari', 'Res previst', 'Tot el dia',
+        'Temps', 'Encara no hi ha previsió', 'Tria una ciutat',
+        ['Serè', 'Parcialment ennuvolat', 'Cobert', 'Boira', 'Plugim', 'Pluja', 'Neu', 'Tempesta', 'Vent', 'Calor'],
+        'Còpies: tot desat', 'Còpies: l’última ha fallat', 'Les còpies no estan configurades',
+        {today: 'Última: avui a les %s', yesterday: 'Última: ahir a les %s', on: 'Última: %s'},
+        'Ginys de l’escriptori', 'Mostra els ginys', 'Mostra el temps', 'Lloc per al temps',
+        '%s (la capital, per defecte)', 'Cerca una ciutat', 'Només s’envia a Open-Meteo el text que escrius.',
+        'Utilitza la meva ubicació', 'Vols enviar la teva ubicació?',
+        'Vilna demanarà al sistema la teva ubicació aproximada, arrodonida a uns 10 km, i l’enviarà a Open-Meteo per a la previsió. No s’envia res més.',
+        'Envia', 'Cancel·la', 'Torna a la capital', 'No s’ha trobat res',
+        'No s’ha pogut trobar la teva ubicació. Escriu una ciutat.', 'La meva ubicació',
+        'Dades del temps: Open-Meteo.com (CC BY 4.0)'],
+    'ca@valencia': ['Gloxi', 'En què et puc ajudar?', 'Pregunta a Gloxi…',
+        ['Què hi ha hui?', 'Busca un fitxer', 'Configura la wifi'], 'Hui · Calendari', 'Res previst', 'Tot el dia',
+        'Temps', 'Encara no hi ha previsió', 'Tria una ciutat',
+        ['Serè', 'Parcialment ennuvolat', 'Cobert', 'Boira', 'Plugim', 'Pluja', 'Neu', 'Tempesta', 'Vent', 'Calor'],
+        'Còpies: tot guardat', 'Còpies: l’última ha fallat', 'Les còpies no estan configurades',
+        {today: 'Última: hui a les %s', yesterday: 'Última: ahir a les %s', on: 'Última: %s'},
+        'Ginys de l’escriptori', 'Mostra els ginys', 'Mostra el temps', 'Lloc per al temps',
+        '%s (la capital, per defecte)', 'Cerca una ciutat', 'Només s’envia a Open-Meteo el text que escrius.',
+        'Utilitza la meua ubicació', 'Vols enviar la teua ubicació?',
+        'Vilna demanarà al sistema la teua ubicació aproximada, arrodonida a uns 10 km, i l’enviarà a Open-Meteo per a la previsió. No s’envia res més.',
+        'Envia', 'Cancel·la', 'Torna a la capital', 'No s’ha trobat res',
+        'No s’ha pogut trobar la teua ubicació. Escriu una ciutat.', 'La meua ubicació',
+        'Dades del temps: Open-Meteo.com (CC BY 4.0)'],
+    gl: ['Gloxi', 'En que che axudo?', 'Pregúntalle a Gloxi…',
+        ['Que hai hoxe?', 'Busca un ficheiro', 'Configura a wifi'], 'Hoxe · Calendario', 'Nada previsto',
+        'Todo o día', 'Tempo', 'Aínda non hai previsión', 'Escolle unha cidade',
+        ['Despexado', 'Parcialmente anubrado', 'Cuberto', 'Néboa', 'Orballo', 'Choiva', 'Neve', 'Treboada', 'Vento', 'Calor'],
+        'Copias: todo gardado', 'Copias: a última fallou', 'As copias non están configuradas',
+        {today: 'Última: hoxe ás %s', yesterday: 'Última: onte ás %s', on: 'Última: %s'}, 'Widgets do escritorio',
+        'Mostrar os widgets', 'Mostrar o tempo', 'Lugar para o tempo', '%s (a capital, de forma predeterminada)',
+        'Buscar unha cidade', 'Só se envía a Open-Meteo o texto que escribes.', 'Usar a miña localización',
+        'Enviar a túa localización?',
+        'Vilna pedirá ao sistema a túa localización aproximada, arredondada a uns 10 km, e enviaraa a Open-Meteo para a previsión. Non se envía nada máis.',
+        'Enviar', 'Cancelar', 'Volver á capital', 'Non se atopou nada',
+        'Non se puido atopar a túa localización. Escribe unha cidade.', 'A miña localización',
+        'Datos do tempo: Open-Meteo.com (CC BY 4.0)'],
+    eu: ['Gloxi', 'Zertan lagun zaitzaket?', 'Galdetu Gloxiri…',
+        ['Zer dago gaur?', 'Bilatu fitxategi bat', 'Konfiguratu wifia'], 'Gaur · Egutegia', 'Ezer ez aurreikusita',
+        'Egun osoa', 'Eguraldia', 'Oraindik ez dago iragarpenik', 'Aukeratu herri bat',
+        ['Oskarbi', 'Partzialki hodeitsu', 'Estalita', 'Lainoa', 'Zirimiria', 'Euria', 'Elurra', 'Ekaitza', 'Haizea', 'Beroa'],
+        'Babeskopiak: dena gordeta', 'Babeskopiak: azkenak huts egin du', 'Babeskopiak ez daude konfiguratuta',
+        {today: 'Azkena: gaur, %s', yesterday: 'Azkena: atzo, %s', on: 'Azkena: %s'}, 'Mahaigaineko widgetak',
+        'Erakutsi widgetak', 'Erakutsi eguraldia', 'Eguraldiaren lekua', '%s (hiriburua, lehenespenez)',
+        'Bilatu herri bat', 'Idazten duzun testua bakarrik bidaltzen da Open-Meteora.', 'Erabili nire kokapena',
+        'Zure kokapena bidali?',
+        'Vilnak zure gutxi gorabeherako kokapena eskatuko dio sistemari, 10 km ingurura biribilduta, eta Open-Meteora bidaliko du iragarpenerako. Ez da beste ezer bidaltzen.',
+        'Bidali', 'Utzi', 'Itzuli hiriburura', 'Ez da ezer aurkitu',
+        'Ezin izan da zure kokapena aurkitu. Idatzi herri bat.', 'Nire kokapena',
+        'Eguraldiaren datuak: Open-Meteo.com (CC BY 4.0)'],
+    pt: ['Gloxi', 'Em que posso ajudar?', 'Pergunte ao Gloxi…',
+        ['O que há hoje?', 'Procurar um ficheiro', 'Configurar o Wi-Fi'], 'Hoje · Calendário', 'Nada previsto',
+        'Todo o dia', 'Tempo', 'Ainda sem previsão', 'Escolha uma localidade',
+        ['Limpo', 'Parcialmente nublado', 'Encoberto', 'Nevoeiro', 'Chuvisco', 'Chuva', 'Neve', 'Trovoada', 'Vento', 'Calor'],
+        'Cópias: tudo guardado', 'Cópias: a última falhou', 'As cópias não estão configuradas',
+        {today: 'Última: hoje às %s', yesterday: 'Última: ontem às %s', on: 'Última: %s'},
+        'Widgets do ambiente de trabalho', 'Mostrar os widgets', 'Mostrar o tempo', 'Local para o tempo',
+        '%s (a capital, por predefinição)', 'Procurar uma localidade',
+        'Só o texto que escreve é enviado para o Open-Meteo.', 'Usar a minha localização',
+        'Enviar a sua localização?',
+        'O Vilna vai pedir ao sistema a sua localização aproximada, arredondada a cerca de 10 km, e enviá-la para o Open-Meteo para a previsão. Nada mais é enviado.',
+        'Enviar', 'Cancelar', 'Voltar à capital', 'Nada encontrado',
+        'Não foi possível encontrar a sua localização. Escreva uma localidade.', 'A minha localização',
+        'Dados meteorológicos: Open-Meteo.com (CC BY 4.0)'],
 };
 
 export const LANGUAGES = Object.keys(TEXT);
 
 export function languageOf(languageNames) {
     for (const name of languageNames ?? []) {
-        const code = String(name).split(/[_.@-]/)[0].toLowerCase();
+        const code = languageCode(name);
         if (TEXT[code])
             return code;
     }

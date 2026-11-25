@@ -35,8 +35,8 @@ test('an old note is not news, a clock behind the note still shows it', () => {
     assert.equal(shouldShow(note, '', note.time - 3600), true);
 });
 
-test('the words in all ten languages, English otherwise', () => {
-    assert.equal(LANGUAGES.length, 10);
+test('the words in all main languages, English otherwise', () => {
+    assert.equal(LANGUAGES.length, 15);
     for (const lang of LANGUAGES) {
         const t = noticeText([lang]);
         assert.ok(t.title && t.body, lang);

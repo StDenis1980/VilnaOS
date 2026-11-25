@@ -40,10 +40,10 @@ test('the schema, the sound themes and the generator agree', () => {
     assert.deepEqual(events, SOUND_EVENTS);
 });
 
-test('the Sounds page has every word in the ten languages', async () => {
+test('the Sounds page has every word in the main languages', async () => {
     const {SOUND_LANGUAGES, checkSoundTables, soundText} = await import('../vilna@stdenis1980.github.io/lib/soundTheme.js');
     assert.deepEqual(checkSoundTables(), []);
-    assert.deepEqual(SOUND_LANGUAGES, ['en', 'uk', 'es', 'pl', 'de', 'fr', 'it', 'ro', 'cs', 'lt']);
+    assert.deepEqual(SOUND_LANGUAGES, ['en', 'uk', 'es', 'pl', 'de', 'fr', 'it', 'ro', 'cs', 'lt', 'ca', 'ca@valencia', 'gl', 'eu', 'pt']);
     const uk = soundText(['uk_UA.UTF-8', 'uk', 'C']);
     assert.equal(uk.page, 'Звуки');
     assert.equal(uk.themes.star, 'Зірка');
