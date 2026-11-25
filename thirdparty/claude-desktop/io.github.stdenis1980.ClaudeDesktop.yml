@@ -1,0 +1,74 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Flatpak wrapper for Anthropic's official Claude desktop app (beta for Linux).
+#
+# The app itself is proprietary and is NOT in this Flatpak or in Vilna's
+# repository. This is an extra-data Flatpak: when a person installs it, Flatpak
+# downloads Anthropic's own .deb from downloads.claude.ai on that person's
+# computer, checks its size and SHA-256 against the pins below, and
+# apply_extra.sh unpacks it into /app/extra. Only this wrapper (launcher,
+# .desktop, metainfo) is ours. See thirdparty/claude-desktop/README.md.
+#
+# The pins come from Anthropic's signed apt index:
+#   python3 tools/claude_desktop.py latest --write
+#
+#   flatpak-builder --user --install --force-clean build \
+#     thirdparty/claude-desktop/io.github.stdenis1980.ClaudeDesktop.yml
+#   flatpak run io.github.stdenis1980.ClaudeDesktop
+id: io.github.stdenis1980.ClaudeDesktop
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# Electron apps: zypak replaces Chromium's setuid sandbox inside Flatpak.
+base: org.electron2.BaseApp
+base-version: "25.08"
+command: claude-desktop
+separate-locales: false
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Voice input and sounds.
+  - --socket=pulseaudio
+  # Notifications, the tray icon and the sign-in token in the keyring
+  # (Electron's safeStorage goes through libsecret).
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.freedesktop.secrets
+  # Files the person downloads from a chat. Anything else comes in through the
+  # file chooser portal, one file or folder at a time.
+  - --filesystem=xdg-download
+
+modules:
+  - name: claude-desktop
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 claude-desktop.sh /app/bin/claude-desktop
+      - install -Dm644 io.github.stdenis1980.ClaudeDesktop.desktop -t /app/share/applications
+      - install -Dm644 io.github.stdenis1980.ClaudeDesktop.metainfo.xml -t /app/share/metainfo
+    sources:
+      # Anthropic's package, downloaded on the person's computer at install
+      # time. tools/claude_desktop.py keeps these pins (one per architecture).
+      - type: extra-data
+        filename: claude-desktop.deb
+        only-arches: [x86_64]
+        url: https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_0.0.0_amd64.deb
+        sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+        size: 0
+      - type: extra-data
+        filename: claude-desktop.deb
+        only-arches: [aarch64]
+        url: https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_0.0.0_arm64.deb
+        sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+        size: 0
+      - type: file
+        path: apply_extra.sh
+      - type: file
+        path: claude-desktop.sh
+      - type: file
+        path: io.github.stdenis1980.ClaudeDesktop.desktop
+      - type: file
+        path: io.github.stdenis1980.ClaudeDesktop.metainfo.xml

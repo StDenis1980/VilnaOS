@@ -30,6 +30,10 @@ jobs:
         run: |
           python3 tools/tinta_bundles.py check
           python3 tools/test_tinta_bundles.py
+      - name: The Claude desktop wrapper's pins are well formed
+        run: |
+          python3 tools/claude_desktop.py check
+          python3 tools/test_claude_desktop.py
 
   gloxi:
     runs-on: ubuntu-latest
