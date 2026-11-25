@@ -4,6 +4,8 @@
 #   flathub - Firefox, the GNOME basics, KeePassXC (flatpaks.list);
 #   vilna   - Vilna's own signed repository (ADR 0024): Tinta Office
 #             (flatpaks-vilna.list, ADR 0011). Its runtime comes from Flathub.
+# With each remote it also fetches that remote's app catalogue, so the store
+# (GNOME Software) shows every app at once and can install it again.
 # Run by vilna-flatpak-defaults.service, in the background (it must not hold
 # the boot). Each remote that succeeds gets its own stamp and is not tried
 # again; when both are done the final stamp stops the service for good.
@@ -49,6 +51,14 @@ install_from() {
         fi
         "$FLATPAK" config --system --set languages "$LANGUAGES" || return 1
         "$FLATPAK" remote-add --system --if-not-exists "$remote" "$repofile" || return 1
+        # The remote's app catalogue (its AppStream branch): what GNOME
+        # Software and Gloxi (vilna-mcp-apps) read to show an app and to
+        # install it again after the person removed it. flatpak install does
+        # not fetch it, and until GNOME Software refreshed on its own the
+        # store did not know Tinta Office. Not fatal: the store fetches it
+        # itself later.
+        "$FLATPAK" update --system --noninteractive --appstream "$remote" \
+            || echo "$remote: app catalogue not fetched yet, the store fetches it later"
         "$FLATPAK" install --system --noninteractive --or-update "$remote" "${apps[@]}" || return 1
     else
         echo "$remote: no apps in $list"

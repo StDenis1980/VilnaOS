@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Nov 25 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Update to 0.7: after adding each remote, fetch its app catalogue
+  (flatpak update --appstream), so GNOME Software shows Tinta Office
+  in the store at once and a person who removed an app can install it
+  again; flatpak install does not fetch the catalogue. Not fatal: the
+  store fetches it later by itself.
+
+-------------------------------------------------------------------
 Tue Nov 17 21:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Update to 0.6: when offline or a remote fails, try again after 30 s,
