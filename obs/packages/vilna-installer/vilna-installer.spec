@@ -78,7 +78,7 @@ BuildArch:      noarch
 
 %description
 The Vilna OS installer (image/docs/installer.md), started in the live
-image. Step 0, the first screen: the ten languages of Vilna and
+image. Step 0, the first screen: the main languages of Vilna and
 every other language of the system, the screen reader, and going on with
 the Gloxi assistant or without it; then steps 1-13 as a conversation with
 Gloxi, with the installation plan beside it. Gloxi only fills the plan;

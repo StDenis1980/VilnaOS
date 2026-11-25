@@ -9,6 +9,11 @@ Name[it]=Vilna Vetro
 Name[ro]=Vilna Sticlă
 Name[cs]=Vilna Sklo
 Name[lt]=Vilna Stiklas
+Name[ca]=Vilna Vidre
+Name[ca@valencia]=Vilna Vidre
+Name[gl]=Vilna Vidro
+Name[eu]=Vilna Beira
+Name[pt]=Vilna Vidro
 Inherits=freedesktop
 Directories=stereo
 

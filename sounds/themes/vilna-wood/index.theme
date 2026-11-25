@@ -9,6 +9,11 @@ Name[it]=Vilna Legno
 Name[ro]=Vilna Lemn
 Name[cs]=Vilna Dřevo
 Name[lt]=Vilna Medis
+Name[ca]=Vilna Fusta
+Name[ca@valencia]=Vilna Fusta
+Name[gl]=Vilna Madeira
+Name[eu]=Vilna Egurra
+Name[pt]=Vilna Madeira
 Inherits=freedesktop
 Directories=stereo
 

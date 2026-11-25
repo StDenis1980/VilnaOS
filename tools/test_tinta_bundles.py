@@ -230,7 +230,7 @@ class FirstBoot(unittest.TestCase):
         (self.share / "vilna.flatpakrepo").write_text("[Flatpak Repo]\n")
         self.assertEqual(self.run_script().returncode, 0)
         calls = self.calls()
-        lang = "config --system --set languages uk;en;es;pl;de;fr;it;ro;cs;lt"
+        lang = "config --system --set languages uk;en;es;pl;de;fr;it;ro;cs;lt;ca;gl;eu;pt"
         self.assertIn(lang, calls)
         for remote in ("flathub", "vilna"):
             install = next(
