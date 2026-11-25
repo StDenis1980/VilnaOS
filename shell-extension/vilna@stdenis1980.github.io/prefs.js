@@ -30,6 +30,12 @@ const DOCK_SCHEMA = 'org.gnome.shell.extensions.dash-to-dock';
 
 const APP_ID = 'org.gnome.Shell.Extensions';
 
+// org.gnome.system.location, or null when the schema is not installed.
+function locationSettings() {
+    const schema = Gio.SettingsSchemaSource.get_default()?.lookup('org.gnome.system.location', true);
+    return schema ? new Gio.Settings({settings_schema: schema}) : null;
+}
+
 function readText(path) {
     try {
         const [ok, bytes] = GLib.file_get_contents(path);
@@ -142,7 +148,15 @@ export default class VilnaPreferences extends ExtensionPreferences {
         const status = new Gtk.Label({wrap: true, xalign: 0, margin_top: 6, visible: false, css_classes: ['dim-label']});
         where.add(status);
         mineButton.connect('clicked', () => {
-            const dialog = new Adw.AlertDialog({heading: t.consentTitle, body: t.consentBody});
+            // GNOME's location services are off unless someone turns them
+            // on: Vilna skips the privacy page of the first start
+            // (vilna-branding vendor.conf), where GNOME asks. While they are
+            // off GeoClue refuses every app, so the dialog says that
+            // agreeing turns them on; other apps still have to ask.
+            const location = locationSettings();
+            const servicesOff = location !== null && !location.get_boolean('enabled');
+            const body = servicesOff ? `${t.consentBody}\n\n${t.servicesOff}` : t.consentBody;
+            const dialog = new Adw.AlertDialog({heading: t.consentTitle, body});
             dialog.add_response('cancel', t.cancel);
             dialog.add_response('send', t.send);
             dialog.set_response_appearance('send', Adw.ResponseAppearance.SUGGESTED);
@@ -152,6 +166,16 @@ export default class VilnaPreferences extends ExtensionPreferences {
                 if (response !== 'send')
                     return;
                 status.visible = false;
+                if (servicesOff) {
+                    // GNOME Shell tells GeoClue the new limit over D-Bus; give
+                    // it a moment, or the first request may still be refused.
+                    location.set_boolean('enabled', true);
+                    Gio.Settings.sync();
+                    await new Promise(resolve => GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+                        resolve();
+                        return GLib.SOURCE_REMOVE;
+                    }));
+                }
                 try {
                     const {default: Geoclue} = await import('gi://Geoclue');
                     const simple = await new Promise((resolve, reject) =>
@@ -162,9 +186,9 @@ export default class VilnaPreferences extends ExtensionPreferences {
                                 reject(e);
                             }
                         }));
-                    const location = simple.get_location();
-                    const lat = roundForPrivacy(location.latitude);
-                    const lon = roundForPrivacy(location.longitude);
+                    const found = simple.get_location();
+                    const lat = roundForPrivacy(found.latitude);
+                    const lon = roundForPrivacy(found.longitude);
                     if (lat === null || lon === null)
                         throw new Error('no coordinates');
                     choose(t.myPlace, lat, lon);

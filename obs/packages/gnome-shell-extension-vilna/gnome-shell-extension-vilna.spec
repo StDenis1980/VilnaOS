@@ -18,6 +18,10 @@ URL:            https://github.com/StDenis1980/VilnaOS
 Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  glib2-tools
 Requires:       gnome-shell >= 46
+# «Use my location» in the weather settings asks GeoClue (prefs.js);
+# without the typelib the import fails and the place is never found.
+Requires:       geoclue2
+Requires:       typelib(Geoclue) = 2.0
 BuildArch:      noarch
 
 %description
