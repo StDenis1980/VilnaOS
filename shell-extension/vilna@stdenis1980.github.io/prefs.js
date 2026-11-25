@@ -28,6 +28,12 @@ import {
 
 const DOCK_SCHEMA = 'org.gnome.shell.extensions.dash-to-dock';
 
+// GNOME Shell promisifies Soup in its own process only; the preferences
+// run in another one (org.gnome.Shell.Extensions), where without this the
+// call returns nothing, the town search threw and showed «Nothing found»
+// for every town (Denys, Sagunto, 2026-11-25).
+Gio._promisify(Soup.Session.prototype, 'send_and_read_async');
+
 const APP_ID = 'org.gnome.Shell.Extensions';
 
 // org.gnome.system.location, or null when the schema is not installed.
@@ -117,17 +123,19 @@ export default class VilnaPreferences extends ExtensionPreferences {
                 return;
             }
             let found = [];
+            let failed = false;
             try {
                 const message = Soup.Message.new('GET', geocodeUrl(query, language));
                 const bytes = await session.send_and_read_async(message, GLib.PRIORITY_DEFAULT, cancellable);
                 found = parseGeocode(new TextDecoder().decode(bytes.get_data()));
             } catch (e) {
                 console.warn(`Vilna prefs: town search failed: ${e.message}`);
+                failed = true;
             }
             if (mine !== token)
                 return;
             if (!found.length)
-                results.append(new Adw.ActionRow({title: t.notFound}));
+                results.append(new Adw.ActionRow({title: failed ? t.searchFailed : t.notFound}));
             for (const r of found) {
                 const row = new Adw.ActionRow({title: r.name, subtitle: r.detail, activatable: true});
                 row.connect('activated', () => {
