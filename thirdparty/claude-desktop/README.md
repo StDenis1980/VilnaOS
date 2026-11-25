@@ -12,7 +12,7 @@ Anthropic випускає Claude для Linux лише як `.deb` у влас�
 Під час встановлення на комп'ютері людини:
 
 1. Flatpak завантажує `.deb` прямо з `downloads.claude.ai` (джерело `extra-data` у маніфесті) і звіряє розмір і SHA-256 з тим, що закріплено в маніфесті.
-2. `apply_extra.sh` без мережі розпаковує програму в `/app/extra/claude`, прибирає `chrome-sandbox` (у Flatpak його замінює zypak з `org.electron2.BaseApp`) і бере іконку Anthropic з того самого пакета (`/app/extra/export`).
+2. `apply_extra.sh` без мережі розпаковує програму в `/app/extra/claude`, прибирає `chrome-sandbox` (у Flatpak його замінює zypak з `org.electronjs.Electron2.BaseApp`) і бере іконку Anthropic з того самого пакета (`/app/extra/export`).
 3. `claude-desktop.sh` запускає програму через `zypak-wrapper`, спершу на Wayland.
 
 Хеші беруться з підписаного сховища apt Anthropic, тобто це рівно ті файли, які прийняв би `apt install claude-desktop` на Debian чи Ubuntu:
