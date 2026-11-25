@@ -30,6 +30,22 @@ CURSOR_MIN = 3.0  # WCAG for a non-text element
 # draw backgrounds and borders with; they are not text on the default background.
 NOT_TEXT = {"Color0", "Color7", "Color15"}
 
+# The letter on each key of the Ukrainian layout (xkb «ua»), as GDK names it:
+# a Ptyxis shortcut on a Latin letter also needs the Cyrillic letter of the
+# same key, or it does nothing while Українська is on (GTK 4 matches by the
+# letter typed).
+UA_LETTER = {
+    "q": "Cyrillic_shorti", "w": "Cyrillic_tse", "e": "Cyrillic_u",
+    "r": "Cyrillic_ka", "t": "Cyrillic_ie", "y": "Cyrillic_en",
+    "u": "Cyrillic_ghe", "i": "Cyrillic_sha", "o": "Cyrillic_shcha",
+    "p": "Cyrillic_ze", "a": "Cyrillic_ef", "s": "Ukrainian_i",
+    "d": "Cyrillic_ve", "f": "Cyrillic_a", "g": "Cyrillic_pe",
+    "h": "Cyrillic_er", "j": "Cyrillic_o", "k": "Cyrillic_el",
+    "l": "Cyrillic_de", "z": "Cyrillic_ya", "x": "Cyrillic_che",
+    "c": "Cyrillic_es", "v": "Cyrillic_em", "b": "Cyrillic_i",
+    "n": "Cyrillic_te", "m": "Cyrillic_softsign",
+}
+
 
 def luminance(hex_colour: str) -> float:
     rgb = rgb_of(hex_colour)
@@ -142,6 +158,22 @@ def check() -> list[str]:
         # A custom keybinding sits at a path of a relocatable schema: an
         # override of that path is silently ignored (VM test, Build12.26).
         errors.append("a custom keybinding in the override is ignored; use media-keys terminal")
+    for name, value in sections.get("org.gnome.Ptyxis.Shortcuts", {}).items():
+        alternatives = [a.strip() for a in value.strip("'").split("|") if a.strip()]
+        parsed = []
+        for alt in alternatives:
+            m = re.fullmatch(r"((?:<[a-z]+>)*)(\w+)", alt)
+            if not m:
+                errors.append(f"Ptyxis shortcut {name}: cannot read {alt!r}")
+                continue
+            parsed.append((m.group(1), m.group(2)))
+        for mods, key in parsed:
+            twin = UA_LETTER.get(key.lower())
+            if twin and (mods, twin) not in parsed:
+                errors.append(
+                    f"Ptyxis shortcut {name}: {mods}{key} has no {mods}{twin} "
+                    "for the Ukrainian layout"
+                )
     if "kgx" in OVERRIDE.read_text(encoding="utf-8"):
         errors.append("30_Vilna.gschema.override still starts kgx (GNOME Console)")
     return errors

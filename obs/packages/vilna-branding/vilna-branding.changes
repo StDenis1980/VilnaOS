@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 25 15:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.21
+- Ptyxis shortcuts (copy, paste, new tab and the other letter
+  shortcuts) also work with the Ukrainian layout on: each is
+  «Latin|Cyrillic on the same key»
+
+-------------------------------------------------------------------
 Tue Nov 24 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.20
