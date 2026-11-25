@@ -13,7 +13,7 @@
 # applies. "+vilnaN" keeps this build above Tumbleweed's of the same
 # version, so the image takes it.
 
-%global upstream_version 51.1
+%global upstream_version 50.1
 
 Name:           ptyxis
 Version:        %{upstream_version}+vilna1
