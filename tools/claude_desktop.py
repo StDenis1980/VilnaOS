@@ -43,9 +43,11 @@ KEY_URL = "https://downloads.claude.ai/claude-desktop/key.asc"
 SUITE = "stable"
 COMPONENT = "main"
 PACKAGE = "claude-desktop"
-# Anthropic's apt signing key. Empty until the first `latest` run has shown
-# it; from then on a different key is an error, not a quiet change.
-KEY_FINGERPRINT = ""
+# Anthropic's apt signing key, as key.asc on downloads.claude.ai served it on
+# 2026-11-25 (first seen by CI, PR #233). Anthropic publishes no fingerprint
+# elsewhere, so this is trust on first use, like `apt` itself; from now on a
+# different key is an error, not a quiet change.
+KEY_FINGERPRINT = "31DDDE24DDFAB679F42D7BD2BAA929FF1A7ECACE"
 # Flatpak architecture -> Debian architecture.
 ARCHES = {"x86_64": "amd64", "aarch64": "arm64"}
 
