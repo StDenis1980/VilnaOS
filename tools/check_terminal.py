@@ -23,6 +23,7 @@ BRANDING = ROOT / "obs" / "packages" / "vilna-branding"
 OVERRIDE = BRANDING / "30_Vilna.gschema.override"
 PATTERN = ROOT / "obs" / "packages" / "patterns-vilna" / "patterns-vilna.spec"
 SPEC = BRANDING / "vilna-branding.spec"
+PTYXIS = ROOT / "obs" / "packages" / "ptyxis"
 
 TEXT_MIN = 4.5  # WCAG AA for normal text
 CURSOR_MIN = 3.0  # WCAG for a non-text element
@@ -174,6 +175,13 @@ def check() -> list[str]:
                     f"Ptyxis shortcut {name}: {mods}{key} has no {mods}{twin} "
                     "for the Ukrainian layout"
                 )
+    # org.vilna.Ptyxis exists only in the Vilna build of Ptyxis; a key the
+    # override sets there must be one that build's schema and patch know.
+    for name in sections.get("org.vilna.Ptyxis", {}):
+        schema = (PTYXIS / "org.vilna.Ptyxis.gschema.xml").read_text(encoding="utf-8")
+        patch = (PTYXIS / "vilna-right-click-paste.patch").read_text(encoding="utf-8")
+        if f'<key name="{name}"' not in schema or f'"{name}"' not in patch:
+            errors.append(f"org.vilna.Ptyxis {name}: not in obs/packages/ptyxis")
     if "kgx" in OVERRIDE.read_text(encoding="utf-8"):
         errors.append("30_Vilna.gschema.override still starts kgx (GNOME Console)")
     return errors

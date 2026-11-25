@@ -9,7 +9,11 @@ import time
 
 import pytest
 
-gi = pytest.importorskip("gi")
+# "gi.repository", not "gi": a package can leave gi/overrides without
+# PyGObject, and that bare "gi" has no require_version.
+pytest.importorskip("gi.repository", exc_type=ImportError)
+import gi  # noqa: E402
+
 try:
     gi.require_version("Gtk", "4.0")
     gi.require_version("Adw", "1")
