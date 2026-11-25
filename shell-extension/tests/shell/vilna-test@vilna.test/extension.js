@@ -837,6 +837,36 @@ async function widgets() {
     check('widgets: weather can be hidden', widget('vilnaWeatherWidget')?.visible, false);
     settings.set_boolean('weather', true);
 
+    // The clock card: GNOME Clocks' settings (its Flatpak keyfile) bring
+    // the next alarm and the other time zones; Madrid is our own time.
+    const clockTexts = () => texts(widget('vilnaClock'));
+    check('clock: only time and date without Clocks', clockTexts().length, 2);
+    const clocksFile = GLib.build_filenamev([GLib.get_home_dir(), '.var', 'app', 'org.gnome.clocks', 'config',
+        'glib-2.0', 'settings', 'keyfile']);
+    GLib.mkdir_with_parents(GLib.path_get_dirname(clocksFile), 0o700);
+    const ring = GLib.DateTime.new_now_local().add_days(1);
+    const ringAt = GLib.DateTime.new_local(ring.get_year(), ring.get_month(), ring.get_day_of_month(), 7, 0, 0);
+    const place = (name, code, lat, lon) =>
+        `{'location': <(uint32 2, <('${name}', '${code}', true, [(${lat}, ${lon})], @a(dd) [])>)>}`;
+    GLib.file_set_contents(clocksFile, [
+        '[org/gnome/clocks]',
+        `alarms=[{'name': <'Work'>, 'id': <'a1'>, 'hour': <int32 7>, 'minute': <int32 0>, 'ring_time': <'${ringAt.format_iso8601()}'>, 'days': <@ai []>}, {'name': <'Off'>, 'hour': <int32 6>, 'minute': <int32 0>, 'days': <[1, 2]>}]`,
+        `world-clocks=[${[place('Madrid', 'LEMD', 0.7051, -0.0644), place('Kyiv', 'UKKK', 0.8802, 0.5292),
+            place('New York', 'KNYC', 0.7118, -1.2910), place('Tokyo', 'RJTT', 0.6227, 2.4405)].join(', ')}]`,
+        '',
+    ].join('\n'));
+    check('clock: the next alarm that is on, tomorrow', await waitFor(() => clockTexts()[3] === 'tomorrow · Work', 5000)
+        ? clockTexts()[2] : clockTexts(), '07:00');
+    check('clock: Clocks is closed, so the card warns', clockTexts()[4], 'Rings only while Clocks is open');
+    check('clock: two other zones, without our own', clockTexts().slice(5).filter((_, i) => i % 2 === 1),
+        ['Kyiv · +1 h', 'New York · −6 h']);
+    settings.set_boolean('clock-alarm', false);
+    check('clock: the alarm can be hidden', await waitFor(() => clockTexts()[2] !== '07:00', 2000), true);
+    settings.set_boolean('clock-zones', false);
+    check('clock: the zones can be hidden', await waitFor(() => clockTexts().length === 2, 2000), true);
+    settings.set_boolean('clock-alarm', true);
+    settings.set_boolean('clock-zones', true);
+
     check('widgets: Копії not set up yet', texts(widget('vilnaBackupWidget'))[0], 'Backups are not set up');
     const dir = GLib.build_filenamev([GLib.get_user_state_dir(), 'vilna-backup']);
     GLib.mkdir_with_parents(dir, 0o700);
@@ -853,6 +883,28 @@ async function widgets() {
     Main.overview.hide();
     await waitFor(() => !Main.overview.visible && !Main.overview.animationInProgress);
     check('widgets: back after the overview', widgetsRoot()?.visible, true);
+
+    // The clock card and its menu, on the desktop.
+    await shot('clock-card-light');
+    const clockInterface = new Gio.Settings({schema_id: 'org.gnome.desktop.interface'});
+    clockInterface.set_string('color-scheme', 'prefer-dark');
+    await shot('clock-card-dark');
+    const clockMenu = theWidgets()?.clock?.menu;
+    widget('vilnaClock')?.emit('clicked', 1);
+    check('clock: a press opens the menu', await waitFor(() => clockMenu?.isOpen, 2000), true);
+    check('clock: menu items', clockMenu?._getMenuItems().map(i => i.label?.text).filter(Boolean),
+        ['Alarms', 'World clocks', 'Stopwatch', 'Timer', 'Date & time']);
+    check('clock: the first item has the focus', clockMenu?._getMenuItems()[0]?.has_key_focus(), true);
+    const [cardX, cardY] = widget('vilnaClock')?.get_transformed_position() ?? [0, 0];
+    const cardBottom = cardY + (widget('vilnaClock')?.height ?? 0);
+    check('clock: the menu opens below the card, in the column',
+        await waitFor(() => {
+            const [x, y] = clockMenu?.actor.get_transformed_position() ?? [0, 0];
+            return y + 20 >= cardBottom && x < cardX + (widget('vilnaClock')?.width ?? 0) / 2;
+        }, 2000) || [clockMenu?.actor.get_transformed_position(), cardX, cardBottom], true);
+    await shot('clock-menu-dark');
+    clockMenu?.close();
+    clockInterface.reset('color-scheme');
 
     settings.set_boolean('widgets', false);
     await sleep(200);

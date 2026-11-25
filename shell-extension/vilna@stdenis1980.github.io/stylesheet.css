@@ -270,6 +270,50 @@
   font-weight: 800;
 }
 
+/* The clock card (clockCard.js): a button that opens the Clocks menu,
+   with the next alarm and other time zones below the date. */
+.vilna-widget-clock:hover {
+  border-color: #2d6bff; /* blue */
+}
+
+.vilna-widget-clock:focus {
+  border: 2px solid #2d6bff;
+}
+
+.vilna-clock-extra {
+  spacing: 4px;
+}
+
+.vilna-clock-extra-shown {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.vilna-light .vilna-clock-extra-shown {
+  border-top: 1px solid rgba(19, 33, 58, 0.1);
+}
+
+.vilna-dark .vilna-clock-extra-shown {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.vilna-clock-row {
+  spacing: 8px;
+}
+
+.vilna-clock-icon {
+  icon-size: 16px;
+}
+
+.vilna-clock-row-time {
+  font-size: 11pt;
+  font-weight: bold;
+}
+
+.vilna-clock-warning {
+  font-style: italic;
+}
+
 .vilna-widget-date,
 .vilna-widget-heading-small {
   font-size: 11pt;

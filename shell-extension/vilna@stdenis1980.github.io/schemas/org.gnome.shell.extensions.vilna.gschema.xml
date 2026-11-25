@@ -105,6 +105,16 @@
       <summary>Desktop widgets</summary>
       <description>A column of cards on the left of the desktop: clock, Gloxi, today in the calendar, weather and backups.</description>
     </key>
+    <key name="clock-alarm" type="b">
+      <default>true</default>
+      <summary>Next alarm on the clock card</summary>
+      <description>The next alarm that is on in GNOME Clocks, read from its settings. Clocks rings only while it runs; with it closed the card says so.</description>
+    </key>
+    <key name="clock-zones" type="b">
+      <default>true</default>
+      <summary>Other time zones on the clock card</summary>
+      <description>Up to two of the world clocks in GNOME Clocks whose time differs from the local time.</description>
+    </key>
     <key name="weather" type="b">
       <default>true</default>
       <summary>Weather widget</summary>

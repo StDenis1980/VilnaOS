@@ -2,7 +2,8 @@
 //
 // (з) Desktop widgets (docs/design/desktop/README.md): a column of cards
 // on the left of the desktop, above the wallpaper and under every window.
-// The clock and date, Gloxi (a question goes to the Gloxi app), today in
+// The clock and date with the next alarm and other time zones
+// (clockCard.js), Gloxi (a question goes to the Gloxi app), today in
 // the calendar (GNOME's own calendar server, nothing leaves the computer),
 // the weather and the state of Копії (vilna-backup's own log).
 //
@@ -27,7 +28,9 @@ import {
     REFRESH_MINUTES, RETRY_MINUTES, askArgv, backupWhen, forecastUrl, homeCountry, lastBackup,
     parseForecast, todayEvents, weatherPlace, weatherScene, widgetText,
 } from './lib/widgets.js';
+import {clockText} from './lib/clockInfo.js';
 import {skyColours} from './lib/weatherSky.js';
+import {ClockCard} from './clockCard.js';
 import {Sky} from './sky.js';
 import {WeatherAlerts} from './weatherAlerts.js';
 import {verticalBox} from './vbox.js';
@@ -107,13 +110,10 @@ export class Widgets {
         this._root = verticalBox({style_class: 'vilna-widgets', width: WIDTH});
         this._root.name = 'vilnaWidgets';
 
-        // Clock and date.
-        const clock = card('vilnaClock');
-        this._time = label('', 'vilna-widget-time');
-        this._date = label('', 'vilna-widget-date');
-        clock.add_child(this._time);
-        clock.add_child(this._date);
-        this._root.add_child(clock);
+        // Clock and date, the next alarm and other time zones; a menu
+        // opens Clocks.
+        this._clock = new ClockCard(this._settings, clockText(GLib.get_language_names()), this._dir);
+        this._root.add_child(this._clock.actor);
 
         // Gloxi: the field opens Gloxi; a suggestion asks it at once.
         const gloxi = card('vilnaGloxiWidget', t.gloxi);
@@ -247,6 +247,8 @@ export class Widgets {
         this._interface.disconnect(this._clockIds[1]);
         this._wallClock.run_dispose?.();
         this._wallClock = null;
+        this._clock.destroy();
+        this._clock = null;
         this._calendar.disconnect(this._calendarId);
         this._calendar.destroy();
         this._calendar = null;
@@ -304,10 +306,7 @@ export class Widgets {
 
     _tick() {
         const now = GLib.DateTime.new_now_local();
-        const twelve = this._interface.get_string('clock-format') === '12h';
-        this._time.text = now.format(twelve ? '%l:%M' : '%H:%M').trim();
-        const date = now.format('%A, %-d %B') ?? '';
-        this._date.text = date.charAt(0).toLocaleUpperCase() + date.slice(1);
+        this._clock.tick(this._interface.get_string('clock-format') === '12h');
         // A new day: today's events change too.
         if (this._day !== now.get_day_of_year()) {
             this._day = now.get_day_of_year();
@@ -456,6 +455,10 @@ export class Widgets {
     }
 
     // For the headless test.
+    get clock() {
+        return this._clock;
+    }
+
     get sky() {
         return this._sky;
     }
