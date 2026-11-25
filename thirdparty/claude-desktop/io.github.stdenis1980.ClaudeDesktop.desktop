@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Claude
+GenericName=AI Assistant
+GenericName[uk]=AI-асистент
+Comment=Anthropic's Claude app (official app, packaged for Vilna)
+Comment[uk]=Програма Claude від Anthropic (офіційна програма в пакунку Vilna)
+Exec=claude-desktop %U
+Icon=io.github.stdenis1980.ClaudeDesktop
+Terminal=false
+Categories=Utility;
+Keywords=AI;assistant;chat;Anthropic;
+MimeType=x-scheme-handler/claude;
+StartupNotify=true
