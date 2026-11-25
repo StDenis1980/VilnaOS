@@ -1,0 +1,154 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The «Feedback about Vilna» window (gl). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\nX-Vilna-Review: not reviewed by a native speaker\n"
+
+msgid "Feedback about Vilna"
+msgstr "Opinións sobre Vilna"
+
+msgid "Feedback"
+msgstr "Opinión"
+
+msgid "Crash reports"
+msgstr "Informes de fallos"
+
+msgid "Tell us what went wrong, what surprised you or what you would like. Only the Vilna team reads it; nothing is published without your permission."
+msgstr "Cóntanos que saíu mal, que che sorprendeu ou que che gustaría. Só o le o equipo de Vilna; non se publica nada sen o teu permiso."
+
+msgid "What is it about?"
+msgstr "De que se trata?"
+
+msgid "Something does not work"
+msgstr "Algo non funciona"
+
+msgid "An idea or a wish"
+msgstr "Unha idea ou un desexo"
+
+msgid "Something else"
+msgstr "Outra cousa"
+
+msgid "Your message"
+msgstr "A túa mensaxe"
+
+msgid "Add facts about this computer"
+msgstr "Engadir datos deste ordenador"
+
+msgid "You may answer me by e-mail"
+msgstr "Podedes responderme por correo electrónico"
+
+msgid "E-mail address"
+msgstr "Enderezo de correo electrónico"
+
+msgid "You may publish it, without my address, after reading it"
+msgstr "Podedes publicalo, sen o meu enderezo, despois de lelo"
+
+msgid "Add my conversation with Gloxi from the installation"
+msgstr "Engadir a miña conversa con Gloxi durante a instalación"
+
+msgid "It may have your name, the computer's name or a Wi-Fi network. You read it before it is added."
+msgstr "Pode conter o teu nome, o do ordenador ou unha rede wifi. Lerala antes de que se engada."
+
+msgid "Conversation with Gloxi"
+msgstr "Conversa con Gloxi"
+
+msgid "Read"
+msgstr "Ler"
+
+msgid "Add"
+msgstr "Engadir"
+
+msgid "Do not add"
+msgstr "Non engadir"
+
+msgid "What will be sent"
+msgstr "Que se enviará"
+
+msgid "Send"
+msgstr "Enviar"
+
+msgid "Sending…"
+msgstr "Enviando…"
+
+msgid "Thank you! Your feedback is sent."
+msgstr "Grazas! A túa opinión enviouse."
+
+msgid "Write what happened or what you suggest."
+msgstr "Escribe que pasou ou que propós."
+
+msgid "This does not look like an e-mail address."
+msgstr "Isto non parece un enderezo de correo electrónico."
+
+msgid "The message is longer than 8000 characters."
+msgstr "A mensaxe ten máis de 8000 caracteres."
+
+msgid "The report service is not running on this computer, so nothing can be sent now. Your text stays here."
+msgstr "O servizo de informes non está en marcha neste ordenador, así que agora non se pode enviar nada. O teu texto queda aquí."
+
+msgid "Not sent: {reason}"
+msgstr "Non enviado: {reason}"
+
+msgid "Crash reports stay on this computer until they are sent. Each one has only what you see here: which program crashed and where in its code."
+msgstr "Os informes de fallos quedan neste ordenador ata que se envían. Cada un ten só o que ves aquí: que programa fallou e en que parte do seu código."
+
+msgid "No crash reports."
+msgstr "Non hai informes de fallos."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Se un programa falla, envíasnos un informe do fallo?"
+
+msgid "Send automatically"
+msgstr "Enviar automaticamente"
+
+msgid "Ask me every time"
+msgstr "Preguntarme cada vez"
+
+msgid "Never"
+msgstr "Nunca"
+
+msgid "No answer yet: nothing is sent."
+msgstr "Aínda sen resposta: non se envía nada."
+
+msgid "The answer was not changed."
+msgstr "A resposta non se cambiou."
+
+msgid "Not sent"
+msgstr "Non enviado"
+
+msgid "Sent"
+msgstr "Enviado"
+
+msgid "Not accepted by the server"
+msgstr "Non aceptado polo servidor"
+
+msgid "First report of this crash"
+msgstr "Primeiro informe deste fallo"
+
+msgid "We already know about this crash"
+msgstr "Xa coñecemos este fallo"
+
+msgid "Fixed in {version}"
+msgstr "Corrixido en {version}"
+
+msgid "View"
+msgstr "Ver"
+
+msgid "Crash report"
+msgstr "Informe de fallo"
+
+msgid "Close"
+msgstr "Pechar"
+
+msgid "Do not send"
+msgstr "Non enviar"
+
+msgid "Delete everything I sent from the server"
+msgstr "Borrar do servidor todo o que enviei"
+
+msgid "Deleted from the server: {count}"
+msgstr "Borrados do servidor: {count}"
+
+msgid "{program} crashed"
+msgstr "{program} fallou"
+
+msgid "Send us a crash report? It has only which program crashed and where in its code."
+msgstr "Envíasnos un informe do fallo? Só di que programa fallou e en que parte do seu código."
