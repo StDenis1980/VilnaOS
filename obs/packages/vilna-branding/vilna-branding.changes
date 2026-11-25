@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Tue Nov 24 16:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.20
+- Super+Return opens Ptyxis again: it is now gnome-settings-daemon's
+  «Launch terminal» key (with Ctrl+Alt+T), not custom0, whose
+  relocatable schema the override could not fill (VM, Build12.26)
+- The terminal program is set in the real schema,
+  org.gnome.desktop.default-applications.terminal (0.18 named
+  org.gnome.desktop.applications.terminal, which does not exist)
+
+-------------------------------------------------------------------
 Tue Nov 24 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.19

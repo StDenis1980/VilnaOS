@@ -94,15 +94,16 @@ theme-name='vilna-wood'
 [org.gnome.settings-daemon.plugins.housekeeping]
 ignore-paths=['/boot/efi']
 
+# Super+Return (and GNOME's Ctrl+Alt+T) open the terminal through
+# gnome-settings-daemon's own «Launch terminal» key, which starts the
+# program of org.gnome.desktop.default-applications.terminal below. Not a
+# custom keybinding: those live at paths of a relocatable schema that an
+# override cannot fill (in the VM test of Build12.26 binding and command
+# stayed empty).
 [org.gnome.settings-daemon.plugins.media-keys]
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']
+terminal=['<Super>Return', '<Primary><Alt>t']
 
-[org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom0]
-binding='<Super>Return'
-command='ptyxis --new-window'
-name='Terminal'
-
-[org.gnome.desktop.applications.terminal]
+[org.gnome.desktop.default-applications.terminal]
 exec='ptyxis'
 exec-arg='--'
 
