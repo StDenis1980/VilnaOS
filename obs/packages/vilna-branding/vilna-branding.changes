@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 25 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.22
+- A right click in Ptyxis pastes the clipboard, Shift + right click
+  opens the menu (org.vilna.Ptyxis right-click-paste, from the Vilna
+  build of Ptyxis)
+
+-------------------------------------------------------------------
 Wed Nov 25 15:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.21

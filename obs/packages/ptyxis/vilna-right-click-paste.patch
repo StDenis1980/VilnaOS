@@ -1,0 +1,43 @@
+--- ptyxis.orig/src/ptyxis-terminal.c
++++ ptyxis/src/ptyxis-terminal.c
+@@ -315,6 +315,40 @@ ptyxis_terminal_capture_click_pressed_cb (PtyxisTerminal  *self,
+         }
+     }
+ 
++  /* Vilna: a plain right click pastes the clipboard when the
++   * org.vilna.Ptyxis right-click-paste setting is on. A right click with
++   * Shift (or any other modifier) still opens the context menu. */
++  if (n_press == 1 &&
++      !handled &&
++      button == GDK_BUTTON_SECONDARY &&
++      state == 0)
++    {
++      static GSettings *vilna_settings;
++
++      if (vilna_settings == NULL)
++        {
++          GSettingsSchemaSource *source = g_settings_schema_source_get_default ();
++          GSettingsSchema *schema = NULL;
++
++          if (source != NULL)
++            schema = g_settings_schema_source_lookup (source, "org.vilna.Ptyxis", TRUE);
++
++          if (schema != NULL)
++            {
++              if (g_settings_schema_has_key (schema, "right-click-paste"))
++                vilna_settings = g_settings_new_full (schema, NULL, NULL);
++              g_settings_schema_unref (schema);
++            }
++        }
++
++      if (vilna_settings != NULL &&
++          g_settings_get_boolean (vilna_settings, "right-click-paste"))
++        {
++          ptyxis_terminal_paste (self);
++          handled = TRUE;
++        }
++    }
++
+   if (handled)
+     gtk_gesture_set_state (GTK_GESTURE (click), GTK_EVENT_SEQUENCE_CLAIMED);
+   else

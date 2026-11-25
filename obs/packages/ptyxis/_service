@@ -1,0 +1,20 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Ptyxis, the Vilna terminal (docs/design/desktop/README.md), from the
+     GNOME release tarball, at the version Tumbleweed ships. OBS fetches it
+     and checks the SHA-256; CI fetches it with obs/tools/fetch_sources.py.
+     A new version: change Version in ptyxis.spec, the path, the file name
+     and the checksum here, and check that vilna-right-click-paste.patch
+     still applies (the rpm job in .github/workflows/obs.yml builds it). -->
+<services>
+  <service name="download_url">
+    <param name="protocol">https</param>
+    <param name="host">download.gnome.org</param>
+    <param name="path">/sources/ptyxis/51/ptyxis-51.1.tar.xz</param>
+    <param name="filename">ptyxis-51.1.tar.xz</param>
+  </service>
+  <service name="verify_file">
+    <param name="file">_service:download_url:ptyxis-51.1.tar.xz</param>
+    <param name="verifier">sha256</param>
+    <param name="checksum">0000000000000000000000000000000000000000000000000000000000000000</param>
+  </service>
+</services>

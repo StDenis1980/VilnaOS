@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Settings of the Vilna patches to Ptyxis (vilna-right-click-paste.patch).
+     Off by default, so the patched Ptyxis behaves as upstream; Vilna turns
+     it on in 30_Vilna.gschema.override (vilna-branding). -->
+<schemalist gettext-domain="ptyxis">
+  <schema id="org.vilna.Ptyxis" path="/org/vilna/Ptyxis/">
+    <key name="right-click-paste" type="b">
+      <default>false</default>
+      <summary>Paste with a right click</summary>
+      <description>If a right click in the terminal pastes the clipboard. A right click with Shift still opens the context menu.</description>
+    </key>
+  </schema>
+</schemalist>

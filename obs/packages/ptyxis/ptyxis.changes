@@ -1,0 +1,7 @@
+-------------------------------------------------------------------
+Wed Nov 25 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: Ptyxis 51.1, as in Tumbleweed, with
+  vilna-right-click-paste.patch: a right click pastes the clipboard
+  when org.vilna.Ptyxis right-click-paste is on, Shift + right click
+  opens the context menu
