@@ -133,6 +133,15 @@ impl Rng {
             "𝟗",
             "\u{fffd}",
             "\u{10ffff}",
+            "＠",
+            "%40",
+            "\u{2028}",
+            "+380 50 ",
+            "/home/",
+            " Kowalska/",
+            "localhost",
+            "::",
+            "Users\\",
         ];
         let n = self.below(max_pieces + 1);
         let mut s = String::new();
@@ -536,11 +545,11 @@ fn hostile_optional_fields_are_dropped_not_refused() {
         (serde_json::json!({"image": "a".repeat(64)}), true),
         (serde_json::json!({"image": "a".repeat(65)}), false),
         (
-            serde_json::json!({"program": {"name": "gloxi", "version": "1".repeat(64)}}),
+            serde_json::json!({"program": {"name": "gloxi", "version": "1a".repeat(32)}}),
             true,
         ),
         (
-            serde_json::json!({"program": {"name": "gloxi", "version": "1".repeat(65)}}),
+            serde_json::json!({"program": {"name": "gloxi", "version": format!("{}1", "1a".repeat(32))}}),
             false,
         ),
         (serde_json::json!({"locale": "uk-UA"}), true),
@@ -682,13 +691,13 @@ fn frame_functions_are_scrubbed() {
 }
 
 #[test]
-fn the_frame_cap_counts_frames_as_sent() {
-    // The cap is applied before bad frames are dropped: 64 empty frames in
-    // front push the real ones out. The report is still accepted.
+fn the_frame_cap_counts_frames_that_stay() {
+    // Bad frames sent first are dropped before the cap is counted, so they
+    // cannot push the real ones out.
     let mut frames: Vec<_> = (0..MAX_FRAMES).map(|_| serde_json::json!({})).collect();
     frames.push(serde_json::json!({"file": "gloxi/chat.py", "line": 1}));
     let c = crash(serde_json::json!({ "frames": frames })).unwrap();
-    assert!(c.frames.is_empty());
+    assert_eq!(c.frames.len(), 1);
     let many: Vec<_> = (0..100_000)
         .map(|_| serde_json::json!({"file": "gloxi/chat.py", "line": 1}))
         .collect();
@@ -1065,4 +1074,166 @@ fn forget_takes_only_real_ids_within_the_limit() {
     }
     let empty: ForgetWire = serde_json::from_str("{}").unwrap();
     assert_eq!(empty.ids().unwrap_err().field, "ids");
+}
+
+// ------------------------------------- forms that used to pass (D9 review) --
+
+#[test]
+fn scrub_output_never_exceeds_max_chars() {
+    // Markers are longer than what they replace (`/` becomes `<path>`).
+    for (input, max) in [
+        ("/ ".repeat(200), 300),
+        ("/".to_owned(), 1),
+        ("a@b.c ".repeat(100), 50),
+        ("192.0.2.1 ".repeat(100), 7),
+    ] {
+        let out = scrub(&input, max);
+        assert!(out.chars().count() <= max, "{max}: {out:?}");
+    }
+    // So a stored report keeps its limits and goes back on the wire unchanged.
+    let c = crash(serde_json::json!({"kind": "panic", "location": "/ ".repeat(150)})).unwrap();
+    assert!(
+        c.location
+            .as_ref()
+            .is_some_and(|l| l.chars().count() <= 300)
+    );
+    let wire: CrashWire = serde_json::from_value(c.to_wire()).unwrap();
+    assert_eq!(Crash::from_wire(wire).unwrap(), c);
+}
+
+#[test]
+fn scrub_hides_forms_that_used_to_pass() {
+    for (input, hidden) in [
+        // e-mail
+        ("anna@localhost", "anna"),
+        ("anna＠example.org", "anna"),
+        ("anna\u{200b}@example.org", "anna"),
+        ("anna@\u{feff}example.org", "anna"),
+        ("anna%40example.org", "anna"),
+        ("\"anna kowalska\"@example.org", "kowalska"),
+        // paths
+        ("/home/Anna Kowalska/doc.txt", "Kowalska"),
+        ("/home/anna/src/anna-diary/main.rs:12", "anna"),
+        ("github.com/anna.kowalska", "kowalska"),
+        ("~anna/notes.txt", "anna"),
+        ("$HOME/anna-notes.txt", "anna"),
+        ("%USERPROFILE%\\anna.txt", "anna"),
+        ("Users\\anna", "anna"),
+        // phone, card and account numbers in groups
+        ("+380 50 123 45 67", "123 45"),
+        ("050-123-45-67", "123-45"),
+        ("(050) 123-45-67", "123-45"),
+        ("612 34 56 78", "34 56"),
+        ("4111 1111 1111 1111", "1111 1111"),
+        ("4111-1111-1111-1111", "1111-1111"),
+        ("ES91 2100 0418 4502 0005 1332", "2100"),
+        // MAC and IPv6
+        ("001a2b3c4d5e", "2b3c"),
+        ("001a.2b3c.4d5e", "2b3c"),
+        ("fe80::", "fe80"),
+        ("connect ::1", "::1"),
+    ] {
+        let out = scrub(input, 1000);
+        assert!(!out.contains(hidden), "{input:?} -> {out:?}");
+    }
+}
+
+#[test]
+fn scrub_keeps_times_dates_and_rust_paths() {
+    for plain in [
+        "о 12:34:56",
+        "2026-11-26 18:54",
+        "сторінки 10 20 30 40 50",
+        "Vec::new failed",
+        "версія 0.2.0",
+        "в gloxi/chat.py",
+    ] {
+        assert_eq!(scrub(plain, 1000), plain);
+    }
+}
+
+#[test]
+fn fields_that_are_not_scrubbed_drop_personal_data() {
+    for (extra, field) in [
+        (serde_json::json!({"image": "Vilna 0501234567"}), "image"),
+        (
+            serde_json::json!({"program": {"name": "gloxi", "version": "anna-380501234567"}}),
+            "version",
+        ),
+        (
+            serde_json::json!({"exception": "Err380501234567"}),
+            "exception",
+        ),
+        (
+            serde_json::json!({"frames": [{"module": "anna-380501234567.so", "line": 1}]}),
+            "module",
+        ),
+        (
+            serde_json::json!({"frames": [{"file": "gloxi/a380501234567.py", "line": 1}]}),
+            "file",
+        ),
+        (
+            serde_json::json!({"frames": [{"module": "lib.so", "build_id": "4111111111111111"}]}),
+            "",
+        ),
+    ] {
+        let c = crash(extra.clone()).unwrap();
+        let json = serde_json::to_string(&c).unwrap();
+        if field.is_empty() {
+            // A build id is hex, not a number: it stays.
+            assert!(json.contains("4111111111111111"), "{extra}");
+        } else {
+            assert!(
+                !json.contains("380501234567") && !json.contains("0501234567"),
+                "{field}: {json}"
+            );
+        }
+    }
+    // A program name that carries a phone number is refused.
+    let refused = crash(serde_json::json!({"program": {"name": "anna-380501234567"}}));
+    assert!(refused.is_err(), "{refused:?}");
+    // A version with a date in it is not a phone number.
+    let c =
+        crash(serde_json::json!({"program": {"name": "gloxi", "version": "0.2.0+git20261126"}}))
+            .unwrap();
+    assert_eq!(c.version.as_deref(), Some("0.2.0+git20261126"));
+    // Feedback's program and version too.
+    let f =
+        feedback(serde_json::json!({"program": "anna-380501234567", "version": "1-380501234567"}))
+            .unwrap()
+            .unwrap();
+    assert_eq!((f.program, f.version), (None, None));
+}
+
+#[test]
+fn one_frame_cannot_pass_for_two_in_the_signature() {
+    let forged = crash(serde_json::json!({
+        "frames": [{"file": "gloxi/a.py", "function": "f|gloxi/b.py!g"}]
+    }))
+    .unwrap();
+    let real = crash(serde_json::json!({
+        "frames": [
+            {"file": "gloxi/a.py", "function": "f"},
+            {"file": "gloxi/b.py", "function": "g"}
+        ]
+    }))
+    .unwrap();
+    assert_ne!(forged.signature(), real.signature());
+}
+
+#[test]
+fn titles_and_places_stay_on_one_line() {
+    for extra in [
+        serde_json::json!({"kind": "panic", "location": "a\nfixed: b"}),
+        serde_json::json!({"frames": [{"file": "gloxi/a.py", "function": "f\r\ng\u{2028}h\u{202e}i"}]}),
+    ] {
+        let c = crash(extra.clone()).unwrap();
+        let title = c.title();
+        assert!(
+            !title
+                .chars()
+                .any(|ch| ch.is_control() || "\u{2028}\u{202e}".contains(ch)),
+            "{extra}: {title:?}"
+        );
+    }
 }

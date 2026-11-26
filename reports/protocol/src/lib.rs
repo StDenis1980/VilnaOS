@@ -79,14 +79,55 @@ static SOURCE_FILE: LazyLock<Option<Regex>> =
 static EMAIL: LazyLock<Option<Regex>> =
     LazyLock::new(|| re(r"^[^\s@<>]{1,64}@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$"));
 
-// Scrubbing patterns, applied in this order.
-static SCRUB_EMAIL: LazyLock<Option<Regex>> = LazyLock::new(|| re(r"[\w.+-]+@[\w-]+(\.[\w-]+)+"));
+// Scrubbing patterns, applied in this order. `INV` are the invisible
+// characters someone may slip around an `@` so the address no longer looks
+// like one.
+const INV: &str = r"\x{200B}-\x{200D}\x{2060}\x{FEFF}\x{00AD}";
+static SCRUB_EMAIL: LazyLock<Option<Regex>> = LazyLock::new(|| {
+    // A quoted local part, full-width and small `@`, `%40`, and a host
+    // without a dot (`anna@localhost`, `anna@laptop`) count too.
+    re(&format!(
+        r#"(?i)(?:"[^"\n]{{1,64}}"|[\w.+\-{INV}]+)[{INV}]*(?:@|＠|﹫|%40)[{INV}]*[\w\-{INV}]+(?:\.[\w\-{INV}]+)*"#
+    ))
+});
 static SCRUB_IPV4: LazyLock<Option<Regex>> = LazyLock::new(|| re(r"\b\d{1,3}(\.\d{1,3}){3}\b"));
+/// A candidate IPv6 address; [`ipv6_or_not`] decides. No `\b` at the end, so
+/// `fe80::` is found too.
 static SCRUB_IPV6: LazyLock<Option<Regex>> =
-    LazyLock::new(|| re(r"\b[0-9A-Fa-f]{1,4}(:[0-9A-Fa-f]{0,4}){2,7}\b"));
-static SCRUB_MAC: LazyLock<Option<Regex>> =
-    LazyLock::new(|| re(r"\b[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}\b"));
+    LazyLock::new(|| re(r"\b[0-9A-Fa-f]{1,4}(:[0-9A-Fa-f]{0,4}){2,7}"));
+/// `::1`, `::ffff:…`: an address that starts with `::`, not after a word
+/// (`Vec::add` is a Rust path, not an address) or a marker (`<n>::`).
+static SCRUB_IPV6_LEADING: LazyLock<Option<Regex>> =
+    LazyLock::new(|| re(r"(^|[^\w:>])::([0-9A-Fa-f]{1,4}(:[0-9A-Fa-f]{1,4}){0,6})?"));
+static SCRUB_MAC: LazyLock<Option<Regex>> = LazyLock::new(|| {
+    re(
+        r"\b[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}\b|\b[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\b",
+    )
+});
+/// Twelve hex digits with no separator; digits alone are a number, not an
+/// address ([`has_hex_letter`]).
+static SCRUB_MAC_BARE: LazyLock<Option<Regex>> = LazyLock::new(|| re(r"\b[0-9A-Fa-f]{12}\b"));
+/// An IBAN, in groups or not; [`enough_digits`] decides.
+static SCRUB_IBAN: LazyLock<Option<Regex>> =
+    LazyLock::new(|| re(r"\b[A-Z]{2}[0-9]{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,3})?\b"));
+/// A phone or card number written in groups (`+380 50 123 45 67`,
+/// `050-123-45-67`, `4111 1111 1111 1111`); [`phone_or_not`] decides.
+static SCRUB_GROUPED: LazyLock<Option<Regex>> =
+    LazyLock::new(|| re(r"\+?\(?[0-9][0-9 ()\-]{6,28}[0-9]\b"));
+static ISO_DATE: LazyLock<Option<Regex>> = LazyLock::new(|| re(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}"));
 static SCRUB_DIGITS: LazyLock<Option<Regex>> = LazyLock::new(|| re(r"\d{6,}"));
+/// A home folder up to the next separator, with up to two spaces in the name
+/// (`/home/Anna Kowalska/`), so the surname does not stay behind.
+static SCRUB_HOME: LazyLock<Option<Regex>> = LazyLock::new(|| {
+    re(
+        r"(?i)(?:/var/home/|/home/|/run/media/|/Users/|[A-Za-z]:[\\/]Users[\\/])[^/\\\s]+(?: [^/\\\s]+){0,2}[/\\]",
+    )
+});
+/// A host name followed by a path, without a scheme (`github.com/anna`).
+static HOST: LazyLock<Option<Regex>> = LazyLock::new(|| re(r"^[\w-]+(\.[\w-]+)*\.[A-Za-z]{2,}$"));
+/// Nine or more digits in a row in a field that is not free text: a phone or
+/// account number, not a date (`20261126`).
+static LONG_NUMBER: LazyLock<Option<Regex>> = LazyLock::new(|| re(r"[0-9]{9,}"));
 static RUST_PLACE: LazyLock<Option<Regex>> =
     LazyLock::new(|| re(r"[A-Za-z0-9_./-]*\.rs:\d+(:\d+)?$"));
 static LINE_NUMBERS: LazyLock<Option<Regex>> = LazyLock::new(|| re(r":\d+(:\d+)?"));
@@ -108,23 +149,88 @@ fn replace(pattern: &LazyLock<Option<Regex>>, text: &str, with: &str) -> Option<
         .map(|r| r.replace_all(text, with).into_owned())
 }
 
+/// Replaces what `pattern` finds by `with` where `hide` says so, and
+/// leaves the rest as it was.
+fn replace_if(
+    pattern: &LazyLock<Option<Regex>>,
+    text: &str,
+    with: &str,
+    hide: fn(&str) -> bool,
+) -> Option<String> {
+    pattern.as_ref().map(|r| {
+        r.replace_all(text, |caps: &regex::Captures<'_>| {
+            let found = caps.get(0).map_or("", |m| m.as_str());
+            if hide(found) {
+                with.to_owned()
+            } else {
+                found.to_owned()
+            }
+        })
+        .into_owned()
+    })
+}
+
+/// A run of hex groups with colons is an address when it has `::`, a hex
+/// letter or all eight groups; `12:34:56` is a time.
+fn ipv6_or_not(found: &str) -> bool {
+    found.contains("::") || has_hex_letter(found) || found.matches(':').count() == 7
+}
+
+fn has_hex_letter(found: &str) -> bool {
+    found
+        .chars()
+        .any(|c| c.is_ascii_hexdigit() && c.is_ascii_alphabetic())
+}
+
+fn enough_digits(found: &str) -> bool {
+    found.chars().filter(char::is_ascii_digit).count() >= 10
+}
+
+/// Numbers in groups are a phone or card number when they hold 9 to 19
+/// digits and one group is longer than two or the number starts with `+` or
+/// `0`. An ISO date with a time is not one, nor `10 20 30 40 50`.
+fn phone_or_not(found: &str) -> bool {
+    let digits = found.chars().filter(char::is_ascii_digit).count();
+    if !(9..=19).contains(&digits) || matches(&ISO_DATE, found) {
+        return false;
+    }
+    let first = found.trim_start_matches(['+', '(']);
+    found.starts_with('+')
+        || first.starts_with('0')
+        || found
+            .split(|c: char| !c.is_ascii_digit())
+            .any(|group| group.len() > 2)
+}
+
 fn scrub_token(token: &str) -> String {
-    // A Rust source place stays from its `crates/` or `src/` folder on, as
-    // `crates/x/src/y.rs:12`; the build machine's folders before it go.
+    // A Rust source place stays from its `crates/` folder on, as
+    // `crates/x/src/y.rs:12`. Outside `crates/`, a place under folders we do
+    // not know keeps only `src/` and the file name: the folders between may
+    // be the person's own.
     if let Some(place) = RUST_PLACE.as_ref().and_then(|r| r.find(token)) {
         let place = place.as_str();
-        let start = place.find("crates/").or_else(|| place.find("src/"));
-        if let Some(rest) = start.and_then(|i| place.get(i..)) {
+        if let Some(rest) = place.find("crates/").and_then(|i| place.get(i..)) {
             return rest.to_owned();
         }
+        match place.rfind("src/") {
+            Some(0) => return place.to_owned(),
+            Some(_) => {
+                let file = place.rsplit('/').next().unwrap_or(place);
+                return format!("src/{file}");
+            }
+            None => {}
+        }
     }
+    let after_host = token
+        .split_once('/')
+        .is_some_and(|(host, rest)| !rest.is_empty() && matches(&HOST, host));
     let looks_like_path = token.starts_with('/')
-        || token.starts_with("~/")
-        || token.starts_with("\\\\")
-        || token.contains(":\\")
+        || (token.starts_with('~') && token.contains('/'))
+        || (token.starts_with('$') && token.contains('/'))
+        || token.contains('\\')
         || token.contains("://")
         || token.matches('/').count() >= 2
-        || token.matches('\\').count() >= 2;
+        || after_host;
     if looks_like_path {
         "<path>".to_owned()
     } else {
@@ -132,20 +238,28 @@ fn scrub_token(token: &str) -> String {
     }
 }
 
+/// Passes that find personal data by its shape, before paths are looked at.
+fn scrub_shapes(text: String) -> Option<String> {
+    let t = replace(&SCRUB_EMAIL, &text, "<email>")?;
+    let t = replace(&SCRUB_MAC, &t, "<mac>")?;
+    let t = replace_if(&SCRUB_MAC_BARE, &t, "<mac>", has_hex_letter)?;
+    let t = replace(&SCRUB_IPV4, &t, "<ip>")?;
+    let t = replace_if(&SCRUB_IPV6, &t, "<ip>", ipv6_or_not)?;
+    let t = replace(&SCRUB_IPV6_LEADING, &t, "${1}<ip>")?;
+    let t = replace_if(&SCRUB_IBAN, &t, "<n>", enough_digits)?;
+    replace_if(&SCRUB_GROUPED, &t, "<n>", phone_or_not)
+}
+
 /// The server's second pass over free text: e-mail addresses, IP and MAC
-/// addresses, paths and runs of six or more digits (ids, phone and account
-/// numbers) are replaced by `<email>`, `<ip>`, `<mac>`, `<path>` and `<n>`.
-/// One relative file inside our own code (`gloxi/chat.py`) stays.
+/// addresses, paths, phone, card and account numbers and runs of six or more
+/// digits (ids) are replaced by `<email>`, `<ip>`, `<mac>`, `<path>` and
+/// `<n>`. One relative file inside our own code (`gloxi/chat.py`) stays. The
+/// result is never longer than `max_chars`, even though a marker is longer
+/// than what it replaces.
 pub fn scrub(text: &str, max_chars: usize) -> String {
-    let text = truncate(text, max_chars);
-    let step =
-        |t: Option<String>, p: &LazyLock<Option<Regex>>, w: &str| t.and_then(|t| replace(p, &t, w));
-    let mut out = Some(text);
-    out = step(out, &SCRUB_EMAIL, "<email>");
-    out = step(out, &SCRUB_MAC, "<mac>");
-    out = step(out, &SCRUB_IPV4, "<ip>");
-    out = step(out, &SCRUB_IPV6, "<ip>");
-    let Some(text) = out else {
+    let Some(text) =
+        scrub_shapes(truncate(text, max_chars)).and_then(|t| replace(&SCRUB_HOME, &t, "/<path>/"))
+    else {
         return "<scrubbed>".to_owned();
     };
     let mut joined = String::with_capacity(text.len());
@@ -160,7 +274,32 @@ pub fn scrub(text: &str, max_chars: usize) -> String {
         }
     }
     joined.push_str(&scrub_token(&token));
-    replace(&SCRUB_DIGITS, &joined, "<n>").unwrap_or_else(|| "<scrubbed>".to_owned())
+    let out = replace(&SCRUB_DIGITS, &joined, "<n>").unwrap_or_else(|| "<scrubbed>".to_owned());
+    truncate(&out, max_chars)
+}
+
+/// True when a value that is not free text (a version, a module, a file)
+/// carries something the scrubber would hide: such a value is dropped, not
+/// stored, because nobody reads it before it reaches a public issue.
+fn carries_personal_data(value: &str) -> bool {
+    matches(&LONG_NUMBER, value) || scrub_shapes(value.to_owned()).is_none_or(|t| t != value)
+}
+
+/// One line: control characters, line and paragraph separators and
+/// direction overrides become spaces, so a value cannot add lines to an
+/// issue title or the signature key, nor turn the title around.
+fn one_line(text: &str) -> String {
+    text.chars()
+        .map(|c| {
+            if c.is_control()
+                || matches!(c, '\u{2028}' | '\u{2029}' | '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}')
+            {
+                ' '
+            } else {
+                c
+            }
+        })
+        .collect()
 }
 
 /// A lowercase random (version 4) UUID, or `None`.
@@ -169,7 +308,18 @@ pub fn report_id(value: &str) -> Option<String> {
     matches(&UUID_V4, &value).then_some(value)
 }
 
+/// The value, trimmed, when it has the expected shape and carries no
+/// personal data; otherwise `None`.
 fn checked(value: Option<String>, pattern: &LazyLock<Option<Regex>>) -> Option<String> {
+    value
+        .map(|v| v.trim().to_owned())
+        .filter(|v| matches(pattern, v) && !carries_personal_data(v))
+}
+
+/// The value, trimmed, when it has the expected shape. For values made only
+/// of hex digits or letters (build ids, offsets, signals), where a long run
+/// of digits is not a phone number.
+fn shaped(value: Option<String>, pattern: &LazyLock<Option<Regex>>) -> Option<String> {
     value
         .map(|v| v.trim().to_owned())
         .filter(|v| matches(pattern, v))
@@ -282,13 +432,13 @@ pub struct Frame {
 impl Frame {
     fn from_wire(w: FrameWire) -> Option<Frame> {
         let module = checked(w.module, &MODULE);
-        let build_id = checked(w.build_id.map(|b| b.to_ascii_lowercase()), &BUILD_ID);
-        let offset = checked(w.offset.map(|o| o.to_ascii_lowercase()), &OFFSET);
+        let build_id = shaped(w.build_id.map(|b| b.to_ascii_lowercase()), &BUILD_ID);
+        let offset = shaped(w.offset.map(|o| o.to_ascii_lowercase()), &OFFSET);
         let file = checked(w.file, &SOURCE_FILE).filter(|f| !f.split('/').any(|part| part == ".."));
         let line = w.line.filter(|l| *l > 0);
         let function = w
             .function
-            .map(|f| scrub(f.trim(), 200))
+            .map(|f| scrub(one_line(&f).trim(), 200))
             .filter(|f| !f.is_empty());
         let frame = Frame {
             module,
@@ -309,7 +459,12 @@ impl Frame {
             .or(self.module.as_deref())
             .unwrap_or("?");
         match (&self.function, &self.offset) {
-            (Some(function), _) => format!("{place}!{function}"),
+            // `|` joins frames in the signature: escaped here, one frame
+            // cannot pass for two and merge other crashes into its issue.
+            (Some(function), _) => {
+                let function = function.replace('\\', "\\\\").replace('|', "\\|");
+                format!("{place}!{function}")
+            }
             (None, Some(offset)) => format!("{place}+{offset}"),
             (None, None) => place.to_owned(),
         }
@@ -370,11 +525,13 @@ impl Crash {
             Some("flatpak") => Packaging::Flatpak,
             _ => Packaging::Other,
         };
+        // The cap counts frames that stay, so bad frames sent first cannot
+        // push the real ones out; the body limit bounds the work.
         let frames = w
             .frames
             .into_iter()
-            .take(MAX_FRAMES)
             .filter_map(Frame::from_wire)
+            .take(MAX_FRAMES)
             .collect();
         Ok(Crash {
             schema: SCHEMA,
@@ -384,15 +541,15 @@ impl Crash {
             packaging,
             image: checked(w.image, &IMAGE),
             kind,
-            signal: checked(w.signal, &SIGNAL).filter(|_| kind == CrashKind::Signal),
+            signal: shaped(w.signal, &SIGNAL).filter(|_| kind == CrashKind::Signal),
             exception: checked(w.exception, &EXCEPTION).filter(|_| kind == CrashKind::Exception),
             location: w
                 .location
-                .map(|l| scrub(l.trim(), 300))
+                .map(|l| scrub(one_line(&l).trim(), 300))
                 .filter(|l| !l.is_empty() && kind == CrashKind::Panic),
             frames,
-            locale: checked(w.locale, &LOCALE),
-            arch: checked(w.arch, &ARCH),
+            locale: shaped(w.locale, &LOCALE),
+            arch: shaped(w.arch, &ARCH),
             memory_gb: w.memory_gb.and_then(round_memory_gb),
         })
     }
@@ -624,7 +781,7 @@ impl Feedback {
                 })
                 .filter(|t| !t.is_empty()),
             crash_ids,
-            locale: checked(w.locale, &LOCALE),
+            locale: shaped(w.locale, &LOCALE),
             program: checked(w.program, &PROGRAM),
             version: checked(w.version, &VERSION),
             may_publish: w.may_publish,
