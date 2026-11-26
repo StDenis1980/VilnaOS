@@ -54,15 +54,21 @@ name = ""
 type = "MX"
 values = [
     "10 mxext1.mailbox.org.",
-    "10 mxext2.mailbox.org.",
-    "10 mxext3.mailbox.org.",
-    "10 mxext4.mailbox.org.",
+    "20 mxext2.mailbox.org.",
+    "30 mxext3.mailbox.org.",
+    "40 mxext4.mailbox.org.",
 ]
 
 [[rrset]]
 name = ""
 type = "TXT"
 values = ["v=spf1 include:mailbox.org ~all"]
+
+[[rrset]]
+# mailbox.org's proof that the domain is ours; keep it while the mailbox lives.
+name = "709e7ac56bbd15eb0f76b9f23e0f21f2c075a94a"
+type = "TXT"
+values = ["b70507eb5d51b22120ad5ca05773319e70186dac"]
 
 [[rrset]]
 name = "_dmarc"
