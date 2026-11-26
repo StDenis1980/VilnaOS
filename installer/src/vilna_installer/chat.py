@@ -261,6 +261,14 @@ class ChatWindow(Adw.ApplicationWindow):
         self.list.set_margin_end(24)
         self.scroll = Gtk.ScrolledWindow(vexpand=True, hscrollbar_policy=Gtk.PolicyType.NEVER)
         self.scroll.set_child(self.list)
+        # Build15.8 (VM, 2026-11-26): after a keyboard layout switch the chat jumped
+        # up and the crash report buttons were out of sight. While the chat is at its
+        # end, it stays there whatever the layout does; scrolled up by hand, it stays.
+        self.at_end = True
+        adj = self.scroll.get_vadjustment()
+        adj.connect("value-changed", self._on_scrolled)
+        adj.connect("notify::upper", self._keep_end)
+        adj.connect("notify::page-size", self._keep_end)
         self.scroll.add_css_class("vilna-chat")
         self.entry = Gtk.Entry(hexpand=True, has_frame=False, placeholder_text=_(conv.MESSAGE))
         self.entry.update_property([Gtk.AccessibleProperty.LABEL], [_(conv.MESSAGE)])
@@ -516,9 +524,17 @@ class ChatWindow(Adw.ApplicationWindow):
         self._bubble(text, False)
 
     def _scroll_down(self) -> bool:
+        self.at_end = True
         adj = self.scroll.get_vadjustment()
         adj.set_value(adj.get_upper())
         return False
+
+    def _on_scrolled(self, adj) -> None:
+        self.at_end = adj.get_value() >= adj.get_upper() - adj.get_page_size() - 2
+
+    def _keep_end(self, adj, _pspec) -> None:
+        if self.at_end:
+            adj.set_value(adj.get_upper() - adj.get_page_size())
 
     def _show(self, reply: conv.Reply) -> None:
         section = SECTION_OF_STEP.get(reply.step.key or "")
@@ -531,6 +547,7 @@ class ChatWindow(Adw.ApplicationWindow):
         for need in reply.needs:
             if need not in self.cards:
                 self._card(need, reply.plan)
+        GLib.idle_add(self._scroll_down)  # cards come after the bubble
 
     def _show_plan(self, plan: dict[str, Any], step: str | None) -> None:
         lines = describe(plan, self._)

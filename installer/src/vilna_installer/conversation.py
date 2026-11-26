@@ -349,7 +349,8 @@ RULES = (
     "returns an error, explain it simply and offer what is allowed. Messages may start "
     "with <installer-notes>: the current step, the plan and data from the installer, not "
     "the person's words. The latest notes are what holds now. Call only the functions "
-    "they name for the step."
+    "they name for the step. Never say the plan is confirmed or that installing has "
+    "begun: only the person confirms it, on the Herkos screen after the summary."
 )
 # Where the notes start and end. The system prompt and the functions stay the
 # same for the whole conversation, and what changes (the step, the plan, the
