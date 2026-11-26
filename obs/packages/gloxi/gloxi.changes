@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Nov 26 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The message field of the Gloxi window is on a line of its own, the
+  whole width of the window, and grows with the text up to eight lines,
+  then scrolls; the model switch and the buttons are on the line below.
+  Enter sends, Shift+Enter starts a new line. In the side panel the field
+  was a few words wide beside the model switch (Build12.29).
+
+-------------------------------------------------------------------
 Tue Nov 24 18:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - vilna-llm.service and system.slice: MemoryLow=65% of the RAM instead of a

@@ -427,6 +427,27 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
             view.chat.lines.slice(2).map(l => `${l.kind}: ${l.text}`),
         ['user: Увімкни темну тему', 'gloxi: Готово: темну тему ввімкнено.', 'action: Settings: dark theme']);
     check('side panel: the field is empty again', view.entry.get_text(), '');
+    // The field grows with long text, up to a few lines, and Shift+Enter
+    // starts a new line instead of sending (Build12.29: one short line).
+    const oneLine = view.fieldHeight;
+    view.entry.set_text('Нагадай мені завтра зранку '.repeat(3).trim());
+    await sleep(300);
+    const grown = view.fieldHeight;
+    view.entry.set_text('рядок\n'.repeat(60).trim());
+    await sleep(300);
+    const tall = view.fieldHeight;
+    check(`side panel: the field grows with long text, then stops growing (${oneLine}, ${grown}, ${tall} px)`,
+        [grown > oneLine * 1.5, tall > grown, tall < 400], [true, true, true]);
+    view.entry.set_text('перший рядок');
+    view.entry.clutter_text.set_cursor_position(-1);
+    const sent = panelRequests.filter(r => r.method === 'chat.submit').length;
+    await press(Clutter.KEY_Shift_L, Clutter.KEY_Return);
+    check('side panel: Shift+Enter starts a new line and sends nothing',
+        [view.entry.get_text(), panelRequests.filter(r => r.method === 'chat.submit').length],
+        ['перший рядок\n', sent]);
+    view.entry.set_text('');
+    await sleep(300);
+    check('side panel: empty, the field is one line again', view.fieldHeight, oneLine);
     // The card as soon as the action is done, the answer once it is finished.
     check('side panel: a screen reader hears the card, then the whole answer once',
         heard.map(([w]) => w), ['Settings: dark theme · Done', 'Gloxi: Готово: темну тему ввімкнено.']);
