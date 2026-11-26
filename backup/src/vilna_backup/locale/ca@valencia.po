@@ -1,0 +1,511 @@
+# Valencian translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: ca@valencia\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"X-Vilna-Review: not reviewed by a native speaker\n"
+
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "TB"
+msgstr "TB"
+
+msgid "Backups are on"
+msgstr "Les còpies estan activades"
+
+msgid "Choose where to keep the backups."
+msgstr "Tria on vols guardar les còpies."
+
+msgid "recommended"
+msgstr "recomanat"
+
+msgid "{day} {month} at {time}"
+msgstr "{day} {month} a les {time}"
+
+msgid "Backing up…"
+msgstr "S'està fent la còpia…"
+
+msgid "Backups are off"
+msgstr "Les còpies estan desactivades"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Activa-les per a mantindre els teus fitxers segurs."
+
+msgid "The last backup failed"
+msgstr "L'última còpia ha fallat"
+
+msgid "Settings only"
+msgstr "Només la configuració"
+
+msgid "Settings and documents"
+msgstr "Configuració i documents"
+
+msgid "The whole home folder"
+msgstr "Tota la carpeta personal"
+
+msgid "Chosen by you"
+msgstr "Triat per tu"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Configuració, Gloxi, Herkos, contrasenyes"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "També Documents, Escriptori i Imatges"
+
+msgid "Everything except caches and Downloads"
+msgstr "Tot excepte la memòria cau i Descàrregues"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Carpetes triades amb Gloxi o al terminal"
+
+msgid "Every hour"
+msgstr "Cada hora"
+
+msgid "Every day"
+msgstr "Cada dia"
+
+msgid "Every week"
+msgstr "Cada setmana"
+
+msgid "Off"
+msgstr "Desactivat"
+
+msgid "today at {time}"
+msgstr "hui a les {time}"
+
+msgid "yesterday at {time}"
+msgstr "ahir a les {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Última còpia {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Tria una carpeta al disc extern."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Escriu l'adreça del servidor: sftp:user@host:/folder, s3:https://… o rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Per a una carpeta d'este ordinador, tria el disc extern."
+
+msgid "This server needs a login and a password."
+msgstr "Este servidor necessita un usuari i una contrasenya."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "{percent} % fet"
+
+msgid "No backup yet · {schedule}"
+msgstr "Encara no hi ha còpies · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "{n} fitxers"
+
+msgid "The server address is not right: {why}"
+msgstr "L'adreça del servidor no és correcta: {why}"
+
+msgid "Vilna cloud"
+msgstr "Núvol Vilna"
+
+msgid "In the EU · coming later"
+msgstr "En la UE · arribarà més avant"
+
+msgid "External disk"
+msgstr "Disc extern"
+
+msgid "No folder chosen yet"
+msgstr "Encara no s'ha triat cap carpeta"
+
+msgid "Your own server"
+msgstr "El teu propi servidor"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 o REST"
+
+msgid "Turn on backups"
+msgstr "Activa les còpies"
+
+msgid "Recovery sheet"
+msgstr "Full de recuperació"
+
+msgid "Backups"
+msgstr "Còpies"
+
+msgid "What to keep in backups?"
+msgstr "Què vols guardar a les còpies?"
+
+msgid "Where"
+msgstr "On"
+
+msgid "Choose…"
+msgstr "Tria…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Adreça, p. ex. sftp:jo@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Usuari (S3 i REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Contrasenya (S3 i REST)"
+
+msgid "How often"
+msgstr "Freqüència"
+
+msgid "Back up"
+msgstr "Fes una còpia"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Les còpies es xifren en este ordinador. Sense la clau ningú no les pot llegir, ni tan sols nosaltres."
+
+msgid "Later"
+msgstr "Més tard"
+
+msgid "Next"
+msgstr "Següent"
+
+msgid "Folder for backups on the external disk"
+msgstr "Carpeta per a les còpies al disc extern"
+
+msgid "Type the key from your sheet"
+msgstr "Escriu la clau del teu full"
+
+msgid "Start again with another place"
+msgstr "Torna a començar amb un altre lloc"
+
+msgid "Confirm and turn on"
+msgstr "Confirma i activa"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Anota esta clau en un paper i guarda-la lluny de l'ordinador. Si perds este ordinador, només esta clau obri les teues còpies. Nosaltres no la coneixem i no te la podem tornar a enviar."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "La clau només es mostra ara. Mai no s'utilitzen les lletres I, L, O i U."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Les còpies continuen desactivades fins que escrigues la clau de recuperació del teu full. Es va mostrar una vegada, quan es va configurar el lloc."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "No tens el full? Torna a començar amb un altre lloc: es crearà una clau nova."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Les còpies estan activades. La primera còpia ha començat."
+
+msgid "Back up now"
+msgstr "Fes una còpia ara"
+
+msgid "Settings"
+msgstr "Configuració"
+
+msgid "What to keep"
+msgstr "Què cal guardar"
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Xifrades en este ordinador. Sense la clau ningú no les pot llegir, ni tan sols nosaltres."
+
+msgid "Cannot read the state of backups"
+msgstr "No es pot llegir l'estat de les còpies"
+
+msgid "Where to put the restored files"
+msgstr "On cal posar els fitxers restaurats"
+
+msgid "Cannot list the backups"
+msgstr "No es poden llistar les còpies"
+
+msgid "Restore…"
+msgstr "Restaura…"
+
+msgid "No backups yet"
+msgstr "Encara no hi ha còpies"
+
+msgid "A backup is already running."
+msgstr "Ja hi ha una còpia en curs."
+
+msgid "Restored from backup {stamp}"
+msgstr "Restaurat des de la còpia {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "S'està restaurant {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "No s'han pogut configurar les còpies: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "Esta no és la clau: {why}"
+
+msgid "Could not start: {why}"
+msgstr "No s'ha pogut iniciar: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "S'han restaurat {n} fitxers a {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "No s'ha pogut restaurar: {why}"
+
+msgid "January"
+msgstr "de gener"
+
+msgid "February"
+msgstr "de febrer"
+
+msgid "March"
+msgstr "de març"
+
+msgid "April"
+msgstr "d'abril"
+
+msgid "May"
+msgstr "de maig"
+
+msgid "June"
+msgstr "de juny"
+
+msgid "July"
+msgstr "de juliol"
+
+msgid "August"
+msgstr "d'agost"
+
+msgid "September"
+msgstr "de setembre"
+
+msgid "October"
+msgstr "d'octubre"
+
+msgid "November"
+msgstr "de novembre"
+
+msgid "December"
+msgstr "de desembre"
+
+msgid "Disk"
+msgstr "Disc"
+
+msgid "Vilna server"
+msgstr "Servidor Vilna"
+
+msgid "Already have backups?"
+msgstr "Ja tens còpies?"
+
+msgid "Back"
+msgstr "Enrere"
+
+msgid "Bring back"
+msgstr "Recupera"
+
+msgid "Bring back {n} files?"
+msgstr "Vols recuperar {n} fitxers?"
+
+msgid "Bring them back…"
+msgstr "Recupera'ls…"
+
+msgid "Bring your files back now?"
+msgstr "Vols recuperar els teus fitxers ara?"
+
+msgid "Cancel"
+msgstr "Cancel·la"
+
+msgid "Checking which files would change…"
+msgstr "S'està comprovant quins fitxers canviarien…"
+
+msgid "Connect"
+msgstr "Connecta"
+
+msgid "Connect this computer to the backups you made before. You need the place of the backups and the key from your recovery sheet. Nothing on this computer changes until you choose what to bring back."
+msgstr "Connecta este ordinador a les còpies que vas fer abans. Necessites el lloc de les còpies i la clau del teu full de recuperació. No canvia res en este ordinador fins que tries què vols recuperar."
+
+msgid "Could not open the backups: {why}"
+msgstr "No s'han pogut obrir les còpies: {why}"
+
+msgid "Could not turn on: {why}"
+msgstr "No s'ha pogut activar: {why}"
+
+msgid "Files changed while you were reading the list; nothing was replaced. Try again."
+msgstr "Els fitxers han canviat mentre llegies la llista; no s'ha substituït res. Torna-ho a provar."
+
+msgid "Files from the latest backup come back into your home folder. First you see which files would change. Then turn backups on to keep this computer safe too."
+msgstr "Els fitxers de l'última còpia tornen a la teua carpeta personal. Primer voràs quins fitxers canviarien. Després activa les còpies per a protegir també este ordinador."
+
+msgid "Files made after the backup stay. Your passwords and keys on this computer stay."
+msgstr "Els fitxers creats després de la còpia es queden. Les teues contrasenyes i claus d'este ordinador també es queden."
+
+msgid "Into a new folder, nothing on this computer is replaced. Over your files, files changed since the backup get their old version back; you see the list first."
+msgstr "En una carpeta nova no se substituïx res en este ordinador. Sobre els teus fitxers, els que han canviat des de la còpia recuperen la versió anterior; abans voràs la llista."
+
+msgid "Into a new folder…"
+msgstr "En una carpeta nova…"
+
+msgid "Keep system secrets in backups?"
+msgstr "Vols guardar els secrets del sistema a les còpies?"
+
+msgid "Keep them"
+msgstr "Guarda'ls"
+
+msgid "Nothing is replaced."
+msgstr "No se substituïx res."
+
+msgid "Old saved passwords came back as a separate key ring."
+msgstr "Les contrasenyes guardades antigues han tornat com un clauer a part."
+
+msgid "On a new computer, with your recovery sheet"
+msgstr "En un ordinador nou, amb el teu full de recuperació"
+
+msgid "Over my files…"
+msgstr "Sobre els meus fitxers…"
+
+msgid "Replace files"
+msgstr "Substituïx fitxers"
+
+msgid "Replace {n} files with their versions from the backup?"
+msgstr "Vols substituir {n} fitxers per les seues versions de la còpia?"
+
+msgid "Restore from backups"
+msgstr "Restaura des de còpies"
+
+msgid "Restore from backups made before"
+msgstr "Restaura des de còpies fetes abans"
+
+msgid "Restore into a new folder, or over your files after seeing which ones change."
+msgstr "Restaura en una carpeta nova, o sobre els teus fitxers després de vore quins canvien."
+
+msgid "Restore the backup made {title}?"
+msgstr "Vols restaurar la còpia feta {title}?"
+
+msgid "Restored: {files} files back, {replaced} replaced."
+msgstr "Restaurat: {files} fitxers recuperats, {replaced} substituïts."
+
+msgid "Restoring…"
+msgstr "S'està restaurant…"
+
+msgid "Saved passwords from the key ring, online accounts, and SSH and GPG keys go into the backups, encrypted like everything else. Whoever has your recovery key can open them, so keep the sheet safe."
+msgstr "Les contrasenyes guardades del clauer, els comptes en línia i les claus SSH i GPG entren en les còpies, xifrats com tota la resta. Qui tinga la teua clau de recuperació els pot obrir, així que guarda bé el full."
+
+msgid "Saved passwords, online accounts, SSH and GPG keys"
+msgstr "Contrasenyes guardades, comptes en línia, claus SSH i GPG"
+
+msgid "System secrets"
+msgstr "Secrets del sistema"
+
+msgid "These files were changed after the backup and get their old version:"
+msgstr "Estos fitxers han canviat després de la còpia i recuperen la versió anterior:"
+
+msgid "This computer can now use your backups."
+msgstr "Este ordinador ja pot utilitzar les teues còpies."
+
+msgid "Turn on"
+msgstr "Activa"
+
+msgid "Where are your backups?"
+msgstr "On són les teues còpies?"
+
+msgid "Your files are already as in this backup"
+msgstr "Els teus fitxers ja estan com en esta còpia"
+
+msgid "{n} files that are missing now come back."
+msgstr "Tornen {n} fitxers que ara falten."
+
+msgid "…and {n} more"
+msgstr "…i {n} més"
+
+msgid "Add a device"
+msgstr "Afig un dispositiu"
+
+msgid "Added {when}"
+msgstr "Afegit {when}"
+
+msgid "Block"
+msgstr "Bloqueja"
+
+msgid "Block «{name}»?"
+msgstr "Vols bloquejar «{name}»?"
+
+msgid "Block…"
+msgstr "Bloqueja…"
+
+msgid "Cannot list the devices"
+msgstr "No es pot mostrar la llista de dispositius"
+
+msgid "Code for a new device"
+msgstr "Codi per a un dispositiu nou"
+
+msgid "Could not block: {why}"
+msgstr "No s'ha pogut bloquejar: {why}"
+
+msgid "Could not make a code: {why}"
+msgstr "No s'ha pogut crear un codi: {why}"
+
+msgid "Delete the old copy yourself: {place}"
+msgstr "Esborra tu mateix la còpia antiga: {place}"
+
+msgid "Done"
+msgstr "Fet"
+
+msgid "Each device has its own key. Block a lost or stolen one."
+msgstr "Cada dispositiu té la seua pròpia clau. Bloqueja'n un de perdut o robat."
+
+msgid "It can no longer open or add to the backups, and forgets its key the next time it tries. Files on it stay as they are. If it was stolen, the backups also get a new key and you get a new recovery sheet."
+msgstr "Ja no podrà obrir les còpies ni afegir-hi res, i oblidarà la seua clau la pròxima vegada que ho intente. Els seus fitxers es queden com estan. Si l'han robat, les còpies també reben una clau nova i tu un full de recuperació nou."
+
+msgid "It was stolen"
+msgstr "L'han robat"
+
+msgid "Key from your sheet, or a code from your other device"
+msgstr "La clau del teu full o un codi de l'altre dispositiu"
+
+msgid "Moving the backups under a new key…"
+msgstr "S'estan passant les còpies a una clau nova…"
+
+msgid "My devices"
+msgstr "Els meus dispositius"
+
+msgid "On a computer that already makes backups, open Backups and choose «Add a device»: it shows a code valid for 15 minutes."
+msgstr "En un ordinador que ja fa còpies, obri Còpies de seguretat i tria «Afig un dispositiu»: mostra un codi vàlid durant 15 minuts."
+
+msgid "On the new computer, open Backups, choose «Restore from backups made before» and type this code there. It works once, until {when}. Do not tell it to anyone."
+msgstr "En l'ordinador nou, obri Còpies de seguretat, tria «Restaura des de còpies fetes abans» i escriu-hi este codi. Funciona una sola vegada, fins a {when}. No el digues a ningú."
+
+msgid "Opens the backups if every device is lost"
+msgstr "Obri les còpies si es perden tots els dispositius"
+
+msgid "Protect"
+msgstr "Protegix"
+
+msgid "Protect the backups after the theft?"
+msgstr "Vols protegir les còpies després del robatori?"
+
+msgid "The backups were not moved: {why}"
+msgstr "Les còpies no s'han mogut: {why}"
+
+msgid "The stolen device may know the key of the backups. Vilna moves every backup under a new key and deletes the old copy; this can take a while. Then you write down a new recovery sheet, and your other devices connect again with a code."
+msgstr "El dispositiu robat pot conéixer la clau de les còpies. Vilna passa totes les còpies a una clau nova i esborra la còpia antiga; açò pot tardar una estona. Després anotes un full de recuperació nou, i els teus altres dispositius es tornen a connectar amb un codi."
+
+msgid "This device · added {when}"
+msgstr "Este dispositiu · afegit {when}"
+
+msgid "Valid until {when}"
+msgstr "Vàlid fins a {when}"
+
+msgid "Withdraw the code"
+msgstr "Retira el codi"
+
+msgid "«{name}» is blocked."
+msgstr "«{name}» està bloquejat."

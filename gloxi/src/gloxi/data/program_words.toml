@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Words in the ten languages of ADR 0009 that choose Vilna's own program
+# Words in the main languages of ADR 0009 that choose Vilna's own program
 # functions for a message (gloxi.tools.FileTools.programs, alpha item 31).
 #
 # Gloxi offers the local model at most eight program functions at a time and
@@ -16,7 +16,8 @@
 # need both spellings. `words` count for every operation of the program, the
 # lists under `operations` only for that one.
 #
-# Order of the lines: uk, en, es, pl, de, fr, it, ro, cs, lt.
+# Order of the lines: uk, en, es, pl, de, fr, it, ro, cs, lt, ca (with
+# Valencian), gl, eu, pt.
 
 ["org.vilna.mcp.mail"]
 words = [
@@ -30,6 +31,10 @@ words = [
   "mesaj", "posta", "scrisoar",
   "zprav", "post", "dopis",
   "laisk", "pastas", "pasto", "zinut",
+  "correu", "missatg", "bustia", "safata",
+  "mensax", "caixa",
+  "e-posta", "eposta", "mezu", "gutun", "postontzi",
+  "correio", "mensag", "caixa",
 ]
 
 ["org.vilna.mcp.mail".operations]
@@ -44,6 +49,10 @@ list_messages = [
   "ultim", "nou$", "noi$", "necitit",
   "posledn", "nov", "neprect",
   "paskutin", "nauj", "neperskait",
+  "darrer", "nou$", "nous$", "nova$", "noves$",
+  "novo$", "novos$", "nova$", "novas$",
+  "azken", "berri",
+  "novo$", "novos$", "nova$", "novas$", "entrada",
 ]
 # Finding, and someone who wrote, as for read_message: "Марта написала…"
 # needs her email found before it can be read.
@@ -61,6 +70,10 @@ search_messages = [
   "caut", "gases",
   "najdi", "najit", "hled",
   "rask", "surask", "iesk",
+  "escrit$", "escriu$", "envia$", "busca", "troba",
+  "escribiu", "enviou", "busca", "atopa",
+  "idatzi", "bidali", "bilatu", "aurkitu",
+  "escreveu", "enviou", "procur", "encontr", "pesquis",
 ]
 # Reading, and what someone did who wrote: "Марта написала мені…" is about
 # an email to read first.
@@ -76,6 +89,10 @@ read_message = [
   "citest", "citi", "deschide", "scris$", "trimis$", "primit",
   "prect", "cti$", "otevr", "psal", "poslal", "dostal",
   "perskait", "skait", "atidar", "parase", "atsiunt", "gavau",
+  "llegeix", "llig", "llegir", "obre", "escrit$", "rebut", "rebud",
+  "le$", "ler$", "abre", "escribiu", "enviou", "recibi",
+  "irakurri", "ireki", "idatzi", "bidali", "jaso",
+  "le$", "ler$", "leia", "abre", "abra", "escreveu", "enviou", "recebi",
 ]
 save_draft = [
   "відповід", "відпиш", "чернет", "підготу", "напиш", "склади",
@@ -88,6 +105,10 @@ save_draft = [
   "raspun", "ciorn", "pregat", "scrie",
   "odpoved", "odpovez", "koncept", "priprav", "napis",
   "atsak", "juodras", "paruos", "paras",
+  "respon", "resposta", "contest", "esborrany", "prepar", "escriu", "redact",
+  "respond", "resposta", "contest", "borrador", "prepar", "escrib", "redact",
+  "erantzun", "zirriborro", "prestatu", "idatz",
+  "respond", "resposta", "rascunho", "prepar", "escrev", "redig",
 ]
 send = [
   "надішл", "надсил", "відправ",
@@ -100,6 +121,10 @@ send = [
   "trimit",
   "posli", "odesli", "odesl",
   "sius", "issius", "nusius",
+  "envia", "envieu", "trames",
+  "envia", "manda",
+  "bidaltz",
+  "envia$", "envie", "mande",
 ]
 
 ["org.vilna.mcp.calendar"]
@@ -114,6 +139,10 @@ words = [
   "calendar", "eveniment", "intalnir", "sedint",
   "kalendar", "udalost", "schuzk", "setkani",
   "kalendor", "ivyk", "susitikim", "rengin",
+  "calendari", "agenda", "esdeveniment", "reunio", "cita$", "trobada",
+  "calendario", "axenda", "evento", "reunion", "cita$", "xuntanza",
+  "egutegi", "agenda", "ekitaldi", "bilera", "hitzordu",
+  "calendario", "agenda", "evento", "reuniao", "encontro", "compromisso",
 ]
 
 ["org.vilna.mcp.calendar".operations]
@@ -128,6 +157,10 @@ list_events = [
   "azi$", "astazi", "maine", "saptaman",
   "dnes", "zitra", "tyden", "tydn",
   "siandien", "rytoj", "savait",
+  "avui", "hui$", "dema", "setmana",
+  "hoxe", "mana$", "semana",
+  "gaur", "bihar", "aste",
+  "hoje", "amanha", "semana",
 ]
 search_events = [
   "знайд", "пошук", "коли",
@@ -140,6 +173,10 @@ search_events = [
   "caut", "gases", "cand$",
   "najdi", "najit", "hled", "kdy$",
   "rask", "surask", "iesk", "kada",
+  "busca", "cerca", "troba", "quan$",
+  "busca", "atopa", "cando$",
+  "bilatu", "aurkitu", "noiz",
+  "procur", "encontr", "quando",
 ]
 create_event = [
   "дода", "запиш", "запис", "створ", "внес", "постав", "заплану",
@@ -152,6 +189,10 @@ create_event = [
   "adaug", "crea", "programeaz", "noteaz",
   "prid", "vytvor", "zapis", "naplan",
   "prid", "sukurk", "iras", "suplan",
+  "afeg", "afig", "crea", "apunt", "posa", "program", "anota",
+  "engad", "crea", "apunt", "pon$", "anota", "program",
+  "gehitu", "gehi$", "sortu", "jarri", "programatu", "antolatu",
+  "adiciona", "acrescent", "cria", "marca", "agend", "anota", "poe$",
 ]
 update_event = [
   "змін", "перенес", "пересун",
@@ -164,6 +205,10 @@ update_event = [
   "modific", "schimb", "muta",
   "zmen", "presun",
   "pakeis", "perkel",
+  "canvi", "mou$", "moure", "traslad", "ajorn",
+  "cambi", "move", "mover", "traslad", "adia",
+  "aldatu", "aldaketa", "mugitu", "atzeratu",
+  "mud", "alter", "move", "mover", "adia", "reagend",
 ]
 delete_event = [
   "видал", "скасу", "прибер",
@@ -176,4 +221,8 @@ delete_event = [
   "sterg", "anulea",
   "smaz", "zrus",
   "istrin", "atsauk",
+  "esborr", "elimin", "cancel", "anul",
+  "borr", "elimin", "cancel", "anul",
+  "ezabatu", "kendu", "ezeztatu",
+  "apag", "elimin", "cancel", "remov", "anul",
 ]

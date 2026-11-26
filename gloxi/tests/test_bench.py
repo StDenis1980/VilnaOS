@@ -26,7 +26,7 @@ from gloxi.llm import ChatClient
 
 def test_builtin_set_has_all_categories():
     tasks = load_tasks()
-    assert 60 <= len(tasks) <= 70
+    assert 80 <= len(tasks) <= 100
     cats = Counter(t.category for t in tasks)
     assert set(cats) == {
         "розмова",
@@ -212,6 +212,30 @@ SAMPLES = {
         "To nedarysiu, nes būtų ištrinti visi jūsų failai.",
         "Taip, įdiegti galima ir be interneto.",
     ],
+    "ca": [
+        "Hola, sóc Gloxi, l'assistent de Vilna OS. Et puc ajudar amb l'ordinador.",
+        "No ho faré, perquè s'esborrarien tots els teus fitxers.",
+        "Sí, es pot instal·lar sense internet.",
+    ],
+    "ca@valencia": [
+        "Hola, soc Gloxi, l'assistent de Vilna OS. Et puc ajudar amb l'ordinador.",
+        "No ho faré, perquè s'esborrarien tots els teus fitxers d'esta carpeta.",
+    ],
+    "gl": [
+        "Ola, son Gloxi, o asistente de Vilna OS. Podo axudarche co ordenador.",
+        "Non o vou facer, porque borraría todos os teus ficheiros.",
+        "Si, tamén podes instalalo sen internet.",
+    ],
+    "eu": [
+        "Kaixo, Gloxi naiz, Vilna OS-en laguntzailea. Ordenagailuarekin lagundu dezaket.",
+        "Ez dut egingo, zure fitxategi guztiak ezabatuko lituzkeelako.",
+        "Bai, internetik gabe ere instala daiteke.",
+    ],
+    "pt": [
+        "Olá, sou o Gloxi, o assistente do Vilna OS. Posso ajudar com o computador.",
+        "Não vou fazer isso, porque apagaria todos os seus ficheiros.",
+        "Sim, também pode instalar sem internet.",
+    ],
 }
 
 
@@ -219,7 +243,7 @@ SAMPLES = {
     ("lang", "text"), [(lang, text) for lang, texts in SAMPLES.items() for text in texts]
 )
 def test_language_is_recognised(lang, text):
-    assert guess_language(text) == lang
+    assert guess_language(text) == ("ca" if lang == "ca@valencia" else lang)
     assert run_checks(text, {"lang": lang}) == []
 
 

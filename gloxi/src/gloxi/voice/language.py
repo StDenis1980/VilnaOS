@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Which of the ten languages (ADR 0009) to listen for and to speak.
+"""Which of the fifteen languages (ADR 0009) to listen for and to speak.
 
 Gloxi answers in the language the person writes in, which is not always the
 interface language. To read an answer with the right voice it is enough to
-tell the ten languages apart on a sentence or more: Cyrillic is Ukrainian;
+tell the languages apart on a sentence or more: Cyrillic is Ukrainian;
 for the Latin ones, the letters only one language uses and its most common
 short words decide. When nothing decides, the interface language wins.
+Valencian is written as Catalan is: a Catalan text counts as Valencian when
+the interface is Valencian.
 """
 
 from __future__ import annotations
@@ -25,6 +27,8 @@ LETTERS = {
     "es": "ñ¿¡",
     "fr": "çœàèêëîïôûù",
     "it": "àèìòù",
+    "pt": "ãõâêôç",
+    "ca": "ç·àèòï",
 }
 
 # The most frequent short words, which almost every sentence has.
@@ -38,19 +42,27 @@ WORDS = {
     "cs": "a je to se na že v s do jak ale jsem není co tak",
     "ro": "și este în nu că la cu o un pe mai sunt din ce",
     "lt": "ir yra kad bet tai su į ne kaip aš jūs dar arba",
+    "ca": "el la els les i és que de en un una per amb no això aquest com però molt",
+    "gl": "o a os as e é que de en un unha por para con non isto como pero moi",
+    "eu": "eta da ez bat du dira ere baina zer nola hau hori nik zu dut",
+    "pt": "o a os as e é que de em um uma por para com não isto como mas muito",
 }
 _WORDS = {lang: set(words.split()) for lang, words in WORDS.items()}
 _WORD = re.compile(r"[^\W\d_]+", re.UNICODE)
 
 
+def _code(part: str) -> str:
+    """``ca_ES.UTF-8@valencia`` → ``ca@valencia`` (ADR 0009), ``pt_PT.UTF-8`` → ``pt``."""
+    base, _, modifier = part.partition("@")
+    lang = base.split("_")[0].split(".")[0].lower()
+    return f"{lang}@valencia" if lang == "ca" and modifier.startswith("valencia") else lang
+
+
 def interface_language(env: dict[str, str] | None = None) -> str:
-    """The first of the ten languages in LANGUAGE/LC_ALL/LC_MESSAGES/LANG, else en."""
+    """The first main language in LANGUAGE/LC_ALL/LC_MESSAGES/LANG, else en."""
     env = os.environ if env is None else env
     for var in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
-        codes = [
-            part.split("_")[0].split(".")[0].split("@")[0].lower()
-            for part in (env.get(var) or "").split(":")
-        ]
+        codes = [_code(part) for part in (env.get(var) or "").split(":")]
         codes = [c for c in codes if c and c not in ("c", "posix")]
         if codes:
             # As gettext: the first language of the list Gloxi has, else English.
@@ -69,6 +81,7 @@ def detect(text: str, fallback: str = "en") -> str:
     words = _WORD.findall(text.lower())
     scores = dict.fromkeys(LANGUAGES, 0.0)
     scores.pop("uk")
+    scores.pop("ca@valencia", None)  # told by the interface language, not the text
     for word in words:
         for lang, common in _WORDS.items():
             if word in common:
@@ -79,4 +92,6 @@ def detect(text: str, fallback: str = "en") -> str:
     if best <= 0:
         return fallback
     winners = [lang for lang, score in scores.items() if score == best]
+    if fallback == "ca@valencia" and "ca" in winners:
+        return fallback
     return fallback if fallback in winners else winners[0]

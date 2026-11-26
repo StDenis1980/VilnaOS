@@ -50,6 +50,14 @@ export function shouldShow(note, shown, now) {
 }
 
 // The words, in the ten languages of Vilna (ADR 0009).
+// The table's key for a GLib language name: "uk_UA.UTF-8" → "uk", and
+// Valencian, "ca_ES.UTF-8@valencia" → "ca@valencia" (ADR 0009).
+function languageCode(name) {
+    const s = String(name);
+    const code = s.split(/[_.@-]/)[0].toLowerCase();
+    return code === 'ca' && /@valencia/i.test(s) ? 'ca@valencia' : code;
+}
+
 const TEXT = {
     en: ['Update undone', 'The last update did not start properly, so Vilna went back to a state that worked before. Your files were not changed.'],
     uk: ['Оновлення скасовано', 'Останнє оновлення не запустилося як слід, тому Vilna повернулася до стану, який працював раніше. Ваші файли не змінено.'],
@@ -61,6 +69,16 @@ const TEXT = {
     ro: ['Actualizare anulată', 'Ultima actualizare nu a pornit corect, așa că Vilna a revenit la o stare care funcționa înainte. Fișierele nu au fost modificate.'],
     cs: ['Aktualizace vrácena', 'Poslední aktualizace se nespustila správně, proto se Vilna vrátila do stavu, který dříve fungoval. Vaše soubory se nezměnily.'],
     lt: ['Atnaujinimas atšauktas', 'Paskutinis atnaujinimas tinkamai nepasileido, todėl Vilna grįžo į anksčiau veikusią būseną. Jūsų failai nepakeisti.'],
+    ca: ['Actualització desfeta',
+        'L’última actualització no s’ha iniciat bé, així que Vilna ha tornat a un estat que funcionava abans. Els teus fitxers no s’han modificat.'],
+    'ca@valencia': ['Actualització desfeta',
+        'L’última actualització no s’ha iniciat bé, així que Vilna ha tornat a un estat que funcionava abans. Els teus fitxers no s’han modificat.'],
+    gl: ['Actualización desfeita',
+        'A última actualización non arrincou ben, así que Vilna volveu a un estado que funcionaba antes. Os teus ficheiros non se modificaron.'],
+    eu: ['Eguneratzea desegin da',
+        'Azken eguneratzea ez da ondo abiarazi; beraz, Vilna lehen funtzionatzen zuen egoera batera itzuli da. Zure fitxategiak ez dira aldatu.'],
+    pt: ['Atualização anulada',
+        'A última atualização não arrancou corretamente, por isso o Vilna voltou a um estado que funcionava antes. Os seus ficheiros não foram alterados.'],
 };
 
 export const LANGUAGES = Object.keys(TEXT);
@@ -68,7 +86,7 @@ export const LANGUAGES = Object.keys(TEXT);
 // languageNames: GLib.get_language_names(), most wanted first.
 export function noticeText(languageNames) {
     for (const name of languageNames ?? []) {
-        const code = String(name).split(/[_.@-]/)[0].toLowerCase();
+        const code = languageCode(name);
         if (TEXT[code]) {
             const [title, body] = TEXT[code];
             return {title, body};

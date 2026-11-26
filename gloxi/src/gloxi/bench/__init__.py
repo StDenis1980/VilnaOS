@@ -19,8 +19,10 @@ import re
 import threading
 import time
 import tomllib
+from collections import Counter
 from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass, field
+from fractions import Fraction
 from importlib import resources
 from pathlib import Path
 from statistics import median
@@ -100,32 +102,75 @@ def cyrillic_share(text: str) -> float:
     return len(_CYRILLIC.findall(text)) / len(letters)
 
 
-# The ten main languages (ADR 0009). Only Ukrainian is written in Cyrillic, so
+# The main languages (ADR 0009). Only Ukrainian is written in Cyrillic, so
 # for the others a rough guess from common words and letters is enough to tell
-# "answered in Polish" from "fell back to English".
-LANGUAGES = ("uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
+# "answered in Polish" from "fell back to English". Valencian is guessed as
+# Catalan: the words that tell them apart are too few for a short answer.
+LANGUAGES = (
+    "uk",
+    "en",
+    "es",
+    "pl",
+    "de",
+    "fr",
+    "it",
+    "ro",
+    "cs",
+    "lt",
+    "ca",
+    "ca@valencia",
+    "gl",
+    "eu",
+    "pt",
+)
 
 _WORDS = {
     "en": "yes the and is are you your to of it that with this can for not all would will "
     "i a an am hi hello here in on be have we do what how my me",
     "es": "sí el la los las que es y en un una para por con tu tus puedes no del "
-    "se todos puedo pero como esto",
+    "se todos puedo pero como esto "
+    "he has ha "
+    "mi me sobre y escribió respuesta "
+    "de correo enviado nadie así ventana dicho dado",
     "pl": "i w nie się jest to na z że do jak czy możesz jeśli lub dla wszystkie "
     "twoje mogę ale co tak być",
     "de": "ja der die das und ist nicht ich sie du mit ein eine zu auf kann den "
-    "alle deine dein aber wie auch",
+    "alle deine dein aber wie auch "
+    "mir gut dann bis um hallo",
     "fr": "oui le la les et est vous de des un une pas pour que dans avec je tous "
-    "vos votre mais comme cela",
+    "vos votre mais comme cela "
+    "l d",
     "it": "sì il la che di e è non per un una sono con puoi del della gli tutti "
-    "tuoi tuo posso ma come questo",
+    "tuoi tuo posso ma come questo "
+    "ho hai ha nel nella nelle tua tuo mi "
+    "l",
     "ro": "da și este în nu de la cu un o sunt pentru că care poți să sau toate "
-    "tale pot dar cum acest",
+    "tale pot dar cum acest "
+    "si despre scrie mi",
     "cs": "ano a i je se na v že to není jsem pro jak můžete s by nebo všechny vaše "
     "mohu ale co tak být opravdu jsi už jen ještě",
     "lt": "ir yra kad ne su į tai kaip jūs galite man aš bet iš arba visi jūsų "
     "galiu nes taip būti kuris kuri gali jei bus tik dar šis šį šiuo norint",
+    "ca": "sí i és els les amb teu teva teus teves puc però això aquest aquesta pots "
+    "tots totes molt també meu meva són dels seu seva fer aquí avui teua meua este "
+    "esta açò ací hui sóc soc ets eres ajudar fitxers ordinador altre perdre correu "
+    "dius trobat desat res ningú cap així només quan esborrany em "
+    "el la no que de en un una he has ha dit llegit afegit donat pogut respost "
+    "missatge esdeveniment resposta està reunió dia ni sobre s m l d",
+    "gl": "e é o os as unha non que do da dos das co coa cos coas teu túa teus túas "
+    "podo pero isto iso todos todas moi tamén che polo pola xa ti ao nos nas podes "
+    "meu miña aquí nin dun dunha cun cunha neste nesta noutro noutra gardar gardou "
+    "atopar atopei fixen engadín dixeches xanela se como ou ben alí lin ola ás si "
+    "está reunión queres ficheiros en con",
+    "eu": "bai eta da ez bat zure dut duzu naiz baina hau hori edo ere dira dago nire "
+    "zer nola dezaket egin dizut zaitut lagundu ditut daude hemen guztiak gabe "
+    "ezin du nahi",
+    "pt": "sim e é o os as uma um não que do da dos das com seu sua seus suas posso "
+    "mas isso isto todos todas muito também pelo pela já você nos nas pode "
+    "meu minha aqui está "
+    "olá às até lá dá jeito me",
 }
-_LETTERS = {  # letters that (among these ten) mostly belong to one language
+_LETTERS = {  # letters that (among these languages) mostly belong to one language
     "es": "ñ¿¡",
     "pl": "łśźżń",
     "de": "äöüß",
@@ -134,8 +179,15 @@ _LETTERS = {  # letters that (among these ten) mostly belong to one language
     "ro": "ășțşţ",
     "cs": "řůěť",
     "lt": "ėįųū",
+    "ca": "·",
+    "pt": "ãõ",
 }
 _TOKEN = re.compile(r"[^\W\d_]+")
+_VOCAB = {lang: set(common.split()) for lang, common in _WORDS.items()}
+# A word several languages share ("que", "no", "el") tells less than one of
+# its own: each counts 1/n for the n languages that have it. Without that,
+# Catalan and Galician lost to Spanish on the words all three use.
+_SHARED = Counter(w for vocab in _VOCAB.values() for w in vocab)
 
 
 def guess_language(text: str) -> str | None:
@@ -145,10 +197,9 @@ def guess_language(text: str) -> str | None:
     low = text.lower()
     words = _TOKEN.findall(low)
     scores = {}
-    for lang, common in _WORDS.items():
-        vocab = set(common.split())
-        scores[lang] = sum(w in vocab for w in words)
-        scores[lang] += 2 * sum(low.count(ch) for ch in _LETTERS.get(lang, ""))
+    for lang, vocab in _VOCAB.items():
+        score = sum(Fraction(1, _SHARED[w]) for w in words if w in vocab)
+        scores[lang] = score + 2 * sum(low.count(ch) for ch in _LETTERS.get(lang, ""))
     best = max(scores, key=scores.get)
     if scores[best] == 0:
         return None  # nothing to go by
@@ -167,6 +218,8 @@ def _lang_ok(answer: str, lang: str) -> bool:
     if lang == "uk":
         # Russian letters in a "Ukrainian" answer mean the model mixed them up.
         return cyrillic_share(answer) >= 0.6 and not re.search(r"[ыэъёЫЭЪЁ]", answer)
+    if lang == "ca@valencia":
+        lang = "ca"
     return cyrillic_share(answer) <= 0.1 and guess_language(answer) == lang
 
 

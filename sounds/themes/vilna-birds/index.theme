@@ -9,6 +9,11 @@ Name[it]=Vilna Uccelli
 Name[ro]=Vilna Păsări
 Name[cs]=Vilna Ptáci
 Name[lt]=Vilna Paukščiai
+Name[ca]=Vilna Ocells
+Name[ca@valencia]=Vilna Ocells
+Name[gl]=Vilna Paxaros
+Name[eu]=Vilna Txoriak
+Name[pt]=Vilna Pássaros
 Inherits=freedesktop
 Directories=stereo
 

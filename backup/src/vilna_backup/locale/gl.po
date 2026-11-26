@@ -1,0 +1,511 @@
+# Galician translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: gl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"X-Vilna-Review: not reviewed by a native speaker\n"
+
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "TB"
+msgstr "TB"
+
+msgid "Backups are on"
+msgstr "As copias están activadas"
+
+msgid "Choose where to keep the backups."
+msgstr "Escolle onde gardar as copias."
+
+msgid "recommended"
+msgstr "recomendado"
+
+msgid "{day} {month} at {time}"
+msgstr "{day} de {month} ás {time}"
+
+msgid "Backing up…"
+msgstr "Facendo a copia…"
+
+msgid "Backups are off"
+msgstr "As copias están desactivadas"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Actívaas para manter os teus ficheiros a salvo."
+
+msgid "The last backup failed"
+msgstr "A última copia fallou"
+
+msgid "Settings only"
+msgstr "Só a configuración"
+
+msgid "Settings and documents"
+msgstr "Configuración e documentos"
+
+msgid "The whole home folder"
+msgstr "Todo o cartafol persoal"
+
+msgid "Chosen by you"
+msgstr "Escollido por ti"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Configuración, Gloxi, Herkos, contrasinais"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "Tamén Documentos, Escritorio e Imaxes"
+
+msgid "Everything except caches and Downloads"
+msgstr "Todo agás cachés e Descargas"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Cartafoles escollidos con Gloxi ou no terminal"
+
+msgid "Every hour"
+msgstr "Cada hora"
+
+msgid "Every day"
+msgstr "Cada día"
+
+msgid "Every week"
+msgstr "Cada semana"
+
+msgid "Off"
+msgstr "Desactivado"
+
+msgid "today at {time}"
+msgstr "hoxe ás {time}"
+
+msgid "yesterday at {time}"
+msgstr "onte ás {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Última copia {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Escolle un cartafol no disco externo."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Escribe o enderezo do servidor: sftp:user@host:/folder, s3:https://… ou rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Para un cartafol neste ordenador, escolle o disco externo."
+
+msgid "This server needs a login and a password."
+msgstr "Este servidor necesita un usuario e un contrasinal."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "{percent} % feito"
+
+msgid "No backup yet · {schedule}"
+msgstr "Aínda non hai copias · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "{n} ficheiros"
+
+msgid "The server address is not right: {why}"
+msgstr "O enderezo do servidor non é correcto: {why}"
+
+msgid "Vilna cloud"
+msgstr "Nube Vilna"
+
+msgid "In the EU · coming later"
+msgstr "Na UE · chegará máis adiante"
+
+msgid "External disk"
+msgstr "Disco externo"
+
+msgid "No folder chosen yet"
+msgstr "Aínda non se escolleu ningún cartafol"
+
+msgid "Your own server"
+msgstr "O teu propio servidor"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 ou REST"
+
+msgid "Turn on backups"
+msgstr "Activar as copias"
+
+msgid "Recovery sheet"
+msgstr "Folla de recuperación"
+
+msgid "Backups"
+msgstr "Copias"
+
+msgid "What to keep in backups?"
+msgstr "Que gardar nas copias?"
+
+msgid "Where"
+msgstr "Onde"
+
+msgid "Choose…"
+msgstr "Escoller…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Enderezo, p. ex. sftp:eu@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Usuario (S3 e REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Contrasinal (S3 e REST)"
+
+msgid "How often"
+msgstr "Frecuencia"
+
+msgid "Back up"
+msgstr "Facer copia"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "As copias cífranse neste ordenador. Sen a clave ninguén pode lelas, nin sequera nós."
+
+msgid "Later"
+msgstr "Máis tarde"
+
+msgid "Next"
+msgstr "Seguinte"
+
+msgid "Folder for backups on the external disk"
+msgstr "Cartafol para as copias no disco externo"
+
+msgid "Type the key from your sheet"
+msgstr "Escribe a clave da túa folla"
+
+msgid "Start again with another place"
+msgstr "Comezar de novo con outro lugar"
+
+msgid "Confirm and turn on"
+msgstr "Confirmar e activar"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Anota esta clave nun papel e gárdaa lonxe do ordenador. Se perdes este ordenador, só esta clave abre as túas copias. Nós non a coñecemos e non cha podemos volver enviar."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "A clave só se mostra agora. Nunca se usan as letras I, L, O e U."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "As copias seguen desactivadas ata que escribas a clave de recuperación da túa folla. Mostrouse unha vez, cando se configurou o lugar."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "Non tes a folla? Comeza de novo con outro lugar: crearase unha clave nova."
+
+msgid "Backups are on. The first backup has started."
+msgstr "As copias están activadas. A primeira copia comezou."
+
+msgid "Back up now"
+msgstr "Facer copia agora"
+
+msgid "Settings"
+msgstr "Configuración"
+
+msgid "What to keep"
+msgstr "Que gardar"
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Cifradas neste ordenador. Sen a clave ninguén pode lelas, nin sequera nós."
+
+msgid "Cannot read the state of backups"
+msgstr "Non se pode ler o estado das copias"
+
+msgid "Where to put the restored files"
+msgstr "Onde poñer os ficheiros restaurados"
+
+msgid "Cannot list the backups"
+msgstr "Non se poden listar as copias"
+
+msgid "Restore…"
+msgstr "Restaurar…"
+
+msgid "No backups yet"
+msgstr "Aínda non hai copias"
+
+msgid "A backup is already running."
+msgstr "Xa hai unha copia en curso."
+
+msgid "Restored from backup {stamp}"
+msgstr "Restaurado desde a copia {stamp}"
+
+msgid "Restoring {title}…"
+msgstr "Restaurando {title}…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "Non se puideron configurar as copias: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "Esta non é a clave: {why}"
+
+msgid "Could not start: {why}"
+msgstr "Non se puido iniciar: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "Restauráronse {n} ficheiros en {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "Non se puido restaurar: {why}"
+
+msgid "January"
+msgstr "xaneiro"
+
+msgid "February"
+msgstr "febreiro"
+
+msgid "March"
+msgstr "marzo"
+
+msgid "April"
+msgstr "abril"
+
+msgid "May"
+msgstr "maio"
+
+msgid "June"
+msgstr "xuño"
+
+msgid "July"
+msgstr "xullo"
+
+msgid "August"
+msgstr "agosto"
+
+msgid "September"
+msgstr "setembro"
+
+msgid "October"
+msgstr "outubro"
+
+msgid "November"
+msgstr "novembro"
+
+msgid "December"
+msgstr "decembro"
+
+msgid "Disk"
+msgstr "Disco"
+
+msgid "Vilna server"
+msgstr "Servidor Vilna"
+
+msgid "Already have backups?"
+msgstr "Xa tes copias?"
+
+msgid "Back"
+msgstr "Atrás"
+
+msgid "Bring back"
+msgstr "Recuperar"
+
+msgid "Bring back {n} files?"
+msgstr "Recuperar {n} ficheiros?"
+
+msgid "Bring them back…"
+msgstr "Recuperalos…"
+
+msgid "Bring your files back now?"
+msgstr "Recuperar os teus ficheiros agora?"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Checking which files would change…"
+msgstr "Comprobando que ficheiros cambiarían…"
+
+msgid "Connect"
+msgstr "Conectar"
+
+msgid "Connect this computer to the backups you made before. You need the place of the backups and the key from your recovery sheet. Nothing on this computer changes until you choose what to bring back."
+msgstr "Conecta este ordenador ás copias que fixeches antes. Necesitas o lugar das copias e a clave da túa folla de recuperación. Non cambia nada neste ordenador ata que escollas que recuperar."
+
+msgid "Could not open the backups: {why}"
+msgstr "Non se puideron abrir as copias: {why}"
+
+msgid "Could not turn on: {why}"
+msgstr "Non se puido activar: {why}"
+
+msgid "Files changed while you were reading the list; nothing was replaced. Try again."
+msgstr "Os ficheiros cambiaron mentres lías a lista; non se substituíu nada. Téntao de novo."
+
+msgid "Files from the latest backup come back into your home folder. First you see which files would change. Then turn backups on to keep this computer safe too."
+msgstr "Os ficheiros da última copia volven ao teu cartafol persoal. Primeiro verás que ficheiros cambiarían. Despois activa as copias para protexer tamén este ordenador."
+
+msgid "Files made after the backup stay. Your passwords and keys on this computer stay."
+msgstr "Os ficheiros creados despois da copia quedan. Os teus contrasinais e claves deste ordenador tamén quedan."
+
+msgid "Into a new folder, nothing on this computer is replaced. Over your files, files changed since the backup get their old version back; you see the list first."
+msgstr "Nun cartafol novo non se substitúe nada neste ordenador. Sobre os teus ficheiros, os que cambiaron desde a copia recuperan a súa versión anterior; antes verás a lista."
+
+msgid "Into a new folder…"
+msgstr "Nun cartafol novo…"
+
+msgid "Keep system secrets in backups?"
+msgstr "Gardar os segredos do sistema nas copias?"
+
+msgid "Keep them"
+msgstr "Gardalos"
+
+msgid "Nothing is replaced."
+msgstr "Non se substitúe nada."
+
+msgid "Old saved passwords came back as a separate key ring."
+msgstr "Os contrasinais gardados antigos volveron como un chaveiro aparte."
+
+msgid "On a new computer, with your recovery sheet"
+msgstr "Nun ordenador novo, coa túa folla de recuperación"
+
+msgid "Over my files…"
+msgstr "Sobre os meus ficheiros…"
+
+msgid "Replace files"
+msgstr "Substituír ficheiros"
+
+msgid "Replace {n} files with their versions from the backup?"
+msgstr "Substituír {n} ficheiros polas súas versións da copia?"
+
+msgid "Restore from backups"
+msgstr "Restaurar desde copias"
+
+msgid "Restore from backups made before"
+msgstr "Restaurar desde copias feitas antes"
+
+msgid "Restore into a new folder, or over your files after seeing which ones change."
+msgstr "Restaura nun cartafol novo, ou sobre os teus ficheiros despois de ver cales cambian."
+
+msgid "Restore the backup made {title}?"
+msgstr "Restaurar a copia feita o {title}?"
+
+msgid "Restored: {files} files back, {replaced} replaced."
+msgstr "Restaurado: {files} ficheiros recuperados, {replaced} substituídos."
+
+msgid "Restoring…"
+msgstr "Restaurando…"
+
+msgid "Saved passwords from the key ring, online accounts, and SSH and GPG keys go into the backups, encrypted like everything else. Whoever has your recovery key can open them, so keep the sheet safe."
+msgstr "Os contrasinais gardados do chaveiro, as contas en liña e as claves SSH e GPG entran nas copias, cifrados como todo o demais. Quen teña a túa clave de recuperación pode abrilos, así que garda ben a folla."
+
+msgid "Saved passwords, online accounts, SSH and GPG keys"
+msgstr "Contrasinais gardados, contas en liña, claves SSH e GPG"
+
+msgid "System secrets"
+msgstr "Segredos do sistema"
+
+msgid "These files were changed after the backup and get their old version:"
+msgstr "Estes ficheiros cambiaron despois da copia e recuperan a súa versión anterior:"
+
+msgid "This computer can now use your backups."
+msgstr "Este ordenador xa pode usar as túas copias."
+
+msgid "Turn on"
+msgstr "Activar"
+
+msgid "Where are your backups?"
+msgstr "Onde están as túas copias?"
+
+msgid "Your files are already as in this backup"
+msgstr "Os teus ficheiros xa están como nesta copia"
+
+msgid "{n} files that are missing now come back."
+msgstr "Volven {n} ficheiros que agora faltan."
+
+msgid "…and {n} more"
+msgstr "…e {n} máis"
+
+msgid "Add a device"
+msgstr "Engadir un dispositivo"
+
+msgid "Added {when}"
+msgstr "Engadido {when}"
+
+msgid "Block"
+msgstr "Bloquear"
+
+msgid "Block «{name}»?"
+msgstr "Bloquear «{name}»?"
+
+msgid "Block…"
+msgstr "Bloquear…"
+
+msgid "Cannot list the devices"
+msgstr "Non se pode mostrar a lista de dispositivos"
+
+msgid "Code for a new device"
+msgstr "Código para un dispositivo novo"
+
+msgid "Could not block: {why}"
+msgstr "Non se puido bloquear: {why}"
+
+msgid "Could not make a code: {why}"
+msgstr "Non se puido crear un código: {why}"
+
+msgid "Delete the old copy yourself: {place}"
+msgstr "Borra ti mesmo a copia antiga: {place}"
+
+msgid "Done"
+msgstr "Feito"
+
+msgid "Each device has its own key. Block a lost or stolen one."
+msgstr "Cada dispositivo ten a súa propia clave. Bloquea un perdido ou roubado."
+
+msgid "It can no longer open or add to the backups, and forgets its key the next time it tries. Files on it stay as they are. If it was stolen, the backups also get a new key and you get a new recovery sheet."
+msgstr "Xa non poderá abrir as copias nin engadirlles nada, e esquecerá a súa clave a próxima vez que o intente. Os seus ficheiros quedan como están. Se foi roubado, as copias reciben ademais unha clave nova e ti unha folla de recuperación nova."
+
+msgid "It was stolen"
+msgstr "Roubárono"
+
+msgid "Key from your sheet, or a code from your other device"
+msgstr "A clave da túa folla ou un código do teu outro dispositivo"
+
+msgid "Moving the backups under a new key…"
+msgstr "Pasando as copias a unha clave nova…"
+
+msgid "My devices"
+msgstr "Os meus dispositivos"
+
+msgid "On a computer that already makes backups, open Backups and choose «Add a device»: it shows a code valid for 15 minutes."
+msgstr "Nun ordenador que xa fai copias, abre Copias de seguranza e escolle «Engadir un dispositivo»: mostra un código válido durante 15 minutos."
+
+msgid "On the new computer, open Backups, choose «Restore from backups made before» and type this code there. It works once, until {when}. Do not tell it to anyone."
+msgstr "No ordenador novo, abre Copias de seguranza, escolle «Restaurar desde copias feitas antes» e escribe alí este código. Funciona unha soa vez, ata {when}. Non llo digas a ninguén."
+
+msgid "Opens the backups if every device is lost"
+msgstr "Abre as copias se se perden todos os dispositivos"
+
+msgid "Protect"
+msgstr "Protexer"
+
+msgid "Protect the backups after the theft?"
+msgstr "Protexer as copias despois do roubo?"
+
+msgid "The backups were not moved: {why}"
+msgstr "As copias non se moveron: {why}"
+
+msgid "The stolen device may know the key of the backups. Vilna moves every backup under a new key and deletes the old copy; this can take a while. Then you write down a new recovery sheet, and your other devices connect again with a code."
+msgstr "O dispositivo roubado pode coñecer a clave das copias. Vilna pasa todas as copias a unha clave nova e borra a copia antiga; isto pode tardar un anaco. Despois anotas unha folla de recuperación nova, e os teus outros dispositivos vólvense conectar cun código."
+
+msgid "This device · added {when}"
+msgstr "Este dispositivo · engadido {when}"
+
+msgid "Valid until {when}"
+msgstr "Válido ata {when}"
+
+msgid "Withdraw the code"
+msgstr "Retirar o código"
+
+msgid "«{name}» is blocked."
+msgstr "«{name}» está bloqueado."

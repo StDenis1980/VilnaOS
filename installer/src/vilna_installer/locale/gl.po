@@ -1,0 +1,858 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The first installer screen (gl). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\nX-Vilna-Review: not reviewed by a native speaker\n"
+
+msgid "Welcome to Vilna"
+msgstr "Dámosche a benvida a Vilna"
+
+msgid "Blavet release"
+msgstr "Versión Blavet"
+
+msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
+msgstr "Escolle un idioma. Despois eu, Gloxi, axudareiche a instalar o sistema, ou podes seguir os pasos pola túa conta."
+
+msgid "Screen reader"
+msgstr "Lector de pantalla"
+
+msgid "Without the assistant"
+msgstr "Sen o asistente"
+
+msgid "Continue with Gloxi"
+msgstr "Continuar con Gloxi"
+
+msgid "Install Vilna"
+msgstr "Instalar Vilna"
+
+msgid "Other languages"
+msgstr "Outros idiomas"
+
+msgid "Search for a language"
+msgstr "Buscar un idioma"
+
+msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the left and change any item yourself."
+msgstr "Son Gloxi, axudareiche a instalar Vilna. Non cambia nada no disco ata que confirmes o plan; vélo á esquerda e podes cambiar calquera punto ti mesmo."
+
+msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
+msgstr "En que idiomas escribes? Engadirei tamén as súas distribucións de teclado, por exemplo ucraíno e inglés."
+
+msgid "Gloxi cannot start on this computer right now. You can go on without the assistant: the steps are the same, and what you chose stays in the plan."
+msgstr "Gloxi non pode iniciarse agora neste ordenador. Podes continuar sen o asistente: os pasos son os mesmos, e o que xa escolliches queda no plan."
+
+msgid "Gloxi did not answer. Try again, or go on without the assistant."
+msgstr "Gloxi non respondeu. Téntao de novo ou continúa sen o asistente."
+
+msgid "Gloxi is thinking…"
+msgstr "Gloxi está a pensar…"
+
+msgid "Send"
+msgstr "Enviar"
+
+msgid "Message to Gloxi"
+msgstr "Mensaxe para Gloxi"
+
+msgid "Change"
+msgstr "Cambiar"
+
+msgid "Plan"
+msgstr "Plan"
+
+msgid "Not decided yet"
+msgstr "Aínda sen decidir"
+
+msgid "Check and confirm the plan"
+msgstr "Revisar e confirmar o plan"
+
+msgid "Wi-Fi password for {name}"
+msgstr "Contrasinal da wifi para {name}"
+
+msgid "Connect"
+msgstr "Conectar"
+
+msgid "Connecting…"
+msgstr "Conectando…"
+
+msgid "Could not connect. Check the password and try again."
+msgstr "Non se puido conectar. Comproba o contrasinal e téntao de novo."
+
+msgid "Password for {name}"
+msgstr "Contrasinal para {name}"
+
+msgid "Repeat the password"
+msgstr "Repite o contrasinal"
+
+msgid "The passwords are not the same."
+msgstr "Os contrasinais non coinciden."
+
+msgid "At least 8 characters."
+msgstr "Polo menos 8 caracteres."
+
+msgid "Passphrase for the disk"
+msgstr "Frase de contrasinal do disco"
+
+msgid "Save"
+msgstr "Gardar"
+
+msgid "Gloxi does not see what you type here."
+msgstr "Gloxi non ve o que escribes aquí."
+
+msgid "entered"
+msgstr "introducida"
+
+msgid "Without a network"
+msgstr "Sen rede"
+
+msgid "Cable"
+msgstr "Cable"
+
+msgid "Erase the whole disk"
+msgstr "Borrar todo o disco"
+
+msgid "Manual layout"
+msgstr "Particionado manual"
+
+msgid "Encrypted, with a recovery key"
+msgstr "Cifrado, con clave de recuperación"
+
+msgid "Encrypted with a passphrase"
+msgstr "Cifrado con frase de contrasinal"
+
+msgid "Not encrypted"
+msgstr "Sen cifrar"
+
+msgid "Cloud model off until the first login"
+msgstr "Modelo na nube desactivado ata o primeiro inicio de sesión"
+
+msgid "Languages and keyboard"
+msgstr "Idiomas e teclado"
+
+msgid "Network"
+msgstr "Rede"
+
+msgid "Disk"
+msgstr "Disco"
+
+msgid "Encryption"
+msgstr "Cifrado"
+
+msgid "Account"
+msgstr "Conta"
+
+msgid "Time and region"
+msgstr "Hora e rexión"
+
+msgid "Privacy"
+msgstr "Privacidade"
+
+msgid "Gloxi is waking up… The first start from the USB stick can take a few minutes. You can also go on without the assistant."
+msgstr "Gloxi estase a espertar… O primeiro inicio desde a memoria USB pode tardar uns minutos. Tamén podes continuar sen o asistente."
+
+msgid "Shall we connect to a network now? It is not needed: everything for installing is already on the USB stick. Name your Wi-Fi network, or say that we go on without a network."
+msgstr "Conectámonos a unha rede agora? Non fai falta: todo o necesario para instalar xa está na memoria USB. Di o nome da túa rede wifi ou di que seguimos sen rede."
+
+msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
+msgstr "Que facemos co disco? Propóñoche borrar todo o disco e instalar Vilna; a outra opción é o teu propio particionado no editor de particións."
+
+msgid "Fine, the disk will not be encrypted. You can change this in the plan."
+msgstr "Ben, o disco non se cifrará. Podes cambialo no plan."
+
+msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
+msgstr "Garda a clave de recuperación nun lugar seguro: sen ela ninguén, nin sequera ti, poderá abrir o disco se algo cambia neste ordenador."
+
+msgid "What is your name? From it I will suggest a login name and a name for the computer."
+msgstr "Como te chamas? A partir do teu nome propoñerei un nome de usuario e un nome para o ordenador."
+
+msgid "I suggest the time zone {timezone} and the date and number formats of {region}. Is that right? If not, name your city or country."
+msgstr "Propóñoche o fuso horario {timezone} e os formatos de data e número de «{region}». É correcto? Se non, di a túa cidade ou o teu país."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi funciona directamente neste ordenador, e o que lle dis queda aquí. Agora o modelo na nube está desactivado; podes escollelo despois do primeiro inicio de sesión, e entón a pasarela de privacidade oculta nomes e números antes de que nada saia do ordenador. Aquí hai unha pregunta que só che corresponde a ti, así que non a respondo por ti: escolle abaixo."
+
+# The classic wizard without the assistant (wizard.py).
+
+msgid "Summary"
+msgstr "Resumo"
+
+msgid "Step {number} of {count}: {title}"
+msgstr "Paso {number} de {count}: {title}"
+
+msgid "Back"
+msgstr "Atrás"
+
+msgid "Next"
+msgstr "Seguinte"
+
+msgid "Which languages do you write in? The first one chosen is the main language."
+msgstr "En que idiomas escribes? O primeiro que escollas será o idioma principal."
+
+msgid "Main language"
+msgstr "Idioma principal"
+
+msgid "Keyboard layouts"
+msgstr "Distribucións de teclado"
+
+msgid "Another keyboard layout"
+msgstr "Outra distribución de teclado"
+
+msgid "None"
+msgstr "Ningunha"
+
+msgid "A network is not needed: everything for installing is already on the USB stick."
+msgstr "Non fai falta rede: todo o necesario para instalar xa está na memoria USB."
+
+msgid "Wi-Fi networks"
+msgstr "Redes wifi"
+
+msgid "Look for networks again"
+msgstr "Buscar redes de novo"
+
+msgid "No Wi-Fi networks found."
+msgstr "Non se atopou ningunha rede wifi."
+
+msgid "Connected"
+msgstr "Conectado"
+
+msgid "Choose the disk for Vilna and what to do with it."
+msgstr "Escolle o disco para Vilna e que facer con el."
+
+msgid "Disks"
+msgstr "Discos"
+
+msgid "What to do with the disk"
+msgstr "Que facer co disco"
+
+msgid "Erase the whole disk and install Vilna"
+msgstr "Borrar todo o disco e instalar Vilna"
+
+msgid "Choose the partitions yourself in the partition editor"
+msgstr "Escoller ti mesmo as particións no editor de particións"
+
+msgid "Empty"
+msgstr "Baleiro"
+
+msgid "{size} free"
+msgstr "{size} libres"
+
+msgid "Everything on this disk will be erased: {what}."
+msgstr "Borrarase todo o que hai neste disco: {what}."
+
+msgid "Open the partition editor"
+msgstr "Abrir o editor de particións"
+
+msgid "Partition editor"
+msgstr "Editor de particións"
+
+msgid "Choose what each partition is for. Partitions you do not use stay as they are. New partitions go into the largest free space."
+msgstr "Escolle para que serve cada partición. As particións que non uses quedan como están. As particións novas van ao maior espazo libre."
+
+msgid "Partitions on the disk"
+msgstr "Particións do disco"
+
+msgid "New partitions"
+msgstr "Particións novas"
+
+msgid "Add a partition"
+msgstr "Engadir unha partición"
+
+msgid "Remove"
+msgstr "Quitar"
+
+msgid "Suggest a layout"
+msgstr "Propoñer un particionado"
+
+msgid "Use"
+msgstr "Uso"
+
+msgid "Format (erase)"
+msgstr "Formatar (borrar)"
+
+msgid "Size, GiB"
+msgstr "Tamaño, GiB"
+
+msgid "Not used, keep"
+msgstr "Sen usar, conservar"
+
+msgid "EFI system partition"
+msgstr "Partición do sistema EFI"
+
+msgid "System"
+msgstr "Sistema"
+
+msgid "Home folders"
+msgstr "Cartafoles persoais"
+
+msgid "Swap"
+msgstr "Intercambio (swap)"
+
+msgid "Partitions chosen: {count}"
+msgstr "Particións escollidas: {count}"
+
+msgid "Encryption keeps your files safe if the computer or the disk is lost or stolen."
+msgstr "O cifrado protexe os teus ficheiros se perdes o ordenador ou o disco, ou se cho rouban."
+
+msgid "The disk opens by itself on this computer; a recovery key opens it if something changes. Recommended."
+msgstr "O disco ábrese só neste ordenador; unha clave de recuperación ábreo se algo cambia. Recomendado."
+
+msgid "This computer has no TPM 2.0 chip, so this way is not available."
+msgstr "Este ordenador non ten chip TPM 2.0, así que esta opción non está dispoñible."
+
+msgid "You type the passphrase every time the computer starts."
+msgstr "Escribes a frase de contrasinal cada vez que se acende o ordenador."
+
+msgid "Anyone who has the disk can read your files."
+msgstr "Calquera que teña o disco pode ler os teus ficheiros."
+
+msgid "The next screen shows the recovery key; keep it safe."
+msgstr "A seguinte pantalla mostra a clave de recuperación; gárdaa nun lugar seguro."
+
+msgid "Your name"
+msgstr "O teu nome"
+
+msgid "Login name"
+msgstr "Nome de usuario"
+
+msgid "Computer name"
+msgstr "Nome do ordenador"
+
+msgid "Time zone"
+msgstr "Fuso horario"
+
+msgid "Date and number formats"
+msgstr "Formatos de data e número"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi funciona directamente neste ordenador, e o que lle dis queda aquí. Agora o modelo na nube está desactivado; podes escollelo despois do primeiro inicio de sesión, e entón a pasarela de privacidade oculta nomes e números antes de que nada saia do ordenador."
+
+msgid "What happens to the disk"
+msgstr "Que pasa co disco"
+
+msgid "Still to do"
+msgstr "Falta por facer"
+
+msgid "The plan is ready. The next screen, from Herkos, shows exactly what will change."
+msgstr "O plan está listo. A seguinte pantalla, de Herkos, mostra exactamente que cambiará."
+
+msgid "Fill in this step."
+msgstr "Completa este paso."
+
+msgid "{name} ({size}{what}) will be erased"
+msgstr "{name} ({size}{what}) borrarase"
+
+msgid "{name} ({size}{what}) stays as it is"
+msgstr "{name} ({size}{what}) queda como está"
+
+msgid "{name} ({size}) is used as {use}, its files stay"
+msgstr "{name} ({size}) úsase como «{use}», os seus ficheiros quedan"
+
+msgid "A new partition of {size} is created{use}"
+msgstr "Créase unha partición nova de {size}{use}"
+
+msgid "Partitions are chosen in the partition editor"
+msgstr "As particións escóllense no editor de particións"
+
+msgid "Type your name."
+msgstr "Escribe o teu nome."
+
+msgid "Choose a disk."
+msgstr "Escolle un disco."
+
+msgid "Choose one of the options."
+msgstr "Escolle unha das opcións."
+
+msgid "Connect to the Wi-Fi network first, or choose another way."
+msgstr "Conéctate primeiro á rede wifi ou escolle outra opción."
+
+msgid "Type the Wi-Fi password and connect."
+msgstr "Escribe o contrasinal da wifi e conéctate."
+
+msgid "Type the password for the account."
+msgstr "Escribe o contrasinal da conta."
+
+msgid "Type the passphrase for the disk."
+msgstr "Escribe a frase de contrasinal do disco."
+
+msgid "The disks changed (a disk added or removed?). Choose the disk again."
+msgstr "Os discos cambiaron (engadiuse ou quitouse un disco?). Volve escoller o disco."
+
+# The summary of the plan and the Herkos confirmation screen (step 12).
+
+msgid "{n} GiB"
+msgstr "{n} GiB"
+
+msgid "{n} MiB"
+msgstr "{n} MiB"
+
+msgid "Erased: {what}"
+msgstr "Borrarase: {what}"
+
+msgid "Formatted for {use}, everything on it erased: {what}"
+msgstr "Formatarase para {use} e borrarase todo o que contén: {what}"
+
+msgid "Kept as it is: {what}"
+msgstr "Queda como está: {what}"
+
+msgid "Shrunk to {to}: {what}"
+msgstr "Reducirase a {to}: {what}"
+
+msgid "Used for {use} without formatting: {what}"
+msgstr "Usarase para {use} sen formatar: {what}"
+
+msgid "New: Vilna, {size}"
+msgstr "Nova: Vilna, {size}"
+
+msgid "New: Vilna, {size}, encrypted"
+msgstr "Nova: Vilna, {size}, cifrada"
+
+msgid "New partition for {use}: {size}"
+msgstr "Partición nova para {use}: {size}"
+
+msgid "Your own layout of {disk}"
+msgstr "O teu propio particionado de {disk}"
+
+msgid "{model} ({name}, {size})"
+msgstr "{model} ({name}, {size})"
+
+msgid "Disk {name}, {size}"
+msgstr "Disco {name}, {size}"
+
+msgid "encrypted with {kind}"
+msgstr "cifrado con {kind}"
+
+msgid "unknown contents"
+msgstr "contido descoñecido"
+
+msgid "empty"
+msgstr "baleiro"
+
+msgid "the boot partition (EFI)"
+msgstr "a partición de arranque (EFI)"
+
+msgid "the system"
+msgstr "o sistema"
+
+msgid "home folders"
+msgstr "os cartafoles persoais"
+
+msgid "swap"
+msgstr "o intercambio (swap)"
+
+msgid "The disks changed since they were looked at (a USB stick put in or taken out?). Choose the disk again."
+msgstr "Os discos cambiaron desde que se revisaron (conectouse ou quitouse unha memoria USB?). Volve escoller o disco."
+
+msgid "The chosen disk is not in the computer now. Choose the disk again."
+msgstr "O disco escollido xa non está no ordenador. Volve escoller o disco."
+
+msgid "This is the USB stick Vilna is running from. Choose another disk."
+msgstr "Esta é a memoria USB desde a que funciona Vilna. Escolle outro disco."
+
+msgid "This disk is read-only. Choose another disk."
+msgstr "Este disco é só de lectura. Escolle outro disco."
+
+msgid "There is not enough room: Vilna needs at least 40 GiB."
+msgstr "Non hai espazo abondo: Vilna necesita polo menos 40 GiB."
+
+msgid "There is not enough free space for these partitions."
+msgstr "Non hai espazo libre abondo para estas particións."
+
+msgid "The EFI system partition needs at least 256 MiB."
+msgstr "A partición do sistema EFI necesita polo menos 256 MiB."
+
+msgid "This disk has RAID, LVM or a filesystem Vilna does not know: only the partition editor can use it."
+msgstr "Este disco ten RAID, LVM ou un sistema de ficheiros que Vilna non coñece: só o editor de particións pode usalo."
+
+msgid "Choose the partitions in the partition editor."
+msgstr "Escolle as particións no editor de particións."
+
+msgid "Choose exactly one EFI system partition."
+msgstr "Escolle exactamente unha partición do sistema EFI."
+
+msgid "Choose exactly one partition for the system."
+msgstr "Escolle exactamente unha partición para o sistema."
+
+msgid "The system and swap partitions are always formatted."
+msgstr "As particións do sistema e de intercambio sempre se formatan."
+
+msgid "This partition is not an EFI system partition; format it or choose another."
+msgstr "Esta partición non é unha partición do sistema EFI; formátaa ou escolle outra."
+
+msgid "This partition cannot be kept for home folders; format it or choose another."
+msgstr "Esta partición non se pode conservar para os cartafoles persoais; formátaa ou escolle outra."
+
+msgid "Only a Linux partition can be kept for home folders; format it."
+msgstr "Só unha partición Linux se pode conservar para os cartafoles persoais; formátaa."
+
+msgid "A partition is chosen twice."
+msgstr "Hai unha partición escollida dúas veces."
+
+msgid "Choose at most one partition for home folders."
+msgstr "Escolle como moito unha partición para os cartafoles persoais."
+
+msgid "Choose at most one swap partition."
+msgstr "Escolle como moito unha partición de intercambio."
+
+msgid "This comes in a later version of Vilna."
+msgstr "Isto chegará nunha versión posterior de Vilna."
+
+msgid "A login name starts with a Latin letter and has only small Latin letters, digits, «-» and «_»."
+msgstr "Un nome de usuario comeza por unha letra latina e só ten letras latinas minúsculas, cifras, «-» e «_»."
+
+msgid "The system already uses this login name; choose another."
+msgstr "O sistema xa usa este nome de usuario; escolle outro."
+
+msgid "A computer name has only small Latin letters, digits and «-»."
+msgstr "Un nome de ordenador só ten letras latinas minúsculas, cifras e «-»."
+
+msgid "Worth knowing"
+msgstr "Convén saber"
+
+msgid "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its recovery key (48 digits) once. Save the key before going on: it is in your Microsoft account or on the printout you made."
+msgstr "O Windows deste disco usa BitLocker. Despois de instalar Vilna, Windows pode pedir unha vez a súa clave de recuperación (48 cifras). Garda a clave antes de continuar: está na túa conta de Microsoft ou na copia impresa que fixeches."
+
+msgid "The chosen disk cannot be written to."
+msgstr "Non se pode escribir no disco escollido."
+
+msgid "The disk is too small: Vilna needs at least 40 GiB."
+msgstr "O disco é demasiado pequeno: Vilna necesita polo menos 40 GiB."
+
+msgid "The disk has RAID, LVM or a filesystem Vilna does not know: only your own layout in the partition editor is possible."
+msgstr "O disco ten RAID, LVM ou un sistema de ficheiros que Vilna non coñece: só é posible o teu propio particionado no editor de particións."
+
+msgid "This way of installing comes in a later version of Vilna."
+msgstr "Esta forma de instalar chegará nunha versión posterior de Vilna."
+
+msgid "Make the layout in the partition editor first."
+msgstr "Primeiro fai o particionado no editor de particións."
+
+msgid "The Wi-Fi password is not entered yet."
+msgstr "Aínda non se introduciu o contrasinal da wifi."
+
+msgid "The account password is not entered yet."
+msgstr "Aínda non se introduciu o contrasinal da conta."
+
+msgid "The disk passphrase is not entered yet."
+msgstr "Aínda non se introduciu a frase de contrasinal do disco."
+
+msgid "There is not enough free space for Vilna on the disk."
+msgstr "Non hai espazo libre abondo para Vilna no disco."
+
+msgid "This computer has no TPM 2.0 chip that can keep the disk key. Choose encryption with a passphrase instead."
+msgstr "Este ordenador non ten un chip TPM 2.0 que poida gardar a clave do disco. Escolle no seu lugar o cifrado con frase de contrasinal."
+
+msgid "Without encryption anyone who has the disk can read your files."
+msgstr "Sen cifrado, calquera que teña o disco pode ler os teus ficheiros."
+
+msgid "The chosen disk is removable, such as a USB disk."
+msgstr "O disco escollido é extraíble, como un disco USB."
+
+msgid "The plan cannot be installed yet: {message}"
+msgstr "O plan aínda non se pode instalar: {message}"
+
+msgid "Not decided yet: {parts}"
+msgstr "Aínda sen decidir: {parts}"
+
+msgid "Herkos"
+msgstr "Herkos"
+
+msgid "Confirm the installation"
+msgstr "Confirma a instalación"
+
+msgid "Check what will happen. Nothing has changed on the disks yet; after you confirm, Vilna is installed and this cannot be undone."
+msgstr "Revisa o que vai pasar. Aínda non cambiou nada nos discos; cando confirmes, instalarase Vilna e non se poderá desfacer."
+
+msgid "What happens to the disks"
+msgstr "Que pasa cos discos"
+
+msgid "The plan"
+msgstr "O plan"
+
+msgid "What has to be fixed first"
+msgstr "Que hai que corrixir primeiro"
+
+msgid "The plan cannot be installed yet. Go back and change it:"
+msgstr "O plan aínda non se pode instalar. Volve atrás e cámbiao:"
+
+msgid "Note"
+msgstr "Atención"
+
+msgid "Recovery key"
+msgstr "Clave de recuperación"
+
+msgid "Write this key down or take a photo of it, and keep it away from the computer. You need it if the disk does not open by itself: after a change of the hardware or of Secure Boot, or when you forget the passphrase. Nobody else has it, not even Vilna."
+msgstr "Anota esta clave ou sácalle unha foto, e gárdaa lonxe do ordenador. Necesitaraa se o disco non se abre só: despois dun cambio de hardware ou de Secure Boot, ou se esqueces a frase de contrasinal. Ninguén máis a ten, nin sequera Vilna."
+
+msgid "To show that you saved it, type the last group of the key (8 letters):"
+msgstr "Para confirmar que a gardaches, escribe o último grupo da clave (8 letras):"
+
+msgid "The last group of the recovery key"
+msgstr "O último grupo da clave de recuperación"
+
+msgid "That is not the last group. Look at the key again."
+msgstr "Ese non é o último grupo. Volve mirar a clave."
+
+msgid "Right. The key is saved."
+msgstr "Correcto. A clave está gardada."
+
+msgid "Recovery key, letter by letter: {key}"
+msgstr "Clave de recuperación, letra por letra: {key}"
+
+msgid "I understand that everything on {disk} is erased"
+msgstr "Entendo que se borrará todo o que hai en {disk}"
+
+msgid "I understand that the partitions marked above are erased"
+msgstr "Entendo que se borrarán as particións marcadas arriba"
+
+msgid "Back to the plan"
+msgstr "Volver ao plan"
+
+msgid "Erase and install"
+msgstr "Borrar e instalar"
+
+msgid "Install"
+msgstr "Instalar"
+
+msgid "Read the changes first…"
+msgstr "Primeiro le os cambios…"
+
+msgid "The disks changed while this screen was open. Go back and choose the disk again."
+msgstr "Os discos cambiaron mentres esta pantalla estaba aberta. Volve atrás e escolle o disco outra vez."
+
+msgid "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its buttons."
+msgstr "Esta pantalla móstraa Herkos, non Gloxi. Gloxi non pode premer os seus botóns."
+
+msgid "Installing Vilna"
+msgstr "Instalando Vilna"
+
+msgid "This takes a few minutes. Do not switch the computer off and do not pull out the stick."
+msgstr "Tardará uns minutos. Non apagues o ordenador nin saques a memoria USB."
+
+msgid "Vilna is installed"
+msgstr "Vilna está instalado"
+
+msgid "Take out the stick Vilna started from, then restart the computer. Vilna starts from the disk."
+msgstr "Saca a memoria USB desde a que se iniciou Vilna e reinicia o ordenador. Vilna arrancará desde o disco."
+
+msgid "The installation stopped"
+msgstr "A instalación detívose"
+
+msgid "Nothing on the disk has changed yet. You can close this window and try again."
+msgstr "Aínda non cambiou nada no disco. Podes pechar esta xanela e téntalo de novo."
+
+msgid "The disk was already partly written: Vilna will not start from it, and what was on it before is erased. Close this window and start the installation again."
+msgstr "O disco xa se escribiu en parte: Vilna non arrancará desde el, e o que había antes borrouse. Pecha esta xanela e volve comezar a instalación."
+
+msgid "Restart"
+msgstr "Reiniciar"
+
+msgid "Close"
+msgstr "Pechar"
+
+msgid "What went wrong (for a bug report):"
+msgstr "Que fallou (para un informe de erro):"
+
+msgid "Checking the plan and the disk"
+msgstr "Comprobando o plan e o disco"
+
+msgid "Writing Vilna to the disk"
+msgstr "Escribindo Vilna no disco"
+
+msgid "Opening the new system"
+msgstr "Abrindo o sistema novo"
+
+msgid "Copying Gloxi's model"
+msgstr "Copiando o modelo de Gloxi"
+
+msgid "Setting up languages, time and your account"
+msgstr "Configurando idiomas, hora e a túa conta"
+
+msgid "Setting up start-up and encryption"
+msgstr "Configurando o arranque e o cifrado"
+
+msgid "Finishing"
+msgstr "Rematando"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "If a program crashes, send us a crash report?"
+msgstr "Se un programa falla, envíasnos un informe do fallo?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Un informe de fallo di que programa fallou e en que parte do seu código. Nunca contén os teus ficheiros, o que escribiches, o teu nome nin o enderezo do ordenador. Podes ler cada informe e cambiar esta resposta máis tarde en Configuración."
+
+msgid "Send automatically"
+msgstr "Enviar automaticamente"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Os informes envíanse sós; podes ler cada un."
+
+msgid "Ask me every time"
+msgstr "Preguntarme cada vez"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Tras un fallo, unha notificación pregunta se enviar o seu informe."
+
+msgid "Never"
+msgstr "Nunca"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Os informes quedan neste ordenador; aínda así podes enviar un ti."
+
+msgid "What is in a report"
+msgstr "Que hai nun informe"
+
+msgid "Choose an answer about crash reports."
+msgstr "Escolle unha resposta sobre os informes de fallos."
+
+msgid "Crash reports: {answer}"
+msgstr "Informes de fallos: {answer}"
+
+msgid "Recovery key. It is only drawn on the screen, so that other programs cannot read it. Press «Read the key aloud» to hear it."
+msgstr "Clave de recuperación. Só está debuxada na pantalla, para que outros programas non a poidan ler. Preme «Ler a clave en voz alta» para oíla."
+
+msgid "Read the key aloud"
+msgstr "Ler a clave en voz alta"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Preme o botón ti mesmo, co teclado ou o rato: Herkos non acepta pulsacións doutros programas."
+
+msgid "Connected to Wi-Fi."
+msgstr "Conectado á wifi."
+
+msgid "The password is saved."
+msgstr "O contrasinal está gardado."
+
+msgid "The passphrase is saved."
+msgstr "A frase de contrasinal está gardada."
+
+msgid "Type the Wi-Fi password into the protected field below. I do not see it."
+msgstr "Escribe o contrasinal da wifi no campo protexido de abaixo. Eu non o vexo."
+
+msgid "Type the password for your account into the protected field below, twice. I do not see it."
+msgstr "Escribe o contrasinal da túa conta no campo protexido de abaixo, dúas veces. Eu non o vexo."
+
+msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
+msgstr "Escribe a frase de contrasinal do disco no campo protexido de abaixo, dúas veces. Eu non a vexo."
+
+msgid "This computer is already connected to the network, so I keep that connection; you can change it in the plan."
+msgstr "Este ordenador xa está conectado á rede, así que manteño esa conexión; podes cambiala no plan."
+
+msgid "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; the other way is your own layout in the partition editor. Use the whole disk?"
+msgstr "O disco para Vilna ten {size} GB e está baleiro. Propóñoche darllo enteiro a Vilna; a outra opción é o teu propio particionado no editor de particións. Usamos todo o disco?"
+
+msgid "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it completely and installing Vilna: everything on it will be lost. The other way is your own layout in the partition editor. Erase this disk?"
+msgstr "O disco para Vilna ten {size} GB e contén {what}. Propóñoche borralo por completo e instalar Vilna: perderase todo o que contén. A outra opción é o teu propio particionado no editor de particións. Borramos este disco?"
+
+msgid "files"
+msgstr "ficheiros"
+
+msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. For more protection if the computer is stolen, the disk can also ask for a PIN at every start. You can also type a passphrase at every start, or not encrypt the disk."
+msgstr "Cifro o sistema novo? Propóñoche o cifrado con clave de recuperación: neste ordenador o disco ábrese só, e a clave ábreo se algo cambia. Para máis protección se che rouban o ordenador, o disco tamén pode pedir un PIN en cada arranque. Tamén podes escribir unha frase de contrasinal en cada arranque, ou non cifrar o disco."
+
+msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
+msgstr "Cifro o sistema novo? Este ordenador non ten chip TPM, así que o disco abriríase cunha frase de contrasinal que escribirías en cada arranque. Sen cifrado, calquera que teña o disco pode ler os teus ficheiros."
+
+msgid "Switch to the dark theme"
+msgstr "Cambiar ao tema escuro"
+
+msgid "Switch to the light theme"
+msgstr "Cambiar ao tema claro"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "A túa conexión xa está protexida: Vilna cifra o DNS, así que a rede na que estás non ve que sitios buscas."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Queres aínda máis protección cunha VPN?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "Unha VPN oculta o teu tráfico á rede na que estás (unha cafetaría, un hotel) e o teu enderezo aos sitios web. O provedor da VPN ve onde vas, por iso só suxerimos provedores probados."
+
+msgid "Sign in to Proton VPN"
+msgstr "Iniciar sesión en Proton VPN"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "Tras o primeiro inicio de sesión, Gloxi abre a aplicación Proton VPN e ti inicias sesión alí."
+
+msgid "Create a free Proton account"
+msgstr "Crear unha conta gratuíta de Proton"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 países, 1 dispositivo á vez. Tras o primeiro inicio de sesión, Gloxi abre a páxina de rexistro de Proton e logo a aplicación."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Teño un número de conta ou un código de Mullvad"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Para o máximo anonimato: sen correo electrónico, só un número de conta. Tras o primeiro inicio de sesión, Gloxi abre a aplicación Mullvad."
+
+msgid "Skip"
+msgstr "Omitir"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "Podes activar unha VPN máis tarde: pídello a Gloxi ou escribe /vpn na súa xanela."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Só inicias sesión na propia aplicación do provedor: Vilna e Gloxi nunca ven o teu contrasinal, o número de conta nin o código."
+
+msgid "Choose an answer about the VPN."
+msgstr "Escolle unha resposta sobre a VPN."
+
+msgid "Encrypted, with a PIN at every start"
+msgstr "Cifrado, cun PIN en cada arranque"
+
+msgid "Start PIN (6 to 20 digits)"
+msgstr "PIN de arranque (de 6 a 20 cifras)"
+
+msgid "The PIN is 6 to 20 digits, nothing else."
+msgstr "O PIN ten de 6 a 20 cifras, nada máis."
+
+msgid "The PIN is saved."
+msgstr "O PIN está gardado."
+
+msgid "Type the start PIN, 6 to 20 digits, into the protected field below, twice. I do not see it."
+msgstr "Escribe o PIN de arranque, de 6 a 20 cifras, no campo protexido de abaixo, dúas veces. Eu non o vexo."
+
+msgid "Like the first way, plus a PIN of 6 to 20 digits at every start: a stolen computer does not even reach the login screen."
+msgstr "Como a primeira opción, máis un PIN de 6 a 20 cifras en cada arranque: un ordenador roubado nin sequera chega á pantalla de inicio de sesión."
+
+msgid "Type the start PIN for the disk."
+msgstr "Escribe o PIN de arranque do disco."
+
+msgid "The start PIN is not entered yet."
+msgstr "Aínda non se introduciu o PIN de arranque."
+
+msgid "Getting to know each other"
+msgstr "Presentación"
+
+msgid "Disk and files"
+msgstr "Disco e ficheiros"
+
+msgid "You and the system"
+msgstr "Ti e o sistema"
+
+msgid "Step {n} of {total}"
+msgstr "Paso {n} de {total}"
+
+msgid "Installation"
+msgstr "Instalación"
+
+msgid "Conversation with Gloxi"
+msgstr "Conversa con Gloxi"
+
+msgid "Password-protected"
+msgstr "Protexida con contrasinal"
+
+msgid "New partition {n}"
+msgstr "Partición nova {n}"
+
+msgid "Password"
+msgstr "Contrasinal"
+
+msgid "This version installs only the EFI and the system partition. Leave home folders and swap unused for now."
+msgstr "Esta versión só instala a partición EFI e a do sistema. Polo de agora, deixa sen usar os cartafoles persoais e o intercambio."
+
+msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
+msgstr "O disco xa ten unha partición do sistema EFI. Escóllea (con formato ou sen el) no canto dunha nova."
+
+msgid "Keyboard layout: {name}"
+msgstr "Distribución do teclado: {name}"

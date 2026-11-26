@@ -9,6 +9,11 @@ Name[it]=Vilna Aria
 Name[ro]=Vilna Aer
 Name[cs]=Vilna Vzduch
 Name[lt]=Vilna Oras
+Name[ca]=Vilna Aire
+Name[ca@valencia]=Vilna Aire
+Name[gl]=Vilna Aire
+Name[eu]=Vilna Airea
+Name[pt]=Vilna Ar
 Inherits=freedesktop
 Directories=stereo
 

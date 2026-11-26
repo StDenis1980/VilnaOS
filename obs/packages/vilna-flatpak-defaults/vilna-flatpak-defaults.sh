@@ -23,10 +23,11 @@ STAMP=${VILNA_FLATPAK_STAMP:-$STATE/flatpak-defaults-all.done}
 OLD_STAMP=$STATE/flatpak-defaults.done
 FLATPAK=${VILNA_FLATPAK_BIN:-flatpak}
 # Translations Flatpak installs with each app and runtime (their .Locale
-# extensions): the ten languages of ADR 0009. Without this Flatpak takes
-# only the system language of this first boot, en_US, and Firefox stayed
-# in English after the person chose Українська (VM test of Build15.6).
-LANGUAGES=${VILNA_FLATPAK_LANGUAGES:-uk;en;es;pl;de;fr;it;ro;cs;lt}
+# extensions): the main languages of ADR 0009, Valencian with ca. Without
+# this Flatpak takes only the system language of this first boot, en_US,
+# and Firefox stayed in English after the person chose Українська (VM test
+# of Build15.6).
+LANGUAGES=${VILNA_FLATPAK_LANGUAGES:-uk;en;es;pl;de;fr;it;ro;cs;lt;ca;gl;eu;pt}
 NM_ONLINE=${VILNA_FLATPAK_NM_ONLINE:-nm-online}
 TEMPFAIL=75
 

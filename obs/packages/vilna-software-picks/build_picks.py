@@ -34,8 +34,11 @@ from xml.sax.saxutils import escape
 
 HERE = Path(__file__).resolve().parent
 
-# The ten main languages of Vilna (ADR 0009).
-LANGUAGES = ("uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
+# The main languages of Vilna (ADR 0009).
+LANGUAGES = (
+    "uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt",
+    "ca", "ca@valencia", "gl", "eu", "pt",
+)
 
 # GNOME Software shows the deployment section only with at least this many
 # resolvable apps (N_TILES in src/gs-overview-page.c), picking 12 at random.

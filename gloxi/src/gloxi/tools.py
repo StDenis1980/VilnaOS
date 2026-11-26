@@ -214,7 +214,7 @@ class ProgramOperation:
     # What the program as a whole does (its manifest): for choosing what to
     # offer (``programs``), not sent with every function.
     about: str = ""
-    # Starts of words in the ten languages that also choose it
+    # Starts of words in the main languages that also choose it
     # (``program_words.toml``): of this operation, and of the whole program.
     stems: tuple[str, ...] = ()
     program_stems: tuple[str, ...] = ()

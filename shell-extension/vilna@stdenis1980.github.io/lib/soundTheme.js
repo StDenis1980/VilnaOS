@@ -69,6 +69,14 @@ export function plan(theme, disabled, existingIndex, existingFiles) {
 // extension has no gettext catalogue of its own).
 const UI_KEYS = ['page', 'groupTheme', 'theme', 'all', 'allHint', 'groupEvents', 'eventsHint', 'play'];
 
+// The table's key for a GLib language name: "uk_UA.UTF-8" → "uk", and
+// Valencian, "ca_ES.UTF-8@valencia" → "ca@valencia" (ADR 0009).
+function languageCode(name) {
+    const s = String(name);
+    const code = s.split(/[_.@-]/)[0].toLowerCase();
+    return code === 'ca' && /@valencia/i.test(s) ? 'ca@valencia' : code;
+}
+
 const SOUND_TEXT = {
     en: {
         ui: ['Sounds', 'Sound theme', 'Theme', 'Event sounds', 'Turn all sounds on or off at once', 'Sounds one by one',
@@ -158,6 +166,51 @@ const SOUND_TEXT = {
             'Senka baterija', 'Šiukšlinė ištuštinta', 'Prisijungimas', 'Gloxi klausosi', 'Gloxi baigė',
             'Gloxi: problema', 'Leidimo prašymas'],
     },
+    ca: {
+        ui: ['Sons', 'Tema de sons', 'Tema', 'Sons d’esdeveniments', 'Activa o desactiva tots els sons alhora',
+            'Sons un per un', 'Desactiva els sons que no vulguis; els altres continuaran sonant.', 'Escolta'],
+        themes: ['Fusta', 'Campaneta', 'Aigua', 'Aire', 'Ocells', 'Vidre', 'Estrella', 'Estàndard de GNOME'],
+        events: ['Notificació', 'Avís sonor', 'Advertiment', 'Error', 'Fet', 'Captura de pantalla', 'Volum',
+            'Dispositiu connectat', 'Dispositiu desconnectat', 'Carregador connectat', 'Carregador desconnectat',
+            'Bateria baixa', 'Paperera buidada', 'Inici de sessió', 'Gloxi escolta', 'Gloxi ha acabat',
+            'Gloxi: un problema', 'Sol·licitud de permís'],
+    },
+    'ca@valencia': {
+        ui: ['Sons', 'Tema de sons', 'Tema', 'Sons d’esdeveniments', 'Activa o desactiva tots els sons alhora',
+            'Sons un per un', 'Desactiva els sons que no vulgues; els altres continuaran sonant.', 'Escolta'],
+        themes: ['Fusta', 'Campaneta', 'Aigua', 'Aire', 'Ocells', 'Vidre', 'Estrella', 'Estàndard de GNOME'],
+        events: ['Notificació', 'Avís sonor', 'Advertiment', 'Error', 'Fet', 'Captura de pantalla', 'Volum',
+            'Dispositiu connectat', 'Dispositiu desconnectat', 'Carregador connectat', 'Carregador desconnectat',
+            'Bateria baixa', 'Paperera buidada', 'Inici de sessió', 'Gloxi escolta', 'Gloxi ha acabat',
+            'Gloxi: un problema', 'Sol·licitud de permís'],
+    },
+    gl: {
+        ui: ['Sons', 'Tema de sons', 'Tema', 'Sons de eventos', 'Activar ou desactivar todos os sons á vez',
+            'Sons un a un', 'Desactiva os sons que non queiras; os demais seguirán soando.', 'Escoitar'],
+        themes: ['Madeira', 'Campaíña', 'Auga', 'Aire', 'Paxaros', 'Vidro', 'Estrela', 'Estándar de GNOME'],
+        events: ['Notificación', 'Aviso sonoro', 'Advertencia', 'Erro', 'Feito', 'Captura de pantalla', 'Volume',
+            'Dispositivo conectado', 'Dispositivo desconectado', 'Cargador conectado', 'Cargador desconectado',
+            'Batería baixa', 'Lixo baleirado', 'Inicio de sesión', 'Gloxi escoita', 'Gloxi rematou',
+            'Gloxi: un problema', 'Solicitude de permiso'],
+    },
+    eu: {
+        ui: ['Soinuak', 'Soinu-gaia', 'Gaia', 'Gertaeren soinuak', 'Aktibatu edo desaktibatu soinu guztiak batera',
+            'Soinuak banan-banan', 'Desaktibatu nahi ez dituzun soinuak; besteek jotzen jarraituko dute.', 'Entzun'],
+        themes: ['Egurra', 'Kanpaitxoa', 'Ura', 'Airea', 'Txoriak', 'Beira', 'Izarra', 'GNOMEren estandarra'],
+        events: ['Jakinarazpena', 'Abisu-soinua', 'Abisua', 'Errorea', 'Eginda', 'Pantaila-argazkia', 'Bolumena',
+            'Gailua konektatuta', 'Gailua deskonektatuta', 'Kargagailua konektatuta', 'Kargagailua deskonektatuta',
+            'Bateria baxua', 'Zakarrontzia hustuta', 'Saio-hasiera', 'Gloxi entzuten ari da', 'Gloxik amaitu du',
+            'Gloxi: arazo bat', 'Baimen-eskaera'],
+    },
+    pt: {
+        ui: ['Sons', 'Tema de sons', 'Tema', 'Sons de eventos', 'Ativar ou desativar todos os sons de uma vez',
+            'Sons um a um', 'Desative os sons que não quer; os outros continuam a tocar.', 'Ouvir'],
+        themes: ['Madeira', 'Sininho', 'Água', 'Ar', 'Pássaros', 'Vidro', 'Estrela', 'Padrão do GNOME'],
+        events: ['Notificação', 'Sinal sonoro', 'Aviso', 'Erro', 'Concluído', 'Captura de ecrã', 'Volume',
+            'Dispositivo ligado', 'Dispositivo removido', 'Carregador ligado', 'Carregador desligado',
+            'Bateria fraca', 'Lixo esvaziado', 'Início de sessão', 'O Gloxi está a ouvir', 'O Gloxi terminou',
+            'Gloxi: um problema', 'Pedido de permissão'],
+    },
 };
 
 export const SOUND_LANGUAGES = Object.keys(SOUND_TEXT);
@@ -166,7 +219,7 @@ export const SOUND_LANGUAGES = Object.keys(SOUND_TEXT);
 export function soundText(languageNames) {
     let code = 'en';
     for (const name of languageNames ?? []) {
-        const c = String(name).split(/[_.@-]/)[0].toLowerCase();
+        const c = languageCode(name);
         if (SOUND_TEXT[c]) {
             code = c;
             break;

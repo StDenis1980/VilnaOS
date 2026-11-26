@@ -167,6 +167,14 @@ const UI_KEYS = [
     'hide', 'motion', 'motionHint', 'missing',
 ];
 
+// The table's key for a GLib language name: "uk_UA.UTF-8" → "uk", and
+// Valencian, "ca_ES.UTF-8@valencia" → "ca@valencia" (ADR 0009).
+function languageCode(name) {
+    const s = String(name);
+    const code = s.split(/[_.@-]/)[0].toLowerCase();
+    return code === 'ca' && /@valencia/i.test(s) ? 'ca@valencia' : code;
+}
+
 const TEXT = {
     en: {
         ui: ['Dock', 'Look', 'Icon size', 'From 32 to 80 pixels', 'Transparency', '0 % solid glass, 100 % only the icons',
@@ -248,6 +256,49 @@ const TEXT = {
         positions: ['Apačioje', 'Kairėje'],
         hides: ['Niekada', 'Kai jį uždengia langas', 'Visada, rodyti prie krašto'],
     },
+    ca: {
+        ui: ['Acoblador', 'Aspecte', 'Mida de les icones', 'De 32 a 80 píxels', 'Transparència',
+            '0 %: vidre opac, 100 %: només les icones', 'Posició i ocultació', 'Posició', 'Amaga l’acoblador',
+            'Icones elàstiques',
+            'Les icones creixen sota el punter, reboten en fer-hi clic i es gronxen mentre en mous una',
+            'L’acoblador no està instal·lat'],
+        positions: ['A baix', 'A l’esquerra'],
+        hides: ['Mai', 'Quan una finestra el tapa', 'Sempre, mostra’l a la vora'],
+    },
+    'ca@valencia': {
+        ui: ['Acoblador', 'Aspecte', 'Mida de les icones', 'De 32 a 80 píxels', 'Transparència',
+            '0 %: vidre opac, 100 %: només les icones', 'Posició i ocultació', 'Posició', 'Amaga l’acoblador',
+            'Icones elàstiques',
+            'Les icones creixen sota el punter, reboten en fer-hi clic i es gronxen mentre en mous una',
+            'L’acoblador no està instal·lat'],
+        positions: ['A baix', 'A l’esquerra'],
+        hides: ['Mai', 'Quan una finestra el tapa', 'Sempre, mostra’l a la vora'],
+    },
+    gl: {
+        ui: ['Dock', 'Aparencia', 'Tamaño das iconas', 'De 32 a 80 píxeles', 'Transparencia',
+            '0 %: vidro opaco, 100 %: só as iconas', 'Posición e ocultación', 'Posición', 'Ocultar o dock',
+            'Iconas elásticas', 'As iconas medran baixo o punteiro, rebotan ao premelas e abanean mentres moves unha',
+            'O dock non está instalado'],
+        positions: ['Abaixo', 'Á esquerda'],
+        hides: ['Nunca', 'Cando unha xanela o tapa', 'Sempre, amosar no bordo'],
+    },
+    eu: {
+        ui: ['Atrakagarria', 'Itxura', 'Ikonoen tamaina', '32tik 80 pixelera', 'Gardentasuna',
+            '% 0: beira opakua, % 100: ikonoak bakarrik', 'Kokapena eta ezkutatzea', 'Kokapena',
+            'Ezkutatu atrakagarria', 'Ikono elastikoak',
+            'Ikonoak erakuslearen azpian handitzen dira, klik egitean errebotatzen dute eta bat mugitzen duzun bitartean kulunkatzen dira',
+            'Atrakagarria ez dago instalatuta'],
+        positions: ['Behean', 'Ezkerrean'],
+        hides: ['Inoiz ez', 'Leiho batek estaltzen duenean', 'Beti, erakutsi ertzean'],
+    },
+    pt: {
+        ui: ['Dock', 'Aspeto', 'Tamanho dos ícones', 'De 32 a 80 píxeis', 'Transparência',
+            '0 %: vidro opaco, 100 %: só os ícones', 'Posição e ocultação', 'Posição', 'Ocultar o dock',
+            'Ícones elásticos', 'Os ícones crescem sob o ponteiro, saltam ao clicar e baloiçam enquanto move um',
+            'O dock não está instalado'],
+        positions: ['Em baixo', 'À esquerda'],
+        hides: ['Nunca', 'Quando uma janela o tapa', 'Sempre, mostrar na margem'],
+    },
 };
 
 export const DOCK_LANGUAGES = Object.keys(TEXT);
@@ -256,7 +307,7 @@ export const DOCK_LANGUAGES = Object.keys(TEXT);
 export function dockText(languageNames) {
     let code = 'en';
     for (const name of languageNames ?? []) {
-        const c = String(name).split(/[_.@-]/)[0].toLowerCase();
+        const c = languageCode(name);
         if (TEXT[c]) {
             code = c;
             break;

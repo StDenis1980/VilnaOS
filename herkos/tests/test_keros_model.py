@@ -245,7 +245,23 @@ def test_config_keros_model(tmp_path):
 
 # -- the bench ---------------------------------------------------------------
 
-LANGS = {"uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"}  # ADR 0009
+LANGS = {
+    "uk",
+    "en",
+    "es",
+    "pl",
+    "de",
+    "fr",
+    "it",
+    "ro",
+    "cs",
+    "lt",
+    "ca",
+    "ca@valencia",
+    "gl",
+    "eu",
+    "pt",
+}  # ADR 0009
 
 
 @pytest.mark.parametrize("name", ["work", "holdout"])

@@ -96,8 +96,8 @@ test('the zones of a place are found in the boundaries file, holes and junk incl
     assert.equal(latestGeocodes('nope'), null);
 });
 
-test('labels in all ten languages', () => {
-    assert.deepEqual(ALERT_LANGUAGES.sort(), ['cs', 'de', 'en', 'es', 'fr', 'it', 'lt', 'pl', 'ro', 'uk']);
+test('labels in all main languages', () => {
+    assert.deepEqual(ALERT_LANGUAGES.sort(), ['ca', 'ca@valencia', 'cs', 'de', 'en', 'es', 'eu', 'fr', 'gl', 'it', 'lt', 'pl', 'pt', 'ro', 'uk']);
     assert.deepEqual(checkAlertTables(), []);
     for (const code of ALERT_LANGUAGES) {
         const t = alertText([code]);
@@ -118,6 +118,9 @@ test('Gloxi translates only words that are not in the person’s language', () =
     assert.equal(translationTarget(es, ['uk_UA.UTF-8', 'uk_UA', 'uk', 'C']), 'uk');
     assert.equal(translationTarget(es, ['es_ES.UTF-8', 'es', 'C']), null);
     assert.equal(translationTarget({headline: 'Orange warning', language: 'en-GB'}, ['en_GB.UTF-8', 'C']), null);
+    const ca = {headline: 'Avís taronja per vent', language: 'ca-ES'};
+    assert.equal(translationTarget(ca, ['ca_ES.UTF-8@valencia', 'ca@valencia', 'ca']), null);
+    assert.equal(translationTarget(es, ['ca_ES.UTF-8@valencia', 'ca@valencia', 'ca']), 'ca@valencia');
     // A language Vilna does not speak: our labels are English, so is the translation.
     assert.equal(translationTarget(es, ['ja_JP.UTF-8', 'C']), 'en');
     assert.equal(translationTarget({headline: '', language: 'es'}, ['uk']), null);

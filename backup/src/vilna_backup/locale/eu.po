@@ -1,0 +1,511 @@
+# Basque translation of the Vilna Backups window.
+# SPDX-License-Identifier: GPL-3.0-or-later
+msgid ""
+msgstr ""
+"Language: eu\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"X-Vilna-Review: not reviewed by a native speaker\n"
+
+msgid "B"
+msgstr "B"
+
+msgid "kB"
+msgstr "kB"
+
+msgid "MB"
+msgstr "MB"
+
+msgid "GB"
+msgstr "GB"
+
+msgid "TB"
+msgstr "TB"
+
+msgid "Backups are on"
+msgstr "Babeskopiak aktibatuta daude"
+
+msgid "Choose where to keep the backups."
+msgstr "Aukeratu non gorde babeskopiak."
+
+msgid "recommended"
+msgstr "gomendatua"
+
+msgid "{day} {month} at {time}"
+msgstr "{month}ren {day}a, {time}"
+
+msgid "Backing up…"
+msgstr "Babeskopia egiten…"
+
+msgid "Backups are off"
+msgstr "Babeskopiak desaktibatuta daude"
+
+msgid "Turn them on to keep your files safe."
+msgstr "Aktibatu zure fitxategiak seguru izateko."
+
+msgid "The last backup failed"
+msgstr "Azken babeskopiak huts egin du"
+
+msgid "Settings only"
+msgstr "Ezarpenak soilik"
+
+msgid "Settings and documents"
+msgstr "Ezarpenak eta dokumentuak"
+
+msgid "The whole home folder"
+msgstr "Karpeta pertsonal osoa"
+
+msgid "Chosen by you"
+msgstr "Zuk aukeratua"
+
+msgid "Settings, Gloxi, Herkos, passwords"
+msgstr "Ezarpenak, Gloxi, Herkos, pasahitzak"
+
+msgid "Also Documents, Desktop and Pictures"
+msgstr "Baita Dokumentuak, Mahaigaina eta Irudiak ere"
+
+msgid "Everything except caches and Downloads"
+msgstr "Guztia, cacheak eta Deskargak izan ezik"
+
+msgid "Folders chosen with Gloxi or in the terminal"
+msgstr "Gloxirekin edo terminalean aukeratutako karpetak"
+
+msgid "Every hour"
+msgstr "Orduro"
+
+msgid "Every day"
+msgstr "Egunero"
+
+msgid "Every week"
+msgstr "Astero"
+
+msgid "Off"
+msgstr "Desaktibatuta"
+
+msgid "today at {time}"
+msgstr "gaur, {time}"
+
+msgid "yesterday at {time}"
+msgstr "atzo, {time}"
+
+msgid "Last backup {when} · {size} · {schedule}"
+msgstr "Azken babeskopia: {when} · {size} · {schedule}"
+
+msgid "Choose a folder on the external disk."
+msgstr "Aukeratu karpeta bat kanpoko diskoan."
+
+msgid "Type the server address: sftp:user@host:/folder, s3:https://… or rest:https://…"
+msgstr "Idatzi zerbitzariaren helbidea: sftp:user@host:/folder, s3:https://… edo rest:https://…"
+
+msgid "For a folder on this computer, choose the external disk."
+msgstr "Ordenagailu honetako karpeta baterako, aukeratu kanpoko diskoa."
+
+msgid "This server needs a login and a password."
+msgstr "Zerbitzari honek erabiltzaile bat eta pasahitz bat behar ditu."
+
+msgid "≈ {size}"
+msgstr "≈ {size}"
+
+msgid "{percent} % done"
+msgstr "% {percent} eginda"
+
+msgid "No backup yet · {schedule}"
+msgstr "Oraindik ez dago babeskopiarik · {schedule}"
+
+msgid "{when}: {message}"
+msgstr "{when}: {message}"
+
+msgid "."
+msgstr ","
+
+msgid "{n} files"
+msgstr "{n} fitxategi"
+
+msgid "The server address is not right: {why}"
+msgstr "Zerbitzariaren helbidea ez da zuzena: {why}"
+
+msgid "Vilna cloud"
+msgstr "Vilna hodeia"
+
+msgid "In the EU · coming later"
+msgstr "EBn · geroago etorriko da"
+
+msgid "External disk"
+msgstr "Kanpoko diskoa"
+
+msgid "No folder chosen yet"
+msgstr "Oraindik ez da karpetarik aukeratu"
+
+msgid "Your own server"
+msgstr "Zure zerbitzari propioa"
+
+msgid "SFTP, S3 or REST"
+msgstr "SFTP, S3 edo REST"
+
+msgid "Turn on backups"
+msgstr "Aktibatu babeskopiak"
+
+msgid "Recovery sheet"
+msgstr "Berreskuratze-orria"
+
+msgid "Backups"
+msgstr "Babeskopiak"
+
+msgid "What to keep in backups?"
+msgstr "Zer gorde babeskopietan?"
+
+msgid "Where"
+msgstr "Non"
+
+msgid "Choose…"
+msgstr "Aukeratu…"
+
+msgid "Address, e.g. sftp:me@host:/backups"
+msgstr "Helbidea, adib. sftp:ni@host:/backups"
+
+msgid "Login (S3 and REST)"
+msgstr "Erabiltzailea (S3 eta REST)"
+
+msgid "Password (S3 and REST)"
+msgstr "Pasahitza (S3 eta REST)"
+
+msgid "How often"
+msgstr "Maiztasuna"
+
+msgid "Back up"
+msgstr "Egin babeskopia"
+
+msgid "Backups are encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Babeskopiak ordenagailu honetan zifratzen dira. Gakorik gabe inork ezin ditu irakurri, ezta guk ere."
+
+msgid "Later"
+msgstr "Geroago"
+
+msgid "Next"
+msgstr "Hurrengoa"
+
+msgid "Folder for backups on the external disk"
+msgstr "Babeskopien karpeta kanpoko diskoan"
+
+msgid "Type the key from your sheet"
+msgstr "Idatzi zure orriko gakoa"
+
+msgid "Start again with another place"
+msgstr "Hasi berriro beste leku batekin"
+
+msgid "Confirm and turn on"
+msgstr "Berretsi eta aktibatu"
+
+msgid "Write this key down on paper and keep it away from the computer. If this computer is lost, only this key opens your backups. We do not know it and cannot send it again."
+msgstr "Idatzi gako hau paper batean eta gorde ordenagailutik urrun. Ordenagailu hau galtzen baduzu, gako honek soilik irekitzen ditu zure babeskopiak. Guk ez dugu ezagutzen eta ezin dizugu berriro bidali."
+
+msgid "The key is shown only now. The letters I, L, O and U are never used."
+msgstr "Gakoa orain bakarrik erakusten da. Ez dira inoiz erabiltzen I, L, O eta U letrak."
+
+msgid "Backups stay off until you type the recovery key back from your sheet. It was shown once, when the place was set up."
+msgstr "Babeskopiak desaktibatuta jarraituko dute zure orriko berreskuratze-gakoa idatzi arte. Behin erakutsi zen, lekua konfiguratu zenean."
+
+msgid "No sheet? Start again with another place: a new key will be made."
+msgstr "Ez duzu orria? Hasi berriro beste leku batekin: gako berri bat sortuko da."
+
+msgid "Backups are on. The first backup has started."
+msgstr "Babeskopiak aktibatuta daude. Lehen babeskopia hasi da."
+
+msgid "Back up now"
+msgstr "Egin babeskopia orain"
+
+msgid "Settings"
+msgstr "Ezarpenak"
+
+msgid "What to keep"
+msgstr "Zer gorde"
+
+msgid "Encrypted on this computer. Without the key nobody can read them, not even us."
+msgstr "Ordenagailu honetan zifratuak. Gakorik gabe inork ezin ditu irakurri, ezta guk ere."
+
+msgid "Cannot read the state of backups"
+msgstr "Ezin da babeskopien egoera irakurri"
+
+msgid "Where to put the restored files"
+msgstr "Non jarri leheneratutako fitxategiak"
+
+msgid "Cannot list the backups"
+msgstr "Ezin da babeskopien zerrenda egin"
+
+msgid "Restore…"
+msgstr "Leheneratu…"
+
+msgid "No backups yet"
+msgstr "Oraindik ez dago babeskopiarik"
+
+msgid "A backup is already running."
+msgstr "Babeskopia bat abian dago jada."
+
+msgid "Restored from backup {stamp}"
+msgstr "{stamp} babeskopiatik leheneratua"
+
+msgid "Restoring {title}…"
+msgstr "{title} leheneratzen…"
+
+msgid "Could not set up the backups: {why}"
+msgstr "Ezin izan dira babeskopiak konfiguratu: {why}"
+
+msgid "This is not the key: {why}"
+msgstr "Hau ez da gakoa: {why}"
+
+msgid "Could not start: {why}"
+msgstr "Ezin izan da abiarazi: {why}"
+
+msgid "Restored {n} files into {folder}"
+msgstr "{n} fitxategi leheneratu dira hemen: {folder}"
+
+msgid "Could not restore: {why}"
+msgstr "Ezin izan da leheneratu: {why}"
+
+msgid "January"
+msgstr "urtarrila"
+
+msgid "February"
+msgstr "otsaila"
+
+msgid "March"
+msgstr "martxoa"
+
+msgid "April"
+msgstr "apirila"
+
+msgid "May"
+msgstr "maiatza"
+
+msgid "June"
+msgstr "ekaina"
+
+msgid "July"
+msgstr "uztaila"
+
+msgid "August"
+msgstr "abuztua"
+
+msgid "September"
+msgstr "iraila"
+
+msgid "October"
+msgstr "urria"
+
+msgid "November"
+msgstr "azaroa"
+
+msgid "December"
+msgstr "abendua"
+
+msgid "Disk"
+msgstr "Diskoa"
+
+msgid "Vilna server"
+msgstr "Vilna zerbitzaria"
+
+msgid "Already have backups?"
+msgstr "Badituzu babeskopiak jada?"
+
+msgid "Back"
+msgstr "Atzera"
+
+msgid "Bring back"
+msgstr "Berreskuratu"
+
+msgid "Bring back {n} files?"
+msgstr "{n} fitxategi berreskuratu?"
+
+msgid "Bring them back…"
+msgstr "Berreskuratu…"
+
+msgid "Bring your files back now?"
+msgstr "Zure fitxategiak berreskuratu orain?"
+
+msgid "Cancel"
+msgstr "Utzi"
+
+msgid "Checking which files would change…"
+msgstr "Zein fitxategi aldatuko liratekeen egiaztatzen…"
+
+msgid "Connect"
+msgstr "Konektatu"
+
+msgid "Connect this computer to the backups you made before. You need the place of the backups and the key from your recovery sheet. Nothing on this computer changes until you choose what to bring back."
+msgstr "Konektatu ordenagailu hau lehen egin zenituen babeskopietara. Babeskopien lekua eta zure berreskuratze-orriko gakoa behar dituzu. Ordenagailu honetan ez da ezer aldatuko zer berreskuratu aukeratu arte."
+
+msgid "Could not open the backups: {why}"
+msgstr "Ezin izan dira babeskopiak ireki: {why}"
+
+msgid "Could not turn on: {why}"
+msgstr "Ezin izan da aktibatu: {why}"
+
+msgid "Files changed while you were reading the list; nothing was replaced. Try again."
+msgstr "Fitxategiak aldatu dira zerrenda irakurtzen ari zinen bitartean; ez da ezer ordeztu. Saiatu berriro."
+
+msgid "Files from the latest backup come back into your home folder. First you see which files would change. Then turn backups on to keep this computer safe too."
+msgstr "Azken babeskopiako fitxategiak zure karpeta pertsonalera itzultzen dira. Lehenik ikusiko duzu zein fitxategi aldatuko liratekeen. Gero aktibatu babeskopiak ordenagailu hau ere babesteko."
+
+msgid "Files made after the backup stay. Your passwords and keys on this computer stay."
+msgstr "Babeskopiaren ondoren sortutako fitxategiak geratu egiten dira. Ordenagailu honetako zure pasahitzak eta gakoak ere geratzen dira."
+
+msgid "Into a new folder, nothing on this computer is replaced. Over your files, files changed since the backup get their old version back; you see the list first."
+msgstr "Karpeta berri batean ez da ezer ordezten ordenagailu honetan. Zure fitxategien gainean, babeskopiaz geroztik aldatu direnek aurreko bertsioa berreskuratzen dute; lehenik zerrenda ikusiko duzu."
+
+msgid "Into a new folder…"
+msgstr "Karpeta berri batean…"
+
+msgid "Keep system secrets in backups?"
+msgstr "Sistemaren sekretuak babeskopietan gorde?"
+
+msgid "Keep them"
+msgstr "Gorde"
+
+msgid "Nothing is replaced."
+msgstr "Ez da ezer ordezten."
+
+msgid "Old saved passwords came back as a separate key ring."
+msgstr "Gordetako pasahitz zaharrak giltzatako bereizi gisa itzuli dira."
+
+msgid "On a new computer, with your recovery sheet"
+msgstr "Ordenagailu berri batean, zure berreskuratze-orriarekin"
+
+msgid "Over my files…"
+msgstr "Nire fitxategien gainean…"
+
+msgid "Replace files"
+msgstr "Ordeztu fitxategiak"
+
+msgid "Replace {n} files with their versions from the backup?"
+msgstr "{n} fitxategi ordeztu babeskopiako bertsioekin?"
+
+msgid "Restore from backups"
+msgstr "Leheneratu babeskopietatik"
+
+msgid "Restore from backups made before"
+msgstr "Leheneratu lehen egindako babeskopietatik"
+
+msgid "Restore into a new folder, or over your files after seeing which ones change."
+msgstr "Leheneratu karpeta berri batean, edo zure fitxategien gainean zein aldatzen diren ikusi ondoren."
+
+msgid "Restore the backup made {title}?"
+msgstr "{title} egindako babeskopia leheneratu?"
+
+msgid "Restored: {files} files back, {replaced} replaced."
+msgstr "Leheneratuta: {files} fitxategi berreskuratu, {replaced} ordeztu."
+
+msgid "Restoring…"
+msgstr "Leheneratzen…"
+
+msgid "Saved passwords from the key ring, online accounts, and SSH and GPG keys go into the backups, encrypted like everything else. Whoever has your recovery key can open them, so keep the sheet safe."
+msgstr "Giltzatakoan gordetako pasahitzak, lineako kontuak eta SSH eta GPG gakoak babeskopietan sartzen dira, gainerako guztia bezala zifratuta. Zure berreskuratze-gakoa duenak ireki ditzake; beraz, gorde ondo orria."
+
+msgid "Saved passwords, online accounts, SSH and GPG keys"
+msgstr "Gordetako pasahitzak, lineako kontuak, SSH eta GPG gakoak"
+
+msgid "System secrets"
+msgstr "Sistemaren sekretuak"
+
+msgid "These files were changed after the backup and get their old version:"
+msgstr "Fitxategi hauek babeskopiaren ondoren aldatu dira eta aurreko bertsioa berreskuratzen dute:"
+
+msgid "This computer can now use your backups."
+msgstr "Ordenagailu honek zure babeskopiak erabil ditzake orain."
+
+msgid "Turn on"
+msgstr "Aktibatu"
+
+msgid "Where are your backups?"
+msgstr "Non daude zure babeskopiak?"
+
+msgid "Your files are already as in this backup"
+msgstr "Zure fitxategiak babeskopia honetan bezala daude jada"
+
+msgid "{n} files that are missing now come back."
+msgstr "Orain falta diren {n} fitxategi itzultzen dira."
+
+msgid "…and {n} more"
+msgstr "…eta beste {n}"
+
+msgid "Add a device"
+msgstr "Gehitu gailu bat"
+
+msgid "Added {when}"
+msgstr "Gehituta: {when}"
+
+msgid "Block"
+msgstr "Blokeatu"
+
+msgid "Block «{name}»?"
+msgstr "«{name}» blokeatu?"
+
+msgid "Block…"
+msgstr "Blokeatu…"
+
+msgid "Cannot list the devices"
+msgstr "Ezin da gailuen zerrenda erakutsi"
+
+msgid "Code for a new device"
+msgstr "Gailu berri baterako kodea"
+
+msgid "Could not block: {why}"
+msgstr "Ezin izan da blokeatu: {why}"
+
+msgid "Could not make a code: {why}"
+msgstr "Ezin izan da koderik sortu: {why}"
+
+msgid "Delete the old copy yourself: {place}"
+msgstr "Ezabatu zeuk kopia zaharra: {place}"
+
+msgid "Done"
+msgstr "Eginda"
+
+msgid "Each device has its own key. Block a lost or stolen one."
+msgstr "Gailu bakoitzak bere gakoa du. Blokeatu galdutako edo lapurtutako bat."
+
+msgid "It can no longer open or add to the backups, and forgets its key the next time it tries. Files on it stay as they are. If it was stolen, the backups also get a new key and you get a new recovery sheet."
+msgstr "Ezin izango ditu babeskopiak ireki edo haietan ezer gehitu, eta bere gakoa ahaztuko du saiatzen den hurrengoan. Bertako fitxategiak dauden bezala geratzen dira. Lapurtu badute, babeskopiek gako berri bat jasotzen dute, eta zuk berreskuratze-orri berri bat."
+
+msgid "It was stolen"
+msgstr "Lapurtu egin dute"
+
+msgid "Key from your sheet, or a code from your other device"
+msgstr "Zure orriko gakoa edo zure beste gailuko kode bat"
+
+msgid "Moving the backups under a new key…"
+msgstr "Babeskopiak gako berri batera eramaten…"
+
+msgid "My devices"
+msgstr "Nire gailuak"
+
+msgid "On a computer that already makes backups, open Backups and choose «Add a device»: it shows a code valid for 15 minutes."
+msgstr "Dagoeneko babeskopiak egiten dituen ordenagailu batean, ireki Babeskopiak eta aukeratu «Gehitu gailu bat»: 15 minutuz balio duen kode bat erakusten du."
+
+msgid "On the new computer, open Backups, choose «Restore from backups made before» and type this code there. It works once, until {when}. Do not tell it to anyone."
+msgstr "Ordenagailu berrian, ireki Babeskopiak, aukeratu «Leheneratu lehen egindako babeskopietatik» eta idatzi kode hau bertan. Behin bakarrik balio du, {when} arte. Ez esan inori."
+
+msgid "Opens the backups if every device is lost"
+msgstr "Babeskopiak irekitzen ditu gailu guztiak galtzen badira"
+
+msgid "Protect"
+msgstr "Babestu"
+
+msgid "Protect the backups after the theft?"
+msgstr "Babestu babeskopiak lapurretaren ondoren?"
+
+msgid "The backups were not moved: {why}"
+msgstr "Babeskopiak ez dira eraman: {why}"
+
+msgid "The stolen device may know the key of the backups. Vilna moves every backup under a new key and deletes the old copy; this can take a while. Then you write down a new recovery sheet, and your other devices connect again with a code."
+msgstr "Lapurtutako gailuak babeskopien gakoa ezagut dezake. Vilnak babeskopia guztiak gako berri batera eramaten ditu eta kopia zaharra ezabatzen du; honek denbora pixka bat iraun dezake. Gero berreskuratze-orri berri bat idazten duzu, eta zure beste gailuak kode batekin konektatzen dira berriro."
+
+msgid "This device · added {when}"
+msgstr "Gailu hau · gehituta: {when}"
+
+msgid "Valid until {when}"
+msgstr "{when} arte balio du"
+
+msgid "Withdraw the code"
+msgstr "Kendu kodea"
+
+msgid "«{name}» is blocked."
+msgstr "«{name}» blokeatuta dago."

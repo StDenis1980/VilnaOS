@@ -117,7 +117,10 @@ def test_every_installer_screen_shows_the_theme_button(gtk):
         assert "style.theme_button(" in Path(module.__file__).read_text(encoding="utf-8"), module
 
 
-@pytest.mark.parametrize("code", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
+@pytest.mark.parametrize(
+    "code",
+    ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt", "ca", "ca@valencia", "gl", "eu", "pt"),
+)
 def test_theme_button_texts_are_translated(code):
     from vilna_installer import start
 

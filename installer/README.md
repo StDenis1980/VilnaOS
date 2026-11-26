@@ -6,7 +6,7 @@
 
 
 - привітання, знак і назва випуску Blavet на шпалерах Blavet (світлих або темних, як система);
-- десять мов [ADR 0009](../docs/adr/0009-languages.md), кожна своєю назвою, без прапорів. Екран одразу перемикається на обрану мову;
+- п'ятнадцять мов [ADR 0009](../docs/adr/0009-languages.md), кожна своєю назвою, без прапорів. Екран одразу перемикається на обрану мову;
 - «Інші мови…» — пошук серед усіх UTF-8 локалей системи (`/usr/share/i18n/SUPPORTED`, інакше `locale -a`), назви мовою оригіналу з iso-codes через GnomeDesktop, як у налаштуваннях GNOME. Система й GNOME будуть цією мовою, програми Vilna і Gloxi поки англійською, і екран про це попереджає. У плані `ui.locale` і `ui.translated`;
 - «Читач екрана» вмикає Orca так само, як налаштування GNOME;
 - «Без асистента» або «Далі з Gloxi».
@@ -87,4 +87,4 @@ vilna-installer-wizard --window --demo empty   # майстер → Herkos → �
 
 ## Пакет OBS
 
-Пакет `vilna-installer` ([`../obs/packages/vilna-installer/`](../obs/packages/vilna-installer/)): команди `vilna-installer`, `vilna-installer-chat`, `vilna-installer-wizard` і `vilna-installer-confirm`, пункт меню «Встановити Vilna» десятьма мовами (`data/`), значки `vilna-installer`. Команди також `vilna-installer-engine`. Він вимагає `vilna-mcp-installer`, інструменти рушія (`systemd-repart`, `cryptsetup`, `btrfsprogs`, `dosfstools`, `keyutils`, `efibootmgr`), `typelib(GnomeDesktop) = 4.0`, `iso-codes` і `vilna-backgrounds`. Ставиться лише в живий образ `Vilna-Live`, де установник запускається сам після автовходу ([`../obs/README.md`](../obs/README.md#живий-образ-з-установником)); у встановленій системі його немає.
+Пакет `vilna-installer` ([`../obs/packages/vilna-installer/`](../obs/packages/vilna-installer/)): команди `vilna-installer`, `vilna-installer-chat`, `vilna-installer-wizard` і `vilna-installer-confirm`, пункт меню «Встановити Vilna» основними мовами (`data/`), значки `vilna-installer`. Команди також `vilna-installer-engine`. Він вимагає `vilna-mcp-installer`, інструменти рушія (`systemd-repart`, `cryptsetup`, `btrfsprogs`, `dosfstools`, `keyutils`, `efibootmgr`), `typelib(GnomeDesktop) = 4.0`, `iso-codes` і `vilna-backgrounds`. Ставиться лише в живий образ `Vilna-Live`, де установник запускається сам після автовходу ([`../obs/README.md`](../obs/README.md#живий-образ-з-установником)); у встановленій системі його немає.
