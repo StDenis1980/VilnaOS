@@ -8,6 +8,14 @@ Thu Nov 26 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github
   was a few words wide beside the model switch (Build12.29).
 
 -------------------------------------------------------------------
+Thu Nov 26 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- gloxi-session installs the Gloxi owl (scalable and symbolic) into hicolor.
+  The .desktop file named io.github.stdenis1980.Gloxi, but the RPM shipped no
+  such icon, so the dock and the app grid showed a generic icon on an
+  installed Vilna (laptop, 26.11.2026); only the Flatpak had the owl.
+
+-------------------------------------------------------------------
 Tue Nov 24 18:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - vilna-llm.service and system.slice: MemoryLow=65% of the RAM instead of a
