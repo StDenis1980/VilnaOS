@@ -31,7 +31,7 @@ msgid "Search for a language"
 msgstr "Buscar un idioma"
 
 msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the left and change any item yourself."
-msgstr "Son Gloxi, axudareiche a instalar Vilna. Non cambia nada no disco ata que confirmes o plan; vélo á esquerda e podes cambiar calquera punto ti mesmo."
+msgstr "Son Gloxi, axudareiche a instalar Vilna. Non cambia nada no disco ata que confirmes o plan; podes ver o plan á esquerda e cambiar calquera punto pola túa conta."
 
 msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
 msgstr "En que idiomas escribes? Engadirei tamén as súas distribucións de teclado, por exemplo ucraíno e inglés."
@@ -88,7 +88,7 @@ msgid "At least 8 characters."
 msgstr "Polo menos 8 caracteres."
 
 msgid "Passphrase for the disk"
-msgstr "Frase de contrasinal do disco"
+msgstr "Frase de paso do disco"
 
 msgid "Save"
 msgstr "Gardar"
@@ -115,7 +115,7 @@ msgid "Encrypted, with a recovery key"
 msgstr "Cifrado, con clave de recuperación"
 
 msgid "Encrypted with a passphrase"
-msgstr "Cifrado con frase de contrasinal"
+msgstr "Cifrado con frase de paso"
 
 msgid "Not encrypted"
 msgstr "Sen cifrar"
@@ -225,7 +225,7 @@ msgid "Erase the whole disk and install Vilna"
 msgstr "Borrar todo o disco e instalar Vilna"
 
 msgid "Choose the partitions yourself in the partition editor"
-msgstr "Escoller ti mesmo as particións no editor de particións"
+msgstr "Escoller as particións pola túa conta no editor de particións"
 
 msgid "Empty"
 msgstr "Baleiro"
@@ -297,7 +297,7 @@ msgid "This computer has no TPM 2.0 chip, so this way is not available."
 msgstr "Este ordenador non ten chip TPM 2.0, así que esta opción non está dispoñible."
 
 msgid "You type the passphrase every time the computer starts."
-msgstr "Escribes a frase de contrasinal cada vez que se acende o ordenador."
+msgstr "Escribes a frase de paso cada vez que se acende o ordenador."
 
 msgid "Anyone who has the disk can read your files."
 msgstr "Calquera que teña o disco pode ler os teus ficheiros."
@@ -369,7 +369,7 @@ msgid "Type the password for the account."
 msgstr "Escribe o contrasinal da conta."
 
 msgid "Type the passphrase for the disk."
-msgstr "Escribe a frase de contrasinal do disco."
+msgstr "Escribe a frase de paso do disco."
 
 msgid "The disks changed (a disk added or removed?). Choose the disk again."
 msgstr "Os discos cambiaron (engadiuse ou quitouse un disco?). Volve escoller o disco."
@@ -530,13 +530,13 @@ msgid "The account password is not entered yet."
 msgstr "Aínda non se introduciu o contrasinal da conta."
 
 msgid "The disk passphrase is not entered yet."
-msgstr "Aínda non se introduciu a frase de contrasinal do disco."
+msgstr "Aínda non se introduciu a frase de paso do disco."
 
 msgid "There is not enough free space for Vilna on the disk."
 msgstr "Non hai espazo libre abondo para Vilna no disco."
 
 msgid "This computer has no TPM 2.0 chip that can keep the disk key. Choose encryption with a passphrase instead."
-msgstr "Este ordenador non ten un chip TPM 2.0 que poida gardar a clave do disco. Escolle no seu lugar o cifrado con frase de contrasinal."
+msgstr "Este ordenador non ten un chip TPM 2.0 que poida gardar a clave do disco. Escolle no seu lugar o cifrado con frase de paso."
 
 msgid "Without encryption anyone who has the disk can read your files."
 msgstr "Sen cifrado, calquera que teña o disco pode ler os teus ficheiros."
@@ -578,7 +578,7 @@ msgid "Recovery key"
 msgstr "Clave de recuperación"
 
 msgid "Write this key down or take a photo of it, and keep it away from the computer. You need it if the disk does not open by itself: after a change of the hardware or of Secure Boot, or when you forget the passphrase. Nobody else has it, not even Vilna."
-msgstr "Anota esta clave ou sácalle unha foto, e gárdaa lonxe do ordenador. Necesitaraa se o disco non se abre só: despois dun cambio de hardware ou de Secure Boot, ou se esqueces a frase de contrasinal. Ninguén máis a ten, nin sequera Vilna."
+msgstr "Anota esta clave ou sácalle unha foto, e gárdaa lonxe do ordenador. Necesitaraa se o disco non se abre só: despois dun cambio de hardware ou de Secure Boot, ou se esqueces a frase de paso. Ninguén máis a ten, nin sequera Vilna."
 
 msgid "To show that you saved it, type the last group of the key (8 letters):"
 msgstr "Para confirmar que a gardaches, escribe o último grupo da clave (8 letras):"
@@ -711,7 +711,7 @@ msgid "Read the key aloud"
 msgstr "Ler a clave en voz alta"
 
 msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
-msgstr "Preme o botón ti mesmo, co teclado ou o rato: Herkos non acepta pulsacións doutros programas."
+msgstr "Preme o botón directamente, co teclado ou o rato: Herkos non acepta pulsacións doutros programas."
 
 msgid "Connected to Wi-Fi."
 msgstr "Conectado á wifi."
@@ -720,7 +720,7 @@ msgid "The password is saved."
 msgstr "O contrasinal está gardado."
 
 msgid "The passphrase is saved."
-msgstr "A frase de contrasinal está gardada."
+msgstr "A frase de paso está gardada."
 
 msgid "Type the Wi-Fi password into the protected field below. I do not see it."
 msgstr "Escribe o contrasinal da wifi no campo protexido de abaixo. Eu non o vexo."
@@ -729,7 +729,7 @@ msgid "Type the password for your account into the protected field below, twice.
 msgstr "Escribe o contrasinal da túa conta no campo protexido de abaixo, dúas veces. Eu non o vexo."
 
 msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
-msgstr "Escribe a frase de contrasinal do disco no campo protexido de abaixo, dúas veces. Eu non a vexo."
+msgstr "Escribe a frase de paso do disco no campo protexido de abaixo, dúas veces. Eu non a vexo."
 
 msgid "This computer is already connected to the network, so I keep that connection; you can change it in the plan."
 msgstr "Este ordenador xa está conectado á rede, así que manteño esa conexión; podes cambiala no plan."
@@ -744,10 +744,10 @@ msgid "files"
 msgstr "ficheiros"
 
 msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. For more protection if the computer is stolen, the disk can also ask for a PIN at every start. You can also type a passphrase at every start, or not encrypt the disk."
-msgstr "Cifro o sistema novo? Propóñoche o cifrado con clave de recuperación: neste ordenador o disco ábrese só, e a clave ábreo se algo cambia. Para máis protección se che rouban o ordenador, o disco tamén pode pedir un PIN en cada arranque. Tamén podes escribir unha frase de contrasinal en cada arranque, ou non cifrar o disco."
+msgstr "Cifro o sistema novo? Propóñoche o cifrado con clave de recuperación: neste ordenador o disco ábrese só, e a clave ábreo se algo cambia. Para máis protección se che rouban o ordenador, o disco tamén pode pedir un PIN en cada arranque. Tamén podes escribir unha frase de paso en cada arranque, ou non cifrar o disco."
 
 msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
-msgstr "Cifro o sistema novo? Este ordenador non ten chip TPM, así que o disco abriríase cunha frase de contrasinal que escribirías en cada arranque. Sen cifrado, calquera que teña o disco pode ler os teus ficheiros."
+msgstr "Cifro o sistema novo? Este ordenador non ten chip TPM, así que o disco abriríase cunha frase de paso que escribirías en cada arranque. Sen cifrado, calquera que teña o disco pode ler os teus ficheiros."
 
 msgid "Switch to the dark theme"
 msgstr "Cambiar ao tema escuro"
