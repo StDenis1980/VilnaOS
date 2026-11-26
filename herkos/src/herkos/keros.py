@@ -64,6 +64,12 @@ RULES: tuple[Rule, ...] = (
             r"\b(ignor[ăa]|uit[ăa])\b.{0,40}\b(instruc[țţt]iuni|regulile)",
             r"\b(ignoruj|zapome[ňn])\w*\b.{0,40}\b(pokyny|instrukce|pravidla)",
             r"\b(ignoruok|pamir[šs]k)\w*\b.{0,40}\b(instrukcij|taisykl)",
+            # Catalan and Valencian, Galician, Portuguese; Basque in both word orders.
+            r"\b(ignora|oblida|esquece|esqueça|esqueza)\w*\b.{0,40}"
+            r"\b(instruccions|indicacions|regles|normes|instrucións|indicacións|normas|regras|"
+            r"instruções|indicações)",
+            r"\b(ahaztu|baztertu)\b.{0,40}\b(jarraibide|argibide|arau)",
+            r"\b(jarraibide|argibide|arau)\w*\b.{0,40}\b(ahaztu|baztertu)\b",
         ),
     ),
     Rule(
@@ -76,13 +82,15 @@ RULES: tuple[Rule, ...] = (
             r"\b(note|message|instructions?) (to|for) (the )?(ai|assistant|model|llm|gloxi)\b",
             r"\b(ai|assistant|gloxi),? (please )?(do|run|send|delete|open|forward)\b",
             # "Note to the AI", "Nota para la IA", "Hinweis an die KI", "P.S. для ШІ"...
-            r"\b(note|nota|notă|hinweis|poznámka|pastaba|ps|p\.s\.)\b.{0,15}"
-            r"\b(ia|ai|ki|di|ші|ии)\b",
+            r"\b(note|nota|notă|hinweis|poznámka|pastaba|oharra|ps|p\.s\.|pd)\b.{0,15}"
+            r"\b(ia|ai|ki|di|aa|ші|ии)\b",
+            # Basque: "Oharra ... irakurtzen duen AArentzat" (the AA that reads it).
+            r"\b(irakurtzen|prozesatzen) (duen|dituen)\b.{0,15}\b(aa|ia|laguntzaile|eredu)\w*",
             # "the AI that reads this", "ШІ, який читає", "whoever processes this message"
             r"\b(ai|ia|ki|di|ші|ии|model\w*|модел\w*|assistant\w*|асистент\w*)\b,? "
             r"(that|which|who|який|яка|що|que|qui|che|care|která|kuris|die|der|który)\s+"
             r"(reads|is reading|processes|читає|обробляє|lee|lit|legge|citește|čte|skaito|"
-            r"liest|verarbeitet|czyta)\b",
+            r"liest|verarbeitet|czyta|llegeix\w*|llig\w*|lea|ler|lê|leia)\b",
             r"\b(whoever|anyone|any (ai|model|assistant))\b.{0,20}\b(reads|reading|processes|"
             r"processing)\b.{0,20}\b(this|these)\b",
         ),

@@ -233,6 +233,11 @@ favorite-apps=['io.github.stdenis1980.VilnaInstaller.desktop', 'io.github.stdeni
 [org.gnome.shell.extensions.dash-to-dock]
 disable-overview-on-startup=true
 
+# No gloxid in the live session (Gloxi does not wake at login above), so
+# no Shell side panel either: the installer talks to the model itself.
+[org.gnome.shell.extensions.vilna]
+gloxi-dock=false
+
 [org.gnome.desktop.screensaver]
 lock-enabled=false
 

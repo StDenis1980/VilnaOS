@@ -7,9 +7,11 @@ color-scheme='default'
 clock-show-weekday=true
 show-battery-percentage=true
 font-antialiasing='rgba'
-# Vilna icons (vilna-icon-theme): folders, trash, drives and the Gloxi and
-# Herkos symbolic icons; everything else comes from Adwaita.
-icon-theme='Vilna'
+# Vilna icons (vilna-icon-theme): Vilna Classic by default (decision of
+# Denys, 26.11.2026) — folders, trash and drives drawn as real objects; it
+# inherits the flat Vilna theme for the Gloxi and Herkos symbolic icons,
+# everything else comes from Adwaita. icon-theme='Vilna' is the flat set.
+icon-theme='Vilna-Classic'
 
 # Vilna wallpapers (vilna-backgrounds): Сонце by default, the light and
 # dark pictures switch with the style. config.sh fails the image build if
@@ -49,7 +51,8 @@ favorite-apps=['io.github.stdenis1980.Gloxi.desktop', 'org.mozilla.firefox.deskt
 # The dock (Dash to Dock, gnome-shell-extension-dash-to-dock): at the
 # bottom, 48 px icons, pinned Gloxi, Firefox, Files, Tinta Correo, Tinta
 # Texto, the terminal and Software (favorite-apps above; one that is not
-# installed is skipped). The Vilna extension's Dock page changes the
+# installed is skipped), with the button to all apps first, before them
+# (show-apps-at-top, decision of Denys of 26.11.2026). The Vilna extension's Dock page changes the
 # place, the size (32-80 px), the hiding, the transparency of the glass
 # (8 % by default, like the terminal) and the springy icons. It stays on an
 # empty desktop and slides away when the focused app's window covers it.
@@ -57,6 +60,13 @@ favorite-apps=['io.github.stdenis1980.Gloxi.desktop', 'org.mozilla.firefox.deskt
 # theme and colour options stay off. A click shows the app, a second
 # click minimises it, with several windows the previews open. The
 # session starts on the desktop, not in the overview.
+# Gloxi as the side panel the Shell draws (Vilna extension, gloxi-dock),
+# with Dmytro's owl and the button in the top bar, instead of the GTK
+# window at the right edge (decision of Denys, 26.11.2026). Super+G opens
+# and closes it.
+[org.gnome.shell.extensions.vilna]
+gloxi-dock=true
+
 [org.gnome.shell.extensions.dash-to-dock]
 dock-position='BOTTOM'
 dock-fixed=false
@@ -73,7 +83,7 @@ click-action='focus-minimize-or-previews'
 show-trash=true
 show-mounts=true
 show-mounts-only-mounted=true
-show-apps-at-top=false
+show-apps-at-top=true
 disable-overview-on-startup=true
 animation-time=0.28
 

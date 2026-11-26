@@ -258,6 +258,14 @@ export function zonesAt(geojson, lat, lon) {
 const ALERT_KEYS = ['levels', 'hazards', 'until', 'from', 'issued', 'meteredPaused', 'meteredAsk', 'title', 'show',
     'metered', 'meteredHint', 'source', 'zone', 'zoneNone', 'open', 'translated'];
 
+// The table's key for a GLib language name: "uk_UA.UTF-8" → "uk", and
+// Valencian, "ca_ES.UTF-8@valencia" → "ca@valencia" (ADR 0009).
+function languageCode(name) {
+    const s = String(name);
+    const code = s.split(/[_.@-]/)[0].toLowerCase();
+    return code === 'ca' && /@valencia/i.test(s) ? 'ca@valencia' : code;
+}
+
 const ALERT_TEXT = {
     en: [['Yellow warning', 'Orange warning', 'Red warning'],
         ['Wind', 'Snow and ice', 'Thunderstorms', 'Fog', 'Heat', 'Cold', 'Coastal event', 'Forest fire', 'Avalanches',
@@ -338,6 +346,43 @@ const ALERT_TEXT = {
         'Įspėjimai apie orus', 'Rodyti įspėjimus apie orus', 'Atsisiųsti ribotu ryšiu',
         'Šalies įspėjimai – iki 0,5 MB kas 10 minučių; zonų ribos – apie 30 MB vieną kartą vietai.',
         'Įspėjimai: EUMETNET – MeteoAlarm', 'Įspėjimų zona: %s', 'Įspėjimų zona dar nerasta', 'Atidaryti meteoalarm.org', 'išvertė Gloxi'],
+    ca: [['Avís groc', 'Avís taronja', 'Avís vermell'],
+        ['Vent', 'Neu i gel', 'Tempestes', 'Boira', 'Calor', 'Fred', 'Fenòmens costaners', 'Incendis forestals', 'Allaus', 'Pluja', 'Inundacions', 'Pluja i inundacions', 'Perill al mar', 'Sequera', 'Temps'],
+        'fins a les %s', 'des de les %s', '%s · emès %s', 'Connexió amb límit de dades: avisos en pausa',
+        'Baixa els avisos', 'Avisos meteorològics', 'Mostra els avisos meteorològics',
+        'Baixa amb connexions amb límit de dades',
+        'Avisos del país: fins a 0,5 MB cada 10 minuts; límits de les zones: uns 30 MB una vegada per lloc.',
+        'Avisos: EUMETNET – MeteoAlarm', 'Zona d’avisos: %s', 'Encara no s’ha trobat la zona d’avisos',
+        'Obre meteoalarm.org', 'traduït per Gloxi'],
+    'ca@valencia': [['Avís groc', 'Avís taronja', 'Avís vermell'],
+        ['Vent', 'Neu i gel', 'Tempestes', 'Boira', 'Calor', 'Fred', 'Fenòmens costaners', 'Incendis forestals', 'Allaus', 'Pluja', 'Inundacions', 'Pluja i inundacions', 'Perill al mar', 'Sequera', 'Temps'],
+        'fins a les %s', 'des de les %s', '%s · emès %s', 'Connexió amb límit de dades: avisos en pausa',
+        'Baixa els avisos', 'Avisos meteorològics', 'Mostra els avisos meteorològics',
+        'Baixa amb connexions amb límit de dades',
+        'Avisos del país: fins a 0,5 MB cada 10 minuts; límits de les zones: uns 30 MB una vegada per lloc.',
+        'Avisos: EUMETNET – MeteoAlarm', 'Zona d’avisos: %s', 'Encara no s’ha trobat la zona d’avisos',
+        'Obre meteoalarm.org', 'traduït per Gloxi'],
+    gl: [['Aviso amarelo', 'Aviso laranxa', 'Aviso vermello'],
+        ['Vento', 'Neve e xeo', 'Treboadas', 'Néboa', 'Calor', 'Frío', 'Fenómenos costeiros', 'Incendios forestais', 'Alancadas', 'Choiva', 'Inundacións', 'Choiva e inundacións', 'Perigo no mar', 'Seca', 'Tempo'],
+        'ata as %s', 'desde as %s', '%s · emitido %s', 'Conexión limitada: avisos en pausa', 'Descargar avisos',
+        'Avisos meteorolóxicos', 'Mostrar avisos meteorolóxicos', 'Descargar con conexión limitada',
+        'Avisos do país: ata 0,5 MB cada 10 minutos; límites das zonas: uns 30 MB unha vez por lugar.',
+        'Avisos: EUMETNET – MeteoAlarm', 'Zona de avisos: %s', 'Aínda non se atopou a zona de avisos',
+        'Abrir meteoalarm.org', 'traducido por Gloxi'],
+    eu: [['Abisu horia', 'Abisu laranja', 'Abisu gorria'],
+        ['Haizea', 'Elurra eta izotza', 'Ekaitzak', 'Lainoa', 'Beroa', 'Hotza', 'Kostaldeko fenomenoak', 'Baso-suteak', 'Elur-jausiak', 'Euria', 'Uholdeak', 'Euria eta uholdeak', 'Itsasoko arriskua', 'Lehortea', 'Eguraldia'],
+        '%s arte', '%s(e)tik', '%s · igorria: %s', 'Konexio mugatua: abisuak pausatuta', 'Deskargatu abisuak',
+        'Eguraldi-abisuak', 'Erakutsi eguraldi-abisuak', 'Deskargatu konexio mugatuetan',
+        'Herrialdeko abisuak: 0,5 MB arte 10 minuturo; eremuen mugak: 30 MB inguru behin leku bakoitzeko.',
+        'Abisuak: EUMETNET – MeteoAlarm', 'Abisu-eremua: %s', 'Abisu-eremua ez da oraindik aurkitu',
+        'Ireki meteoalarm.org', 'Gloxik itzulia'],
+    pt: [['Aviso amarelo', 'Aviso laranja', 'Aviso vermelho'],
+        ['Vento', 'Neve e gelo', 'Trovoadas', 'Nevoeiro', 'Calor', 'Frio', 'Fenómenos costeiros', 'Incêndios florestais', 'Avalanches', 'Chuva', 'Inundações', 'Chuva e inundações', 'Perigo no mar', 'Seca', 'Tempo'],
+        'até às %s', 'a partir das %s', '%s · emitido %s', 'Ligação limitada: avisos em pausa', 'Transferir avisos',
+        'Avisos meteorológicos', 'Mostrar avisos meteorológicos', 'Transferir em ligações limitadas',
+        'Avisos do país: até 0,5 MB a cada 10 minutos; limites das zonas: cerca de 30 MB uma vez por local.',
+        'Avisos: EUMETNET – MeteoAlarm', 'Zona de avisos: %s', 'Zona de avisos ainda não encontrada',
+        'Abrir meteoalarm.org', 'traduzido pelo Gloxi'],
 };
 
 export const ALERT_LANGUAGES = Object.keys(ALERT_TEXT);
@@ -346,7 +391,7 @@ export const ALERT_LANGUAGES = Object.keys(ALERT_TEXT);
 export function alertText(languageNames) {
     let code = 'en';
     for (const name of languageNames ?? []) {
-        const c = String(name).split(/[_.@-]/)[0].toLowerCase();
+        const c = languageCode(name);
         if (ALERT_TEXT[c]) {
             code = c;
             break;
@@ -369,14 +414,15 @@ export function translationTarget(original, languageNames) {
         return null;
     let target = 'en';
     for (const name of languageNames ?? []) {
-        const c = String(name).split(/[_.@-]/)[0].toLowerCase();
+        const c = languageCode(name);
         if (ALERT_TEXT[c]) {
             target = c;
             break;
         }
     }
     const language = String(original.language ?? '').slice(0, 2).toLowerCase();
-    return language === target ? null : target;
+    // A warning in Catalan is already in the language of a Valencian person.
+    return language === target.split('@')[0] ? null : target;
 }
 
 // Our short label for a warning: "Orange warning: Wind".

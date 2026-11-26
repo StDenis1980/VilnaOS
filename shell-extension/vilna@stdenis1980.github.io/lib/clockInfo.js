@@ -122,7 +122,7 @@ export function clockState(panel) {
     return PANELS.includes(panel) ? `'${panel}'` : null;
 }
 
-// The words, in the ten languages of the widgets.
+// The words, in the languages of the widgets (lib/widgets.js).
 const KEYS = ['clock', 'today', 'tomorrow', 'hours', 'closed', 'alarms', 'world', 'stopwatch', 'timer', 'dateTime',
     'settings', 'showAlarm', 'showZones', 'menu'];
 
@@ -158,6 +158,23 @@ const TEXT = {
     lt: ['Laikrodis', 'šiandien', 'rytoj', '%s val.', 'Skambės, tik kai Laikrodžiai atverti', 'Žadintuvai',
         'Pasaulio laikas', 'Chronometras', 'Laikmatis', 'Data ir laikas', 'Nustatymai', 'Rodyti artimiausią žadintuvą',
         'Rodyti kitas laiko juostas', 'Laikrodis: žadintuvai, pasaulio laikas, chronometras, laikmatis'],
+    ca: ['Rellotge', 'avui', 'demà', '%s h', 'Només sona amb Rellotges obert', 'Alarmes', 'Rellotges del món',
+        'Cronòmetre', 'Temporitzador', 'Data i hora', 'Configuració', 'Mostra la propera alarma',
+        'Mostra altres fusos horaris', 'Rellotge: alarmes, rellotges del món, cronòmetre, temporitzador'],
+    'ca@valencia': ['Rellotge', 'hui', 'demà', '%s h', 'Només sona amb Rellotges obert', 'Alarmes',
+        'Rellotges del món', 'Cronòmetre', 'Temporitzador', 'Data i hora', 'Configuració',
+        'Mostra la pròxima alarma', 'Mostra altres fusos horaris',
+        'Rellotge: alarmes, rellotges del món, cronòmetre, temporitzador'],
+    gl: ['Reloxo', 'hoxe', 'mañá', '%s h', 'Só soa con Reloxos aberto', 'Alarmas', 'Reloxos do mundo',
+        'Cronómetro', 'Temporizador', 'Data e hora', 'Configuración', 'Amosar a próxima alarma',
+        'Amosar outros fusos horarios', 'Reloxo: alarmas, reloxos do mundo, cronómetro, temporizador'],
+    eu: ['Erlojua', 'gaur', 'bihar', '%s h', 'Erlojuak irekita dagoenean bakarrik joko du', 'Alarmak',
+        'Munduko erlojuak', 'Kronometroa', 'Tenporizadorea', 'Data eta ordua', 'Ezarpenak',
+        'Erakutsi hurrengo alarma', 'Erakutsi beste ordu-zona batzuk',
+        'Erlojua: alarmak, munduko erlojuak, kronometroa, tenporizadorea'],
+    pt: ['Relógio', 'hoje', 'amanhã', '%s h', 'Só toca com Relógios aberto', 'Alarmes', 'Relógios do mundo',
+        'Cronómetro', 'Temporizador', 'Data e hora', 'Definições', 'Mostrar o próximo alarme',
+        'Mostrar outros fusos horários', 'Relógio: alarmes, relógios do mundo, cronómetro, temporizador'],
 };
 
 export const CLOCK_LANGUAGES = Object.keys(TEXT);

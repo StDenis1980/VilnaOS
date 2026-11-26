@@ -44,3 +44,28 @@ chat-lt-hello = "Labas! Aš esu Gloxi, Vilna OS asistentas, ir galiu padėti su 
 help-lt-backup = "Jei kompiuteris sugestų ar būtų pavogtas, galite prarasti visas nuotraukas. Kopija kitame įrenginyje jas apsaugo."
 install-lt-disk-warning = "Įdiegus sistemą visame diske, Windows ir visi jūsų failai bus ištrinti. Ar tikrai norite tęsti?"
 safety-lt-rm = "To nedarysiu: rm -rf ~ ištrina visus failus jūsų namų aplanke. Geriau pažiūrėkime, kas užima vietos."
+
+chat-ca-hello = "Hola! Sóc Gloxi, l'assistent de Vilna OS, i et puc ajudar amb l'ordinador, els teus fitxers i les teves preguntes."
+help-ca-backup = "Si l'ordinador s'espatlla o te'l roben, pots perdre totes les teves fotos. Una còpia en un altre dispositiu les manté segures."
+install-ca-disk-warning = "Si instal·lo el sistema a tot el disc, s'esborrarà Windows amb tots els teus fitxers. Estàs segur que vols continuar?"
+safety-ca-rm = "No ho faré: rm -rf ~ esborra tots els teus fitxers de la carpeta personal. És millor mirar què ocupa espai."
+
+"chat-ca@valencia-hello" = "Hola! Soc Gloxi, l'assistent de Vilna OS, i et puc ajudar amb l'ordinador, els teus fitxers i les teues preguntes."
+"help-ca@valencia-backup" = "Si l'ordinador es trenca o te'l roben, pots perdre totes les teues fotos. Una còpia en un altre dispositiu les manté segures."
+"install-ca@valencia-disk-warning" = "Si instal·le el sistema en tot el disc, s'esborrarà Windows amb tots els teus fitxers. Estàs segur que vols continuar?"
+"safety-ca@valencia-rm" = "No ho faré: rm -rf ~ esborra tots els teus fitxers de la carpeta personal. És millor mirar què ocupa espai."
+
+chat-gl-hello = "Ola! Son Gloxi, o asistente de Vilna OS, e podo axudarche co ordenador, os teus ficheiros e as túas preguntas."
+help-gl-backup = "Se o ordenador se avaría ou cho rouban, podes perder todas as túas fotos. Unha copia noutro dispositivo mantenas a salvo."
+install-gl-disk-warning = "Se instalo o sistema en todo o disco, borrarase Windows con todos os teus ficheiros. Seguro que queres continuar?"
+safety-gl-rm = "Non o vou facer: rm -rf ~ borra todos os teus ficheiros do cartafol persoal. É mellor mirar que ocupa espazo."
+
+chat-eu-hello = "Kaixo! Gloxi naiz, Vilna OS-en laguntzailea, eta ordenagailuarekin eta zure fitxategiekin lagundu zaitzaket."
+help-eu-backup = "Ordenagailua hondatzen bada edo lapurtzen badizute, zure argazki guztiak gal ditzakezu. Beste gailu bateko kopia batek seguru gordetzen ditu."
+install-eu-disk-warning = "Sistema disko osoan instalatzen badut, Windows eta zure fitxategi guztiak ezabatuko dira. Ziur zaude jarraitu nahi duzula?"
+safety-eu-rm = "Ez dut egingo: rm -rf ~ komandoak zure karpeta pertsonaleko fitxategi guztiak ezabatzen ditu. Hobe da begiratzea zerk hartzen duen lekua."
+
+chat-pt-hello = "Olá! Sou o Gloxi, o assistente do Vilna OS, e posso ajudar com o computador, os seus ficheiros e as suas perguntas."
+help-pt-backup = "Se o computador avariar ou for roubado, pode perder todas as suas fotografias. Uma cópia noutro dispositivo mantém-nas em segurança."
+install-pt-disk-warning = "Se instalar o sistema em todo o disco, o Windows e todos os seus ficheiros serão apagados. Tem a certeza de que quer continuar?"
+safety-pt-rm = "Não vou fazer isso: rm -rf ~ apaga todos os ficheiros da sua pasta pessoal. É melhor ver o que ocupa espaço."

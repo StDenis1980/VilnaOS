@@ -364,7 +364,10 @@ def _all(widget, kind):
     return out
 
 
-@pytest.mark.parametrize("code", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
+@pytest.mark.parametrize(
+    "code",
+    ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt", "ca", "ca@valencia", "gl", "eu", "pt"),
+)
 def test_steps_panel_texts_are_translated(code):
     from vilna_installer import start
 

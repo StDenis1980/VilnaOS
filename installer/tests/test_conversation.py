@@ -438,10 +438,10 @@ def test_start_conversation_does_not_wait_for_the_model(plan_path):
 
 def test_other_languages_get_english_from_gloxi(tmp_path):
     path = tmp_path / "plan.json"
-    start.write_plan(start.start_plan("pt", False, True, locale="pt_BR.UTF-8"), path)
+    start.write_plan(start.start_plan("nl", False, True, locale="nl_NL.UTF-8"), path)
     c, model, tools = make(path, "empty", "Hello.")
     try:
-        c.send("olá")
+        c.send("hallo")
         assert "Reply in English" in model.last_system
     finally:
         tools.close()

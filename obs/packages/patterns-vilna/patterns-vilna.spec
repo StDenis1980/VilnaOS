@@ -63,7 +63,7 @@ Requires:       gnome-shell-extension-dash-to-dock
 # in the VM test of Build15.6 GNOME Initial Setup, the search and the
 # rest of the Shell stayed in English after the person chose Українська.
 # Firefox and the other Flatpak apps get theirs from Flathub
-# (vilna-flatpak-defaults sets the ten languages of ADR 0009).
+# (vilna-flatpak-defaults sets the main languages of ADR 0009).
 Requires:       gnome-shell-lang
 Requires:       mutter-lang
 Requires:       gnome-initial-setup-lang

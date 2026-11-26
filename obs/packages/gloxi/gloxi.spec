@@ -23,6 +23,7 @@ BuildRequires:  %{python_module pytest >= 8}
 BuildRequires:  %{python_module vilna-privacy-gateway}
 BuildRequires:  %{python_module wheel}
 BuildRequires:  fdupes
+BuildRequires:  hicolor-icon-theme
 BuildRequires:  python-rpm-macros
 BuildRequires:  sysuser-tools
 BuildRequires:  systemd-rpm-macros
@@ -64,6 +65,8 @@ Requires:       %{name} = %{version}-%{release}
 Requires:       python3-gobject
 Requires:       typelib(Adw) = 1
 Requires:       typelib(Gtk) = 4.0
+# /usr/share/icons/hicolor/{scalable,symbolic}/apps for the Gloxi owl.
+Requires:       hicolor-icon-theme
 BuildArch:      noarch
 
 %description session
@@ -86,6 +89,12 @@ install -Dm0644 data/io.github.stdenis1980.Gloxi.desktop \
   %{buildroot}%{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
 install -Dm0644 data/autostart/io.github.stdenis1980.Gloxi-wake.desktop \
   %{buildroot}%{_sysconfdir}/xdg/autostart/io.github.stdenis1980.Gloxi-wake.desktop
+# The owl the .desktop file names (Icon=io.github.stdenis1980.Gloxi): without
+# it the dock and the app grid show a generic icon.
+install -Dm0644 data/icons/io.github.stdenis1980.Gloxi.svg \
+  %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/io.github.stdenis1980.Gloxi.svg
+install -Dm0644 data/icons/io.github.stdenis1980.Gloxi-symbolic.svg \
+  %{buildroot}%{_datadir}/icons/hicolor/symbolic/apps/io.github.stdenis1980.Gloxi-symbolic.svg
 for unit in gloxi@.socket gloxi@.service vilna-llm.service \
             vilna-people-sync.service vilna-people-sync.path \
             vilna-mcp-gloxi-network@.service; do
@@ -137,6 +146,8 @@ install -d %{buildroot}%{_datadir}/vilna/models
 %license LICENSE
 %{_bindir}/gloxi-gtk
 %{_datadir}/applications/io.github.stdenis1980.Gloxi.desktop
+%{_datadir}/icons/hicolor/scalable/apps/io.github.stdenis1980.Gloxi.svg
+%{_datadir}/icons/hicolor/symbolic/apps/io.github.stdenis1980.Gloxi-symbolic.svg
 %dir %{_sysconfdir}/xdg/autostart
 %config %{_sysconfdir}/xdg/autostart/io.github.stdenis1980.Gloxi-wake.desktop
 

@@ -52,7 +52,7 @@ class Pack:
         return self.file.size
 
 
-# Section 1: NVIDIA Parakeet TDT 0.6B v3, int8 (25 European languages, all ten of ours).
+# Section 1: NVIDIA Parakeet TDT 0.6B v3, int8 (25 European languages: ours but ca, gl, eu).
 PARAKEET = Pack(
     key="parakeet-tdt-0.6b-v3",
     kind="stt",
@@ -169,6 +169,11 @@ class Voice:
 # 2.1). RHVoice (pl, cs, ro) is an HTS voice sherpa-onnx cannot read, and
 # Lithuanian ingute is fine-tuned from lessac too; eSpeak NG reads those
 # languages, as section 2 allows. French uses Kokoro's SIWIS voice.
+# Catalan, Valencian, Basque and European Portuguese are read by eSpeak NG
+# too (Kokoro's Portuguese is Brazilian); eSpeak NG has no Galician voice,
+# so Galician is read with the Spanish one until a free Galician voice is
+# found. Parakeet hears Portuguese, but not Catalan, Galician or Basque:
+# dictation in those three is not checked (ADR 0009, 2026-11-25).
 VOICES: dict[str, Voice] = {
     "uk": Voice("uk", PIPER_UK, speaker=1, name="Mykyta"),
     "en": Voice("en", KOKORO, speaker=3, espeak="en-us", name="Heart"),
@@ -180,6 +185,11 @@ VOICES: dict[str, Voice] = {
     "cs": Voice("cs", None, espeak="cs", name="eSpeak NG"),
     "ro": Voice("ro", None, espeak="ro", name="eSpeak NG"),
     "lt": Voice("lt", None, espeak="lt", name="eSpeak NG"),
+    "ca": Voice("ca", None, espeak="ca", name="eSpeak NG"),
+    "ca@valencia": Voice("ca@valencia", None, espeak="ca", name="eSpeak NG"),
+    "gl": Voice("gl", None, espeak="es", name="eSpeak NG"),
+    "eu": Voice("eu", None, espeak="eu", name="eSpeak NG"),
+    "pt": Voice("pt", None, espeak="pt", name="eSpeak NG"),
 }
 
 LANGUAGES = tuple(VOICES)

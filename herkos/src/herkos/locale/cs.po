@@ -580,6 +580,9 @@ msgstr "R3 · těžko vratné"
 msgid "R4 · cannot be undone"
 msgstr "R4 · nevratné"
 
+msgid "R4 · big change, can be undone"
+msgstr "R4 · velká změna, lze vrátit"
+
 msgid "Suspicious content"
 msgstr "Podezřelý obsah"
 

@@ -580,6 +580,9 @@ msgstr "R3 · schwer rückgängig zu machen"
 msgid "R4 · cannot be undone"
 msgstr "R4 · nicht rückgängig zu machen"
 
+msgid "R4 · big change, can be undone"
+msgstr "R4 · große Änderung, rückgängig machbar"
+
 msgid "Suspicious content"
 msgstr "Verdächtiger Inhalt"
 

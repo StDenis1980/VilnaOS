@@ -9,6 +9,11 @@ Name[it]=Vilna Stella
 Name[ro]=Vilna Stea
 Name[cs]=Vilna Hvězda
 Name[lt]=Vilna Žvaigždė
+Name[ca]=Vilna Estrella
+Name[ca@valencia]=Vilna Estrella
+Name[gl]=Vilna Estrela
+Name[eu]=Vilna Izarra
+Name[pt]=Vilna Estrela
 Inherits=freedesktop
 Directories=stereo
 

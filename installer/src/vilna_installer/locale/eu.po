@@ -1,0 +1,858 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The first installer screen (eu). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\nX-Vilna-Review: not reviewed by a native speaker\n"
+
+msgid "Welcome to Vilna"
+msgstr "Ongi etorri Vilnara"
+
+msgid "Blavet release"
+msgstr "Blavet bertsioa"
+
+msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
+msgstr "Aukeratu hizkuntza bat. Gero nik, Gloxik, sistema instalatzen lagunduko dizut, edo urratsak zeure kabuz egin ditzakezu."
+
+msgid "Screen reader"
+msgstr "Pantaila-irakurgailua"
+
+msgid "Without the assistant"
+msgstr "Laguntzailerik gabe"
+
+msgid "Continue with Gloxi"
+msgstr "Jarraitu Gloxirekin"
+
+msgid "Install Vilna"
+msgstr "Instalatu Vilna"
+
+msgid "Other languages"
+msgstr "Beste hizkuntza batzuk"
+
+msgid "Search for a language"
+msgstr "Bilatu hizkuntza bat"
+
+msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the left and change any item yourself."
+msgstr "Gloxi naiz, Vilna instalatzen lagunduko dizut. Diskoan ez da ezer aldatuko plana berretsi arte; ezkerrean ikusten duzu, eta edozein puntu zeuk alda dezakezu."
+
+msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
+msgstr "Zein hizkuntzatan idazten duzu? Haien teklatu-diseinuak ere gehituko ditut, adibidez ukrainera eta ingelesa."
+
+msgid "Gloxi cannot start on this computer right now. You can go on without the assistant: the steps are the same, and what you chose stays in the plan."
+msgstr "Gloxik ezin du orain abiarazi ordenagailu honetan. Laguntzailerik gabe jarraitu dezakezu: urratsak berak dira, eta aukeratu duzuna planean geratzen da."
+
+msgid "Gloxi did not answer. Try again, or go on without the assistant."
+msgstr "Gloxik ez du erantzun. Saiatu berriro, edo jarraitu laguntzailerik gabe."
+
+msgid "Gloxi is thinking…"
+msgstr "Gloxi pentsatzen ari da…"
+
+msgid "Send"
+msgstr "Bidali"
+
+msgid "Message to Gloxi"
+msgstr "Mezua Gloxiri"
+
+msgid "Change"
+msgstr "Aldatu"
+
+msgid "Plan"
+msgstr "Plana"
+
+msgid "Not decided yet"
+msgstr "Oraindik erabaki gabe"
+
+msgid "Check and confirm the plan"
+msgstr "Berrikusi eta berretsi plana"
+
+msgid "Wi-Fi password for {name}"
+msgstr "{name} sarearen Wi-Fi pasahitza"
+
+msgid "Connect"
+msgstr "Konektatu"
+
+msgid "Connecting…"
+msgstr "Konektatzen…"
+
+msgid "Could not connect. Check the password and try again."
+msgstr "Ezin izan da konektatu. Egiaztatu pasahitza eta saiatu berriro."
+
+msgid "Password for {name}"
+msgstr "{name} kontuaren pasahitza"
+
+msgid "Repeat the password"
+msgstr "Errepikatu pasahitza"
+
+msgid "The passwords are not the same."
+msgstr "Pasahitzak ez datoz bat."
+
+msgid "At least 8 characters."
+msgstr "Gutxienez 8 karaktere."
+
+msgid "Passphrase for the disk"
+msgstr "Diskoaren pasaesaldia"
+
+msgid "Save"
+msgstr "Gorde"
+
+msgid "Gloxi does not see what you type here."
+msgstr "Gloxik ez du ikusten hemen idazten duzuna."
+
+msgid "entered"
+msgstr "sartuta"
+
+msgid "Without a network"
+msgstr "Sarerik gabe"
+
+msgid "Cable"
+msgstr "Kablea"
+
+msgid "Erase the whole disk"
+msgstr "Ezabatu disko osoa"
+
+msgid "Manual layout"
+msgstr "Partizionatze eskuzkoa"
+
+msgid "Encrypted, with a recovery key"
+msgstr "Zifratua, berreskuratze-gakoarekin"
+
+msgid "Encrypted with a passphrase"
+msgstr "Pasaesaldiarekin zifratua"
+
+msgid "Not encrypted"
+msgstr "Zifratu gabe"
+
+msgid "Cloud model off until the first login"
+msgstr "Hodeiko eredua desaktibatuta lehen saio-hasierara arte"
+
+msgid "Languages and keyboard"
+msgstr "Hizkuntzak eta teklatua"
+
+msgid "Network"
+msgstr "Sarea"
+
+msgid "Disk"
+msgstr "Diskoa"
+
+msgid "Encryption"
+msgstr "Zifratzea"
+
+msgid "Account"
+msgstr "Kontua"
+
+msgid "Time and region"
+msgstr "Ordua eta eskualdea"
+
+msgid "Privacy"
+msgstr "Pribatutasuna"
+
+msgid "Gloxi is waking up… The first start from the USB stick can take a few minutes. You can also go on without the assistant."
+msgstr "Gloxi esnatzen ari da… USB memoriatik lehen abioak minutu batzuk iraun ditzake. Laguntzailerik gabe ere jarraitu dezakezu."
+
+msgid "Shall we connect to a network now? It is not needed: everything for installing is already on the USB stick. Name your Wi-Fi network, or say that we go on without a network."
+msgstr "Sare batera konektatuko gara orain? Ez da beharrezkoa: instalatzeko behar den guztia USB memorian dago jada. Esan zure Wi-Fi sarearen izena, edo esan sarerik gabe jarraituko dugula."
+
+msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
+msgstr "Zer egingo dugu diskoarekin? Disko osoa ezabatu eta Vilna instalatzea proposatzen dizut; beste aukera zeure partizionatzea da, partizio-editorean."
+
+msgid "Fine, the disk will not be encrypted. You can change this in the plan."
+msgstr "Ondo, diskoa ez da zifratuko. Planean alda dezakezu."
+
+msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
+msgstr "Gorde berreskuratze-gakoa leku seguruan: hura gabe inork ezin izango du diskoa ireki, ezta zuk ere, ordenagailu honetan zerbait aldatzen bada."
+
+msgid "What is your name? From it I will suggest a login name and a name for the computer."
+msgstr "Nola duzu izena? Zure izenetik abiatuta, erabiltzaile-izen bat eta ordenagailuarentzako izen bat proposatuko ditut."
+
+msgid "I suggest the time zone {timezone} and the date and number formats of {region}. Is that right? If not, name your city or country."
+msgstr "{timezone} ordu-zona eta «{region}» eskualdeko data- eta zenbaki-formatuak proposatzen dizkizut. Zuzena da? Bestela, esan zure hiria edo herrialdea."
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer. One question here is yours alone, so I do not answer it for you: choose below."
+msgstr "Gloxi ordenagailu honetan bertan dabil, eta esaten diozuna hemen geratzen da. Hodeiko eredua desaktibatuta dago orain; lehen saio-hasieraren ondoren aukera dezakezu, eta orduan pribatutasun-pasabideak izenak eta zenbakiak ezkutatzen ditu ezer ordenagailutik atera aurretik. Hemen galdera bat zurea da soilik, beraz ez dut zure ordez erantzuten: aukeratu behean."
+
+# The classic wizard without the assistant (wizard.py).
+
+msgid "Summary"
+msgstr "Laburpena"
+
+msgid "Step {number} of {count}: {title}"
+msgstr "{count} urratsetatik {number}.a: {title}"
+
+msgid "Back"
+msgstr "Atzera"
+
+msgid "Next"
+msgstr "Hurrengoa"
+
+msgid "Which languages do you write in? The first one chosen is the main language."
+msgstr "Zein hizkuntzatan idazten duzu? Aukeratzen duzun lehena izango da hizkuntza nagusia."
+
+msgid "Main language"
+msgstr "Hizkuntza nagusia"
+
+msgid "Keyboard layouts"
+msgstr "Teklatu-diseinuak"
+
+msgid "Another keyboard layout"
+msgstr "Beste teklatu-diseinu bat"
+
+msgid "None"
+msgstr "Bat ere ez"
+
+msgid "A network is not needed: everything for installing is already on the USB stick."
+msgstr "Ez da sarerik behar: instalatzeko behar den guztia USB memorian dago jada."
+
+msgid "Wi-Fi networks"
+msgstr "Wi-Fi sareak"
+
+msgid "Look for networks again"
+msgstr "Bilatu sareak berriro"
+
+msgid "No Wi-Fi networks found."
+msgstr "Ez da Wi-Fi sarerik aurkitu."
+
+msgid "Connected"
+msgstr "Konektatuta"
+
+msgid "Choose the disk for Vilna and what to do with it."
+msgstr "Aukeratu Vilnarentzako diskoa eta zer egin harekin."
+
+msgid "Disks"
+msgstr "Diskoak"
+
+msgid "What to do with the disk"
+msgstr "Zer egin diskoarekin"
+
+msgid "Erase the whole disk and install Vilna"
+msgstr "Ezabatu disko osoa eta instalatu Vilna"
+
+msgid "Choose the partitions yourself in the partition editor"
+msgstr "Aukeratu zeuk partizioak partizio-editorean"
+
+msgid "Empty"
+msgstr "Hutsik"
+
+msgid "{size} free"
+msgstr "{size} libre"
+
+msgid "Everything on this disk will be erased: {what}."
+msgstr "Disko honetako guztia ezabatuko da: {what}."
+
+msgid "Open the partition editor"
+msgstr "Ireki partizio-editorea"
+
+msgid "Partition editor"
+msgstr "Partizio-editorea"
+
+msgid "Choose what each partition is for. Partitions you do not use stay as they are. New partitions go into the largest free space."
+msgstr "Aukeratu partizio bakoitza zertarako den. Erabiltzen ez dituzun partizioak dauden bezala geratzen dira. Partizio berriak leku libre handienera doaz."
+
+msgid "Partitions on the disk"
+msgstr "Diskoko partizioak"
+
+msgid "New partitions"
+msgstr "Partizio berriak"
+
+msgid "Add a partition"
+msgstr "Gehitu partizio bat"
+
+msgid "Remove"
+msgstr "Kendu"
+
+msgid "Suggest a layout"
+msgstr "Proposatu partizionatze bat"
+
+msgid "Use"
+msgstr "Erabilera"
+
+msgid "Format (erase)"
+msgstr "Formateatu (ezabatu)"
+
+msgid "Size, GiB"
+msgstr "Tamaina, GiB"
+
+msgid "Not used, keep"
+msgstr "Erabili gabe, mantendu"
+
+msgid "EFI system partition"
+msgstr "EFI sistema-partizioa"
+
+msgid "System"
+msgstr "Sistema"
+
+msgid "Home folders"
+msgstr "Karpeta pertsonalak"
+
+msgid "Swap"
+msgstr "Trukea (swap)"
+
+msgid "Partitions chosen: {count}"
+msgstr "Aukeratutako partizioak: {count}"
+
+msgid "Encryption keeps your files safe if the computer or the disk is lost or stolen."
+msgstr "Zifratzeak zure fitxategiak babesten ditu ordenagailua edo diskoa galtzen baduzu edo lapurtzen badizkizute."
+
+msgid "The disk opens by itself on this computer; a recovery key opens it if something changes. Recommended."
+msgstr "Diskoa bere kabuz irekitzen da ordenagailu honetan; berreskuratze-gako batek irekitzen du zerbait aldatzen bada. Gomendatua."
+
+msgid "This computer has no TPM 2.0 chip, so this way is not available."
+msgstr "Ordenagailu honek ez du TPM 2.0 txiprik, beraz aukera hau ez dago erabilgarri."
+
+msgid "You type the passphrase every time the computer starts."
+msgstr "Pasaesaldia idazten duzu ordenagailua pizten den bakoitzean."
+
+msgid "Anyone who has the disk can read your files."
+msgstr "Diskoa duen edonork irakur ditzake zure fitxategiak."
+
+msgid "The next screen shows the recovery key; keep it safe."
+msgstr "Hurrengo pantailak berreskuratze-gakoa erakusten du; gorde leku seguruan."
+
+msgid "Your name"
+msgstr "Zure izena"
+
+msgid "Login name"
+msgstr "Erabiltzaile-izena"
+
+msgid "Computer name"
+msgstr "Ordenagailuaren izena"
+
+msgid "Time zone"
+msgstr "Ordu-zona"
+
+msgid "Date and number formats"
+msgstr "Data- eta zenbaki-formatuak"
+
+msgid "Gloxi works right on this computer, and what you tell it stays here. A cloud model is off now; you can choose it after the first login, and then the privacy gateway hides names and numbers before anything leaves the computer."
+msgstr "Gloxi ordenagailu honetan bertan dabil, eta esaten diozuna hemen geratzen da. Hodeiko eredua desaktibatuta dago orain; lehen saio-hasieraren ondoren aukera dezakezu, eta orduan pribatutasun-pasabideak izenak eta zenbakiak ezkutatzen ditu ezer ordenagailutik atera aurretik."
+
+msgid "What happens to the disk"
+msgstr "Zer gertatzen da diskoarekin"
+
+msgid "Still to do"
+msgstr "Egiteko dagoena"
+
+msgid "The plan is ready. The next screen, from Herkos, shows exactly what will change."
+msgstr "Plana prest dago. Hurrengo pantailak, Herkosenak, zehatz erakusten du zer aldatuko den."
+
+msgid "Fill in this step."
+msgstr "Osatu urrats hau."
+
+msgid "{name} ({size}{what}) will be erased"
+msgstr "{name} ({size}{what}) ezabatu egingo da"
+
+msgid "{name} ({size}{what}) stays as it is"
+msgstr "{name} ({size}{what}) dagoen bezala geratzen da"
+
+msgid "{name} ({size}) is used as {use}, its files stay"
+msgstr "{name} ({size}) «{use}» gisa erabiltzen da, bere fitxategiak geratzen dira"
+
+msgid "A new partition of {size} is created{use}"
+msgstr "{size}(e)ko partizio berri bat sortzen da{use}"
+
+msgid "Partitions are chosen in the partition editor"
+msgstr "Partizioak partizio-editorean aukeratzen dira"
+
+msgid "Type your name."
+msgstr "Idatzi zure izena."
+
+msgid "Choose a disk."
+msgstr "Aukeratu disko bat."
+
+msgid "Choose one of the options."
+msgstr "Aukeratu aukeretako bat."
+
+msgid "Connect to the Wi-Fi network first, or choose another way."
+msgstr "Konektatu lehenik Wi-Fi sarera, edo aukeratu beste aukera bat."
+
+msgid "Type the Wi-Fi password and connect."
+msgstr "Idatzi Wi-Fi pasahitza eta konektatu."
+
+msgid "Type the password for the account."
+msgstr "Idatzi kontuaren pasahitza."
+
+msgid "Type the passphrase for the disk."
+msgstr "Idatzi diskoaren pasaesaldia."
+
+msgid "The disks changed (a disk added or removed?). Choose the disk again."
+msgstr "Diskoak aldatu dira (disko bat gehitu edo kendu da?). Aukeratu diskoa berriro."
+
+# The summary of the plan and the Herkos confirmation screen (step 12).
+
+msgid "{n} GiB"
+msgstr "{n} GiB"
+
+msgid "{n} MiB"
+msgstr "{n} MiB"
+
+msgid "Erased: {what}"
+msgstr "Ezabatuko da: {what}"
+
+msgid "Formatted for {use}, everything on it erased: {what}"
+msgstr "{use} erabiltzeko formateatuko da, eta barruko guztia ezabatuko da: {what}"
+
+msgid "Kept as it is: {what}"
+msgstr "Dagoen bezala geratzen da: {what}"
+
+msgid "Shrunk to {to}: {what}"
+msgstr "{to}(e)ra txikituko da: {what}"
+
+msgid "Used for {use} without formatting: {what}"
+msgstr "{use} erabiltzeko erabiliko da formateatu gabe: {what}"
+
+msgid "New: Vilna, {size}"
+msgstr "Berria: Vilna, {size}"
+
+msgid "New: Vilna, {size}, encrypted"
+msgstr "Berria: Vilna, {size}, zifratua"
+
+msgid "New partition for {use}: {size}"
+msgstr "{use} erabiltzeko partizio berria: {size}"
+
+msgid "Your own layout of {disk}"
+msgstr "{disk} diskoaren zure partizionatzea"
+
+msgid "{model} ({name}, {size})"
+msgstr "{model} ({name}, {size})"
+
+msgid "Disk {name}, {size}"
+msgstr "{name} diskoa, {size}"
+
+msgid "encrypted with {kind}"
+msgstr "{kind} bidez zifratua"
+
+msgid "unknown contents"
+msgstr "eduki ezezaguna"
+
+msgid "empty"
+msgstr "hutsik"
+
+msgid "the boot partition (EFI)"
+msgstr "abio-partizioa (EFI)"
+
+msgid "the system"
+msgstr "sistema"
+
+msgid "home folders"
+msgstr "karpeta pertsonalak"
+
+msgid "swap"
+msgstr "trukea (swap)"
+
+msgid "The disks changed since they were looked at (a USB stick put in or taken out?). Choose the disk again."
+msgstr "Diskoak aldatu dira begiratu zirenetik (USB memoria bat sartu edo atera da?). Aukeratu diskoa berriro."
+
+msgid "The chosen disk is not in the computer now. Choose the disk again."
+msgstr "Aukeratutako diskoa ez dago orain ordenagailuan. Aukeratu diskoa berriro."
+
+msgid "This is the USB stick Vilna is running from. Choose another disk."
+msgstr "Hau da Vilna exekutatzen ari den USB memoria. Aukeratu beste disko bat."
+
+msgid "This disk is read-only. Choose another disk."
+msgstr "Disko hau irakurtzeko soilik da. Aukeratu beste disko bat."
+
+msgid "There is not enough room: Vilna needs at least 40 GiB."
+msgstr "Ez dago leku nahikorik: Vilnak gutxienez 40 GiB behar ditu."
+
+msgid "There is not enough free space for these partitions."
+msgstr "Ez dago leku libre nahikorik partizio hauentzat."
+
+msgid "The EFI system partition needs at least 256 MiB."
+msgstr "EFI sistema-partizioak gutxienez 256 MiB behar ditu."
+
+msgid "This disk has RAID, LVM or a filesystem Vilna does not know: only the partition editor can use it."
+msgstr "Disko honek RAID, LVM edo Vilnak ezagutzen ez duen fitxategi-sistema bat du: partizio-editoreak soilik erabil dezake."
+
+msgid "Choose the partitions in the partition editor."
+msgstr "Aukeratu partizioak partizio-editorean."
+
+msgid "Choose exactly one EFI system partition."
+msgstr "Aukeratu EFI sistema-partizio bat, bakarra."
+
+msgid "Choose exactly one partition for the system."
+msgstr "Aukeratu sistemarentzako partizio bat, bakarra."
+
+msgid "The system and swap partitions are always formatted."
+msgstr "Sistemaren eta trukearen partizioak beti formateatzen dira."
+
+msgid "This partition is not an EFI system partition; format it or choose another."
+msgstr "Partizio hau ez da EFI sistema-partizio bat; formateatu edo aukeratu beste bat."
+
+msgid "This partition cannot be kept for home folders; format it or choose another."
+msgstr "Partizio hau ezin da mantendu karpeta pertsonaletarako; formateatu edo aukeratu beste bat."
+
+msgid "Only a Linux partition can be kept for home folders; format it."
+msgstr "Linux partizio bat soilik manten daiteke karpeta pertsonaletarako; formateatu."
+
+msgid "A partition is chosen twice."
+msgstr "Partizio bat bi aldiz aukeratu da."
+
+msgid "Choose at most one partition for home folders."
+msgstr "Aukeratu gehienez partizio bat karpeta pertsonaletarako."
+
+msgid "Choose at most one swap partition."
+msgstr "Aukeratu gehienez truke-partizio bat."
+
+msgid "This comes in a later version of Vilna."
+msgstr "Hau Vilnaren geroagoko bertsio batean etorriko da."
+
+msgid "A login name starts with a Latin letter and has only small Latin letters, digits, «-» and «_»."
+msgstr "Erabiltzaile-izena letra latino batez hasten da, eta letra latino xeheak, zifrak, «-» eta «_» soilik ditu."
+
+msgid "The system already uses this login name; choose another."
+msgstr "Sistemak dagoeneko erabiltzen du erabiltzaile-izen hau; aukeratu beste bat."
+
+msgid "A computer name has only small Latin letters, digits and «-»."
+msgstr "Ordenagailu-izen batek letra latino xeheak, zifrak eta «-» soilik ditu."
+
+msgid "Worth knowing"
+msgstr "Jakitea komeni da"
+
+msgid "Windows on this disk uses BitLocker. After Vilna is installed, Windows may ask for its recovery key (48 digits) once. Save the key before going on: it is in your Microsoft account or on the printout you made."
+msgstr "Disko honetako Windowsek BitLocker erabiltzen du. Vilna instalatu ondoren, Windowsek behin eska dezake bere berreskuratze-gakoa (48 zifra). Gorde gakoa jarraitu aurretik: zure Microsoft kontuan edo egin zenuen kopia inprimatuan dago."
+
+msgid "The chosen disk cannot be written to."
+msgstr "Ezin da idatzi aukeratutako diskoan."
+
+msgid "The disk is too small: Vilna needs at least 40 GiB."
+msgstr "Diskoa txikiegia da: Vilnak gutxienez 40 GiB behar ditu."
+
+msgid "The disk has RAID, LVM or a filesystem Vilna does not know: only your own layout in the partition editor is possible."
+msgstr "Diskoak RAID, LVM edo Vilnak ezagutzen ez duen fitxategi-sistema bat du: zure partizionatzea partizio-editorean soilik da posible."
+
+msgid "This way of installing comes in a later version of Vilna."
+msgstr "Instalatzeko modu hau Vilnaren geroagoko bertsio batean etorriko da."
+
+msgid "Make the layout in the partition editor first."
+msgstr "Egin lehenik partizionatzea partizio-editorean."
+
+msgid "The Wi-Fi password is not entered yet."
+msgstr "Oraindik ez da Wi-Fi pasahitza sartu."
+
+msgid "The account password is not entered yet."
+msgstr "Oraindik ez da kontuaren pasahitza sartu."
+
+msgid "The disk passphrase is not entered yet."
+msgstr "Oraindik ez da diskoaren pasaesaldia sartu."
+
+msgid "There is not enough free space for Vilna on the disk."
+msgstr "Ez dago leku libre nahikorik Vilnarentzat diskoan."
+
+msgid "This computer has no TPM 2.0 chip that can keep the disk key. Choose encryption with a passphrase instead."
+msgstr "Ordenagailu honek ez du diskoaren gakoa gorde dezakeen TPM 2.0 txiprik. Aukeratu horren ordez pasaesaldiarekin zifratzea."
+
+msgid "Without encryption anyone who has the disk can read your files."
+msgstr "Zifratu gabe, diskoa duen edonork irakur ditzake zure fitxategiak."
+
+msgid "The chosen disk is removable, such as a USB disk."
+msgstr "Aukeratutako diskoa aldagarria da, USB disko bat bezala."
+
+msgid "The plan cannot be installed yet: {message}"
+msgstr "Plana ezin da oraindik instalatu: {message}"
+
+msgid "Not decided yet: {parts}"
+msgstr "Oraindik erabaki gabe: {parts}"
+
+msgid "Herkos"
+msgstr "Herkos"
+
+msgid "Confirm the installation"
+msgstr "Berretsi instalazioa"
+
+msgid "Check what will happen. Nothing has changed on the disks yet; after you confirm, Vilna is installed and this cannot be undone."
+msgstr "Begiratu zer gertatuko den. Oraindik ez da ezer aldatu diskoetan; berresten duzunean, Vilna instalatuko da eta ezin izango da desegin."
+
+msgid "What happens to the disks"
+msgstr "Zer gertatzen da diskoekin"
+
+msgid "The plan"
+msgstr "Plana"
+
+msgid "What has to be fixed first"
+msgstr "Zer zuzendu behar da lehenik"
+
+msgid "The plan cannot be installed yet. Go back and change it:"
+msgstr "Plana ezin da oraindik instalatu. Itzuli atzera eta aldatu:"
+
+msgid "Note"
+msgstr "Kontuz"
+
+msgid "Recovery key"
+msgstr "Berreskuratze-gakoa"
+
+msgid "Write this key down or take a photo of it, and keep it away from the computer. You need it if the disk does not open by itself: after a change of the hardware or of Secure Boot, or when you forget the passphrase. Nobody else has it, not even Vilna."
+msgstr "Idatzi gako hau edo atera iezaiozu argazki bat, eta gorde ordenagailutik urrun. Beharko duzu diskoa bere kabuz irekitzen ez bada: hardwarea edo Secure Boot aldatu ondoren, edo pasaesaldia ahazten baduzu. Beste inork ez du, ezta Vilnak ere."
+
+msgid "To show that you saved it, type the last group of the key (8 letters):"
+msgstr "Gorde duzula baieztatzeko, idatzi gakoaren azken taldea (8 letra):"
+
+msgid "The last group of the recovery key"
+msgstr "Berreskuratze-gakoaren azken taldea"
+
+msgid "That is not the last group. Look at the key again."
+msgstr "Hori ez da azken taldea. Begiratu gakoa berriro."
+
+msgid "Right. The key is saved."
+msgstr "Zuzena. Gakoa gorde da."
+
+msgid "Recovery key, letter by letter: {key}"
+msgstr "Berreskuratze-gakoa, letraz letra: {key}"
+
+msgid "I understand that everything on {disk} is erased"
+msgstr "Ulertzen dut {disk} diskoko guztia ezabatuko dela"
+
+msgid "I understand that the partitions marked above are erased"
+msgstr "Ulertzen dut goian markatutako partizioak ezabatuko direla"
+
+msgid "Back to the plan"
+msgstr "Itzuli planera"
+
+msgid "Erase and install"
+msgstr "Ezabatu eta instalatu"
+
+msgid "Install"
+msgstr "Instalatu"
+
+msgid "Read the changes first…"
+msgstr "Irakurri lehenik aldaketak…"
+
+msgid "The disks changed while this screen was open. Go back and choose the disk again."
+msgstr "Diskoak aldatu dira pantaila hau irekita zegoen bitartean. Itzuli atzera eta aukeratu diskoa berriro."
+
+msgid "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its buttons."
+msgstr "Pantaila hau Herkosek erakusten du, ez Gloxik. Gloxik ezin ditu bere botoiak sakatu."
+
+msgid "Installing Vilna"
+msgstr "Vilna instalatzen"
+
+msgid "This takes a few minutes. Do not switch the computer off and do not pull out the stick."
+msgstr "Minutu batzuk iraungo du. Ez itzali ordenagailua eta ez atera USB memoria."
+
+msgid "Vilna is installed"
+msgstr "Vilna instalatuta dago"
+
+msgid "Take out the stick Vilna started from, then restart the computer. Vilna starts from the disk."
+msgstr "Atera Vilna abiarazi den USB memoria, eta berrabiarazi ordenagailua. Vilna diskotik abiaraziko da."
+
+msgid "The installation stopped"
+msgstr "Instalazioa gelditu egin da"
+
+msgid "Nothing on the disk has changed yet. You can close this window and try again."
+msgstr "Oraindik ez da ezer aldatu diskoan. Leiho hau itxi eta berriro saia zaitezke."
+
+msgid "The disk was already partly written: Vilna will not start from it, and what was on it before is erased. Close this window and start the installation again."
+msgstr "Diskoan dagoeneko zati bat idatzi da: Vilna ez da handik abiaraziko, eta lehen zegoena ezabatu egin da. Itxi leiho hau eta hasi instalazioa berriro."
+
+msgid "Restart"
+msgstr "Berrabiarazi"
+
+msgid "Close"
+msgstr "Itxi"
+
+msgid "What went wrong (for a bug report):"
+msgstr "Zerk huts egin du (errore-txosten baterako):"
+
+msgid "Checking the plan and the disk"
+msgstr "Plana eta diskoa egiaztatzen"
+
+msgid "Writing Vilna to the disk"
+msgstr "Vilna diskoan idazten"
+
+msgid "Opening the new system"
+msgstr "Sistema berria irekitzen"
+
+msgid "Copying Gloxi's model"
+msgstr "Gloxiren eredua kopiatzen"
+
+msgid "Setting up languages, time and your account"
+msgstr "Hizkuntzak, ordua eta zure kontua konfiguratzen"
+
+msgid "Setting up start-up and encryption"
+msgstr "Abioa eta zifratzea konfiguratzen"
+
+msgid "Finishing"
+msgstr "Amaitzen"
+
+# The privacy step and crash reports (ADR 0018 section 3).
+msgid "If a program crashes, send us a crash report?"
+msgstr "Programa batek huts egiten badu, hutsegitearen txostena bidaliko diguzu?"
+
+msgid "A crash report says which program crashed and where in its code. It never has your files, what you typed, your name or the computer's address. You can read every report, and change this answer later in Settings."
+msgstr "Hutsegite-txosten batek esaten du zein programak huts egin duen eta bere kodearen zein zatitan. Ez ditu inoiz zure fitxategiak, idatzi duzuna, zure izena edo ordenagailuaren helbidea. Txosten bakoitza irakur dezakezu, eta erantzun hau geroago alda dezakezu Ezarpenak atalean."
+
+msgid "Send automatically"
+msgstr "Bidali automatikoki"
+
+msgid "Reports go by themselves; you can read each one."
+msgstr "Txostenak bere kabuz bidaltzen dira; bakoitza irakur dezakezu."
+
+msgid "Ask me every time"
+msgstr "Galdetu niri aldi bakoitzean"
+
+msgid "After a crash, a notification asks whether to send its report."
+msgstr "Hutsegite baten ondoren, jakinarazpen batek galdetzen du txostena bidali behar den."
+
+msgid "Never"
+msgstr "Inoiz ez"
+
+msgid "Reports stay on this computer; you can still send one yourself."
+msgstr "Txostenak ordenagailu honetan geratzen dira; hala ere, zeuk bidal dezakezu bat."
+
+msgid "What is in a report"
+msgstr "Zer dago txosten batean"
+
+msgid "Choose an answer about crash reports."
+msgstr "Aukeratu erantzun bat hutsegite-txostenei buruz."
+
+msgid "Crash reports: {answer}"
+msgstr "Hutsegite-txostenak: {answer}"
+
+msgid "Recovery key. It is only drawn on the screen, so that other programs cannot read it. Press «Read the key aloud» to hear it."
+msgstr "Berreskuratze-gakoa. Pantailan marraztuta dago soilik, beste programek irakur ez dezaten. Sakatu «Irakurri gakoa ozen» entzuteko."
+
+msgid "Read the key aloud"
+msgstr "Irakurri gakoa ozen"
+
+msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
+msgstr "Sakatu botoia zeuk, teklatuarekin edo saguarekin: Herkosek ez ditu onartzen beste programen sakatzeak."
+
+msgid "Connected to Wi-Fi."
+msgstr "Wi-Fi sarera konektatuta."
+
+msgid "The password is saved."
+msgstr "Pasahitza gorde da."
+
+msgid "The passphrase is saved."
+msgstr "Pasaesaldia gorde da."
+
+msgid "Type the Wi-Fi password into the protected field below. I do not see it."
+msgstr "Idatzi Wi-Fi pasahitza beheko eremu babestuan. Nik ez dut ikusten."
+
+msgid "Type the password for your account into the protected field below, twice. I do not see it."
+msgstr "Idatzi zure kontuaren pasahitza beheko eremu babestuan, bi aldiz. Nik ez dut ikusten."
+
+msgid "Type the disk passphrase into the protected field below, twice. I do not see it."
+msgstr "Idatzi diskoaren pasaesaldia beheko eremu babestuan, bi aldiz. Nik ez dut ikusten."
+
+msgid "This computer is already connected to the network, so I keep that connection; you can change it in the plan."
+msgstr "Ordenagailu hau sarera konektatuta dago jada, beraz konexio hori mantentzen dut; planean alda dezakezu."
+
+msgid "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; the other way is your own layout in the partition editor. Use the whole disk?"
+msgstr "Vilnarentzako diskoak {size} GB ditu eta hutsik dago. Oso-osorik Vilnari ematea proposatzen dizut; beste aukera zeure partizionatzea da, partizio-editorean. Disko osoa erabiliko dugu?"
+
+msgid "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it completely and installing Vilna: everything on it will be lost. The other way is your own layout in the partition editor. Erase this disk?"
+msgstr "Vilnarentzako diskoak {size} GB ditu, eta {what} dago bertan. Guztiz ezabatu eta Vilna instalatzea proposatzen dizut: barruko guztia galduko da. Beste aukera zeure partizionatzea da, partizio-editorean. Disko hau ezabatuko dugu?"
+
+msgid "files"
+msgstr "fitxategiak"
+
+msgid "Shall I encrypt the new system? I suggest encryption with a recovery key: on this computer the disk opens by itself, and the key opens it if something changes. For more protection if the computer is stolen, the disk can also ask for a PIN at every start. You can also type a passphrase at every start, or not encrypt the disk."
+msgstr "Sistema berria zifratuko dut? Berreskuratze-gakodun zifratzea proposatzen dizut: ordenagailu honetan diskoa bere kabuz irekitzen da, eta gakoak irekitzen du zerbait aldatzen bada. Ordenagailua lapurtzen badizute babes handiagoa izateko, diskoak PIN bat ere eska dezake abio bakoitzean. Pasaesaldi bat ere idatz dezakezu abio bakoitzean, edo diskoa ez zifratu."
+
+msgid "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open with a passphrase you type at every start. Without encryption, anyone with the disk can read your files."
+msgstr "Sistema berria zifratuko dut? Ordenagailu honek ez du TPM txiprik, beraz diskoa abio bakoitzean idatzitako pasaesaldi batekin irekiko litzateke. Zifratu gabe, diskoa duen edonork irakur ditzake zure fitxategiak."
+
+msgid "Switch to the dark theme"
+msgstr "Aldatu gai ilunera"
+
+msgid "Switch to the light theme"
+msgstr "Aldatu gai argira"
+
+msgid "VPN"
+msgstr "VPNa"
+
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up."
+msgstr "Zure konexioa babestuta dago jada: Vilnak DNSa zifratzen du, beraz zauden sareak ez du ikusten zein gune bilatzen dituzun."
+
+msgid "Do you want even more protection with a VPN?"
+msgstr "Babes gehiago nahi duzu VPN batekin?"
+
+msgid "A VPN hides your traffic from the network you are on (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so we only suggest proven ones."
+msgstr "VPN batek zure trafikoa ezkutatzen dio zauden sareari (kafetegi bat, hotel bat), eta zure helbidea webguneei. VPN hornitzaileak ikusten du nora zoazen; horregatik, hornitzaile frogatuak soilik iradokitzen ditugu."
+
+msgid "Sign in to Proton VPN"
+msgstr "Hasi saioa Proton VPN-n"
+
+msgid "After the first login Gloxi opens the Proton VPN app, and you sign in there."
+msgstr "Lehen saio-hasieraren ondoren, Gloxik Proton VPN aplikazioa irekitzen du, eta zuk han hasten duzu saioa."
+
+msgid "Create a free Proton account"
+msgstr "Sortu doako Proton kontu bat"
+
+msgid "5 countries, 1 device at a time. After the first login Gloxi opens Proton's sign-up page, then the app."
+msgstr "5 herrialde, gailu 1 aldi berean. Lehen saio-hasieraren ondoren, Gloxik Protonen izen-emate orria irekitzen du, eta gero aplikazioa."
+
+msgid "I have a Mullvad account number or code"
+msgstr "Mullvad kontu-zenbaki edo kode bat daukat"
+
+msgid "For the most anonymity: no email, only an account number. After the first login Gloxi opens the Mullvad app."
+msgstr "Anonimotasun handiena lortzeko: posta elektronikorik gabe, kontu-zenbaki bat soilik. Lehen saio-hasieraren ondoren, Gloxik Mullvad aplikazioa irekitzen du."
+
+msgid "Skip"
+msgstr "Saltatu"
+
+msgid "You can turn on a VPN later: ask Gloxi, or type /vpn in its window."
+msgstr "VPN bat geroago aktiba dezakezu: eskatu Gloxiri, edo idatzi /vpn bere leihoan."
+
+msgid "You sign in only in the provider's own app: Vilna and Gloxi never see your password, account number or code."
+msgstr "Hornitzailearen aplikazioan bertan soilik hasten duzu saioa: Vilnak eta Gloxik ez dituzte inoiz ikusten zure pasahitza, kontu-zenbakia edo kodea."
+
+msgid "Choose an answer about the VPN."
+msgstr "Aukeratu erantzun bat VPNari buruz."
+
+msgid "Encrypted, with a PIN at every start"
+msgstr "Zifratua, PIN batekin abio bakoitzean"
+
+msgid "Start PIN (6 to 20 digits)"
+msgstr "Abioko PINa (6 eta 20 zifra artean)"
+
+msgid "The PIN is 6 to 20 digits, nothing else."
+msgstr "PINak 6 eta 20 zifra artean ditu, besterik ez."
+
+msgid "The PIN is saved."
+msgstr "PINa gorde da."
+
+msgid "Type the start PIN, 6 to 20 digits, into the protected field below, twice. I do not see it."
+msgstr "Idatzi abioko PINa, 6 eta 20 zifra artean, beheko eremu babestuan, bi aldiz. Nik ez dut ikusten."
+
+msgid "Like the first way, plus a PIN of 6 to 20 digits at every start: a stolen computer does not even reach the login screen."
+msgstr "Lehen aukera bezala, gehi 6 eta 20 zifra arteko PIN bat abio bakoitzean: lapurtutako ordenagailu bat ez da saio-hasierako pantailara ere iristen."
+
+msgid "Type the start PIN for the disk."
+msgstr "Idatzi diskoaren abioko PINa."
+
+msgid "The start PIN is not entered yet."
+msgstr "Oraindik ez da abioko PINa sartu."
+
+msgid "Getting to know each other"
+msgstr "Aurkezpena"
+
+msgid "Disk and files"
+msgstr "Diskoa eta fitxategiak"
+
+msgid "You and the system"
+msgstr "Zu eta sistema"
+
+msgid "Step {n} of {total}"
+msgstr "{total} urratsetatik {n}.a"
+
+msgid "Installation"
+msgstr "Instalazioa"
+
+msgid "Conversation with Gloxi"
+msgstr "Elkarrizketa Gloxirekin"
+
+msgid "Password-protected"
+msgstr "Pasahitzez babestua"
+
+msgid "New partition {n}"
+msgstr "{n}. partizio berria"
+
+msgid "Password"
+msgstr "Pasahitza"
+
+msgid "This version installs only the EFI and the system partition. Leave home folders and swap unused for now."
+msgstr "Bertsio honek EFI partizioa eta sistemarena soilik instalatzen ditu. Oraingoz, utzi erabili gabe karpeta pertsonalak eta trukea."
+
+msgid "The disk has an EFI system partition already. Choose it (formatted or not) instead of a new one."
+msgstr "Diskoak badu jada EFI sistema-partizio bat. Aukeratu hura (formateatuta edo ez) berri baten ordez."
+
+msgid "Keyboard layout: {name}"
+msgstr "Teklatu-diseinua: {name}"

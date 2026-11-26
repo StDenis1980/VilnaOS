@@ -580,6 +580,9 @@ msgstr "R3 · difícil de deshacer"
 msgid "R4 · cannot be undone"
 msgstr "R4 · no se puede deshacer"
 
+msgid "R4 · big change, can be undone"
+msgstr "R4 · cambio importante, se puede deshacer"
+
 msgid "Suspicious content"
 msgstr "Contenido sospechoso"
 

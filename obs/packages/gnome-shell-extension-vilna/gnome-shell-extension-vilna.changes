@@ -1,12 +1,19 @@
 -------------------------------------------------------------------
-Wed Nov 25 22:15:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+Thu Nov 26 13:40:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
-- 0.16: the clock card shows the next alarm and up to two other time
+- 0.17: the clock card shows the next alarm and up to two other time
   zones from GNOME Clocks (read from its Flatpak settings file), says
   when Clocks is closed and so will not ring, and opens a menu: alarms,
   world clocks, stopwatch and timer open Clocks on that tab, Date &
   time opens the system settings (Denys, 2026-11-25). Keys clock-alarm
   and clock-zones; three small symbolic icons drawn for Vilna.
+
+-------------------------------------------------------------------
+Thu Nov 26 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.16: the message field of the Gloxi side panel wraps long text and
+  grows with it, up to about eight lines, then scrolls; Enter sends,
+  Shift+Enter starts a new line (Build12.29: one short line).
 
 -------------------------------------------------------------------
 Wed Nov 25 21:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>

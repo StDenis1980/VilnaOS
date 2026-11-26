@@ -48,6 +48,14 @@ export class WifiOffer {
 
 // The words, in the ten languages of Vilna (ADR 0009). The extension has no
 // gettext catalogue of its own; these three lines are all it says.
+// The table's key for a GLib language name: "uk_UA.UTF-8" → "uk", and
+// Valencian, "ca_ES.UTF-8@valencia" → "ca@valencia" (ADR 0009).
+function languageCode(name) {
+    const s = String(name);
+    const code = s.split(/[_.@-]/)[0].toLowerCase();
+    return code === 'ca' && /@valencia/i.test(s) ? 'ca@valencia' : code;
+}
+
 const TEXT = {
     en: ['Shared Wi-Fi', 'DNS is already encrypted. A VPN hides the rest of your traffic from this network too.', 'Set up a VPN'],
     uk: ['Спільна Wi-Fi', 'DNS уже зашифровано. VPN сховає від цієї мережі й решту трафіку.', 'Налаштувати VPN'],
@@ -59,6 +67,17 @@ const TEXT = {
     ro: ['Wi-Fi comun', 'DNS-ul este deja criptat. Un VPN ascunde de această rețea și restul traficului.', 'Configurează un VPN'],
     cs: ['Sdílená Wi-Fi', 'DNS je už šifrované. VPN skryje před touto sítí i zbytek provozu.', 'Nastavit VPN'],
     lt: ['Bendras „Wi-Fi“ tinklas', 'DNS jau užšifruotas. VPN nuo šio tinklo paslėps ir likusį srautą.', 'Nustatyti VPN'],
+    ca: ['Wifi compartida', 'El DNS ja està xifrat. Una VPN també amaga a aquesta xarxa la resta del teu trànsit.',
+        'Configura una VPN'],
+    'ca@valencia': ['Wifi compartida',
+        'El DNS ja està xifrat. Una VPN també amaga a esta xarxa la resta del teu trànsit.', 'Configura una VPN'],
+    gl: ['Wifi compartida', 'O DNS xa está cifrado. Unha VPN tamén oculta a esta rede o resto do teu tráfico.',
+        'Configurar unha VPN'],
+    eu: ['Wifi partekatua',
+        'DNSa zifratuta dago jada. VPN batek zure gainerako trafikoa ere ezkutatzen dio sare honi.',
+        'Konfiguratu VPN bat'],
+    pt: ['Wi-Fi partilhada', 'O DNS já está cifrado. Uma VPN também esconde desta rede o resto do seu tráfego.',
+        'Configurar uma VPN'],
 };
 
 export const LANGUAGES = Object.keys(TEXT);
@@ -66,7 +85,7 @@ export const LANGUAGES = Object.keys(TEXT);
 // languageNames: GLib.get_language_names(), most wanted first ('uk_UA.UTF-8', 'uk', 'C').
 export function offerText(languageNames) {
     for (const name of languageNames ?? []) {
-        const code = String(name).split(/[_.@-]/)[0].toLowerCase();
+        const code = languageCode(name);
         if (TEXT[code]) {
             const [title, body, action] = TEXT[code];
             return {title, body, action};

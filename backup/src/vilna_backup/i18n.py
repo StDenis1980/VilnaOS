@@ -55,9 +55,14 @@ def languages() -> list[str]:
         if value:
             out = []
             for part in value.split(":"):
-                code = part.split(".")[0].split("@")[0]
+                base, _, modifier = part.partition("@")
+                code = base.split(".")[0]
                 if code and code not in ("C", "POSIX"):
-                    out += [code, code.split("_")[0]]
+                    lang = code.split("_")[0]
+                    # ca_ES.UTF-8@valencia: Valencian first, then Catalan (ADR 0009).
+                    if modifier:
+                        out += [f"{code}@{modifier}", f"{lang}@{modifier}"]
+                    out += [code, lang]
             return out
     return []
 

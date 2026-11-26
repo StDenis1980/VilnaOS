@@ -163,7 +163,7 @@ def test_keyboards_follow_the_languages_with_a_latin_one_always_there():
     assert wiz.keyboards_for(["uk_UA.UTF-8"]) == ["ua", "us"]
     assert wiz.keyboards_for(["uk_UA.UTF-8", "pl_PL.UTF-8"]) == ["ua", "pl"]
     assert wiz.keyboards_for(["de_DE.UTF-8"], "ua") == ["de", "ua"]
-    assert wiz.keyboards_for(["pt_BR.UTF-8"]) == ["us"]
+    assert wiz.keyboards_for(["nl_NL.UTF-8"]) == ["us"]
 
 
 def test_replacing_a_disk_with_windows_says_what_is_lost(tmp_path):

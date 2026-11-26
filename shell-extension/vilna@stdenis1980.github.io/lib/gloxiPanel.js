@@ -207,6 +207,14 @@ export class PanelChat {
 const KEYS = ['indicator', 'ready', 'thinking', 'answering', 'error', 'offline', 'hint', 'send', 'openWindow',
     'close', 'you', 'empty', 'replaced', 'done', 'denied', 'failed', 'suspicious', 'messages'];
 
+// The table's key for a GLib language name: "uk_UA.UTF-8" → "uk", and
+// Valencian, "ca_ES.UTF-8@valencia" → "ca@valencia" (ADR 0009).
+function languageCode(name) {
+    const s = String(name);
+    const code = s.split(/[_.@-]/)[0].toLowerCase();
+    return code === 'ca' && /@valencia/i.test(s) ? 'ca@valencia' : code;
+}
+
 const TEXT = {
     en: ['Gloxi side panel', 'Gloxi is ready', 'Gloxi is thinking', 'Gloxi is answering', 'Something went wrong',
         'Gloxi is not running here. Open the Gloxi window.', 'Write to Gloxi…', 'Send', 'Open the Gloxi window',
@@ -253,13 +261,38 @@ const TEXT = {
         'Gloxi čia neveikia. Atverkite Gloxi langą.', 'Parašykite Gloxi…', 'Siųsti', 'Atverti Gloxi langą',
         'Uždaryti skydelį', 'Jūs', 'Kuo galiu padėti?', 'Gloxi atvertas kitame skydelyje.', 'Atlikta', 'Atmesta',
         'Nepavyko', 'Įtartinas turinys: žr. Gloxi langą', 'Pokalbis su Gloxi'],
+    ca: ['Plafó lateral de Gloxi', 'Gloxi està a punt', 'Gloxi està pensant', 'Gloxi està responent',
+        'Alguna cosa ha anat malament', 'Gloxi no s’està executant aquí. Obre la finestra de Gloxi.',
+        'Escriu a Gloxi…', 'Envia', 'Obre la finestra de Gloxi', 'Tanca el plafó', 'Tu', 'En què et puc ajudar?',
+        'Gloxi està obert en un altre plafó.', 'Fet', 'Denegat', 'Ha fallat',
+        'Contingut sospitós: mira la finestra de Gloxi', 'Conversa amb Gloxi'],
+    'ca@valencia': ['Plafó lateral de Gloxi', 'Gloxi està a punt', 'Gloxi està pensant', 'Gloxi està responent',
+        'Alguna cosa ha anat malament', 'Gloxi no s’està executant ací. Obre la finestra de Gloxi.',
+        'Escriu a Gloxi…', 'Envia', 'Obre la finestra de Gloxi', 'Tanca el plafó', 'Tu', 'En què et puc ajudar?',
+        'Gloxi està obert en un altre plafó.', 'Fet', 'Denegat', 'Ha fallat',
+        'Contingut sospitós: mira la finestra de Gloxi', 'Conversa amb Gloxi'],
+    gl: ['Panel lateral de Gloxi', 'Gloxi está listo', 'Gloxi está a pensar', 'Gloxi está a responder',
+        'Algo saíu mal', 'Gloxi non se está a executar aquí. Abre a xanela de Gloxi.', 'Escríbelle a Gloxi…',
+        'Enviar', 'Abrir a xanela de Gloxi', 'Pechar o panel', 'Ti', 'En que che podo axudar?',
+        'Gloxi está aberto noutro panel.', 'Feito', 'Denegado', 'Fallou',
+        'Contido sospeitoso: mira a xanela de Gloxi', 'Conversa con Gloxi'],
+    eu: ['Gloxiren alboko panela', 'Gloxi prest dago', 'Gloxi pentsatzen ari da', 'Gloxi erantzuten ari da',
+        'Zerbaitek huts egin du', 'Gloxi ez dabil hemen. Ireki Gloxiren leihoa.', 'Idatzi Gloxiri…', 'Bidali',
+        'Ireki Gloxiren leihoa', 'Itxi panela', 'Zu', 'Zertan lagun zaitzaket?',
+        'Gloxi beste panel batean irekita dago.', 'Eginda', 'Ukatuta', 'Huts egin du',
+        'Eduki susmagarria: ikusi Gloxiren leihoa', 'Elkarrizketa Gloxirekin'],
+    pt: ['Painel lateral do Gloxi', 'O Gloxi está pronto', 'O Gloxi está a pensar', 'O Gloxi está a responder',
+        'Algo correu mal', 'O Gloxi não está a ser executado aqui. Abra a janela do Gloxi.', 'Escreva ao Gloxi…',
+        'Enviar', 'Abrir a janela do Gloxi', 'Fechar o painel', 'Você', 'Em que posso ajudar?',
+        'O Gloxi está aberto noutro painel.', 'Feito', 'Recusado', 'Falhou',
+        'Conteúdo suspeito: veja a janela do Gloxi', 'Conversa com o Gloxi'],
 };
 
 export const LANGUAGES = Object.keys(TEXT);
 
 function languageOf(languageNames) {
     for (const name of languageNames ?? []) {
-        const code = String(name).split(/[_.@-]/)[0].toLowerCase();
+        const code = languageCode(name);
         if (TEXT[code])
             return code;
     }

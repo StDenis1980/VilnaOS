@@ -88,8 +88,8 @@
          in the RAM overlay (+1.7 GB on KLX, 2026-11-17), while an RPM
          stays in the squashfs and is read from the stick. Live image
          only, decision of Denys of 2026-11-17. The two translation
-         packages cover the ten languages (ADR 0009): uk, ro and lt are
-         in -other. -->
+         packages cover the main languages (ADR 0009): uk, ro and lt
+         are in -other. -->
     <package name="MozillaFirefox"/>
     <!-- MozillaFirefox needs some MozillaFirefox-branding and both the
          openSUSE and the upstream one provide it: without a choice OBS

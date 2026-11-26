@@ -20,7 +20,7 @@ import re
 
 from gloxi.llm import ChatClient, ModelError
 
-# The ten languages of Vilna (ADR 0009), by their English names for the model.
+# The main languages of Vilna (ADR 0009), by their English names for the model.
 LANGUAGES = {
     "uk": "Ukrainian",
     "en": "English",
@@ -32,6 +32,11 @@ LANGUAGES = {
     "ro": "Romanian",
     "cs": "Czech",
     "lt": "Lithuanian",
+    "ca": "Catalan",
+    "ca@valencia": "Valencian (the Valencian standard of Catalan)",
+    "gl": "Galician",
+    "eu": "Basque",
+    "pt": "European Portuguese",
 }
 
 # A warning's headline is a line or two; a whole description is a paragraph.

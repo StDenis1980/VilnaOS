@@ -9,6 +9,11 @@ Name[it]=Vilna Acqua
 Name[ro]=Vilna Apă
 Name[cs]=Vilna Voda
 Name[lt]=Vilna Vanduo
+Name[ca]=Vilna Aigua
+Name[ca@valencia]=Vilna Aigua
+Name[gl]=Vilna Auga
+Name[eu]=Vilna Ura
+Name[pt]=Vilna Água
 Inherits=freedesktop
 Directories=stereo
 

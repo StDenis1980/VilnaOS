@@ -40,7 +40,9 @@ def test_ukrainian_is_used():
     assert uk.gettext("[local]") == "[локально]"
 
 
-@pytest.mark.parametrize("lang", ["es", "pl", "de", "fr", "it", "ro", "cs", "lt"])
+@pytest.mark.parametrize(
+    "lang", ["es", "pl", "de", "fr", "it", "ro", "cs", "lt", "ca", "ca@valencia", "gl", "eu", "pt"]
+)
 def test_every_main_language_is_used(lang):
     t = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=[lang])
     assert t.gettext(HELP) != HELP
@@ -48,8 +50,8 @@ def test_every_main_language_is_used(lang):
 
 
 def test_a_language_without_a_catalogue_falls_back_to_english():
-    pt = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=["pt"], fallback=True)
-    assert pt.gettext(HELP) == HELP
+    nl = gettext.translation(DOMAIN, str(LOCALE_DIR), languages=["nl"], fallback=True)
+    assert nl.gettext(HELP) == HELP
 
 
 def test_mo_round_trip(tmp_path):

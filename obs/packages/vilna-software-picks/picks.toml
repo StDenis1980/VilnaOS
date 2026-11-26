@@ -27,7 +27,7 @@
 selector = "vilna"
 
 [section.title]
-# Заголовок блоку на головній сторінці, 10 основних мов (ADR 0009)
+# Заголовок блоку на головній сторінці, основні мови (ADR 0009)
 uk = "Рекомендовано Vilna"
 en = "Recommended by Vilna"
 es = "Recomendado por Vilna"
@@ -38,6 +38,11 @@ it = "Consigliato da Vilna"
 ro = "Recomandat de Vilna"
 cs = "Doporučeno Vilnou"
 lt = "Rekomenduoja Vilna"
+ca = "Recomanat per Vilna"
+"ca@valencia" = "Recomanat per Vilna"
+gl = "Recomendado por Vilna"
+eu = "Vilnak gomendatua"
+pt = "Recomendado pelo Vilna"
 
 [categories]
 work = "Робота"

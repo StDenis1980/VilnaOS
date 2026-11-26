@@ -580,6 +580,9 @@ msgstr "R3 · sunku atšaukti"
 msgid "R4 · cannot be undone"
 msgstr "R4 · negrįžtama"
 
+msgid "R4 · big change, can be undone"
+msgstr "R4 · didelis pakeitimas, galima atšaukti"
+
 msgid "Suspicious content"
 msgstr "Įtartinas turinys"
 

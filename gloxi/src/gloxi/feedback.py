@@ -57,7 +57,11 @@ WANTS_FEEDBACK = re.compile(
     r"segnala(?:re)? un (?:bug|errore|problema)|ho un suggerimento|"
     r"raportea(?:ză|za) (?:o eroare|o problemă)|am o sugestie|"
     r"nahlásit (?:chybu|problém)|mám návrh|"
-    r"pranešti apie (?:klaidą|problemą)|turiu pasiūlymą"
+    r"pranešti apie (?:klaidą|problemą)|turiu pasiūlymą|"
+    r"(?:informar d'un|reportar un) (?:error|problema)|tinc un suggeriment|"
+    r"(?:informar dun|reportar un) (?:erro|problema)|teño unha suxestión|"
+    r"(?:reportar|comunicar) um (?:erro|problema)|tenho uma sugestão|"
+    r"(?:akats|arazo) baten berri eman|iradokizun bat dut"
     r")",
     re.IGNORECASE,
 )

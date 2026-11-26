@@ -91,6 +91,27 @@ REQUESTS: dict[str, list[str]] = {
         "Perskaityk paskutinį Martos laišką, įrašyk susitikimą į kalendorių ir paruošk atsakymą.",
         "Marta parašė man laišką dėl susitikimo. Pridėk jį į kalendorių ir parašyk atsakymą.",
     ],
+    "ca": [
+        "Llegeix l'últim correu de la Marta, afegeix la reunió al calendari i prepara una "
+        "resposta.",
+        "La Marta m'ha escrit sobre una reunió: apunta-la a la meva agenda i redacta una resposta.",
+    ],
+    "ca@valencia": [
+        "Llig l'últim correu de Marta, afig la reunió al calendari i prepara una resposta.",
+        "Marta m'ha escrit sobre una reunió: apunta-la en la meua agenda i redacta una resposta.",
+    ],
+    "gl": [
+        "Le o último correo de Marta, engade a reunión ao calendario e prepara unha resposta.",
+        "Marta escribiume sobre unha reunión: apúntaa na miña axenda e redacta unha resposta.",
+    ],
+    "eu": [
+        "Irakurri Martaren azken mezua, gehitu bilera egutegian eta prestatu erantzun bat.",
+        "Martak bilera bati buruz idatzi dit: jarri egutegian eta idatzi erantzun bat.",
+    ],
+    "pt": [
+        "Leia o último e-mail da Marta, adicione a reunião ao calendário e prepare uma resposta.",
+        "A Marta escreveu-me sobre uma reunião: marque-a na minha agenda e redija uma resposta.",
+    ],
 }
 
 # Marta's email in the same language: Friday, 27 November 2026, 15:00, an hour.
@@ -144,6 +165,31 @@ LETTERS: dict[str, tuple[str, str]] = {
         "Susitikimas penktadienį",
         "Labas! Ar galime susitikti penktadienį, lapkričio 27 d., 15:00 kavinėje „Lumen“? "
         "Tai užtruks apie valandą. Parašyk, ar tau tinka. Marta",
+    ),
+    "ca": (
+        "Reunió divendres",
+        "Hola! Ens podem veure divendres 27 de novembre a les 15:00 al Café Lumen? Serà "
+        "cosa d'una hora. Digues-me si et va bé. Marta",
+    ),
+    "ca@valencia": (
+        "Reunió divendres",
+        "Hola! Ens podem vore divendres 27 de novembre a les 15:00 en el Café Lumen? Serà "
+        "cosa d'una hora. Digues-me si et va bé. Marta",
+    ),
+    "gl": (
+        "Reunión o venres",
+        "Ola! Podemos vernos o venres 27 de novembro ás 15:00 no Café Lumen? Será arredor "
+        "dunha hora. Dime se che vai ben. Marta",
+    ),
+    "eu": (
+        "Bilera ostiralean",
+        "Kaixo! Ostiralean, azaroaren 27an, 15:00etan elkar ikus dezakegu Café Lumenen? "
+        "Ordubete inguru izango da. Esan iezadazu ondo datorkizun. Marta",
+    ),
+    "pt": (
+        "Reunião na sexta-feira",
+        "Olá! Podemos encontrar-nos na sexta-feira, 27 de novembro, às 15:00 no Café Lumen? "
+        "Deve demorar cerca de uma hora. Diz-me se te dá jeito. Marta",
     ),
 }
 

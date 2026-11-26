@@ -121,17 +121,33 @@
   spacing: 6px;
 }
 
-.vilna-gloxi-entry {
+/* The scrolled field round the entry: grows with the text up to about
+   eight lines, then scrolls. It carries the border, so focus shows. */
+.vilna-gloxi-field {
   border-radius: 12px;
-  padding: 8px 10px;
   background-color: #ffffff;
   border: 1px solid rgba(19, 33, 58, 0.24);
+  max-height: 11em;
+}
+
+.vilna-dark .vilna-gloxi-field {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.vilna-gloxi-field:focus {
+  border: 2px solid #2d6bff;
+}
+
+.vilna-gloxi-entry {
+  padding: 8px 10px;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
   color: #13213a;
 }
 
 .vilna-dark .vilna-gloxi-entry {
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.24);
   color: #eef1f7;
 }
 
@@ -144,7 +160,8 @@
 }
 
 .vilna-gloxi-entry:focus {
-  border: 2px solid #2d6bff;
+  border: none;
+  box-shadow: none;
 }
 
 .vilna-gloxi-button {

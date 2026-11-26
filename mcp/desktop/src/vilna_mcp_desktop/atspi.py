@@ -137,7 +137,10 @@ class Apps:
         """(process, window, element) for an id, after every check."""
         m = _ID.fullmatch(element)
         if not m:
-            raise ToolError(f"{element!r} is not an id from list_windows or read_window")
+            raise ToolError(
+                f"{element!r} is not an id from list_windows or read_window; call "
+                "list_windows, then read_window, and use an id they gave"
+            )
         pid, path = int(m.group(1)), [int(i) for i in m.group(2).split(".")]
         desktop = self._desktop()
         app = desktop.child(path[0]) if path[0] < desktop.child_count() else None

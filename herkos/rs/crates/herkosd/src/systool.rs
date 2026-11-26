@@ -48,8 +48,11 @@ pub struct State {
 
 impl State {
     fn to_json(&self) -> Value {
+        // Named like the argument of rollback and restore: with "number",
+        // the model counted the list and passed the place of a row (laptop,
+        // 2026-11-26: 3 and 1 for snapshots 8 and 15).
         json!({
-            "number": self.number,
+            "snapshot": self.number,
             "date": self.date,
             "description": self.description,
             "starts_next": self.default,
@@ -214,7 +217,11 @@ fn snapshot_arg(args: &Value) -> Result<u64, String> {
 fn tools() -> Value {
     let number = json!({
         "type": "object",
-        "properties": {"snapshot": {"type": "integer", "minimum": 1}},
+        "properties": {"snapshot": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The 'snapshot' value list_snapshots gave, not a place in the list",
+        }},
         "required": ["snapshot"],
         "additionalProperties": false,
     });
@@ -481,7 +488,7 @@ mod tests {
             Some(3)
         );
         assert_eq!(
-            replies[2]["result"]["structuredContent"]["states"][0]["number"],
+            replies[2]["result"]["structuredContent"]["states"][0]["snapshot"],
             1
         );
         assert_eq!(replies[3]["result"]["isError"], true);
