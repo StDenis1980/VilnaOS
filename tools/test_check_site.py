@@ -341,6 +341,18 @@ class SecurityTxt(unittest.TestCase):
 
         self.assertEqual(build_and_check(tweak), ["security.txt: Expires 'soon' is not a date"])
 
+    def test_expires_without_a_time_zone_is_reported(self) -> None:
+        for naive in ("2099-01-01T00:00:00", "2099-01-01"):
+            with self.subTest(expires=naive):
+
+                def tweak(public: Path, naive: str = naive) -> None:
+                    put(public, ".well-known/security.txt", security_txt(expires=naive))
+
+                self.assertEqual(
+                    build_and_check(tweak),
+                    [f"security.txt: Expires {naive} has no time zone (RFC 9116)"],
+                )
+
     def test_check_security_txt_is_callable_on_its_own(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             public = Path(tmp)

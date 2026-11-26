@@ -288,6 +288,9 @@ def check_files(root: Path, paths: Sequence[str]) -> list[Problem]:
         except UnicodeDecodeError:
             problems.append(Problem(rel, "the file is not valid UTF-8"))
         else:
+            if text.startswith("\ufeff"):
+                problems.append(Problem(rel, "the file starts with a byte order mark (BOM)"))
+                text = text[1:]
             problems += check_text(rel, text)
     return problems
 

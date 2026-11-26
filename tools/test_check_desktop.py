@@ -133,6 +133,10 @@ class Syntax(unittest.TestCase):
             found = cd.check_files(Path(tmp), [OTHER_FILE])
         self.assertEqual([str(p) for p in found], [f"{OTHER_FILE}: the file is not valid UTF-8"])
 
+    def test_byte_order_mark_is_one_clear_error(self) -> None:
+        found = errors_of("\ufeff" + desktop())
+        self.assertEqual(found, [f"{APP_FILE}: the file starts with a byte order mark (BOM)"])
+
     def test_missing_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             found = cd.check_files(Path(tmp), ["nope.desktop"])
