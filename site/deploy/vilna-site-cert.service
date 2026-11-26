@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Certificate for the spare copy of vilnaos.com (ADR 0032), DNS-01 at deSEC.
+[Unit]
+Description=Get or renew the vilnaos.com certificate for the spare host
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+LoadCredential=desec_token:/etc/vilna-site/desec_token
+ExecStart=/usr/local/lib/vilna-site/cert.sh

@@ -48,6 +48,8 @@ python3 tools/check_site.py
 
 ## Розгортання: statichost.eu
 
+Сайт має два хости й DNS у двох провайдерів ([ADR 0032](../docs/adr/0032-site-hosts-dns.md)): основний — statichost.eu (нижче), запасний — копія на VPS IONOS ([`deploy/`](deploy/)); записи DNS — у [`dns/`](dns/). Записи в таблиці «Записи DNS в Arsys» нижче діють, доки NS vilnaos.com ще в Arsys.
+
 Хостинг — [statichost.eu](https://statichost.eu/) (рішення Denys 3.11.2026). Публікує й змінює DNS лише Denys або за його згодою.
 
 - [`statichost.yml`](statichost.yml): збірки немає, публікується тека `public/` як є.

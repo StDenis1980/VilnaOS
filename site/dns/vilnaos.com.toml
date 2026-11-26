@@ -1,0 +1,105 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The vilnaos.com zone, served by two DNS providers at once (deSEC and bunny
+# DNS, ADR 0032). This file is the only source: tools/site_dns.py writes it
+# to both providers (`apply`) and shows how they differ from it (`diff`).
+# Arsys is only the registrar. Change DNS here, through a pull request.
+#
+# Names are relative to the zone ("" is the zone apex). Values are written
+# as in a zone file: host names end with a dot, MX is "priority host.", SRV
+# is "priority weight port host.", TXT is the text without quotes.
+# The apex NS and SOA belong to each provider and are not listed here.
+
+zone = "vilnaos.com"
+ttl = 3600
+
+# The site: the apex and www point at one of these hosts. tools/site_dns.py
+# `failover <host>` switches both names at both providers; `apply` leaves
+# them alone unless it is given --with-site.
+[site]
+names = ["", "www"]
+active = "statichost"
+ttl = 3600  # 300 once deSEC lowers the minimum TTL for this account
+
+[site.hosts.statichost]
+# statichost.eu (Hetzner, Finland); site/README.md, "Розгортання".
+A = ["95.217.26.94"]
+AAAA = ["2a01:4f9:c01f:8002::"]
+
+[site.hosts.ionos]
+# Our VPS at IONOS (reports.vilnaos.com), site/deploy/. IPv4 only.
+A = ["217.160.125.31"]
+
+[[rrset]]
+name = "reports"
+type = "A"
+values = ["217.160.125.31"]
+
+[[rrset]]
+# Flatpak repository on bunny.net (ADR 0024).
+name = "flatpak"
+type = "CNAME"
+values = ["vilna-flatpak.b-cdn.net."]
+
+# Certificates for the site on the VPS (site/deploy/README.md): lego follows
+# a CNAME _acme-challenge -> vilnaos-acme.dedyn.io. and writes the ACME token
+# in a small zone of its own at deSEC, so the VPS token can touch nothing else.
+# Not published yet: that zone does not exist in our deSEC account (new
+# accounts get one domain), and a CNAME to a name anyone could register would
+# let them get certificates for vilnaos.com. Add it back once the zone is ours:
+#
+# [[rrset]]
+# name = "_acme-challenge"
+# type = "CNAME"
+# values = ["vilnaos-acme.dedyn.io."]
+
+# Mail: mailbox.org (business/mail/mailbox-org-plan.md in the project files).
+[[rrset]]
+name = ""
+type = "MX"
+values = [
+    "10 mxext1.mailbox.org.",
+    "20 mxext2.mailbox.org.",
+    "30 mxext3.mailbox.org.",
+    "40 mxext4.mailbox.org.",
+]
+
+[[rrset]]
+name = ""
+type = "TXT"
+values = ["v=spf1 include:mailbox.org ~all"]
+
+[[rrset]]
+# mailbox.org's proof that the domain is ours; keep it while the mailbox lives.
+name = "709e7ac56bbd15eb0f76b9f23e0f21f2c075a94a"
+type = "TXT"
+values = ["b70507eb5d51b22120ad5ca05773319e70186dac"]
+
+[[rrset]]
+name = "_dmarc"
+type = "TXT"
+values = ["v=DMARC1; p=none; rua=mailto:postmaster@vilnaos.com"]
+
+[[rrset]]
+name = "MBO0001._domainkey"
+type = "CNAME"
+values = ["MBO0001._domainkey.mailbox.org."]
+
+[[rrset]]
+name = "MBO0002._domainkey"
+type = "CNAME"
+values = ["MBO0002._domainkey.mailbox.org."]
+
+[[rrset]]
+name = "MBO0003._domainkey"
+type = "CNAME"
+values = ["MBO0003._domainkey.mailbox.org."]
+
+[[rrset]]
+name = "MBO0004._domainkey"
+type = "CNAME"
+values = ["MBO0004._domainkey.mailbox.org."]
+
+[[rrset]]
+name = "_autodiscover._tcp"
+type = "SRV"
+values = ["0 0 443 auto.mailbox.org."]

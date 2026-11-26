@@ -42,3 +42,7 @@ reports.vilnaos.com {
 		respond 404
 	}
 }
+
+# Other sites on this server, each in its own file: the spare copy of
+# vilnaos.com (site/deploy/, ADR 0032). An empty folder is fine.
+import sites/*.caddy

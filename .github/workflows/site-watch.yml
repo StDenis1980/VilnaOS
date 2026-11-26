@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Watches both hosts of vilnaos.com, each asked by its own address (ADR 0032,
+# tools/site_dns.py probe). A red run means one of them is not serving the
+# site properly, and GitHub tells Denys by mail.
+#
+# If the main host (statichost) fails three times in a row and the spare
+# one (our VPS) works, this moves vilnaos.com and www to the spare host at
+# both DNS providers, but only when Denys has turned that on (repository
+# variable VILNA_SITE_FAILOVER = auto). Moving back is always by hand: run
+# this workflow with "move to" = statichost.
+name: Site watch
+
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+    inputs:
+      move_to:
+        description: "Move vilnaos.com and www to this host (empty: only check)"
+        type: choice
+        options: ["", statichost, ionos]
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-watch
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    # Nothing to watch until the zone is at deSEC and bunny (VILNA_SITE_DNS).
+    if: vars.VILNA_SITE_DNS == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      main_down: ${{ steps.probe.outputs.main_down }}
+      spare_up: ${{ steps.probe.outputs.spare_up }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ask each host (three tries, a minute apart)
+        id: probe
+        run: |
+          main_down=true
+          for try in 1 2 3; do
+            python3 tools/site_dns.py probe --json > probe.json || true
+            cat probe.json
+            if python3 -c 'import json,sys; d=json.load(open("probe.json")); sys.exit(0 if not any(d["statichost"].values()) else 1)'; then
+              main_down=false
+              break
+            fi
+            [ "$try" = 3 ] || sleep 60
+          done
+          if python3 -c 'import json,sys; d=json.load(open("probe.json")); sys.exit(0 if not any(d["ionos"].values()) else 1)'; then
+            spare_up=true
+          else
+            spare_up=false
+          fi
+          echo "main_down=$main_down" >> "$GITHUB_OUTPUT"
+          echo "spare_up=$spare_up" >> "$GITHUB_OUTPUT"
+          echo "statichost down: $main_down, VPS up: $spare_up"
+      - name: Fail the run if a host is down
+        run: python3 tools/site_dns.py probe
+
+  move:
+    needs: probe
+    if: >-
+      always() && needs.probe.result != 'skipped' &&
+      (inputs.move_to != '' ||
+       (vars.VILNA_SITE_FAILOVER == 'auto' && needs.probe.outputs.main_down == 'true' && needs.probe.outputs.spare_up == 'true'))
+    runs-on: ubuntu-latest
+    environment: dns
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move vilnaos.com and www
+        env:
+          DESEC_TOKEN: ${{ secrets.DESEC_TOKEN }}
+          BUNNY_API_KEY: ${{ secrets.BUNNY_API_KEY }}
+          MOVE_TO: ${{ inputs.move_to || 'ionos' }}
+        run: |
+          python3 tools/site_dns.py failover "$MOVE_TO" --yes
+          echo "::warning::vilnaos.com and www now point at $MOVE_TO."
