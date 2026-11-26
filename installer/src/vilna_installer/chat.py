@@ -426,6 +426,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.thinking.set_visible(False)
         if self.conversation is not None:
             self._show(self.conversation.opening())
+            threading.Thread(target=self.conversation.warm, daemon=True).start()
             self._ready(True)
             self.entry.grab_focus()
         return False
