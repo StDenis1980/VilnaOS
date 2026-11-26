@@ -21,6 +21,7 @@ import {
     geocodeUrl, homeCountry, languageOf, parseGeocode, roundForPrivacy, weatherPlace, widgetText,
 } from './lib/widgets.js';
 import {DISCLAIMER, SITE_URL, alertText} from './lib/alerts.js';
+import {clockText} from './lib/clockInfo.js';
 import {SOUND_EVENTS, SOUND_THEMES, soundText} from './lib/soundTheme.js';
 import {
     HIDE_MODES, ICON_SIZE_MAX, ICON_SIZE_MIN, ICON_SIZE_STEP, POSITIONS, clampIconSize, dockText, hideKeys, hideMode,
@@ -77,7 +78,9 @@ export default class VilnaPreferences extends ExtensionPreferences {
         window.add(page);
 
         const shown = new Adw.PreferencesGroup({title: t.prefsTitle});
-        for (const [key, title] of [['widgets', t.showWidgets], ['weather', t.showWeather]]) {
+        const clock = clockText(GLib.get_language_names());
+        for (const [key, title] of [['widgets', t.showWidgets], ['clock-alarm', clock.showAlarm],
+            ['clock-zones', clock.showZones], ['weather', t.showWeather]]) {
             const row = new Adw.SwitchRow({title});
             settings.bind(key, row, 'active', Gio.SettingsBindFlags.DEFAULT);
             shown.add(row);

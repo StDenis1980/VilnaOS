@@ -34,7 +34,8 @@ side panel at the right edge of the screen, in a strip kept free of other
 windows (experimental, off by default). It draws
 the dock (Dash to Dock) in the Vilna colours, light or dark with the style,
 and moves windows (open, close, minimise, drag) with the Vilna motion.
-Desktop widgets show the clock, Gloxi, today's events, the weather and
+Desktop widgets show the clock with the next alarm and other time
+zones from GNOME Clocks, Gloxi, today's events, the weather and
 the state of backups.
 
 %prep
@@ -44,10 +45,11 @@ the state of backups.
 
 %install
 dest=%{buildroot}%{_datadir}/gnome-shell/extensions/%{uuid}
-install -d "$dest/lib" "$dest/owl"
+install -d "$dest/lib" "$dest/owl" "$dest/icons"
 install -m 0644 %{uuid}/metadata.json %{uuid}/stylesheet.css %{uuid}/*.js "$dest/"
 install -m 0644 %{uuid}/lib/*.js "$dest/lib/"
 install -m 0644 %{uuid}/owl/*.svg %{uuid}/owl/README.md "$dest/owl/"
+install -m 0644 %{uuid}/icons/*.svg %{uuid}/icons/README.md "$dest/icons/"
 # System-wide schema: compiled by the glib2 file trigger, found by
 # Extension.getSettings() when the extension has no schemas/ folder.
 install -D -m 0644 %{uuid}/schemas/org.gnome.shell.extensions.vilna.gschema.xml \
