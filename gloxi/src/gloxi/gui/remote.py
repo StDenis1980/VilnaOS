@@ -24,7 +24,8 @@ from gettext import gettext as _
 from pathlib import Path
 from typing import Any
 
-from gloxi.gui.controller import ChatView, ModelChoice, show_action
+from gloxi import ai_notice
+from gloxi.gui.controller import ChatView, ModelChoice, mark_answer, show_action
 from gloxi.vpn_intro import LAUNCHABLE, installer_choice, mark_handed
 
 TIMEOUT = 10.0
@@ -139,6 +140,15 @@ class RemoteController:
         if not isinstance(history, list):
             return
         view = self.view
+        if any(isinstance(item, dict) for item in history):
+            # The conversation began before this window: it starts again with
+            # Gloxi saying it is an AI, as every conversation does (ADR 0033).
+            def notice() -> None:
+                view.start_answer(_("Gloxi"))
+                view.append_answer(ai_notice.notice())
+                view.finish_answer()
+
+            self.dispatch(notice)
         for item in history[-MAX_SHOWN:]:
             if not isinstance(item, dict) or not isinstance(item.get("text"), str):
                 continue
@@ -146,9 +156,12 @@ class RemoteController:
             if item.get("role") == "user":
                 self.dispatch(lambda text=text: view.show_user_message(text))
             elif item.get("role") == "assistant":
+                mark = item.get("mark")
 
-                def answer(text: str = text) -> None:
+                def answer(text: str = text, mark: Any = mark) -> None:
                     view.start_answer(_("Gloxi"))
+                    if isinstance(mark, dict):
+                        mark_answer(view, mark)
                     view.append_answer(text)
                     view.finish_answer()
 
@@ -215,6 +228,10 @@ class RemoteController:
         elif name == "start_answer":
             label = str(m.get("label", ""))
             self.dispatch(lambda: view.start_answer(label))
+        elif name == "answer_mark":
+            mark = m.get("mark")
+            if isinstance(mark, dict):
+                self.dispatch(lambda: mark_answer(view, mark))
         elif name == "append_answer":
             piece = str(m.get("piece", ""))
             self.dispatch(lambda: view.append_answer(piece))

@@ -7,6 +7,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: src/gloxi/ai_notice.py
+msgid "I am Gloxi, an AI assistant: a language model writes my answers, and they can be wrong."
+msgstr "Soy Gloxi, un asistente de IA: mis respuestas las escribe un modelo de lenguaje y pueden contener errores."
+
+#: src/gloxi/ai_notice.py
+msgid "Written by AI"
+msgstr "Escrito por IA"
+
 #: src/gloxi/backup_intro.py
 msgid "All right. I will ask once more in a week. You can also type /backup any time."
 msgstr "De acuerdo. Te lo preguntaré otra vez dentro de una semana. También puedes escribir /backup cuando quieras."

@@ -33,7 +33,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from gloxi import __version__
+from gloxi import __version__, ai_notice
 from gloxi.vpn_intro import CHOSEN
 
 # 2: hello takes "client": "panel" (the Shell's side panel beside the window).
@@ -183,6 +183,9 @@ class EventView:
     def start_answer(self, label: str) -> None:
         self._event("start_answer", label=label)
 
+    def mark_answer(self, mark: dict) -> None:
+        self._event("answer_mark", mark=mark)
+
     def append_answer(self, piece: str) -> None:
         self._event("append_answer", piece=piece)
 
@@ -318,7 +321,11 @@ class Service:
             size += len(text.encode("utf-8"))
             if size > HISTORY_BYTES:
                 break
-            out.append({"role": role, "text": text})
+            item: dict = {"role": role, "text": text}
+            if role == "assistant":
+                # Every answer kept here is the model's (ADR 0033).
+                item["mark"] = ai_notice.mark()
+            out.append(item)
         out.reverse()
         return out
 

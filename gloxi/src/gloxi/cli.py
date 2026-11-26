@@ -20,7 +20,7 @@ from typing import TextIO
 
 import httpx
 
-from gloxi import __version__, check, crash, upgrade
+from gloxi import __version__, ai_notice, check, crash, upgrade
 from gloxi.backup_intro import BackupIntro, Turn, backup_intro
 from gloxi.chat import Conversation
 from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
@@ -294,6 +294,8 @@ def repl(
 ) -> int:
     feedback = feedback or FeedbackTalk()
     print(f"Gloxi {__version__}. {_(HELP)}", file=out)
+    # Gloxi's first words in a conversation: it is an AI (ADR 0033).
+    print(ai_notice.notice(), file=out)
     router = conversation.router
     if router.cloud_enabled:
         print(_("Cloud: on ({mode} mode).").format(mode=router.policy.mode), file=out)
@@ -322,6 +324,7 @@ def repl(
         if text == "/reset":
             conversation.reset()
             print(_("Conversation cleared."), file=out)
+            print(ai_notice.notice(), file=out)
             continue
         if text == "/vpn":
             if vpn:
@@ -469,6 +472,9 @@ def main(argv: list[str] | None = None) -> int:
         conversation = Conversation(router, settings.system_prompt, tools=tools)
         if args.command == "ask":
             force, text = split_command(" ".join(args.question))
+            # On stderr: a person at the terminal reads it, a script reading
+            # the answer from stdout gets only the answer.
+            print(ai_notice.notice(), file=sys.stderr)
             return 0 if _answer(conversation, text, sys.stdout, force=force) else 1
         intro = backup_intro(settings.tools_enabled)
         if intro:

@@ -2,6 +2,7 @@
 from fake_server import FakeLlamaServer
 from helpers import make_conversation
 
+from gloxi import ai_notice
 from gloxi.config import RouterPolicy
 from gloxi.gui.controller import ChatController, cloud_status
 
@@ -44,6 +45,10 @@ class RecordingView:
         return [e[0] for e in self.events]
 
 
+# Gloxi's first answer in a conversation starts by saying it is an AI (ADR 0033).
+FIRST = ai_notice.notice() + "\n\n"
+
+
 def sync(job):
     job()
 
@@ -58,7 +63,7 @@ def test_submit_streams_answer_in_order():
     ctl, view, conv = make(FakeLlamaServer("Привіт, я Gloxi."))
     assert ctl.submit("  привіт  ")
     assert view.events[:3] == [("busy", True), ("user", "привіт"), ("start", "On this computer")]
-    assert view.answer() == "Привіт, я Gloxi."
+    assert view.answer() == FIRST + "Привіт, я Gloxi."
     assert view.kinds()[-2:] == ["finish", "busy"]
     assert view.events[-1] == ("busy", False)
     assert ctl.busy is False
@@ -85,7 +90,7 @@ def test_cloud_route_label_says_not_masked():
     ctl, view, _ = make(FakeLlamaServer(), cloud=cloud, policy=RouterPolicy(cloud_allowed=True))
     ctl.submit("/cloud поясни")
     assert ("start", "Cloud: api.example.eu, not masked") in view.events
-    assert view.answer() == "хмара"
+    assert view.answer() == FIRST + "хмара"
 
 
 def test_model_error_is_shown_and_busy_cleared():
@@ -135,7 +140,7 @@ def test_tool_calls_are_shown_as_notes():
     ctl = ChatController(conv, view, runner=sync)
     assert ctl.submit("прочитай a")
     assert ("note", "files: read /home/u/Documents/a (done)") in view.events
-    assert view.answer() == "Готово."
+    assert view.answer() == FIRST + "Готово."
 
 
 def test_backup_talk_in_the_window(tmp_path):

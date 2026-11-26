@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from gloxi import upgrade
+from gloxi import ai_notice, upgrade
 from gloxi.backup_intro import BackupIntro, Turn
 from gloxi.chat import Conversation
 from gloxi.cli import model_consent_text, split_command, upgrade_consent_text
@@ -62,6 +62,8 @@ class ChatView(Protocol):
     def show_note(self, text: str) -> None: ...
     # Optional: a view without cards (the terminal) gets a note instead.
     # def show_action(self, card: dict) -> None: ...
+    # Optional: the machine-readable mark of the answer just started (ADR 0033).
+    # def mark_answer(self, mark: dict) -> None: ...
     def open_uri(self, url: str) -> None: ...
     def launch_app(self, app_id: str) -> None: ...
 
@@ -73,6 +75,13 @@ def show_action(view: object, card: dict) -> None:
         draw(card)
     else:
         view.show_note(card_view(card).title)  # type: ignore[attr-defined]
+
+
+def mark_answer(view: object, mark: dict) -> None:
+    """Tell a view that draws marks that the answer just started is the model's."""
+    draw = getattr(view, "mark_answer", None)
+    if callable(draw):
+        draw(mark)
 
 
 def show_outcome(view: object, outcome: ToolOutcome) -> None:
@@ -157,7 +166,20 @@ class ChatController:
         self.intro = intro
         self.vpn = vpn
         self.busy = False
+        # Gloxi's first message in a conversation says it is an AI (ADR 0033).
+        self.disclosed = False
         conversation.on_tool = lambda outcome: show_outcome(view, outcome)
+
+    def _first_words(self) -> None:
+        """Start Gloxi's first message of the conversation with the AI notice.
+
+        Called right after ``start_answer``: the notice is the first piece of
+        that answer, so it is shown, kept in the window and read aloud with
+        it, but never enters the history the model gets.
+        """
+        if not self.disclosed:
+            self.disclosed = True
+            self.view.append_answer(ai_notice.notice() + "\n\n")
 
     def submit(self, raw: str) -> bool:
         """Handle one line of input. Returns False if it was ignored."""
@@ -197,6 +219,8 @@ class ChatController:
         self.view.set_busy(True)
         self.view.show_user_message(text)
         self.view.start_answer(route_label(route, self.conversation.router.masks_cloud))
+        mark_answer(self.view, ai_notice.mark(route.target))
+        self._first_words()
         self.runner(lambda: self._stream(text, route))
         return True
 
@@ -243,6 +267,7 @@ class ChatController:
                 turn = step()
                 if turn is not None:
                     self.view.start_answer(label or _("Gloxi, backups"))
+                    self._first_words()
                     self.view.append_answer(turn.render())
                     self.view.finish_answer()
                     if turn.open_uri:
@@ -269,6 +294,7 @@ class ChatController:
             try:
                 turn = step()
                 self.view.start_answer(_("Gloxi, feedback"))
+                self._first_words()
                 self.view.append_answer(turn.render())
                 self.view.finish_answer()
                 if turn.done and self.feedback.url:
@@ -283,6 +309,7 @@ class ChatController:
     def reset(self) -> None:
         if not self.busy:
             self.conversation.reset()
+            self.disclosed = False
             self.warm()
 
     def warm(self) -> None:

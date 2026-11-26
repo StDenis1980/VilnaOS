@@ -168,7 +168,7 @@ def test_the_model_is_never_offered_the_network_tool():
 
 def test_the_window_hears_why_the_cloud_did_not_answer():
     from helpers import make_conversation
-    from test_gui_controller import RecordingView
+    from test_gui_controller import FIRST, RecordingView
 
     from gloxi.gui.controller import ChatController
 
@@ -183,5 +183,5 @@ def test_the_window_hears_why_the_cloud_did_not_answer():
     assert ctl.submit("/cloud привіт")
     errors = [e[1] for e in view.events if e[0] == "error"]
     assert errors == ["Gloxi may not connect to the internet, so the cloud model cannot answer."]
-    assert view.answer() == ""
+    assert view.answer() == FIRST  # Gloxi still said it is an AI
     assert ctl.busy is False

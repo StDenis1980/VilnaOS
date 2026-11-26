@@ -140,3 +140,13 @@ test('a card Keros warned about or that failed interrupts; history is never read
     chat.apply({event: 'action', card: {status: 'done', program: 'Files', operation: 'copy'}});
     assert.deepEqual(said(chat, true), [['Files: move', true], ['Files: copy', false]]);
 });
+
+test('a conversation shown again starts with Gloxi saying it is an AI (ADR 0033)', () => {
+    const chat = new PanelChat();
+    const notice = panelText(['uk_UA.UTF-8']).aiNotice;
+    assert.match(notice, /ШІ/);
+    chat.loadHistory([{role: 'user', text: 'привіт'}, {role: 'assistant', text: 'Так.'}], notice);
+    assert.deepEqual(chat.lines.map(l => l.text), [notice, 'привіт', 'Так.']);
+    chat.loadHistory([], notice);
+    assert.deepEqual(chat.lines, []); // an empty panel says it in its welcome instead
+});
