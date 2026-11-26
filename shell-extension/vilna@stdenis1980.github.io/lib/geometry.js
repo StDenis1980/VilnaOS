@@ -77,6 +77,34 @@ export function dockStrip(monitor, workArea, size = 'one-sixth') {
     return {x: monitor.x + monitor.width - width, y: top, width, height: bottom - top};
 }
 
+/**
+ * Where a window goes so that the Gloxi strip does not cover it: moved left
+ * until its right edge meets the strip, and made narrower only when it is
+ * wider than the room left of the strip (never past the work area's left
+ * edge). Null when the window is clear of the strip already, or there is no
+ * room. A right strut moves only maximised and tiled windows, so the panel
+ * makes room for the others itself (Build12.29: a window stayed under it).
+ * canResize false: the window keeps its width and only moves.
+ */
+export function clearOfStrip(rect, strip, workArea, canResize = true) {
+    if (!rect || !strip)
+        return null;
+    const x = finite(rect.x), y = finite(rect.y);
+    const width = Math.max(0, finite(rect.width)), height = Math.max(0, finite(rect.height));
+    const limit = finite(strip.x);
+    if (x + width <= limit || y >= strip.y + strip.height || y + height <= strip.y)
+        return null;
+    const left = Math.min(finite(workArea?.x, limit), limit);
+    const room = limit - left;
+    if (room <= 0)
+        return null;
+    const newWidth = canResize ? Math.min(width, room) : width;
+    const newX = Math.max(left, Math.min(x, limit - newWidth));
+    if (newX === x && newWidth === width)
+        return null;
+    return {x: Math.round(newX), y, width: Math.round(newWidth), height};
+}
+
 // Stage A of the Gloxi window: an ordinary GTK window that the Shell keeps at
 // the right edge of the work area. Gloxi uses the same numbers when the Shell
 // is missing (gloxi/src/gloxi/gui/panel.py; a Gloxi test reads them here).
