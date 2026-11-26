@@ -4,7 +4,7 @@ msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8\nX-Vilna-Review: not reviewed by a native speaker\n"
 
 msgid "Welcome to Vilna"
-msgstr "Bem-vindo ao Vilna"
+msgstr "Boas-vindas ao Vilna"
 
 msgid "Blavet release"
 msgstr "Versão Blavet"

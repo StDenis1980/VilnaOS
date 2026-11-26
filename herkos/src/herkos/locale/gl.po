@@ -588,7 +588,7 @@ msgid "Suspicious content"
 msgstr "Contido sospeitoso"
 
 msgid "Allow only if you asked for exactly this yourself."
-msgstr "Permíteo só se ti mesmo pediches exactamente isto."
+msgstr "Permíteo só se es ti quen pediu exactamente isto."
 
 msgid "I have read exactly what will be done"
 msgstr "Lin exactamente o que se vai facer"
@@ -725,7 +725,7 @@ msgid "{what} (read only)"
 msgstr "{what} (só lectura)"
 
 msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
-msgstr "Preme o botón ti mesmo, co teclado ou o rato: Herkos non acepta pulsacións doutros programas."
+msgstr "Preme o botón directamente, co teclado ou o rato: Herkos non acepta pulsacións doutros programas."
 
 msgid "See which devices can open the backups"
 msgstr "Ver que dispositivos poden abrir as copias"

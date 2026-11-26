@@ -454,7 +454,7 @@ msgid "Could not make a code: {why}"
 msgstr "No s'ha pogut crear un codi: {why}"
 
 msgid "Delete the old copy yourself: {place}"
-msgstr "Esborra tu mateix la còpia antiga: {place}"
+msgstr "Esborra la còpia antiga pel teu compte: {place}"
 
 msgid "Done"
 msgstr "Fet"

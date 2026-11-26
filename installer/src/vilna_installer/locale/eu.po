@@ -13,7 +13,7 @@ msgid "Choose a language. Then I, Gloxi, will help you install the system, or yo
 msgstr "Aukeratu hizkuntza bat. Gero nik, Gloxik, sistema instalatzen lagunduko dizut, edo urratsak zeure kabuz egin ditzakezu."
 
 msgid "Screen reader"
-msgstr "Pantaila-irakurgailua"
+msgstr "Pantaila-irakurlea"
 
 msgid "Without the assistant"
 msgstr "Laguntzailerik gabe"
@@ -37,7 +37,7 @@ msgid "Which languages do you write in? I will add their keyboard layouts too, f
 msgstr "Zein hizkuntzatan idazten duzu? Haien teklatu-diseinuak ere gehituko ditut, adibidez ukrainera eta ingelesa."
 
 msgid "Gloxi cannot start on this computer right now. You can go on without the assistant: the steps are the same, and what you chose stays in the plan."
-msgstr "Gloxik ezin du orain abiarazi ordenagailu honetan. Laguntzailerik gabe jarraitu dezakezu: urratsak berak dira, eta aukeratu duzuna planean geratzen da."
+msgstr "Gloxi ezin da orain ordenagailu honetan abiarazi. Laguntzailerik gabe jarraitu dezakezu: urratsak berak dira, eta aukeratu duzuna planean geratzen da."
 
 msgid "Gloxi did not answer. Try again, or go on without the assistant."
 msgstr "Gloxik ez du erantzun. Saiatu berriro, edo jarraitu laguntzailerik gabe."

@@ -31,7 +31,7 @@ msgid "Search for a language"
 msgstr "Cerca un idioma"
 
 msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the left and change any item yourself."
-msgstr "Soc Gloxi, t'ajudaré a instal·lar Vilna. Al disc no canvia res fins que confirmes el pla; el veus a l'esquerra i hi pots canviar qualsevol punt tu mateix."
+msgstr "Soc Gloxi, t'ajudaré a instal·lar Vilna. Al disc no canvia res fins que confirmes el pla; el veus a l'esquerra i en pots canviar qualsevol punt pel teu compte."
 
 msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
 msgstr "En quins idiomes escrius? També n'afegiré les distribucions de teclat, per exemple ucraïnès i anglès."
@@ -225,7 +225,7 @@ msgid "Erase the whole disk and install Vilna"
 msgstr "Esborra tot el disc i instal·la Vilna"
 
 msgid "Choose the partitions yourself in the partition editor"
-msgstr "Tria tu mateix les particions a l'editor de particions"
+msgstr "Tria les particions pel teu compte a l'editor de particions"
 
 msgid "Empty"
 msgstr "Buit"
@@ -693,7 +693,7 @@ msgid "Never"
 msgstr "Mai"
 
 msgid "Reports stay on this computer; you can still send one yourself."
-msgstr "Els informes es queden en este ordinador; tot i així, pots enviar-ne un tu mateix."
+msgstr "Els informes es queden en este ordinador; tot i així, pots enviar-ne un pel teu compte."
 
 msgid "What is in a report"
 msgstr "Què hi ha en un informe"
@@ -711,7 +711,7 @@ msgid "Read the key aloud"
 msgstr "Llig la clau en veu alta"
 
 msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
-msgstr "Prem el botó tu mateix, amb el teclat o el ratolí: Herkos no accepta pulsacions d'altres programes."
+msgstr "Prem el botó directament, amb el teclat o el ratolí: Herkos no accepta pulsacions d'altres programes."
 
 msgid "Connected to Wi-Fi."
 msgstr "Connectat a la Wi-Fi."
