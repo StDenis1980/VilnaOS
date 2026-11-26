@@ -40,13 +40,17 @@ name = "flatpak"
 type = "CNAME"
 values = ["vilna-flatpak.b-cdn.net."]
 
-[[rrset]]
 # Certificates for the site on the VPS (site/deploy/README.md): lego follows
-# this CNAME and writes the ACME token in a small zone of its own at deSEC,
-# so one write is enough and the VPS token can touch nothing else.
-name = "_acme-challenge"
-type = "CNAME"
-values = ["vilnaos-acme.dedyn.io."]
+# a CNAME _acme-challenge -> vilnaos-acme.dedyn.io. and writes the ACME token
+# in a small zone of its own at deSEC, so the VPS token can touch nothing else.
+# Not published yet: that zone does not exist in our deSEC account (new
+# accounts get one domain), and a CNAME to a name anyone could register would
+# let them get certificates for vilnaos.com. Add it back once the zone is ours:
+#
+# [[rrset]]
+# name = "_acme-challenge"
+# type = "CNAME"
+# values = ["vilnaos-acme.dedyn.io."]
 
 # Mail: mailbox.org (business/mail/mailbox-org-plan.md in the project files).
 [[rrset]]
