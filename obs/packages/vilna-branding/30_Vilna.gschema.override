@@ -51,7 +51,8 @@ favorite-apps=['io.github.stdenis1980.Gloxi.desktop', 'org.mozilla.firefox.deskt
 # The dock (Dash to Dock, gnome-shell-extension-dash-to-dock): at the
 # bottom, 48 px icons, pinned Gloxi, Firefox, Files, Tinta Correo, Tinta
 # Texto, the terminal and Software (favorite-apps above; one that is not
-# installed is skipped). The Vilna extension's Dock page changes the
+# installed is skipped), with the button to all apps first, before them
+# (show-apps-at-top, decision of Denys of 26.11.2026). The Vilna extension's Dock page changes the
 # place, the size (32-80 px), the hiding, the transparency of the glass
 # (8 % by default, like the terminal) and the springy icons. It stays on an
 # empty desktop and slides away when the focused app's window covers it.
@@ -82,7 +83,7 @@ click-action='focus-minimize-or-previews'
 show-trash=true
 show-mounts=true
 show-mounts-only-mounted=true
-show-apps-at-top=false
+show-apps-at-top=true
 disable-overview-on-startup=true
 animation-time=0.28
 
