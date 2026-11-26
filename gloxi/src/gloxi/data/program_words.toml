@@ -226,3 +226,177 @@ delete_event = [
   "ezabatu", "kendu", "ezeztatu",
   "apag", "elimin", "cancel", "remov", "anul",
 ]
+
+# The desktop's own settings (mcp/settings). Without these, "Увімкнути темну
+# тему" chose nothing of it, and the model pressed a made-up button through
+# AT-SPI instead (laptop, 2026-11-26).
+["org.vilna.mcp.settings"]
+words = [
+  "налаштув", "параметр",
+  "settings", "setting$",
+  "ajuste", "configur",
+  "ustawien",
+  "einstellung",
+  "parametr", "reglage",
+  "impostazion",
+  "setari", "setar",
+  "nastaven",
+  "nustatym",
+  "configur",
+  "axuste", "configur",
+  "ezarpen", "konfigur",
+  "definic", "configur",
+]
+
+["org.vilna.mcp.settings".operations]
+set_color_scheme = [
+  "темн", "світл",
+  "dark", "light$", "theme",
+  "oscur", "claro$", "clara$", "tema$",
+  "ciemn", "jasn", "motyw",
+  "dunkel", "dunkl", "hell$", "helle", "erscheinungsbild",
+  "sombre", "clair$", "claire$", "theme",
+  "scur", "chiar", "tema$",
+  "intunecat", "luminos", "tema$",
+  "tmav", "svetl", "motiv",
+  "tams", "sviesi", "sviesu", "tema$",
+  "fosc", "clar$", "clara$", "tema$",
+  "escur", "claro$", "clara$", "tema$",
+  "ilun", "argi$", "gaia$",
+  "escur", "claro$", "clara$", "tema$",
+]
+set_night_light = [
+  "нічн",
+  "night",
+  "nocturn",
+  "nocn",
+  "nachtlicht", "nachtmodus",
+  "nocturn", "nuit$",
+  "nottur",
+  "noapt", "nocturn",
+  "nocni",
+  "naktin", "nakties",
+  "nocturn",
+  "nocturn",
+  "gau$", "gaueko",
+  "noturn", "nocturn",
+]
+set_volume = [
+  "гучн", "тихіш", "голосніш",
+  "volume", "louder", "quieter",
+  "volum",
+  "glosn", "cisz",
+  "lautstark", "lauter", "leiser",
+  "volum",
+  "volum",
+  "volum",
+  "hlasit",
+  "garsum", "garsiau", "tyliau",
+  "volum",
+  "volum",
+  "bolumen",
+  "volum",
+]
+set_mute = [
+  "беззвуч", "заглуш",
+  "mute", "unmute",
+  "silenci",
+  "wycisz",
+  "stumm",
+  "muet", "sourdin",
+  "muto$", "silenzi",
+  "mut$",
+  "ztlum",
+  "nutild",
+  "silenci",
+  "silenci",
+  "isildu",
+  "silenci", "mudo$",
+]
+set_do_not_disturb = [
+  "турбув",
+  "disturb",
+  "molest",
+  "przeszkadz",
+  "storen",
+  "deranger",
+  "disturb",
+  "deranj",
+  "nerusit", "rusit",
+  "netrukd", "trukdy",
+  "molest",
+  "molest",
+  "molestatu",
+  "incomod",
+]
+set_text_scale = [
+  "шрифт",
+  "font$", "fonts$",
+  "fuente", "letra$",
+  "czcionk",
+  "schrift",
+  "police$",
+  "caratter",
+  "font$",
+  "pism",
+  "srift",
+  "lletra",
+  "letra$", "fonte$",
+  "letra$",
+  "letra$", "fonte$",
+]
+
+# Snapshots of the whole system (mcp/system, Mitos): "Поверни систему, як було
+# до оновлення" chose apps_* and not the return (laptop, 2026-11-26).
+["org.vilna.mcp.system"]
+words = [
+  "систем", "оновлен", "знімк",
+  "system", "update", "snapshot",
+  "sistema", "actualiz", "instantan",
+  "system", "aktualiz",
+  "system", "aktualisier", "update", "schnappschuss",
+  "systeme", "mise$", "jour$", "instantan",
+  "sistema", "aggiorn", "istantan",
+  "sistem", "actualiz", "instantan",
+  "system", "aktualiz",
+  "sistem", "atnaujin",
+  "sistema", "actualitz", "instantan",
+  "sistema", "actualiz", "instantan",
+  "sistema", "eguneratz", "argazki",
+  "sistema", "atualiz", "instantan",
+]
+
+["org.vilna.mcp.system".operations]
+list_snapshots = [
+  "знімк",
+  "snapshot",
+  "instantan",
+  "migawk",
+  "schnappschuss",
+  "instantan",
+  "istantan",
+  "instantan",
+  "snimk",
+  "momentin",
+  "instantan",
+  "instantan",
+  "argazki",
+  "instantan",
+]
+# A return asks only through Herkos (R4, every time, with the state shown).
+rollback = [
+  "поверн", "відкот", "відкат",
+  "rollback", "roll$", "revert", "restore",
+  "volv", "revert", "restaur",
+  "przywroc", "cofn",
+  "zuruck", "wiederherstell",
+  "revenir", "restaur",
+  "ripristin",
+  "revin", "restaur",
+  "vrat", "obnov",
+  "grazin", "atkurt",
+  "revert", "restaur",
+  "volv", "revert", "restaur",
+  "itzuli", "lehengoratu",
+  "volt", "revert", "restaur",
+]
