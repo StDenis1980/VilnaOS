@@ -139,7 +139,9 @@ def check_security_txt(public: Path) -> list[str]:
     except ValueError:
         problems.append(f"security.txt: Expires {expires!r} is not a date")
     else:
-        if when <= datetime.now(UTC):
+        if when.tzinfo is None:
+            problems.append(f"security.txt: Expires {expires} has no time zone (RFC 9116)")
+        elif when <= datetime.now(UTC):
             problems.append(f"security.txt: Expires {expires} has passed, renew it")
     return problems
 

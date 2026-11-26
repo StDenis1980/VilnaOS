@@ -17,7 +17,21 @@ jobs:
       - name: Check SPDX headers
         run: python3 tools/check_spdx.py
       - name: Check the site (site/README.md)
-        run: python3 tools/check_site.py
+        run: |
+          python3 tools/check_site.py
+          python3 tools/test_check_site.py
+      - name: The .desktop files are well formed and translated
+        run: |
+          python3 tools/check_desktop.py
+          python3 tools/test_check_desktop.py
+      - name: The AppStream metainfo files are well formed
+        run: |
+          python3 tools/check_metainfo.py
+          python3 tools/test_check_metainfo.py
+      - name: Local links and anchors in Markdown lead somewhere
+        run: |
+          python3 tools/check_md_links.py
+          python3 tools/test_check_md_links.py
       - name: «Рекомендовано Vilna» follows ADR 0011 and 0012
         run: |
           python3 obs/packages/vilna-software-picks/build_picks.py --defaults image/packages.yaml check
