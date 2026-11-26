@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 26 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.24
+- The dock's button to all apps comes first, before the pinned apps
+  (dash-to-dock show-apps-at-top=true)
+
+-------------------------------------------------------------------
 Thu Nov 26 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.23
