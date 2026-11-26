@@ -30,6 +30,7 @@ from gloxi.gui import shell as vilna_shell  # noqa: E402
 from gloxi.gui.cards import card_view, starter_prompts  # noqa: E402
 from gloxi.gui.chime import Chime  # noqa: E402
 from gloxi.gui.controller import ChatController, ModelSetup  # noqa: E402
+from gloxi.gui.input import MessageInput  # noqa: E402
 from gloxi.gui.panel import OwlState, OwlStates, PanelPrefs  # noqa: E402
 from gloxi.gui.remote import RemoteController, ServiceError  # noqa: E402
 from gloxi.gui.shortcuts import FALLBACK_COMMAND, GlobalShortcut  # noqa: E402
@@ -73,6 +74,15 @@ CSS = """
 .owl.animated.waiting image { animation: gloxi-hop 0.6s ease-in-out 4 alternate; }
 
 window.gloxi-panel.compact .messages { margin: 6px 10px; }
+
+/* The message field (gloxi.gui.input): looks like an entry, grows with the text. */
+.gloxi-input {
+  border-radius: 12px;
+  background: @view_bg_color;
+  box-shadow: inset 0 0 0 1px alpha(currentColor, 0.24);
+}
+.gloxi-input:focus-within { box-shadow: inset 0 0 0 2px @accent_color; }
+.gloxi-input textview, .gloxi-input textview text { background: none; }
 """
 
 # The translucent panel: only the background; the bars sit on it without a
@@ -190,9 +200,9 @@ class ChatWindow(Adw.ApplicationWindow):
             lambda *_a: self.prefs.size == "compact" and GLib.idle_add(self._scroll_to_end),
         )
 
-        self.entry = Gtk.Entry(
-            hexpand=True,
-            placeholder_text=_("Ask Gloxi… (/local or /cloud to pick the model)"),
+        # Grows with the text; Enter sends, Shift+Enter starts a new line.
+        self.entry = MessageInput(
+            _("Ask Gloxi… (/local or /cloud to pick the model)"), hexpand=True
         )
         self.entry.connect("activate", self._on_send)
         self.send_button = Gtk.Button(icon_name="go-up-symbolic", tooltip_text=_("Send"))
@@ -216,11 +226,17 @@ class ChatWindow(Adw.ApplicationWindow):
         )
         self.stop_button.add_css_class("circular")
         self.stop_button.connect("clicked", lambda *_a: self.voice and self.voice.stop_speaking())
-        bottom = Gtk.Box(spacing=8)
+        # The field on a line of its own, the whole width of the window; the
+        # model and the buttons on the line below (Build12.29: beside the
+        # model switch, the field was a few words wide in the side panel).
+        bottom = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         for side in ("top", "bottom", "start", "end"):
             getattr(bottom, f"set_margin_{side}")(12)
-        bottom.append(self.model_switch)
         bottom.append(self.entry)
+        controls = Gtk.Box(spacing=8)
+        controls.append(self.model_switch)
+        controls.append(Gtk.Box(hexpand=True))
+        bottom.append(controls)
         # Capture phase: the entry itself binds Ctrl+/ to "select all".
         shortcuts = Gtk.ShortcutController(propagation_phase=Gtk.PropagationPhase.CAPTURE)
         shortcuts.add_shortcut(
@@ -251,9 +267,9 @@ class ChatWindow(Adw.ApplicationWindow):
             )
         )
         self.add_controller(shortcuts)
-        bottom.append(self.stop_button)
-        bottom.append(self.mic_button)
-        bottom.append(self.send_button)
+        controls.append(self.stop_button)
+        controls.append(self.mic_button)
+        controls.append(self.send_button)
         focus = Gtk.EventControllerFocus()
         focus.connect("enter", lambda *_a: self._owl(lambda s: s.focus(True)))
         focus.connect("leave", lambda *_a: self._owl(lambda s: s.focus(False)))

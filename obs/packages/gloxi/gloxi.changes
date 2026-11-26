@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Nov 26 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- The message field of the Gloxi window is on a line of its own, the
+  whole width of the window, and grows with the text up to eight lines,
+  then scrolls; the model switch and the buttons are on the line below.
+  Enter sends, Shift+Enter starts a new line. In the side panel the field
+  was a few words wide beside the model switch (Build12.29).
+
+-------------------------------------------------------------------
 Thu Nov 26 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - gloxi-session installs the Gloxi owl (scalable and symbolic) into hicolor.

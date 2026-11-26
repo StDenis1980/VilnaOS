@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 26 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.16: the message field of the Gloxi side panel wraps long text and
+  grows with it, up to about eight lines, then scrolls; Enter sends,
+  Shift+Enter starts a new line (Build12.29: one short line).
+
+-------------------------------------------------------------------
 Wed Nov 25 21:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.15: the Gloxi side panel moves windows it would cover left of it,
