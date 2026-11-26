@@ -783,3 +783,62 @@ def test_ukrainian_replies_are_told_to_keep_off_russian_words(plan_path):
         assert "never Russian" in model.last_system
     finally:
         tools.close()
+
+
+class Warmed(Script):
+    def __init__(self, *replies):
+        super().__init__(*replies)
+        self.warmed = []
+
+    def warm(self, messages, tools):
+        self.warmed.append((messages, [t["function"]["name"] for t in tools]))
+
+
+def test_the_start_is_read_into_the_cache_before_the_first_message(plan_path):
+    """Build13.18: the first message sent 1,981 unread tokens, 44.8 s to the first word."""
+    tools = InstallerTools(plan_path, demo="empty")
+    model = Warmed("Я допоможу встановити Vilna.")
+    c = Conversation(plan_path, tools, model)
+    try:
+        c.opening()
+        c.warm()
+        c.send("Привіт, що ти вмієш?")
+        (warmed, warm_tools), (sent, sent_tools) = model.warmed[0], model.seen[0]
+        # The request starts with exactly what was warmed, so llama-server reads
+        # only the person's message and the notes.
+        assert warm_tools == sent_tools
+        assert sent[: len(warmed)] == warmed and len(sent) > len(warmed)
+    finally:
+        tools.close()
+
+
+def test_warming_without_a_model_that_can_is_nothing(plan_path):
+    c, model, tools = make(plan_path, "empty")
+    try:
+        c.opening()
+        c.warm()  # Script has no warm(): no error, nothing sent
+        assert model.seen == []
+    finally:
+        tools.close()
+
+
+def test_a_failed_warming_only_costs_time(plan_path):
+    class Broken(Script):
+        def warm(self, messages, tools):
+            raise ModelError("connection refused")
+
+    tools = InstallerTools(plan_path, demo="empty")
+    c = Conversation(plan_path, tools, Broken())
+    try:
+        c.opening()
+        c.warm()
+    finally:
+        tools.close()
+
+
+def test_the_local_model_warms_with_one_token(monkeypatch, tmp_path):
+    sent = []
+    model = conv.LocalModel(key_file=tmp_path / "none")
+    monkeypatch.setattr(model, "_request", lambda path, body=None, **_: sent.append(body) or {})
+    model.warm([{"role": "system", "content": "x"}], [])
+    assert sent[0]["max_tokens"] == 1 and sent[0]["cache_prompt"] and sent[0]["id_slot"] == 0

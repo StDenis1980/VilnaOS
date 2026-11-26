@@ -56,6 +56,9 @@ class Talk:
     def opening(self):
         return self._reply("Hello", "languages")
 
+    def warm(self):
+        self.warmed = True
+
     def needs(self):
         return []
 

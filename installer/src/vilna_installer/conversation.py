@@ -33,6 +33,7 @@ says so and the person goes on in the classic wizard with the same plan.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
@@ -746,7 +747,20 @@ class LocalModel:
             return False
         return True
 
+    def warm(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> None:
+        """Read the start of the conversation into the cache now, while the person reads
+        and types; one token is generated and thrown away."""
+        self._request("/chat/completions", self._body(messages, tools) | {"max_tokens": 1})
+
     def chat(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> ModelReply:
+        out = self._request("/chat/completions", self._body(messages, tools))
+        try:
+            message = out["choices"][0]["message"]
+        except (KeyError, IndexError, TypeError) as e:
+            raise ModelError(f"unexpected answer: {str(out)[:200]}") from e
+        return ModelReply(message.get("content") or "", message.get("tool_calls") or [])
+
+    def _body(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> dict[str, Any]:
         # Slot 0, as Gloxi's own conversation (PR #152): its cached prompt is
         # this conversation's, and Keros checks use the last slot.
         body: dict[str, Any] = {
@@ -758,12 +772,7 @@ class LocalModel:
         }
         if tools:
             body["tools"] = tools
-        out = self._request("/chat/completions", body)
-        try:
-            message = out["choices"][0]["message"]
-        except (KeyError, IndexError, TypeError) as e:
-            raise ModelError(f"unexpected answer: {str(out)[:200]}") from e
-        return ModelReply(message.get("content") or "", message.get("tool_calls") or [])
+        return body
 
 
 def unit_failed(unit: str = MODEL_UNIT) -> bool:
@@ -860,6 +869,21 @@ class Conversation:
         self.state.passed.add("intro")
         self.history.append({"role": "assistant", "content": text})
         return self._reply(text)
+
+    def warm(self) -> None:
+        """After opening(): the rules, the functions and the greeting go into the model's
+        cache before the person's first message.
+
+        Build13.18 (VM, 8 GB, 2026-11-25): the first «Привіт, що ти вмієш?» sent 1,981
+        tokens the model had never read; at 44 tokens/s the first word came after 44.8 s.
+        Every later request starts with the same messages, so only the new part is read."""
+        warm = getattr(self.model, "warm", None)
+        if warm is None:
+            return
+        system = [{"role": "system", "content": self.system_prompt()}]
+        # A failure only costs time: the first answer then reads it all.
+        with contextlib.suppress(ModelError):
+            warm(system + self.history[self._start :], self.offered())
 
     def current(self) -> Step:
         if self.state.focus:

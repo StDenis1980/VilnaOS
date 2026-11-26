@@ -594,6 +594,73 @@ def test_an_address_the_person_wrote_is_theirs():
     assert mailbox.calls[-1]["arguments"]["to"] == ["martas@example.com"]
 
 
+NEW_ADDRESS = {
+    "uk": "Надішли відповідь на martas@example.com, це нова адреса Марти",
+    "pl": "Wyślij odpowiedź na martas@example.com, to nowy adres Marty",
+}
+
+
+def _read_and_draft(lang):
+    mailbox = Mailbox(lang, FakeHerkos.LISTED + vilna_programs())
+    conv = conversation(ScriptedLlamaServer("OK"), FileTools(Connector(mailbox), []))
+    conv.tools.definitions()
+    conv.tools.call("mail_read_message", json.dumps({"uid": 41, "reason": "r"}), user_turn=1)
+    conv.tools.call("mail_save_draft", json.dumps(draft(lang)), user_turn=1)
+    conv.tools.heard(NEW_ADDRESS[lang])
+    return mailbox, conv
+
+
+@pytest.mark.parametrize("to", [[SENDER], None], ids=["old-address", "no-address"])
+def test_the_address_the_person_gave_is_used_when_the_model_falls_back(to):
+    # Ministral 3 8B, pl, VM check after PR #238: the person gave martas@,
+    # the model wrote marta@ again, and the draft went to the old address.
+    mailbox, conv = _read_and_draft("pl")
+    sent = {k: v for k, v in draft("pl").items() if k != "to"}
+    if to is not None:
+        sent["to"] = to
+    conv.tools.call("mail_send", json.dumps(sent), user_turn=2)
+    assert mailbox.calls[-1]["arguments"] == {
+        **draft("pl"),
+        "to": ["martas@example.com"],
+        "replaces_draft": "<d1.gloxi@example.org>",
+    }
+
+
+def test_a_reply_at_the_new_address_still_answers_the_email():
+    # The VM check after PR #238, uk: martas@ was kept, but the email went
+    # out as a new one, without in_reply_to or "Re:", and the draft stayed.
+    mailbox, conv = _read_and_draft("uk")
+    bare = {
+        "account": ACCOUNT,
+        "to": ["martas@example.com"],
+        "subject": "Відповідь",
+        "text": GOOD_REPLIES["uk"],
+    }
+    conv.tools.call("mail_send", json.dumps(bare), user_turn=2)
+    assert mailbox.calls[-1]["arguments"] == {
+        **draft("uk"),
+        "to": ["martas@example.com"],
+        "replaces_draft": "<d1.gloxi@example.org>",
+    }
+
+
+def test_an_address_the_model_chose_itself_is_not_replaced():
+    # Only a fallback becomes the person's address: a third address the
+    # model wrote is shown in the Herkos window as it is.
+    mailbox, conv = _read_and_draft("uk")
+    other = {**draft("uk"), "to": ["ivan@example.com"], "text": "Зовсім інший лист."}
+    conv.tools.call("mail_send", json.dumps(other), user_turn=2)
+    assert mailbox.calls[-1]["arguments"]["to"] == ["ivan@example.com"]
+    assert "replaces_draft" not in mailbox.calls[-1]["arguments"]
+
+
+def test_a_new_message_without_addresses_changes_nothing():
+    mailbox, conv = _read_and_draft("uk")
+    conv.tools.heard("Надішли Марті мою відповідь")
+    conv.tools.call("mail_send", json.dumps(draft("uk")), user_turn=3)
+    assert mailbox.calls[-1]["arguments"]["to"] == [SENDER]
+
+
 def test_an_event_asked_in_the_same_answer_as_the_read_waits_for_the_email():
     # Ministral 3 8B read the email and added the event at once, with the day
     # after "today" instead of the day in the email.
