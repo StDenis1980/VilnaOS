@@ -580,6 +580,9 @@ msgstr "R3 · difficile à annuler"
 msgid "R4 · cannot be undone"
 msgstr "R4 · irréversible"
 
+msgid "R4 · big change, can be undone"
+msgstr "R4 · changement important, annulable"
+
 msgid "Suspicious content"
 msgstr "Contenu suspect"
 

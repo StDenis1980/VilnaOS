@@ -445,7 +445,9 @@ class FileTools:
         if SYSTEM_TOOL in labels:
             out += (
                 "\n\nTo take the system back to how it was before an update, use the "
-                f"{labels[SYSTEM_TOOL]}_* functions, never buttons in a window."
+                f"{labels[SYSTEM_TOOL]}_* functions, never buttons in a window. Name saved "
+                "states by the snapshot value list_snapshots gave, never 1, 2, 3 by row, and "
+                "pass that value."
             )
         atspi = {p.name: p.function for p in self._programs.values() if p.tool == ATSPI_TOOL}
         listing, reading = atspi.get("list_windows"), atspi.get("read_window")

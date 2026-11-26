@@ -6,7 +6,13 @@ from pathlib import Path
 import pytest
 
 from herkos import style
-from herkos.dialog import default_choice, needs_acknowledgement, risk_level, shown_choices
+from herkos.dialog import (
+    default_choice,
+    needs_acknowledgement,
+    risk_label,
+    risk_level,
+    shown_choices,
+)
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -19,6 +25,14 @@ def test_level_is_shown_and_unknown_is_strictest():
     assert risk_level(question("r3")) == "R3"
     assert risk_level(question("R9")) == "R4"
     assert risk_level({}) == "R4"
+
+
+def test_an_r4_change_that_can_be_undone_does_not_say_it_cannot():
+    # A return of the system to a saved state: the chip said "cannot be
+    # undone" above "Can be undone." (laptop, 2026-11-26).
+    assert "cannot" not in risk_label({**question("R4"), "undoable": True})
+    assert "cannot" in risk_label(question("R4"))
+    assert risk_label({**question("R2"), "undoable": True}) != risk_label(question("R4"))
 
 
 def test_choices_come_from_herkos_unchanged_for_plain_questions():

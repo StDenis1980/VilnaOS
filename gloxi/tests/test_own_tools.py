@@ -59,6 +59,7 @@ def test_the_prompt_sends_settings_to_their_functions_and_atspi_ids_to_list_wind
     t = FileTools(_connector(vilna_programs()), [])
     prompt = t.prompt()
     assert "settings_*" in prompt and "system_*" in prompt
+    assert "never 1, 2, 3 by row" in prompt
     assert "atspi_list_windows" in prompt and "never make an id up" in prompt
     # Without those programs, nothing about them.
     bare = FileTools(_connector([]), []).prompt()

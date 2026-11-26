@@ -581,6 +581,9 @@ msgstr "R3 · desegiten zaila"
 msgid "R4 · cannot be undone"
 msgstr "R4 · ezin da desegin"
 
+msgid "R4 · big change, can be undone"
+msgstr "R4 · aldaketa handia, desegin daiteke"
+
 msgid "Suspicious content"
 msgstr "Eduki susmagarria"
 

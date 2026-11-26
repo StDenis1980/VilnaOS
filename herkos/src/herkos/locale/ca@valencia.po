@@ -581,6 +581,9 @@ msgstr "R3 · difícil de desfer"
 msgid "R4 · cannot be undone"
 msgstr "R4 · no es pot desfer"
 
+msgid "R4 · big change, can be undone"
+msgstr "R4 · canvi important, es pot desfer"
+
 msgid "Suspicious content"
 msgstr "Contingut sospitós"
 
