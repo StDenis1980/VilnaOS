@@ -754,12 +754,15 @@ class _MailSeen:
         self.sender = ""
         self.others: set[str] = set()  # the other people on the email read
         self.said: set[str] = set()  # the addresses the person wrote themselves
+        self.asked: list[str] = []  # those in the person's latest message, in order
         self.message_id = ""
         self.subject = ""
         self.draft: dict[str, Any] = {}  # the reply saved last, with its message_id
 
     def heard(self, text: str) -> None:
-        self.said |= {a.casefold() for a in _ADDRESS.findall(text)}
+        found = [a.casefold() for a in _ADDRESS.findall(text)]
+        self.asked = list(dict.fromkeys(found))
+        self.said |= set(found)
 
     def note(self, operation: str, result: Any, arguments: Any = None) -> None:
         if not isinstance(result, dict):
@@ -801,6 +804,7 @@ class _MailSeen:
                 out["account"] = self.account
             elif len(self.accounts) == 1:
                 out["account"] = self.accounts[0]
+        self._to_asked(operation, out)
         # A send of the draft saved: the draft's people, whom the person saw in
         # its Herkos window, not ones the model wrote again (marcia@ for
         # marta@, Qwen3 4B, pl, VM check after PR #232).
@@ -820,6 +824,7 @@ class _MailSeen:
             out["to"] = to = [self.sender if self._near_sender(t) else t for t in to]
         to = [to] if isinstance(to, str) else to if isinstance(to, list) else []
         answers = any(parseaddr(str(t))[1].casefold() == self.sender for t in to)
+        answers = answers or self._answers_elsewhere(out, to)
         given = out.get("in_reply_to")
         if given is not None and not (isinstance(given, str) and _MESSAGE_ID.fullmatch(given)):
             out.pop("in_reply_to")  # "..." or a made-up id is no Message-ID
@@ -853,11 +858,63 @@ class _MailSeen:
             value = [value] if isinstance(value, str) else value if isinstance(value, list) else []
             return {parseaddr(str(v))[1].casefold() for v in value}
 
+        same_people = all(
+            people(message.get(k)) == people(draft.get(k)) for k in ("to", "cc", "bcc")
+        )
+        # The draft sent to the address the person gave instead: it is still
+        # that draft, and sending it to another address must not leave the
+        # old one in Drafts (VM check after PR #238).
+        moved = bool(people(message.get("to"))) and people(message.get("to")) <= set(self.asked)
         return (
             message.get("account") == draft.get("account")
             and message.get("in_reply_to") == draft.get("in_reply_to")
-            and all(people(message.get(k)) == people(draft.get(k)) for k in ("to", "cc", "bcc"))
+            and (same_people or moved)
             and self._like_draft(message)
+        )
+
+    def _to_asked(self, operation: str, message: dict[str, Any]) -> None:
+        """The address the person wrote in this message, not the one the model fell back on.
+
+        "Send it to martas@example.com, Marta's new address": Ministral 3 8B
+        wrote marta@ again, or no address, and the draft went to the old one
+        (pl, VM check after PR #238). Only a fallback is changed: no address,
+        the sender's or the draft's. An address of someone else on the email
+        is a person the message talks about, not a new address.
+        """
+        if operation not in ("send", "save_draft"):
+            return
+        asked = [a for a in self.asked if a != self.sender and a not in self.others]
+        if not asked:
+            return
+        fallback = {self.sender}
+        for k in ("to", "cc", "bcc"):
+            fallback |= _addresses(self.draft.get(k))
+        given: set[str] = set()
+        for k in ("to", "cc", "bcc"):
+            given |= _addresses(message.get(k))
+        if given & set(self.asked) or not given <= fallback:
+            return
+        message["to"] = asked
+
+    def _answers_elsewhere(self, message: dict[str, Any], to: list[Any]) -> bool:
+        """A reply to the email read, sent to an address the person gave.
+
+        Marta's new address made the reply a new email: no in_reply_to, no
+        "Re:", and the draft stayed in Drafts (VM check after PR #238). It is
+        still the answer when the text is the draft's, or the model kept the
+        email's id or subject.
+        """
+        if not ({parseaddr(str(t))[1].casefold() for t in to} & self.said):
+            return False
+        subject = message.get("subject")
+        return (
+            self._like_draft(message)
+            or message.get("in_reply_to") == self.message_id
+            or (
+                isinstance(subject, str)
+                and bool(self.subject)
+                and _same_subject(subject, self.subject)
+            )
         )
 
     def _like_draft(self, message: dict[str, Any]) -> bool:
@@ -908,6 +965,13 @@ class _MailSeen:
 
 
 _ADDRESS = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+
+
+def _addresses(value: Any) -> set[str]:
+    value = [value] if isinstance(value, str) else value if isinstance(value, list) else []
+    return {a.casefold() for _, a in getaddresses([str(v) for v in value]) if a}
+
+
 _QUOTES = str.maketrans({c: '"' for c in "«»“”„‟″"} | {c: "'" for c in "‘’‚‛′"})
 
 
