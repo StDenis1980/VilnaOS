@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Nov 26 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.23
+- Icon theme Vilna-Classic by default (icon-theme='Vilna-Classic'); it
+  inherits Vilna for the Gloxi and Herkos symbolic icons
+- Gloxi as the Shell side panel by default
+  (org.gnome.shell.extensions.vilna gloxi-dock=true)
+
+-------------------------------------------------------------------
 Wed Nov 25 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.22
