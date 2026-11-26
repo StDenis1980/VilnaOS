@@ -55,7 +55,7 @@ MOTIFS: dict[str, tuple[list[float], float, float]] = {
     "x-vilna-herkos-consent": ([A5, B5], 0.12, 0.6),
 }
 
-# Theme names in the ten Vilna languages (ADR 0009).
+# Theme names in the main Vilna languages (ADR 0009).
 THEMES: dict[str, dict[str, str]] = {
     "water": {
         "en": "Vilna Water",
@@ -68,6 +68,11 @@ THEMES: dict[str, dict[str, str]] = {
         "ro": "Vilna Apă",
         "cs": "Vilna Voda",
         "lt": "Vilna Vanduo",
+        "ca": "Vilna Aigua",
+        "ca@valencia": "Vilna Aigua",
+        "gl": "Vilna Auga",
+        "eu": "Vilna Ura",
+        "pt": "Vilna Água",
     },
     "air": {
         "en": "Vilna Air",
@@ -80,6 +85,11 @@ THEMES: dict[str, dict[str, str]] = {
         "ro": "Vilna Aer",
         "cs": "Vilna Vzduch",
         "lt": "Vilna Oras",
+        "ca": "Vilna Aire",
+        "ca@valencia": "Vilna Aire",
+        "gl": "Vilna Aire",
+        "eu": "Vilna Airea",
+        "pt": "Vilna Ar",
     },
     "birds": {
         "en": "Vilna Birds",
@@ -92,6 +102,11 @@ THEMES: dict[str, dict[str, str]] = {
         "ro": "Vilna Păsări",
         "cs": "Vilna Ptáci",
         "lt": "Vilna Paukščiai",
+        "ca": "Vilna Ocells",
+        "ca@valencia": "Vilna Ocells",
+        "gl": "Vilna Paxaros",
+        "eu": "Vilna Txoriak",
+        "pt": "Vilna Pássaros",
     },
     "glass": {
         "en": "Vilna Glass",
@@ -104,6 +119,11 @@ THEMES: dict[str, dict[str, str]] = {
         "ro": "Vilna Sticlă",
         "cs": "Vilna Sklo",
         "lt": "Vilna Stiklas",
+        "ca": "Vilna Vidre",
+        "ca@valencia": "Vilna Vidre",
+        "gl": "Vilna Vidro",
+        "eu": "Vilna Beira",
+        "pt": "Vilna Vidro",
     },
     "star": {
         "en": "Vilna Star",
@@ -116,6 +136,11 @@ THEMES: dict[str, dict[str, str]] = {
         "ro": "Vilna Stea",
         "cs": "Vilna Hvězda",
         "lt": "Vilna Žvaigždė",
+        "ca": "Vilna Estrella",
+        "ca@valencia": "Vilna Estrella",
+        "gl": "Vilna Estrela",
+        "eu": "Vilna Izarra",
+        "pt": "Vilna Estrela",
     },
     "wood": {
         "en": "Vilna Wood",
@@ -128,6 +153,11 @@ THEMES: dict[str, dict[str, str]] = {
         "ro": "Vilna Lemn",
         "cs": "Vilna Dřevo",
         "lt": "Vilna Medis",
+        "ca": "Vilna Fusta",
+        "ca@valencia": "Vilna Fusta",
+        "gl": "Vilna Madeira",
+        "eu": "Vilna Egurra",
+        "pt": "Vilna Madeira",
     },
     "bell": {
         "en": "Vilna Bell",
@@ -140,6 +170,11 @@ THEMES: dict[str, dict[str, str]] = {
         "ro": "Vilna Clopoțel",
         "cs": "Vilna Zvoneček",
         "lt": "Vilna Varpelis",
+        "ca": "Vilna Campaneta",
+        "ca@valencia": "Vilna Campaneta",
+        "gl": "Vilna Campaíña",
+        "eu": "Vilna Kanpaitxoa",
+        "pt": "Vilna Sininho",
     },
 }
 

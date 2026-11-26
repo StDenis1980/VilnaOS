@@ -9,7 +9,10 @@
 // The strip is a Shell actor registered as a strut, the same mechanism as
 // the top bar. GNOME then keeps maximised and tiled windows out of it, and
 // the notification banners, which are laid out in the work area, move left
-// of it by themselves. On with gloxi-dock (off by default); opened and closed
+// of it by themselves. Other windows a strut leaves where they are, so the
+// panel moves those it would cover left of it (narrower only when they do
+// not fit) and puts them back when it closes, unless the person has moved,
+// resized or maximised them meanwhile. On with gloxi-dock (off by default); opened and closed
 // with gloxi-panel-open, which the top-bar button, the panel's own close
 // button, Escape, the key gloxi-panel-key (Super+G) and Gloxi itself (over
 // D-Bus, GloxiPanelOpen, when its own portal key got the press) change.
@@ -35,9 +38,9 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
-import {dockMonitor, dockStrip} from './lib/geometry.js';
+import {clearOfStrip, dockMonitor, dockStrip} from './lib/geometry.js';
 import {isGloxiSource, panelText} from './lib/gloxiPanel.js';
-import {PanelView} from './gloxiPanel.js';
+import {PanelView, hasKeyFocus} from './gloxiPanel.js';
 
 const SLIDE_MS = 250;
 
@@ -79,6 +82,13 @@ function animate() {
     return St.Settings.get().enable_animations;
 }
 
+// Maximised (either way, which tiled is too) or fullscreen: Mutter keeps
+// those in the work area itself.
+function placedByShell(window) {
+    return Boolean(window.maximized_horizontally || window.maximized_vertically ||
+        window.is_maximized?.() || window.is_fullscreen());
+}
+
 export class Dock {
     // dir: the extension's directory, for the owl pictures.
     constructor(settings, dir) {
@@ -92,6 +102,8 @@ export class Dock {
         this._monitor = null; // the index the open panel is on
         this._starting = true;
         this._keyBound = false;
+        // Windows moved out of the strip: window → where it was.
+        this._moved = new Map();
     }
 
     enable() {
@@ -100,6 +112,8 @@ export class Dock {
         this._connect(this._settings, 'changed::gloxi-dock-size', sync);
         this._connect(this._settings, 'changed::gloxi-panel-open', sync);
         this._connect(Main.layoutManager, 'monitors-changed', sync);
+        // Moved or resized by the person: theirs again, not put back.
+        this._connect(global.display, 'grab-op-begin', (_d, window) => this._moved.delete(window));
         this._connect(Main.messageTray, 'source-added', (_t, source) => this._watchSource(source));
         for (const source of Main.messageTray.getSources())
             this._watchSource(source);
@@ -142,8 +156,14 @@ export class Dock {
         const id = source.connect('notification-added', (_s, notification) => {
             if (!this._view)
                 return;
-            this._view.notice(notification.title, notification.body ?? notification.bannerBodyText);
-            notification.acknowledged = true;
+            // No banner only once the panel shows it: if showing fails,
+            // the banner is the person's way to see it.
+            try {
+                this._view.notice(notification.title, notification.body ?? notification.bannerBodyText);
+                notification.acknowledged = true;
+            } catch (e) {
+                console.error(`Vilna Gloxi panel: ${e.message}\n${e.stack}`);
+            }
         });
         const gone = source.connect('destroy', () => {
             this._signals = this._signals.filter(([o]) => o !== source);
@@ -225,6 +245,7 @@ export class Dock {
         }
         this._panel.set_position(x, y);
         this._panel.set_size(width, height);
+        this._makeRoom({x, y, width, height});
         this._button?.add_style_pseudo_class('checked');
         if (!opening)
             return;
@@ -245,16 +266,44 @@ export class Dock {
         }
     }
 
+    // Windows on the panel's monitor that the strip would cover.
+    _makeRoom(strip) {
+        const area = Main.layoutManager.getWorkAreaForMonitor(this._monitor);
+        for (const actor of global.get_window_actors()) {
+            const window = actor.meta_window;
+            if (!window || window.get_window_type() !== Meta.WindowType.NORMAL ||
+                window.get_monitor() !== this._monitor || placedByShell(window) || !window.allows_move())
+                continue;
+            const from = window.get_frame_rect();
+            const to = clearOfStrip(from, strip, area, window.allows_resize());
+            if (!to)
+                continue;
+            if (!this._moved.has(window))
+                this._moved.set(window, {x: from.x, y: from.y, width: from.width, height: from.height});
+            window.move_resize_frame(true, to.x, to.y, to.width, to.height);
+        }
+    }
+
+    _giveBack() {
+        const alive = new Set(global.display.list_all_windows());
+        for (const [window, from] of this._moved) {
+            if (alive.has(window) && !placedByShell(window))
+                window.move_resize_frame(true, from.x, from.y, from.width, from.height);
+        }
+        this._moved.clear();
+    }
+
     _release(slide) {
         if (!this._panel)
             return;
         const panel = this._panel, view = this._view;
-        const hadFocus = panel.contains(global.stage.get_key_focus());
+        const hadFocus = hasKeyFocus(panel);
         this._panel = null;
         this._view = null;
         this._button?.remove_style_pseudo_class('checked');
         // The strut goes at once: windows take the space back while it slides out.
         Main.layoutManager.untrackChrome(panel);
+        this._giveBack();
         const done = () => {
             view.destroy();
             panel.destroy();

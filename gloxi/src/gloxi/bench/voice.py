@@ -67,6 +67,21 @@ PHRASES = {
         "Primink man rytoj devintą valandą ryto paskambinti gydytojui. "
         "Kiek kainuoja bilietas į Vilnių?"
     ),
+    "ca": (
+        "Recorda'm demà a les nou del matí que truqui al metge. Quant costa un bitllet a Barcelona?"
+    ),
+    "ca@valencia": (
+        "Recorda'm demà a les nou del matí que telefone al metge. "
+        "Quant costa un bitllet a València?"
+    ),
+    "gl": ("Lémbrame mañá ás nove da mañá que chame ao médico. Canto custa un billete a Santiago?"),
+    "eu": (
+        "Gogorarazi iezadazu bihar goizeko bederatzietan medikuari deitzeko. "
+        "Zenbat balio du Bilborako txartel batek?"
+    ),
+    "pt": (
+        "Lembra-me amanhã às nove da manhã de ligar ao médico. Quanto custa um bilhete para Lisboa?"
+    ),
 }
 
 

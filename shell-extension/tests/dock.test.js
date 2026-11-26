@@ -70,9 +70,9 @@ test('icons move only with the spring on and animations on', () => {
     }
 });
 
-test('the Dock page speaks the ten languages of Vilna', () => {
+test('the Dock page speaks the main languages of Vilna', () => {
     assert.deepEqual(checkDockTables(), []);
-    assert.deepEqual([...DOCK_LANGUAGES].sort(), ['cs', 'de', 'en', 'es', 'fr', 'it', 'lt', 'pl', 'ro', 'uk']);
+    assert.deepEqual([...DOCK_LANGUAGES].sort(), ['ca', 'ca@valencia', 'cs', 'de', 'en', 'es', 'eu', 'fr', 'gl', 'it', 'lt', 'pl', 'pt', 'ro', 'uk']);
     assert.equal(dockText(['uk_UA.UTF-8', 'en']).page, 'Док');
     assert.equal(dockText(['xx']).page, 'Dock');
 });

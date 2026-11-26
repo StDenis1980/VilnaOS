@@ -24,9 +24,19 @@ import St from 'gi://St';
 import {
     MAX_INPUT, PanelChat, helloLanguage, owlFile, panelText, requestLine, safeUri, stateText,
 } from './lib/gloxiPanel.js';
+import {verticalBox} from './vbox.js';
 
 const GLOXI_DESKTOP = 'io.github.stdenis1980.Gloxi.desktop';
 const CALL_SECONDS = 15;
+
+/**
+ * Whether the keyboard focus is in this actor. With the focus in a window
+ * the stage has none, and contains(null) throws in GNOME Shell 51.
+ */
+export function hasKeyFocus(actor) {
+    const focus = global.stage.get_key_focus();
+    return focus !== null && actor.contains(focus);
+}
 
 // Where gloxid listens (gloxi/docs/service-protocol.md).
 export function gloxiSocket() {
@@ -92,12 +102,18 @@ class GloxiClient {
             } catch {
                 message = null;
             }
-            if (message && typeof message === 'object' && 'id' in message && !('event' in message)) {
-                const waiting = this._pending.get(message.id);
-                this._pending.delete(message.id);
-                waiting?.(message);
-            } else if (message) {
-                this._onLine(message);
+            // A fault while showing one line must not stop the reading:
+            // the rest of the answer and every later event would be lost.
+            try {
+                if (message && typeof message === 'object' && 'id' in message && !('event' in message)) {
+                    const waiting = this._pending.get(message.id);
+                    this._pending.delete(message.id);
+                    waiting?.(message);
+                } else if (message) {
+                    this._onLine(message);
+                }
+            } catch (e) {
+                console.error(`Vilna Gloxi panel: ${e.message}\n${e.stack}`);
             }
             this._read();
         });
@@ -204,14 +220,14 @@ export class PanelView {
 
     _build() {
         const t = this._t;
-        const box = new St.BoxLayout({vertical: true, style_class: 'vilna-gloxi-panel', x_expand: true, y_expand: true});
+        const box = verticalBox({style_class: 'vilna-gloxi-panel', x_expand: true, y_expand: true});
         box.name = 'vilnaGloxiPanel';
         box.accessible_name = t.indicator;
 
         const header = new St.BoxLayout({style_class: 'vilna-gloxi-header'});
         this._owl = new St.Icon({icon_size: 40, style_class: 'vilna-gloxi-owl'});
         header.add_child(this._owl);
-        const titles = new St.BoxLayout({vertical: true, x_expand: true, y_align: Clutter.ActorAlign.CENTER});
+        const titles = verticalBox({x_expand: true, y_align: Clutter.ActorAlign.CENTER});
         titles.add_child(new St.Label({text: 'Gloxi', style_class: 'vilna-gloxi-title'}));
         this._stateLabel = new St.Label({style_class: 'vilna-gloxi-state'});
         titles.add_child(this._stateLabel);
@@ -224,7 +240,7 @@ export class PanelView {
             style_class: 'vilna-gloxi-scroll', x_expand: true, y_expand: true,
             hscrollbar_policy: St.PolicyType.NEVER, vscrollbar_policy: St.PolicyType.AUTOMATIC,
         });
-        this._list = new St.BoxLayout({vertical: true, style_class: 'vilna-gloxi-messages', x_expand: true});
+        this._list = verticalBox({style_class: 'vilna-gloxi-messages', x_expand: true});
         this._list.accessible_name = t.messages;
         if (typeof this._scroll.set_child === 'function')
             this._scroll.set_child(this._list);
@@ -235,20 +251,49 @@ export class PanelView {
         this._list.add_child(this._empty);
 
         const input = new St.BoxLayout({style_class: 'vilna-gloxi-input'});
+        // The field grows with the text, line by line, up to a few lines
+        // (max-height in the stylesheet), then scrolls (Build12.29: one
+        // short line, long text out of sight). Enter sends, Shift+Enter
+        // starts a new line.
         this._entry = new St.Entry({
             hint_text: t.hint, can_focus: true, x_expand: true, style_class: 'vilna-gloxi-entry',
         });
         this._entry.accessible_name = t.hint.replace(/…$/, '');
-        this._entry.clutter_text.max_length = MAX_INPUT;
-        this._entry.clutter_text.connect('activate', () => this._submit());
-        this._entry.clutter_text.connect('key-press-event', (_a, event) => {
-            if (event.get_key_symbol() === Clutter.KEY_Escape) {
+        const text = this._entry.clutter_text;
+        text.max_length = MAX_INPUT;
+        text.single_line_mode = false;
+        text.activatable = false;
+        text.line_wrap = true;
+        text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
+        text.connect('key-press-event', (_a, event) => {
+            const key = event.get_key_symbol();
+            if (key === Clutter.KEY_Escape) {
                 this._onClose();
+                return Clutter.EVENT_STOP;
+            }
+            if ((key === Clutter.KEY_Return || key === Clutter.KEY_KP_Enter) &&
+                !(event.get_state() & Clutter.ModifierType.SHIFT_MASK)) {
+                this._submit();
                 return Clutter.EVENT_STOP;
             }
             return Clutter.EVENT_PROPAGATE;
         });
-        input.add_child(this._entry);
+        this._field = new St.ScrollView({
+            style_class: 'vilna-gloxi-field', x_expand: true, y_align: Clutter.ActorAlign.END,
+            hscrollbar_policy: St.PolicyType.NEVER, vscrollbar_policy: St.PolicyType.AUTOMATIC,
+        });
+        // A scroll view takes only a scrollable child: a box round the entry.
+        const fieldBox = verticalBox({x_expand: true});
+        fieldBox.add_child(this._entry);
+        if (typeof this._field.set_child === 'function')
+            this._field.set_child(fieldBox);
+        else
+            this._field.add_actor(fieldBox);
+        // The border goes round the scrolled field, so it shows focus.
+        this._entry.connect('key-focus-in', () => this._field.add_style_pseudo_class('focus'));
+        this._entry.connect('key-focus-out', () => this._field.remove_style_pseudo_class('focus'));
+        text.connect('cursor-changed', () => this._showCursor());
+        input.add_child(this._field);
         this._send = iconButton('mail-send-symbolic', t.send, () => this._submit());
         input.add_child(this._send);
         box.add_child(input);
@@ -259,6 +304,29 @@ export class PanelView {
 
     focus() {
         this._entry.grab_key_focus();
+    }
+
+    // Keeps the line with the text cursor in view once the field scrolls.
+    _showCursor() {
+        const adjustment = this._field.vadjustment ?? this._field.vscroll?.adjustment;
+        const text = this._entry.clutter_text;
+        if (!adjustment)
+            return;
+        const [ok, , y, lineHeight] = text.position_to_coords(text.cursor_position);
+        if (!ok)
+            return;
+        // In the field's scrolled coordinates: the text sits inside the
+        // entry's padding.
+        const lineTop = y + text.y;
+        if (lineTop < adjustment.value)
+            adjustment.value = lineTop;
+        else if (lineTop + lineHeight > adjustment.value + adjustment.page_size)
+            adjustment.value = lineTop + lineHeight - adjustment.page_size;
+    }
+
+    /** The field's height in pixels; for the headless test. */
+    get fieldHeight() {
+        return this._field.height;
     }
 
     async _connect() {
@@ -365,7 +433,7 @@ export class PanelView {
 
     _lineActor(line) {
         const t = this._t;
-        const box = new St.BoxLayout({vertical: true, style_class: `vilna-gloxi-line ${line.kind}`, x_expand: true});
+        const box = verticalBox({style_class: `vilna-gloxi-line ${line.kind}`, x_expand: true});
         if (line.caption)
             box.add_child(new St.Label({text: line.caption, style_class: 'vilna-gloxi-caption'}));
         const label = new St.Label({style_class: 'vilna-gloxi-text', x_expand: true});
@@ -419,7 +487,7 @@ export class PanelView {
     // an ATK notification (AT-SPI Announcement, which Orca reads), from the
     // message list. Read whole, once an answer is finished, not word by word.
     _speak() {
-        const focused = this.actor.contains(global.stage.get_key_focus());
+        const focused = hasKeyFocus(this.actor);
         const news = this._chat.takeNews(focused);
         if (!news.length)
             return;

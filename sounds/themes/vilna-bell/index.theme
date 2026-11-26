@@ -9,6 +9,11 @@ Name[it]=Vilna Campanella
 Name[ro]=Vilna Clopoțel
 Name[cs]=Vilna Zvoneček
 Name[lt]=Vilna Varpelis
+Name[ca]=Vilna Campaneta
+Name[ca@valencia]=Vilna Campaneta
+Name[gl]=Vilna Campaíña
+Name[eu]=Vilna Kanpaitxoa
+Name[pt]=Vilna Sininho
 Inherits=freedesktop
 Directories=stereo
 

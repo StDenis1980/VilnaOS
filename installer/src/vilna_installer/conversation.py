@@ -33,8 +33,10 @@ says so and the person goes on in the classic wizard with the same plan.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -81,9 +83,14 @@ ENGLISH_NAMES = {
     "ro": "Romanian",
     "cs": "Czech",
     "lt": "Lithuanian",
+    "ca": "Catalan",
+    "ca@valencia": "Valencian (the Valencian standard of Catalan)",
+    "gl": "Galician",
+    "eu": "Basque",
+    "pt": "European Portuguese",
 }
 
-# Fixed texts (msgids of locale/*.po). A new one needs all nine translations
+# Fixed texts (msgids of locale/*.po). A new one needs every translation
 # (ADR 0009); the tests fail without them.
 INTRO = (
     "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you "
@@ -125,6 +132,7 @@ ENCRYPT_PASS_QUESTION = (
     "with a passphrase you type at every start. Without encryption, anyone with the disk "
     "can read your files."
 )
+NO_ENCRYPTION = "Fine, the disk will not be encrypted. You can change this in the plan."
 KEEP_KEY = (
     "Keep the recovery key safe: without it nobody, not even you, can open the disk if "
     "something in this computer changes."
@@ -270,6 +278,7 @@ TEXTS = (
     FILES,
     ENCRYPT_TPM_QUESTION,
     ENCRYPT_PASS_QUESTION,
+    NO_ENCRYPTION,
     KEEP_KEY,
     USER_QUESTION,
     TIME_QUESTION,
@@ -542,6 +551,41 @@ NOT_SAVED = (
     "person said what they want, call the function for it now. If not, ask what they want."
 )
 ENCRYPTED_METHODS = ("tpm2", "tpm2-pin", "passphrase")
+# «Do not encrypt» in the installer's languages, looked for inside the answer.
+NO_ENCRYPTION_WORDS = (
+    "без шифр",
+    "не шифр",
+    "шифрувати не",
+    "шифрування не треба",
+    "шифрування не потрібн",
+    "no encryption",
+    "without encryption",
+    "not encrypt",
+    "don't encrypt",
+    "unencrypted",
+    "bez szyfrowania",
+    "nie szyfruj",
+    "ohne verschlüsselung",
+    "nicht verschlüsseln",
+    "sin cifrar",
+    "sin cifrado",
+    "no cifrar",
+    "sans chiffrement",
+    "pas de chiffrement",
+    "ne pas chiffrer",
+    "senza crittografia",
+    "non cifrare",
+    "fără criptare",
+    "fara criptare",
+    "bez šifrování",
+    "nešifrovat",
+    "be šifravimo",
+    "nešifruoti",
+)
+# A bare «no» right after the fixed question «Shall I encrypt the new system?».
+NO_WORDS = frozenset(
+    ["ні", "не", "не треба", "no", "nope", "nie", "nein", "non", "ne", "nu", "não"]
+)
 QUESTION_MARKS = ("?", "？", "¿")
 # The encryption step on a computer without a TPM 2.0: the model recommended
 # TPM2 anyway, and only the Herkos screen stopped it (Build8.9).
@@ -555,6 +599,12 @@ AFTER_SECRET = (
     "The person has just done this in the installer window themselves; "
     "do not ask for it again. Go on with the current step."
 )
+# Build12.26 (VM, 2026-11-24): «свободного простору», «будь-хім», «буде замінятий»:
+# the small model drifts into Russian words, as Gloxi's chat saw too.
+NOT_RUSSIAN = {
+    "Ukrainian": "Use only Ukrainian words and grammar, never Russian ones "
+    "(«вільного місця», not «свободного простору»)."
+}
 # Named for the model when the plan holds the marker "entered" for them.
 ENTERED_NAMES = {
     "network": "the Wi-Fi password (the computer is connected)",
@@ -697,7 +747,20 @@ class LocalModel:
             return False
         return True
 
+    def warm(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> None:
+        """Read the start of the conversation into the cache now, while the person reads
+        and types; one token is generated and thrown away."""
+        self._request("/chat/completions", self._body(messages, tools) | {"max_tokens": 1})
+
     def chat(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> ModelReply:
+        out = self._request("/chat/completions", self._body(messages, tools))
+        try:
+            message = out["choices"][0]["message"]
+        except (KeyError, IndexError, TypeError) as e:
+            raise ModelError(f"unexpected answer: {str(out)[:200]}") from e
+        return ModelReply(message.get("content") or "", message.get("tool_calls") or [])
+
+    def _body(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> dict[str, Any]:
         # Slot 0, as Gloxi's own conversation (PR #152): its cached prompt is
         # this conversation's, and Keros checks use the last slot.
         body: dict[str, Any] = {
@@ -709,12 +772,7 @@ class LocalModel:
         }
         if tools:
             body["tools"] = tools
-        out = self._request("/chat/completions", body)
-        try:
-            message = out["choices"][0]["message"]
-        except (KeyError, IndexError, TypeError) as e:
-            raise ModelError(f"unexpected answer: {str(out)[:200]}") from e
-        return ModelReply(message.get("content") or "", message.get("tool_calls") or [])
+        return body
 
 
 def unit_failed(unit: str = MODEL_UNIT) -> bool:
@@ -811,6 +869,21 @@ class Conversation:
         self.state.passed.add("intro")
         self.history.append({"role": "assistant", "content": text})
         return self._reply(text)
+
+    def warm(self) -> None:
+        """After opening(): the rules, the functions and the greeting go into the model's
+        cache before the person's first message.
+
+        Build13.18 (VM, 8 GB, 2026-11-25): the first «Привіт, що ти вмієш?» sent 1,981
+        tokens the model had never read; at 44 tokens/s the first word came after 44.8 s.
+        Every later request starts with the same messages, so only the new part is read."""
+        warm = getattr(self.model, "warm", None)
+        if warm is None:
+            return
+        system = [{"role": "system", "content": self.system_prompt()}]
+        # A failure only costs time: the first answer then reads it all.
+        with contextlib.suppress(ModelError):
+            warm(system + self.history[self._start :], self.offered())
 
     def current(self) -> Step:
         if self.state.focus:
@@ -923,9 +996,53 @@ class Conversation:
                 f"\n\n(The installer: this looks typed in the wrong keyboard layout; in "
                 f"the Ukrainian layout it reads «{mistyped}».)"
             )
+        asked = self._last_said()
         self.history.append({"role": "user", "content": content})
         self._log("person", text, self.current().key)
+        if self._declines_encryption(text, mistyped, asked):
+            return self._without_encryption()
         return self._answer(fresh=True)
+
+    def _last_said(self) -> str:
+        last = next((m for m in reversed(self.history) if m["role"] == "assistant"), None)
+        return (last or {}).get("content") or ""
+
+    def _declines_encryption(self, text: str, mistyped: str | None, asked: str) -> bool:
+        """At the encryption step, the person said not to encrypt.
+
+        Build12.26 (VM, 2026-11-24): to «без шифрування» the model saved a passphrase
+        in all three runs and asked for it, so this answer does not go through it."""
+        if self.current().key != "encryption":
+            return False
+        for said in filter(None, (text, mistyped)):
+            low = " ".join(said.lower().split())
+            if any(mark in low for mark in QUESTION_MARKS):
+                continue
+            if any(no in low for no in NO_ENCRYPTION_WORDS):
+                return True
+            questions = (self.texts(ENCRYPT_TPM_QUESTION), self.texts(ENCRYPT_PASS_QUESTION))
+            if low.strip(".,!") in NO_WORDS and asked.endswith(questions):
+                return True
+        return False
+
+    def _without_encryption(self) -> Reply:
+        """Save «none» as the person said, then the next step's question."""
+        try:
+            ok, _ = self.tools.call("plan_set_encryption", {"method": "none"})
+        except ToolsError:
+            ok = False
+        if not ok:
+            return self._answer(fresh=True)
+        self.refresh()
+        if self.state.focus == "encryption":
+            self.state.focus = None
+        said = [self.texts(NO_ENCRYPTION)]
+        question = self.question(self.current())
+        if question:
+            said.append(question)
+        answer = "\n\n".join(said)
+        self.history.append({"role": "assistant", "content": answer})
+        return self._reply(answer)
 
     def resume(self, entered: str | None = None) -> Reply:
         """Go on without a new message: after a protected field (``entered`` names it:
@@ -1028,6 +1145,10 @@ class Conversation:
             return self._reply(self.texts(MODEL_FAILED), failed=True)
         finally:
             self._note = ""
+        answer = _spoken(answer)
+        if not answer:
+            # The model said nothing but the notes: the step's own question, if any.
+            answer = self.question(self.current()) or self.texts(MODEL_FAILED)
         answer = "\n\n".join([*self._said, answer])
         self.history.append({"role": "assistant", "content": answer})
         return self._reply(answer)
@@ -1127,6 +1248,8 @@ class Conversation:
             return None
         # The notes are English and come right before the answer; a small
         # model then drifted into English (S7 on KLX, 2026-11-17).
+        if self.reply_language in NOT_RUSSIAN:
+            parts.append(NOT_RUSSIAN[self.reply_language])
         parts.append(f"Reply in {self.reply_language}.")
         text = f"{NOTES_START}\n" + "\n\n".join(parts) + f"\n{NOTES_END}"
         return text, (context if context != known else "")
@@ -1209,6 +1332,8 @@ class Conversation:
             if name == "disks_survey":
                 self.state.survey = data
                 data = _short_survey(data)
+            elif name == "locale_list":
+                data = _short_locales(data)
             text = json.dumps(data, ensure_ascii=False)[:MAX_DATA_CHARS]
             parts.append(f"{name}: " + (_external(text) if name in EXTERNAL else text))
         if step.key == "encryption":
@@ -1335,6 +1460,19 @@ def wrong_layout(text: str) -> str | None:
     return read
 
 
+# Build12.26 (VM, 2026-11-24): at the encryption step Gloxi wrote the whole
+# «<installer-notes> Step 8 of 13 … </installer-notes>» block into the chat.
+_NOTES_RE = re.compile(
+    re.escape(NOTES_START) + r".*?(?:" + re.escape(NOTES_END) + r"|\Z)", re.DOTALL
+)
+
+
+def _spoken(text: str) -> str:
+    """What the model said, without the installer's notes it echoed back."""
+    text = _NOTES_RE.sub("", text).replace(NOTES_END, "")
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+
 def _without_notes(content: str) -> str:
     """A message without the installer's notes at its start."""
     if not content.startswith(NOTES_START) or NOTES_END not in content:
@@ -1349,6 +1487,27 @@ def _external(text: str) -> str:
 def _compact(plan: dict[str, Any]) -> dict[str, Any]:
     """The plan without what the model does not need (and without the step-0 settings)."""
     return {k: v for k, v in plan.items() if k not in ("ui", "assistant", "version")}
+
+
+def _short_locales(listed: dict[str, Any]) -> dict[str, Any]:
+    """Each locale with its keyboard and time zone on one short line.
+
+    Fifteen languages as full objects filled the history of a small model at
+    the second step, and it was cut (and read again) a turn early.
+    """
+    rows = listed.get("languages")
+    if not isinstance(rows, list):
+        return listed
+    short = {}
+    for row in rows:
+        if isinstance(row, dict) and row.get("locale"):
+            short[row["locale"]] = ", ".join(
+                str(row[k]) for k in ("keyboard", "timezone") if row.get(k)
+            )
+    out = {"locale: keyboard, time zone": short}
+    if listed.get("note"):
+        out["note"] = listed["note"]
+    return out
 
 
 def _short_survey(survey: dict[str, Any]) -> dict[str, Any]:

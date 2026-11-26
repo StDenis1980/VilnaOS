@@ -128,6 +128,10 @@ def test_recent_crash_is_offered_and_shown():
         "Quiero reportar un error",
         "zgłoś błąd",
         "Fehler melden",
+        "Tinc un suggeriment",
+        "reportar un erro",
+        "Tenho uma sugestão",
+        "Akats baten berri eman",
     ],
 )
 def test_phrases_start_feedback(text):

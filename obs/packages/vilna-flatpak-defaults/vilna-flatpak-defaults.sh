@@ -4,6 +4,8 @@
 #   flathub - Firefox, the GNOME basics, KeePassXC (flatpaks.list);
 #   vilna   - Vilna's own signed repository (ADR 0024): Tinta Office
 #             (flatpaks-vilna.list, ADR 0011). Its runtime comes from Flathub.
+# With each remote it also fetches that remote's app catalogue, so the store
+# (GNOME Software) shows every app at once and can install it again.
 # Run by vilna-flatpak-defaults.service, in the background (it must not hold
 # the boot). Each remote that succeeds gets its own stamp and is not tried
 # again; when both are done the final stamp stops the service for good.
@@ -21,10 +23,11 @@ STAMP=${VILNA_FLATPAK_STAMP:-$STATE/flatpak-defaults-all.done}
 OLD_STAMP=$STATE/flatpak-defaults.done
 FLATPAK=${VILNA_FLATPAK_BIN:-flatpak}
 # Translations Flatpak installs with each app and runtime (their .Locale
-# extensions): the ten languages of ADR 0009. Without this Flatpak takes
-# only the system language of this first boot, en_US, and Firefox stayed
-# in English after the person chose Українська (VM test of Build15.6).
-LANGUAGES=${VILNA_FLATPAK_LANGUAGES:-uk;en;es;pl;de;fr;it;ro;cs;lt}
+# extensions): the main languages of ADR 0009, Valencian with ca. Without
+# this Flatpak takes only the system language of this first boot, en_US,
+# and Firefox stayed in English after the person chose Українська (VM test
+# of Build15.6).
+LANGUAGES=${VILNA_FLATPAK_LANGUAGES:-uk;en;es;pl;de;fr;it;ro;cs;lt;ca;gl;eu;pt}
 NM_ONLINE=${VILNA_FLATPAK_NM_ONLINE:-nm-online}
 TEMPFAIL=75
 
@@ -49,6 +52,14 @@ install_from() {
         fi
         "$FLATPAK" config --system --set languages "$LANGUAGES" || return 1
         "$FLATPAK" remote-add --system --if-not-exists "$remote" "$repofile" || return 1
+        # The remote's app catalogue (its AppStream branch): what GNOME
+        # Software and Gloxi (vilna-mcp-apps) read to show an app and to
+        # install it again after the person removed it. flatpak install does
+        # not fetch it, and until GNOME Software refreshed on its own the
+        # store did not know Tinta Office. Not fatal: the store fetches it
+        # itself later.
+        "$FLATPAK" update --system --noninteractive --appstream "$remote" \
+            || echo "$remote: app catalogue not fetched yet, the store fetches it later"
         "$FLATPAK" install --system --noninteractive --or-update "$remote" "${apps[@]}" || return 1
     else
         echo "$remote: no apps in $list"

@@ -1,0 +1,1433 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: gloxi\n"
+"Report-Msgid-Bugs-To: https://github.com/StDenis1980/VilnaOS/issues\n"
+"Language: eu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Vilna-Review: not reviewed by a native speaker\n"
+
+#: src/gloxi/backup_intro.py
+msgid "All right. I will ask once more in a week. You can also type /backup any time."
+msgstr "Ados. Astebete barru galdetuko dizut berriro. /backup ere idatz dezakezu nahi duzunean."
+
+#: src/gloxi/backup_intro.py
+msgid "An external disk"
+msgstr "Kanpoko disko bat"
+
+#: src/gloxi/backup_intro.py
+msgid "And Wi-Fi passwords, online accounts, SSH and GPG keys?"
+msgstr "Eta Wi-Fi pasahitzak, lineako kontuak eta SSH eta GPG gakoak?"
+
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
+#, python-brace-format
+msgid "Choose a number from 1 to {n}."
+msgstr "Aukeratu zenbaki bat, 1etik {n}ra."
+
+#: src/gloxi/backup_intro.py
+msgid "Choose a number from the list, or type an amount in GB, e.g. 120"
+msgstr "Aukeratu zerrendako zenbaki bat, edo idatzi kopuru bat GBtan, adib. 120"
+
+#: src/gloxi/backup_intro.py
+msgid "Choose myself"
+msgstr "Neuk aukeratu"
+
+#: src/gloxi/backup_intro.py
+msgid "Choose what goes into backups"
+msgstr "Aukeratu zer sartzen den babeskopietan"
+
+#: src/gloxi/backup_intro.py
+msgid "Desktop"
+msgstr "Mahaigaina"
+
+#: src/gloxi/backup_intro.py
+msgid "Documents"
+msgstr "Dokumentuak"
+
+#: src/gloxi/backup_intro.py
+msgid "Downloads"
+msgstr "Deskargak"
+
+#: src/gloxi/backup_intro.py
+msgid "Dropbox, OneDrive, Google Drive"
+msgstr "Dropbox, OneDrive, Google Drive"
+
+#: src/gloxi/backup_intro.py
+msgid "Every day, recommended"
+msgstr "Egunero, gomendatua"
+
+#: src/gloxi/backup_intro.py
+msgid "Every hour"
+msgstr "Orduro"
+
+#: src/gloxi/backup_intro.py
+msgid "Every week"
+msgstr "Astero"
+
+#: src/gloxi/backup_intro.py
+msgid "Everything in the home folder"
+msgstr "Karpeta pertsonaleko guztia"
+
+#: src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "Everything in the home folder, without caches and Downloads ({size})"
+msgstr "Karpeta pertsonaleko guztia, cacherik eta Deskargarik gabe ({size})"
+
+#: src/gloxi/backup_intro.py
+msgid "Gloxi checks that the backup fits"
+msgstr "Gloxik egiaztatzen du babeskopia sartzen dela"
+
+#: src/gloxi/backup_intro.py
+msgid "Gloxi checks whether backups are set up"
+msgstr "Gloxik egiaztatzen du babeskopiak konfiguratuta dauden"
+
+#: src/gloxi/backup_intro.py
+msgid "Gloxi measures how much space your folders take"
+msgstr "Gloxik neurtzen du zure karpetek zenbat leku hartzen duten"
+
+#: src/gloxi/backup_intro.py
+msgid ""
+"Have your recovery sheet ready and run this in a terminal:\n"
+"  vilna-backup recover <where the backups are>\n"
+"Then: vilna-backup restore --in-place"
+msgstr ""
+"Izan eskura zure berreskuratze-orria, eta exekutatu hau terminal batean:\n"
+"  vilna-backup recover <babeskopiak non dauden>\n"
+"Gero: vilna-backup restore --in-place"
+
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
+msgid "Herkos sent an answer Gloxi does not understand"
+msgstr "Herkosek Gloxik ulertzen ez duen erantzun bat bidali du"
+
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
+msgid "Herkos, the permission service, is not available"
+msgstr "Herkos, baimen-zerbitzua, ez dago erabilgarri"
+
+#: src/gloxi/backup_intro.py
+msgid "How much space are you ready to give to backups?"
+msgstr "Zenbat leku eman nahi diezu babeskopiei?"
+
+#: src/gloxi/backup_intro.py
+msgid "How often?"
+msgstr "Zein maiztasunez?"
+
+#: src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "I could not continue: {why}. We can go on later: type /backup."
+msgstr "Ezin izan dut jarraitu: {why}. Geroago jarrai dezakegu: idatzi /backup."
+
+#: src/gloxi/backup_intro.py
+msgid "I had Vilna before: restore from a backup"
+msgstr "Lehen ere Vilna nuen: leheneratu babeskopia batetik"
+
+#: src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "I will back up {what} (about {size}) {how} {where}."
+msgstr "{what} babeskopia egingo dut (gutxi gorabehera {size}) {how} {where}."
+
+#: src/gloxi/backup_intro.py
+msgid "Keep Gloxi conversations in backups"
+msgstr "Sartu Gloxirekin izandako elkarrizketak babeskopietan"
+
+#: src/gloxi/backup_intro.py
+msgid "Keep your conversations with Gloxi in backups too?"
+msgstr "Gloxirekin izandako zure elkarrizketak ere sartu babeskopietan?"
+
+#: src/gloxi/backup_intro.py src/gloxi/vpn_intro.py
+msgid "Later"
+msgstr "Geroago"
+
+#: src/gloxi/backup_intro.py
+msgid "Leave large folders out of backups"
+msgstr "Utzi karpeta handiak babeskopietatik kanpo"
+
+#: src/gloxi/backup_intro.py
+msgid "Leave out Gloxi history"
+msgstr "Utzi kanpo Gloxiren historia"
+
+#: src/gloxi/backup_intro.py
+msgid "Music"
+msgstr "Musika"
+
+#: src/gloxi/backup_intro.py
+msgid "My own storage (S3, SFTP)"
+msgstr "Nire biltegiratze propioa (S3, SFTP)"
+
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py src/gloxi/vpn_intro.py
+msgid "No"
+msgstr "Ez"
+
+#: src/gloxi/backup_intro.py
+msgid "No limit"
+msgstr "Mugarik gabe"
+
+#: src/gloxi/backup_intro.py
+msgid "No, I will give more space"
+msgstr "Ez, leku gehiago emango dut"
+
+#: src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "Only settings ({size})"
+msgstr "Ezarpenak soilik ({size})"
+
+#: src/gloxi/backup_intro.py
+msgid "Passwords and accounts are switched on by you only:"
+msgstr "Pasahitzak eta kontuak zuk bakarrik aktibatzen dituzu:"
+
+#: src/gloxi/backup_intro.py
+msgid "Pictures"
+msgstr "Irudiak"
+
+#: src/gloxi/backup_intro.py
+msgid "Set how much space backups may take"
+msgstr "Ezarri babeskopiek zenbat leku har dezaketen"
+
+#: src/gloxi/backup_intro.py
+msgid "Set how often backups are made"
+msgstr "Ezarri babeskopiak zein maiztasunez egiten diren"
+
+#: src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "Settings and documents, recommended ({size})"
+msgstr "Ezarpenak eta dokumentuak, gomendatua ({size})"
+
+#: src/gloxi/backup_intro.py
+msgid "Settings are always kept. Which folders to add? Type their numbers, for example: 1 3"
+msgstr "Ezarpenak beti gordetzen dira. Zein karpeta gehituko ditut? Idatzi haien zenbakiak, adibidez: 1 3"
+
+#: src/gloxi/backup_intro.py
+msgid "Settings, passwords, Gloxi and Herkos"
+msgstr "Ezarpenak, pasahitzak, Gloxi eta Herkos"
+
+#: src/gloxi/backup_intro.py
+msgid "Shall I keep backups of your data, so you do not lose it along with the computer?"
+msgstr "Zure datuen babeskopiak egingo ditut, ordenagailuarekin batera ez galtzeko?"
+
+#: src/gloxi/backup_intro.py
+msgid "The Vilna cloud is not open yet in this preview. Choose another place."
+msgstr "Vilna hodeia ez dago oraindik erabilgarri aurrebista honetan. Aukeratu beste leku bat."
+
+#: src/gloxi/backup_intro.py
+msgid "The last step is yours, because it is about keys: run this in a terminal. It shows the recovery key once; write it on paper and keep it away from the computer. Without it, backups cannot be restored if this computer is lost. The first backup starts right after."
+msgstr "Azken urratsa zurea da, gakoei buruzkoa delako: exekutatu hau terminal batean. Berreskuratze-gakoa behin bakarrik erakusten du; idatzi paper batean eta gorde ordenagailutik urrun. Hura gabe, babeskopiak ezin dira leheneratu ordenagailu hau galtzen baduzu. Lehen babeskopia berehala hasten da."
+
+#: src/gloxi/backup_intro.py
+msgid "These are US companies: they see your account, the size and time of backups (not the contents), and a broken device could delete the backups. They are not in this preview yet. Choose another place."
+msgstr "AEBetako enpresak dira: zure kontua, babeskopien tamaina eta ordua ikusten dituzte (ez edukia), eta arriskuan dagoen gailu batek babeskopiak ezaba litzake. Oraindik ez daude aurrebista honetan. Aukeratu beste leku bat."
+
+#: src/gloxi/backup_intro.py
+msgid "Type an amount in GB, e.g. 120"
+msgstr "Idatzi kopuru bat GBtan, adib. 120"
+
+#: src/gloxi/backup_intro.py
+msgid "Type the numbers of the folders, for example: 1 3"
+msgstr "Idatzi karpeten zenbakiak, adibidez: 1 3"
+
+#: src/gloxi/backup_intro.py
+msgid "Videos"
+msgstr "Bideoak"
+
+#: src/gloxi/backup_intro.py
+msgid "Vilna cloud (EU)"
+msgstr "Vilna hodeia (EB)"
+
+#: src/gloxi/backup_intro.py
+msgid "We are not talking about backups now."
+msgstr "Orain ez gara babeskopiez ari."
+
+#: src/gloxi/backup_intro.py
+msgid "What shall we keep? This is how much space it takes now:"
+msgstr "Zer gordeko dugu? Hau da orain hartzen duen lekua:"
+
+#: src/gloxi/backup_intro.py
+msgid "Where shall we keep them? Everything is encrypted on this computer first."
+msgstr "Non gordeko ditugu? Dena ordenagailu honetan zifratzen da lehenik."
+
+#: src/gloxi/backup_intro.py src/gloxi/feedback.py
+msgid "Yes"
+msgstr "Bai"
+
+#: src/gloxi/backup_intro.py
+msgid "Yes, leave them out"
+msgstr "Bai, utzi kanpoan"
+
+#: src/gloxi/backup_intro.py
+msgid "every day"
+msgstr "egunero"
+
+#: src/gloxi/backup_intro.py
+msgid "every hour"
+msgstr "orduro"
+
+#: src/gloxi/backup_intro.py
+msgid "every week"
+msgstr "astero"
+
+#: src/gloxi/backup_intro.py
+msgid "everything in the home folder"
+msgstr "karpeta pertsonaleko guztia"
+
+#: src/gloxi/backup_intro.py
+msgid "in your own storage"
+msgstr "zure biltegiratze propioan"
+
+#: src/gloxi/backup_intro.py
+msgid "no"
+msgstr "ez"
+
+#: src/gloxi/backup_intro.py
+msgid "on the external disk"
+msgstr "kanpoko diskoan"
+
+#: src/gloxi/backup_intro.py
+msgid "settings"
+msgstr "ezarpenak"
+
+#: src/gloxi/backup_intro.py
+msgid "settings and documents"
+msgstr "ezarpenak eta dokumentuak"
+
+#: src/gloxi/backup_intro.py
+msgid "settings and the folders you chose"
+msgstr "ezarpenak eta aukeratu dituzun karpetak"
+
+#: src/gloxi/backup_intro.py src/gloxi/cli.py src/gloxi/voice/cli.py
+msgid "yes"
+msgstr "bai"
+
+#: src/gloxi/backup_intro.py
+#, python-brace-format
+msgid ""
+"{size} does not fit into {limit}. Leave out these large folders (about {after} remains)?\n"
+"{folders}"
+msgstr ""
+"{size} ez da sartzen {limit}(e)n. Karpeta handi hauek kanpoan utziko ditut (gutxi gorabehera {after} geratuko litzateke)?\n"
+"{folders}"
+
+#: src/gloxi/backup_intro.py
+#, python-brace-format
+msgid "{size} does not fit. Choose a larger amount."
+msgstr "{size} ez da sartzen. Aukeratu kopuru handiago bat."
+
+#: src/gloxi/check.py
+msgid "Could not read the memory size; the local model may still work."
+msgstr "Ezin izan da memoriaren tamaina irakurri; baliteke tokiko ereduak hala ere funtzionatzea."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "Free disk space: {free}. The model needs {size}."
+msgstr "Leku librea diskoan: {free}. Ereduak {size} behar ditu."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "Gloxi starts {large} because its file is in the models folder, but the speed test has not shown that it is fast enough here. To go back to {small}, delete {file} from {folder}."
+msgstr "Gloxik {large} abiarazten du bere fitxategia ereduen karpetan dagoelako, baina abiadura-probak ez du erakutsi hemen behar bezain azkarra denik. {small} eredura itzultzeko, ezabatu {file} {folder} karpetatik."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "Memory: {ram}. The local model needs at least 8 GB; Gloxi can still answer through the cloud with your own key."
+msgstr "Memoria: {ram}. Tokiko ereduak gutxienez 8 GB behar ditu; Gloxik hala ere erantzun dezake hodeiaren bidez, zure gako propioarekin."
+
+#: src/gloxi/check.py
+msgid "The processor has no AVX2 (it is older than Intel Core 8th generation or Ryzen 2000), so the local model will be slow."
+msgstr "Prozesadoreak ez du AVX2rik (Intel Core 8. belaunaldia edo Ryzen 2000 baino zaharragoa da), beraz tokiko eredua motel ibiliko da."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "This computer can run {name}."
+msgstr "Ordenagailu honek {name} exekuta dezake."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "This computer can run {name}. Gloxi will measure once whether the larger model would be fast enough."
+msgstr "Ordenagailu honek {name} exekuta dezake. Gloxik behin neurtuko du eredu handiagoa behar bezain azkarra izango litzatekeen."
+
+#: src/gloxi/check.py
+msgid "This computer is below the minimum for the local model."
+msgstr "Ordenagailu hau tokiko ereduaren gutxienekoaren azpitik dago."
+
+#: src/gloxi/check.py
+#, python-brace-format
+msgid "This computer is fast enough for the larger model, {name}."
+msgstr "Ordenagailu hau behar bezain azkarra da eredu handiagorako, {name}."
+
+#: src/gloxi/check.py
+msgid "To paste into the feedback form:"
+msgstr "Iritzi-inprimakian itsasteko:"
+
+#: src/gloxi/cli.py
+msgid "(interrupted)"
+msgstr "(etenda)"
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Backups need Herkos, and it is not running."
+msgstr "Babeskopiek Herkos behar dute, eta ez dago martxan."
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Checking how fast this computer runs the model (about a minute)…"
+msgstr "Ordenagailu honek eredua zein azkar exekutatzen duen egiaztatzen (minutu bat inguru)…"
+
+#: src/gloxi/cli.py
+msgid "Cloud: off. Everything stays on this computer."
+msgstr "Hodeia: desaktibatuta. Dena ordenagailu honetan geratzen da."
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "Cloud: on ({mode} mode)."
+msgstr "Hodeia: aktibatuta ({mode} modua)."
+
+#: src/gloxi/cli.py
+msgid "Commands: /local <text> or /cloud <text> picks the model for one message, /reset clears the conversation, /backup sets up backups, /vpn sets up a VPN, /feedback reports a problem or suggests something, /exit quits."
+msgstr "Aginduak: /local <testua> edo /cloud <testua> mezu baterako eredua aukeratzen du, /reset elkarrizketa garbitzen du, /backup babeskopiak konfiguratzen ditu, /vpn VPN bat konfiguratzen du, /feedback arazo baten berri ematen du edo zerbait iradokitzen du, /exit irten egiten da."
+
+#: src/gloxi/cli.py
+msgid "Conversation cleared."
+msgstr "Elkarrizketa garbitu da."
+
+#: src/gloxi/cli.py src/gloxi/voice/cli.py
+msgid "Download it now? [y/N] "
+msgstr "Deskargatu orain? [b/E] "
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "Downloading the model: {percent}%"
+msgstr "Eredua deskargatzen: % {percent}"
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Gloxi keeps the current model and will not ask again."
+msgstr "Gloxik oraingo eredua mantentzen du eta ez du berriro galdetuko."
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "Gloxi needs a language model on this computer to answer. It is {name}, {size}, licence {licence}, from {source}. It will be kept in {folder}. Only the file is downloaded: nothing about you is sent."
+msgstr "Erantzuteko, Gloxik hizkuntza-eredu bat behar du ordenagailu honetan. {name} da, {size}, {licence} lizentzia, {source} iturburutik. {folder} karpetan gordeko da. Fitxategia soilik deskargatzen da: ez da zuri buruzko ezer bidaltzen."
+
+#: src/gloxi/cli.py
+msgid ""
+"Is llama-server running? For example:\n"
+"  llama-server -m model.gguf --port 8080\n"
+"or point Gloxi elsewhere with GLOXI_LOCAL_URL."
+msgstr ""
+"Martxan dago llama-server? Adibidez:\n"
+"  llama-server -m model.gguf --port 8080\n"
+"edo eman Gloxiri beste helbide bat GLOXI_LOCAL_URL bidez."
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "Not downloaded. Gloxi will ask again next time."
+msgstr "Ez da deskargatu. Gloxik berriro galdetuko du hurrengoan."
+
+#: src/gloxi/cli.py
+msgid "Note: masking is off (mask_cloud = false), so messages sent to the cloud are NOT masked."
+msgstr "Kontuz: maskaratzea desaktibatuta dago (mask_cloud = false), beraz hodeira bidalitako mezuak EZ dira maskaratzen."
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "Open the app: {app}"
+msgstr "Ireki aplikazioa: {app}"
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "Starting {name} on this computer…"
+msgstr "{name} abiarazten ordenagailu honetan…"
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "The VPN needs Vilna and Herkos, and Herkos is not running."
+msgstr "VPNak Vilna eta Herkos behar ditu, eta Herkos ez dago martxan."
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "The model could not be started: {why}"
+msgstr "Ezin izan da eredua abiarazi: {why}"
+
+#: src/gloxi/cli.py
+msgid "The model is ready."
+msgstr "Eredua prest dago."
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+msgid "The model is ready. Gloxi will use it from the next start."
+msgstr "Eredua prest dago. Gloxik hurrengo abiotik aurrera erabiliko du."
+
+#: src/gloxi/cli.py src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "The model was not downloaded: {why}"
+msgstr "Eredua ez da deskargatu: {why}"
+
+#: src/gloxi/cli.py
+msgid "There is no language model yet. Run gloxi in a terminal once to download it."
+msgstr "Oraindik ez dago hizkuntza-eredurik. Exekutatu gloxi behin terminal batean deskargatzeko."
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "This computer is fast enough for a better model: {name}, {size}, licence {licence}, from {source}. It answers better, in Ukrainian too; Gloxi expects about {speed} tokens per second here. It will be kept in {folder}, next to the current model, and Gloxi will use it from the next start. Only the file is downloaded: nothing about you is sent."
+msgstr "Ordenagailu hau behar bezain azkarra da eredu hobe baterako: {name}, {size}, {licence} lizentzia, {source} iturburutik. Hobeto erantzuten du, baita ukraineraz ere; Gloxik hemen segundoko {speed} token inguru espero ditu. {folder} karpetan gordeko da, oraingo ereduaren ondoan, eta Gloxik hurrengo abiotik aurrera erabiliko du. Fitxategia soilik deskargatzen da: ez da zuri buruzko ezer bidaltzen."
+
+#: src/gloxi/cli.py
+msgid "Without a language model Gloxi cannot answer. Run gloxi again when you want to download it."
+msgstr "Hizkuntza-eredurik gabe Gloxik ezin du erantzun. Exekutatu gloxi berriro deskargatu nahi duzunean."
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "[cloud: {host}, masked]"
+msgstr "[hodeia: {host}, maskaratuta]"
+
+#: src/gloxi/cli.py
+#, python-brace-format
+msgid "[cloud: {host}, not masked]"
+msgstr "[hodeia: {host}, maskaratu gabe]"
+
+#: src/gloxi/cli.py
+msgid "[local]"
+msgstr "[tokikoa]"
+
+#: src/gloxi/engine.py
+msgid "."
+msgstr ","
+
+#: src/gloxi/engine.py
+msgid "Google on Hugging Face"
+msgstr "Google Hugging Face-n"
+
+#: src/gloxi/engine.py
+msgid "Mistral AI on Hugging Face"
+msgstr "Mistral AI Hugging Face-n"
+
+#: src/gloxi/engine.py
+msgid "Qwen (Alibaba Cloud) on Hugging Face"
+msgstr "Qwen (Alibaba Cloud) Hugging Face-n"
+
+#: src/gloxi/engine.py
+msgid "the model"
+msgstr "eredua"
+
+#: src/gloxi/engine.py
+#, python-brace-format
+msgid "{value} GB"
+msgstr "{value} GB"
+
+#: src/gloxi/engine.py
+#, python-brace-format
+msgid "{value} MB"
+msgstr "{value} MB"
+
+#: src/gloxi/feedback.py
+msgid "A suggestion"
+msgstr "Iradokizun bat"
+
+#: src/gloxi/feedback.py
+msgid "About this computer:"
+msgstr "Ordenagailu honi buruz:"
+
+#: src/gloxi/feedback.py
+msgid "All right, nothing was sent."
+msgstr "Ados, ez da ezer bidali."
+
+#: src/gloxi/feedback.py src/gloxi/gui/window.py
+msgid "Cancel"
+msgstr "Utzi"
+
+#: src/gloxi/feedback.py
+msgid "Crash report:"
+msgstr "Hutsegite-txostena:"
+
+#: src/gloxi/feedback.py
+msgid "Expected:"
+msgstr "Espero zena:"
+
+#: src/gloxi/feedback.py
+msgid "Gloxi stopped with an error recently. Add that crash report?"
+msgstr "Gloxi errore batekin gelditu da duela gutxi. Hutsegite-txosten hori gehituko dut?"
+
+#: src/gloxi/feedback.py
+#, python-brace-format
+msgid "Hidden before showing it here: {what}."
+msgstr "Hemen erakutsi aurretik ezkutatua: {what}."
+
+#: src/gloxi/feedback.py
+msgid "May I add what this computer is (system, processor, memory, graphics, models), as gloxi check shows it? Nothing personal."
+msgstr "Gehi dezaket zer ordenagailu den hau (sistema, prozesadorea, memoria, grafikoak, ereduak), gloxi check-ek erakusten duen bezala? Ezer pertsonalik ez."
+
+#: src/gloxi/feedback.py
+msgid "Never mind"
+msgstr "Utzi"
+
+#: src/gloxi/feedback.py
+msgid "Open the form"
+msgstr "Ireki inprimakia"
+
+#: src/gloxi/feedback.py
+#, python-brace-format
+msgid "Opening the form in your browser. Thank you! If it does not open: {url}"
+msgstr "Inprimakia zure nabigatzailean irekitzen. Eskerrik asko! Irekitzen ez bada: {url}"
+
+#: src/gloxi/feedback.py
+msgid "Please answer 1 or 2."
+msgstr "Erantzun 1 edo 2."
+
+#: src/gloxi/feedback.py
+msgid "Please answer 1, 2 or 3."
+msgstr "Erantzun 1, 2 edo 3."
+
+#: src/gloxi/feedback.py
+msgid "Please write a few words, or /cancel to stop."
+msgstr "Idatzi hitz batzuk, edo /cancel gelditzeko."
+
+#: src/gloxi/feedback.py src/gloxi/gui/panel.py
+msgid "Something went wrong"
+msgstr "Zerbait gaizki joan da"
+
+#: src/gloxi/feedback.py
+msgid "Suggestion:"
+msgstr "Iradokizuna:"
+
+#: src/gloxi/feedback.py
+msgid "This is public: anyone can read it on GitHub, and you need a GitHub account to send it. The form opens in your browser, where you can still change everything; it is sent only when you press Create there."
+msgstr "Hau publikoa da: edonork irakur dezake GitHub-en, eta GitHub kontu bat behar duzu bidaltzeko. Inprimakia zure nabigatzailean irekitzen da, eta han oraindik dena alda dezakezu; han Create sakatzen duzunean soilik bidaltzen da."
+
+#: src/gloxi/feedback.py
+#, python-brace-format
+msgid "This sounds like a security problem. Please do not post it publicly: report it privately at {url}"
+msgstr "Segurtasun-arazo bat dirudi. Ez argitaratu publikoki: eman haren berri modu pribatuan hemen: {url}"
+
+#: src/gloxi/feedback.py
+msgid "Title:"
+msgstr "Izenburua:"
+
+#: src/gloxi/feedback.py
+msgid "What did you do or ask, and what happened?"
+msgstr "Zer egin edo eskatu duzu, eta zer gertatu da?"
+
+#: src/gloxi/feedback.py
+msgid "What did you expect instead? (Enter to skip)"
+msgstr "Zer espero zenuen horren ordez? (Sartu saltatzeko)"
+
+#: src/gloxi/feedback.py
+msgid "What happened:"
+msgstr "Zer gertatu da:"
+
+#: src/gloxi/feedback.py
+msgid "What would you like to tell us?"
+msgstr "Zer kontatu nahi diguzu?"
+
+#: src/gloxi/feedback.py
+msgid "What would you suggest? A sentence or two is enough."
+msgstr "Zer iradokitzen duzu? Esaldi bat edo bi nahikoa dira."
+
+#: src/gloxi/feedback.py
+msgid "a card number"
+msgstr "txartel-zenbaki bat"
+
+#: src/gloxi/feedback.py
+msgid "a date of birth"
+msgstr "jaiotza-data bat"
+
+#: src/gloxi/feedback.py
+msgid "a name"
+msgstr "izen bat"
+
+#: src/gloxi/feedback.py
+msgid "a passport number"
+msgstr "pasaporte-zenbaki bat"
+
+#: src/gloxi/feedback.py
+msgid "a password or key"
+msgstr "pasahitz edo gako bat"
+
+#: src/gloxi/feedback.py
+msgid "a personal ID number"
+msgstr "identifikazio pertsonaleko zenbaki bat"
+
+#: src/gloxi/feedback.py
+msgid "a phone number"
+msgstr "telefono-zenbaki bat"
+
+#: src/gloxi/feedback.py
+msgid "a profile link"
+msgstr "profil baterako esteka bat"
+
+#: src/gloxi/feedback.py
+msgid "a tax number"
+msgstr "identifikazio fiskaleko zenbaki bat"
+
+#: src/gloxi/feedback.py
+msgid "an IP address"
+msgstr "IP helbide bat"
+
+#: src/gloxi/feedback.py
+msgid "an account number"
+msgstr "kontu-zenbaki bat"
+
+#: src/gloxi/feedback.py
+msgid "an address"
+msgstr "posta-helbide bat"
+
+#: src/gloxi/feedback.py
+msgid "an e-mail address"
+msgstr "helbide elektroniko bat"
+
+#: src/gloxi/gui/cards.py
+msgid "Action"
+msgstr "Ekintza"
+
+#: src/gloxi/gui/cards.py
+msgid "Denied"
+msgstr "Ukatuta"
+
+#: src/gloxi/gui/cards.py
+msgid "Done"
+msgstr "Eginda"
+
+#: src/gloxi/gui/cards.py
+msgid "Failed"
+msgstr "Errorea"
+
+#: src/gloxi/gui/cards.py
+msgid "It asks Gloxi to ignore its instructions."
+msgstr "Gloxiri bere argibideei jaramonik ez egiteko eskatzen dio."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains a link that could carry your data away."
+msgstr "Zure datuak eraman ditzakeen esteka bat du."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains invisible or direction-changing characters."
+msgstr "Karaktere ikusezinak edo testuaren norabidea aldatzen dutenak ditu."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains markers that imitate system messages."
+msgstr "Sistemaren mezuak imitatzen dituzten markak ditu."
+
+#: src/gloxi/gui/cards.py
+msgid "It contains text hidden from people."
+msgstr "Pertsonei ezkutatutako testua du."
+
+#: src/gloxi/gui/cards.py
+msgid "It tries to give Gloxi a new role or new instructions."
+msgstr "Gloxiri rol berri bat edo argibide berriak ematen saiatzen da."
+
+#: src/gloxi/gui/cards.py
+msgid "The check on this computer found text addressed to Gloxi."
+msgstr "Ordenagailu honetako egiaztapenak Gloxiri zuzendutako testua aurkitu du."
+
+#: src/gloxi/gui/cards.py
+#, python-brace-format
+msgid "The content {what}."
+msgstr "Edukia: {what}."
+
+#: src/gloxi/gui/cards.py
+msgid "Tidy up Downloads"
+msgstr "Antolatu Deskargak"
+
+#: src/gloxi/gui/cards.py
+msgid "Turn on the dark theme"
+msgstr "Aktibatu gai iluna"
+
+#: src/gloxi/gui/cards.py
+msgid "What do I have today?"
+msgstr "Zer daukat gaur?"
+
+#: src/gloxi/gui/controller.py
+msgid "Auto"
+msgstr "Automatikoa"
+
+#: src/gloxi/gui/controller.py
+msgid "Cannot reach the cloud model."
+msgstr "Ezin da hodeiko ereduarekin konektatu."
+
+#: src/gloxi/gui/controller.py
+msgid "Cloud"
+msgstr "Hodeia"
+
+#: src/gloxi/gui/controller.py
+msgid "Cloud off: everything stays on this computer"
+msgstr "Hodeia desaktibatuta: dena ordenagailu honetan geratzen da"
+
+#: src/gloxi/gui/controller.py
+msgid "Cloud on, masking is off: messages are NOT masked"
+msgstr "Hodeia aktibatuta, maskaratzea desaktibatuta: mezuak EZ dira maskaratzen"
+
+#: src/gloxi/gui/controller.py
+msgid "Cloud on, private data is masked"
+msgstr "Hodeia aktibatuta, datu pribatuak maskaratzen dira"
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "Cloud: {host}, masked"
+msgstr "Hodeia: {host}, maskaratuta"
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "Cloud: {host}, not masked"
+msgstr "Hodeia: {host}, maskaratu gabe"
+
+#: src/gloxi/gui/controller.py
+msgid "Gloxi, VPN"
+msgstr "Gloxi, VPNa"
+
+#: src/gloxi/gui/controller.py
+msgid "Gloxi, backups"
+msgstr "Gloxi, babeskopiak"
+
+#: src/gloxi/gui/controller.py
+msgid "Gloxi, feedback"
+msgstr "Gloxi, iritzia"
+
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py
+msgid "Local"
+msgstr "Tokikoa"
+
+#: src/gloxi/gui/controller.py src/gloxi/gui/remote.py src/gloxi/gui/switcher.py
+msgid "On this computer"
+msgstr "Ordenagailu honetan"
+
+#: src/gloxi/gui/controller.py
+msgid "Short messages stay on this computer, long ones go to the cloud"
+msgstr "Mezu laburrak ordenagailu honetan geratzen dira, luzeak hodeira doaz"
+
+#: src/gloxi/gui/controller.py src/gloxi/gui/window.py
+msgid "The cloud is turned off in the settings."
+msgstr "Hodeia desaktibatuta dago ezarpenetan."
+
+#: src/gloxi/gui/controller.py
+msgid "The local model is not running. Start llama-server and try again."
+msgstr "Tokiko eredua ez dago martxan. Abiarazi llama-server eta saiatu berriro."
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "The model returned an error: {error}"
+msgstr "Ereduak errore bat itzuli du: {error}"
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "{model} at {host}, NOT masked"
+msgstr "{model} {host}(e)n, maskaratu GABE"
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "{model} at {host}, private data masked"
+msgstr "{model} {host}(e)n, datu pribatuak maskaratuta"
+
+#: src/gloxi/gui/controller.py
+#, python-brace-format
+msgid "{model}, on this computer"
+msgstr "{model}, ordenagailu honetan"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is answering"
+msgstr "Gloxi erantzuten ari da"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is listening"
+msgstr "Gloxi entzuten ari zaizu"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is ready"
+msgstr "Gloxi zure galderaren zain dago"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is thinking"
+msgstr "Gloxi pentsatzen ari da"
+
+#: src/gloxi/gui/panel.py
+msgid "Gloxi is waiting for you"
+msgstr "Gloxi zure zain dago"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi"
+msgstr "Gloxi"
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is not reachable: its service is not running. Try again in a moment."
+msgstr "Gloxi ez dago eskuragarri: bere zerbitzua ez dago martxan. Saiatu berriro une batean."
+
+#: src/gloxi/gui/remote.py
+msgid "Gloxi is open in another window."
+msgstr "Gloxi beste leiho batean irekita dago."
+
+#: src/gloxi/gui/remote.py
+msgid "The connection to the Gloxi service was lost. Try again."
+msgstr "Gloxiren zerbitzuarekiko konexioa galdu da. Saiatu berriro."
+
+#: src/gloxi/gui/shortcuts.py
+msgid "Show or hide Gloxi"
+msgstr "Erakutsi edo ezkutatu Gloxi"
+
+#: src/gloxi/gui/switcher.py
+msgid "In the cloud"
+msgstr "Hodeian"
+
+#: src/gloxi/gui/switcher.py
+#, python-brace-format
+msgid "Model changed to «{model}» · it answers from the next message"
+msgstr "Eredua «{model}» eredura aldatu da · hurrengo mezutik aurrera erantzungo du"
+
+#: src/gloxi/gui/switcher.py
+msgid "Turned off in the settings"
+msgstr "Ezarpenetan desaktibatuta"
+
+#: src/gloxi/gui/switcher.py
+msgid "cloud"
+msgstr "hodeia"
+
+#: src/gloxi/gui/switcher.py
+msgid "local"
+msgstr "tokikoa"
+
+#: src/gloxi/gui/switcher.py
+msgid "recommended"
+msgstr "gomendatua"
+
+#: src/gloxi/gui/window.py
+msgid "1/3"
+msgstr "1/3"
+
+#: src/gloxi/gui/window.py
+msgid "1/6"
+msgstr "1/6"
+
+#: src/gloxi/gui/window.py
+msgid "A sixth of the screen"
+msgstr "Pantailaren seiren bat"
+
+#: src/gloxi/gui/window.py
+msgid "A third of the screen"
+msgstr "Pantailaren heren bat"
+
+#: src/gloxi/gui/window.py
+msgid "Above other windows"
+msgstr "Beste leihoen gainean"
+
+#: src/gloxi/gui/window.py
+msgid "Actions hidden from Gloxi"
+msgstr "Gloxiri ezkutatutako ekintzak"
+
+#: src/gloxi/gui/window.py
+msgid "Add folder…"
+msgstr "Gehitu karpeta…"
+
+#: src/gloxi/gui/window.py
+msgid "Ask Gloxi… (/local or /cloud to pick the model)"
+msgstr "Galdetu Gloxiri… (/local edo /cloud eredua aukeratzeko)"
+
+#: src/gloxi/gui/window.py
+msgid "Background"
+msgstr "Atzealdea"
+
+#: src/gloxi/gui/window.py
+msgid "Background opacity"
+msgstr "Atzealdearen opakutasuna"
+
+#: src/gloxi/gui/window.py
+msgid "Choose a folder for Gloxi"
+msgstr "Aukeratu karpeta bat Gloxirentzat"
+
+#: src/gloxi/gui/window.py
+msgid "Ctrl + / opens this list"
+msgstr "Ctrl + / teklek zerrenda hau irekitzen dute"
+
+#: src/gloxi/gui/window.py
+msgid "Download"
+msgstr "Deskarga"
+
+#: src/gloxi/gui/window.py
+msgid "Download Gloxi's voice?"
+msgstr "Gloxiren ahotsa deskargatu?"
+
+#: src/gloxi/gui/window.py
+msgid "Download the language model?"
+msgstr "Hizkuntza-eredua deskargatu?"
+
+#: src/gloxi/gui/window.py
+msgid "Expand to a sixth (Ctrl+2)"
+msgstr "Zabaldu pantailaren 1/6ra (Ctrl+2)"
+
+#: src/gloxi/gui/window.py
+msgid "Folders Gloxi may use"
+msgstr "Gloxik erabil ditzakeen karpetak"
+
+#: src/gloxi/gui/window.py
+msgid "Gloxi can use only the programs you turn on here. Herkos asks you before turning one on, and every action still goes through it."
+msgstr "Gloxik hemen aktibatzen dituzun programak soilik erabil ditzake. Herkosek galdetu egiten dizu bat aktibatu aurretik, eta ekintza bakoitzak Herkosetik pasatzen jarraitzen du."
+
+#: src/gloxi/gui/window.py
+msgid "Gloxi sees only the folders you choose here, and every action in them goes through Herkos, which asks you first."
+msgstr "Gloxik hemen aukeratzen dituzun karpetak soilik ikusten ditu, eta haietako ekintza bakoitza Herkosetik pasatzen da, eta hark lehenik galdetzen dizu."
+
+#: src/gloxi/gui/window.py
+msgid "Gloxi stays at the right edge; windows make room. Super+G opens and closes it"
+msgstr "Gloxi eskuineko ertzean geratzen da; leihoek lekua uzten diote. Super+G teklek ireki eta ixten dute"
+
+#: src/gloxi/gui/window.py
+msgid "Herkos checks Gloxi's next actions more strictly."
+msgstr "Herkosek zorrotzago aztertuko ditu Gloxiren hurrengo ekintzak."
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "Herkos could not change it: {why}"
+msgstr "Herkosek ezin izan du aldatu: {why}"
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "Herkos could not restart: {why}"
+msgstr "Herkosek ezin izan du berrabiarazi: {why}"
+
+#: src/gloxi/gui/window.py
+msgid "Herkos found something suspicious in how the program describes them."
+msgstr "Herkosek zerbait susmagarria aurkitu du programak nola deskribatzen dituen."
+
+#: src/gloxi/gui/window.py
+msgid "How can I help?"
+msgstr "Zertan lagun zaitzaket?"
+
+#: src/gloxi/gui/window.py
+msgid "It starts the next time Herkos starts."
+msgstr "Herkos abiarazten den hurrengo aldian abiaraziko da."
+
+#: src/gloxi/gui/window.py
+msgid "Listening… press again to finish (Esc to cancel)"
+msgstr "Entzuten… sakatu berriro amaitzeko (Esc uzteko)"
+
+#: src/gloxi/gui/window.py
+msgid "Model"
+msgstr "Eredua"
+
+#: src/gloxi/gui/window.py
+msgid "Model for the next messages"
+msgstr "Hurrengo mezuetarako eredua"
+
+#: src/gloxi/gui/window.py
+msgid "New conversation"
+msgstr "Elkarrizketa berria"
+
+#: src/gloxi/gui/window.py
+msgid "No folders yet: Gloxi cannot see any of your files."
+msgstr "Oraindik ez dago karpetarik: Gloxik ezin du zure fitxategietako bat ere ikusi."
+
+#: src/gloxi/gui/window.py
+msgid "No programs for Gloxi are installed."
+msgstr "Ez dago Gloxirentzako programarik instalatuta."
+
+#: src/gloxi/gui/window.py
+msgid "Not now"
+msgstr "Orain ez"
+
+#: src/gloxi/gui/window.py
+msgid "Not turned on: you said no in the Herkos window."
+msgstr "Aktibatu gabe: ezetz esan duzu Herkosen leihoan."
+
+#: src/gloxi/gui/window.py
+msgid "Off in high contrast"
+msgstr "Desaktibatuta kontraste handiarekin"
+
+#: src/gloxi/gui/window.py
+msgid "Only the new message"
+msgstr "Mezu berria soilik"
+
+#: src/gloxi/gui/window.py
+msgid "Otherwise it waits in the field for you to check and send"
+msgstr "Bestela, eremuan itxaroten du zuk berrikusi eta bidaltzeko"
+
+#: src/gloxi/gui/window.py
+msgid "Panel size and look"
+msgstr "Panelaren tamaina eta itxura"
+
+#: src/gloxi/gui/window.py
+msgid "Programs for Gloxi"
+msgstr "Gloxirentzako programak"
+
+#: src/gloxi/gui/window.py
+msgid "Read answers aloud"
+msgstr "Irakurri erantzunak ozen"
+
+#: src/gloxi/gui/window.py
+msgid "Report a problem or suggest something"
+msgstr "Eman arazo baten berri edo iradoki zerbait"
+
+#: src/gloxi/gui/window.py
+msgid "Send"
+msgstr "Bidali"
+
+#: src/gloxi/gui/window.py
+msgid "Send dictated text at once"
+msgstr "Bidali diktatutako testua berehala"
+
+#: src/gloxi/gui/window.py
+msgid "Send the conversation to the cloud?"
+msgstr "Elkarrizketa hodeira bidali?"
+
+#: src/gloxi/gui/window.py
+msgid "Send with context"
+msgstr "Bidali testuinguruarekin"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi and ask it a question"
+msgstr "Erakutsi Gloxi eta egin galdera bat"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi and talk about a VPN"
+msgstr "Erakutsi Gloxi eta hitz egin VPN bati buruz"
+
+#: src/gloxi/gui/window.py
+msgid "Show Gloxi, or hide it if it is in front"
+msgstr "Erakusten du Gloxi, edo ezkutatzen du aurrean badago"
+
+#: src/gloxi/gui/window.py
+msgid "Side panel of the desktop"
+msgstr "Mahaigaineko alboko panela"
+
+#: src/gloxi/gui/window.py
+msgid "Size"
+msgstr "Tamaina"
+
+#: src/gloxi/gui/window.py
+msgid "Small"
+msgstr "Txikia"
+
+#: src/gloxi/gui/window.py
+msgid "Speak instead of typing (Ctrl+M)"
+msgstr "Hitz egin idatzi ordez (Ctrl+M)"
+
+#: src/gloxi/gui/window.py
+msgid "Stop reading aloud (Esc)"
+msgstr "Utzi ozen irakurtzeari (Esc)"
+
+#: src/gloxi/gui/window.py
+msgid "Stop sharing this folder"
+msgstr "Utzi karpeta hau partekatzeari"
+
+#: src/gloxi/gui/window.py
+msgid "Suspicious content"
+msgstr "Eduki susmagarria"
+
+#: src/gloxi/gui/window.py
+msgid "TEXT"
+msgstr "TESTUA"
+
+#: src/gloxi/gui/window.py
+#, python-brace-format
+msgid "The app {app} is not installed."
+msgstr "{app} aplikazioa ez dago instalatuta."
+
+#: src/gloxi/gui/window.py
+msgid "The cloud model does not see the earlier messages of this conversation. Send them too, so that it knows the context?"
+msgstr "Hodeiko ereduak ez ditu ikusten elkarrizketa honetako aurreko mezuak. Horiek ere bidaliko ditugu, testuingurua ezagut dezan?"
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages stay on this computer."
+msgstr "Aurreko mezuak ordenagailu honetan geratzen dira."
+
+#: src/gloxi/gui/window.py
+msgid "The earlier messages will go to the cloud with the next one."
+msgstr "Aurreko mezuak hurrengoarekin batera joango dira hodeira."
+
+#: src/gloxi/gui/window.py
+msgid "The last lines of the chat and the input"
+msgstr "Txataren azken lerroak eta testu-eremua"
+
+#: src/gloxi/gui/window.py
+msgid "Translucent"
+msgstr "Zeharrargia"
+
+#: src/gloxi/gui/window.py
+msgid "You:"
+msgstr "Zu:"
+
+#: src/gloxi/gui/window.py
+msgid "Your own size. Drag an edge of the panel to change it."
+msgstr "Zure tamaina. Arrastatu panelaren ertz bat aldatzeko."
+
+#: src/gloxi/network.py
+msgid "Gloxi checks whether it may reach the internet."
+msgstr "Gloxik egiaztatzen du internetera konekta daitekeen."
+
+#: src/gloxi/network.py
+msgid "Gloxi may not connect to the internet, so the cloud model cannot answer."
+msgstr "Gloxi ezin da internetera konektatu, beraz hodeiko ereduak ezin du erantzun."
+
+#: src/gloxi/network.py
+msgid "Gloxi needs the internet to send your message to the cloud model."
+msgstr "Gloxik internet behar du zure mezua hodeiko eredura bidaltzeko."
+
+#: src/gloxi/network.py
+msgid "Herkos is not running, so Gloxi cannot connect to the internet for the cloud."
+msgstr "Herkos ez dago martxan, beraz Gloxi ezin da internetera konektatu hodeirako."
+
+#: src/gloxi/network.py
+msgid "The cloud is turned off."
+msgstr "Hodeia desaktibatuta dago."
+
+#: src/gloxi/programs.py
+msgid "Off: Gloxi cannot use it"
+msgstr "Desaktibatuta: Gloxik ezin du erabili"
+
+#: src/gloxi/programs.py
+msgid "On"
+msgstr "Aktibatuta"
+
+#: src/gloxi/programs.py
+msgid "On: starts when Herkos starts again"
+msgstr "Aktibatuta: Herkos berriro abiarazten denean hasiko da"
+
+#: src/gloxi/programs.py
+msgid "You turned this program on in Gloxi's settings"
+msgstr "Programa hau Gloxiren ezarpenetan aktibatu duzu"
+
+#: src/gloxi/router.py
+msgid "Note: the cloud model changed some masked values, so they could not be put back. Check the answer before you use it."
+msgstr "Kontuz: hodeiko ereduak maskaratutako balio batzuk aldatu ditu, beraz ezin izan dira berrezarri. Berrikusi erantzuna erabili aurretik."
+
+#: src/gloxi/tools.py
+#, python-brace-format
+msgid "{what} (denied: {message})"
+msgstr "{what} (ukatuta: {message})"
+
+#: src/gloxi/tools.py
+#, python-brace-format
+msgid "{what} (done)"
+msgstr "{what} (eginda)"
+
+#: src/gloxi/tools.py
+#, python-brace-format
+msgid "{what} (done; warning: the content {warnings})"
+msgstr "{what} (eginda; kontuz, edukia: {warnings})"
+
+#: src/gloxi/tools.py
+#, python-brace-format
+msgid "{what} (error: {message})"
+msgstr "{what} (errorea: {message})"
+
+#: src/gloxi/voice/cli.py
+msgid "Listening… speak now."
+msgstr "Entzuten… hitz egin orain."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Not downloaded. Gloxi will ask when you use voice again."
+msgstr "Ez da deskargatu. Gloxik galdetuko dizu ahotsa berriro erabiltzen duzunean."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "The download was cancelled."
+msgstr "Deskarga bertan behera utzi da."
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The voice models were not downloaded: {why}"
+msgstr "Ahots-ereduak ez dira deskargatu: {why}"
+
+#: src/gloxi/voice/cli.py src/gloxi/voice/session.py
+msgid "Voice is ready."
+msgstr "Ahotsa prest dago."
+
+#: src/gloxi/voice/models.py
+msgid "NVIDIA via sherpa-onnx on GitHub"
+msgstr "NVIDIA, sherpa-onnx bidez GitHub-en"
+
+#: src/gloxi/voice/models.py
+msgid "Piper via sherpa-onnx on GitHub"
+msgstr "Piper, sherpa-onnx bidez GitHub-en"
+
+#: src/gloxi/voice/models.py
+msgid "Silero via sherpa-onnx on GitHub"
+msgstr "Silero, sherpa-onnx bidez GitHub-en"
+
+#: src/gloxi/voice/models.py
+msgid "hexgrad via sherpa-onnx on GitHub"
+msgstr "hexgrad, sherpa-onnx bidez GitHub-en"
+
+#: src/gloxi/voice/models.py
+msgid "lang-uk via PyPI"
+msgstr "lang-uk, PyPI bidez"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Downloading the voice models: {percent}%"
+msgstr "Ahots-ereduak deskargatzen: % {percent}"
+
+#: src/gloxi/voice/session.py
+msgid "End of speech"
+msgstr "Hizketaren amaiera"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid ""
+"Gloxi can listen to you and read its answers aloud on this computer, without the internet. For that it needs:\n"
+"\n"
+"{models}\n"
+"\n"
+"In total {size}, kept in {folder}. The sound of your voice never leaves this computer and is not saved."
+msgstr ""
+"Gloxik entzun zaitzake eta bere erantzunak ozen irakur ditzake ordenagailu honetan, internetik gabe. Horretarako behar du:\n"
+"\n"
+"{models}\n"
+"\n"
+"Guztira {size}, {folder} karpetan gordeta. Zure ahotsaren soinua ez da inoiz ordenagailu honetatik ateratzen eta ez da gordetzen."
+
+#: src/gloxi/voice/session.py
+msgid "Nothing was heard. Press the microphone and speak."
+msgstr "Ez da ezer entzun. Sakatu mikrofonoa eta hitz egin."
+
+#: src/gloxi/voice/session.py
+msgid "Recognising…"
+msgstr "Ezagutzen…"
+
+#: src/gloxi/voice/session.py
+msgid "Speech recognition"
+msgstr "Ahots-ezagutza"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The answer could not be read aloud: {why}"
+msgstr "Ezin izan da erantzuna ozen irakurri: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone could not be opened: {why}"
+msgstr "Ezin izan da mikrofonoa ireki: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The microphone stopped: {why}"
+msgstr "Mikrofonoa gelditu egin da: {why}"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "The speech was not recognised: {why}"
+msgstr "Ez da hizketa ezagutu: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "The voice models are still downloading."
+msgstr "Ahots-ereduak deskargatzen ari dira oraindik."
+
+#: src/gloxi/voice/session.py
+msgid "Ukrainian word stress"
+msgstr "Ukrainerazko hitzen azentua"
+
+#: src/gloxi/voice/session.py
+msgid "Unpacking the voice models…"
+msgstr "Ahots-ereduak deskonprimitzen…"
+
+#: src/gloxi/voice/session.py
+msgid "Voice"
+msgstr "Ahotsa"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "Voice could not be started: {why}"
+msgstr "Ezin izan da ahotsa abiarazi: {why}"
+
+#: src/gloxi/voice/session.py
+msgid "Voices"
+msgstr "Ahotsak"
+
+#: src/gloxi/voice/session.py
+#, python-brace-format
+msgid "• {what}: {name}, {size}, {licence}, {source}"
+msgstr "• {what}: {name}, {size}, {licence}, {source}"
+
+#: src/gloxi/voice/speech.py
+msgid "The code is on the screen."
+msgstr "Kodea pantailan dago."
+
+#: src/gloxi/voice/speech.py
+msgid "link"
+msgstr "esteka"
+
+#: src/gloxi/voice/speech.py
+msgid "password hidden"
+msgstr "pasahitza ezkutatuta"
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. I will ask once more in a week. You can also type /vpn any time."
+msgstr "Ados. Astebete barru galdetuko dizut berriro. /vpn ere idatz dezakezu nahi duzunean."
+
+#: src/gloxi/vpn_intro.py
+msgid "All right. Type /vpn when you want to go on."
+msgstr "Ados. Idatzi /vpn jarraitu nahi duzunean."
+
+#: src/gloxi/vpn_intro.py
+msgid "Connected"
+msgstr "Konektatuta"
+
+#: src/gloxi/vpn_intro.py
+msgid "Create a free Proton account (5 countries, 1 device)"
+msgstr "Sortu doako Proton kontu bat (5 herrialde, gailu 1)"
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether a VPN protects this computer"
+msgstr "Gloxik egiaztatzen du VPN batek ordenagailu hau babesten duen"
+
+#: src/gloxi/vpn_intro.py
+msgid "Gloxi checks whether the VPN is connected"
+msgstr "Gloxik egiaztatzen du VPNa konektatuta dagoen"
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening Proton's sign-up page. You can create the account with a Proton address, without another email. Then sign in in the Proton VPN app that I open next, press Connect and tell me when it is connected."
+msgstr "Protonen izen-emate orria irekitzen ari naiz. Kontua Proton helbide batekin sor dezakezu, beste posta elektronikorik gabe. Gero hasi saioa jarraian irekiko dudan Proton VPN aplikazioan, sakatu «Connect» eta esan iezadazu konektatuta dagoenean."
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Mullvad app. Enter your account number or activation code there, not here: I do not see it and do not keep it. Then press Connect and tell me when it is connected."
+msgstr "Mullvad aplikazioa irekitzen ari naiz. Idatzi han zure kontu-zenbakia edo aktibazio-kodea, ez hemen: nik ez dut ikusten ez gordetzen. Gero sakatu «Connect» eta esan iezadazu konektatuta dagoenean."
+
+#: src/gloxi/vpn_intro.py
+msgid "I am opening the Proton VPN app. Sign in there, not here: I do not see your password. Then press Connect and tell me when it is connected."
+msgstr "Proton VPN aplikazioa irekitzen ari naiz. Hasi saioa han, ez hemen: nik ez dut zure pasahitza ikusten. Gero sakatu «Connect» eta esan iezadazu konektatuta dagoenean."
+
+#: src/gloxi/vpn_intro.py
+#, python-brace-format
+msgid "I could not continue: {why}. We can go on later: type /vpn."
+msgstr "Ezin izan dut jarraitu: {why}. Geroago jarrai dezakegu: idatzi /vpn."
+
+#: src/gloxi/vpn_intro.py
+msgid "I do not see a VPN connection yet. Press Connect in the app, wait a few seconds and tell me again."
+msgstr "Oraindik ez dut VPN konexiorik ikusten. Sakatu «Connect» aplikazioan, itxaron segundo batzuk eta esan berriro."
+
+#: src/gloxi/vpn_intro.py
+msgid "I have a Mullvad account number or code"
+msgstr "Mullvad kontu-zenbaki edo kode bat daukat"
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Mullvad app: in its settings turn on “Auto-connect”, so the VPN comes up by itself."
+msgstr "Urrats bat gehiago Mullvad aplikazioan: bere ezarpenetan aktibatu «Auto-connect» (konexio automatikoa), VPNa bere kabuz aktiba dadin."
+
+#: src/gloxi/vpn_intro.py
+msgid "One more step in the Proton VPN app: in its settings turn on “Connect at startup”, so the VPN comes up by itself."
+msgstr "Urrats bat gehiago Proton VPN aplikazioan: bere ezarpenetan aktibatu «Connect at startup» (konektatu abiaraztean), VPNa bere kabuz aktiba dadin."
+
+#: src/gloxi/vpn_intro.py
+msgid "Sign in to Proton VPN"
+msgstr "Hasi saioa Proton VPN-n"
+
+#: src/gloxi/vpn_intro.py
+msgid "Start Mullvad VPN and keep its service on after a restart"
+msgstr "Abiarazi Mullvad VPN eta mantendu bere zerbitzua aktibo berrabiarazi ondoren"
+
+#: src/gloxi/vpn_intro.py
+msgid "The VPN is connected. Shall I turn on the kill switch? Then nothing leaves this computer outside the VPN: if the VPN drops, the internet stops until it is back. Turning it off later always asks you first."
+msgstr "VPNa konektatuta dago. Larrialdiko etengailua aktibatuko dut? Horrela ez da ezer aterako ordenagailu honetatik VPNtik kanpo: VPNa erortzen bada, internet gelditu egingo da itzuli arte. Geroago desaktibatzeko beti galdetuko dizut lehenik."
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch is on."
+msgstr "Larrialdiko etengailua aktibatuta dago."
+
+#: src/gloxi/vpn_intro.py
+msgid "The kill switch stays off. You can turn it on any time: type /vpn."
+msgstr "Larrialdiko etengailua desaktibatuta dago oraindik. Nahi duzunean aktiba dezakezu: idatzi /vpn."
+
+#: src/gloxi/vpn_intro.py
+msgid "Turn on the VPN kill switch"
+msgstr "Aktibatu VPNaren larrialdiko etengailua"
+
+#: src/gloxi/vpn_intro.py
+msgid "We are not talking about a VPN now."
+msgstr "Orain ez gara VPN bati buruz ari."
+
+#: src/gloxi/vpn_intro.py
+msgid "Yes, recommended"
+msgstr "Bai, gomendatua"
+
+#: src/gloxi/vpn_intro.py
+msgid "You chose this while installing Vilna."
+msgstr "Hau aukeratu zenuen Vilna instalatzean."
+
+#: src/gloxi/vpn_intro.py
+msgid "Your connection is already protected: Vilna encrypts DNS, so the network you are on does not see which sites you look up. Do you want even more protection with a VPN? It also hides the rest of your traffic from that network (a cafe, a hotel) and your address from websites. The VPN provider sees where you go, so I only suggest proven ones."
+msgstr "Zure konexioa babestuta dago jada: Vilnak DNSa zifratzen du, beraz zauden sareak ez du ikusten zein gune bilatzen dituzun. Babes gehiago nahi duzu VPN batekin? Zure gainerako trafikoa ere ezkutatzen dio sare horri (kafetegi bat, hotel bat), eta zure helbidea webguneei. VPN hornitzaileak ikusten du nora zoazen; horregatik, konfiantza frogatuko hornitzaileak soilik proposatzen dizkizut."

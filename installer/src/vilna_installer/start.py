@@ -18,6 +18,7 @@ from __future__ import annotations
 import ast
 import contextlib
 import json
+import locale
 import os
 import re
 import subprocess
@@ -40,7 +41,7 @@ class Language:
     locale: str  # the system locale it starts from
 
 
-# The ten languages of ADR 0009, in its order; the rest come through Weblate.
+# The fifteen languages of ADR 0009, in its order; the rest come through Weblate.
 LANGUAGES: tuple[Language, ...] = (
     Language("uk", "Українська", "uk_UA.UTF-8"),
     Language("en", "English", "en_US.UTF-8"),
@@ -52,6 +53,11 @@ LANGUAGES: tuple[Language, ...] = (
     Language("ro", "Română", "ro_RO.UTF-8"),
     Language("cs", "Čeština", "cs_CZ.UTF-8"),
     Language("lt", "Lietuvių", "lt_LT.UTF-8"),
+    Language("ca", "Català", "ca_ES.UTF-8"),
+    Language("ca@valencia", "Valencià", "ca_ES.UTF-8@valencia"),
+    Language("gl", "Galego", "gl_ES.UTF-8"),
+    Language("eu", "Euskara", "eu_ES.UTF-8"),
+    Language("pt", "Português", "pt_PT.UTF-8"),
 )
 CODES = tuple(lang.code for lang in LANGUAGES)
 MAIN_LOCALES = frozenset(lang.locale for lang in LANGUAGES)
@@ -131,12 +137,44 @@ class Texts:
         return self._catalog.get(message, message)
 
 
+def code_of(part: str) -> str:
+    """``ca_ES.UTF-8@valencia`` → ``ca@valencia``, ``pt_PT.UTF-8`` → ``pt``.
+
+    Valencian is the one main language told apart by a locale modifier
+    (ADR 0009); every other modifier (``@euro``, ``@latin``) is dropped.
+    """
+    base, _, modifier = part.partition("@")
+    lang = base.split(".")[0].split("_")[0]
+    return f"{lang}@valencia" if lang == "ca" and modifier.startswith("valencia") else lang
+
+
+def gtk_language(language: str, environ: Any = None) -> None:
+    """GTK's and libadwaita's own words («Show Password») in the installer's language.
+
+    They come from glibc gettext, which reads LANGUAGE at every lookup, so
+    they follow the person's choice and not the live session's (English).
+    ``language`` is a code (``uk``) or a locale (``pt_BR.UTF-8``). Programs the
+    installer starts inherit it: those whose output it reads run in C.UTF-8
+    (``vilna_mcp_installer.machine``).
+    """
+    env = os.environ if environ is None else environ
+    code = language.split(".")[0].split("@")[0]
+    if not code:
+        return
+    # GTK has Valencian words (ca@valencia) and falls back to Catalan for the rest.
+    env["LANGUAGE"] = "ca@valencia:ca" if code_of(language) == "ca@valencia" else code
+    if environ is None and hasattr(locale, "textdomain"):
+        # glibc keeps the words it has found until the domain is set again:
+        # without this, a second choice (Українська, then Polski) kept the first.
+        locale.textdomain(locale.textdomain(None))
+
+
 def default_language(environ: dict[str, str] | None = None) -> str:
     """The language the image was started in (boot menu sets LANG), else English."""
     env = os.environ if environ is None else environ
     for var in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
         for part in (env.get(var) or "").split(":"):
-            code = part.split(".")[0].split("@")[0].split("_")[0]
+            code = code_of(part)
             if code in CODES:
                 return code
     return "en"
@@ -186,7 +224,7 @@ def system_locales(supported: Path = SUPPORTED) -> list[str]:
 def other_languages(
     locales: Iterable[str], name_of: Callable[[str], str | None]
 ) -> list[tuple[str, str]]:
-    """(locale, its own name) for every locale but the ten main ones, by name."""
+    """(locale, its own name) for every locale but the main ones, by name."""
     rows = []
     for loc in set(locales):
         if loc in MAIN_LOCALES or not LOCALE_RE.match(loc):
@@ -205,7 +243,7 @@ def language_of(locale: str) -> str:
 def start_plan(
     language: str, screen_reader: bool, assistant: bool, locale: str | None = None
 ) -> dict[str, Any]:
-    """The start of the plan: one of the ten languages, or any locale of the system."""
+    """The start of the plan: one of the main languages, or any locale of the system."""
     if language in CODES and locale is None:
         locale = next(lang.locale for lang in LANGUAGES if lang.code == language)
     elif locale is None:

@@ -1,0 +1,154 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The «Feedback about Vilna» window (eu). Review by a native speaker is welcome (Weblate).
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\nX-Vilna-Review: not reviewed by a native speaker\n"
+
+msgid "Feedback about Vilna"
+msgstr "Vilnari buruzko iritziak"
+
+msgid "Feedback"
+msgstr "Iritzia"
+
+msgid "Crash reports"
+msgstr "Hutsegite-txostenak"
+
+msgid "Tell us what went wrong, what surprised you or what you would like. Only the Vilna team reads it; nothing is published without your permission."
+msgstr "Kontatu zer joan den gaizki, zerk harritu zaituen edo zer nahiko zenukeen. Vilnaren taldeak bakarrik irakurtzen du; ez da ezer argitaratzen zure baimenik gabe."
+
+msgid "What is it about?"
+msgstr "Zeri buruzkoa da?"
+
+msgid "Something does not work"
+msgstr "Zerbaitek ez du funtzionatzen"
+
+msgid "An idea or a wish"
+msgstr "Ideia edo nahi bat"
+
+msgid "Something else"
+msgstr "Beste zerbait"
+
+msgid "Your message"
+msgstr "Zure mezua"
+
+msgid "Add facts about this computer"
+msgstr "Gehitu ordenagailu honi buruzko datuak"
+
+msgid "You may answer me by e-mail"
+msgstr "Posta elektronikoz erantzun didazue"
+
+msgid "E-mail address"
+msgstr "Helbide elektronikoa"
+
+msgid "You may publish it, without my address, after reading it"
+msgstr "Argitara dezakezue, nire helbiderik gabe, irakurri ondoren"
+
+msgid "Add my conversation with Gloxi from the installation"
+msgstr "Gehitu instalazioan Gloxirekin izandako nire elkarrizketa"
+
+msgid "It may have your name, the computer's name or a Wi-Fi network. You read it before it is added."
+msgstr "Zure izena, ordenagailuarena edo Wi-Fi sare bat izan ditzake. Gehitu aurretik irakurriko duzu."
+
+msgid "Conversation with Gloxi"
+msgstr "Elkarrizketa Gloxirekin"
+
+msgid "Read"
+msgstr "Irakurri"
+
+msgid "Add"
+msgstr "Gehitu"
+
+msgid "Do not add"
+msgstr "Ez gehitu"
+
+msgid "What will be sent"
+msgstr "Zer bidaliko den"
+
+msgid "Send"
+msgstr "Bidali"
+
+msgid "Sending…"
+msgstr "Bidaltzen…"
+
+msgid "Thank you! Your feedback is sent."
+msgstr "Eskerrik asko! Zure iritzia bidali da."
+
+msgid "Write what happened or what you suggest."
+msgstr "Idatzi zer gertatu den edo zer proposatzen duzun."
+
+msgid "This does not look like an e-mail address."
+msgstr "Hau ez dirudi helbide elektroniko bat."
+
+msgid "The message is longer than 8000 characters."
+msgstr "Mezuak 8000 karaktere baino gehiago ditu."
+
+msgid "The report service is not running on this computer, so nothing can be sent now. Your text stays here."
+msgstr "Txosten-zerbitzua ez dabil ordenagailu honetan, beraz ezin da ezer bidali orain. Zure testua hemen geratzen da."
+
+msgid "Not sent: {reason}"
+msgstr "Ez da bidali: {reason}"
+
+msgid "Crash reports stay on this computer until they are sent. Each one has only what you see here: which program crashed and where in its code."
+msgstr "Hutsegite-txostenak ordenagailu honetan geratzen dira bidali arte. Bakoitzak hemen ikusten duzuna soilik du: zein programak huts egin duen eta bere kodearen zein zatitan."
+
+msgid "No crash reports."
+msgstr "Ez dago hutsegite-txostenik."
+
+msgid "If a program crashes, send us a crash report?"
+msgstr "Programa batek huts egiten badu, hutsegitearen txostena bidaliko diguzu?"
+
+msgid "Send automatically"
+msgstr "Bidali automatikoki"
+
+msgid "Ask me every time"
+msgstr "Galdetu niri aldi bakoitzean"
+
+msgid "Never"
+msgstr "Inoiz ez"
+
+msgid "No answer yet: nothing is sent."
+msgstr "Oraindik erantzunik ez: ez da ezer bidaltzen."
+
+msgid "The answer was not changed."
+msgstr "Erantzuna ez da aldatu."
+
+msgid "Not sent"
+msgstr "Bidali gabe"
+
+msgid "Sent"
+msgstr "Bidalita"
+
+msgid "Not accepted by the server"
+msgstr "Zerbitzariak ez du onartu"
+
+msgid "First report of this crash"
+msgstr "Hutsegite honen lehen txostena"
+
+msgid "We already know about this crash"
+msgstr "Badakigu hutsegite honen berri"
+
+msgid "Fixed in {version}"
+msgstr "{version} bertsioan konponduta"
+
+msgid "View"
+msgstr "Ikusi"
+
+msgid "Crash report"
+msgstr "Hutsegite-txostena"
+
+msgid "Close"
+msgstr "Itxi"
+
+msgid "Do not send"
+msgstr "Ez bidali"
+
+msgid "Delete everything I sent from the server"
+msgstr "Ezabatu zerbitzaritik bidali dudan guztia"
+
+msgid "Deleted from the server: {count}"
+msgstr "Zerbitzaritik ezabatuak: {count}"
+
+msgid "{program} crashed"
+msgstr "{program} programak huts egin du"
+
+msgid "Send us a crash report? It has only which program crashed and where in its code."
+msgstr "Hutsegitearen txostena bidaliko diguzu? Zein programak huts egin duen eta bere kodearen zein zatitan, besterik ez du."

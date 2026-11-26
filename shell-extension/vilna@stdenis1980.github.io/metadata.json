@@ -6,5 +6,5 @@
   "session-modes": ["user", "unlock-dialog", "gdm"],
   "settings-schema": "org.gnome.shell.extensions.vilna",
   "url": "https://github.com/StDenis1980/VilnaOS",
-  "version-name": "0.12"
+  "version-name": "0.16"
 }

@@ -5,7 +5,11 @@ from __future__ import annotations
 
 import pytest
 
-gi = pytest.importorskip("gi")
+# "gi.repository", not "gi": a package can leave gi/overrides without
+# PyGObject, and that bare "gi" has no require_version.
+pytest.importorskip("gi.repository", exc_type=ImportError)
+import gi  # noqa: E402
+
 gi.require_version("Gtk", "4.0")
 from gi.repository import GLib, GObject, Gtk  # noqa: E402
 
@@ -52,6 +56,7 @@ def test_the_hint_shows_the_layout_in_use_and_follows_a_switch():
     assert hint.get_visible()
     assert hint.label.get_label() == "uk"
     assert hint.get_halign() == Gtk.Align.START
+    assert not hint.has_css_class("dim-label")  # Build12.26: dimmed, 3.2:1 in the light theme
     keyboard.set_property("active-layout-index", 1)  # the Shell switched the field to Latin
     assert hint.label.get_label() == "en"
     assert hint.get_tooltip_text() == "Keyboard layout: English (US)"
@@ -67,7 +72,10 @@ def test_nothing_known_hides_the_hint():
     assert not hint.get_visible()
 
 
-@pytest.mark.parametrize("code", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
+@pytest.mark.parametrize(
+    "code",
+    ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt", "ca", "ca@valencia", "gl", "eu", "pt"),
+)
 def test_hint_texts_are_translated(code):
     catalog = start.catalog(code)
     assert [t for t in layout_hint.TEXTS if t not in catalog] == []

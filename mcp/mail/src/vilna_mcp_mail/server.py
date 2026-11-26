@@ -140,7 +140,14 @@ TOOLS = [
         "send",
         "Send a message. The person sees exactly this message and says yes or no every "
         f"time. At most {MAX_RECIPIENTS} recipients; no attachments.",
-        _MESSAGE,
+        {
+            **_MESSAGE,
+            "replaces_draft": {
+                "type": "string",
+                "description": "message_id from save_draft: that draft goes from Drafts once "
+                "this is sent",
+            },
+        },
         ["account", "to", "subject", "text"],
         readOnlyHint=False,
         destructiveHint=False,

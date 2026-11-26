@@ -51,8 +51,8 @@ test('remembers a bounded list and ignores junk from the settings', () => {
     assert.ok(!o.offered.includes('old'));
 });
 
-test('the words in all ten languages, English otherwise', () => {
-    assert.equal(LANGUAGES.length, 10);
+test('the words in all main languages, English otherwise', () => {
+    assert.equal(LANGUAGES.length, 15);
     for (const lang of LANGUAGES) {
         const t = offerText([lang]);
         assert.ok(t.title && t.body && t.action, lang);

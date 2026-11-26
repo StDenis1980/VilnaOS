@@ -589,6 +589,9 @@ msgstr "R3 · важко скасувати"
 msgid "R4 · cannot be undone"
 msgstr "R4 · незворотно"
 
+msgid "R4 · big change, can be undone"
+msgstr "R4 · велика зміна, можна скасувати"
+
 msgid "Suspicious content"
 msgstr "Підозрілий вміст"
 

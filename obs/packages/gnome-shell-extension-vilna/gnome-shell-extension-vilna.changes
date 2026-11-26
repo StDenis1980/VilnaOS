@@ -1,4 +1,54 @@
 -------------------------------------------------------------------
+Thu Nov 26 10:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.16: the message field of the Gloxi side panel wraps long text and
+  grows with it, up to about eight lines, then scrolls; Enter sends,
+  Shift+Enter starts a new line (Build12.29: one short line).
+
+-------------------------------------------------------------------
+Wed Nov 25 21:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.15: the Gloxi side panel moves windows it would cover left of it,
+  narrower only when they do not fit, and puts them back when it closes
+  unless the person moved, resized or maximised them meanwhile; the strut
+  moved only maximised and tiled windows (Build12.29).
+
+-------------------------------------------------------------------
+Wed Nov 25 20:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.14: «Use my location» in the weather settings finds the place
+  again (Denys, laptop, 2026-11-25). GNOME's location services were
+  off, because Vilna skips the privacy page of the first start, so
+  GeoClue refused; the consent dialog now says so and agreeing turns
+  them on. Requires geoclue2 and its typelib, which prefs.js imports.
+- The town search finds towns again: the preferences run outside GNOME
+  Shell, where Soup was not promisified, so every search threw and
+  showed «Nothing found» (Denys, Sagunto, 2026-11-25). A failed search
+  now says Open-Meteo could not be reached.
+- The weather card tells hail (codes 96, 99) and freezing rain or
+  drizzle (56, 57, 66, 67) apart, with hailstones that hop on landing
+  and a glaze of ice with glints; light and heavy rain, snow and
+  showers draw fewer or more drops. A clear night twinkles more, a star
+  falls now and then (every 20-45 s), and the moon has seas (Denys).
+
+-------------------------------------------------------------------
+Tue Nov 24 18:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.13: the Gloxi side panel reads Gloxi notifications and answers
+  aloud with the focus in another window too; on GNOME Shell 51 that
+  threw, stopped the reading of gloxid mid-answer and left the
+  notification without a banner (VM check of Build12.26).
+
+-------------------------------------------------------------------
+Tue Nov 24 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Starts on GNOME Shell 51 again: St.BoxLayout there has no «vertical»
+  property, and the one throw put the whole extension in ERROR (no
+  widgets, no Gloxi button, no side panel; VM check of Build12.26).
+  Vertical boxes now use «orientation» where the Shell has it and
+  «vertical» on Shell 46 and 47 (vbox.js).
+
+-------------------------------------------------------------------
 Tue Nov 24 16:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - The layout indicator of a password field stays where the field's

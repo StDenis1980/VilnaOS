@@ -225,6 +225,7 @@ class ChatWindow(Adw.ApplicationWindow):
         plan = plans.load(plan_path)
         code = (plan.get("ui") or {}).get("language", "en")
         self._ = start.Texts(code if code in start.CODES else "en")
+        start.gtk_language(self._.code)
         _ = self._
         self.set_default_size(1280, 800)
         self.set_title(_(start.TITLE))
@@ -425,6 +426,7 @@ class ChatWindow(Adw.ApplicationWindow):
         self.thinking.set_visible(False)
         if self.conversation is not None:
             self._show(self.conversation.opening())
+            threading.Thread(target=self.conversation.warm, daemon=True).start()
             self._ready(True)
             self.entry.grab_focus()
         return False

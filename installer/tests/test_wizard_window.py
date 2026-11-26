@@ -9,7 +9,11 @@ import time
 
 import pytest
 
-gi = pytest.importorskip("gi")
+# "gi.repository", not "gi": a package can leave gi/overrides without
+# PyGObject, and that bare "gi" has no require_version.
+pytest.importorskip("gi.repository", exc_type=ImportError)
+import gi  # noqa: E402
+
 try:
     gi.require_version("Gtk", "4.0")
     gi.require_version("Adw", "1")
@@ -300,6 +304,78 @@ def test_tab_reaches_every_choice_after_one_is_made(plan_path):
         reached.append(win.get_focus())
     assert set(checks) - {first} <= set(reached)
     assert first.get_active()  # Tab chose nothing
+
+
+def test_tab_goes_past_the_keyboard_layout_hint(plan_path):
+    """Without a TPM the passphrase is chosen; Tab stopped at the hint under it (VM, Build12.26)."""
+    win = window(plan_path)
+    win.wizard.tpm = lambda: False
+    win.go("encryption", strict=False)
+    win.present()
+    assert spin(lambda: win.get_mapped())
+    spin(lambda: False, 0.3)
+    checks = [c for c in _all(win, Gtk.CheckButton) if c.get_mapped()]
+    chosen = next(c for c in checks if c.get_active())
+    last = checks[-1]
+    assert last is not chosen and last.is_sensitive()  # «Not encrypted», under the hint
+    chosen.grab_focus()
+    reached = []
+    for _ in range(8):
+        win.emit("move-focus", Gtk.DirectionType.TAB_FORWARD)
+        spin(lambda: False, 0.05)
+        reached.append(win.get_focus())
+    assert last in reached
+    last.grab_focus()
+    win.emit("move-focus", Gtk.DirectionType.TAB_BACKWARD)
+    spin(lambda: False, 0.05)
+    assert isinstance(win.get_focus().get_ancestor(Adw.PasswordEntryRow), Adw.PasswordEntryRow)
+
+
+def test_gtk_words_are_in_the_installers_language(tmp_path):
+    """«Show Password» stayed English in the English live session (VM, Build12.26)."""
+    start.gtk_language("uk")
+    if GLib.dgettext("libadwaita", "Show Password") == "Show Password":
+        pytest.skip("libadwaita has no Ukrainian here, or the locale is C")
+    start.gtk_language("en")  # a second choice is not kept from the first
+    assert GLib.dgettext("libadwaita", "Show Password") == "Show Password"
+    del os.environ["LANGUAGE"]
+    path = tmp_path / "plan.json"
+    start.write_plan(start.start_plan("uk", False, False), path)
+    win = window(path)
+    win.wizard.tpm = lambda: False
+    win.go("encryption", strict=False)
+    win.present()
+    assert spin(lambda: win.get_mapped())
+    spin(lambda: False, 0.3)
+    tips = {w.get_tooltip_text() for w in _all(win, Gtk.Widget) if w.get_mapped()}
+    assert "Show Password" not in tips
+
+
+def test_a_list_does_not_stop_at_the_hint():
+    """libadwaita 1.5 put the hint under the list; newer ones keep it in, where Tab stopped."""
+    win = Gtk.Window()
+    rows = Gtk.ListBox()
+    entry = Adw.PasswordEntryRow(title="Passphrase")
+    check = a11y.radio(wizard_window.radio_group(), label="Not encrypted")
+    after = Adw.ActionRow(title="Not encrypted")
+    after.add_prefix(check)
+    after.set_focusable(False)
+    for row in (entry, wizard_window.hint_row(start.Texts("en"), entry), after):
+        rows.append(row)
+    win.set_child(rows)
+    win.present()
+    assert spin(lambda: check.get_mapped())
+    entry.grab_focus()
+    reached = []
+    for _ in range(4):
+        win.emit("move-focus", Gtk.DirectionType.TAB_FORWARD)
+        spin(lambda: False, 0.05)
+        reached.append(win.get_focus())
+    assert check in reached
+    check.grab_focus()
+    win.emit("move-focus", Gtk.DirectionType.TAB_BACKWARD)
+    spin(lambda: False, 0.05)
+    assert win.get_focus().get_ancestor(Adw.PasswordEntryRow) is entry
 
 
 def test_a_wifi_network_can_be_chosen_after_without_a_network(plan_path):

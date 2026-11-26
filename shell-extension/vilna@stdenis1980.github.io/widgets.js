@@ -30,6 +30,7 @@ import {
 import {skyColours} from './lib/weatherSky.js';
 import {Sky} from './sky.js';
 import {WeatherAlerts} from './weatherAlerts.js';
+import {verticalBox} from './vbox.js';
 
 const GLOXI = 'io.github.stdenis1980.Gloxi.desktop';
 const BACKUP = 'io.github.stdenis1980.VilnaBackup.desktop';
@@ -44,7 +45,7 @@ function label(text, style) {
 }
 
 function card(name, title) {
-    const box = new St.BoxLayout({vertical: true, style_class: 'vilna-widget', x_expand: true});
+    const box = verticalBox({style_class: 'vilna-widget', x_expand: true});
     if (name)
         box.name = name;
     if (title)
@@ -103,7 +104,7 @@ export class Widgets {
 
     _show() {
         const t = this._text;
-        this._root = new St.BoxLayout({vertical: true, style_class: 'vilna-widgets', width: WIDTH});
+        this._root = verticalBox({style_class: 'vilna-widgets', width: WIDTH});
         this._root.name = 'vilnaWidgets';
 
         // Clock and date.
@@ -136,7 +137,7 @@ export class Widgets {
 
         // Today in the calendar.
         this._events = card('vilnaCalendarWidget', t.today);
-        this._eventList = new St.BoxLayout({vertical: true});
+        this._eventList = verticalBox();
         this._events.add_child(this._eventList);
         this._root.add_child(this._events);
 
@@ -149,7 +150,7 @@ export class Widgets {
         this._weatherContent = card(null, t.weather);
         this._weatherCard.add_child(this._weatherContent);
         const row = new St.BoxLayout({x_expand: true});
-        const temps = new St.BoxLayout({vertical: true, x_expand: true});
+        const temps = verticalBox({x_expand: true});
         this._temp = label('—', 'vilna-widget-temp');
         this._weatherLine = label(t.noWeather, 'vilna-widget-line');
         temps.add_child(this._temp);
@@ -169,7 +170,7 @@ export class Widgets {
         // Копії.
         this._backupTitle = label('', 'vilna-widget-heading-small');
         this._backupLine = label('', 'vilna-widget-line');
-        const backupBox = new St.BoxLayout({vertical: true, x_expand: true});
+        const backupBox = verticalBox({x_expand: true});
         backupBox.add_child(this._backupTitle);
         backupBox.add_child(this._backupLine);
         const backupButton = new St.Button({child: backupBox, x_expand: true, style_class: 'vilna-widget-plain'});
@@ -331,7 +332,7 @@ export class Widgets {
         }
         const time = d => GLib.DateTime.new_from_unix_local(Math.floor(d.getTime() / 1000)).format('%H:%M');
         for (const e of events) {
-            const box = new St.BoxLayout({vertical: true, style_class: 'vilna-widget-event'});
+            const box = verticalBox({style_class: 'vilna-widget-event'});
             box.add_child(label(e.summary, 'vilna-widget-event-title'));
             box.add_child(label(e.allDay ? this._text.allDay : `${time(e.start)}–${time(e.end)}`, 'vilna-widget-line'));
             this._eventList.add_child(box);
@@ -449,7 +450,7 @@ export class Widgets {
         this._weatherIcon.visible = !scene;
         if (!scene)
             return;
-        this._sky.show(scene.kind, scene.day);
+        this._sky.show(scene.kind, scene.day, scene.strength);
         content.add_style_class_name('vilna-widget-on-sky');
         content.add_style_class_name(`vilna-sky-ink-${skyColours(scene.kind, scene.day).ink}`);
     }

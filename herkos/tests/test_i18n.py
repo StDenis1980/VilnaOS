@@ -45,7 +45,22 @@ def used_messages() -> set[str]:
 
 
 # ADR 0009: the ten languages of Vilna; English is the msgid.
-LANGUAGES = ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
+LANGUAGES = (
+    "uk",
+    "es",
+    "pl",
+    "de",
+    "fr",
+    "it",
+    "ro",
+    "cs",
+    "lt",
+    "ca",
+    "ca@valencia",
+    "gl",
+    "eu",
+    "pt",
+)
 
 
 @pytest.mark.parametrize("lang", LANGUAGES)

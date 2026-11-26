@@ -399,7 +399,8 @@ def parse_xkb_layouts(text: str) -> list[dict[str, str]]:
 
 XKB_LISTS = (Path("/usr/share/X11/xkb/rules/base.lst"), Path("/usr/share/X11/xkb/rules/evdev.lst"))
 
-# The ten languages of ADR 0009 and the keyboard each starts with.
+# The fifteen languages of ADR 0009 and the keyboard each starts with.
+# Catalan, Valencian, Galician and Basque are typed on the Spanish keyboard (ç, l·l, ñ).
 KEYBOARD_OF = {
     "uk": "ua",
     "en": "us",
@@ -411,6 +412,11 @@ KEYBOARD_OF = {
     "ro": "ro",
     "cs": "cz",
     "lt": "lt",
+    "ca": "es",
+    "ca@valencia": "es",
+    "gl": "es",
+    "eu": "es",
+    "pt": "pt",
 }
 LOCALE_OF = {
     "uk": "uk_UA.UTF-8",
@@ -423,6 +429,11 @@ LOCALE_OF = {
     "ro": "ro_RO.UTF-8",
     "cs": "cs_CZ.UTF-8",
     "lt": "lt_LT.UTF-8",
+    "ca": "ca_ES.UTF-8",
+    "ca@valencia": "ca_ES.UTF-8@valencia",
+    "gl": "gl_ES.UTF-8",
+    "eu": "eu_ES.UTF-8",
+    "pt": "pt_PT.UTF-8",
 }
 TIMEZONE_OF = {
     "uk_UA": "Europe/Kyiv",
@@ -437,6 +448,10 @@ TIMEZONE_OF = {
     "ro_RO": "Europe/Bucharest",
     "cs_CZ": "Europe/Prague",
     "lt_LT": "Europe/Vilnius",
+    "ca_ES": "Europe/Madrid",
+    "gl_ES": "Europe/Madrid",
+    "eu_ES": "Europe/Madrid",
+    "pt_PT": "Europe/Lisbon",
 }
 
 
@@ -468,13 +483,31 @@ def parse_nmcli_wifi(text: str) -> list[dict[str, Any]]:
 # --- the machine ------------------------------------------------------------
 
 
+def untranslated_env(environ: dict[str, str] | None = None) -> dict[str, str]:
+    """The environment for programs whose output is read: C.UTF-8, no translation.
+
+    The installer shows GTK in the language the person chose (LANGUAGE), and
+    the live system may start in any of ten: what is parsed here («connected»,
+    «yes» from nmcli) must not depend on which.
+    """
+    env = dict(os.environ if environ is None else environ)
+    env.pop("LANGUAGE", None)
+    env["LC_ALL"] = "C.UTF-8"
+    return env
+
+
 class Machine:
     """The real computer the live system runs on."""
 
     def _run(self, *argv: str, timeout: float = 20) -> str:
         try:
             done = subprocess.run(
-                list(argv), capture_output=True, text=True, timeout=timeout, check=False
+                list(argv),
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False,
+                env=untranslated_env(),
             )
         except (OSError, subprocess.SubprocessError) as e:
             raise MachineError(f"{argv[0]} did not run: {e}") from e

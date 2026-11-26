@@ -34,7 +34,7 @@ def test_missing_style_file_is_empty():
 
 
 def test_window_styles_take_vilna_colours_not_raw_hex():
-    pytest.importorskip("gi")
+    pytest.importorskip("gi.repository", exc_type=ImportError)
     from vilna_installer import chat, confirm_window, welcome, wizard_window
 
     for css in (chat.CSS, confirm_window.CSS, welcome.CSS, wizard_window.CSS):
@@ -74,7 +74,9 @@ def test_unwritable_choice_file_does_not_fail(tmp_path, monkeypatch):
 
 @pytest.fixture
 def gtk(tmp_path, monkeypatch):
-    gi = pytest.importorskip("gi")
+    pytest.importorskip("gi.repository", exc_type=ImportError)
+    import gi
+
     gi.require_version("Gtk", "4.0")
     gi.require_version("Adw", "1")
     from gi.repository import Adw, Gtk
@@ -115,7 +117,10 @@ def test_every_installer_screen_shows_the_theme_button(gtk):
         assert "style.theme_button(" in Path(module.__file__).read_text(encoding="utf-8"), module
 
 
-@pytest.mark.parametrize("code", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
+@pytest.mark.parametrize(
+    "code",
+    ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt", "ca", "ca@valencia", "gl", "eu", "pt"),
+)
 def test_theme_button_texts_are_translated(code):
     from vilna_installer import start
 

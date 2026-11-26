@@ -7,9 +7,11 @@ color-scheme='default'
 clock-show-weekday=true
 show-battery-percentage=true
 font-antialiasing='rgba'
-# Vilna icons (vilna-icon-theme): folders, trash, drives and the Gloxi and
-# Herkos symbolic icons; everything else comes from Adwaita.
-icon-theme='Vilna'
+# Vilna icons (vilna-icon-theme): Vilna Classic by default (decision of
+# Denys, 26.11.2026) — folders, trash and drives drawn as real objects; it
+# inherits the flat Vilna theme for the Gloxi and Herkos symbolic icons,
+# everything else comes from Adwaita. icon-theme='Vilna' is the flat set.
+icon-theme='Vilna-Classic'
 
 # Vilna wallpapers (vilna-backgrounds): Сонце by default, the light and
 # dark pictures switch with the style. config.sh fails the image build if
@@ -49,7 +51,8 @@ favorite-apps=['io.github.stdenis1980.Gloxi.desktop', 'org.mozilla.firefox.deskt
 # The dock (Dash to Dock, gnome-shell-extension-dash-to-dock): at the
 # bottom, 48 px icons, pinned Gloxi, Firefox, Files, Tinta Correo, Tinta
 # Texto, the terminal and Software (favorite-apps above; one that is not
-# installed is skipped). The Vilna extension's Dock page changes the
+# installed is skipped), with the button to all apps first, before them
+# (show-apps-at-top, decision of Denys of 26.11.2026). The Vilna extension's Dock page changes the
 # place, the size (32-80 px), the hiding, the transparency of the glass
 # (8 % by default, like the terminal) and the springy icons. It stays on an
 # empty desktop and slides away when the focused app's window covers it.
@@ -57,6 +60,13 @@ favorite-apps=['io.github.stdenis1980.Gloxi.desktop', 'org.mozilla.firefox.deskt
 # theme and colour options stay off. A click shows the app, a second
 # click minimises it, with several windows the previews open. The
 # session starts on the desktop, not in the overview.
+# Gloxi as the side panel the Shell draws (Vilna extension, gloxi-dock),
+# with Dmytro's owl and the button in the top bar, instead of the GTK
+# window at the right edge (decision of Denys, 26.11.2026). Super+G opens
+# and closes it.
+[org.gnome.shell.extensions.vilna]
+gloxi-dock=true
+
 [org.gnome.shell.extensions.dash-to-dock]
 dock-position='BOTTOM'
 dock-fixed=false
@@ -73,7 +83,7 @@ click-action='focus-minimize-or-previews'
 show-trash=true
 show-mounts=true
 show-mounts-only-mounted=true
-show-apps-at-top=false
+show-apps-at-top=true
 disable-overview-on-startup=true
 animation-time=0.28
 
@@ -94,15 +104,16 @@ theme-name='vilna-wood'
 [org.gnome.settings-daemon.plugins.housekeeping]
 ignore-paths=['/boot/efi']
 
+# Super+Return (and GNOME's Ctrl+Alt+T) open the terminal through
+# gnome-settings-daemon's own «Launch terminal» key, which starts the
+# program of org.gnome.desktop.default-applications.terminal below. Not a
+# custom keybinding: those live at paths of a relocatable schema that an
+# override cannot fill (in the VM test of Build12.26 binding and command
+# stayed empty).
 [org.gnome.settings-daemon.plugins.media-keys]
-custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']
+terminal=['<Super>Return', '<Primary><Alt>t']
 
-[org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom0]
-binding='<Super>Return'
-command='ptyxis --new-window'
-name='Terminal'
-
-[org.gnome.desktop.applications.terminal]
+[org.gnome.desktop.default-applications.terminal]
 exec='ptyxis'
 exec-arg='--'
 
@@ -123,6 +134,37 @@ interface-style='system'
 label='Vilna'
 palette='vilna'
 opacity=0.92
+
+# A right click pastes, as Denys asked (2026-11-25); Shift + right click
+# opens the context menu. Ptyxis has no such setting: the Vilna build of
+# Ptyxis (obs/packages/ptyxis, vilna-right-click-paste.patch) adds it as
+# org.vilna.Ptyxis, off unless set here.
+[org.vilna.Ptyxis]
+right-click-paste=true
+
+# Ptyxis's letter shortcuts also answer to the Ukrainian layout. GTK 4
+# matches a shortcut by the letter the key types, and with Українська on
+# Ctrl+Shift+C types «С», so copy, paste, new tab and the rest did nothing
+# (Denys, Build12.29, 2026-11-25). Each shortcut is therefore
+# «Latin|Cyrillic on the same key» (a GTK alternative trigger); the
+# Cyrillic letters are those of the ua layout, the same as ru for these
+# keys. tools/check_terminal.py checks that every letter shortcut has
+# its Cyrillic twin. Changing one in Ptyxis ▸ Preferences replaces both.
+[org.gnome.Ptyxis.Shortcuts]
+copy-clipboard='<ctrl><shift>c|<ctrl><shift>Cyrillic_es'
+paste-clipboard='<ctrl><shift>v|<ctrl><shift>Cyrillic_em'
+new-tab='<ctrl><shift>t|<ctrl><shift>Cyrillic_ie'
+new-window='<ctrl><shift>n|<ctrl><shift>Cyrillic_te'
+split-auto='<ctrl><alt>a|<ctrl><alt>Cyrillic_ef'
+split-horizontal='<ctrl><alt>d|<ctrl><alt>Cyrillic_ve'
+split-vertical='<ctrl><alt>r|<ctrl><alt>Cyrillic_ka'
+tab-overview='<ctrl><shift>o|<ctrl><shift>Cyrillic_shcha'
+go-to-terminal='<ctrl><shift>p|<ctrl><shift>Cyrillic_ze'
+search='<ctrl><shift>f|<ctrl><shift>Cyrillic_a'
+select-all='<ctrl><shift>a|<ctrl><shift>Cyrillic_ef'
+close-tab='<ctrl><shift>w|<ctrl><shift>Cyrillic_tse'
+close-window='<ctrl><shift>q|<ctrl><shift>Cyrillic_shorti'
+undo-close-tab='<ctrl><shift><alt>t|<ctrl><shift><alt>Cyrillic_ie'
 
 [org.freedesktop.Tracker.Miner.Files]
 index-removable-devices=false

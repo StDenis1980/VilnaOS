@@ -44,7 +44,7 @@ STEPS = (
     "summary",
 )
 
-# Texts (msgids of locale/*.po). A new one needs all nine translations
+# Texts (msgids of locale/*.po). A new one needs every translation
 # (ADR 0009); the tests fail without them.
 SUMMARY = "Summary"
 STEP_OF = "Step {number} of {count}: {title}"
@@ -142,7 +142,7 @@ WIFI_NOT_CONNECTED = "Connect to the Wi-Fi network first, or choose another way.
 # The VPN step (ADR 0027 section 2): DNS is encrypted already, so the step
 # offers more protection and never promises anonymity. Only the classic
 # wizard has it; after the conversation Gloxi asks on the first start. In all
-# ten languages, like the crash reports question.
+# main languages, like the crash reports question.
 VPN_TITLE = "VPN"
 VPN_LEAD = (
     "Your connection is already protected: Vilna encrypts DNS, so the network you are on "
@@ -616,7 +616,7 @@ class Wizard:
         return (self.plan.get("ui") or {}).get("locale") or "en_US.UTF-8"
 
     def language_choices(self) -> list[tuple[str, str]]:
-        """(locale, own name): the ten languages, and the person's own when it is another."""
+        """(locale, own name): the main languages, and the person's own when it is another."""
         rows = [(lang.locale, lang.name) for lang in start.LANGUAGES]
         ui = self.ui_locale()
         if ui not in start.MAIN_LOCALES:

@@ -31,9 +31,27 @@ LOCALE_DIR = SOURCES / "locale"
 DOMAIN = "gloxi"
 
 # ADR 0009: the main languages. English is the source language.
-MAIN_LANGUAGES = ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
+MAIN_LANGUAGES = (
+    "uk",
+    "es",
+    "pl",
+    "de",
+    "fr",
+    "it",
+    "ro",
+    "cs",
+    "lt",
+    "ca",
+    "ca@valencia",
+    "gl",
+    "eu",
+    "pt",
+)
 # Must be complete: from the alpha every main language is (ADR 0009).
 COMPLETE_NOW = MAIN_LANGUAGES
+# First translated by AI, not yet read by a native speaker (ADR 0009, 2026-11-25):
+# their catalogues say so in the header, until someone who knows the language has.
+NOT_REVIEWED = ("ca", "ca@valencia", "gl", "eu", "pt")
 
 MARKERS = {"_", "N_"}
 
@@ -176,6 +194,8 @@ def header_for(lang: str | None) -> str:
         "Content-Type: text/plain; charset=UTF-8\n",
         "Content-Transfer-Encoding: 8bit\n",
     ]
+    if lang in NOT_REVIEWED:
+        lines.append("X-Vilna-Review: not reviewed by a native speaker\n")
     return "".join(lines)
 
 

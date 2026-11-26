@@ -15,7 +15,11 @@ import pytest
 # reader): in memory, never in the settings of whoever runs the tests.
 os.environ["GSETTINGS_BACKEND"] = "memory"
 
-gi = pytest.importorskip("gi")
+# "gi.repository", not "gi": a package can leave gi/overrides without
+# PyGObject, and that bare "gi" has no require_version.
+pytest.importorskip("gi.repository", exc_type=ImportError)
+import gi  # noqa: E402
+
 try:
     gi.require_version("Gtk", "4.0")
     gi.require_version("Adw", "1")
@@ -51,6 +55,9 @@ class Talk:
 
     def opening(self):
         return self._reply("Hello", "languages")
+
+    def warm(self):
+        self.warmed = True
 
     def needs(self):
         return []
@@ -357,7 +364,10 @@ def _all(widget, kind):
     return out
 
 
-@pytest.mark.parametrize("code", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
+@pytest.mark.parametrize(
+    "code",
+    ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt", "ca", "ca@valencia", "gl", "eu", "pt"),
+)
 def test_steps_panel_texts_are_translated(code):
     from vilna_installer import start
 

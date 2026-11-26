@@ -7,7 +7,7 @@
 | Файл у системі | Звідки | Що робить |
 | --- | --- | --- |
 | `/usr/share/swcatalog/xml/vilna-software-picks.xml` | `build_picks.py build` з `picks.toml` | Метадані AppStream з `merge="append"`: додають до опису програми з Flathub три позначки (нижче) |
-| `/usr/share/gnome-software/deployment-featured.ini` | те саме | Заголовок блоку «Рекомендовано Vilna» 10 мовами (ADR 0009) і селектор `vilna` |
+| `/usr/share/gnome-software/deployment-featured.ini` | те саме | Заголовок блоку «Рекомендовано Vilna» основними мовами (ADR 0009) і селектор `vilna` |
 
 Позначки в метаданих:
 

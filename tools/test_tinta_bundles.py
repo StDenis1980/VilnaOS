@@ -9,6 +9,7 @@ Run: python3 tools/test_tinta_bundles.py
 from __future__ import annotations
 
 import copy
+import gzip
 import os
 import stat
 import subprocess
@@ -230,7 +231,7 @@ class FirstBoot(unittest.TestCase):
         (self.share / "vilna.flatpakrepo").write_text("[Flatpak Repo]\n")
         self.assertEqual(self.run_script().returncode, 0)
         calls = self.calls()
-        lang = "config --system --set languages uk;en;es;pl;de;fr;it;ro;cs;lt"
+        lang = "config --system --set languages uk;en;es;pl;de;fr;it;ro;cs;lt;ca;gl;eu;pt"
         self.assertIn(lang, calls)
         for remote in ("flathub", "vilna"):
             install = next(
@@ -264,6 +265,28 @@ class FirstBoot(unittest.TestCase):
         self.assertEqual(self.run_script().returncode, 0)
         self.assertTrue((self.state / "flatpak-defaults-all.done").exists())
 
+    def test_catalogue_fetched_after_remote_add(self) -> None:
+        # flatpak install does not fetch the remote's AppStream: without it the
+        # store did not show Tinta Office until GNOME Software refreshed.
+        (self.share / "vilna.flatpakrepo").write_text("[Flatpak Repo]\n")
+        self.assertEqual(self.run_script().returncode, 0)
+        calls = self.calls()
+        for remote in ("flathub", "vilna"):
+            added = next(
+                i for i, c in enumerate(calls) if c.startswith("remote-add") and f" {remote} " in c
+            )
+            fetch = f"update --system --noninteractive --appstream {remote}"
+            self.assertIn(fetch, calls[added:])
+
+    def test_catalogue_failure_does_not_hold_the_apps(self) -> None:
+        (self.share / "vilna.flatpakrepo").write_text("[Flatpak Repo]\n")
+        self.fail.write_text("--appstream vilna")
+        r = self.run_script()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("the store fetches it later", r.stdout)
+        self.assertTrue(any(c.startswith("install") and " vilna " in c for c in self.calls()))
+        self.assertTrue((self.state / "flatpak-defaults-all.done").exists())
+
     def test_old_stamp_means_flathub_was_done(self) -> None:
         # A computer from before Tinta: only Tinta is installed now.
         self.state.mkdir()
@@ -272,6 +295,70 @@ class FirstBoot(unittest.TestCase):
         self.assertEqual(self.run_script().returncode, 0)
         self.assertTrue(all("flathub" not in c for c in self.calls()))
         self.assertTrue(any(c.startswith("install") and " vilna " in c for c in self.calls()))
+
+
+class Catalogue(unittest.TestCase):
+    """What GNOME Software needs to show a Tinta app and install it again."""
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+        self.bundles = tb.load()
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def write(self, skip: str = "", drop: str = "", icons: bool = True) -> None:
+        parts = ['<components version="0.8" origin="flatpak">']
+        for b in self.bundles:
+            app = b["id"]
+            if app == skip:
+                continue
+            fields = {
+                "name": f"<name>{b['name']}</name>",
+                "summary": "<summary>Synthetic summary</summary>",
+                "launchable": f'<launchable type="desktop-id">{app}.desktop</launchable>',
+                "icon": f'<icon type="cached" width="64" height="64">{app}.png</icon>',
+            }
+            if app == drop.split(":")[0]:
+                fields.pop(drop.split(":")[1])
+            body = "".join(fields.values())
+            parts.append(f'<component type="desktop-application"><id>{app}</id>{body}</component>')
+            if icons:
+                for size in tb.ICON_SIZES:
+                    (self.dir / "icons" / size).mkdir(parents=True, exist_ok=True)
+                    (self.dir / "icons" / size / f"{app}.png").write_bytes(b"png")
+        parts.append("</components>")
+        with gzip.open(self.dir / "appstream.xml.gz", "wt", encoding="utf-8") as f:
+            f.write("".join(parts))
+
+    def problems(self) -> list[str]:
+        return tb.in_catalogue(self.bundles, tb.read_catalogue(self.dir), self.dir)
+
+    def test_all_apps_shown(self) -> None:
+        self.write()
+        self.assertEqual(self.problems(), [])
+        self.assertEqual(tb.main(["catalogue", str(self.dir)]), 0)
+
+    def test_missing_app(self) -> None:
+        self.write(skip="io.github.stdenis1980.tintapdf")
+        problems = self.problems()
+        self.assertEqual(len(problems), 1)
+        self.assertIn("tintapdf", problems[0])
+        self.assertEqual(tb.main(["catalogue", str(self.dir)]), 1)
+
+    def test_no_icon_files(self) -> None:
+        self.write(icons=False)
+        self.assertTrue(any("icon" in p for p in self.problems()))
+
+    def test_no_launcher_or_summary(self) -> None:
+        for field in ("launchable", "summary", "icon", "name"):
+            with self.subTest(field=field):
+                self.write(drop=f"io.github.stdenis1980.ibercorreo:{field}")
+                self.assertTrue(any("ibercorreo" in p for p in self.problems()), field)
+
+    def test_not_fetched(self) -> None:
+        self.assertEqual(tb.main(["catalogue", str(self.dir)]), 2)
 
 
 class Unit(unittest.TestCase):

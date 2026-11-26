@@ -193,6 +193,39 @@ def test_undo_files_are_private_and_bounded(tmp_path, monkeypatch):
     assert UNDO_KEEP >= 100
 
 
+def test_undo_goes_to_the_state_folder_systemd_gives(tmp_path, monkeypatch):
+    # vilna-mcp-calendar@.service: ProtectHome=read-only, StateDirectory=.
+    monkeypatch.setenv("STATE_DIRECTORY", str(tmp_path / "state"))
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "home-state"))
+    assert DirUndo.default().path == tmp_path / "state" / "undo"
+    monkeypatch.delenv("STATE_DIRECTORY")
+    assert DirUndo.default().path == tmp_path / "home-state" / "vilna-mcp-calendar" / "undo"
+
+
+def _no_undo(tmp_path):
+    blocked = tmp_path / "file"
+    blocked.write_text("")  # a file where the folder should be: mkdir fails
+    return DirUndo(blocked / "undo")
+
+
+def test_a_new_event_that_cannot_be_undone_is_not_left_behind(tmp_path):
+    c = cal(undo=_no_undo(tmp_path))
+    with pytest.raises(CalendarError, match="nothing was changed"):
+        c.create_event(title="Lunch", start="2027-03-12T13:00")
+    assert [e["title"] for e in day(c)] == ["Standup"]
+
+
+def test_a_change_that_cannot_be_undone_is_not_made(tmp_path):
+    c = cal()
+    made = c.create_event(title="Lunch", start="2027-03-12T13:00")["created"]
+    c.undo = _no_undo(tmp_path)
+    with pytest.raises(CalendarError, match="nothing was changed"):
+        c.update_event(id=made["id"], title="Dinner")
+    with pytest.raises(CalendarError, match="nothing was changed"):
+        c.delete_event(id=made["id"])
+    assert [e["title"] for e in day(c)] == ["Standup", "Lunch"]
+
+
 def _call(server, name, arguments):
     msg = {
         "jsonrpc": "2.0",

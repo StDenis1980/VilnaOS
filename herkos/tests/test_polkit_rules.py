@@ -18,7 +18,22 @@ from herkos.manifest import ManifestRegistry
 
 SYSTEMD = Path(__file__).resolve().parents[1] / "systemd"
 POLICY = SYSTEMD / "org.vilna.herkos.policy"
-LANGUAGES = {"uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"}  # and English (ADR 0009)
+LANGUAGES = {
+    "uk",
+    "es",
+    "pl",
+    "de",
+    "fr",
+    "it",
+    "ro",
+    "cs",
+    "lt",
+    "ca",
+    "ca@valencia",
+    "gl",
+    "eu",
+    "pt",
+}  # and English (ADR 0009)
 
 # polkit runs every rules file in the order of the file names; the first
 # answer that is not NOT_HANDLED wins, else the action's defaults decide.

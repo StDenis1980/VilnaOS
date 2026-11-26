@@ -52,15 +52,24 @@ test('the forecast request carries only the place, and the answer is read safely
         {temp: 3, high: null, low: null, code: 71, day: true, feels: null, wind: null, gusts: null});
 });
 
-test('weather codes map to eight kinds with night icons', () => {
-    assert.deepEqual(weatherKind(0, true), {kind: 'clear', index: 0, icon: 'weather-clear-symbolic'});
+test('weather codes map to ten kinds with night icons', () => {
+    assert.deepEqual(weatherKind(0, true), {kind: 'clear', index: 0, icon: 'weather-clear-symbolic', strength: 1});
     assert.equal(weatherKind(0, false).icon, 'weather-clear-night-symbolic');
     assert.equal(weatherKind(63).kind, 'rain');
     assert.equal(weatherKind(81).kind, 'rain');
     assert.equal(weatherKind(75).kind, 'snow');
-    assert.equal(weatherKind(96).kind, 'storm');
+    assert.equal(weatherKind(95).kind, 'storm');
+    assert.equal(weatherKind(96).kind, 'hail');
+    assert.equal(weatherKind(99).kind, 'hail');
+    assert.equal(weatherKind(67).kind, 'ice');
+    assert.equal(weatherKind(56).kind, 'ice');
+    assert.equal(weatherKind(55).kind, 'drizzle');
     assert.equal(weatherKind(48).kind, 'fog');
     assert.equal(weatherKind(1234).kind, 'overcast');
+    // Light, moderate and heavy rain, snow and showers are told apart.
+    assert.ok(weatherKind(61).strength < weatherKind(63).strength && weatherKind(63).strength < weatherKind(65).strength);
+    assert.ok(weatherKind(71).strength < weatherKind(75).strength);
+    assert.ok(weatherKind(80).strength < weatherKind(82).strength);
 });
 
 test('a dry sky becomes windy or hot; wet weather stays what it is', () => {
@@ -144,16 +153,20 @@ test('today: events still ahead, all-day first, at most three', () => {
     assert.deepEqual(todayEvents(null, now), []);
 });
 
-test('words in all ten languages, English as the fallback', () => {
-    assert.deepEqual(LANGUAGES.sort(), ['cs', 'de', 'en', 'es', 'fr', 'it', 'lt', 'pl', 'ro', 'uk']);
+test('words in all main languages, English as the fallback', () => {
+    assert.deepEqual(LANGUAGES.sort(), ['ca', 'ca@valencia', 'cs', 'de', 'en', 'es', 'eu', 'fr', 'gl', 'it', 'lt', 'pl', 'pt', 'ro', 'uk']);
     assert.deepEqual(checkTables(), []);
     for (const code of LANGUAGES) {
         const t = widgetText([code]);
         assert.equal(t.chips.length, 3, code);
-        assert.equal(t.kinds.length, 10, code);
+        assert.equal(t.kinds.length, 12, code);
         assert.ok(t.capital.includes('%s') && t.last.today.includes('%s') && t.last.on.includes('%s'), code);
         assert.ok(t.dataBy.includes('Open-Meteo'), code);
     }
     assert.equal(widgetText(['uk_UA.UTF-8', 'uk', 'C']).help, 'Чим допомогти?');
+    // Valencian has its own words and does not fall back to Catalan (ADR 0009).
+    const valencian = widgetText(['ca_ES.UTF-8@valencia', 'ca_ES@valencia', 'ca@valencia', 'ca_ES', 'ca']);
+    assert.match(valencian.myPlace, /meua/);
+    assert.match(widgetText(['ca_ES.UTF-8', 'ca']).myPlace, /meva/);
     assert.equal(widgetText(['ja_JP', 'C']).help, 'How can I help?');
 });

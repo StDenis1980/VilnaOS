@@ -153,6 +153,9 @@ msgstr "Sollen wir uns jetzt mit einem Netzwerk verbinden? Es ist nicht nötig: 
 msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
 msgstr "Was machen wir mit der Festplatte? Ich schlage vor, die ganze Festplatte zu löschen und Vilna zu installieren; der andere Weg ist Ihre eigene Aufteilung im Partitionseditor."
 
+msgid "Fine, the disk will not be encrypted. You can change this in the plan."
+msgstr "Gut, die Festplatte wird nicht verschlüsselt. Sie können das im Plan ändern."
+
 msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
 msgstr "Bewahren Sie den Wiederherstellungsschlüssel sicher auf: Ohne ihn kann niemand, auch Sie nicht, die Festplatte öffnen, wenn sich an diesem Computer etwas ändert."
 

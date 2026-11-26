@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 25 17:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Stop owning /usr/share/sounds: the filesystem package owns it, and
+  the two entries conflicted, so transactional-update dup failed on an
+  installed system ("file /usr/share/sounds ... conflicts with file
+  from package filesystem")
+
+-------------------------------------------------------------------
 Tue Nov 24 09:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Require the canberra-gtk-play and glib2-tools packages instead of

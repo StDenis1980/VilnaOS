@@ -215,6 +215,27 @@ jobs:
             echo "$id: $out"
             case "$out" in *"$version"*) ;; *) echo "::error::$id is not version $version"; exit 1 ;; esac
           done < tinta/apps.txt
+      - name: Tinta Office is in the store and installs again after removal
+        run: |
+          set -eu
+          # What GNOME Software reads: the remote's app catalogue, which first
+          # boot fetches (vilna-flatpak-defaults); flatpak install does not.
+          flatpak update -y --noninteractive --appstream vilna
+          rm -rf catalogue
+          cp -rL /var/lib/flatpak/appstream/vilna/x86_64/active catalogue
+          chmod -R a+rX catalogue
+          flatpak run --filesystem="$PWD" --command=python3 io.github.stdenis1980.Gloxi \
+            "$PWD/tools/tinta_bundles.py" catalogue "$PWD/catalogue"
+          ids="$(cut -d' ' -f1 tinta/apps.txt)"
+          # Search reads the same catalogue, as the store's search does.
+          for id in $ids; do
+            flatpak search --columns=application,remotes "$id" | grep -E "^$id[[:space:]]+vilna" \
+              || { echo "::error::$id is not found in the vilna catalogue"; exit 1; }
+          done
+          # A person removes Tinta Office and installs it again from Vilna.
+          flatpak uninstall -y --noninteractive $ids
+          flatpak install -y --noninteractive vilna $ids
+          for id in $ids; do test "$(flatpak info --show-origin "$id")" = vilna; done
       - name: Keep the checked bundle for the release
         if: startsWith(github.ref, 'refs/tags/gloxi-v')
         uses: actions/upload-artifact@v4

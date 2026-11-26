@@ -544,9 +544,13 @@ class Mailbox:
             "undo_arguments": {"account": a.email, "folder": folder, "message_id": message_id},
         }
 
-    def send(self, account: Any = None, **message: Any) -> dict:
+    def send(self, account: Any = None, replaces_draft: Any = None, **message: Any) -> dict:
         a = self._writable(account, send=True)
         draft = Draft.check(**message)
+        if replaces_draft is not None and (
+            not isinstance(replaces_draft, str) or not _OWN_DRAFT_ID.fullmatch(replaces_draft)
+        ):
+            raise MailError("'replaces_draft' is the message_id save_draft gave")
         msg = draft.message(a)
         raw = msg.as_bytes()
         refused = self.store.send(a, raw, draft.recipients())
@@ -558,6 +562,11 @@ class Mailbox:
         }
         if refused:
             out["refused"] = refused
+        if replaces_draft:
+            # What is sent is still built from these arguments alone, the ones
+            # the person saw; the draft they answer only goes from Drafts, so
+            # the same reply does not stay there as if unsent.
+            out["draft_removed"] = self._remove_own_draft(a, replaces_draft)
         if not a.saves_sent:
             # Bcc stays out of the copy too: it is the message as sent.
             try:
@@ -566,6 +575,13 @@ class Mailbox:
                 out["saved_to"] = None
                 out["note"] = f"sent, but no copy was kept in Sent: {e}"
         return out
+
+    def _remove_own_draft(self, a: Account, message_id: str) -> bool:
+        try:
+            folder = next((f.name for f in self.store.folders(a) if f.role == "drafts"), "")
+            return bool(folder) and self.store.remove_draft(a, folder, message_id)
+        except MailError:
+            return False  # sent all the same; the draft stays
 
     def restore(self, account: Any = None, folder: Any = None, message_id: Any = None) -> dict:
         """Undo ``save_draft``: remove that draft again, and only a draft Gloxi wrote."""

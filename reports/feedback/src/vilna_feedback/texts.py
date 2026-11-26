@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The window's words: English msgids, translations in ``locale/<code>.po``.
 
-All ten languages of ADR 0009. English is the msgid; a text without a
+All main languages of ADR 0009. English is the msgid; a text without a
 translation stays English. Translations other than Ukrainian were made with
 AI help and are worth a native speaker's look (Weblate).
 """
@@ -12,7 +12,23 @@ import ast
 import os
 from importlib import resources
 
-CODES = ("uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt")
+CODES = (
+    "uk",
+    "en",
+    "es",
+    "pl",
+    "de",
+    "fr",
+    "it",
+    "ro",
+    "cs",
+    "lt",
+    "ca",
+    "ca@valencia",
+    "gl",
+    "eu",
+    "pt",
+)
 
 TITLE = "Feedback about Vilna"
 TAB_FEEDBACK = "Feedback"
@@ -176,7 +192,10 @@ def language(environ: dict[str, str] | None = None) -> str:
     env = os.environ if environ is None else environ
     for var in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
         for part in (env.get(var) or "").split(":"):
-            code = part.split(".")[0].split("@")[0].split("_")[0]
+            base, _, modifier = part.partition("@")
+            code = base.split(".")[0].split("_")[0]
+            if code == "ca" and modifier.startswith("valencia"):
+                code = "ca@valencia"  # ADR 0009: Valencian has its own catalogue
             if code in CODES:
                 return code
     return "en"

@@ -17,7 +17,21 @@ jobs:
       - name: Check SPDX headers
         run: python3 tools/check_spdx.py
       - name: Check the site (site/README.md)
-        run: python3 tools/check_site.py
+        run: |
+          python3 tools/check_site.py
+          python3 tools/test_check_site.py
+      - name: The .desktop files are well formed and translated
+        run: |
+          python3 tools/check_desktop.py
+          python3 tools/test_check_desktop.py
+      - name: The AppStream metainfo files are well formed
+        run: |
+          python3 tools/check_metainfo.py
+          python3 tools/test_check_metainfo.py
+      - name: Local links and anchors in Markdown lead somewhere
+        run: |
+          python3 tools/check_md_links.py
+          python3 tools/test_check_md_links.py
       - name: The vilnaos.com zone and the spare host (ADR 0032)
         run: |
           python3 tools/site_dns.py check
@@ -34,6 +48,10 @@ jobs:
         run: |
           python3 tools/tinta_bundles.py check
           python3 tools/test_tinta_bundles.py
+      - name: The Claude desktop wrapper's pins are well formed
+        run: |
+          python3 tools/claude_desktop.py check
+          python3 tools/test_claude_desktop.py
 
   gloxi:
     runs-on: ubuntu-latest

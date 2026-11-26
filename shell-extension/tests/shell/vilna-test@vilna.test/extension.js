@@ -380,12 +380,18 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
         const [w, h] = actor.get_transformed_size();
         pointer.notify_absolute_motion(GLib.get_monotonic_time(), x + w / 2, y + h / 2);
         await sleep(300);
+        const picked = () => global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, x + w / 2, y + h / 2);
+        if (!await waitFor(() => actor.contains(picked()), 3000))
+            lines.push(`NOTE click: under the pointer ${picked()?.constructor?.name} ${picked()?.name} ${picked()?.style_class}, panel open ${theDock()?.panel !== null}`);
         pointer.notify_button(GLib.get_monotonic_time(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.PRESSED);
         await sleep(100);
         pointer.notify_button(GLib.get_monotonic_time(), Clutter.BUTTON_PRIMARY, Clutter.ButtonState.RELEASED);
         await sleep(600);
     };
-    const panelFocused = () => Boolean(theDock()?.panel?.contains(global.stage.get_key_focus()));
+    const panelFocused = () => {
+        const focus = global.stage.get_key_focus();
+        return Boolean(focus && theDock()?.panel?.contains(focus));
+    };
     const dock = theDock();
 
     settings.set_boolean('gloxi-dock', true);
@@ -421,6 +427,27 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
             view.chat.lines.slice(2).map(l => `${l.kind}: ${l.text}`),
         ['user: Увімкни темну тему', 'gloxi: Готово: темну тему ввімкнено.', 'action: Settings: dark theme']);
     check('side panel: the field is empty again', view.entry.get_text(), '');
+    // The field grows with long text, up to a few lines, and Shift+Enter
+    // starts a new line instead of sending (Build12.29: one short line).
+    const oneLine = view.fieldHeight;
+    view.entry.set_text('Нагадай мені завтра зранку '.repeat(3).trim());
+    await sleep(300);
+    const grown = view.fieldHeight;
+    view.entry.set_text('рядок\n'.repeat(60).trim());
+    await sleep(300);
+    const tall = view.fieldHeight;
+    check(`side panel: the field grows with long text, then stops growing (${oneLine}, ${grown}, ${tall} px)`,
+        [grown > oneLine * 1.5, tall > grown, tall < 400], [true, true, true]);
+    view.entry.set_text('перший рядок');
+    view.entry.clutter_text.set_cursor_position(-1);
+    const sent = panelRequests.filter(r => r.method === 'chat.submit').length;
+    await press(Clutter.KEY_Shift_L, Clutter.KEY_Return);
+    check('side panel: Shift+Enter starts a new line and sends nothing',
+        [view.entry.get_text(), panelRequests.filter(r => r.method === 'chat.submit').length],
+        ['перший рядок\n', sent]);
+    view.entry.set_text('');
+    await sleep(300);
+    check('side panel: empty, the field is one line again', view.fieldHeight, oneLine);
     // The card as soon as the action is done, the answer once it is finished.
     check('side panel: a screen reader hears the card, then the whole answer once',
         heard.map(([w]) => w), ['Settings: dark theme · Done', 'Gloxi: Готово: темну тему ввімкнено.']);
@@ -459,6 +486,16 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
         Main.messageTray._notificationQueue?.includes(reminder) ?? false], [true, false, false]);
     check('side panel: it stays in the notification list', gloxiSource.notifications.includes(reminder), true);
     check('side panel: a screen reader hears it instead of the banner', heard.at(-1)?.[0], 'Нагадування: Зустріч о 15:00');
+    // The same with the focus in a window, not in the panel (Build12.26:
+    // nothing was read then, and the panel stopped reading gloxid).
+    global.stage.set_key_focus(null);
+    findWindow(OTHER).activate(global.get_current_time());
+    await sleep(300);
+    const away = new MessageTray.Notification({source: gloxiSource, title: 'Нагадування', body: 'Обід о 13:00'});
+    gloxiSource.addNotification(away);
+    await sleep(300);
+    check('side panel: focus in a window, a Gloxi notification is still read, and no banner',
+        [panelFocused(), heard.at(-1)?.[0], away.acknowledged], [false, 'Нагадування: Обід о 13:00', true]);
     listAccessible.disconnect(hearing);
 
     settings.set_string('gloxi-dock-size', 'one-third');
@@ -481,13 +518,49 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     gloxiSource.destroy();
     check('side panel: the strip is gone after sliding out', await waitFor(() => dockPanel() === null, 2000), true);
 
+    // A window that is not maximised: the strut alone leaves it under the
+    // panel (Build12.29), so the panel moves it out and back.
+    const loose = findWindow(OTHER);
+    if (Meta.MaximizeFlags)
+        loose.unmaximize(Meta.MaximizeFlags.BOTH);
+    else
+        loose.unmaximize();
+    await sleep(500);
+    loose.move_resize_frame(true, 1300, 200, 500, 400);
+    const placed = await waitFor(() => loose.get_frame_rect().x === 1300, 2000);
+    const rightOf = r => r.x + r.width;
+    settings.set_boolean('gloxi-panel-open', true);
+    await sleep(800);
+    const stripX = dockPanel()?.[0] ?? 0;
+    check('strip: a window under it moves left of it, same width',
+        placed && await waitFor(() => rightOf(loose.get_frame_rect()) <= stripX, 2000) &&
+            loose.get_frame_rect().width, 500);
+    settings.set_boolean('gloxi-panel-open', false);
+    check('strip: closed, the window goes back',
+        await waitFor(() => loose.get_frame_rect().x === 1300, 2000), true);
+    settings.set_boolean('gloxi-panel-open', true);
+    await sleep(800);
+    global.display.emit('grab-op-begin', loose, Meta.GrabOp.MOVING);
+    global.display.emit('grab-op-end', loose, Meta.GrabOp.MOVING);
+    const kept = loose.get_frame_rect().x;
+    settings.set_boolean('gloxi-panel-open', false);
+    await sleep(800);
+    check('strip: a window the person moved meanwhile stays where they left it',
+        [kept < 1300, loose.get_frame_rect().x], [true, kept]);
+    await waitFor(() => dockPanel() === null, 2000);
+
     await setShellProperty('GloxiPanelOpen', new GLib.Variant('b', true));
     await sleep(800);
     check('side panel: Gloxi opens it over D-Bus', Boolean(dockPanel()), true);
+    // Wait for the state, not a set time: on a busy CI runner the virtual
+    // pointer's press can arrive after the pause, and the next click then
+    // looked like it had done nothing.
     await click(button);
-    check('side panel: the top-bar button closes it', settings.get_boolean('gloxi-panel-open'), false);
+    check('side panel: the top-bar button closes it',
+        await waitFor(() => !settings.get_boolean('gloxi-panel-open'), 3000), true);
     await click(button);
-    check('side panel: and opens it', settings.get_boolean('gloxi-panel-open'), true);
+    check('side panel: and opens it',
+        await waitFor(() => settings.get_boolean('gloxi-panel-open'), 3000), true);
     await sleep(300);
     check('side panel: a new panel says hello again', panelRequests.filter(r => r.method === 'hello').length >= 2, true);
 

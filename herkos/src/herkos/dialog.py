@@ -159,6 +159,17 @@ def risk_level(question: dict) -> str:
     return level if level in RISK_LABELS else "R4"
 
 
+def risk_label(question: dict) -> str:
+    """The chip's words. An R4 change that can be undone (a return of the
+    system to a saved state) is R4 because it is big, not because it is
+    lost: the chip said "cannot be undone" above "Can be undone." (laptop,
+    2026-11-26)."""
+    level = risk_level(question)
+    if level == "R4" and question.get("undoable"):
+        return _("R4 · big change, can be undone")
+    return _(RISK_LABELS[level])
+
+
 def suspicious(question: dict) -> bool:
     """Untrusted content took part in this request (Keros, brief scheme 10.7)."""
     return bool(question.get("taint_sources"))
@@ -205,10 +216,10 @@ def main() -> int:
     try:
         question = json.loads(sys.stdin.read())
     except ValueError:
-        print("deny")
+        print("failed")
         return 1
     if not isinstance(question, dict):
-        print("deny")
+        print("failed")
         return 1
     import gi
 
@@ -218,7 +229,9 @@ def main() -> int:
 
     from herkos import real_input, style
 
-    answer = ["deny"]
+    # Until the person answers: a window that never showed is no "no" of
+    # theirs (VM check 2026-11-24: it was logged as denied_user).
+    answer = ["failed"]
     from gi.repository import Gio
 
     # One window per question: never ask the bus for a name (NON_UNIQUE).
@@ -278,7 +291,7 @@ def main() -> int:
         shape = Gtk.Image.new_from_icon_name(RISK_ICONS[level])
         shape.set_accessible_role(Gtk.AccessibleRole.PRESENTATION)  # the words say it
         chip.append(shape)
-        chip.append(Gtk.Label(label=_(RISK_LABELS[level])))
+        chip.append(Gtk.Label(label=risk_label(question)))
         chip.add_css_class("vilna-risk")
         chip.add_css_class(level.lower())
         head.append(chip)

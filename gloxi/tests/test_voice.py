@@ -46,7 +46,13 @@ def test_every_pack_is_pinned():
 def test_every_language_has_a_voice():
     from gloxi.voice.language import LANGUAGES
 
-    assert set(LANGUAGES) == {"uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"}
+    assert set(LANGUAGES) == {"uk", "en", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"} | {
+        "ca",
+        "ca@valencia",
+        "gl",
+        "eu",
+        "pt",
+    }
     for lang, voice in models.VOICES.items():
         assert voice.lang == lang
         assert voice.pack is not None or voice.espeak, lang
@@ -248,10 +254,20 @@ def test_unpack_reports_a_damaged_archive(tmp_path):
         ("Bună ziua, cum este vremea astăzi în oraș?", "ro"),
         ("Dobrý den, jaké je dnes počasí ve městě? Nevím.", "cs"),
         ("Labas, koks šiandien oras mieste? Aš nežinau.", "lt"),
+        ("Hola, quin temps fa avui a la ciutat? Això no ho sé.", "ca"),
+        ("Ola, que tempo fai hoxe na cidade? Non o sei, pero é moi bo.", "gl"),
+        ("Kaixo, zer eguraldi dago gaur hirian? Ez dakit, eta zu?", "eu"),
+        ("Olá, como está o tempo hoje na cidade? Não sei, mas é muito bom.", "pt"),
     ],
 )
 def test_detect(text, lang):
     assert language.detect(text, fallback="en") == lang
+
+
+def test_catalan_text_counts_as_valencian_in_a_valencian_interface():
+    text = "Hola, quin temps fa avui a la ciutat? Això no ho sé."
+    assert language.detect(text, fallback="ca@valencia") == "ca@valencia"
+    assert language.detect(text, fallback="en") == "ca"
 
 
 def test_detect_falls_back():
@@ -266,6 +282,9 @@ def test_interface_language():
     assert language.interface_language({"LANGUAGE": "ja", "LANG": "pl_PL"}) == "en"
     assert language.interface_language({"LANGUAGE": "ja:cs"}) == "cs"
     assert language.interface_language({}) == "en"
+    assert language.interface_language({"LANG": "ca_ES.UTF-8@valencia"}) == "ca@valencia"
+    assert language.interface_language({"LANG": "ca_ES.UTF-8"}) == "ca"
+    assert language.interface_language({"LANG": "pt_PT.UTF-8"}) == "pt"
 
 
 # -- what is read aloud ----------------------------------------------------------------

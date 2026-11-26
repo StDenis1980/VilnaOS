@@ -149,7 +149,10 @@ def _msgids() -> set[str]:
     return ids
 
 
-@pytest.mark.parametrize("lang", ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt"))
+@pytest.mark.parametrize(
+    "lang",
+    ("uk", "es", "pl", "de", "fr", "it", "ro", "cs", "lt", "ca", "ca@valencia", "gl", "eu", "pt"),
+)
 def test_every_window_text_is_translated(lang):
     """ADR 0009: the ten languages of Vilna; English is the msgid."""
     po = resources.files("vilna_backup.locale") / f"{lang}.po"
