@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Writes site/dns/vilnaos.com.toml to both DNS providers of vilnaos.com,
+# deSEC and bunny DNS (ADR 0032), after it changes on main. The apex and www
+# addresses are left alone here: site-watch.yml moves them on a failover.
+# Off until Denys has created both zones and set VILNA_SITE_DNS = true.
+name: DNS
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/dns/**", "tools/site_dns.py", ".github/workflows/dns.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-watch
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: vars.VILNA_SITE_DNS == 'true'
+    runs-on: ubuntu-latest
+    environment: dns
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write the zone to deSEC and bunny DNS
+        env:
+          DESEC_TOKEN: ${{ secrets.DESEC_TOKEN }}
+          BUNNY_API_KEY: ${{ secrets.BUNNY_API_KEY }}
+        run: |
+          python3 tools/site_dns.py apply --yes
+          python3 tools/site_dns.py diff

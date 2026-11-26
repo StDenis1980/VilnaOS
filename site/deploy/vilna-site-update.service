@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Spare copy of vilnaos.com (ADR 0032): pull main, check, switch.
+[Unit]
+Description=Update the spare copy of vilnaos.com
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/vilna-site/update.sh
