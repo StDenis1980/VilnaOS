@@ -32,6 +32,22 @@ jobs:
         run: |
           python3 tools/check_md_links.py
           python3 tools/test_check_md_links.py
+      - name: The systemd units are well formed
+        run: |
+          python3 tools/check_systemd.py
+          python3 tools/test_check_systemd.py
+      - name: The polkit policies and rules are well formed
+        run: |
+          python3 tools/check_polkit.py
+          python3 tools/test_check_polkit.py
+      - name: The RPM spec files are well formed
+        run: |
+          python3 tools/check_spec.py
+          python3 tools/test_check_spec.py
+      - name: The KIWI images install only packages we build
+        run: |
+          python3 tools/check_kiwi.py
+          python3 tools/test_check_kiwi.py
       - name: «Рекомендовано Vilna» follows ADR 0011 and 0012
         run: |
           python3 obs/packages/vilna-software-picks/build_picks.py --defaults image/packages.yaml check
