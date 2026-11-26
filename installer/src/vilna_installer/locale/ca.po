@@ -156,6 +156,9 @@ msgstr "Què fem amb el disc? Et proposo esborrar tot el disc i instal·lar Viln
 msgid "Fine, the disk will not be encrypted. You can change this in the plan."
 msgstr "D'acord, el disc no es xifrarà. Ho pots canviar al pla."
 
+msgid "The login name is {username}, and the computer's name is {hostname}; you can change them in the plan."
+msgstr "El nom d'usuari és {username} i el nom de l'ordinador, {hostname}; els pots canviar al pla."
+
 msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
 msgstr "Guarda la clau de recuperació en un lloc segur: sense ella ningú, ni tan sols tu, podrà obrir el disc si alguna cosa canvia en aquest ordinador."
 

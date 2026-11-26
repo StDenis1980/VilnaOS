@@ -156,6 +156,9 @@ msgstr "Co uděláme s diskem? Navrhuji smazat celý disk a nainstalovat Vilna; 
 msgid "Fine, the disk will not be encrypted. You can change this in the plan."
 msgstr "Dobře, disk nebude šifrovaný. Změnit to můžete v plánu."
 
+msgid "The login name is {username}, and the computer's name is {hostname}; you can change them in the plan."
+msgstr "Přihlašovací jméno je {username} a název počítače {hostname}; změnit je můžete v plánu."
+
 msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
 msgstr "Klíč pro obnovení dobře uschovejte: bez něj nikdo, ani vy, disk neotevře, pokud se v tomto počítači něco změní."
 

@@ -156,6 +156,9 @@ msgstr "O que fazemos com o disco? Proponho apagar todo o disco e instalar o Vil
 msgid "Fine, the disk will not be encrypted. You can change this in the plan."
 msgstr "Muito bem, o disco não será encriptado. Pode alterar isto no plano."
 
+msgid "The login name is {username}, and the computer's name is {hostname}; you can change them in the plan."
+msgstr "O nome de utilizador é {username} e o nome do computador é {hostname}; pode alterá-los no plano."
+
 msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
 msgstr "Guarde a chave de recuperação num lugar seguro: sem ela ninguém, nem mesmo o próprio utilizador, consegue abrir o disco se algo mudar neste computador."
 

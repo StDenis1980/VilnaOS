@@ -842,3 +842,126 @@ def test_the_local_model_warms_with_one_token(monkeypatch, tmp_path):
     monkeypatch.setattr(model, "_request", lambda path, body=None, **_: sent.append(body) or {})
     model.warm([{"role": "system", "content": "x"}], [])
     assert sent[0]["max_tokens"] == 1 and sent[0]["cache_prompt"] and sent[0]["id_slot"] == 0
+
+
+def at_step(c, plan_path, key):
+    """The plan filled up to ``key``, and the installer's question for it just asked."""
+    c.state.passed.update({"intro", "survey"})
+    p = plans.load(plan_path)
+    p["locale"] = {"languages": ["uk_UA.UTF-8"], "keyboards": ["ua", "us"]}
+    p["network"] = {"mode": "offline"}
+    if key != "disk":
+        c.state.passed.update({"old_files", "old_encrypted"})
+        p["disk"] = {"target": "x", "layout": "replace", "encryption": {"method": "none"}}
+    if key == "time":
+        p["user"] = {"full_name": "Олена", "username": "olena", "hostname": "olena-pc"}
+        p["user"]["password"] = "entered"
+    plans.save(p, plan_path)
+    c.refresh()
+    assert c.current().key == key
+    c.history.append({"role": "assistant", "content": c.question(c.current())})
+
+
+@pytest.mark.parametrize(
+    ("answer", "login"),
+    [("Тестер", "tester"), ("Мене звати Олена Демо", "olena"), ("Łukasz", "lukasz")],
+)
+def test_a_name_gives_latin_login_and_computer_names_without_the_model(plan_path, answer, login):
+    """Build15.8: Gloxi suggested «Тестер» as the computer's name and then refused it."""
+    c, model, tools = make(plan_path, "empty")
+    texts = start.Texts("uk")
+    try:
+        at_step(c, plan_path, "user")
+        reply = c.send(answer)
+        user = c.plan["user"]
+        assert (user["username"], user["hostname"]) == (login, f"{login}-pc")
+        assert reply.needs == ["user_password"] and model.seen == []
+        saved = texts(conv.NAMES_SAVED).format(username=login, hostname=f"{login}-pc")
+        assert reply.text == saved + "\n\n" + texts(conv.TYPE_PASSWORD)
+    finally:
+        tools.close()
+
+
+def test_a_question_at_the_name_step_goes_to_the_model(plan_path):
+    c, model, tools = make(plan_path, "empty", "Ім'я для входу — латиницею.")
+    try:
+        at_step(c, plan_path, "user")
+        c.send("а навіщо ім'я?")
+        assert len(model.seen) == 1 and not c.plan.get("user")
+    finally:
+        tools.close()
+
+
+def test_the_models_cyrillic_names_are_saved_in_latin(plan_path):
+    c, model, tools = make(
+        plan_path,
+        "empty",
+        [call("plan_set_user", full_name="Тестер", username="Тестер", hostname="Тестер-ПК")],
+        "Збережено.",
+    )
+    try:
+        at_step(c, plan_path, "user")
+        c.history.append({"role": "assistant", "content": "Як назвати комп'ютер?"})
+        c.send("залиш як є")
+        assert (c.plan["user"]["username"], c.plan["user"]["hostname"]) == ("tester", "tester-pk")
+    finally:
+        tools.close()
+
+
+@pytest.mark.parametrize(
+    ("answer", "asked"), [("так", True), ("Ок", True), ("встанови на весь диск", False)]
+)
+def test_yes_to_the_disk_question_erases_that_disk(plan_path, answer, asked):
+    """Build15.8: «встанови на весь диск» was not taken as the choice of the disk."""
+    c, model, tools = make(plan_path, "windows", "Усе на диску буде стерто, зокрема Windows.")
+    try:
+        at_step(c, plan_path, "disk")
+        if not asked:
+            c.history.append({"role": "assistant", "content": "Добре."})
+        reply = c.send(answer)
+        assert c.plan["disk"]["layout"] == "replace"
+        assert c.plan["disk"]["target"] == "nvme-Demo_SSD_512_0002"
+        assert reply.step.key == "old_files"  # the model explains what is erased
+        assert conv.MOVED_ON in model.last_system
+    finally:
+        tools.close()
+
+
+@pytest.mark.parametrize("answer", ["не стирай диск", "так?", "а що на ньому?"])
+def test_no_or_a_question_at_the_disk_step_goes_to_the_model(plan_path, answer):
+    c, model, tools = make(plan_path, "windows", "Добре, не стираю.")
+    try:
+        at_step(c, plan_path, "disk")
+        c.send(answer)
+        assert not (c.plan.get("disk") or {}).get("layout") and len(model.seen) == 1
+    finally:
+        tools.close()
+
+
+def test_yes_to_the_suggested_time_saves_it(plan_path):
+    """Build15.8: on «так» at the time step the model repeated an old error about the name."""
+    c, model, tools = make(plan_path, "empty")
+    texts = start.Texts("uk")
+    try:
+        at_step(c, plan_path, "time")
+        reply = c.send("так")
+        assert c.plan["locale"]["timezone"] == "Europe/Kyiv"
+        assert reply.text == texts(conv.PRIVACY_TEXT) and model.seen == []
+    finally:
+        tools.close()
+
+
+@pytest.mark.parametrize(
+    ("name", "latin"),
+    [
+        ("Олена", "olena"),
+        ("Щука Ґанна", "shchuka-ganna"),
+        ("Мар'яна", "mariana"),
+        ("Jürgen", "jurgen"),
+        ("Ștefan", "stefan"),
+        ("2Pac", "pac"),
+        ("李", ""),
+    ],
+)
+def test_latin_names(name, latin):
+    assert conv.latin_name(name) == latin

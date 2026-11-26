@@ -156,6 +156,9 @@ msgstr "Ką darysime su disku? Siūlau ištrinti visą diską ir įdiegti Vilna;
 msgid "Fine, the disk will not be encrypted. You can change this in the plan."
 msgstr "Gerai, diskas nebus šifruojamas. Tai galite pakeisti plane."
 
+msgid "The login name is {username}, and the computer's name is {hostname}; you can change them in the plan."
+msgstr "Prisijungimo vardas yra {username}, o kompiuterio pavadinimas – {hostname}; juos galite pakeisti plane."
+
 msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
 msgstr "Atkūrimo raktą laikykite saugiai: be jo niekas, net jūs, neatidarys disko, jei šiame kompiuteryje kas nors pasikeis."
 

@@ -156,6 +156,9 @@ msgstr "¿Qué hacemos con el disco? Te propongo borrar todo el disco e instalar
 msgid "Fine, the disk will not be encrypted. You can change this in the plan."
 msgstr "Bien, el disco no se cifrará. Puedes cambiarlo en el plan."
 
+msgid "The login name is {username}, and the computer's name is {hostname}; you can change them in the plan."
+msgstr "El nombre de usuario es {username} y el nombre del equipo, {hostname}; puedes cambiarlos en el plan."
+
 msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
 msgstr "Guarda la clave de recuperación en un lugar seguro: sin ella nadie, ni siquiera tú, podrá abrir el disco si algo cambia en este ordenador."
 
