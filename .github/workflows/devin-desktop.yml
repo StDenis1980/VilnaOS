@@ -38,7 +38,7 @@ jobs:
           set -eu
           cp -r thirdparty /tmp/thirdparty-orig
           python3 tools/devin_desktop.py latest --write >/dev/null || true
-          url="$(sed -n 's/^ *url: \(https:.*/Devin-linux-x64-.*\.deb\)$/\1/p' thirdparty/devin-desktop/io.github.stdenis1980.DevinDesktop.yml)"
+          url="$(sed -n 's|^ *url: \(https:.*/Devin-linux-x64-.*\.deb\)$|\1|p' thirdparty/devin-desktop/io.github.stdenis1980.DevinDesktop.yml)"
           rm -rf thirdparty && mv /tmp/thirdparty-orig thirdparty
           case "$url" in ''|*-0.0.0.deb) exit 0 ;; esac
           curl -fsSL -o /tmp/app.deb "$url"
