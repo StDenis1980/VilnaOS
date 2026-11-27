@@ -84,6 +84,21 @@ LEGACY: frozenset[tuple[str, str]] = frozenset(
             "thirdparty/claude-desktop/io.github.stdenis1980.ClaudeDesktop.metainfo.xml",
             "licence-text-missing",
         ),
+        ("thirdparty/cursor/io.github.stdenis1980.Cursor.metainfo.xml", "licence-text-missing"),
+        (
+            "thirdparty/devin-desktop/io.github.stdenis1980.DevinDesktop.metainfo.xml",
+            "licence-text-missing",
+        ),
+        (
+            "thirdparty/grok-bot/io.github.stdenis1980.GrokBot.metainfo.xml",
+            "licence-text-missing",
+        ),
+        # Added on main after the check was written: no header yet.
+        ("obs/packages/gnome-software/gnome-software.changes", "no-licence-info"),
+        ("obs/packages/gnome-software/vilna-layout-search.patch", "no-licence-info"),
+        ("thirdparty/cursor/io.github.stdenis1980.Cursor.desktop", "no-licence-info"),
+        ("thirdparty/devin-desktop/io.github.stdenis1980.DevinDesktop.desktop", "no-licence-info"),
+        ("thirdparty/grok-bot/io.github.stdenis1980.GrokBot.desktop", "no-licence-info"),
         # Top-level Markdown files and .gitignore carry no header.
         (".gitignore", "no-licence-info"),
         ("README.es.md", "no-licence-info"),

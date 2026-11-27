@@ -2755,7 +2755,11 @@ fn a_permission_for_one_folder_opens_it_and_nothing_else() {
         ),
     ];
     for (why, path) in others {
-        assert_eq!(f.open(&[path.clone()]), "denied_user", "{why}: {path}");
+        assert_eq!(
+            f.open(std::slice::from_ref(&path)),
+            "denied_user",
+            "{why}: {path}"
+        );
     }
     // The same, written in the URI as Gloxi may: the argument is the plain path.
     for (why, uri, argument) in [

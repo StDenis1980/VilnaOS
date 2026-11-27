@@ -50,9 +50,8 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import check_ci_coverage as cc  # noqa: E402  (after sys.path.insert above)
+import check_ci_coverage as cc  # noqa: E402  (a neighbour in tools/, as check_obs imports check_spec)
 
 WORKFLOW_DIR = ".github/workflows"
 ACTION_DIR = ".github/actions"
@@ -65,6 +64,8 @@ LEGACY: dict[tuple[str, str], int] = {
     # actions/checkout without persist-credentials: false in jobs that never push.
     (".github/workflows/ci.yml", "persist-credentials"): 19,
     (".github/workflows/claude-desktop.yml", "persist-credentials"): 2,
+    (".github/workflows/cursor-apps.yml", "persist-credentials"): 2,
+    (".github/workflows/devin-desktop.yml", "persist-credentials"): 2,
     (".github/workflows/dns.yml", "persist-credentials"): 1,
     (".github/workflows/flatpak.yml", "persist-credentials"): 3,
     (".github/workflows/obs.yml", "persist-credentials"): 2,

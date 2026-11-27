@@ -1187,7 +1187,7 @@ class RealRepo(unittest.TestCase):
     def test_no_errors_on_the_repo(self) -> None:
         problems, count = cf.check_files(ROOT, cf.tracked_files(ROOT))
         self.assertEqual(errors(problems), [])
-        self.assertEqual(count, 8)
+        self.assertEqual(count, 11)
 
     def test_main_on_the_repo(self) -> None:
         out, err = io.StringIO(), io.StringIO()

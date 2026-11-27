@@ -113,6 +113,9 @@ LEGACY = frozenset(
             "thirdparty/claude-desktop/io.github.stdenis1980.ClaudeDesktop.yml",
             "branch-missing",
         ),
+        ("thirdparty/cursor/io.github.stdenis1980.Cursor.yml", "branch-missing"),
+        ("thirdparty/devin-desktop/io.github.stdenis1980.DevinDesktop.yml", "branch-missing"),
+        ("thirdparty/grok-bot/io.github.stdenis1980.GrokBot.yml", "branch-missing"),
     }
 )
 

@@ -150,8 +150,52 @@ class AllowedRow:
     reason: str
 
 
+# Tests that feed invented personal data in on purpose.
+HOSTILE_TESTS = (
+    "backup/tests/test_hostile_plan.py|gloxi/tests/test_hostile_router.py|herkos/rs/crates/herkos-core/tests/hostile_request.rs|herkos/rs/crates/herkosd/tests/hostile_daemon.rs|mcp/backup/tests/test_hostile_backup.py|reports/client/tests/hostile_client.rs|tools/test_check_branding.py|tools/test_check_obs.py|tools/test_check_reproducible.py|tools/test_check_shell_extension.py|tools/test_vuln_match.py"
+)
+
 # Allowed findings with the reason. A real person's data never goes here.
 EXCEPTIONS: tuple[AllowedRow, ...] = (
+    AllowedRow(
+        "email",
+        HOSTILE_TESTS,
+        "demo@evil.org|demo@exämple.org|demo@notvilnaos.com"
+        "|demo@vilnaos.com.evil.org|demo@vilnaos.org|evil@example.org.evil.net"
+        "|me@example.eu|pw@example.eu|secret@s3.example.eu"
+        "|vilna@stdenis1980.github.io|y@evil.org",
+        "invented values that these tests pass in on purpose (hostile input, checks of checks)",
+    ),
+    AllowedRow(
+        "phone",
+        HOSTILE_TESTS,
+        "380501234567|48123456789",
+        "invented values that these tests pass in on purpose (hostile input, checks of checks)",
+    ),
+    AllowedRow(
+        "iban",
+        HOSTILE_TESTS,
+        "de89370400440532013000",
+        "invented values that these tests pass in on purpose (hostile input, checks of checks)",
+    ),
+    AllowedRow(
+        "home",
+        HOSTILE_TESTS,
+        "abuild|alice|anna|bob|etc|it|olena|діма",
+        "invented values that these tests pass in on purpose (hostile input, checks of checks)",
+    ),
+    AllowedRow(
+        "ip",
+        HOSTILE_TESTS,
+        "1.0.0.0|4::2|::ffff:8.8.8.8",
+        "invented values that these tests pass in on purpose (hostile input, checks of checks)",
+    ),
+    AllowedRow(
+        "home",
+        "tools/check_reproducible.py",
+        "live",
+        "the home of the live user inside the image, not a path of a builder",
+    ),
     # --- e-mail ---------------------------------------------------------------------------
     AllowedRow(
         "email",

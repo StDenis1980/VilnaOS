@@ -330,12 +330,12 @@ class PathRule(unittest.TestCase):
     def test_literal_build_paths_are_found(self) -> None:
         for literal in (
             "/home/abuild/rpmbuild",
-            "/home/denis/x",
+            "/home/olena/x",
             "/root/build",
-            "/Users/denis/x",
+            "/Users/olena/x",
             "/builddir/build",
             "/usr/src/packages/BUILD",
-            "C:\\\\Users\\\\denis",
+            "C:\\\\Users\\\\olena",
         ):
             with self.subTest(literal=literal):
                 self.assertEqual(py(f"x = '{literal}'"), ["path"])
@@ -352,7 +352,7 @@ class PathRule(unittest.TestCase):
                 self.assertEqual(py(f"x = '{literal}'"), [])
 
     def test_docstring_may_name_a_path(self) -> None:
-        self.assertEqual(py('"""Example: /home/denis/x."""\nx = 1'), [])
+        self.assertEqual(py('"""Example: /home/olena/x."""\nx = 1'), [])
         self.assertEqual(py('def f():\n    """Under /root/x."""\n'), [])
 
     def test_path_written_to_a_file_is_found(self) -> None:

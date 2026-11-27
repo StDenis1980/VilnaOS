@@ -74,6 +74,14 @@ NOT_A_CHECK: dict[str, str] = {
         "a helper: the live tests of herkos (herkos/tests/a11y_tour.py) start it as a process "
         "of their own to read the AT-SPI tree; it needs a desktop session, so it is not a check"
     ),
+    "tools/quality_report.py": (
+        "a report for people over the checks; ci.yml runs each check itself, and "
+        "tools/test_quality_report.py tests the report"
+    ),
+    "tools/vuln_match.py": (
+        "it needs an OSV file downloaded separately (CI has no feed by design); "
+        "tools/test_vuln_match.py tests it on made-up data"
+    ),
     "tools/build_site.py": (
         "the builder of site/public; tools/check_site.py (run by ci.yml) calls "
         "build_site.main(['', '--check']), so the build is checked there"

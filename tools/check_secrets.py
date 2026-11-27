@@ -78,6 +78,9 @@ LEGACY: dict[tuple[str, str, str], str] = {
     ): "a placeholder task of the benchmark, not a live key",
     # Made-up keys in the detector tests (the same value on two lines).
     ("privacy-gateway/tests/test_detectors.py", "api-key", "8856c5dc"): "made-up test key",
+    # Made-up secrets that the hostile tests pass in on purpose.
+    ("mcp/backup/tests/test_hostile_backup.py", "secret-assignment", "8d7661d4"): "made-up test value",
+    ("mcp/desktop/tests/test_hostile_desktop.py", "secret-assignment", "8f7fd819"): "made-up test value",
     # The header repeated 8000 times to test the detector on long input.
     ("privacy-gateway/tests/test_detectors.py", "private-key", "3021d90e"): "header only",
 }

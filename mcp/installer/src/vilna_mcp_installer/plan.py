@@ -40,6 +40,7 @@ import json
 import os
 import re
 import tempfile
+import unicodedata
 import zoneinfo
 from collections.abc import Callable
 from pathlib import Path
@@ -326,7 +327,7 @@ def set_encryption(plan: dict[str, Any], method: str, **_: Any) -> dict[str, Any
 def full_name_ok(name: str) -> bool:
     """Can an account hold this full name? Checked before the disk is touched: the
     engine refuses such a name only when it creates the account, after erasing."""
-    return all(c.isprintable() and c not in NAME_FORBIDDEN for c in name)
+    return not any(c in NAME_FORBIDDEN or unicodedata.category(c) == "Cc" for c in name)
 
 
 def set_user(

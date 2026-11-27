@@ -60,9 +60,8 @@ from pathlib import Path, PurePosixPath
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "tools"))
 
-import sbom  # noqa: E402  (after sys.path.insert above)
+import sbom  # noqa: E402  (a neighbour in tools/, as check_obs imports check_spec)
 
 APACHE = "Apache-2.0"
 BINARY_SUFFIXES = frozenset(

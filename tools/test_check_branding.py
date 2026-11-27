@@ -1736,7 +1736,7 @@ class RealRepo(unittest.TestCase):
         rel = "docs/design/plymouth/dots-120x35.png"
         data = (ROOT / rel).read_bytes()
         end = data.rindex(b"\x00\x00\x00\x00IEND")
-        dirty = data[:end] + text_chunk("/home/denis/logo.png") + data[end:]
+        dirty = data[:end] + text_chunk("/home/olena/logo.png") + data[end:]
         _, problems = cb.check_png(rel, dirty)
         self.assertTrue(any(p.rule == "png-text-path" for p in problems))
 
