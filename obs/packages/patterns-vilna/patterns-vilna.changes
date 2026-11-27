@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Nov 27 13:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- 0.17: require tailscale (openSUSE's package, ADR 0027): tailscaled
+  stays off until the person turns it on; Trayscale from Flathub is
+  its window. Require netbird and netbird-ui (openSUSE's packages),
+  a WireGuard mesh whose server can run in the EU; its service stays
+  off as well.
+
+-------------------------------------------------------------------
 Tue Nov 24 10:00:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - 0.16: the terminal is Ptyxis (ptyxis, ptyxis-lang) instead of

@@ -1,0 +1,27 @@
+[Desktop Entry]
+Type=Application
+Name=Devin Desktop
+GenericName=Code Editor
+GenericName[uk]=Редактор коду
+Comment=Cognition's AI code editor, formerly Windsurf (official app, packaged for Vilna)
+Comment[uk]=Редактор коду з AI від Cognition, колишній Windsurf (офіційна програма в пакунку Vilna)
+Comment[es]=Editor de código con IA de Cognition, antes Windsurf (app oficial, empaquetada para Vilna)
+Comment[pl]=Edytor kodu z AI firmy Cognition, dawniej Windsurf (oficjalna aplikacja w pakiecie Vilna)
+Comment[de]=KI-Code-Editor von Cognition, früher Windsurf (offizielle App, für Vilna verpackt)
+Comment[fr]=Éditeur de code avec IA de Cognition, anciennement Windsurf (application officielle, empaquetée pour Vilna)
+Comment[it]=Editor di codice con IA di Cognition, già Windsurf (app ufficiale, pacchettizzata per Vilna)
+Comment[ro]=Editor de cod cu AI de la Cognition, fostul Windsurf (aplicația oficială, împachetată pentru Vilna)
+Comment[cs]=Editor kódu s AI od Cognition, dříve Windsurf (oficiální aplikace zabalená pro Vilnu)
+Comment[lt]=„Cognition“ kodo redaktorius su DI, anksčiau „Windsurf“ (oficiali programa „Vilna“ pakete)
+Comment[ca]=Editor de codi amb IA de Cognition, abans Windsurf (aplicació oficial, empaquetada per a Vilna)
+Comment[ca@valencia]=Editor de codi amb IA de Cognition, abans Windsurf (aplicació oficial, empaquetada per a Vilna)
+Comment[gl]=Editor de código con IA de Cognition, antes Windsurf (aplicación oficial, empaquetada para Vilna)
+Comment[eu]=Cognitionen IA duen kode-editorea, lehen Windsurf (aplikazio ofiziala, Vilnarako paketatua)
+Comment[pt]=Editor de código com IA da Cognition, antes Windsurf (aplicação oficial, empacotada para o Vilna)
+Exec=devin-desktop %F
+Icon=io.github.stdenis1980.DevinDesktop
+Terminal=false
+Categories=Development;IDE;TextEditor;
+Keywords=AI;code;editor;IDE;programming;Windsurf;Devin;
+MimeType=x-scheme-handler/devin;x-scheme-handler/windsurf;application/x-devin-desktop-workspace;text/plain;inode/directory;
+StartupNotify=true

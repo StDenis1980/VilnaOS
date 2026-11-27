@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The extra-data Flatpak of Cognition's Devin Desktop, formerly Windsurf
+# (thirdparty/devin-desktop/README.md): the pins agree with Cognition's
+# signed apt index, the wrapper builds, and installing it downloads the
+# pinned .deb, checks it and unpacks a runnable Electron app. Nothing here
+# publishes anything: the app is not in Vilna's repository yet.
+name: Devin Desktop
+
+on:
+  push:
+    branches: [main]
+    paths: ["thirdparty/devin-desktop/**", "thirdparty/electron-deb/**", "tools/devin_desktop.py", "tools/claude_desktop.py", "tools/test_claude_desktop.py", ".github/workflows/devin-desktop.yml"]
+  pull_request:
+    paths: ["thirdparty/devin-desktop/**", "thirdparty/electron-deb/**", "tools/devin_desktop.py", "tools/claude_desktop.py", "tools/test_claude_desktop.py", ".github/workflows/devin-desktop.yml"]
+  # Cognition may remove an older .deb from its pool: a weekly look tells us
+  # when the pins need to move before installs start to fail.
+  schedule:
+    - cron: "29 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/test_claude_desktop.py
+      - name: The pins are the newest version in Cognition's signed apt index
+        run: python3 tools/devin_desktop.py latest
+      - name: The pins are well formed
+        run: python3 tools/devin_desktop.py check
+
+      - name: What the package carries (.desktop files, URL schemes, app folder)
+        if: always()
+        run: |
+          set -eu
+          cp -r thirdparty /tmp/thirdparty-orig
+          python3 tools/devin_desktop.py latest --write >/dev/null || true
+          url="$(sed -n 's|^ *url: \(https:.*/Devin-linux-x64-.*\.deb\)$|\1|p' thirdparty/devin-desktop/io.github.stdenis1980.DevinDesktop.yml)"
+          rm -rf thirdparty && mv /tmp/thirdparty-orig thirdparty
+          case "$url" in ''|*-0.0.0.deb) exit 0 ;; esac
+          curl -fsSL -o /tmp/app.deb "$url"
+          dpkg-deb -c /tmp/app.deb | awk '{print $6}' | grep -E '\.desktop$|chrome-sandbox$|resources/app/package\.json$|/apps/[^/]+\.png$|pixmaps/' || true
+          dpkg-deb --fsys-tarfile /tmp/app.deb | tar -xO --wildcards '*.desktop' 2>/dev/null | grep -E '^(Name|Exec|MimeType|StartupWMClass)=' || true
+
+  flatpak:
+    needs: pins
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
+      options: --privileged
+    env:
+      APP: io.github.stdenis1980.DevinDesktop
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the metadata
+        run: |
+          desktop-file-validate thirdparty/devin-desktop/$APP.desktop
+          appstreamcli validate --no-net --explain thirdparty/devin-desktop/$APP.metainfo.xml
+      - uses: flathub-infra/flatpak-github-actions/flatpak-builder@933e9e8ca36e85046ebca8e211f0785c6becac40
+        with:
+          build-bundle: false
+          manifest-path: thirdparty/devin-desktop/io.github.stdenis1980.DevinDesktop.yml
+          cache-key: flatpak-builder-devin-${{ github.sha }}
+          upload-artifact: false
+      - name: Installing downloads Cognition's .deb, checks it and unpacks the app
+        run: |
+          set -eu
+          # A single-file bundle cannot carry extra-data ("Extra data missing in
+          # detached metadata"), so it installs from the OSTree repository
+          # flatpak-builder wrote, as it will from Vilna's repository.
+          flatpak remote-add --no-gpg-verify devin-check "file://$PWD/repo"
+          flatpak install -y --noninteractive devin-check "$APP"
+          flatpak run --command=sh "$APP" -c '
+            set -eu
+            cd /app/extra/app
+            test -x .main
+            test -d resources
+            test ! -e chrome-sandbox
+            echo "main program: $(readlink .main), $(du -sh . | cut -f1)"
+            ls
+          '
+          loc="$(flatpak info --show-location "$APP")"
+          ls "$loc/export/share/applications/$APP.desktop"
+          ls "$loc"/export/share/icons/hicolor/*/apps/"$APP".png \
+            || echo "::warning::Cognition's icon was not exported from /app/extra/export"

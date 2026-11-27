@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Flatpak wrapper for xAI's Grok Bot app, built and served by Anysphere.
+#
+# The app itself is proprietary and is NOT in this Flatpak or in Vilna's
+# repository. This is an extra-data Flatpak: when a person installs it, Flatpak
+# downloads the vendor's own .deb from downloads.cursor.com on that person's
+# computer, checks its size and SHA-256 against the pins below, and
+# ../electron-deb/apply_extra.sh unpacks it into /app/extra. Only this wrapper
+# (launcher, .desktop, metainfo) is ours. See thirdparty/grok-bot/README.md.
+#
+# The pins come from Anysphere's update service, checked against its signed
+# apt index where it lists the package:
+#   python3 tools/cursor_apps.py latest --write grok-bot
+#
+#   flatpak-builder --user --install --force-clean build \
+#     thirdparty/grok-bot/io.github.stdenis1980.GrokBot.yml
+#   flatpak run io.github.stdenis1980.GrokBot
+id: io.github.stdenis1980.GrokBot
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# Electron apps: zypak replaces Chromium's setuid sandbox inside Flatpak.
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: grok-bot
+separate-locales: false
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --socket=pulseaudio
+  # Notifications and the sign-in token in the keyring. Without the secret
+  # service Electron's safeStorage falls back to plain text.
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.secrets
+  # Sleep and resume events; without it Chromium logs system bus errors.
+  - --system-talk-name=org.freedesktop.login1
+  # The Bots work on a computer in xAI's cloud, not on this one: files come
+  # in through the file chooser portal, and downloads go to Downloads.
+  - --filesystem=xdg-download
+
+modules:
+  - name: grok-bot
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 launch.sh /app/bin/launch
+      - ln -s launch /app/bin/grok-bot
+      - install -Dm644 io.github.stdenis1980.GrokBot.desktop -t /app/share/applications
+      - install -Dm644 io.github.stdenis1980.GrokBot.metainfo.xml -t /app/share/metainfo
+    sources:
+      # The vendor's package, downloaded on the person's computer at install
+      # time. tools/cursor_apps.py keeps these pins (one per architecture).
+      - type: extra-data
+        filename: app.deb
+        only-arches: [x86_64]
+        url: https://downloads.cursor.com/grokbot/stable/bfb372966cec77c6ec2750957965f2a2268da17d/linux/x64/grok-bot_1.3.0_amd64.deb
+        sha256: "87b046b6e4126c3eb466df59135b59c8efbb5f9f10e0de548f0d65ec8ac55528"
+        size: 117982212
+      - type: extra-data
+        filename: app.deb
+        only-arches: [aarch64]
+        url: https://downloads.cursor.com/grokbot/stable/bfb372966cec77c6ec2750957965f2a2268da17d/linux/arm64/grok-bot_1.3.0_arm64.deb
+        sha256: "f9168a4a6182201a24977c18f42751cd964f8daf300289333c37c4f0baf40ed3"
+        size: 114013936
+      - type: file
+        path: ../electron-deb/apply_extra.sh
+      - type: file
+        path: ../electron-deb/launch.sh
+      - type: file
+        path: io.github.stdenis1980.GrokBot.desktop
+      - type: file
+        path: io.github.stdenis1980.GrokBot.metainfo.xml

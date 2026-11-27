@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Flatpak wrapper for Anysphere's Cursor code editor.
+#
+# The app itself is proprietary and is NOT in this Flatpak or in Vilna's
+# repository. This is an extra-data Flatpak: when a person installs it, Flatpak
+# downloads the vendor's own .deb from downloads.cursor.com on that person's
+# computer, checks its size and SHA-256 against the pins below, and
+# ../electron-deb/apply_extra.sh unpacks it into /app/extra. Only this wrapper
+# (launcher, .desktop, metainfo) is ours. See thirdparty/cursor/README.md.
+#
+# The pins come from Anysphere's update service, checked against its signed
+# apt index where it lists the package:
+#   python3 tools/cursor_apps.py latest --write cursor
+#
+#   flatpak-builder --user --install --force-clean build \
+#     thirdparty/cursor/io.github.stdenis1980.Cursor.yml
+#   flatpak run io.github.stdenis1980.Cursor
+id: io.github.stdenis1980.Cursor
+runtime: org.freedesktop.Platform
+runtime-version: "25.08"
+sdk: org.freedesktop.Sdk
+# Electron apps: zypak replaces Chromium's setuid sandbox inside Flatpak.
+base: org.electronjs.Electron2.BaseApp
+base-version: "25.08"
+command: cursor
+separate-locales: false
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --socket=pulseaudio
+  # Notifications and the sign-in token in the keyring. Without the secret
+  # service Electron's safeStorage falls back to plain text.
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.secrets
+  # Sleep and resume events; without it Chromium logs system bus errors.
+  - --system-talk-name=org.freedesktop.login1
+  # A code editor needs the person's projects and tools (decision of Denys 2026-11-27,
+  # thirdparty/cursor/README.md): the home folder, removable drives, and
+  # commands on the system through flatpak-spawn --host
+  # (../electron-deb/host-shell.sh),
+  # like Visual Studio Code on Flathub. GNOME Software marks this as
+  # potentially unsafe.
+  - --filesystem=home
+  - --filesystem=/media
+  - --filesystem=/run/media
+  - --talk-name=org.freedesktop.Flatpak
+
+modules:
+  - name: cursor
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 apply_extra.sh /app/bin/apply_extra
+      - install -Dm755 launch.sh /app/bin/launch
+      - install -Dm755 ide.sh /app/bin/cursor
+      - install -Dm755 host-shell.sh /app/bin/host-shell
+      - install -Dm644 io.github.stdenis1980.Cursor.desktop -t /app/share/applications
+      - install -Dm644 io.github.stdenis1980.Cursor.metainfo.xml -t /app/share/metainfo
+    sources:
+      # The vendor's package, downloaded on the person's computer at install
+      # time. tools/cursor_apps.py keeps these pins (one per architecture).
+      - type: extra-data
+        filename: app.deb
+        only-arches: [x86_64]
+        url: https://downloads.cursor.com/production/0925c4b8226c56947c43f0b555fb98e187a7e029/linux/x64/deb/amd64/deb/cursor_3.32.4_amd64.deb
+        sha256: "c9c6579b4917c41a142a51a903dee7c81d6ab19b8b8f63916513361e6f019266"
+        size: 230561828
+      - type: extra-data
+        filename: app.deb
+        only-arches: [aarch64]
+        url: https://downloads.cursor.com/production/0925c4b8226c56947c43f0b555fb98e187a7e029/linux/arm64/deb/arm64/deb/cursor_3.32.4_arm64.deb
+        sha256: "46471d418f23628360acf899277a4e4b559cd53d4c0199d8c6e2e8b1116d6b84"
+        size: 201883184
+      - type: file
+        path: ../electron-deb/apply_extra.sh
+      - type: file
+        path: ../electron-deb/launch.sh
+      - type: file
+        path: ../electron-deb/ide.sh
+      - type: file
+        path: ../electron-deb/host-shell.sh
+      - type: file
+        path: io.github.stdenis1980.Cursor.desktop
+      - type: file
+        path: io.github.stdenis1980.Cursor.metainfo.xml

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+<component type="desktop-application">
+  <id>io.github.stdenis1980.DevinDesktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary=https://cognition.com/legal/platform-terms-of-service</project_license>
+
+  <name>Devin Desktop</name>
+  <summary>AI code editor by Cognition, formerly Windsurf, official app in a Vilna package</summary>
+  <summary xml:lang="uk">Редактор коду з AI від Cognition, колишній Windsurf, офіційна програма в пакунку Vilna</summary>
+  <summary xml:lang="es">Editor de código con IA de Cognition, antes Windsurf, la app oficial en un paquete de Vilna</summary>
+  <summary xml:lang="pl">Edytor kodu z AI firmy Cognition, dawniej Windsurf, oficjalna aplikacja w pakiecie Vilna</summary>
+  <summary xml:lang="de">KI-Code-Editor von Cognition, früher Windsurf, die offizielle App in einem Vilna-Paket</summary>
+  <summary xml:lang="fr">Éditeur de code avec IA de Cognition, anciennement Windsurf, l’application officielle dans un paquet Vilna</summary>
+  <summary xml:lang="it">Editor di codice con IA di Cognition, già Windsurf, l’app ufficiale in un pacchetto Vilna</summary>
+  <summary xml:lang="ro">Editor de cod cu AI de la Cognition, fostul Windsurf, aplicația oficială într-un pachet Vilna</summary>
+  <summary xml:lang="cs">Editor kódu s AI od Cognition, dříve Windsurf, oficiální aplikace v balíčku Vilna</summary>
+  <summary xml:lang="lt">„Cognition“ kodo redaktorius su DI, anksčiau „Windsurf“, oficiali programa „Vilna“ pakete</summary>
+
+  <!-- The packager, not the vendor: with the vendor's icon, the vendor's
+       name here reads as an official package in GNOME Software (PR #233). -->
+  <developer id="io.github.stdenis1980">
+    <name>Vilna OS (packaging of Cognition’s app)</name>
+    <name xml:lang="uk">Vilna OS (пакунок програми Cognition)</name>
+  </developer>
+
+  <description>
+    <p>
+      Devin Desktop, formerly Windsurf, is Cognition’s code editor with AI agents that read, write and run your code. This package is not made by Cognition. It is a small wrapper by Vilna OS: when you install it, your computer downloads Cognition’s own Linux app from its signed apt repository and checks that it is exactly the published file.
+    </p>
+    <p xml:lang="uk">
+      Devin Desktop, колишній Windsurf, — редактор коду від Cognition з AI-агентами, які читають, пишуть і запускають ваш код. Цей пакунок зробила не Cognition. Це невелика обгортка від Vilna OS: під час встановлення ваш комп'ютер завантажує власну програму Cognition для Linux з її підписаного сховища apt і перевіряє, що це саме опублікований файл.
+    </p>
+    <p>
+      Devin Desktop is proprietary software and works with a Devin account. Your code and prompts go to Cognition’s servers under Cognition’s terms. It can open the files in your home folder, and its terminal and agents run commands on your system as you.
+    </p>
+    <p xml:lang="uk">
+      Devin Desktop — невільна програма, працює з обліковим записом Devin. Ваш код і запити йдуть на сервери Cognition за умовами Cognition. Програма бачить файли у вашій домашній теці, а її термінал і агенти запускають команди у вашій системі від вашого імені.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.stdenis1980.DevinDesktop.desktop</launchable>
+  <url type="homepage">https://devin.ai/download</url>
+  <url type="vcs-browser">https://github.com/StDenis1980/VilnaOS/tree/main/thirdparty/devin-desktop</url>
+  <url type="bugtracker">https://github.com/StDenis1980/VilnaOS/issues</url>
+
+  <provides>
+    <binary>devin-desktop</binary>
+  </provides>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <requires>
+    <internet>always</internet>
+  </requires>
+  <categories>
+    <category>Development</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+
+    <release version="3.15.14" date="2026-11-27"/>
+  </releases>
+</component>
