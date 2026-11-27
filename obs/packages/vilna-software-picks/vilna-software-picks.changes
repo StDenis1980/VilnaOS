@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov 27 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Version 0.5: Zed (dev.zed.Zed, community build on Flathub) instead of
+  Dev Toolbox in «Розробка», to stay at 60 apps (decision of Denys,
+  2026-11-27)
+
+-------------------------------------------------------------------
 Fri Nov 13 17:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
 
 - Version 0.4: Wesnoth is org.wesnoth.Wesnoth on Flathub; licences as

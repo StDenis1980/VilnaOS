@@ -505,12 +505,12 @@ default = false
 why = "Контейнери Podman без командного рядка."
 
 [[app]]
-id = "me.iepure.devtoolbox"
+id = "dev.zed.Zed"
 category = "development"
-license = "GPL-3.0-or-later"
-source = "flathub-verified"
+license = "AGPL-3.0-or-later AND Apache-2.0 AND GPL-3.0-or-later"
+source = "flathub-community"
 default = false
-why = "Дрібні інструменти розробника: JSON, Base64, хеші, регулярні вирази."
+why = "Швидкий вільний редактор коду з AI-помічником; неофіційна збірка спільноти Flathub (рішення Denys 27.11.2026)."
 
 # ---------------------------------------------------------------- Система і безпека
 

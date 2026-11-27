@@ -74,6 +74,8 @@ vilna:
     - {name: proton-vpn,                   license: GPL-3.0-or-later, status: upstream}  # з Tumbleweed (4.15.0, рішення Denys 13.11.2026), у patterns-vilna 0.9; закріпити версію в OBS Vilna
     - {name: mullvad-vpn,                  license: GPL-3.0-or-later, status: obs}       # 2026.5, перепакований офіційний RPM зі своїми скриптами, підпис Mullvad
     - {name: tailscale,                    license: BSD-3-Clause,     status: upstream}  # з Tumbleweed; tailscaled вимкнений, доки людина сама не ввімкне; вікно — Trayscale з Flathub (ADR 0027, доповнення 27.11.2026)
+    - {name: netbird,                      license: BSD-3-Clause,     status: upstream}  # з Tumbleweed (0.83.2); WireGuard-мережа з ЄС, свій сервер можна в ЄС; служба вимкнена (доповнення ADR 0027, 27.11.2026)
+    - {name: netbird-ui,                   license: BSD-3-Clause,     status: upstream}  # вікно NetBird; значок у панелі потребує StatusNotifierWatcher, якого у Vilna немає — перевірити у VM
     # Локальна модель
     - {name: llama.cpp,                    license: MIT,              status: upstream}
     - {name: vilna-model-default,          license: model,            status: obs}      # Qwen3 4B Q4_K_M в образі (ADR 0006, 0008)

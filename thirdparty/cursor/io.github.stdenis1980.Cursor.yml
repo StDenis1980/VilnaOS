@@ -40,7 +40,8 @@ finish-args:
   - --system-talk-name=org.freedesktop.login1
   # A code editor needs the person's projects and tools (decision of Denys 2026-11-27,
   # thirdparty/cursor/README.md): the home folder, removable drives, and
-  # commands on the system through flatpak-spawn --host (host-shell.sh),
+  # commands on the system through flatpak-spawn --host
+  # (../electron-deb/host-shell.sh),
   # like Visual Studio Code on Flathub. GNOME Software marks this as
   # potentially unsafe.
   - --filesystem=home
@@ -54,7 +55,7 @@ modules:
     build-commands:
       - install -Dm755 apply_extra.sh /app/bin/apply_extra
       - install -Dm755 launch.sh /app/bin/launch
-      - install -Dm755 cursor.sh /app/bin/cursor
+      - install -Dm755 ide.sh /app/bin/cursor
       - install -Dm755 host-shell.sh /app/bin/host-shell
       - install -Dm644 io.github.stdenis1980.Cursor.desktop -t /app/share/applications
       - install -Dm644 io.github.stdenis1980.Cursor.metainfo.xml -t /app/share/metainfo
@@ -78,9 +79,9 @@ modules:
       - type: file
         path: ../electron-deb/launch.sh
       - type: file
-        path: cursor.sh
+        path: ../electron-deb/ide.sh
       - type: file
-        path: host-shell.sh
+        path: ../electron-deb/host-shell.sh
       - type: file
         path: io.github.stdenis1980.Cursor.desktop
       - type: file

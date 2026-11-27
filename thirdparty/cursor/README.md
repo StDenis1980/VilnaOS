@@ -13,7 +13,7 @@ Cursor — невільна програма, і [умови Cursor](https://cur
 
 1. Flatpak завантажує `.deb` прямо з `downloads.cursor.com` (джерело `extra-data`) і звіряє розмір і SHA-256 із закріпленими в маніфесті.
 2. [`../electron-deb/apply_extra.sh`](../electron-deb/apply_extra.sh) без мережі розпаковує програму в `/app/extra/app`, прибирає лише `chrome-sandbox` (у Flatpak його замінює zypak) і бере іконку Anysphere з того самого пакета.
-3. `cursor.sh` запускає програму через `zypak-wrapper`, спершу на Wayland.
+3. [`../electron-deb/ide.sh`](../electron-deb/ide.sh) запускає програму через `zypak-wrapper`, спершу на Wayland.
 
 Закріплене оновлює `tools/cursor_apps.py` (спільний з [Grok Bot](../grok-bot/README.md)):
 
@@ -32,7 +32,7 @@ CI (`.github/workflows/cursor-apps.yml`) щотижня дивиться, чи �
 Редакторові коду потрібні проєкти й інструменти людини, тож доступ такий самий, як у Visual Studio Code на Flathub (рішення Denys 27.11.2026):
 
 - домашня тека, `/media` і `/run/media`;
-- `org.freedesktop.Flatpak`: термінал і агент Cursor запускають команди в системі через `flatpak-spawn --host` (`host-shell.sh`, у змінній `SHELL`), з git, компіляторами й іншими програмами людини;
+- `org.freedesktop.Flatpak`: термінал і агент Cursor запускають команди в системі через `flatpak-spawn --host` ([`host-shell.sh`](../electron-deb/host-shell.sh), у змінній `SHELL`), з git, компіляторами й іншими програмами людини;
 - мережа, Wayland, GPU, звук, сповіщення, сховище секретів, `login1`.
 
 GNOME Software позначає такий пакунок як «Потенційно небезпечна». Це правда: агент Cursor може змінювати файли й запускати команди від імені людини, і Herkos цього не бачить.

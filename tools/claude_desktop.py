@@ -43,6 +43,11 @@ KEY_URL = "https://downloads.claude.ai/claude-desktop/key.asc"
 SUITE = "stable"
 COMPONENT = "main"
 PACKAGE = "claude-desktop"
+# Names in messages; tools/devin_desktop.py reuses this module for another
+# vendor's signed apt repository and sets its own.
+NAME = "claude-desktop"
+VENDOR = "Anthropic"
+TOOL = "tools/claude_desktop.py"
 # Anthropic's apt signing key, as key.asc on downloads.claude.ai served it on
 # 2026-11-25 (first seen by CI, PR #233). Anthropic publishes no fingerprint
 # elsewhere, so this is trust on first use, like `apt` itself; from now on a
@@ -102,7 +107,7 @@ def check_pins(pins: dict[str, Pin]) -> list[str]:
     for arch, pin in sorted(pins.items()):
         deb_arch = ARCHES.get(arch, "?")
         if not pin.url.startswith(f"{REPO}/pool/"):
-            problems.append(f"{arch}: {pin.url} is not in Anthropic's apt repository {REPO}")
+            problems.append(f"{arch}: {pin.url} is not in {VENDOR}'s apt repository {REPO}")
         if not pin.url.endswith(f"_{deb_arch}.deb"):
             problems.append(f"{arch}: {pin.url} is not the {deb_arch} package")
         if not HEX64.fullmatch(pin.sha256) or pin.sha256 == "0" * 64:
@@ -236,7 +241,7 @@ def newest(packages: str, deb_arch: str) -> dict[str, str]:
 
 
 def fetch(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "vilna-claude-desktop-pins"})
+    req = urllib.request.Request(url, headers={"User-Agent": f"vilna-{NAME}-pins"})
     with urllib.request.urlopen(req, timeout=60) as r:
         return r.read()
 
@@ -265,11 +270,11 @@ def verified_inrelease() -> str:
         raise PinError("InRelease has no valid signature")
     if not KEY_FINGERPRINT:
         raise PinError(
-            f"InRelease is signed by {sigs[0]}; pin it as KEY_FINGERPRINT in tools/claude_desktop.py "
-            "after checking it against Anthropic's published key"
+            f"InRelease is signed by {sigs[0]}; pin it as KEY_FINGERPRINT in {TOOL} "
+            f"after checking it against {VENDOR}'s published key"
         )
     if KEY_FINGERPRINT not in sigs:
-        raise PinError(f"InRelease is signed by {sigs}, not Anthropic's key {KEY_FINGERPRINT}")
+        raise PinError(f"InRelease is signed by {sigs}, not {VENDOR}'s key {KEY_FINGERPRINT}")
     # Only what the signature covers: gpg prints the signed text on stdout.
     return out.stdout.decode("utf-8")
 
@@ -312,9 +317,9 @@ def cmd_check() -> int:
     if versions and meta not in versions:
         problems.append(f"metainfo's newest release is {meta!r}, the pins are {sorted(versions)}")
     for p in problems:
-        print(f"claude-desktop: {p}", file=sys.stderr)
+        print(f"{NAME}: {p}", file=sys.stderr)
     if not problems:
-        print(f"claude-desktop {meta}: pins ok")
+        print(f"{NAME} {meta}: pins ok")
     return 1 if problems else 0
 
 
@@ -349,7 +354,7 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_check()
         return cmd_latest(args.write)
     except PinError as e:
-        print(f"claude-desktop: {e}", file=sys.stderr)
+        print(f"{NAME}: {e}", file=sys.stderr)
         return 1
 
 

@@ -89,6 +89,10 @@ Requires:       mullvad-vpn
 # stays off (openSUSE's default preset) until the person turns it on;
 # its window is Trayscale from Flathub.
 Requires:       tailscale
+# NetBird (ADR 0027, a manual option): a WireGuard mesh from Germany whose
+# server can run in the EU; openSUSE's packages, service off until chosen.
+Requires:       netbird
+Requires:       netbird-ui
 # Branding (composition.md, section 4.5): Vilna's own packages where
 # Aeon or openSUSE set something for the distribution, the neutral
 # *-branding-upstream ones elsewhere. The Aeon and openSUSE ones are
