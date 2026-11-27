@@ -113,7 +113,8 @@ def groups(key: str) -> list[str]:
 
 def normalize(typed: str) -> str:
     """What the person typed, without spaces and dashes, in lower case."""
-    return re.sub(r"[\s\-‐‑–—]+", "", typed).lower()
+    # Invisible characters (U+200B and the like) often come along when the key is copied.
+    return re.sub(r"[\s\-‐‑–—\u200b-\u200d\u2060\ufeff\u00ad]+", "", typed).lower()
 
 
 def check_group(key: str, typed: str, index: int) -> bool:
@@ -121,7 +122,11 @@ def check_group(key: str, typed: str, index: int) -> bool:
     parts = groups(key)
     if not 0 <= index < len(parts):
         return False
-    return secrets.compare_digest(normalize(typed), parts[index])
+    if not parts[index]:
+        return False
+    # Bytes, not str: compare_digest refuses a str with non-ASCII letters, and a
+    # Cyrillic «а» or «с» typed on a Ukrainian layout is a wrong letter, not an error.
+    return secrets.compare_digest(normalize(typed).encode(), parts[index].encode())
 
 
 def spoken(key: str) -> str:

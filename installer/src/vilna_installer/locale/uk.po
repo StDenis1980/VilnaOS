@@ -859,3 +859,6 @@ msgstr "Пароль"
 
 msgid "Keyboard layout: {name}"
 msgstr "Розкладка клавіатури: {name}"
+
+msgid "Write your name without «,» and «:», for example «Olena Shevchenko»."
+msgstr "Напишіть ім'я без «,» і «:», наприклад «Олена Шевченко»."

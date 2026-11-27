@@ -859,3 +859,6 @@ msgstr "Discul are deja o partiție de sistem EFI. Alegeți-o (formatată sau nu
 
 msgid "Keyboard layout: {name}"
 msgstr "Aranjamentul tastaturii: {name}"
+
+msgid "Write your name without «,» and «:», for example «Olena Shevchenko»."
+msgstr "Scrie numele fără «,» și «:», de exemplu «Olena Shevchenko»."

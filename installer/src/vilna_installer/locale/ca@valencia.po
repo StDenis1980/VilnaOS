@@ -859,3 +859,6 @@ msgstr "El disc ja té una partició del sistema EFI. Tria-la (formatada o no) e
 
 msgid "Keyboard layout: {name}"
 msgstr "Distribució del teclat: {name}"
+
+msgid "Write your name without «,» and «:», for example «Olena Shevchenko»."
+msgstr "Escriu el teu nom sense «,» ni «:», per exemple «Olena Shevchenko»."

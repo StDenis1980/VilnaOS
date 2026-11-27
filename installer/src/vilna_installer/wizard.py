@@ -131,6 +131,7 @@ CHANGE_USE = "{name} ({size}) is used as {use}, its files stay"
 CHANGE_CREATE = "A new partition of {size} is created{use}"
 CHANGE_MANUAL = "Partitions are chosen in the partition editor"
 NAME_NEEDED = "Type your name."
+BAD_FULL_NAME = "Write your name without «,» and «:», for example «Olena Shevchenko»."
 BAD_USERNAME = (
     "A login name starts with a Latin letter and has only small Latin letters, digits, «-» and «_»."
 )
@@ -241,6 +242,7 @@ PROBLEM_TEXT = {
     "later_stage": "This comes in a later version of Vilna.",
     "bitlocker_recovery_key": BITLOCKER_KEY,
     "reserved_username": TAKEN_USERNAME,
+    "bad_full_name": BAD_FULL_NAME,
     "bad_username": BAD_USERNAME,
     "bad_hostname": BAD_HOSTNAME,
     "bad_crash_reports": conv.CRASH_NEEDED,
@@ -666,6 +668,8 @@ class Wizard:
     def set_user(self, full_name: str, username: str, hostname: str) -> str | None:
         if not full_name.strip():
             return NAME_NEEDED
+        if not plans.full_name_ok(" ".join(full_name.split())):
+            return BAD_FULL_NAME
         if not plans.USERNAME_RE.match(username):
             return BAD_USERNAME
         if username in plans.RESERVED_USERS or username.startswith("gloxi-"):

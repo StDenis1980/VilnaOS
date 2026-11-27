@@ -257,6 +257,10 @@ def test_changing_the_disk_asks_for_the_recovery_key_again():
         ("set_user", {"full_name": "A", "username": "gloxi-1000", "hostname": "pc"}),
         ("set_user", {"full_name": "A", "username": "olena", "hostname": "-pc"}),
         ("set_user", {"full_name": " ", "username": "olena", "hostname": "pc"}),
+        ("set_user", {"full_name": "Demo, Olena", "username": "olena", "hostname": "pc"}),
+        ("set_user", {"full_name": "Olena\x1b[2J", "username": "olena", "hostname": "pc"}),
+        ("set_user", {"full_name": "A", "username": "olena\n", "hostname": "pc"}),
+        ("set_user", {"full_name": "A", "username": "olena", "hostname": "pc\n"}),
         ("set_time", {"timezone": "Mars/Base", "region": "uk_UA.UTF-8"}),
         ("set_time", {"timezone": "Europe/Kyiv", "region": "uk"}),
     ],
@@ -471,3 +475,12 @@ def test_the_vpn_is_the_persons_choice_and_may_wait_for_the_first_start():
     p["confirmed_by_user"] = True
     plans.set_vpn(p, "skip")
     assert p["confirmed_by_user"] is False
+
+
+def test_the_validator_refuses_a_full_name_an_account_cannot_hold():
+    # A plan written by hand or by the model: the engine would refuse the name only
+    # when it makes the account, after the disk is erased.
+    p, s = complete()
+    p["user"]["full_name"] = "Demo: Olena"
+    codes = {problem["code"] for problem in plans.validate(p, s)["problems"]}
+    assert "bad_full_name" in codes

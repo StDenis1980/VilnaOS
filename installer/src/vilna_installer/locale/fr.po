@@ -859,3 +859,6 @@ msgstr "Le disque a déjà une partition système EFI. Choisissez-la (formatée 
 
 msgid "Keyboard layout: {name}"
 msgstr "Disposition du clavier : {name}"
+
+msgid "Write your name without «,» and «:», for example «Olena Shevchenko»."
+msgstr "Écrivez votre nom sans « , » ni « : », par exemple « Olena Shevchenko »."

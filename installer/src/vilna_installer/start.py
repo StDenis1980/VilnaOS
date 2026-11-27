@@ -65,7 +65,7 @@ MAIN_LOCALES = frozenset(lang.locale for lang in LANGUAGES)
 # Any other language the system has a locale for («Other languages»). GNOME
 # and the rest of openSUSE are in it; Vilna's own programs and Gloxi stay in
 # English until someone translates them, and Gloxi was not checked in it.
-LOCALE_RE = re.compile(r"^([a-z]{2,3})(_[A-Z]{2})?\.UTF-8(@[a-z]+)?$")
+LOCALE_RE = re.compile(r"^([a-z]{2,3})(_[A-Z]{2})?\.UTF-8(@[a-z]+)?\Z")
 SUPPORTED = Path("/usr/share/i18n/SUPPORTED")
 
 # Every text of the screen, in English (the msgids of locale/*.po).

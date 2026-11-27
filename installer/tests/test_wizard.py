@@ -132,6 +132,10 @@ def test_the_values_are_checked_before_the_plan_takes_them(tmp_path):
     assert w.set_user("Olena", "Olena", "pc") == wiz.BAD_USERNAME
     assert w.set_user("Olena", "root", "pc") == wiz.TAKEN_USERNAME
     assert w.set_user("Olena", "olena", "-pc") == wiz.BAD_HOSTNAME
+    # Refused here, not when the account is made after the disk is erased.
+    assert w.set_user("Shevchenko, Olena", "olena", "pc") == wiz.BAD_FULL_NAME
+    assert w.set_user("Olena", "olena\n", "pc") == wiz.BAD_USERNAME
+    assert w.set_user("Olena", "olena", "pc\n") == wiz.BAD_HOSTNAME
     assert w.set_languages([], None) == wiz.CHOOSE
     assert "unknown time zone" in w.set_time("Mars/Olympus", "uk_UA.UTF-8")
     assert "user" not in w.plan
