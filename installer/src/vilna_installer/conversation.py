@@ -1033,7 +1033,7 @@ class Conversation:
                     {"full_name": name, "username": login, "hostname": f"{login}-pc"},
                     [self.texts(NAMES_SAVED).format(username=login, hostname=f"{login}-pc")],
                 )
-        if step == "disk":
+        if step in ("survey", "disk"):
             disk = self._only_disk()
             question = self._disk_question()
             if disk and any(
@@ -1047,6 +1047,10 @@ class Conversation:
         return None
 
     def _only_disk(self) -> dict[str, Any] | None:
+        if self.state.survey is None:
+            ok, data = self.tools.call("disks_survey")
+            if ok and isinstance(data, dict):
+                self.state.survey = data
         disks = [d for d in (self.state.survey or {}).get("disks", []) if not d.get("boot_medium")]
         return disks[0] if len(disks) == 1 else None
 
@@ -1177,6 +1181,11 @@ class Conversation:
         if key == "network":
             return self.texts(NETWORK_QUESTION)
         if key == "disk":
+            return self._disk_question()
+        if key == "survey" and self._only_disk():
+            # Build15.11 (VM, 2026-11-27): the model described the one disk and asked
+            # «Як ви хочете використовувати цей диск?» without a suggestion, and «так»
+            # went nowhere. The fixed question says what is on it and what to do.
             return self._disk_question()
         if key == "encryption":
             ok, hw = self.tools.call("hardware_describe")

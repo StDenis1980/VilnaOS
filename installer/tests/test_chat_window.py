@@ -275,6 +275,18 @@ def cards(win):
     return out
 
 
+def descendants(widget):
+    out, stack = [], [widget]
+    while stack:
+        w = stack.pop()
+        out.append(w)
+        child = w.get_first_child()
+        while child is not None:
+            stack.append(child)
+            child = child.get_next_sibling()
+    return out
+
+
 def buttons(widget):
     out, stack = [], [widget]
     while stack:
@@ -421,3 +433,21 @@ def test_the_chat_stays_at_its_end_when_its_content_grows_or_shrinks(plan_path):
     assert not win.at_end
     adj.configure(adj.get_value(), 0, 1500, 10, 90, 100)
     assert adj.get_value() == 300
+
+
+def test_after_a_protected_field_the_focus_goes_to_the_message_entry(plan_path):
+    # Build15.11 (VM, 2026-11-27): the focus left with the removed password field went
+    # up the chat, the chat followed it, and the next question was out of sight.
+    win = window(plan_path, talk=Talk(plan_path))
+    win.present()
+    assert spin(lambda: "Hello" in bubbles(win))
+    win._card("user_password", plans.load(plan_path))
+    (card,) = cards(win)
+    field = next(w for w in descendants(card) if isinstance(w, Gtk.PasswordEntry))
+    field.grab_focus()
+    assert spin(lambda: win.get_focus() is not None and win.get_focus().is_ancestor(card))
+    win._secret_done("user_password", card, Gtk.Label(), Gtk.Button(), True, "a-long-password")
+    assert cards(win) == []
+    focus = win.get_focus()
+    assert focus is win.entry or (focus is not None and focus.is_ancestor(win.entry))
+    assert spin(lambda: win.at_end)

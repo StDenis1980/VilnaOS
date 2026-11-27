@@ -158,25 +158,26 @@ def test_change_in_the_plan_asks_the_step_question_again(plan_path):
         "empty",
         [call("plan_set_languages", languages=["uk_UA.UTF-8"], keyboards=["ua", "us"])],
         [call("plan_set_network", mode="offline")],
-        "На диску нічого немає. Що зробимо з ним?",
-        "Як зашифрувати новий диск?",
+        "Тут можна скопіювати важливі файли.",
     )
     try:
         c.opening()
         c.send("українська")
-        c.send("без мережі")
+        reply = c.send("без мережі")
         assert c.current().key == "survey"
+        # One disk: what is on it and what to do, as fixed text (Build15.11).
+        assert reply.text == c.question(c.current())
         c.goto("network")
         reply = c.resume()
         assert reply.step.key == "network"
         assert reply.text == start.Texts("uk")(conv.NETWORK_QUESTION)
-        assert len(model.seen) == 3  # the model was not asked
+        assert len(model.seen) == 2  # the model was not asked
         # The demo computer has a TPM 2.0: encryption with a recovery key first.
         c.goto("encryption")
         assert c.resume().text == start.Texts("uk")(conv.ENCRYPT_TPM_QUESTION)
         # Without a fixed question the model is told why the step is back.
-        c.goto("survey")
-        assert c.resume().text == "Як зашифрувати новий диск?"
+        c.goto("old_files")
+        assert c.resume().text == "Тут можна скопіювати важливі файли."
         assert conv.CHANGING in model.last_system
     finally:
         tools.close()
@@ -619,14 +620,15 @@ def test_after_the_wifi_password_gloxi_knows_it_is_entered(plan_path):
         plans.save(plan, plan_path)
         reply = c.resume("network")
         assert reply.step.key == "survey"
-        assert reply.text.startswith(texts(conv.CONNECTED) + "\n\n")
+        assert reply.text == texts(conv.CONNECTED) + "\n\n" + c.question(c.current())
+        c.send("а пароль?")
         messages = model.seen[-1][0]
         # The model's last word is no longer its own request for the password,
-        # and the installer's notes after it name what the person already typed.
-        assert messages[-2] == {"role": "assistant", "content": texts(conv.CONNECTED)}
-        assert messages[-1]["content"].startswith(conv.NOTES_START)
+        # and the installer's notes name what the person already typed.
+        said = [m["content"] for m in messages if m["role"] == "assistant"]
+        assert texts(conv.CONNECTED) in said and texts(conv.TYPE_WIFI) in said[-3:]
         assert "never ask for it again: the Wi-Fi password" in model.last_system
-        c.send("а пароль?")
+        c.send("а далі?")
         assert "the Wi-Fi password" in model.last_system  # on every later turn too
     finally:
         tools.close()
@@ -965,3 +967,25 @@ def test_yes_to_the_suggested_time_saves_it(plan_path):
 )
 def test_latin_names(name, latin):
     assert conv.latin_name(name) == latin
+
+
+def test_yes_right_after_the_disk_is_described_erases_it(plan_path):
+    """Build15.11: the model asked «Як ви хочете використовувати цей диск?», and «так»
+    was not taken; now the one disk is described by fixed text with a suggestion."""
+    c, model, tools = make(plan_path, "windows", "Усе на диску буде стерто, зокрема Windows.")
+    try:
+        c.state.passed.add("intro")
+        p = plans.load(plan_path)
+        p["locale"] = {"languages": ["uk_UA.UTF-8"], "keyboards": ["ua", "us"]}
+        p["network"] = {"mode": "offline"}
+        plans.save(p, plan_path)
+        c.refresh()
+        assert c.current().key == "survey"
+        reply = c.resume()
+        assert reply.text == c._disk_question() and model.seen == []
+        assert "Windows" in reply.text
+        reply = c.send("так")
+        assert c.plan["disk"]["layout"] == "replace"
+        assert reply.step.key == "old_files"
+    finally:
+        tools.close()
