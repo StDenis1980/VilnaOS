@@ -68,6 +68,46 @@ jobs:
         run: |
           python3 tools/claude_desktop.py check
           python3 tools/test_claude_desktop.py
+      - name: The SBOM of our code and its dependencies is whole (SPDX 2.3)
+        run: |
+          python3 tools/sbom.py --check
+          python3 tools/test_sbom.py
+      - name: Dependencies and lock files agree and come from known sources
+        run: |
+          python3 tools/check_deps.py
+          python3 tools/test_check_deps.py
+      - name: Translations keep placeholders, markup and plural forms
+        run: |
+          python3 tools/check_po_format.py
+          python3 tools/test_check_po_format.py
+      - name: Tool manifests match their MCP servers
+        run: |
+          python3 tools/check_manifests.py
+          python3 tools/test_check_manifests.py
+      - name: SVG files have no scripts, remote links or editor paths
+        run: |
+          python3 tools/check_svg.py
+          python3 tools/test_check_svg.py
+      - name: Shell scripts are strict and avoid risky constructs
+        run: |
+          python3 tools/check_shell.py
+          python3 tools/test_check_shell.py
+      - name: The ADR register matches the ADR files
+        run: |
+          python3 tools/check_adr.py
+          python3 tools/test_check_adr.py
+      - name: Versions agree between projects, specs and the alpha freeze
+        run: |
+          python3 tools/check_versions.py
+          python3 tools/test_check_versions.py
+      - name: Every check and test file is run by CI
+        run: |
+          python3 tools/check_ci_coverage.py
+          python3 tools/test_check_ci_coverage.py
+      - name: The driver report reads the images
+        run: |
+          python3 tools/report_drivers.py > /dev/null
+          python3 tools/test_report_drivers.py
 
   gloxi:
     runs-on: ubuntu-latest
