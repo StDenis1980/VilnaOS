@@ -54,6 +54,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent.parent
 
 MAX_BYTES = 16 * 1024 * 1024
+MAX_JSON_DEPTH = 512  # the deepest data file of the repo nests about ten levels
 SUFFIXES = (".json", ".toml")
 BOM = "\ufeff"
 I18N_DIR = ("site", "src", "i18n")
@@ -104,6 +105,16 @@ def parse_json(text: str) -> tuple[Any, list[str]]:
         return dict(items)
 
     value = json.loads(text, object_pairs_hook=pairs, parse_constant=_reject_constant)
+    # Whether json runs out of recursion depends on the Python build and the
+    # stack size, so the depth is also checked here, without recursion.
+    stack: list[tuple[Any, int]] = [(value, 1)]
+    while stack:
+        item, depth = stack.pop()
+        if isinstance(item, (dict, list)):
+            if depth > MAX_JSON_DEPTH:
+                raise ValueError("nested too deeply")
+            items = item.values() if isinstance(item, dict) else item
+            stack.extend((child, depth + 1) for child in items)
     return value, dups
 
 
