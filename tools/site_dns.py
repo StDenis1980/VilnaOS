@@ -289,6 +289,7 @@ class Desec:
 
     label = "deSEC"
     skip = {("", "SOA"), ("", "DNSKEY"), ("", "CDS"), ("", "CDNSKEY")}
+    unsupported: frozenset[tuple[str, str]] = frozenset()
 
     def __init__(self, zone: str, token: str, request=_request) -> None:
         self.zone = zone
@@ -326,6 +327,10 @@ class Bunny:
     """bunny DNS: single records, added and deleted one by one."""
 
     label = "bunny DNS"
+    # bunny refuses NS at the apex ("NS records are not supported on the root
+    # of the domain", 2026-11-27) and serves only its own two servers there.
+    # The .com delegation and deSEC still list all four.
+    unsupported = frozenset({("", "NS")})
 
     def __init__(self, zone: str, key: str, request=_request) -> None:
         self.zone = zone
@@ -428,14 +433,15 @@ def sync(
     want_all = z.wanted(with_site=with_site or bool(host), host=host)
     changed = 0
     for p in providers(z.zone, which):
-        have_all = p.records()
+        wanted = [r for r in want_all if (r.name, r.type) not in p.unsupported]
+        have_all = [r for r in p.records() if (r.name, r.type) not in p.unsupported]
         if host:
-            want = [r for r in want_all if z.is_site(r)]
+            want = [r for r in wanted if z.is_site(r)]
             have = [r for r in have_all if z.is_site(r)]
         elif with_site:
-            want, have = want_all, have_all
+            want, have = wanted, have_all
         else:
-            want = [r for r in want_all if not z.is_site(r)]
+            want = [r for r in wanted if not z.is_site(r)]
             have = [r for r in have_all if not z.is_site(r)]
         add, remove = plan(want, have)
         print(f"{p.label}: {len(add)} to add, {len(remove)} to remove")

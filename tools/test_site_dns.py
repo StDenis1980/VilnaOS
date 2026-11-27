@@ -53,6 +53,8 @@ class FakeBunny:
         if method == "GET":
             return {"Records": list(self.records.values())}
         if method == "PUT":
+            if body["Name"] == "" and body["Type"] == sd.BUNNY_TYPE_IDS["NS"]:
+                raise sd.ZoneError("bunny: NS records are not supported on the root")
             names_types = {(r["Name"], r["Type"]) for r in self.records.values()}
             cname = sd.BUNNY_TYPE_IDS["CNAME"]
             if (body["Name"], cname) in names_types or (
