@@ -23,5 +23,5 @@ Icon=io.github.stdenis1980.DevinDesktop
 Terminal=false
 Categories=Development;IDE;TextEditor;
 Keywords=AI;code;editor;IDE;programming;Windsurf;Devin;
-MimeType=text/plain;inode/directory;
+MimeType=x-scheme-handler/devin;x-scheme-handler/windsurf;application/x-devin-desktop-workspace;text/plain;inode/directory;
 StartupNotify=true

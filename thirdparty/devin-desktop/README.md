@@ -23,8 +23,10 @@ CI: `.github/workflows/devin-desktop.yml`.
 
 Як у Cursor (рішення Denys 27.11.2026): домашня тека, `/media`, а термінал і агенти працюють через `flatpak-spawn --host` ([`host-shell.sh`](../electron-deb/host-shell.sh)). GNOME Software позначає пакунок як «Потенційно небезпечна».
 
+## Вхід
+
+Пакет реєструє схеми `devin://` і `windsurf://` (`--open-url`), їх узято з `.desktop` пакета 3.15.14; ключ apt і хеш перевірено в CI.
+
 ## Що ще не зроблено
 
-- **Ключ і хеш** — з першого запуску CI (контейнер не бачить сховища Cognition).
-- **Схема URL для входу** — з `.desktop` пакета, CI друкує його; тоді додати в `MimeType`.
 - **Публікація, «Рекомендовано Vilna», назва й іконка** — як у [Cursor](../cursor/README.md#що-ще-не-зроблено).
