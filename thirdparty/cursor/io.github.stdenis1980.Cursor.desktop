@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Cursor
+GenericName=Code Editor
+GenericName[uk]=Редактор коду
+Comment=Anysphere's AI code editor (official app, packaged for Vilna)
+Comment[uk]=Редактор коду з AI від Anysphere (офіційна програма в пакунку Vilna)
+Exec=cursor %F
+Icon=io.github.stdenis1980.Cursor
+Terminal=false
+Categories=Development;IDE;TextEditor;
+Keywords=AI;code;editor;IDE;programming;
+MimeType=x-scheme-handler/cursor;text/plain;inode/directory;
+StartupNotify=true
+StartupWMClass=Cursor

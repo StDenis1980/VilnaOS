@@ -6,7 +6,7 @@
 #
 
 Name:           patterns-vilna
-Version:        0.16
+Version:        0.17
 Release:        0
 Summary:        Patterns for Vilna OS
 License:        GPL-3.0-or-later
@@ -85,6 +85,10 @@ Requires:       vilna-software-picks
 # Their services stay off until the person chooses one.
 Requires:       proton-vpn
 Requires:       mullvad-vpn
+# Tailscale (ADR 0027, a manual option): openSUSE's package. tailscaled
+# stays off (openSUSE's default preset) until the person turns it on;
+# its window is Trayscale from Flathub.
+Requires:       tailscale
 # Branding (composition.md, section 4.5): Vilna's own packages where
 # Aeon or openSUSE set something for the distribution, the neutral
 # *-branding-upstream ones elsewhere. The Aeon and openSUSE ones are

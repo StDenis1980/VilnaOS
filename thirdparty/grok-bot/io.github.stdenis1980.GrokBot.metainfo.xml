@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+<component type="desktop-application">
+  <id>io.github.stdenis1980.GrokBot</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary=https://x.ai/legal/terms-of-service</project_license>
+
+  <name>Grok Bot</name>
+  <summary>xAI’s AI agents, official app in a Vilna package</summary>
+  <summary xml:lang="uk">AI-агенти від xAI, офіційна програма в пакунку Vilna</summary>
+  <summary xml:lang="es">Agentes de IA de xAI, la app oficial en un paquete de Vilna</summary>
+  <summary xml:lang="pl">Agenci AI od xAI, oficjalna aplikacja w pakiecie Vilna</summary>
+  <summary xml:lang="de">KI-Agenten von xAI, die offizielle App in einem Vilna-Paket</summary>
+  <summary xml:lang="fr">Agents IA de xAI, l’application officielle dans un paquet Vilna</summary>
+  <summary xml:lang="it">Agenti IA di xAI, l’app ufficiale in un pacchetto Vilna</summary>
+  <summary xml:lang="ro">Agenți AI de la xAI, aplicația oficială într-un pachet Vilna</summary>
+  <summary xml:lang="cs">AI agenti od xAI, oficiální aplikace v balíčku Vilna</summary>
+  <summary xml:lang="lt">„xAI“ DI agentai, oficiali programa „Vilna“ pakete</summary>
+
+  <!-- The packager, not the vendor: with the vendor's icon, the vendor's
+       name here reads as an official package in GNOME Software (PR #233). -->
+  <developer id="io.github.stdenis1980">
+    <name>Vilna OS (packaging of xAI’s app)</name>
+    <name xml:lang="uk">Vilna OS (пакунок програми xAI)</name>
+  </developer>
+
+  <description>
+    <p>
+      Grok Bot gives you Bots from xAI that do tasks for you on a computer in xAI’s cloud, also after you close this app. This package is not made by xAI or Anysphere, who build the app. It is a small wrapper by Vilna OS: when you install it, your computer downloads the vendor’s own Linux app from downloads.cursor.com and checks that it is exactly the published file.
+    </p>
+    <p xml:lang="uk">
+      Grok Bot дає вам агентів від xAI, які виконують завдання на комп'ютері у хмарі xAI, навіть коли цю програму закрито. Цей пакунок зробили не xAI і не Anysphere, яка будує програму. Це невелика обгортка від Vilna OS: під час встановлення ваш комп'ютер завантажує власну програму для Linux з downloads.cursor.com і перевіряє, що це саме опублікований файл.
+    </p>
+    <p>
+      Grok Bot is proprietary software and works with a Cursor account or a Grok subscription. Your tasks and the files you give the Bots go to xAI’s cloud under the vendor’s terms.
+    </p>
+    <p xml:lang="uk">
+      Grok Bot — невільна програма, працює з обліковим записом Cursor або передплатою Grok. Ваші завдання й файли, які ви даєте агентам, ідуть у хмару xAI за умовами постачальника.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.stdenis1980.GrokBot.desktop</launchable>
+  <url type="homepage">https://x.ai/bot</url>
+  <url type="vcs-browser">https://github.com/StDenis1980/VilnaOS/tree/main/thirdparty/grok-bot</url>
+  <url type="bugtracker">https://github.com/StDenis1980/VilnaOS/issues</url>
+
+  <provides>
+    <binary>grok-bot</binary>
+  </provides>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <requires>
+    <internet>always</internet>
+  </requires>
+  <categories>
+    <category>Utility</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.0.0" date="2026-11-27"/>
+  </releases>
+</component>

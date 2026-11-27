@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Grok Bot
+GenericName=AI Agents
+GenericName[uk]=AI-агенти
+Comment=xAI's Grok Bot app (official app, packaged for Vilna)
+Comment[uk]=Програма Grok Bot від xAI (офіційна програма в пакунку Vilna)
+Exec=grok-bot %U
+Icon=io.github.stdenis1980.GrokBot
+Terminal=false
+Categories=Utility;
+Keywords=AI;agent;assistant;Grok;xAI;
+StartupNotify=true

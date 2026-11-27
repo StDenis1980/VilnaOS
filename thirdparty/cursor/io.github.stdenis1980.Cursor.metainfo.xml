@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+<component type="desktop-application">
+  <id>io.github.stdenis1980.Cursor</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary=https://cursor.com/terms-of-service</project_license>
+
+  <name>Cursor</name>
+  <summary>AI code editor by Anysphere, official app in a Vilna package</summary>
+  <summary xml:lang="uk">Редактор коду з AI від Anysphere, офіційна програма в пакунку Vilna</summary>
+  <summary xml:lang="es">Editor de código con IA de Anysphere, la app oficial en un paquete de Vilna</summary>
+  <summary xml:lang="pl">Edytor kodu z AI firmy Anysphere, oficjalna aplikacja w pakiecie Vilna</summary>
+  <summary xml:lang="de">KI-Code-Editor von Anysphere, die offizielle App in einem Vilna-Paket</summary>
+  <summary xml:lang="fr">Éditeur de code avec IA d’Anysphere, l’application officielle dans un paquet Vilna</summary>
+  <summary xml:lang="it">Editor di codice con IA di Anysphere, l’app ufficiale in un pacchetto Vilna</summary>
+  <summary xml:lang="ro">Editor de cod cu AI de la Anysphere, aplicația oficială într-un pachet Vilna</summary>
+  <summary xml:lang="cs">Editor kódu s AI od Anysphere, oficiální aplikace v balíčku Vilna</summary>
+  <summary xml:lang="lt">„Anysphere“ kodo redaktorius su DI, oficiali programa „Vilna“ pakete</summary>
+
+  <!-- The packager, not the vendor: with the vendor's icon, the vendor's
+       name here reads as an official package in GNOME Software (PR #233). -->
+  <developer id="io.github.stdenis1980">
+    <name>Vilna OS (packaging of Anysphere’s app)</name>
+    <name xml:lang="uk">Vilna OS (пакунок програми Anysphere)</name>
+  </developer>
+
+  <description>
+    <p>
+      Cursor is Anysphere’s code editor with an AI agent that reads, writes and runs your code. This package is not made by Anysphere. It is a small wrapper by Vilna OS: when you install it, your computer downloads Anysphere’s own Linux app from downloads.cursor.com and checks that it is exactly the published file.
+    </p>
+    <p xml:lang="uk">
+      Cursor — редактор коду від Anysphere з AI-агентом, який читає, пише й запускає ваш код. Цей пакунок зробила не Anysphere. Це невелика обгортка від Vilna OS: під час встановлення ваш комп'ютер завантажує власну програму Anysphere для Linux з downloads.cursor.com і перевіряє, що це саме опублікований файл.
+    </p>
+    <p>
+      Cursor is proprietary software and works with a Cursor account. Your code and prompts go to Anysphere’s servers under Anysphere’s terms. Cursor can open the files in your home folder, and its terminal and agent run commands on your system as you.
+    </p>
+    <p xml:lang="uk">
+      Cursor — невільна програма, працює з обліковим записом Cursor. Ваш код і запити йдуть на сервери Anysphere за умовами Anysphere. Cursor бачить файли у вашій домашній теці, а його термінал і агент запускають команди у вашій системі від вашого імені.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.stdenis1980.Cursor.desktop</launchable>
+  <url type="homepage">https://cursor.com/download</url>
+  <url type="vcs-browser">https://github.com/StDenis1980/VilnaOS/tree/main/thirdparty/cursor</url>
+  <url type="bugtracker">https://github.com/StDenis1980/VilnaOS/issues</url>
+
+  <provides>
+    <binary>cursor</binary>
+  </provides>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <requires>
+    <internet>always</internet>
+  </requires>
+  <categories>
+    <category>Development</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.0.0" date="2026-11-27"/>
+  </releases>
+</component>

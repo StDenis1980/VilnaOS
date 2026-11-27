@@ -1,0 +1,113 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The extra-data Flatpaks of Cursor and Grok Bot (thirdparty/cursor,
+# thirdparty/grok-bot): the pins are the newest release, the wrappers build,
+# and installing each one downloads the pinned .deb, checks it and unpacks a
+# runnable Electron app. Nothing here publishes anything: the apps are not in
+# Vilna's repository.
+name: Cursor and Grok Bot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "thirdparty/cursor/**"
+      - "thirdparty/grok-bot/**"
+      - "thirdparty/electron-deb/**"
+      - "tools/cursor_apps.py"
+      - "tools/test_cursor_apps.py"
+      - "tools/claude_desktop.py"
+      - ".github/workflows/cursor-apps.yml"
+  pull_request:
+    paths:
+      - "thirdparty/cursor/**"
+      - "thirdparty/grok-bot/**"
+      - "thirdparty/electron-deb/**"
+      - "tools/cursor_apps.py"
+      - "tools/test_cursor_apps.py"
+      - "tools/claude_desktop.py"
+      - ".github/workflows/cursor-apps.yml"
+  # Old packages may disappear from downloads.cursor.com: a weekly look tells
+  # us when the pins need to move before installs start to fail.
+  schedule:
+    - cron: "23 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/test_cursor_apps.py
+      - name: The pins are the newest release (signed apt index where it has the package)
+        run: python3 tools/cursor_apps.py latest
+      - name: The pins are well formed
+        run: python3 tools/cursor_apps.py check
+      - name: What the packages carry (.desktop files, URL schemes, app folder)
+        if: always()
+        run: |
+          set -eu
+          cp -r thirdparty /tmp/thirdparty-orig
+          python3 tools/cursor_apps.py latest --write >/dev/null || true
+          for app in cursor grok-bot; do
+            dir="$(mktemp -d)"
+            python3 tools/cursor_apps.py fetch "$app" x86_64 "$dir" >/dev/null || continue
+            echo "== $app"
+            dpkg-deb -c "$dir"/*.deb | awk '{print $6}' | grep -E '\.desktop$|chrome-sandbox|resources/app|/icons/|pixmaps' | head -n 20
+            dpkg-deb --fsys-tarfile "$dir"/*.deb | tar -xO --wildcards '*.desktop' 2>/dev/null | grep -E '^(Name|Exec|MimeType|StartupWMClass)=' || true
+            rm -rf "$dir"
+          done
+          rm -rf thirdparty && mv /tmp/thirdparty-orig thirdparty
+
+  flatpak:
+    needs: pins
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: cursor
+            id: io.github.stdenis1980.Cursor
+          - app: grok-bot
+            id: io.github.stdenis1980.GrokBot
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
+      options: --privileged
+    env:
+      APP: ${{ matrix.id }}
+      DIR: thirdparty/${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the metadata
+        run: |
+          desktop-file-validate $DIR/$APP.desktop
+          appstreamcli validate --no-net --explain $DIR/$APP.metainfo.xml
+      - uses: flathub-infra/flatpak-github-actions/flatpak-builder@933e9e8ca36e85046ebca8e211f0785c6becac40
+        with:
+          build-bundle: false
+          manifest-path: ${{ env.DIR }}/${{ matrix.id }}.yml
+          cache-key: flatpak-builder-${{ matrix.app }}-${{ github.sha }}
+          upload-artifact: false
+      - name: Installing downloads the vendor's .deb, checks it and unpacks the app
+        run: |
+          set -eu
+          # A single-file bundle cannot carry extra-data, so it installs from
+          # the OSTree repository flatpak-builder wrote, as it will from
+          # Vilna's repository (thirdparty/claude-desktop/README.md).
+          flatpak remote-add --no-gpg-verify check "file://$PWD/repo"
+          flatpak install -y --noninteractive check "$APP"
+          flatpak run --command=sh "$APP" -c '
+            set -eu
+            cd /app/extra/app
+            test -x .main
+            test -d resources
+            test ! -e chrome-sandbox
+            echo "main program: $(readlink .main), $(du -sh . | cut -f1)"
+            ls
+          '
+          loc="$(flatpak info --show-location "$APP")"
+          ls "$loc/export/share/applications/$APP.desktop"
+          ls "$loc"/export/share/icons/hicolor/*/apps/"$APP".png \
+            || echo "::warning::the vendor's icon was not exported from /app/extra/export"
