@@ -57,7 +57,7 @@ FEEDBACK_ACTION = "https://reports.vilnaos.com/v1/feedback"
 NOINDEX = '<meta name="robots" content="noindex">\n'
 PAGES = {
     "home": ("home.html", "index.html", ""),
-    "gloxi": ("gloxi.html", "gloxi/index.html", NOINDEX),
+    "gloxi": ("gloxi.html", "gloxi/index.html", ""),
     "privacy": ("privacy.html", "privacy/index.html", NOINDEX),
     "blavet": ("blavet.html", "blavet/index.html", NOINDEX),
     "security": ("security.html", "security/index.html", NOINDEX),

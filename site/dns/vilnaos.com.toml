@@ -7,7 +7,7 @@
 # Names are relative to the zone ("" is the zone apex). Values are written
 # as in a zone file: host names end with a dot, MX is "priority host.", SRV
 # is "priority weight port host.", TXT is the text without quotes.
-# The apex NS and SOA belong to each provider and are not listed here.
+# The apex SOA belongs to each provider and is not listed here.
 
 zone = "vilnaos.com"
 ttl = 3600
@@ -28,6 +28,14 @@ AAAA = ["2a01:4f9:c01f:8002::"]
 [site.hosts.ionos]
 # Our VPS at IONOS (reports.vilnaos.com), site/deploy/. IPv4 only.
 A = ["217.160.125.31"]
+
+[[rrset]]
+# The zone's own NS set, as at the .com registry (Arsys). deSEC serves all
+# four. bunny refuses NS at the apex and serves only its own two, so
+# tools/site_dns.py leaves this rrset out at bunny.
+name = ""
+type = "NS"
+values = ["ns1.desec.io.", "ns2.desec.org.", "kiki.bunny.net.", "coco.bunny.net."]
 
 [[rrset]]
 name = "reports"

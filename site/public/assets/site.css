@@ -76,6 +76,8 @@ h3 { font-size: 18px; margin: 24px 0 8px; }
 .card.warn { border-color: var(--gold); }
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
 .cards .card { margin: 0; }
+.cards.four { grid-template-columns: 1fr; }
+@media (min-width: 640px) { .cards.four { grid-template-columns: repeat(2, 1fr); } }
 .card h3 { margin-top: 0; }
 
 .button {

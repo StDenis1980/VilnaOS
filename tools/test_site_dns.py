@@ -53,6 +53,8 @@ class FakeBunny:
         if method == "GET":
             return {"Records": list(self.records.values())}
         if method == "PUT":
+            if body["Name"] == "" and body["Type"] == sd.BUNNY_TYPE_IDS["NS"]:
+                raise sd.ZoneError("bunny: NS records are not supported on the root")
             names_types = {(r["Name"], r["Type"]) for r in self.records.values()}
             cname = sd.BUNNY_TYPE_IDS["CNAME"]
             if (body["Name"], cname) in names_types or (
@@ -105,6 +107,14 @@ class Check(unittest.TestCase):
     def test_site_address_outside_site_table_is_refused(self) -> None:
         z = self.zone('[[rrset]]\nname = "www"\ntype = "A"\nvalues = ["192.0.2.1"]\n')
         self.assertTrue(any("[site]" in p for p in sd.check(z)))
+
+    def test_zone_without_apex_ns_is_refused(self) -> None:
+        # Without it apply would delete each provider's own apex NS.
+        text = (ROOT / "site" / "dns" / "vilnaos.com.toml").read_text(encoding="utf-8")
+        text = text.replace('type = "NS"', 'type = "TXT"', 1)
+        with tempfile.NamedTemporaryFile("w", suffix=".toml", delete=False) as f:
+            f.write(text)
+        self.assertTrue(any("apex NS" in p for p in sd.check(sd.load(Path(f.name)))))
 
     def test_unknown_active_host_is_refused(self) -> None:
         text = (ROOT / "site" / "dns" / "vilnaos.com.toml").read_text(encoding="utf-8")
