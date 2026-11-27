@@ -1,0 +1,8 @@
+-------------------------------------------------------------------
+Fri Nov 27 13:30:00 UTC 2026 - Denys <288736242+StDenis1980@users.noreply.github.com>
+
+- Initial package: GNOME Software 51.1, the version in Tumbleweed,
+  built as Tumbleweed builds it, with vilna-layout-search.patch:
+  a search with no results is tried again as typed in the person's
+  other keyboard layouts ("ашкуащч" finds "firefox", "rfkmrekznjh"
+  finds "калькулятор"), through xkbcommon and xkeyboard-config

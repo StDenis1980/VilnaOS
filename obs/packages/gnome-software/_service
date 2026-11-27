@@ -1,0 +1,22 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- GNOME Software, the Vilna store, from the GNOME release tarball at the
+     version Tumbleweed ships (51.1, its SHA-256 as in
+     gnome-software-51.1.sha256sum on download.gnome.org). OBS fetches it and
+     checks the SHA-256; CI fetches it with obs/tools/fetch_sources.py.
+     A new version: change upstream_version in gnome-software.spec, the path,
+     the file name and the checksum here, and check that
+     vilna-layout-search.patch still applies (the rpm job in
+     .github/workflows/obs.yml builds it). -->
+<services>
+  <service name="download_url">
+    <param name="protocol">https</param>
+    <param name="host">download.gnome.org</param>
+    <param name="path">/sources/gnome-software/51/gnome-software-51.1.tar.xz</param>
+    <param name="filename">gnome-software-51.1.tar.xz</param>
+  </service>
+  <service name="verify_file">
+    <param name="file">_service:download_url:gnome-software-51.1.tar.xz</param>
+    <param name="verifier">sha256</param>
+    <param name="checksum">6501b1d7e499bfb8009f08efa3339ca6369bc38ee335cc3dfb67da7b2ab71289</param>
+  </service>
+</services>
