@@ -1,4 +1,4 @@
-# Vilna OS, Gloxi and Herkos: please report vulnerabilities privately.
+# Vilna OS, Gloxi and Sandro: please report vulnerabilities privately.
 Contact: https://github.com/StDenis1980/VilnaOS/security/advisories/new
 Expires: 2027-11-01T00:00:00Z
 Preferred-Languages: uk, en, es
