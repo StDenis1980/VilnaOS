@@ -704,6 +704,9 @@ fn a_folder_in_the_place_of_the_settings_file_stops_the_daemon() {
 
 #[test]
 fn a_settings_file_nobody_can_read_stops_the_daemon() {
+    if run_as_root("a_settings_file_nobody_can_read_stops_the_daemon") {
+        return;
+    }
     let world = World::new();
     world.write_config(NO_MODEL);
     fs::set_permissions(world.config_file(), fs::Permissions::from_mode(0o000)).expect("chmod");
@@ -1165,6 +1168,9 @@ fn a_permission_written_while_running_counts_and_one_broken_later_stops_counting
 
 #[test]
 fn a_permissions_file_nobody_can_read_gives_nothing() {
+    if run_as_root("a_permissions_file_nobody_can_read_gives_nothing") {
+        return;
+    }
     let world = with_tool(Some(permissions(&[grant("permanent", "R1")])));
     let file = world.state().join("permissions.json");
     fs::set_permissions(&file, fs::Permissions::from_mode(0o000)).expect("chmod");
@@ -1695,6 +1701,9 @@ fn more_manifests_than_the_limit_load_the_first_256_by_name() {
 
 #[test]
 fn a_manifest_folder_others_can_change_or_that_is_not_a_folder_loads_nothing() {
+    if run_as_root("a_manifest_folder_others_can_change_or_that_is_not_a_folder_loads_nothing") {
+        return;
+    }
     for kind in [
         "group-writable",
         "world-writable",
@@ -2583,6 +2592,9 @@ fn a_journal_that_is_broken_stops_the_daemon_from_starting_and_nothing_is_listen
 
 #[test]
 fn a_journal_that_cannot_be_read_stops_the_daemon_from_starting() {
+    if run_as_root("a_journal_that_cannot_be_read_stops_the_daemon_from_starting") {
+        return;
+    }
     let world = World::new();
     world.write_config(NO_MODEL);
     fs::create_dir_all(world.journal()).expect("a folder where the journal goes");
@@ -2623,6 +2635,9 @@ fn an_action_after_someone_else_wrote_to_the_journal_is_refused_and_not_run() {
 
 #[test]
 fn a_journal_that_cannot_be_written_any_more_refuses_actions() {
+    if run_as_root("a_journal_that_cannot_be_written_any_more_refuses_actions") {
+        return;
+    }
     let (world, _daemon) = running_with_permission();
     let mut client = Client::connect(&world.socket());
     client.hello();
@@ -2917,6 +2932,16 @@ fn my_uid() -> u32 {
     fs::metadata("/proc/self").expect("metadata").uid()
 }
 
+/// Root reads files whatever their mode and owns what root owns, so a test of
+/// permissions says nothing there (an RPM build runs its tests as root).
+fn run_as_root(test: &str) -> bool {
+    let root = my_uid() == 0;
+    if root {
+        eprintln!("{test}: skipped, it needs a user other than root");
+    }
+    root
+}
+
 impl World {
     fn passwd(&self, text: &str) -> PathBuf {
         let path = self.root.join("passwd");
@@ -3126,8 +3151,10 @@ fn no_system_file_or_an_empty_one_means_nobody_and_every_caller_gets_no_answer()
 
 #[test]
 fn a_caller_who_is_not_listed_gets_no_answer_and_one_who_is_gets_the_gate() {
+    if run_as_root("a_caller_who_is_not_listed_gets_no_answer_and_one_who_is_gets_the_gate") {
+        return;
+    }
     let me = my_uid();
-    assert_ne!(me, 0, "these tests are never run as root");
     // The people of the file must not have this caller's number (a CI
     // runner is often uid 1001, which `PASSWD` gives to alice).
     let alice = if me == 1001 { 1003 } else { 1001 };

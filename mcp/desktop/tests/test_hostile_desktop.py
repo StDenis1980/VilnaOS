@@ -994,7 +994,12 @@ def test_listed_flatpak_ids_look_like_flatpak_ids():
         None,
         process(500, uid=None),
         process(500, uid=ME + 1),
-        process(500, uid=0),
+        # Root's processes are foreign only when the tests do not run as root
+        # (an RPM build does).
+        pytest.param(
+            process(500, uid=0),
+            marks=pytest.mark.skipif(ME == 0, reason="uid 0 is this user here"),
+        ),
         process(500, uid=-1),
         process(os.getpid()),
     ],
