@@ -12,8 +12,9 @@ from pathlib import Path
 import pytest
 from fake_server import FakeLlamaServer
 from helpers import make_conversation
-from test_gui_controller import RecordingView, sync
+from test_gui_controller import FIRST, RecordingView, sync
 
+from gloxi import ai_notice
 from gloxi.gui.controller import ChatController
 from gloxi.gui.remote import RemoteController, ServiceError, window_language
 from gloxi.service import EventView, Service, bind, inherited_listener, service_socket
@@ -82,7 +83,7 @@ def test_answer_streams_to_the_window_in_order(running):
     assert remote.submit("  привіт ")
     assert wait_for(lambda: ("busy", False) in view.events[1:])
     assert view.events[:3] == [("busy", True), ("user", "привіт"), ("start", "On this computer")]
-    assert view.answer() == "Привіт, я Gloxi."
+    assert view.answer() == FIRST + "Привіт, я Gloxi."
     assert view.kinds()[-2:] == ["finish", "busy"]
     assert not remote.busy
     # The conversation lives in the service.
@@ -446,8 +447,15 @@ def test_a_window_opened_again_shows_the_kept_conversation(running):
     # Build14.10: the window opened again was empty, yet gloxid remembered.
     remote, view = r.client(session=lambda: "4")
     assert wait_for(lambda: ("finish",) in view.events)
-    assert view.events[:2] == [("user", "привіт"), ("start", "Gloxi")]
-    assert view.answer() == "Привіт, я Gloxi."
+    # It starts again with Gloxi saying it is an AI (ADR 0033).
+    assert view.events[:5] == [
+        ("start", "Gloxi"),
+        ("piece", ai_notice.notice()),
+        ("finish",),
+        ("user", "привіт"),
+        ("start", "Gloxi"),
+    ]
+    assert view.answer() == ai_notice.notice() + "Привіт, я Gloxi."
     # Shown once: a reconnect does not show it twice.
     remote.close()
     remote._closed = False
@@ -468,7 +476,7 @@ def test_hello_sends_back_only_what_was_said_and_not_too_much(running):
     ]
     assert r.service.history() == [
         {"role": "user", "text": "нове"},
-        {"role": "assistant", "text": "відповідь"},
+        {"role": "assistant", "text": "відповідь", "mark": ai_notice.mark()},
     ]
 
 

@@ -409,9 +409,10 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     check('strip: panel below the top bar', dockPanel(), [1600, top, 320, mh - top]);
     const view = dock.view;
     check('side panel: said hello to gloxid as the panel', panelRequests[0]?.params?.client ?? null, 'panel');
+    // It starts again with Gloxi saying it is an AI (ADR 0033).
     check('side panel: the kept conversation, only what was said',
-        await waitFor(() => view.chat.lines.length === 2, 3000) && view.chat.lines.map(l => `${l.kind}: ${l.text}`),
-        ['user: Що сьогодні?', 'gloxi: О 15:00 зустріч з Дмитром.']);
+        await waitFor(() => view.chat.lines.length === 3, 3000) && view.chat.lines.map(l => `${l.kind}: ${l.text}`),
+        [`gloxi: ${view._t.aiNotice}`, 'user: Що сьогодні?', 'gloxi: О 15:00 зустріч з Дмитром.']);
     check('side panel: ready to type', panelFocused(), true);
     check('side panel: the field\'s name starts with what it shows',
         Boolean(view.entry.accessible_name) && view.entry.hint_text.startsWith(view.entry.accessible_name), true);
@@ -423,8 +424,8 @@ async function sidePanel(settings, [mx, mw, mh, top]) {
     view.entry.set_text('Увімкни темну тему');
     await press(Clutter.KEY_Return);
     check('side panel: Enter sends, the answer streams in',
-        await waitFor(() => view.chat.lines.length === 5 && !view.chat.busy, 3000) &&
-            view.chat.lines.slice(2).map(l => `${l.kind}: ${l.text}`),
+        await waitFor(() => view.chat.lines.length === 6 && !view.chat.busy, 3000) &&
+            view.chat.lines.slice(3).map(l => `${l.kind}: ${l.text}`),
         ['user: Увімкни темну тему', 'gloxi: Готово: темну тему ввімкнено.', 'action: Settings: dark theme']);
     check('side panel: the field is empty again', view.entry.get_text(), '');
     // The field grows with long text, up to a few lines, and Shift+Enter

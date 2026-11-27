@@ -55,6 +55,17 @@ _MESSAGE_ID = re.compile(r"^<[^<>\s]{1,994}>$")
 # Message ids of drafts this server wrote (make_msgid with idstring "gloxi"):
 # only these may be removed again by ``restore``.
 _OWN_DRAFT_ID = re.compile(r"^<[^<>@\s]+\.gloxi@[^<>\s]+>$")
+# AI Act, Art. 50(2): what Gloxi writes is marked, machine-readably, as made
+# by an AI (ADR 0033, Denys's decision of 2026-11-26). The person does not see
+# these in their mail program; a recipient may, in the raw message. The
+# digital source type is IPTC's, the one C2PA and image metadata use.
+AI_HEADERS = (
+    ("X-AI-Generated", "yes"),
+    (
+        "X-Digital-Source-Type",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+    ),
+)
 _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 
 
@@ -376,6 +387,8 @@ class Draft:
         if self.in_reply_to:
             msg["In-Reply-To"] = self.in_reply_to
             msg["References"] = self.in_reply_to
+        for name, value in AI_HEADERS:
+            msg[name] = value
         text = self.text.replace("\r\n", "\n")
         if not text.endswith("\n"):
             text += "\n"

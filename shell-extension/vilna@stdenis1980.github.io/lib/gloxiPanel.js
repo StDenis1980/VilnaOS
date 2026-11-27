@@ -136,8 +136,12 @@ export class PanelChat {
         return true;
     }
 
-    /** gloxid's hello: the kept conversation, newest last. */
-    loadHistory(history) {
+    /**
+     * gloxid's hello: the kept conversation, newest last. A conversation
+     * shown again starts, as every one does, with Gloxi saying it is an AI
+     * (`notice`, ADR 0033).
+     */
+    loadHistory(history, notice = '') {
         this.lines = [];
         this._answer = null;
         this._news = [];
@@ -147,6 +151,11 @@ export class PanelChat {
                 if (t)
                     this._push({kind: m.role === 'user' ? 'user' : 'gloxi', text: t});
             }
+        }
+        if (this.lines.length && notice) {
+            this.lines.unshift({kind: 'gloxi', text: text(notice)});
+            if (this.lines.length > MAX_MESSAGES)
+                this.lines.splice(1, this.lines.length - MAX_MESSAGES);
         }
         this.offline = false;
     }
@@ -205,7 +214,7 @@ export class PanelChat {
 // The panel's words. English is the key; the rest are Vilna's languages
 // (ADR 0009). A missing language shows English.
 const KEYS = ['indicator', 'ready', 'thinking', 'answering', 'error', 'offline', 'hint', 'send', 'openWindow',
-    'close', 'you', 'empty', 'replaced', 'done', 'denied', 'failed', 'suspicious', 'messages'];
+    'close', 'you', 'empty', 'replaced', 'done', 'denied', 'failed', 'suspicious', 'messages', 'aiNotice'];
 
 // The table's key for a GLib language name: "uk_UA.UTF-8" → "uk", and
 // Valencian, "ca_ES.UTF-8@valencia" → "ca@valencia" (ADR 0009).
@@ -219,73 +228,88 @@ const TEXT = {
     en: ['Gloxi side panel', 'Gloxi is ready', 'Gloxi is thinking', 'Gloxi is answering', 'Something went wrong',
         'Gloxi is not running here. Open the Gloxi window.', 'Write to Gloxi…', 'Send', 'Open the Gloxi window',
         'Close the panel', 'You', 'How can I help?', 'Gloxi is open in another panel.', 'Done', 'Denied', 'Failed',
-        'Suspicious content: see the Gloxi window', 'Conversation with Gloxi'],
+        'Suspicious content: see the Gloxi window', 'Conversation with Gloxi',
+        'I am Gloxi, an AI assistant: a language model writes my answers, and they can be wrong.'],
     uk: ['Бічна панель Gloxi', 'Gloxi готовий', 'Gloxi думає', 'Gloxi відповідає', 'Щось пішло не так',
         'Gloxi тут не запущено. Відкрийте вікно Gloxi.', 'Напишіть Gloxi…', 'Надіслати', 'Відкрити вікно Gloxi',
         'Закрити панель', 'Ви', 'Чим допомогти?', 'Gloxi відкрито на іншій панелі.', 'Готово', 'Відхилено',
-        'Не вдалося', 'Підозрілий вміст: подробиці у вікні Gloxi', 'Розмова з Gloxi'],
+        'Не вдалося', 'Підозрілий вміст: подробиці у вікні Gloxi', 'Розмова з Gloxi',
+        'Я Gloxi, ШІ-помічник: мої відповіді пише мовна модель, і вони можуть бути хибними.'],
     es: ['Panel lateral de Gloxi', 'Gloxi está listo', 'Gloxi está pensando', 'Gloxi está respondiendo',
         'Algo ha salido mal', 'Gloxi no se está ejecutando aquí. Abra la ventana de Gloxi.', 'Escriba a Gloxi…',
         'Enviar', 'Abrir la ventana de Gloxi', 'Cerrar el panel', 'Usted', '¿En qué puedo ayudar?',
         'Gloxi está abierto en otro panel.', 'Hecho', 'Denegado', 'Falló',
-        'Contenido sospechoso: vea la ventana de Gloxi', 'Conversación con Gloxi'],
+        'Contenido sospechoso: vea la ventana de Gloxi', 'Conversación con Gloxi',
+        'Soy Gloxi, un asistente de IA: mis respuestas las escribe un modelo de lenguaje y pueden contener errores.'],
     pl: ['Panel boczny Gloxi', 'Gloxi jest gotowy', 'Gloxi myśli', 'Gloxi odpowiada', 'Coś poszło nie tak',
         'Gloxi nie działa tutaj. Otwórz okno Gloxi.', 'Napisz do Gloxi…', 'Wyślij', 'Otwórz okno Gloxi',
         'Zamknij panel', 'Ty', 'W czym mogę pomóc?', 'Gloxi jest otwarty w innym panelu.', 'Gotowe', 'Odmówiono',
-        'Nie udało się', 'Podejrzana treść: szczegóły w oknie Gloxi', 'Rozmowa z Gloxi'],
+        'Nie udało się', 'Podejrzana treść: szczegóły w oknie Gloxi', 'Rozmowa z Gloxi',
+        'Jestem Gloxi, asystent AI: moje odpowiedzi pisze model językowy i mogą zawierać błędy.'],
     de: ['Gloxi-Seitenleiste', 'Gloxi ist bereit', 'Gloxi denkt nach', 'Gloxi antwortet', 'Etwas ist schiefgelaufen',
         'Gloxi läuft hier nicht. Öffnen Sie das Gloxi-Fenster.', 'An Gloxi schreiben…', 'Senden',
         'Gloxi-Fenster öffnen', 'Seitenleiste schließen', 'Sie', 'Wie kann ich helfen?',
         'Gloxi ist in einer anderen Seitenleiste geöffnet.', 'Erledigt', 'Abgelehnt', 'Fehlgeschlagen',
-        'Verdächtiger Inhalt: siehe Gloxi-Fenster', 'Gespräch mit Gloxi'],
+        'Verdächtiger Inhalt: siehe Gloxi-Fenster', 'Gespräch mit Gloxi',
+        'Ich bin Gloxi, ein KI-Assistent: Meine Antworten schreibt ein Sprachmodell, und sie können falsch sein.'],
     fr: ['Panneau latéral de Gloxi', 'Gloxi est prêt', 'Gloxi réfléchit', 'Gloxi répond', 'Un problème est survenu',
         'Gloxi ne fonctionne pas ici. Ouvrez la fenêtre de Gloxi.', 'Écrire à Gloxi…', 'Envoyer',
         'Ouvrir la fenêtre de Gloxi', 'Fermer le panneau', 'Vous', 'Comment puis-je aider ?',
         'Gloxi est ouvert dans un autre panneau.', 'Fait', 'Refusé', 'Échec',
-        'Contenu suspect : voir la fenêtre de Gloxi', 'Conversation avec Gloxi'],
+        'Contenu suspect : voir la fenêtre de Gloxi', 'Conversation avec Gloxi',
+        'Je suis Gloxi, un assistant IA : mes réponses sont rédigées par un modèle de langage et peuvent être erronées.'],
     it: ['Pannello laterale di Gloxi', 'Gloxi è pronto', 'Gloxi sta pensando', 'Gloxi sta rispondendo',
         'Qualcosa è andato storto', 'Gloxi non è in esecuzione qui. Apri la finestra di Gloxi.', 'Scrivi a Gloxi…',
         'Invia', 'Apri la finestra di Gloxi', 'Chiudi il pannello', 'Tu', 'Come posso aiutarti?',
         'Gloxi è aperto in un altro pannello.', 'Fatto', 'Negato', 'Non riuscito',
-        'Contenuto sospetto: vedi la finestra di Gloxi', 'Conversazione con Gloxi'],
+        'Contenuto sospetto: vedi la finestra di Gloxi', 'Conversazione con Gloxi',
+        'Sono Gloxi, un assistente IA: le mie risposte sono scritte da un modello linguistico e possono essere sbagliate.'],
     ro: ['Panoul lateral Gloxi', 'Gloxi este gata', 'Gloxi se gândește', 'Gloxi răspunde', 'Ceva nu a mers bine',
         'Gloxi nu rulează aici. Deschideți fereastra Gloxi.', 'Scrieți-i lui Gloxi…', 'Trimite',
         'Deschide fereastra Gloxi', 'Închide panoul', 'Dvs.', 'Cu ce vă pot ajuta?',
         'Gloxi este deschis în alt panou.', 'Gata', 'Refuzat', 'Nu a reușit',
-        'Conținut suspect: vedeți fereastra Gloxi', 'Conversație cu Gloxi'],
+        'Conținut suspect: vedeți fereastra Gloxi', 'Conversație cu Gloxi',
+        'Sunt Gloxi, un asistent AI: răspunsurile mele sunt scrise de un model lingvistic și pot fi greșite.'],
     cs: ['Boční panel Gloxi', 'Gloxi je připraven', 'Gloxi přemýšlí', 'Gloxi odpovídá', 'Něco se pokazilo',
         'Gloxi zde neběží. Otevřete okno Gloxi.', 'Napište Gloxi…', 'Odeslat', 'Otevřít okno Gloxi',
         'Zavřít panel', 'Vy', 'S čím mohu pomoci?', 'Gloxi je otevřen v jiném panelu.', 'Hotovo', 'Zamítnuto',
-        'Nezdařilo se', 'Podezřelý obsah: podrobnosti v okně Gloxi', 'Rozhovor s Gloxi'],
+        'Nezdařilo se', 'Podezřelý obsah: podrobnosti v okně Gloxi', 'Rozhovor s Gloxi',
+        'Jsem Gloxi, asistent AI: mé odpovědi píše jazykový model a mohou být chybné.'],
     lt: ['Gloxi šoninis skydelis', 'Gloxi pasiruošęs', 'Gloxi galvoja', 'Gloxi atsako', 'Kažkas nepavyko',
         'Gloxi čia neveikia. Atverkite Gloxi langą.', 'Parašykite Gloxi…', 'Siųsti', 'Atverti Gloxi langą',
         'Uždaryti skydelį', 'Jūs', 'Kuo galiu padėti?', 'Gloxi atvertas kitame skydelyje.', 'Atlikta', 'Atmesta',
-        'Nepavyko', 'Įtartinas turinys: žr. Gloxi langą', 'Pokalbis su Gloxi'],
+        'Nepavyko', 'Įtartinas turinys: žr. Gloxi langą', 'Pokalbis su Gloxi',
+        'Esu Gloxi, dirbtinio intelekto asistentas: mano atsakymus rašo kalbos modelis, ir jie gali būti klaidingi.'],
     ca: ['Plafó lateral de Gloxi', 'Gloxi està a punt', 'Gloxi està pensant', 'Gloxi està responent',
         'Alguna cosa ha anat malament', 'Gloxi no s’està executant aquí. Obre la finestra de Gloxi.',
         'Escriu a Gloxi…', 'Envia', 'Obre la finestra de Gloxi', 'Tanca el plafó', 'Tu', 'En què et puc ajudar?',
         'Gloxi està obert en un altre plafó.', 'Fet', 'Denegat', 'Ha fallat',
-        'Contingut sospitós: mira la finestra de Gloxi', 'Conversa amb Gloxi'],
+        'Contingut sospitós: mira la finestra de Gloxi', 'Conversa amb Gloxi',
+        'Soc Gloxi, un assistent d\'IA: les meves respostes les escriu un model de llenguatge i poden ser errònies.'],
     'ca@valencia': ['Plafó lateral de Gloxi', 'Gloxi està a punt', 'Gloxi està pensant', 'Gloxi està responent',
         'Alguna cosa ha anat malament', 'Gloxi no s’està executant ací. Obre la finestra de Gloxi.',
         'Escriu a Gloxi…', 'Envia', 'Obre la finestra de Gloxi', 'Tanca el plafó', 'Tu', 'En què et puc ajudar?',
         'Gloxi està obert en un altre plafó.', 'Fet', 'Denegat', 'Ha fallat',
-        'Contingut sospitós: mira la finestra de Gloxi', 'Conversa amb Gloxi'],
+        'Contingut sospitós: mira la finestra de Gloxi', 'Conversa amb Gloxi',
+        'Soc Gloxi, un assistent d\'IA: les meues respostes les escriu un model de llenguatge i poden ser errònies.'],
     gl: ['Panel lateral de Gloxi', 'Gloxi está listo', 'Gloxi está a pensar', 'Gloxi está a responder',
         'Algo saíu mal', 'Gloxi non se está a executar aquí. Abre a xanela de Gloxi.', 'Escríbelle a Gloxi…',
         'Enviar', 'Abrir a xanela de Gloxi', 'Pechar o panel', 'Ti', 'En que che podo axudar?',
         'Gloxi está aberto noutro panel.', 'Feito', 'Denegado', 'Fallou',
-        'Contido sospeitoso: mira a xanela de Gloxi', 'Conversa con Gloxi'],
+        'Contido sospeitoso: mira a xanela de Gloxi', 'Conversa con Gloxi',
+        'Son Gloxi, un asistente de IA: as miñas respostas escríbeas un modelo de linguaxe e poden ser erróneas.'],
     eu: ['Gloxiren alboko panela', 'Gloxi prest dago', 'Gloxi pentsatzen ari da', 'Gloxi erantzuten ari da',
         'Zerbaitek huts egin du', 'Gloxi ez dabil hemen. Ireki Gloxiren leihoa.', 'Idatzi Gloxiri…', 'Bidali',
         'Ireki Gloxiren leihoa', 'Itxi panela', 'Zu', 'Zertan lagun zaitzaket?',
         'Gloxi beste panel batean irekita dago.', 'Eginda', 'Ukatuta', 'Huts egin du',
-        'Eduki susmagarria: ikusi Gloxiren leihoa', 'Elkarrizketa Gloxirekin'],
+        'Eduki susmagarria: ikusi Gloxiren leihoa', 'Elkarrizketa Gloxirekin',
+        'Gloxi naiz, AA laguntzailea: hizkuntza-eredu batek idazten ditu nire erantzunak, eta okerrak izan daitezke.'],
     pt: ['Painel lateral do Gloxi', 'O Gloxi está pronto', 'O Gloxi está a pensar', 'O Gloxi está a responder',
         'Algo correu mal', 'O Gloxi não está a ser executado aqui. Abra a janela do Gloxi.', 'Escreva ao Gloxi…',
         'Enviar', 'Abrir a janela do Gloxi', 'Fechar o painel', 'Você', 'Em que posso ajudar?',
         'O Gloxi está aberto noutro painel.', 'Feito', 'Recusado', 'Falhou',
-        'Conteúdo suspeito: veja a janela do Gloxi', 'Conversa com o Gloxi'],
+        'Conteúdo suspeito: veja a janela do Gloxi', 'Conversa com o Gloxi',
+        'Sou o Gloxi, um assistente de IA: as minhas respostas são escritas por um modelo de linguagem e podem estar erradas.'],
 };
 
 export const LANGUAGES = Object.keys(TEXT);

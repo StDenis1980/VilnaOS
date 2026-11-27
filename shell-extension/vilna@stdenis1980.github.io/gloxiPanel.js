@@ -247,7 +247,12 @@ export class PanelView {
         else
             this._scroll.add_actor(this._list);
         box.add_child(this._scroll);
-        this._empty = new St.Label({text: t.empty, style_class: 'vilna-gloxi-empty', x_align: Clutter.ActorAlign.CENTER});
+        // Before the first message too, the person sees that Gloxi is an AI (ADR 0033).
+        this._empty = new St.Label({
+            text: `${t.empty}\n\n${t.aiNotice}`, style_class: 'vilna-gloxi-empty', x_align: Clutter.ActorAlign.CENTER,
+        });
+        this._empty.clutter_text.line_wrap = true;
+        this._empty.clutter_text.line_alignment = Pango.Alignment.CENTER;
         this._list.add_child(this._empty);
 
         const input = new St.BoxLayout({style_class: 'vilna-gloxi-input'});
@@ -340,7 +345,7 @@ export class PanelView {
                 if (language)
                     params.language = language;
                 const hello = await this._client.call('hello', params);
-                this._chat.loadHistory(hello.history);
+                this._chat.loadHistory(hello.history, this._t.aiNotice);
                 this._chat.busy = Boolean(hello.state?.busy);
                 this._chat.error = false;
                 this._render();

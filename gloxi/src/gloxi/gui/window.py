@@ -16,7 +16,7 @@ gi.require_version("Adw", "1")
 gi.require_version("Pango", "1.0")
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 
-from gloxi import crash  # noqa: E402
+from gloxi import ai_notice, crash  # noqa: E402
 from gloxi.backup_intro import BackupIntro, backup_intro  # noqa: E402
 from gloxi.chat import Conversation  # noqa: E402
 from gloxi.config import ConfigError, load_settings  # noqa: E402
@@ -337,6 +337,14 @@ class ChatWindow(Adw.ApplicationWindow):
         question = Gtk.Label(label=_("How can I help?"))
         question.add_css_class("title-2")
         box.append(question)
+        # Before the first message too, the person sees that Gloxi is an AI (ADR 0033).
+        notice = Gtk.Label(
+            label=ai_notice.notice(),
+            wrap=True,
+            justify=Gtk.Justification.CENTER,
+            max_width_chars=40,
+        )
+        box.append(notice)
         starts = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, max_children_per_line=3)
         starts.set_halign(Gtk.Align.CENTER)
         for text in starter_prompts():
@@ -1093,6 +1101,18 @@ class ChatWindow(Adw.ApplicationWindow):
     def start_answer(self, label: str) -> None:
         self._answer_label = self._bubble("…", "assistant", caption=label)
         self._answer_text = ""
+
+    def mark_answer(self, mark: dict) -> None:
+        """The answer just started is the model's: say so to AT-SPI (ADR 0033).
+
+        Not through ``_idle``: it comes on the main loop right after
+        ``start_answer``, and a short answer may finish before an idle call.
+        """
+        if self._answer_label is not None and mark.get("ai_generated"):
+            self._answer_label.update_property(
+                [Gtk.AccessibleProperty.DESCRIPTION], [_(ai_notice.WRITTEN_BY_AI)]
+            )
+            self._answer_label.add_css_class("ai-generated")
 
     @_idle
     def append_answer(self, piece: str) -> None:

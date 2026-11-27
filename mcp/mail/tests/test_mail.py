@@ -93,9 +93,14 @@ def test_send_builds_the_message_from_its_arguments_only(box):
     assert msg["Bcc"] is None  # never in the message itself
     assert msg["In-Reply-To"] == "<demo2@example.net>"
     assert msg.get_body().get_content().replace("\r\n", "\n") == "Yes, see you at 13:00.\n\nOla\n"
-    # Exactly these headers, nothing Gloxi did not give or the dialog did not show.
+    # Exactly these headers, nothing Gloxi did not give or the dialog did not
+    # show, except the marks that an AI wrote it (ADR 0033).
+    assert msg["X-AI-Generated"] == "yes"
+    assert msg["X-Digital-Source-Type"].endswith("/trainedAlgorithmicMedia")
     assert sorted(k.lower() for k in msg) == sorted(
         [
+            "x-ai-generated",
+            "x-digital-source-type",
             "from",
             "to",
             "subject",
@@ -175,6 +180,9 @@ def test_a_draft_is_saved_and_undone(box):
         "unread": 0,
     }
     assert box.store.outbox == []  # a draft is not sent
+    # Marked as written by an AI, like a message sent (ADR 0033).
+    (draft,) = box.store.boxes[DEMO_ACCOUNT]["Drafts"]
+    assert parsed(draft.raw)["X-AI-Generated"] == "yes"
     undone = box.restore(**out["undo_arguments"])
     assert undone["removed"] is True
     assert box.list_messages(folder="Drafts")["total"] == 0
