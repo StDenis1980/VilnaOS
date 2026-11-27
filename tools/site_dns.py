@@ -211,8 +211,12 @@ def check(z: Zone) -> list[str]:
             problems.append(f"{r}: the site's address; set it under [site], not as an rrset")
     if "CNAME" in names_types.get("", set()):
         problems.append("the apex cannot be a CNAME")
-    if any(r.name == "" and r.type == "NS" for r in z.records):
-        problems.append("the apex NS belongs to each provider; do not list it")
+    # Both providers must name all four servers at the apex: a resolver
+    # trusts the zone's own NS set over the .com delegation, so a provider
+    # that lists only itself would pull every resolver it answers onto it.
+    apex_ns = [r for r in z.records if r.name == "" and r.type == "NS"]
+    if len(apex_ns) < 2:
+        problems.append("the apex NS must list the servers of both providers")
     spf = [
         r for r in z.records if r.name == "" and r.type == "TXT" and r.value.startswith("v=spf1")
     ]
@@ -284,7 +288,7 @@ class Desec:
     """deSEC: whole rrsets, written in one bulk PATCH."""
 
     label = "deSEC"
-    skip = {("", "NS"), ("", "SOA"), ("", "DNSKEY"), ("", "CDS"), ("", "CDNSKEY")}
+    skip = {("", "SOA"), ("", "DNSKEY"), ("", "CDS"), ("", "CDNSKEY")}
 
     def __init__(self, zone: str, token: str, request=_request) -> None:
         self.zone = zone
@@ -345,8 +349,6 @@ class Bunny:
         if rtype is None or rec.get("Disabled"):
             return None
         name = _rel(rec.get("Name") or "", zone)
-        if (name, rtype) == ("", "NS"):
-            return None
         v = rec["Value"]
         if rtype == "MX":
             v = f"{rec.get('Priority', 0)} {v}"

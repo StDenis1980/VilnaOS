@@ -30,6 +30,14 @@ AAAA = ["2a01:4f9:c01f:8002::"]
 A = ["217.160.125.31"]
 
 [[rrset]]
+# The zone's own NS set, the same at both providers and at the .com registry
+# (Arsys). Without it each provider would list only its own servers, and a
+# resolver that asked that provider first would never try the other one.
+name = ""
+type = "NS"
+values = ["ns1.desec.io.", "ns2.desec.org.", "kiki.bunny.net.", "coco.bunny.net."]
+
+[[rrset]]
 name = "reports"
 type = "A"
 values = ["217.160.125.31"]
