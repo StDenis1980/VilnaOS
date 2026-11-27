@@ -55,7 +55,7 @@ jobs:
             dir="$(mktemp -d)"
             python3 tools/cursor_apps.py fetch "$app" x86_64 "$dir" >/dev/null || continue
             echo "== $app"
-            dpkg-deb -c "$dir"/*.deb | awk '{print $6}' | grep -E '\.desktop$|chrome-sandbox|resources/app|/icons/|pixmaps' | head -n 20
+            dpkg-deb -c "$dir"/*.deb | awk '{print $6}' | grep -E '\.desktop$|chrome-sandbox$|resources/app\.asar$|resources/app/package\.json$|/apps/[^/]+\.png$|pixmaps/' || true
             dpkg-deb --fsys-tarfile "$dir"/*.deb | tar -xO --wildcards '*.desktop' 2>/dev/null | grep -E '^(Name|Exec|MimeType|StartupWMClass)=' || true
             rm -rf "$dir"
           done

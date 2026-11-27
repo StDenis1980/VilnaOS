@@ -64,15 +64,15 @@ modules:
       - type: extra-data
         filename: app.deb
         only-arches: [x86_64]
-        url: https://downloads.cursor.com/pending/cursor_0.0.0_amd64.deb
-        sha256: "0000000000000000000000000000000000000000000000000000000000000000"
-        size: 0
+        url: https://downloads.cursor.com/production/0925c4b8226c56947c43f0b555fb98e187a7e029/linux/x64/deb/amd64/deb/cursor_3.32.4_amd64.deb
+        sha256: "c9c6579b4917c41a142a51a903dee7c81d6ab19b8b8f63916513361e6f019266"
+        size: 230561828
       - type: extra-data
         filename: app.deb
         only-arches: [aarch64]
-        url: https://downloads.cursor.com/pending/cursor_0.0.0_arm64.deb
-        sha256: "0000000000000000000000000000000000000000000000000000000000000000"
-        size: 0
+        url: https://downloads.cursor.com/production/0925c4b8226c56947c43f0b555fb98e187a7e029/linux/arm64/deb/arm64/deb/cursor_3.32.4_arm64.deb
+        sha256: "46471d418f23628360acf899277a4e4b559cd53d4c0199d8c6e2e8b1116d6b84"
+        size: 201883184
       - type: file
         path: ../electron-deb/apply_extra.sh
       - type: file

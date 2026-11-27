@@ -189,7 +189,8 @@ def latest_pins(app: App, apt: dict[tuple[str, str], dict[str, str]]) -> dict[st
                 raise PinError(f"{app.key} {arch}: {url} does not match Anysphere's signed apt index")
             print(f"{app.key} {arch}: {version} agrees with the signed apt index")
         else:
-            print(f"{app.key} {arch}: {version} is not in the signed apt index; hash taken over HTTPS")
+            has = f" (it has {listed.get('Version')})" if listed else ""
+            print(f"{app.key} {arch}: {version} is not in the signed apt index{has}; hash taken over HTTPS")
         pins[arch] = pin
     versions = {deb_version(app, p.url) for p in pins.values()}
     if len(versions) != 1:

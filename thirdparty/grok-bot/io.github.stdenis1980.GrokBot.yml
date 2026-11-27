@@ -57,15 +57,15 @@ modules:
       - type: extra-data
         filename: app.deb
         only-arches: [x86_64]
-        url: https://downloads.cursor.com/pending/grok-bot_0.0.0_amd64.deb
-        sha256: "0000000000000000000000000000000000000000000000000000000000000000"
-        size: 0
+        url: https://downloads.cursor.com/grokbot/stable/bfb372966cec77c6ec2750957965f2a2268da17d/linux/x64/grok-bot_1.3.0_amd64.deb
+        sha256: "87b046b6e4126c3eb466df59135b59c8efbb5f9f10e0de548f0d65ec8ac55528"
+        size: 117982212
       - type: extra-data
         filename: app.deb
         only-arches: [aarch64]
-        url: https://downloads.cursor.com/pending/grok-bot_0.0.0_arm64.deb
-        sha256: "0000000000000000000000000000000000000000000000000000000000000000"
-        size: 0
+        url: https://downloads.cursor.com/grokbot/stable/bfb372966cec77c6ec2750957965f2a2268da17d/linux/arm64/grok-bot_1.3.0_arm64.deb
+        sha256: "f9168a4a6182201a24977c18f42751cd964f8daf300289333c37c4f0baf40ed3"
+        size: 114013936
       - type: file
         path: ../electron-deb/apply_extra.sh
       - type: file
