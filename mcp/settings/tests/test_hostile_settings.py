@@ -1195,6 +1195,8 @@ def test_the_module_in_a_subprocess_survives_junk_and_answers_in_utf8():
 
 @pytest.fixture(scope="module")
 def manifest() -> dict:
+    if not MANIFEST.is_file():  # the RPM of this package builds without the Herkos sources
+        pytest.skip(f"no {MANIFEST.name} next to this package")
     return tomllib.loads(MANIFEST.read_text(encoding="utf-8"))
 
 
