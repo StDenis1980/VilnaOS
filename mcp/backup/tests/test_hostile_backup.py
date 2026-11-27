@@ -38,6 +38,9 @@ for _src in (_ROOT / "mcp" / "backup" / "src", _ROOT / "backup" / "src"):
     if _src.is_dir() and str(_src) not in sys.path:
         sys.path.append(str(_src))
 
+# The RPM of the MCP server builds without the backup sources: nothing to test there.
+pytest.importorskip("vilna_backup", reason="the vilna_backup sources are not here")
+
 from vilna_backup import cli, devices, keys, plan, restic, schedule  # noqa: E402
 from vilna_backup.service import Backup, BackupError  # noqa: E402
 from vilna_backup.settings import (  # noqa: E402
@@ -50,7 +53,13 @@ from vilna_backup.settings import (  # noqa: E402
 )
 
 from vilna_mcp_backup import server as mcp  # noqa: E402
-from vilna_mcp_backup.server import MAX_LIST, Server, ToolFailure, check_arguments, to_command  # noqa: E402
+from vilna_mcp_backup.server import (  # noqa: E402
+    MAX_LIST,
+    Server,
+    ToolFailure,
+    check_arguments,
+    to_command,
+)
 
 # --------------------------------------------------------------------------------------
 # Layer 1: the MCP server and a fake ``vilna-backup``
