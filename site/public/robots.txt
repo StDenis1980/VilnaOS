@@ -1,3 +1,4 @@
-# Closed to search engines until Gloxi 0.1 is released (site/README.md, "Launch").
+# Open since 2026-12 (site/README.md, "Launch"). Pages that are not ready
+# carry <meta name="robots" content="noindex"> instead.
 User-agent: *
-Disallow: /
+Allow: /
