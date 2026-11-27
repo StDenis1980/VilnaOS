@@ -180,7 +180,7 @@ msgstr "Jen nastavení ({size})"
 
 #: src/gloxi/backup_intro.py
 msgid "Passwords and accounts are switched on by you only:"
-msgstr "Hesla a účty zapínáte jen vy sami:"
+msgstr "Hesla a účty zapínáte jen vy:"
 
 #: src/gloxi/backup_intro.py
 msgid "Pictures"

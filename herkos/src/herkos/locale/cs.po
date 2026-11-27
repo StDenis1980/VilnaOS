@@ -10,13 +10,13 @@ msgid "Herkos: permission"
 msgstr "Herkos: oprávnění"
 
 msgid "Herkos: Gloxi asks for permission"
-msgstr "Herkos: Gloxi žádá o svolení"
+msgstr "Herkos: Gloxi žádá o povolení"
 
 msgid "Gloxi's reason: "
 msgstr "Zdůvodnění od Gloxi: "
 
 msgid "… and {n} more"
-msgstr "… a {n} dalších"
+msgstr "… a další ({n})"
 
 msgid "Can be undone."
 msgstr "Lze vrátit zpět."
@@ -40,7 +40,7 @@ msgid "Allow once"
 msgstr "Povolit jednou"
 
 msgid "Allow for this session"
-msgstr "Povolit pro toto sezení"
+msgstr "Povolit pro tuto relaci"
 
 msgid "Always allow"
 msgstr "Vždy povolit"
@@ -49,7 +49,7 @@ msgid "[o] allow once"
 msgstr "[o] povolit jednou"
 
 msgid "[s] allow for this session"
-msgstr "[s] povolit pro toto sezení"
+msgstr "[s] povolit pro tuto relaci"
 
 msgid "[a] always allow"
 msgstr "[a] vždy povolit"
@@ -397,7 +397,7 @@ msgid "Undone. The earlier version is back."
 msgstr "Vráceno. Dřívější verze je zpět."
 
 msgid "Until the session ends"
-msgstr "Do konce sezení"
+msgstr "Do konce relace"
 
 msgid "What"
 msgstr "Co"
@@ -418,7 +418,7 @@ msgid "{how} · in {where}"
 msgstr "{how} · v {where}"
 
 msgid "{name} and {n} more"
-msgstr "{name} a {n} dalších"
+msgstr "{name} a další ({n})"
 
 # Settings (org.vilna.mcp.settings, ADR 0023)
 msgid "See the desktop settings"
@@ -587,7 +587,7 @@ msgid "Suspicious content"
 msgstr "Podezřelý obsah"
 
 msgid "Allow only if you asked for exactly this yourself."
-msgstr "Povolte jen tehdy, pokud jste přesně o tohle požádali sami."
+msgstr "Povolte jen tehdy, pokud to přesně odpovídá vaší žádosti."
 
 msgid "I have read exactly what will be done"
 msgstr "Rozumím, co přesně se udělá"
@@ -724,7 +724,7 @@ msgid "{what} (read only)"
 msgstr "{what} (jen ke čtení)"
 
 msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
-msgstr "Stiskněte tlačítko sami, klávesnicí nebo myší: Herkos nepřijímá stisky od jiných programů."
+msgstr "Stiskněte tlačítko přímo, klávesnicí nebo myší: Herkos nepřijímá stisky od jiných programů."
 
 msgid "See which devices can open the backups"
 msgstr "Zobrazit, která zařízení mohou otevřít zálohy"

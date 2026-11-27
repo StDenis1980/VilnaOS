@@ -453,7 +453,7 @@ msgid "Could not make a code: {why}"
 msgstr "Nu s-a putut crea un cod: {why}"
 
 msgid "Delete the old copy yourself: {place}"
-msgstr "Ștergeți singur copia veche: {place}"
+msgstr "Ștergeți manual copia veche: {place}"
 
 msgid "Done"
 msgstr "Gata"

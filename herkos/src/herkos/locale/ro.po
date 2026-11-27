@@ -19,16 +19,16 @@ msgid "… and {n} more"
 msgstr "… și încă {n}"
 
 msgid "Can be undone."
-msgstr "Poate fi anulat."
+msgstr "Se poate anula."
 
 msgid "Cannot be undone."
-msgstr "Nu poate fi anulat."
+msgstr "Nu se poate anula."
 
 msgid "Riskier than usual: {why}."
 msgstr "Mai riscant decât de obicei: {why}."
 
 msgid "Untrusted content came from: {src}"
-msgstr "Conținut nesigur provenit de la: {src}"
+msgstr "Conținut care nu este de încredere, provenit de la: {src}"
 
 msgid "Exactly this will be done:"
 msgstr "Se va face exact acest lucru:"
@@ -83,7 +83,7 @@ msgid "the tool describes this operation as riskier"
 msgstr "instrumentul descrie această operație ca fiind mai riscantă"
 
 msgid "untrusted content is in the conversation"
-msgstr "în conversație există conținut nesigur"
+msgstr "în conversație există conținut care nu este de încredere"
 
 msgid "content read earlier {kinds}"
 msgstr "conținutul citit anterior {kinds}"
@@ -95,7 +95,7 @@ msgid "it touches more than {n} items at once"
 msgstr "atinge mai mult de {n} elemente deodată"
 
 msgid "it cannot be undone"
-msgstr "nu poate fi anulat"
+msgstr "nu se poate anula"
 
 msgid "Herkos cannot tell which of the program's commands this runs"
 msgstr "Herkos nu își poate da seama ce comandă a programului rulează aceasta"
@@ -107,7 +107,7 @@ msgid "data leaves this device"
 msgstr "datele părăsesc acest dispozitiv"
 
 msgid "it sends data to an address that came from untrusted content"
-msgstr "trimite date la o adresă care a venit din conținut nesigur"
+msgstr "trimite date la o adresă venită din conținut care nu este de încredere"
 
 # Keros findings
 msgid "asks the assistant to ignore its instructions"

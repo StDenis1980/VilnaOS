@@ -10,7 +10,7 @@ msgid "Blavet release"
 msgstr "Versiunea Blavet"
 
 msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
-msgstr "Alegeți o limbă. Apoi eu, Gloxi, vă voi ajuta să instalați sistemul, sau puteți parcurge pașii pe cont propriu."
+msgstr "Alegeți o limbă. Apoi eu, Gloxi, vă voi ajuta să instalați sistemul sau puteți parcurge pașii pe cont propriu."
 
 msgid "Screen reader"
 msgstr "Cititor de ecran"
@@ -28,10 +28,10 @@ msgid "Other languages"
 msgstr "Alte limbi"
 
 msgid "Search for a language"
-msgstr "Caută o limbă"
+msgstr "Căutați o limbă"
 
 msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the left and change any item yourself."
-msgstr "Sunt Gloxi și vă ajut să instalați Vilna. Pe disc nu se schimbă nimic până nu confirmați planul; îl vedeți în stânga și puteți schimba singur orice punct."
+msgstr "Sunt Gloxi și vă ajut să instalați Vilna. Pe disc nu se schimbă nimic până nu confirmați planul; îl vedeți în stânga și puteți modifica orice element."
 
 msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
 msgstr "În ce limbi scrieți? Voi adăuga și aranjamentele lor de tastatură, de exemplu ucraineană și engleză."
@@ -46,7 +46,7 @@ msgid "Gloxi is thinking…"
 msgstr "Gloxi se gândește…"
 
 msgid "Send"
-msgstr "Trimite"
+msgstr "Trimiteți"
 
 msgid "Message to Gloxi"
 msgstr "Mesaj pentru Gloxi"
@@ -58,7 +58,7 @@ msgid "Plan"
 msgstr "Plan"
 
 msgid "Not decided yet"
-msgstr "Încă nedecis"
+msgstr "Nu s-a decis încă"
 
 msgid "Check and confirm the plan"
 msgstr "Verificați și confirmați planul"
@@ -228,7 +228,7 @@ msgid "Erase the whole disk and install Vilna"
 msgstr "Ștergeți tot discul și instalați Vilna"
 
 msgid "Choose the partitions yourself in the partition editor"
-msgstr "Alegeți singur partițiile în editorul de partiții"
+msgstr "Alegeți manual partițiile în editorul de partiții"
 
 msgid "Empty"
 msgstr "Gol"
@@ -551,7 +551,7 @@ msgid "The plan cannot be installed yet: {message}"
 msgstr "Planul nu poate fi instalat încă: {message}"
 
 msgid "Not decided yet: {parts}"
-msgstr "Încă nedecis: {parts}"
+msgstr "Nu s-a decis încă: {parts}"
 
 msgid "Herkos"
 msgstr "Herkos"
@@ -696,7 +696,7 @@ msgid "Never"
 msgstr "Niciodată"
 
 msgid "Reports stay on this computer; you can still send one yourself."
-msgstr "Rapoartele rămân pe acest calculator; puteți totuși trimite unul singur."
+msgstr "Rapoartele rămân pe acest calculator; puteți totuși trimite unul manual."
 
 msgid "What is in a report"
 msgstr "Ce conține un raport"

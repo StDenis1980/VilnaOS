@@ -7,13 +7,13 @@ msgid "Welcome to Vilna"
 msgstr "Sveiki, tai Vilna"
 
 msgid "Blavet release"
-msgstr "Leidimas Blavet"
+msgstr "Laida „Blavet“"
 
 msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
-msgstr "Pasirinkite kalbą. Tada aš, Gloxi, padėsiu įdiegti sistemą, arba galite atlikti veiksmus patys."
+msgstr "Pasirinkite kalbą. Tada aš, Gloxi, padėsiu įdiegti sistemą arba galite atlikti veiksmus patys."
 
 msgid "Screen reader"
-msgstr "Ekrano skaitytuvas"
+msgstr "Ekrano skaityklė"
 
 msgid "Without the assistant"
 msgstr "Be asistento"
@@ -67,7 +67,7 @@ msgid "Wi-Fi password for {name}"
 msgstr "„Wi-Fi“ slaptažodis tinklui {name}"
 
 msgid "Connect"
-msgstr "Prijungti"
+msgstr "Prisijungti"
 
 msgid "Connecting…"
 msgstr "Jungiamasi…"
@@ -91,7 +91,7 @@ msgid "Passphrase for the disk"
 msgstr "Disko slaptafrazė"
 
 msgid "Save"
-msgstr "Išsaugoti"
+msgstr "Įrašyti"
 
 msgid "Gloxi does not see what you type here."
 msgstr "Gloxi nemato, ką čia įvedate."
