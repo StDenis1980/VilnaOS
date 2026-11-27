@@ -156,6 +156,9 @@ msgstr "Ce facem cu discul? Vă propun să ștergem tot discul și să instalăm
 msgid "Fine, the disk will not be encrypted. You can change this in the plan."
 msgstr "Bine, discul nu va fi criptat. Puteți schimba asta în plan."
 
+msgid "The login name is {username}, and the computer's name is {hostname}; you can change them in the plan."
+msgstr "Numele de utilizator este {username}, iar numele calculatorului este {hostname}; le puteți schimba în plan."
+
 msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
 msgstr "Păstrați cheia de recuperare în siguranță: fără ea nimeni, nici chiar dumneavoastră, nu va putea deschide discul dacă ceva se schimbă în acest calculator."
 

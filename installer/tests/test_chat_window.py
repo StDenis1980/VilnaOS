@@ -406,3 +406,18 @@ def test_the_greeting_puts_the_plan_where_it_is():
     """The plan panel is on the left; the greeting said «on the right»."""
     assert "on the left" in conv.INTRO
     assert "on the right" not in conv.INTRO
+
+
+def test_the_chat_stays_at_its_end_when_its_content_grows_or_shrinks(plan_path):
+    """Build15.8: after a layout switch the chat jumped up, the crash buttons out of sight."""
+    win = window(plan_path, talk=Talk(plan_path))
+    adj = win.scroll.get_vadjustment()
+    adj.configure(900, 0, 1000, 10, 90, 100)  # at the end
+    assert win.at_end
+    adj.configure(adj.get_value(), 0, 800, 10, 90, 100)  # shorter: the value is clamped
+    adj.configure(adj.get_value(), 0, 1200, 10, 90, 100)  # longer again
+    assert adj.get_value() == 1100
+    adj.set_value(300)  # the person scrolls up to read: it stays there
+    assert not win.at_end
+    adj.configure(adj.get_value(), 0, 1500, 10, 90, 100)
+    assert adj.get_value() == 300

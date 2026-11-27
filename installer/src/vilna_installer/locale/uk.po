@@ -156,6 +156,9 @@ msgstr "Що зробимо з диском? Раджу стерти весь д
 msgid "Fine, the disk will not be encrypted. You can change this in the plan."
 msgstr "Добре, диск не шифруватиметься. Змінити це можна в плані."
 
+msgid "The login name is {username}, and the computer's name is {hostname}; you can change them in the plan."
+msgstr "Ім'я для входу — {username}, а назва комп'ютера — {hostname}; змінити їх можна в плані."
+
 msgid "Keep the recovery key safe: without it nobody, not even you, can open the disk if something in this computer changes."
 msgstr "Збережіть ключ відновлення в надійному місці: без нього ніхто, навіть ви, не відкриє диск, якщо в комп'ютері щось зміниться."
 

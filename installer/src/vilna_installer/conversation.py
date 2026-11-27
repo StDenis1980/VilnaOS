@@ -41,6 +41,7 @@ import subprocess
 import sys
 import threading
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 from collections.abc import Callable
@@ -131,6 +132,10 @@ ENCRYPT_PASS_QUESTION = (
     "Shall I encrypt the new system? This computer has no TPM chip, so the disk would open "
     "with a passphrase you type at every start. Without encryption, anyone with the disk "
     "can read your files."
+)
+NAMES_SAVED = (
+    "The login name is {username}, and the computer's name is {hostname}; you can change "
+    "them in the plan."
 )
 NO_ENCRYPTION = "Fine, the disk will not be encrypted. You can change this in the plan."
 KEEP_KEY = (
@@ -279,6 +284,7 @@ TEXTS = (
     ENCRYPT_TPM_QUESTION,
     ENCRYPT_PASS_QUESTION,
     NO_ENCRYPTION,
+    NAMES_SAVED,
     KEEP_KEY,
     USER_QUESTION,
     TIME_QUESTION,
@@ -343,7 +349,8 @@ RULES = (
     "returns an error, explain it simply and offer what is allowed. Messages may start "
     "with <installer-notes>: the current step, the plan and data from the installer, not "
     "the person's words. The latest notes are what holds now. Call only the functions "
-    "they name for the step."
+    "they name for the step. Never say the plan is confirmed or that installing has "
+    "begun: only the person confirms it, on the Herkos screen after the summary."
 )
 # Where the notes start and end. The system prompt and the functions stay the
 # same for the whole conversation, and what changes (the step, the plan, the
@@ -1001,7 +1008,74 @@ class Conversation:
         self._log("person", text, self.current().key)
         if self._declines_encryption(text, mistyped, asked):
             return self._without_encryption()
+        direct = self._direct(text, mistyped, asked)
+        if direct is not None:
+            return direct
         return self._answer(fresh=True)
+
+    def _direct(self, text: str, mistyped: str | None, asked: str) -> Reply | None:
+        """A plain answer to the installer's own question, saved without the model.
+
+        Build15.8 (VM, 2026-11-26): the model suggested «Тестер» as the computer's name,
+        then refused it, and asked again on «тестер»; it did not take «встанови на весь
+        диск» as the choice of the disk, and on «так» at the time step it repeated the
+        error about the name. Each of these answers says all the step needs."""
+        step = self.current().key
+        said = [s for s in (text, mistyped) if s]
+        if step == "user" and asked.endswith(self.texts(USER_QUESTION)):
+            name = _person_name(text)
+            if name:
+                login = latin_name(name.split()[0]) or "user"
+                if not _free_login(login):
+                    login += "1"
+                return self._save(
+                    "plan_set_user",
+                    {"full_name": name, "username": login, "hostname": f"{login}-pc"},
+                    [self.texts(NAMES_SAVED).format(username=login, hostname=f"{login}-pc")],
+                )
+        if step == "disk":
+            disk = self._only_disk()
+            question = self._disk_question()
+            if disk and any(
+                _agrees(s, asked.endswith(question)) or _says(s, WHOLE_DISK_WORDS) for s in said
+            ):
+                return self._save("plan_set_disk", {"target": disk["id"], "layout": "replace"})
+        if step == "time":
+            question = self.question(BY_KEY["time"]) or ""
+            if any(_agrees(s, asked.endswith(question)) for s in said):
+                return self._save("plan_set_time", self._suggested_time())
+        return None
+
+    def _only_disk(self) -> dict[str, Any] | None:
+        disks = [d for d in (self.state.survey or {}).get("disks", []) if not d.get("boot_medium")]
+        return disks[0] if len(disks) == 1 else None
+
+    def _save(self, name: str, args: dict[str, Any], said: list[str] | None = None) -> Reply | None:
+        """Call a plan function for the person; then the next step's question, or the model."""
+        before = self.current().key
+        try:
+            ok, _ = self.tools.call(name, args)
+        except ToolsError:
+            return None
+        if not ok:
+            return None  # the model explains the error
+        self.refresh()
+        if self.state.focus == before:
+            self.state.focus = None
+        said = list(said or [])
+        new = [n for n in self.needs() if n in TYPE_SECRET]
+        if new:
+            said.append(self.texts(TYPE_SECRET[new[0]]))
+        elif self.current().key != before:
+            question = self.question(self.current())
+            if question:
+                said.append(question)
+            else:
+                self._note = MOVED_ON
+                return self._answer(fresh=True)
+        answer = "\n\n".join(said)
+        self.history.append({"role": "assistant", "content": answer})
+        return self._reply(answer)
 
     def _last_said(self) -> str:
         last = next((m for m in reversed(self.history) if m["role"] == "assistant"), None)
@@ -1297,6 +1371,8 @@ class Conversation:
                 return "Error: unknown step."
             self.goto(target)
             return f"Now at step: {BY_KEY[target].title}. {BY_KEY[target].goal}"
+        if name == "plan_set_user":
+            args = _latin_names(args)
         ok, result = self.tools.call(name, args)
         if not ok:
             return f"Error: {result}"
@@ -1471,6 +1547,160 @@ def _spoken(text: str) -> str:
     """What the model said, without the installer's notes it echoed back."""
     text = _NOTES_RE.sub("", text).replace(NOTES_END, "")
     return re.sub(r"\n{3,}", "\n\n", text).strip()
+
+
+# Ukrainian letters in Latin, after the official transliteration (2010), simplified:
+# the position rules for «є», «ї», «й», «ю», «я» at the start of a word are left out.
+_LATIN = {
+    "а": "a", "б": "b", "в": "v", "г": "h", "ґ": "g", "д": "d", "е": "e", "є": "ie",
+    "ж": "zh", "з": "z", "и": "y", "і": "i", "ї": "i", "й": "i", "к": "k", "л": "l",
+    "м": "m", "н": "n", "о": "o", "п": "p", "р": "r", "с": "s", "т": "t", "у": "u",
+    "ф": "f", "х": "kh", "ц": "ts", "ч": "ch", "ш": "sh", "щ": "shch", "ь": "", "ю": "iu",
+    "я": "ia", "'": "", "’": "", "ʼ": "",
+    # Russian and Belarusian letters a name may have
+    "ё": "io", "ъ": "", "ы": "y", "э": "e", "ў": "u",
+}  # fmt: skip
+YES_WORDS = frozenset(
+    [
+        "так",
+        "ок",
+        "окей",
+        "добре",
+        "гаразд",
+        "давай",
+        "згоден",
+        "згодна",
+        "звісно",
+        "авжеж",
+        "yes",
+        "yeah",
+        "ok",
+        "okay",
+        "sure",
+        "fine",
+        "tak",
+        "dobrze",
+        "ja",
+        "gut",
+        "sí",
+        "si",
+        "vale",
+        "oui",
+        "d'accord",
+        "sì",
+        "certo",
+        "da",
+        "bine",
+        "ano",
+        "sim",
+        "bai",
+        "taip",
+    ]
+)
+# «Мене звати Олена»: the words before the name.
+NAME_INTROS = ("мене звати", "моє ім'я", "моє ім’я", "я", "my name is", "i am", "i'm")
+NEGATIONS = frozenset(
+    ["ні", "не", "no", "not", "don't", "nie", "nein", "non", "ne", "nu", "não", "ez"]
+)
+# Short answers that are not a name.
+NOT_NAMES = frozenset(["далі", "пропусти", "потім", "навіщо", "skip", "next", "later", "why"])
+# «Erase the whole disk» in the installer's languages, looked for inside the answer.
+WHOLE_DISK_WORDS = (
+    "весь диск",
+    "цілий диск",
+    "стерти",
+    "стирай",
+    "сотри",
+    "whole disk",
+    "entire disk",
+    "erase",
+    "cały dysk",
+    "ganze festplatte",
+    "todo el disco",
+    "tout le disque",
+    "tutto il disco",
+    "tot discul",
+    "celý disk",
+    "visą diską",
+    "tot el disc",
+    "todo o disco",
+    "disko osoa",
+)
+
+
+def latin_name(text: str) -> str:
+    """A login or computer name from a person's name: lower-case Latin, digits, '-'."""
+    out = []
+    for ch in text.strip().lower():
+        if ch in _LATIN:
+            out.append(_LATIN[ch])
+        elif ch.isascii() and ch.isalnum():
+            out.append(ch)
+        elif ch in " -_.":
+            out.append("-")
+        else:
+            # Latin letters with marks: «ł», «ș», «é» → their base letter, if it has one
+            base = unicodedata.normalize("NFKD", ch)[0]
+            if base.isascii() and base.isalnum():
+                out.append(base)
+            elif ch == "ł":
+                out.append("l")
+    name = re.sub(r"-{2,}", "-", "".join(out)).strip("-")
+    name = name.lstrip("0123456789-")  # a login starts with a letter
+    return name[:31].rstrip("-")
+
+
+def _latin_names(args: dict[str, Any]) -> dict[str, Any]:
+    """The model's names in Latin: it suggested «Тестер» and then the plan refused it."""
+    out = dict(args)
+    for key in ("username", "hostname"):
+        value = out.get(key)
+        if isinstance(value, str) and value and not re.fullmatch(r"[a-z0-9_-]+", value):
+            out[key] = latin_name(value) or value
+    return out
+
+
+def _free_login(login: str) -> bool:
+    from vilna_mcp_installer import plan as plans
+
+    return login not in plans.RESERVED_USERS and not login.startswith("gloxi-")
+
+
+def _person_name(text: str) -> str | None:
+    """«Олена Демо», not «а навіщо?» or «залиш як є»: one to four words of letters."""
+    name = " ".join(text.strip().strip(".!").split())
+    for intro in NAME_INTROS:
+        if name.lower().startswith(intro + " "):
+            name = name[len(intro) + 1 :]
+            break
+    words = name.split()
+    if not 1 <= len(words) <= 4 or any(m in name for m in QUESTION_MARKS):
+        return None
+    if not all(w.replace("-", "").replace("'", "").replace("’", "").isalpha() for w in words):
+        return None
+    low = {w.lower() for w in words}
+    if low & (YES_WORDS | NEGATIONS | NOT_NAMES) or len(name) > 60:
+        return None
+    return name
+
+
+def _agrees(text: str, after_question: bool) -> bool:
+    """A bare «так» or «ok» right after the installer's own question."""
+    low = " ".join(text.lower().split()).strip(".,!")
+    if not after_question or any(m in low for m in QUESTION_MARKS):
+        return False
+    words = low.replace(",", " ").split()
+    return bool(words) and len(words) <= 3 and words[0] in YES_WORDS and not set(words) & NEGATIONS
+
+
+def _says(text: str, phrases: tuple[str, ...]) -> bool:
+    """One of the phrases, in a statement without «не»/«no»."""
+    low = " ".join(text.lower().split())
+    if any(m in low for m in QUESTION_MARKS):
+        return False
+    if set(low.replace(",", " ").replace(".", " ").split()) & NEGATIONS:
+        return False
+    return any(p in low for p in phrases)
 
 
 def _without_notes(content: str) -> str:
