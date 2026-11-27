@@ -10,7 +10,7 @@ msgid "Blavet release"
 msgstr "Vydání Blavet"
 
 msgid "Choose a language. Then I, Gloxi, will help you install the system, or you can go through the steps yourself."
-msgstr "Vyberte jazyk. Potom vám já, Gloxi, pomohu nainstalovat systém, nebo můžete projít kroky sami."
+msgstr "Vyberte jazyk. Potom vám já, Gloxi, pomohu nainstalovat systém, nebo můžete jednotlivé kroky projít bez asistenta."
 
 msgid "Screen reader"
 msgstr "Čtečka obrazovky"
@@ -22,7 +22,7 @@ msgid "Continue with Gloxi"
 msgstr "Pokračovat s Gloxi"
 
 msgid "Install Vilna"
-msgstr "Instalace Vilna"
+msgstr "Instalace systému Vilna"
 
 msgid "Other languages"
 msgstr "Další jazyky"
@@ -31,13 +31,13 @@ msgid "Search for a language"
 msgstr "Hledat jazyk"
 
 msgid "I am Gloxi, I will help you install Vilna. Nothing on the disk changes until you confirm the plan; you can see it on the left and change any item yourself."
-msgstr "Jsem Gloxi a pomohu vám nainstalovat Vilna. Na disku se nic nezmění, dokud plán nepotvrdíte; vidíte ho vlevo a kteroukoli položku můžete změnit sami."
+msgstr "Jsem Gloxi a pomohu vám nainstalovat systém Vilna. Na disku se nic nezmění, dokud plán nepotvrdíte; vidíte ho vlevo a kteroukoli položku můžete změnit."
 
 msgid "Which languages do you write in? I will add their keyboard layouts too, for example Ukrainian and English."
 msgstr "V jakých jazycích píšete? Přidám i jejich rozložení klávesnice, například ukrajinštinu a angličtinu."
 
 msgid "Gloxi cannot start on this computer right now. You can go on without the assistant: the steps are the same, and what you chose stays in the plan."
-msgstr "Gloxi se teď na tomto počítači nemůže spustit. Můžete pokračovat bez asistenta: kroky jsou stejné a to, co jste už vybrali, v plánu zůstane."
+msgstr "Gloxi se teď na tomto počítači nemůže spustit. Můžete pokračovat bez asistenta: kroky jsou stejné a vaše dosavadní volby v plánu zůstanou."
 
 msgid "Gloxi did not answer. Try again, or go on without the assistant."
 msgstr "Gloxi neodpověděl. Zkuste to znovu, nebo pokračujte bez asistenta."
@@ -70,10 +70,10 @@ msgid "Connect"
 msgstr "Připojit"
 
 msgid "Connecting…"
-msgstr "Připojuji…"
+msgstr "Připojování…"
 
 msgid "Could not connect. Check the password and try again."
-msgstr "Nelze se připojit. Zkontrolujte heslo a zkuste to znovu."
+msgstr "Připojení se nezdařilo. Zkontrolujte heslo a zkuste to znovu."
 
 msgid "Password for {name}"
 msgstr "Heslo pro {name}"
@@ -151,7 +151,7 @@ msgid "Shall we connect to a network now? It is not needed: everything for insta
 msgstr "Připojíme se teď k síti? Není to nutné: vše potřebné k instalaci už je na USB disku. Řekněte název své sítě Wi-Fi, nebo řekněte, že pokračujeme bez sítě."
 
 msgid "What shall we do with the disk? I suggest erasing the whole disk and installing Vilna; the other way is your own layout in the partition editor."
-msgstr "Co uděláme s diskem? Navrhuji smazat celý disk a nainstalovat Vilna; druhou možností je vlastní rozdělení v editoru oddílů."
+msgstr "Co uděláme s diskem? Navrhuji smazat celý disk a nainstalovat systém Vilna; druhou možností je vlastní rozdělení v editoru oddílů."
 
 msgid "Fine, the disk will not be encrypted. You can change this in the plan."
 msgstr "Dobře, disk nebude šifrovaný. Změnit to můžete v plánu."
@@ -225,10 +225,10 @@ msgid "What to do with the disk"
 msgstr "Co udělat s diskem"
 
 msgid "Erase the whole disk and install Vilna"
-msgstr "Smazat celý disk a nainstalovat Vilna"
+msgstr "Smazat celý disk a nainstalovat systém Vilna"
 
 msgid "Choose the partitions yourself in the partition editor"
-msgstr "Vybrat oddíly sami v editoru oddílů"
+msgstr "Vybrat oddíly ručně v editoru oddílů"
 
 msgid "Empty"
 msgstr "Prázdný"
@@ -623,7 +623,7 @@ msgid "This screen is shown by Herkos, not by Gloxi. Gloxi cannot press its butt
 msgstr "Tuto obrazovku zobrazuje Herkos, ne Gloxi. Gloxi nemůže mačkat její tlačítka."
 
 msgid "Installing Vilna"
-msgstr "Instalace Vilna"
+msgstr "Instalace systému Vilna"
 
 msgid "This takes a few minutes. Do not switch the computer off and do not pull out the stick."
 msgstr "Potrvá to několik minut. Nevypínejte počítač a nevytahujte USB disk."
@@ -696,7 +696,7 @@ msgid "Never"
 msgstr "Nikdy"
 
 msgid "Reports stay on this computer; you can still send one yourself."
-msgstr "Hlášení zůstanou na tomto počítači; i tak můžete kterékoli poslat sami."
+msgstr "Hlášení zůstanou na tomto počítači; i tak můžete kterékoli poslat ručně."
 
 msgid "What is in a report"
 msgstr "Co je v hlášení"
@@ -714,7 +714,7 @@ msgid "Read the key aloud"
 msgstr "Přečíst klíč nahlas"
 
 msgid "Press the button yourself, with the keyboard or the mouse: Herkos does not take presses from other programs."
-msgstr "Stiskněte tlačítko sami, klávesnicí nebo myší: Herkos nepřijímá stisky od jiných programů."
+msgstr "Stiskněte tlačítko přímo, klávesnicí nebo myší: Herkos nepřijímá stisky od jiných programů."
 
 msgid "Connected to Wi-Fi."
 msgstr "Připojeno k Wi-Fi."
@@ -738,10 +738,10 @@ msgid "This computer is already connected to the network, so I keep that connect
 msgstr "Tento počítač už je připojený k síti, takže toto připojení ponechám; v plánu ho můžete změnit."
 
 msgid "The disk for Vilna has {size} GB and is empty. I suggest giving all of it to Vilna; the other way is your own layout in the partition editor. Use the whole disk?"
-msgstr "Disk pro Vilna má {size} GB a je prázdný. Navrhuji ho celý dát Vilna; druhou možností je vlastní rozdělení v editoru oddílů. Použít celý disk?"
+msgstr "Disk pro systém Vilna má {size} GB a je prázdný. Navrhuji ho celý dát systému Vilna; druhou možností je vlastní rozdělení v editoru oddílů. Použít celý disk?"
 
 msgid "The disk for Vilna has {size} GB, and there is {what} on it. I suggest erasing it completely and installing Vilna: everything on it will be lost. The other way is your own layout in the partition editor. Erase this disk?"
-msgstr "Disk pro Vilna má {size} GB a obsahuje {what}. Navrhuji ho úplně smazat a nainstalovat Vilna: vše, co na něm je, se ztratí. Druhou možností je vlastní rozdělení v editoru oddílů. Smazat tento disk?"
+msgstr "Disk pro systém Vilna má {size} GB a obsahuje {what}. Navrhuji ho úplně smazat a nainstalovat systém Vilna: vše, co na něm je, se ztratí. Druhou možností je vlastní rozdělení v editoru oddílů. Smazat tento disk?"
 
 msgid "files"
 msgstr "soubory"

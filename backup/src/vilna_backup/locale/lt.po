@@ -327,7 +327,7 @@ msgid "Checking which files would change…"
 msgstr "Tikrinama, kurie failai pasikeistų…"
 
 msgid "Connect"
-msgstr "Prijungti"
+msgstr "Prisijungti"
 
 msgid "Connect this computer to the backups you made before. You need the place of the backups and the key from your recovery sheet. Nothing on this computer changes until you choose what to bring back."
 msgstr "Prijunkite šį kompiuterį prie anksčiau padarytų kopijų. Reikės kopijų vietos ir rakto iš atkūrimo lapo. Šiame kompiuteryje niekas nepasikeis, kol nepasirinksite, ką grąžinti."

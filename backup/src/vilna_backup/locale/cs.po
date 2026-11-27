@@ -423,7 +423,7 @@ msgid "{n} files that are missing now come back."
 msgstr "Vrátí se soubory, které teď chybějí: {n}."
 
 msgid "…and {n} more"
-msgstr "…a dalších {n}"
+msgstr "…a další ({n})"
 
 msgid "Add a device"
 msgstr "Přidat zařízení"
@@ -453,7 +453,7 @@ msgid "Could not make a code: {why}"
 msgstr "Kód nelze vytvořit: {why}"
 
 msgid "Delete the old copy yourself: {place}"
-msgstr "Starou kopii smažte sami: {place}"
+msgstr "Starou kopii smažte ručně: {place}"
 
 msgid "Done"
 msgstr "Hotovo"
