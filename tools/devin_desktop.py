@@ -35,9 +35,10 @@ cd.KEY_URL = "https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/windsurf.
 cd.SUITE = "stable"
 cd.COMPONENT = "main"
 cd.PACKAGE = "devin-desktop"
-# Cognition's apt signing key, as windsurf.gpg served it (first seen by CI,
+# Cognition's apt signing key, as windsurf.gpg served it on 2026-11-27 (first
+# seen by CI, PR #262;
 # trust on first use like `apt` itself); a different key is then an error.
-cd.KEY_FINGERPRINT = ""
+cd.KEY_FINGERPRINT = "EE2C46CC44E1578C23135B0E9E608A1B9FD62A3F"
 cd.ARCHES = {"x86_64": "amd64"}
 cd.NAME = "devin-desktop"
 cd.VENDOR = "Cognition"
