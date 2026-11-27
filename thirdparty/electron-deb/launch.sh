@@ -4,6 +4,7 @@
 # session has a Wayland display: Electron's "auto" hint goes by
 # XDG_SESSION_TYPE, which a start from outside the session (SSH, a service)
 # does not set, and then it fails with "Missing X server".
+set -eu
 if [ -n "${WAYLAND_DISPLAY:-}" ]; then
   platform=--ozone-platform=wayland
 else
