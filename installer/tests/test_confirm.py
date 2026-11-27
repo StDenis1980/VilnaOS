@@ -205,6 +205,9 @@ def test_the_recovery_key_has_systemds_format():
     assert encryption.check_group(key, " BRBT-BUBV ", 7)
     assert not encryption.check_group(key, "brbtbubc", 7)
     assert not encryption.check_group(key, "brbtbubv", 8)
+    # A Cyrillic «с» on a Ukrainian layout is a wrong letter, not a crash.
+    assert not encryption.check_group(key, "сccbcdce", 0)
+    assert encryption.check_group(key, "brbt\u200bbubv", 7)  # copied with an invisible space
     assert encryption.spoken(key).startswith("c c c b c d c e. c f c g")
 
 

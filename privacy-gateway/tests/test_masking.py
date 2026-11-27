@@ -114,3 +114,11 @@ def test_a_placeholder_from_another_masker_is_not_masked_again():
     assert first == "мій пароль від пошти [SECRET_1], пишіть на a@example.com"
     assert gateway.mask(first) == "мій пароль від пошти [SECRET_1], пишіть на [EMAIL_1]"
     assert gateway.unmask("[SECRET_1] і [EMAIL_1]") == "[SECRET_1] і a@example.com"
+
+
+def test_numbers_in_other_digits_keep_their_own_placeholders():
+    masker = Masker()
+    first = masker.mask("тел. +٣٨٠ ٦٧ ١٢٣ ٤٥ ٦٧")
+    second = masker.mask("тел. +٣٨٠ ٥٠ ٩٨٧ ٦٥ ٤٣")
+    assert first != second
+    assert masker.unmask(second) == "тел. +٣٨٠ ٥٠ ٩٨٧ ٦٥ ٤٣"

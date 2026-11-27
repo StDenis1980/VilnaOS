@@ -927,7 +927,19 @@ def test_yes_to_the_disk_question_erases_that_disk(plan_path, answer, asked):
         tools.close()
 
 
-@pytest.mark.parametrize("answer", ["не стирай диск", "так?", "а що на ньому?"])
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "не стирай диск",
+        "так?",
+        "а що на ньому?",
+        "don’t erase the whole disk",
+        "never erase the whole disk",
+        "Nicht die ganze Festplatte löschen",
+        "n'effacez pas tout le disque",
+        "ok, cancel",
+    ],
+)
 def test_no_or_a_question_at_the_disk_step_goes_to_the_model(plan_path, answer):
     c, model, tools = make(plan_path, "windows", "Добре, не стираю.")
     try:

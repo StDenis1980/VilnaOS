@@ -15,7 +15,9 @@ is labelled (``Ім'я: ...``, ``Name: ...``).
 
 from __future__ import annotations
 
+import bisect
 import re
+import unicodedata
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from enum import StrEnum
@@ -56,20 +58,26 @@ EMAIL_RE = re.compile(
     r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}"
 )
 
-PHONE_CANDIDATE_RE = re.compile(r"(?<![\w+])(?:\+|00)?(?:\(?\d{1,4}\)?[\s.\-]*){3,6}\d{2,4}(?!\w)")
+# A phone does not run across a line break: one per line is two numbers.
+PHONE_CANDIDATE_RE = re.compile(
+    r"(?<![\w+])(?:\+|00)?(?:\(?\d{1,4}\)?(?:[^\S\n]|[.\-])*){3,6}\d{2,4}(?!\w)"
+)
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}|\d{1,2}[./]\d{1,2}[./]\d{2,4}")
 
 # A profile link: the site and a user name, nothing after it. Longer links
 # (a repository, a post) are left alone: they are usually what the user asks about.
+# It starts only where a word starts and the subdomain cannot give back what it
+# took: on a long run of letters the search stays linear (it was quadratic).
 PROFILE_RE = re.compile(
-    r"(?:https?://)?(?:[\w-]+\.)?"
+    r"(?<![\w.-])(?:https?://)?(?:[\w-]++\.)?"
     r"(?:linkedin\.com/in|t\.me|telegram\.me|github\.com|facebook\.com|fb\.com"
     r"|instagram\.com|twitter\.com|x\.com|threads\.net|tiktok\.com|mastodon\.social)"
     r"/@?[\w.%+-]++/?+(?![\w/])",
     re.I,
 )
 
-IPV4_RE = re.compile(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")
+# A full stop after the address ends the sentence; only a fifth number makes it a version.
+IPV4_RE = re.compile(r"(?<!\d)(?<!\d\.)(?:\d{1,3}\.){3}\d{1,3}(?!\d|\.\d)")
 
 # --- identifiers and money ----------------------------------------------------
 
@@ -82,15 +90,18 @@ PASSPORT_RE = re.compile(r"(?<![\w])[А-ЯІЇЄҐ]{2} ?\d{6}(?!\d)")
 # --- secrets ------------------------------------------------------------------
 
 SECRET_RES = (
-    re.compile(r"\bsk-(?:proj-|ant-)?[A-Za-z0-9_-]{20,}"),  # OpenAI, Anthropic style keys
+    # The look-behinds start a key only where a run of key characters starts, so a
+    # long run of "sk-sk-sk-" is read once, not once per "sk-".
+    re.compile(r"(?<![\w-])sk-(?:proj-|ant-)?[A-Za-z0-9_-]{20,}"),  # OpenAI, Anthropic style keys
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}"),  # GitHub tokens
     re.compile(r"\bgithub_pat_[A-Za-z0-9_]{40,}"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),  # AWS access key id
-    re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}"),  # Slack
+    re.compile(r"(?<![\w-])xox[abprs]-[A-Za-z0-9-]{10,}"),  # Slack
     re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b"),  # Google API key
     re.compile(r"(?<=Bearer )[A-Za-z0-9._~+/-]{20,}=*"),
-    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]+?-----END [A-Z ]*PRIVATE KEY-----"),
 )
+PEM_BEGIN_RE = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")
+PEM_END_RE = re.compile(r"-----END [A-Z ]*PRIVATE KEY-----")
 
 # --- labelled fields: ``Label: value`` on one line ------------------------------
 
@@ -446,18 +457,60 @@ def _value_spans(pattern: re.Pattern[str]) -> Finder:
     return find
 
 
+def _private_keys(text: str) -> Iterator[Span]:
+    """PEM private keys. Each BEGIN looks for its END once: with no END left, no
+    later BEGIN can have one, so the search stops (a regex rescanned the rest of
+    the text for every BEGIN)."""
+    pos = 0
+    while begin := PEM_BEGIN_RE.search(text, pos):
+        end = PEM_END_RE.search(text, begin.end())
+        if end is None:
+            return
+        yield begin.start(), end.end()
+        pos = end.end()
+
+
 def _secrets(text: str) -> Iterator[Span]:
     for pattern in SECRET_RES:
         for m in pattern.finditer(text):
             yield m.span()
+    yield from _private_keys(text)
+
+
+def _digit_ends(raw: str) -> list[int]:
+    """For each digit of ``raw``, the offset just after it."""
+    return [i + 1 for i, c in enumerate(raw) if c.isdigit()]
 
 
 def _cards(text: str) -> Iterator[Span]:
     for m in CARD_RE.finditer(text):
-        digits = _digits(m.group(0))
+        raw = m.group(0)
+        digits = _digits(raw)
+        ends = _digit_ends(raw)
         # Card numbers start with 2-6 (Mastercard, Amex, Visa, Discover, UnionPay).
-        if 13 <= len(digits) <= 19 and digits[0] in "23456" and luhn_ok(digits):
+        if digits[:1] not in tuple("23456"):
+            continue
+        # The run may go on past the card: "4111 1111 1111 1111 12/28" (the expiry
+        # date) or "... 123" (the CVV). Take the longest start of it that passes
+        # the checksum and ends at a group break.
+        for n in range(min(len(digits), 19), 12, -1):
+            cut = ends[n - 1]
+            if (n == len(digits) or not raw[cut].isdigit()) and luhn_ok(digits[:n]):
+                yield m.start(), m.start() + cut
+                break
+
+
+def _ibans(text: str) -> Iterator[Span]:
+    for m in IBAN_RE.finditer(text):
+        raw = m.group(0)
+        if iban_ok(raw):
             yield m.span()
+            continue
+        # A short word after the IBAN ("... 2874 PLN", "... OK") is taken as its
+        # last group; try without it.
+        cut = raw.rfind(" ")
+        if cut > 0 and iban_ok(raw[:cut]):
+            yield m.start(), m.start() + cut
 
 
 def _tax_ids(text: str) -> Iterator[Span]:
@@ -485,7 +538,7 @@ RULES: tuple[Rule, ...] = (
     Rule(Kind.PASSPORT, _value_spans(PASSPORT_LABEL_RE)),
     Rule(Kind.EMAIL, _spans(EMAIL_RE)),
     Rule(Kind.PROFILE, _spans(PROFILE_RE)),
-    Rule(Kind.IBAN, _spans(IBAN_RE, iban_ok)),
+    Rule(Kind.IBAN, _ibans),
     Rule(Kind.CARD, _cards),
     Rule(Kind.TAX_ID, _tax_ids),
     Rule(Kind.NATIONAL_ID, _dnis),
@@ -619,6 +672,53 @@ def _tied(text: str, found: list[Finding], known: frozenset[str]) -> list[Findin
     ]
 
 
+# Characters that show nothing, often left by copying from a page or put in to
+# split a value: they are read as absent.
+_INVISIBLE = frozenset("\u200b\u200c\u200d\u2060\u2061\u2062\u2063\u2064\ufeff\u00ad\u180e")
+# Spaces that are not U+0020 (from PDFs and sites) are read as one.
+_SPACES = frozenset("\u00a0\u2007\u202f")
+
+
+def _plain_char(c: str) -> str:
+    """One character as the rules read it: full-width forms and other digits as ASCII."""
+    if c.isascii():
+        return c
+    if c in _SPACES:
+        return " "
+    if "\uff01" <= c <= "\uff5e":  # full-width ASCII: "４", "＠"
+        return chr(ord(c) - 0xFEE0)
+    if c.isdecimal():  # Arabic-Indic and other decimal digits
+        return str(unicodedata.decimal(c))
+    return c
+
+
+def plain(text: str) -> tuple[str, list[int]]:
+    """``text`` as the rules read it, and for each of its characters the index in ``text``.
+
+    Invisible characters are left out; full-width forms, other digits and
+    other spaces become ASCII. Each kept character maps to one character, so a
+    span found in the plain text maps back to the original.
+    """
+    out: list[str] = []
+    index: list[int] = []
+    for i, c in enumerate(text):
+        if c in _INVISIBLE:
+            continue
+        out.append(_plain_char(c))
+        index.append(i)
+    return "".join(out), index
+
+
+def _needs_plain(text: str) -> bool:
+    return not text.isascii() and any(
+        c in _INVISIBLE
+        or c in _SPACES
+        or "\uff01" <= c <= "\uff5e"
+        or (c.isdecimal() and not c.isascii())
+        for c in text
+    )
+
+
 def detect(
     text: str,
     kinds: Iterable[Kind] | None = None,
@@ -632,6 +732,27 @@ def detect(
     ``known`` holds values already hidden earlier in the conversation: a bare
     number among them stays hidden.
     """
+    if _needs_plain(text):
+        flat, index = plain(text)
+        return [
+            Finding(
+                f.kind,
+                index[f.start],
+                index[f.end - 1] + 1,
+                text[index[f.start] : index[f.end - 1] + 1],
+            )
+            for f in _detect(flat, kinds, strict=strict, known=known)
+        ]
+    return _detect(text, kinds, strict=strict, known=known)
+
+
+def _detect(
+    text: str,
+    kinds: Iterable[Kind] | None,
+    *,
+    strict: bool,
+    known: Iterable[str],
+) -> list[Finding]:
     wanted = set(kinds) if kinds is not None else set(Kind)
     candidates: list[tuple[int, int, int, Kind]] = []
     for rank, rule in enumerate(RULES):
@@ -644,12 +765,17 @@ def detect(
                 candidates.append((rank, start, end, rule.kind))
     candidates.sort(key=lambda c: (c[0], -(c[2] - c[1]), c[1]))
 
-    taken: list[Span] = []
+    # Taken spans never overlap, so sorted starts and ends find a clash in log time
+    # (a list scan made a text with many findings quadratic).
+    starts: list[int] = []
+    ends: list[int] = []
     found: list[Finding] = []
     for _, start, end, kind in candidates:
-        if any(start < t_end and t_start < end for t_start, t_end in taken):
+        i = bisect.bisect_right(starts, start)
+        if (i > 0 and ends[i - 1] > start) or (i < len(starts) and starts[i] < end):
             continue
-        taken.append((start, end))
+        starts.insert(i, start)
+        ends.insert(i, end)
         found.append(Finding(kind, start, end, text[start:end]))
     found.sort(key=lambda f: f.start)
     return found if strict else _tied(text, found, frozenset(known))

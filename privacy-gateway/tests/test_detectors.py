@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # All data in these tests is synthetic.
+import time
+
 import pytest
 
 from privacy_gateway import Kind, detect
@@ -158,3 +160,64 @@ def test_finds_passwords_in_a_sentence(text, secret):
 )
 def test_talk_about_passwords_is_left_alone(text):
     assert [k for k in kinds(text) if k[0] is Kind.SECRET] == []
+
+
+# --- values with something right after them, or written in other characters ---
+
+
+@pytest.mark.parametrize(
+    ("text", "kind", "value"),
+    [
+        (f"card {CARD} 12/28", Kind.CARD, CARD),
+        (f"{CARD} 123", Kind.CARD, CARD),
+        ("PL61 1090 1014 0000 0712 1981 2874 PLN", Kind.IBAN, "PL61 1090 1014 0000 0712 1981 2874"),
+        ("LT12 1000 0111 0100 1000 OK", Kind.IBAN, "LT12 1000 0111 0100 1000"),
+        ("Server is 192.168.10.25.", Kind.IP, "192.168.10.25"),
+    ],
+)
+def test_value_followed_by_more(text, kind, value):
+    assert (kind, value) in kinds(text)
+
+
+def test_one_phone_per_line():
+    phones = ["067 123 45 67", "050 987 65 43"]
+    assert [v for k, v in kinds("\n".join(phones)) if k is Kind.PHONE] == phones
+
+
+@pytest.mark.parametrize(
+    ("text", "kind"),
+    [
+        ("ole​na@example.org", Kind.EMAIL),
+        ("olena@exam­ple.org", Kind.EMAIL),
+        ("olena＠example.org", Kind.EMAIL),
+        ("+380 67 ​123 45 67", Kind.PHONE),
+        ("4111 1111​ 1111 1111", Kind.CARD),
+        ("４１１１ １１１１ １１１１ １１１１", Kind.CARD),
+        ("٤١١١ ١١١١ ١١١١ ١١١١", Kind.CARD),
+        ("4111 1111 1111 1111", Kind.CARD),
+        ("UA21 3223 1300 0002 6007 2335 6600 1", Kind.IBAN),
+    ],
+)
+def test_invisible_and_other_width_characters(text, kind):
+    # The whole value is found, with the characters that hid it, so none of it is left.
+    assert [(f.kind, f.value) for f in detect(text)] == [(kind, text)]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "x" * 200_000,
+        "1-" * 100_000,
+        "a" * 200_000 + "@",
+        "a@b.co " * 30_000,
+        "sk-" * 60_000,
+        "-----BEGIN PRIVATE KEY-----" * 8_000,
+    ],
+    ids=["letters", "digits", "at-sign", "many-emails", "key-prefixes", "key-headers"],
+)
+def test_long_input_stays_fast(text):
+    # These took from seconds to minutes when the search grew with the square of
+    # the length. The bound is loose: it only tells linear from quadratic.
+    started = time.perf_counter()
+    detect(text)
+    assert time.perf_counter() - started < 5

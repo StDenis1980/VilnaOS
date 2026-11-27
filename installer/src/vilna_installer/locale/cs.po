@@ -859,3 +859,6 @@ msgstr "Na disku už je systémový oddíl EFI. Vyberte ho (s formátováním ne
 
 msgid "Keyboard layout: {name}"
 msgstr "Rozložení klávesnice: {name}"
+
+msgid "Write your name without «,» and «:», for example «Olena Shevchenko»."
+msgstr "Napište jméno bez «,» a «:», například «Olena Shevchenko»."

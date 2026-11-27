@@ -13,7 +13,7 @@ import re
 from collections.abc import Iterable, Iterator, Mapping
 from typing import Any
 
-from privacy_gateway.detectors import Kind, detect
+from privacy_gateway.detectors import Kind, detect, plain
 
 PLACEHOLDER_RE = re.compile(r"\[([A-Z_]+?)_(\d+)\]")
 # What a model may make of a placeholder: another case, brackets or separator,
@@ -43,6 +43,9 @@ _MAX_PLACEHOLDER = max(len(k.value) for k in Kind) + 16
 
 
 def _normalise(kind: Kind, value: str) -> str:
+    # Read the value as the rules do, so "+٣٨٠ ٦٧ …" and "+٣٨٠ ٥٠ …" are two
+    # numbers, not one empty key, and an invisible character does not make a new value.
+    value = plain(value)[0]
     if kind is Kind.EMAIL:
         return value.lower()
     if kind in (Kind.PHONE, Kind.CARD, Kind.IBAN):

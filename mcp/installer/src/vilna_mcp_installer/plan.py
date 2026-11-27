@@ -62,7 +62,7 @@ STAGE_LAYOUTS = {"alpha": ("replace", "manual"), "beta": LAYOUTS}
 ENCRYPTION = ("tpm2", "tpm2-pin", "passphrase", "none")
 TPM_METHODS = ("tpm2", "tpm2-pin")
 # Digits only: the PIN is typed before the keyboard layout is loaded.
-PIN_RE = re.compile(r"^[0-9]{6,20}$")
+PIN_RE = re.compile(r"^[0-9]{6,20}\Z")
 # What a partition of a manual layout is for: the EFI system partition, the
 # system itself (the image is written on it), the home folders, swap.
 USES = ("efi", "system", "home", "swap")
@@ -99,11 +99,14 @@ STEP_FIELDS = {
     "time": 10,
 }
 
-LOCALE_RE = re.compile(r"^[a-z]{2,3}(_[A-Z]{2})?\.UTF-8(@[a-z]+)?$")
-KEYBOARD_RE = re.compile(r"^[a-z]{2,8}(\([a-z0-9_-]{1,24}\))?$")
-USERNAME_RE = re.compile(r"^[a-z_][a-z0-9_-]{0,30}$")
-HOSTNAME_RE = re.compile(r"^(?!-)[a-z0-9-]{1,63}(?<!-)$")
+LOCALE_RE = re.compile(r"^[a-z]{2,3}(_[A-Z]{2})?\.UTF-8(@[a-z]+)?\Z")
+KEYBOARD_RE = re.compile(r"^[a-z]{2,8}(\([a-z0-9_-]{1,24}\))?\Z")
+USERNAME_RE = re.compile(r"^[a-z_][a-z0-9_-]{0,30}\Z")
+HOSTNAME_RE = re.compile(r"^(?!-)[a-z0-9-]{1,63}(?<!-)\Z")
 # Names the system already uses (ADR 0025 and the usual system accounts).
+# The account database keeps the full name in a field that ":" ends and "," splits.
+NAME_FORBIDDEN = frozenset(":,")
+NAME_HINT = "the full name cannot hold ',' or ':'; write it as «John Smith», not «Smith, John»"
 RESERVED_USERS = frozenset(
     {
         "root",
@@ -320,11 +323,19 @@ def set_encryption(plan: dict[str, Any], method: str, **_: Any) -> dict[str, Any
     return enc
 
 
+def full_name_ok(name: str) -> bool:
+    """Can an account hold this full name? Checked before the disk is touched: the
+    engine refuses such a name only when it creates the account, after erasing."""
+    return all(c.isprintable() and c not in NAME_FORBIDDEN for c in name)
+
+
 def set_user(
     plan: dict[str, Any], full_name: str, username: str, hostname: str, **_: Any
 ) -> dict[str, Any]:
     """The person's name, login name and the computer's name; the password is separate."""
     name = _text(full_name, "full_name")
+    if not full_name_ok(name):
+        raise PlanError(NAME_HINT)
     if not isinstance(username, str) or not USERNAME_RE.match(username):
         raise PlanError(
             "'username' must start with a Latin letter and have only lower-case Latin "
@@ -620,6 +631,8 @@ def _check_user(user: Any, r: _Report) -> None:
     ):
         r.missing.append("user")
         return
+    if not isinstance(user["full_name"], str) or not full_name_ok(user["full_name"]):
+        r.error("bad_full_name", "user.full_name", NAME_HINT)
     if not isinstance(user["username"], str) or not USERNAME_RE.match(user["username"]):
         r.error("bad_username", "user.username", "invalid login name")
     elif user["username"] in RESERVED_USERS or user["username"].startswith("gloxi-"):

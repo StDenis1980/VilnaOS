@@ -1602,6 +1602,50 @@ NAME_INTROS = ("мене звати", "моє ім'я", "моє ім’я", "я"
 NEGATIONS = frozenset(
     ["ні", "не", "no", "not", "don't", "nie", "nein", "non", "ne", "nu", "não", "ez"]
 )
+# What turns «erase the whole disk» or «ok» into a «no», in the main languages; more
+# than NEGATIONS, which also keeps names out («Mai» is a name, «mai» is «never»).
+REFUSALS = NEGATIONS | frozenset(
+    [
+        "нет",
+        "ніколи",
+        "нічого",
+        "never",
+        "nothing",
+        "won't",
+        "cannot",
+        "can't",
+        "dont",
+        "cancel",
+        "stop",
+        "wait",
+        "скасуй",
+        "стоп",
+        "зачекай",
+        "nicht",
+        "kein",
+        "keine",
+        "nie",
+        "niemals",
+        "nichts",
+        "pas",
+        "jamais",
+        "rien",
+        "nunca",
+        "nada",
+        "mai",
+        "niente",
+        "niciodată",
+        "nimic",
+        "nigdy",
+        "nic",
+        "nikdy",
+        "niekada",
+        "nieko",
+        "inoiz",
+        "ezer",
+        "res",
+    ]
+)
 # Short answers that are not a name.
 NOT_NAMES = frozenset(["далі", "пропусти", "потім", "навіщо", "skip", "next", "later", "why"])
 # «Erase the whole disk» in the installer's languages, looked for inside the answer.
@@ -1684,13 +1728,23 @@ def _person_name(text: str) -> str | None:
     return name
 
 
+def _words(low: str) -> list[str]:
+    """The words of a lower-case answer, with a typographic apostrophe as «'»."""
+    return re.findall(r"[\w']+", low.replace("’", "'").replace("ʼ", "'"))
+
+
+def _refuses(words: list[str]) -> bool:
+    """«не», «don't», «nicht», «jamais», or the French «n'effacez»."""
+    return any(w in REFUSALS or w.startswith("n'") for w in words)
+
+
 def _agrees(text: str, after_question: bool) -> bool:
     """A bare «так» or «ok» right after the installer's own question."""
     low = " ".join(text.lower().split()).strip(".,!")
-    if not after_question or any(m in low for m in QUESTION_MARKS):
+    if not after_question or not low.isprintable() or any(m in low for m in QUESTION_MARKS):
         return False
-    words = low.replace(",", " ").split()
-    return bool(words) and len(words) <= 3 and words[0] in YES_WORDS and not set(words) & NEGATIONS
+    words = _words(low)
+    return bool(words) and len(words) <= 3 and words[0] in YES_WORDS and not _refuses(words)
 
 
 def _says(text: str, phrases: tuple[str, ...]) -> bool:
@@ -1698,7 +1752,7 @@ def _says(text: str, phrases: tuple[str, ...]) -> bool:
     low = " ".join(text.lower().split())
     if any(m in low for m in QUESTION_MARKS):
         return False
-    if set(low.replace(",", " ").replace(".", " ").split()) & NEGATIONS:
+    if _refuses(_words(low)):
         return False
     return any(p in low for p in phrases)
 

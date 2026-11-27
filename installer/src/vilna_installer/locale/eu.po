@@ -859,3 +859,6 @@ msgstr "Diskoak badu jada EFI sistema-partizio bat. Aukeratu hura (formateatuta 
 
 msgid "Keyboard layout: {name}"
 msgstr "Teklatu-diseinua: {name}"
+
+msgid "Write your name without «,» and «:», for example «Olena Shevchenko»."
+msgstr "Idatzi zure izena «,» eta «:» gabe, adibidez «Olena Shevchenko»."

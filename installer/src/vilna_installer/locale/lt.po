@@ -859,3 +859,6 @@ msgstr "Diske jau yra EFI sistemos skaidinys. Pasirinkite jį (formatuotą ar ne
 
 msgid "Keyboard layout: {name}"
 msgstr "Klaviatūros išdėstymas: {name}"
+
+msgid "Write your name without «,» and «:», for example «Olena Shevchenko»."
+msgstr "Vardą parašykite be «,» ir «:», pavyzdžiui, «Olena Shevchenko»."
