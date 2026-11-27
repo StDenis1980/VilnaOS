@@ -321,6 +321,27 @@ def parse_records(data: object, source: str, problems: list[sbom.Problem]) -> li
     return records
 
 
+MAX_JSON_DEPTH = 256  # real OSV and SPDX files nest about ten levels
+
+
+def read_json(handle: object) -> object:
+    """``json.load`` that refuses nesting deeper than ``MAX_JSON_DEPTH``.
+
+    Whether ``json`` itself runs out of recursion depends on the Python build,
+    so the depth is checked here, without recursion, on every interpreter.
+    """
+    data = json.load(handle)  # type: ignore[arg-type]
+    stack: list[tuple[object, int]] = [(data, 1)]
+    while stack:
+        value, depth = stack.pop()
+        if isinstance(value, (list, dict)):
+            if depth > MAX_JSON_DEPTH:
+                raise ValueError(f"nested deeper than {MAX_JSON_DEPTH} levels")
+            items = value.values() if isinstance(value, dict) else value
+            stack.extend((item, depth + 1) for item in items)
+    return data
+
+
 def load_osv(path: str, problems: list[sbom.Problem]) -> list[Record] | None:
     """The records of an OSV file, or None (a problem is added) when it cannot be used."""
     try:
@@ -328,7 +349,7 @@ def load_osv(path: str, problems: list[sbom.Problem]) -> list[Record] | None:
             problems.append(sbom.Problem(path, f"larger than {MAX_FILE_BYTES // 2**20} MiB"))
             return None
         with open(path, encoding="utf-8") as handle:
-            data = json.load(handle)
+            data = read_json(handle)
     except (OSError, ValueError, RecursionError) as err:  # JSON/Unicode errors are ValueErrors
         problems.append(sbom.Problem(path, f"cannot read: {err}"))
         return None
@@ -540,7 +561,7 @@ def load_sbom(args: argparse.Namespace, problems: list[sbom.Problem]) -> object 
                 problems.append(sbom.Problem(args.sbom, "too large"))
                 return None
             with open(args.sbom, encoding="utf-8") as handle:
-                return json.load(handle)
+                return read_json(handle)
         except (OSError, ValueError, RecursionError) as err:
             problems.append(sbom.Problem(args.sbom, f"cannot read: {err}"))
             return None

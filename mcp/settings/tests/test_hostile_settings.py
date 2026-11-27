@@ -1345,7 +1345,10 @@ def _fake_pulse(sinks, default=None, fail=None):
 
 @pytest.fixture
 def pulse(monkeypatch):
-    pulsectl = pytest.importorskip("pulsectl")
+    try:  # pulsectl loads libpulse when imported: an OSError without it
+        import pulsectl
+    except (ImportError, OSError) as err:
+        pytest.skip(f"pulsectl cannot be used here: {err}")
 
     def make(sinks, **kw):
         fake, calls = _fake_pulse(sinks, **kw)

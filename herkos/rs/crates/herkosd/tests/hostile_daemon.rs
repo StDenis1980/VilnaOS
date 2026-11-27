@@ -3128,10 +3128,19 @@ fn no_system_file_or_an_empty_one_means_nobody_and_every_caller_gets_no_answer()
 fn a_caller_who_is_not_listed_gets_no_answer_and_one_who_is_gets_the_gate() {
     let me = my_uid();
     assert_ne!(me, 0, "these tests are never run as root");
+    // The people of the file must not have this caller's number (a CI
+    // runner is often uid 1001, which `PASSWD` gives to alice).
+    let alice = if me == 1001 { 1003 } else { 1001 };
+    let gloxi = if me == 2001 { 2003 } else { 2001 };
+    let others = format!(
+        "root:x:0:0:root:/root:/bin/bash\n\
+         alice:x:{alice}:{alice}:Alice:/home/alice:/bin/bash\n\
+         gloxi-alice:x:{gloxi}:{gloxi}::/var/lib/gloxi-alice:/usr/sbin/nologin\n"
+    );
 
     // Somebody else's people: this caller is not one of them.
     let world = World::new();
-    let passwd = world.passwd(PASSWD);
+    let passwd = world.passwd(&others);
     let toml = world.system_toml(person("alice", "gloxi-alice"));
     let _daemon = world.system(&passwd, &toml).running("others");
     let mut client = Client::connect(&world.socket());
@@ -3144,7 +3153,7 @@ fn a_caller_who_is_not_listed_gets_no_answer_and_one_who_is_gets_the_gate() {
     // This caller as the Gloxi user of a person.
     let world = World::new();
     let passwd = world.passwd(&format!(
-        "alice:x:1001:1001:A:{home}:/bin/sh\nme:x:{me}:{me}::/var/empty:/sbin/nologin\n",
+        "alice:x:{alice}:{alice}:A:{home}:/bin/sh\nme:x:{me}:{me}::/var/empty:/sbin/nologin\n",
         home = world.root.join("home").display()
     ));
     let toml = world.system_toml(person("alice", "me"));
@@ -3162,7 +3171,12 @@ fn a_caller_who_is_not_listed_gets_no_answer_and_one_who_is_gets_the_gate() {
         daemon.stderr()
     );
     // The person's own state is under their number, not the caller's.
-    assert!(world.root.join("sysstate/1001/journal.jsonl").exists());
+    assert!(
+        world
+            .root
+            .join(format!("sysstate/{alice}/journal.jsonl"))
+            .exists()
+    );
 }
 
 #[test]
