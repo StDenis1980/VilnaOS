@@ -48,6 +48,11 @@ PACKAGE = "claude-desktop"
 NAME = "claude-desktop"
 VENDOR = "Anthropic"
 TOOL = "tools/claude_desktop.py"
+# How a .deb's file name carries its version and architecture: Debian's
+# <package>_<version>_<arch>.deb unless a vendor names its files otherwise.
+DEB_NAME = r"/{package}_(?P<version>[^_/]+)_(?P<arch>[^_/]+)\.deb$"
+# Debian architecture -> its spelling in the file name, where that differs.
+FILE_ARCH: dict[str, str] = {}
 # Anthropic's apt signing key, as key.asc on downloads.claude.ai served it on
 # 2026-11-25 (first seen by CI, PR #233). Anthropic publishes no fingerprint
 # elsewhere, so this is trust on first use, like `apt` itself; from now on a
@@ -72,8 +77,13 @@ class Pin:
 
     @property
     def version(self) -> str:
-        m = re.search(rf"/{PACKAGE}_([^_/]+)_[^_/]+\.deb$", self.url)
-        return m.group(1) if m else ""
+        m = re.search(DEB_NAME.format(package=re.escape(PACKAGE)), self.url)
+        return m["version"] if m else ""
+
+    @property
+    def deb_arch(self) -> str:
+        m = re.search(DEB_NAME.format(package=re.escape(PACKAGE)), self.url)
+        return m["arch"] if m else ""
 
 
 # --- the manifest -----------------------------------------------------------
@@ -108,7 +118,7 @@ def check_pins(pins: dict[str, Pin]) -> list[str]:
         deb_arch = ARCHES.get(arch, "?")
         if not pin.url.startswith(f"{REPO}/pool/"):
             problems.append(f"{arch}: {pin.url} is not in {VENDOR}'s apt repository {REPO}")
-        if not pin.url.endswith(f"_{deb_arch}.deb"):
+        if pin.deb_arch != FILE_ARCH.get(deb_arch, deb_arch):
             problems.append(f"{arch}: {pin.url} is not the {deb_arch} package")
         if not HEX64.fullmatch(pin.sha256) or pin.sha256 == "0" * 64:
             problems.append(f"{arch}: no SHA-256 pinned")

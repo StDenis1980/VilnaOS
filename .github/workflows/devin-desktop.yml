@@ -38,9 +38,9 @@ jobs:
           set -eu
           cp -r thirdparty /tmp/thirdparty-orig
           python3 tools/devin_desktop.py latest --write >/dev/null || true
-          url="$(sed -n 's/^ *url: \(https:.*devin-desktop_.*_amd64\.deb\)$/\1/p' thirdparty/devin-desktop/io.github.stdenis1980.DevinDesktop.yml)"
+          url="$(sed -n 's/^ *url: \(https:.*/Devin-linux-x64-.*\.deb\)$/\1/p' thirdparty/devin-desktop/io.github.stdenis1980.DevinDesktop.yml)"
           rm -rf thirdparty && mv /tmp/thirdparty-orig thirdparty
-          case "$url" in *_0.0.0_*) exit 0 ;; esac
+          case "$url" in ''|*-0.0.0.deb) exit 0 ;; esac
           curl -fsSL -o /tmp/app.deb "$url"
           dpkg-deb -c /tmp/app.deb | awk '{print $6}' | grep -E '\.desktop$|chrome-sandbox$|resources/app/package\.json$|/apps/[^/]+\.png$|pixmaps/' || true
           dpkg-deb --fsys-tarfile /tmp/app.deb | tar -xO --wildcards '*.desktop' 2>/dev/null | grep -E '^(Name|Exec|MimeType|StartupWMClass)=' || true

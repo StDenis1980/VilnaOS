@@ -66,9 +66,9 @@ modules:
       - type: extra-data
         filename: app.deb
         only-arches: [x86_64]
-        url: https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/apt/pool/main/d/devin-desktop/devin-desktop_0.0.0_amd64.deb
-        sha256: "0000000000000000000000000000000000000000000000000000000000000000"
-        size: 0
+        url: https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/apt/pool/main/d/devin-desktop/Devin-linux-x64-3.15.14.deb
+        sha256: "74a70c939d1d4f43ade7b73ceafb0bf94ac18ded3b3865367a492e4bfa041141"
+        size: 307678940
       - type: file
         path: ../electron-deb/apply_extra.sh
       - type: file

@@ -39,10 +39,13 @@ cd.PACKAGE = "devin-desktop"
 # seen by CI, PR #262;
 # trust on first use like `apt` itself); a different key is then an error.
 cd.KEY_FINGERPRINT = "EE2C46CC44E1578C23135B0E9E608A1B9FD62A3F"
-cd.ARCHES = {"x86_64": "amd64"}
 cd.NAME = "devin-desktop"
 cd.VENDOR = "Cognition"
 cd.TOOL = "tools/devin_desktop.py"
+# Cognition names its files Devin-linux-x64-<version>.deb.
+cd.DEB_NAME = r"/Devin-linux-(?P<arch>x64)-(?P<version>[^/]+)\.deb$"
+cd.ARCHES = {"x86_64": "amd64"}
+cd.FILE_ARCH = {"amd64": "x64"}
 
 if __name__ == "__main__":
     sys.exit(cd.main())
