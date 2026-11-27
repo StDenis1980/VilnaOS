@@ -762,7 +762,12 @@ class ChatWindow(Adw.ApplicationWindow):
         plan = plans.load(self.plan_path)
         plans.mark_entered(plan, which[need])
         plans.save(plan, self.plan_path)
+        # Build15.11 (VM, 2026-11-27): the focus left with the removed field went up the
+        # chat, the chat followed it, and the next question and its buttons were out of
+        # sight. The message entry under the chat takes it, and the chat goes to its end.
+        self.entry.grab_focus()
         self.list.remove(card)
+        GLib.idle_add(self._scroll_down)
         self.cards.discard(need)
         self.last_change = None
         self._turn(None, entered=which[need])
