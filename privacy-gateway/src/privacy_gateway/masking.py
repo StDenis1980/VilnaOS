@@ -10,7 +10,7 @@ real values never leave the device: they live only in this object's memory.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from typing import Any
 
 from privacy_gateway.detectors import Kind, detect, plain
@@ -21,9 +21,10 @@ PLACEHOLDER_RE = re.compile(r"\[([A-Z_]+?)_(\d+)\]")
 # Measured on 2026-11-05: Mistral models turned {PERSON_2} into {Person_2} and
 # {ОСОБА_1} into {ОСАБА_1}, so the real value was not put back.
 LOOSE_RE = re.compile(
-    r"[\[{(]{1,2}\s*(?P<kind>[^\W\d_]{2,}(?:[ _-][^\W\d_]+)*)(?P<sep>[ _-]*)(?P<n>\d{1,4})"
-    r"\s*[\]})]{1,2}"
+    r"(?P<open>[\[{(]{1,2})\s*(?P<kind>[^\W\d_]{2,}(?:[ _-][^\W\d_]+)*)(?P<sep>[ _-]*)"
+    r"(?P<n>\d{1,4})\s*(?P<close>[\]})]{1,2})"
 )
+_PAIRS = {"[": "]", "{": "}", "(": ")"}
 # Without brackets only the exact form counts, in any case: "EMAIL_1", "email_1".
 BARE_RE = re.compile(
     r"(?<![\w\[{(])(?P<kind>[A-Za-z]{2,}(?:_[A-Za-z]+)*)(?P<sep>_)(?P<n>\d{1,4})(?![\w\]})])"
@@ -62,6 +63,8 @@ class Masker:
         self._placeholder_of: dict[tuple[Kind, str], str] = {}
         self._value_of: dict[str, str] = {}
         self._count: dict[Kind, int] = {}
+        self._by_number: dict[int, list[tuple[str, str]]] = {}
+        self._reserved: set[str] = set()
 
     def __repr__(self) -> str:
         # Never print the values: this object ends up in logs and tracebacks.
@@ -72,15 +75,19 @@ class Masker:
 
     def mask(self, text: str) -> str:
         """Replace every finding in ``text`` with its placeholder."""
-        parts: list[str] = []
-        pos = 0
         known = (value for _, value in self._placeholder_of)
         # A placeholder already in the text (put there by another masker, such as
         # Gloxi's password hider) is not a value: masking it again gave [[SECRET_1]].
         placed = [m.span() for m in PLACEHOLDER_RE.finditer(text)]
-        for f in detect(text, self.kinds, strict=self.strict, known=known):
-            if any(f.start < end and start < f.end for start, end in placed):
-                continue
+        found = [
+            f
+            for f in detect(text, self.kinds, strict=self.strict, known=known)
+            if not any(f.start < end and start < f.end for start, end in placed)
+        ]
+        self._reserve(text, found)
+        parts: list[str] = []
+        pos = 0
+        for f in found:
             parts.append(text[pos : f.start])
             parts.append(self._placeholder(f.kind, f.value))
             pos = f.end
@@ -128,9 +135,13 @@ class Masker:
         """
 
         def put_back(m: re.Match) -> str:
-            return self._value_of.get(self._known(m) or "", m.group(0))
+            placeholder = self._known(m)
+            if placeholder is None:
+                return m.group(0)
+            before, after = _kept_brackets(m)
+            return before + self._value_of[placeholder] + after
 
-        return BARE_RE.sub(put_back, LOOSE_RE.sub(put_back, text))
+        return _substitute(text, put_back)
 
     def unresolved(self, text: str) -> list[str]:
         """Placeholder-like pieces of an unmasked answer that match none of ours.
@@ -165,9 +176,12 @@ class Masker:
         """
 
         def hide(m: re.Match) -> str:
-            return shown if self._known(m) else m.group(0)
+            if not self._known(m):
+                return m.group(0)
+            before, after = _kept_brackets(m)
+            return before + shown + after
 
-        return BARE_RE.sub(hide, LOOSE_RE.sub(hide, text))
+        return _substitute(text, hide)
 
     def conceal_stream(self, chunks: Iterable[str], shown: str = "••••••") -> Iterator[str]:
         """:meth:`conceal` for a streamed answer."""
@@ -189,12 +203,10 @@ class Masker:
         if exact in self._value_of or not bracketed:
             return exact if exact in self._value_of else None
         best, best_distance = None, None
-        for placeholder in self._value_of:
-            ours = PLACEHOLDER_RE.fullmatch(placeholder)
-            if ours is None or int(ours.group(2)) != int(m.group("n")):
-                continue
-            distance = _distance(kind, ours.group(1))
-            if distance <= max(1, len(ours.group(1)) // 4) and (
+        # Only placeholders with the same number: at most one per kind.
+        for name, placeholder in self._by_number.get(int(m.group("n")), ()):
+            distance = _distance(kind, name)
+            if distance <= max(1, len(name) // 4) and (
                 best_distance is None or distance < best_distance
             ):
                 best, best_distance = placeholder, distance
@@ -205,11 +217,65 @@ class Masker:
         placeholder = self._placeholder_of.get(key)
         if placeholder is None:
             n = self._count.get(kind, 0) + 1
+            # A placeholder the person wrote themselves ("[EMAIL_1]" as text) is not
+            # given to a value: putting values back would replace their text too.
+            while f"[{kind.value}_{n}]" in self._reserved:
+                n += 1
             self._count[kind] = n
             placeholder = f"[{kind.value}_{n}]"
             self._placeholder_of[key] = placeholder
             self._value_of[placeholder] = value
+            self._by_number.setdefault(n, []).append((kind.value, placeholder))
         return placeholder
+
+    def _reserve(self, text: str, found: list) -> None:
+        """Remember placeholder-like text the person wrote and the model will see,
+        in any of the forms read back (a value that is hidden is not seen)."""
+        if not any(c.isdigit() for c in text):
+            return
+        hidden = [(f.start, f.end) for f in found]
+        for pattern in (LOOSE_RE, BARE_RE):
+            for m in pattern.finditer(text):
+                if any(m.start() < end and start < m.end() for start, end in hidden):
+                    continue
+                kind = re.sub(r"[ -]", "_", m.group("kind")).upper()
+                exact = f"[{kind}_{int(m.group('n'))}]"
+                if exact not in self._value_of:
+                    self._reserved.add(exact)
+
+
+def _substitute(text: str, fn: Callable[[re.Match], str]) -> str:
+    """Replace bracketed then bare placeholders in one pass, so that a value put
+    back is never read again ("Name: EMAIL_1" inside a restored value stays)."""
+    out: list[str] = []
+    pos = 0
+    for m in LOOSE_RE.finditer(text):
+        out.append(BARE_RE.sub(fn, text[pos : m.start()]))
+        out.append(fn(m))
+        pos = m.end()
+    out.append(BARE_RE.sub(fn, text[pos:]))
+    return "".join(out)
+
+
+def _kept_brackets(m: re.Match) -> tuple[str, str]:
+    """The brackets around a placeholder that are the person's, not the placeholder's.
+
+    The placeholder takes one bracket on each side, or two of the same kind when
+    the model doubled them ("[[EMAIL_1]]"); "([EMAIL_1])" keeps its round brackets
+    and "[EMAIL_1]]" its extra one.
+    """
+    if m.re is not LOOSE_RE:
+        return "", ""
+    opened, closed = m.group("open"), m.group("close")
+    doubled = (
+        len(opened) == 2
+        and len(closed) == 2
+        and opened[0] == opened[1]
+        and closed == _PAIRS[opened[0]] * 2
+    )
+    if doubled:
+        return "", ""
+    return opened[:-1], closed[1:]
 
 
 def _distance(a: str, b: str) -> int:

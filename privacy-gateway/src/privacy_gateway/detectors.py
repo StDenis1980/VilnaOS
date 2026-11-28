@@ -59,10 +59,15 @@ EMAIL_RE = re.compile(
 )
 
 # A phone does not run across a line break: one per line is two numbers.
+# A "+" starts a number even right after a word ("tel+380 ..."); without it the
+# number must stand on its own.
 PHONE_CANDIDATE_RE = re.compile(
-    r"(?<![\w+])(?:\+|00)?(?:\(?\d{1,4}\)?(?:[^\S\n]|[.\-])*){3,6}\d{2,4}(?!\w)"
+    r"(?:(?<![\d+])\+|(?<![\w+])(?:00)?)(?:\(?\d{1,4}\)?(?:[^\S\n]|[.\-])*){3,6}\d{2,4}"
+    r"(?![\d_])"
 )
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}|\d{1,2}[./]\d{1,2}[./]\d{2,4}")
+# A date standing on its own: "23.45.67" inside "067.123.45.67" is a phone's groups.
+_LONE_DATE_RE = re.compile(rf"(?<![\d.])(?:{DATE_RE.pattern})(?![\d.]?\d)")
 
 # A profile link: the site and a user name, nothing after it. Longer links
 # (a repository, a post) are left alone: they are usually what the user asks about.
@@ -81,8 +86,17 @@ IPV4_RE = re.compile(r"(?<!\d)(?<!\d\.)(?:\d{1,3}\.){3}\d{1,3}(?!\d|\.\d)")
 
 # --- identifiers and money ----------------------------------------------------
 
-IBAN_RE = re.compile(r"\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
-CARD_RE = re.compile(r"(?<![\d-])\d(?:[ -]?\d){12,18}(?![\d-])")
+# Groups split by a space or a hyphen, in either case; a country in capitals may
+# stand right after a word ("abcUA21..."), since a lower-case run there is a word.
+IBAN_RE = re.compile(
+    r"(?:(?<![A-Za-z0-9])[A-Za-z]{2}|(?<![A-Z0-9])[A-Z]{2})\d{2}"
+    r"(?:[ -]?[A-Za-z0-9]{4}){2,7}(?:[ -]?[A-Za-z0-9]{1,4})?"
+)
+# Digits split by a space, a hyphen, a tab or two spaces, or in dotted groups of four.
+CARD_RE = re.compile(
+    r"(?<![\d-])\d(?:(?:[ \t-]| {2})?\d){12,18}(?![\d-])"
+    r"|(?<![\d.])\d{4}(?:\.\d{4}){2}\.\d{4}(?:\.\d{3,4})?(?![\d.]?\d)"
+)
 TAX_ID_RE = re.compile(r"(?<!\d)\d{10}(?!\d)")
 # Ukrainian passport book: two Cyrillic capitals and six digits.
 PASSPORT_RE = re.compile(r"(?<![\w])[А-ЯІЇЄҐ]{2} ?\d{6}(?!\d)")
@@ -92,13 +106,14 @@ PASSPORT_RE = re.compile(r"(?<![\w])[А-ЯІЇЄҐ]{2} ?\d{6}(?!\d)")
 SECRET_RES = (
     # The look-behinds start a key only where a run of key characters starts, so a
     # long run of "sk-sk-sk-" is read once, not once per "sk-".
-    re.compile(r"(?<![\w-])sk-(?:proj-|ant-)?[A-Za-z0-9_-]{20,}"),  # OpenAI, Anthropic style keys
+    re.compile(r"(?<![\w-])(?i:sk)-(?:(?i:proj|ant)-)?[A-Za-z0-9_-]{20,}"),  # OpenAI, Anthropic
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}"),  # GitHub tokens
     re.compile(r"\bgithub_pat_[A-Za-z0-9_]{40,}"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),  # AWS access key id
     re.compile(r"(?<![\w-])xox[abprs]-[A-Za-z0-9-]{10,}"),  # Slack
     re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b"),  # Google API key
-    re.compile(r"(?<=Bearer )[A-Za-z0-9._~+/-]{20,}=*"),
+    # In any case, after any run of spaces: the key alone is hidden.
+    re.compile(r"(?<![\w-])(?i:bearer)[ \t]++(?P<value>[A-Za-z0-9._~+/-]{20,}=*)"),
 )
 PEM_BEGIN_RE = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")
 PEM_END_RE = re.compile(r"-----END [A-Z ]*PRIVATE KEY-----")
@@ -108,7 +123,8 @@ PEM_END_RE = re.compile(r"-----END [A-Z ]*PRIVATE KEY-----")
 
 def _labelled(labels: str) -> re.Pattern[str]:
     return re.compile(
-        rf"(?im)^[ \t]*(?:[-*•][ \t]*)?(?:{labels})[ \t]*[:\-–—][ \t]*(?P<value>\S[^\n]*?)[ \t]*$"
+        rf"(?im)^[ \t]*(?:[-*•][ \t]*)?(?:{labels})[ \t]*[:=\-–—][ \t]*"
+        r"(?P<value>[^\s=][^\r\n]*?)[ \t\r]*$"
     )
 
 
@@ -214,7 +230,7 @@ def luhn_ok(number: str) -> bool:
 
 
 def iban_ok(raw: str) -> bool:
-    iban = raw.replace(" ", "")
+    iban = raw.replace(" ", "").replace("-", "").upper()
     if not 15 <= len(iban) <= 34:
         return False
     moved = iban[4:] + iban[:4]
@@ -427,7 +443,7 @@ def looks_like_phone(raw: str) -> bool:
     digits = _digits(raw)
     if not 10 <= len(digits) <= 15:
         return False
-    return not DATE_RE.search(raw) and not AMOUNT_RE.fullmatch(raw)
+    return not _LONE_DATE_RE.search(raw) and not AMOUNT_RE.fullmatch(raw)
 
 
 def ipv4_ok(raw: str) -> bool:
@@ -473,7 +489,7 @@ def _private_keys(text: str) -> Iterator[Span]:
 def _secrets(text: str) -> Iterator[Span]:
     for pattern in SECRET_RES:
         for m in pattern.finditer(text):
-            yield m.span()
+            yield m.span("value") if "value" in pattern.groupindex else m.span()
     yield from _private_keys(text)
 
 
@@ -506,11 +522,12 @@ def _ibans(text: str) -> Iterator[Span]:
         if iban_ok(raw):
             yield m.span()
             continue
-        # A short word after the IBAN ("... 2874 PLN", "... OK") is taken as its
-        # last group; try without it.
-        cut = raw.rfind(" ")
-        if cut > 0 and iban_ok(raw[:cut]):
-            yield m.start(), m.start() + cut
+        # A short word after the IBAN ("... 2874 PLN", "... OK", "...001def") is
+        # taken as its last group; try without its last characters.
+        for cut in range(len(raw) - 1, max(14, len(raw) - 5), -1):
+            if raw[cut - 1] not in " -" and iban_ok(raw[:cut]):
+                yield m.start(), m.start() + cut
+                break
 
 
 def _tax_ids(text: str) -> Iterator[Span]:
