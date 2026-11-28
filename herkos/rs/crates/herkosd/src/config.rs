@@ -174,12 +174,39 @@ pub fn parse_config_for(text: &str, source: &Path, owner: &Owner) -> Result<Conf
     Ok(c)
 }
 
+/// The longest settings or state file herkosd reads.
+pub const MAX_FILE_BYTES: u64 = 16 * 1024 * 1024;
+
+/// A settings or state file of at most `limit` bytes. Only a plain file is
+/// read: a link to `/dev/zero` filled the memory and a pipe never answered.
+pub fn read_small(path: &Path, limit: u64) -> std::io::Result<String> {
+    use std::io::{Error, ErrorKind, Read};
+    use std::os::unix::fs::OpenOptionsExt;
+    let nonblock = rustix::fs::OFlags::NONBLOCK.bits();
+    let file = std::fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(i32::try_from(nonblock).unwrap_or(0))
+        .open(path)?;
+    if !file.metadata()?.is_file() {
+        return Err(Error::new(ErrorKind::InvalidData, "not a regular file"));
+    }
+    let mut text = String::new();
+    file.take(limit + 1).read_to_string(&mut text)?;
+    if u64::try_from(text.len()).unwrap_or(u64::MAX) > limit {
+        return Err(Error::new(
+            ErrorKind::InvalidData,
+            format!("larger than {limit} bytes"),
+        ));
+    }
+    Ok(text)
+}
+
 pub fn load_config(path: &Path) -> Result<Config, String> {
     load_config_for(path, &Owner::current())
 }
 
 pub fn load_config_for(path: &Path, owner: &Owner) -> Result<Config, String> {
-    match std::fs::read_to_string(path) {
+    match read_small(path, MAX_FILE_BYTES) {
         Ok(text) => parse_config_for(&text, path, owner),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(defaults(owner)),
         Err(e) => Err(format!("{}: {e}", path.display())),
@@ -189,6 +216,31 @@ pub fn load_config_for(path: &Path, owner: &Owner) -> Result<Config, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_pipe_or_a_device_is_not_read_as_a_settings_file() {
+        let dir = std::env::temp_dir().join(format!("herkosd-small-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).expect("dir");
+        let fifo = dir.join("config.toml");
+        rustix::fs::mknodat(
+            rustix::fs::CWD,
+            &fifo,
+            rustix::fs::FileType::Fifo,
+            rustix::fs::Mode::from_raw_mode(0o600),
+            0,
+        )
+        .expect("fifo");
+        assert!(read_small(&fifo, 100).is_err(), "a pipe never answers");
+        let zero = dir.join("permissions.json");
+        std::os::unix::fs::symlink("/dev/zero", &zero).expect("link");
+        assert!(read_small(&zero, 100).is_err(), "a device has no end");
+        let big = dir.join("big");
+        std::fs::write(&big, "x".repeat(101)).expect("write");
+        assert!(read_small(&big, 100).is_err());
+        assert!(read_small(&big, 101).is_ok());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 
     fn parse(text: &str) -> Result<Config, String> {
         parse_config(text, Path::new("config.toml"))
