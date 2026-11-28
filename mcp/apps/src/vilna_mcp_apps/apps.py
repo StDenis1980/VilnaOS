@@ -16,7 +16,9 @@ this module only does it, and only in a narrow way of its own:
 
 from __future__ import annotations
 
-import configparser
+import re
+import xml.etree.ElementTree as ET
+import zlib
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Protocol
@@ -48,6 +50,10 @@ def branch_candidates(remote: str, own: str | None) -> list[str]:
 
 class AppsError(Exception):
     """An error Gloxi can act on: what was wrong, and what is allowed."""
+
+
+# What reading a broken, cut off or oddly encoded catalogue can raise.
+CATALOGUE_ERRORS = (OSError, ValueError, EOFError, LookupError, zlib.error, ET.ParseError)
 
 
 @dataclass
@@ -101,33 +107,84 @@ _DEVICES = {"all": "all devices (camera, microphone, USB…)", "input": "input d
 _SHARED = {"network": "the internet and local network"}
 
 
+_FEATURES = {
+    "devel": "can watch and change other programs (developer tools)",
+    "bluetooth": "Bluetooth devices",
+    "canbus": "CAN bus devices",
+    "per-app-dev-shm": "shared memory of its own",
+}
+MAX_PERMISSION_CHARS = 200
+MAX_PERMISSIONS = 50
+# Bidirectional and zero-width marks: a name that reads differently than it is.
+_INVISIBLE = re.compile("[\u061c\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]")
+
+
+def plain(text: str, limit: int = MAX_PERMISSION_CHARS) -> str:
+    """One line a person reads as written: no control, line break or direction marks."""
+    text = _INVISIBLE.sub("", text)
+    text = " ".join("".join(c if c.isprintable() else " " for c in text).split())
+    return text if len(text) <= limit else text[: limit - 1] + "…"
+
+
+def keyfile(text: str) -> dict[str, dict[str, list[str]]] | None:
+    """A keyfile read the way GLib's GKeyFile (and so Flatpak) reads it.
+
+    Every line stands on its own: an indented line is a key of its own, not more of
+    the line above. A key given twice keeps both values, so nothing is ever hidden.
+    A line GKeyFile would refuse makes the whole file unreadable (None).
+    """
+    out: dict[str, dict[str, list[str]]] = {}
+    group: dict[str, list[str]] | None = None
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            group = out.setdefault(line[1:-1].strip(), {})
+        elif group is not None and "=" in line:
+            key, _, value = line.partition("=")
+            group.setdefault(key.strip(), []).append(value.strip())
+        else:
+            return None
+    return out
+
+
 def permissions(metadata: str) -> list[str]:
     """The Flatpak permissions of an app that reach beyond its sandbox, readable."""
-    kf = configparser.ConfigParser(interpolation=None, strict=False)
-    try:
-        kf.read_string(metadata)
-    except configparser.Error:
+    kf = keyfile(metadata)
+    if kf is None:
         return ["its permissions could not be read"]
-    if not kf.has_section("Context"):
-        return []
-    ctx = kf["Context"]
+    ctx = kf.get("Context", {})
 
     def items(key: str) -> list[str]:
-        return [x.strip() for x in ctx.get(key, "").split(";") if x.strip()]
+        return [x.strip() for v in ctx.get(key, []) for x in v.split(";") if x.strip()]
 
+    # Names that stay inside the sandbox (wayland, pulseaudio, dri...) say nothing.
     out = [_SHARED[x] for x in items("shared") if x in _SHARED]
     out += [_SOCKETS[x] for x in items("sockets") if x in _SOCKETS]
     out += [_DEVICES[x] for x in items("devices") if x in _DEVICES]
+    out += [_FEATURES[x] for x in items("features") if x in _FEATURES]
     for fs in items("filesystems"):
         base, _, mode = fs.partition(":")
         if base.startswith("!"):
             continue
         what = _FILESYSTEMS.get(base)
         if what is None and base.startswith(("/", "~/", "xdg-")):
-            what = f"the folder {base}"
+            what = f"the folder {plain(base)}"
         if what:
             out.append(what + (" (read only)" if mode == "ro" else ""))
-    return list(dict.fromkeys(out))
+    for bus, where in (("Session Bus Policy", "session"), ("System Bus Policy", "system")):
+        for name, values in kf.get(bus, {}).items():
+            if any(v in ("talk", "own") for v in values):
+                verb = "own" if "own" in values else "talk to"
+                out.append(f"{verb} {plain(name)} on the {where} bus")
+    names = [plain(k, 60) for k in kf.get("Environment", {})]
+    if names:
+        out.append("changes its environment: " + ", ".join(names[:10]))
+    out = list(dict.fromkeys(out))
+    if len(out) > MAX_PERMISSIONS:
+        out = [*out[: MAX_PERMISSIONS - 1], f"and {len(out) - MAX_PERMISSIONS + 1} more"]
+    return out
 
 
 def human_size(n: int) -> str:
@@ -146,6 +203,7 @@ class Apps:
     backend: Backend
     picks: dict[str, str] = field(default_factory=dict)  # app id -> section
     _catalogue: dict[str, dict[str, Component]] | None = None
+    _unreadable: dict[str, Exception] = field(default_factory=dict)
 
     # ------------------------------------------------------------ helpers
 
@@ -154,14 +212,26 @@ class Apps:
         here = set(self.backend.remotes())
         return [r for r in ALLOWED_REMOTES if r in here]
 
-    def catalogue(self) -> dict[str, dict[str, Component]]:
+    def catalogue(self, need: Iterable[str] | None = None) -> dict[str, dict[str, Component]]:
+        """The catalogues of the sources set up here.
+
+        A source whose catalogue cannot be read is an error only when it is needed
+        (``need``; all of them by default): one broken catalogue never stops installs
+        from the other source.
+        """
         if self._catalogue is None:
-            self._catalogue = {}
+            self._catalogue, self._unreadable = {}, {}
             for remote in self._remotes():
                 try:
                     self._catalogue[remote] = {c.id: c for c in self.backend.components(remote)}
-                except (OSError, ValueError) as e:
-                    raise AppsError(f"the catalogue of {remote} cannot be read: {e}") from e
+                except CATALOGUE_ERRORS as e:
+                    self._unreadable[remote] = e
+        for remote in self._remotes() if need is None else need:
+            e = self._unreadable.get(remote)
+            if isinstance(e, ET.ParseError):
+                raise e
+            if e is not None:
+                raise AppsError(f"the catalogue of {remote} cannot be read: {plain(str(e))}") from e
         return self._catalogue
 
     def _check_id(self, app_id: object) -> str:
@@ -182,13 +252,15 @@ class Apps:
                 )
             if remote not in allowed:
                 raise AppsError(f"the source {remote} is not set up on this computer")
-            return remote, self.catalogue().get(remote, {}).get(app_id)
-        found = [(r, self.catalogue().get(r, {}).get(app_id)) for r in allowed]
+            return remote, self.catalogue([remote]).get(remote, {}).get(app_id)
+        readable = self.catalogue([])
+        found = [(r, readable.get(r, {}).get(app_id)) for r in allowed]
         found = [(r, c) for r, c in found if c is not None]
         if not found:
             # An app the catalogue does not describe yet (a new upload).
             found = [(r, None) for r in allowed if self.backend.remote_ref(r, app_id)]
         if not found:
+            self.catalogue()  # a source that could not be read says so
             raise AppsError(
                 f"{app_id} is not in {' or '.join(allowed) or 'any app source here'}; "
                 "search for it first"
@@ -354,13 +426,13 @@ def facts(entry: dict) -> dict:
         verified = "a Vilna app"
     pick = f"yes ({entry['pick']})" if entry.get("pick") else "no: Vilna has not checked this app"
     lines = {
-        "App": f"{entry['name']} ({entry['app_id']})",
-        "Developer": entry["developer"] or "not given",
+        "App": f"{plain(entry['name'], 100)} ({entry['app_id']})",
+        "Developer": plain(entry["developer"]) or "not given",
         "Verified": verified,
         "In Recommended by Vilna": pick,
         "Source": entry["remote"],
         "Download": human_size(entry.get("download_size", 0)),
-        "License": entry["license"] or "not given",
+        "License": plain(entry["license"]) or "not given",
         "Can reach": "; ".join(entry.get("permissions") or []) or "only its own files",
     }
     if entry.get("installed"):

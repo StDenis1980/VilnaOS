@@ -25,6 +25,7 @@ from typing import Any, TextIO
 from vilna_mcp_apps import __version__
 from vilna_mcp_apps.apps import AppsError
 from vilna_mcp_apps.appstream import is_app_id
+from vilna_mcp_apps.server import _plain_id, dump
 
 PROTOCOL_VERSIONS = ("2025-06-18", "2025-03-26", "2024-11-05")
 SYSTEM_APPS = Path("/var/lib/flatpak/app")
@@ -68,6 +69,9 @@ class Launcher:
         return {"launched": app_id}
 
 
+MAX_ERROR = 1000
+
+
 def _systemd_run(command: list[str]) -> None:
     try:
         subprocess.run(
@@ -80,7 +84,8 @@ def _systemd_run(command: list[str]) -> None:
         )
     except (OSError, subprocess.SubprocessError) as e:
         err = getattr(e, "stderr", b"") or b""
-        raise AppsError(f"the app did not start: {err.decode(errors='replace') or e}") from e
+        why = err.decode(errors="replace") or str(e)
+        raise AppsError(f"the app did not start: {why[-MAX_ERROR:]}") from e
 
 
 class LauncherServer:
@@ -112,7 +117,7 @@ class LauncherServer:
 
     def call(self, name: Any, args: Any) -> dict:
         if name != "launch":
-            return _tool_error(f"unknown tool {name}")
+            return _tool_error(f"unknown tool {repr(name)[:100]}")
         if not isinstance(args, dict) or set(args) != {"app_id"}:
             return _tool_error("launch takes exactly one argument, app_id")
         try:
@@ -120,7 +125,7 @@ class LauncherServer:
         except AppsError as e:
             return _tool_error(str(e))
         return {
-            "content": [{"type": "text", "text": json.dumps(out, ensure_ascii=False)}],
+            "content": [{"type": "text", "text": dump(out)}],
             "structuredContent": out,
             "isError": False,
         }
@@ -131,12 +136,16 @@ class LauncherServer:
                 continue
             try:
                 msg = json.loads(line)
-            except ValueError:
+            except (ValueError, RecursionError):
                 response = _error(None, -32700, "not valid JSON")
             else:
-                response = self.handle(msg)
+                try:
+                    response = self.handle(msg)
+                except Exception as e:  # noqa: BLE001 - one bad call never ends the server
+                    id_ = msg.get("id") if isinstance(msg, dict) else None
+                    response = _error(_plain_id(id_), -32603, f"internal error: {type(e).__name__}")
             if response is not None:
-                stdout.write(json.dumps(response, ensure_ascii=False) + "\n")
+                stdout.write(dump(response) + "\n")
                 stdout.flush()
 
 
