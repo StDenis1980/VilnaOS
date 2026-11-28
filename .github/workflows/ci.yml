@@ -108,6 +108,103 @@ jobs:
         run: |
           python3 tools/report_drivers.py > /dev/null
           python3 tools/test_report_drivers.py
+      - name: The image SBOM is whole
+        run: |
+          python3 tools/sbom_image.py --check
+          python3 tools/test_sbom_image.py
+      - name: Licences of what the image ships fit together
+        run: |
+          python3 tools/check_licence_mix.py
+          python3 tools/test_check_licence_mix.py
+      - name: Vulnerability matching works offline
+        run: |
+          python3 tools/test_vuln_match.py
+      - name: Security documents are in place
+        run: |
+          python3 tools/check_security_docs.py
+          python3 tools/test_check_security_docs.py
+      - name: Builds are reproducible
+        run: |
+          python3 tools/check_reproducible.py
+          python3 tools/test_check_reproducible.py
+      - name: No secrets in the repo
+        run: |
+          python3 tools/check_secrets.py
+          python3 tools/test_check_secrets.py
+      - name: No personal data in the repo
+        run: |
+          python3 tools/check_personal_data.py
+          python3 tools/test_check_personal_data.py
+      - name: Workflows and actions are safe
+        run: |
+          python3 tools/check_actions.py
+          python3 tools/test_check_actions.py
+      - name: Every file has its licence (REUSE)
+        run: |
+          python3 tools/check_reuse.py
+          python3 tools/test_check_reuse.py
+      - name: JSON, TOML and YAML files parse
+        run: |
+          python3 tools/check_data_files.py
+          python3 tools/test_check_data_files.py
+      - name: Shell extensions are consistent
+        run: |
+          python3 tools/check_shell_extension.py
+          python3 tools/test_check_shell_extension.py
+      - name: D-Bus files are consistent
+        run: |
+          python3 tools/check_dbus.py
+          python3 tools/test_check_dbus.py
+      - name: systemd presets are consistent
+        run: |
+          python3 tools/check_presets.py
+          python3 tools/test_check_presets.py
+      - name: SELinux policy sources are consistent
+        run: |
+          python3 tools/check_selinux.py
+          python3 tools/test_check_selinux.py
+      - name: Site pages are consistent
+        run: |
+          python3 tools/check_site_pages.py
+          python3 tools/test_check_site_pages.py
+      - name: Site translations are consistent
+        run: |
+          python3 tools/check_site_i18n.py
+          python3 tools/test_check_site_i18n.py
+      - name: Sound themes are consistent
+        run: |
+          python3 tools/check_sounds.py
+          python3 tools/test_check_sounds.py
+      - name: Icon themes are consistent
+        run: |
+          python3 tools/check_icon_theme.py
+          python3 tools/test_check_icon_theme.py
+      - name: Branding files are consistent
+        run: |
+          python3 tools/check_branding.py
+          python3 tools/test_check_branding.py
+      - name: READMEs are consistent
+        run: |
+          python3 tools/check_readmes.py
+          python3 tools/test_check_readmes.py
+      - name: MCP tool schemas are consistent
+        run: |
+          python3 tools/check_mcp_schemas.py
+          python3 tools/test_check_mcp_schemas.py
+      - name: OBS packages are consistent
+        run: |
+          python3 tools/check_obs.py
+          python3 tools/test_check_obs.py
+      - name: Flatpak defaults are consistent
+        run: |
+          python3 tools/check_flatpak_defaults.py
+          python3 tools/test_check_flatpak_defaults.py
+      - name: The checks survive hostile input
+        run: |
+          python3 tools/test_hostile_checks.py
+      - name: The quality report works
+        run: |
+          python3 tools/test_quality_report.py
 
   gloxi:
     runs-on: ubuntu-latest
