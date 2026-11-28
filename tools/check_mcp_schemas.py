@@ -844,6 +844,7 @@ def tracked_sources(root: Path) -> list[str]:
         check=True,
         capture_output=True,
         text=True,
+        errors="surrogateescape",
     ).stdout
     found = []
     for name in out.split("\0"):
@@ -902,4 +903,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

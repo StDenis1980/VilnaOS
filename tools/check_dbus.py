@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Check the tracked D-Bus files: bus policies (``*.conf``) and activation files (``*.service``).
 
-A file is a *policy* when its path has a ``dbus-1`` folder or its text holds a
+Templates (``*.conf.in``, ``*.service.in``) and upper-case suffixes count too. A file is
+a *policy* when its path has a ``dbus-1`` folder or its text holds a
 ``<busconfig`` element or a ``DOCTYPE busconfig``. A ``*.service`` file is an *activation*
 file when its path has a ``dbus-1`` folder or it has a ``[D-BUS Service]`` group. Systemd
 units (a ``*.service`` with ``[Unit]`` and ``[Service]``) are not D-Bus files and are
@@ -24,13 +25,16 @@ For every policy:
 * no ``<allow>`` without a condition (no attribute, or only the attributes about the type of the
   message, reply or eavesdropping, which name no peer); an attribute with an empty value is
   an error too;
+* an ``<allow>`` with ``send_*`` attributes names ``send_destination`` (or its prefix):
+  without it the rule sends to every service; ``receive_sender="*"`` is an error too;
 * ``<allow own>`` inside ``<policy context="default">`` is a warning: any user may own the name.
 
 For every activation file:
 
 * the file is a key file with a ``[D-BUS Service]`` group and no repeated group or key;
-* ``Name`` is ours (the rule above for ``own``) and ``Exec`` is not empty; a file name that is
-  not ``<Name>.service`` is a warning;
+* ``Name`` is ours (the rule above for ``own``) and in no other activation file, and ``Exec``
+  is one program by its absolute path (no shell, no ``|``, ``;``, ``&``, ``$`` or
+  backtick); a file name that is not ``<Name>.service`` is a warning;
 * ``SystemdService`` is set, is a plain unit name ending in ``.service`` and names a systemd
   unit that is tracked in the repo (by its file name, an instance of a template
   ``name@.service`` or an ``Alias=`` of its ``[Install]``). Another activation file never
@@ -209,6 +213,12 @@ def check_rule(path: str, element: Element, context: str | None) -> list[Problem
         error(f"<allow> names no peer, name, interface or path (only {names})", "weak-allow")
     if attrs.get("send_destination", "").strip() == "*":
         error('<allow send_destination="*"> lets the policy send to every service', "wildcard-send")
+    sends = {k for k in known if k.startswith("send_")} - WEAK_ATTRIBUTES
+    if sends and not sends & {"send_destination", "send_destination_prefix"}:
+        # A missing attribute means "any": this lets messages go to every service.
+        error("<allow> with send_* but no send_destination sends to every service", "no-destination")
+    if attrs.get("receive_sender", "").strip() == "*":
+        error('<allow receive_sender="*"> takes messages from every service', "wildcard-receive")
     for key, prefix in (("own", False), ("own_prefix", True)):
         value = attrs.get(key)
         if value is None or not value.strip():
@@ -362,8 +372,16 @@ def check_activation(
         problems.append(
             Problem(path, f"the file name is not {name}.service", warning=True, rule="file-name")
         )
-    if not group.get("Exec", ""):
+    exec_line = group.get("Exec", "")
+    if not exec_line:
         problems.append(Problem(path, "Exec is missing or empty", rule="exec"))
+    elif exec_shell(exec_line):
+        # dbus-daemon runs Exec itself when systemd is not there or the unit is gone.
+        problems.append(
+            Problem(path, "Exec runs a shell or a pipeline, not one program", rule="exec-shell")
+        )
+    if name:
+        cache.setdefault(f"name:{name}", set()).add(path)
     unit = group.get("SystemdService", "")
     if not unit:
         problems.append(Problem(path, "SystemdService is missing", rule="systemd-service"))
@@ -379,6 +397,23 @@ def check_activation(
                 Problem(path, f"SystemdService={unit}: no such unit in the repo", rule="no-unit")
             )
     return problems
+
+
+SHELLS = frozenset({"sh", "bash", "dash", "zsh", "ksh", "busybox", "env"})
+
+
+def exec_shell(line: str) -> bool:
+    """True when ``Exec`` starts a shell or holds shell syntax instead of one program."""
+    words = line.split()
+    program = posixpath.basename(words[0]) if words else ""
+    return program in SHELLS or not line.startswith("/") or any(c in line for c in "|;&`$<>")
+
+
+def dbus_suffix(rel: str) -> str:
+    """``.conf`` or ``.service`` for any case and for a template (``*.conf.in``)."""
+    name = posixpath.basename(rel).lower()
+    name = name[: -len(".in")] if name.endswith(".in") else name
+    return posixpath.splitext(name)[1]
 
 
 # --- finding and reading the files -----------------------------------------------------
@@ -424,7 +459,7 @@ def check_file(
     explicit: bool = False,
 ) -> tuple[list[Problem], bool]:
     """The problems of one file and whether it was a D-Bus file at all."""
-    suffix = posixpath.splitext(rel)[1]
+    suffix = dbus_suffix(rel)
     if suffix not in (".conf", ".service"):
         return [], False
     in_dir = is_dbus_dir(rel)
@@ -466,6 +501,12 @@ def check_files(
         found, is_dbus = check_file(root, rel, tracked, cache, explicit)
         count += is_dbus
         problems += [downgrade(p) for p in found]
+    for key, owners in cache.items():
+        if key.startswith("name:") and len(owners) > 1:
+            name = key[len("name:") :]
+            for owner in sorted(owners):
+                message = f"Name={name} is also in another activation file"
+                problems.append(downgrade(Problem(owner, message, rule="duplicate-name")))
     problems.sort(key=lambda p: (p.path, p.warning, p.message))
     return problems, count
 
@@ -501,4 +542,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

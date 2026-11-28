@@ -66,7 +66,7 @@ PHONE_CANDIDATE_RE = re.compile(
     r"(?![\d_])"
 )
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}|\d{1,2}[./]\d{1,2}[./]\d{2,4}")
-# A date standing on its own: "23.45.67" inside "067.123.45.67" is a phone's groups.
+# A date standing on its own: "dd.dd.dd" inside a dotted phone number is the phone's groups.
 _LONE_DATE_RE = re.compile(rf"(?<![\d.])(?:{DATE_RE.pattern})(?![\d.]?\d)")
 
 # A profile link: the site and a user name, nothing after it. Longer links

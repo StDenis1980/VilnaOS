@@ -188,7 +188,12 @@ def check() -> list[str]:
 
 
 def main() -> int:
-    errors = check()
+    try:
+        errors = check()
+    except (OSError, ValueError, KeyError, configparser.Error) as err:
+        # ValueError covers text that is not UTF-8 and a colour that is no colour.
+        print(f"error: cannot read the terminal defaults: {err}", file=sys.stderr)
+        return 1
     for e in errors:
         print(f"error: {e}", file=sys.stderr)
     if not errors:
@@ -197,4 +202,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

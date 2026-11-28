@@ -98,6 +98,10 @@ ARRAY_EXPANSION = re.compile(r"\$\{[#!]?[A-Za-z_]\w*\[")
 GUARD = re.compile(r"\$\{[A-Za-z_]\w*:?\?")
 SYSTEM_PATH = re.compile(r"/(etc|usr)(/|$)")
 ARRAY_DECLARE = frozenset({"declare", "typeset", "local"})
+# Characters with no meaning to the shell inside a word (the parser looks at all others).
+PLAIN_RUN = re.compile(r"[^ \t\r\n\\'\"`$;&|<>()#]+")
+# How deep ( ), $( ) and backticks may nest before the script is refused.
+MAX_NESTING = 100
 VARIABLE_NAME = re.compile(r"[A-Za-z_]\w*|\d|[@*#?$!-]")
 
 
@@ -215,6 +219,9 @@ class Frame:
 
 class Parser:
     def __init__(self, text: str, line: int = 1, level: int = 0, program: Program | None = None):
+        if level > MAX_NESTING:
+            # Python's own stack ends near a thousand; a script never nests this deep.
+            raise ShellSyntaxError(line, f"more than {MAX_NESTING} nested ( ), $( ) or backticks")
         self.s = text
         self.i = 0
         self.line = line
@@ -279,8 +286,7 @@ class Parser:
         elif c == "$":
             self.read_dollar(f, quoted=False)
         elif f.in_cond and c != ";":
-            self.add_lit(f, c, quoted=False)
-            self.i += 1
+            self.add_run(f, c)
         elif c == "(" and f.word is not None and self.assignment_prefix(f):
             self.read_array(f)
         elif c == "(" and f.word is None and not f.words and s[self.i + 1 : self.i + 2] == "(":
@@ -288,8 +294,15 @@ class Parser:
         elif c in ";&|<>()":
             self.operator(f, c)
         else:
-            self.add_lit(f, c, quoted=False)
-            self.i += 1
+            self.add_run(f, c)
+
+    def add_run(self, f: Frame, c: str) -> None:
+        """Add ``c`` and the plain characters after it as one piece: a character at a
+        time made a long word take quadratic time."""
+        match = PLAIN_RUN.match(self.s, self.i + 1)
+        run = c + match.group() if match else c
+        self.add_lit(f, run, quoted=False)
+        self.i += len(run)
 
     def backslash(self, f: Frame) -> None:
         nxt = self.s[self.i + 1 : self.i + 2]
@@ -1099,6 +1112,7 @@ def tracked_scripts(root: Path) -> list[str]:
         check=True,
         capture_output=True,
         text=True,
+        errors="surrogateescape",
     ).stdout
     return sorted(p for p in out.split("\0") if p.endswith(".sh"))
 
@@ -1140,4 +1154,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

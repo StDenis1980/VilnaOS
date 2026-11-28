@@ -21,6 +21,10 @@ Rules:
   grants ``sys_admin`` of the class ``capability`` or ``cap_userns``, to ``self`` or to any
   other type. A comment does not excuse it. ``neverallow``, ``dontaudit`` and ``auditallow``
   are not grants and are not read.
+* **permissive**: no ``permissive TYPE;`` or CIL ``(typepermissive TYPE)``: such a domain
+  is not confined, SELinux only logs. A macro (``define``) that holds ``sys_admin`` is a
+  sys_admin grant too, and an ``allowxperm`` over every ioctl number (``0x0000-0xffff``,
+  ``*`` or ``~``) is a wildcard.
 * **wildcards**: no ``*`` or ``~`` (complement), and in CIL no ``all``, ``*`` or ``not``,
   in an ``allow`` (types, classes or permissions) unless a comment explains it: a comment
   on a line of the rule, or comment lines right above it (no blank line between). The text
@@ -192,6 +196,11 @@ KEYWORDS = frozenset(
 
 IDENT = r"[A-Za-z_]\w*"
 ALLOW = re.compile(r"(?<![\w$])allow(?=\s)([^;]*)(?:;|$)")
+ALLOWXPERM = re.compile(r"(?<![\w$])allowxperm(?=\s)([^;]*)(?:;|$)")
+XPERM_RANGE = re.compile(r"0x([0-9A-Fa-f]+)\s*-\s*0x([0-9A-Fa-f]+)")
+PERMISSIVE = re.compile(r"(?<![\w$])permissive\s+[\w$]+\s*;")
+# An m4 macro the rules use by name: define(`name', `text').
+DEFINE_BODY = re.compile(r"(?<![\w$])define\(\s*`[\w$]+'\s*,\s*`([^']*)'")
 CALL = re.compile(rf"(?<![\w$.])({IDENT})\s*\(")
 IFACE_DEF = re.compile(rf"(?<![\w$])(?:interface|template|define)\(\s*[`']?({IDENT})")
 REQUIRE_OPEN = re.compile(r"(?<![\w$])(gen_require\(\s*`|require\s*\{)")
@@ -380,6 +389,24 @@ def check_te_rules(path: str, src: Source, offset: int = 0) -> list[Problem]:
                     first + offset,
                     rule="wildcard",
                 )
+            )
+    for m in PERMISSIVE.finditer(src.clean):
+        # A permissive domain is not confined at all: SELinux only logs what it does.
+        line = line_of(src, m.start()) + offset
+        problems.append(Problem(path, "permissive domain", line, rule="permissive"))
+    for m in DEFINE_BODY.finditer(src.clean):
+        if "sys_admin" in re.findall(r"\w+", m.group(1)):
+            line = line_of(src, m.start()) + offset
+            message = "a macro holds sys_admin (an allow can use it by name)"
+            problems.append(Problem(path, message, line, rule="sys-admin"))
+    for m in ALLOWXPERM.finditer(src.clean):
+        whole = any(
+            int(lo, 16) == 0 and int(hi, 16) >= 0xFFFF for lo, hi in XPERM_RANGE.findall(m.group(1))
+        )
+        if whole or "*" in m.group(1) or "~" in m.group(1):
+            line = line_of(src, m.start()) + offset
+            problems.append(
+                Problem(path, "allowxperm allows every ioctl number", line, rule="wildcard")
             )
     return problems
 
@@ -570,6 +597,11 @@ def check_cil_rules(
     problems: list[Problem] = []
     for node, _optional, _blocks in walk_cil(nodes):
         kind = node.head
+        if kind == "typepermissive":
+            problems.append(
+                Problem(path, "permissive domain", node.line + offset, rule="permissive")
+            )
+            continue
         if kind not in ("allow", "classpermissionset"):
             continue
         parts = node.items[1:4] if kind == "allow" else node.items[2:]
@@ -810,6 +842,7 @@ def tracked_files(root: Path) -> list[str]:
         check=True,
         capture_output=True,
         text=True,
+        errors="surrogateescape",
     ).stdout
     found = [p for p in out.split("\0") if p and p.endswith(SUFFIXES)]
     return sorted(p for p in found if p.endswith(POLICY_SUFFIXES) or p.startswith("docs/"))
@@ -848,4 +881,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

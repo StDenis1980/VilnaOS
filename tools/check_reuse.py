@@ -1029,7 +1029,7 @@ def list_files(root: Path) -> list[str]:
     """Tracked files (``git ls-files``); in a folder that is not a git repo, all files."""
     if (root / ".git").exists():
         out = subprocess.run(
-            ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True, text=True
+            ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True, text=True, errors="surrogateescape"
         ).stdout
         return sorted(p for p in out.split("\0") if p)
     return sorted(
@@ -1076,4 +1076,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

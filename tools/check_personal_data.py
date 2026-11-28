@@ -152,7 +152,7 @@ class AllowedRow:
 
 # Tests that feed invented personal data in on purpose.
 HOSTILE_TESTS = (
-    "backup/tests/test_hostile_plan.py|gloxi/tests/test_hostile_router.py|herkos/rs/crates/herkos-core/tests/hostile_request.rs|herkos/rs/crates/herkosd/tests/hostile_daemon.rs|mcp/backup/tests/test_hostile_backup.py|reports/client/tests/hostile_client.rs|tools/test_check_branding.py|tools/test_check_obs.py|tools/test_check_reproducible.py|tools/test_check_shell_extension.py|tools/test_vuln_match.py"
+    "backup/tests/test_hostile_plan.py|backup/tests/test_robustness.py|herkos/tests/test_robustness.py|privacy-gateway/tests/test_robustness.py|gloxi/tests/test_hostile_router.py|herkos/rs/crates/herkos-core/tests/hostile_request.rs|herkos/rs/crates/herkosd/tests/hostile_daemon.rs|mcp/backup/tests/test_hostile_backup.py|reports/client/tests/hostile_client.rs|tools/test_check_branding.py|tools/test_check_obs.py|tools/test_check_reproducible.py|tools/test_check_shell_extension.py|tools/test_vuln_match.py"
 )
 
 # Allowed findings with the reason. A real person's data never goes here.
@@ -163,7 +163,7 @@ EXCEPTIONS: tuple[AllowedRow, ...] = (
         "demo@evil.org|demo@exämple.org|demo@notvilnaos.com"
         "|demo@vilnaos.com.evil.org|demo@vilnaos.org|evil@example.org.evil.net"
         "|me@example.eu|pw@example.eu|secret@s3.example.eu"
-        "|vilna@stdenis1980.github.io|y@evil.org",
+        "|vilna@stdenis1980.github.io|y@evil.org|evil@еxample.org",
         "invented values that these tests pass in on purpose (hostile input, checks of checks)",
     ),
     AllowedRow(
@@ -187,7 +187,7 @@ EXCEPTIONS: tuple[AllowedRow, ...] = (
     AllowedRow(
         "ip",
         HOSTILE_TESTS,
-        "1.0.0.0|4::2|::ffff:8.8.8.8",
+        "1.0.0.0|4::2|::ffff:8.8.8.8|67.123.45.67",
         "invented values that these tests pass in on purpose (hostile input, checks of checks)",
     ),
     AllowedRow(
@@ -782,4 +782,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())
