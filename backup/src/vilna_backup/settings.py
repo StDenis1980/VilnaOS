@@ -30,6 +30,52 @@ SCHEDULES = ("hourly", "daily", "weekly", "off")
 DEFAULT_SCHEDULE = "daily"
 # Step 5: where. "rest" is a restic rest-server (ours in the EU, append-only).
 DESTINATION_KINDS = ("local", "sftp", "s3", "rest")
+# Plain http only to this machine (a rest-server or MinIO for tests).
+LOCAL_HOSTS = ("127.0.0.1", "localhost", "[::1]")
+_BOOL_FIELDS = ("enabled", "gloxi_history", "system_secrets", "recovery_confirmed")
+
+
+def bad_path_char(path: str) -> bool:
+    """A character restic's one-path-per-line files cannot carry: a line break or NUL."""
+    return any(c in "\n\r\x00" for c in path)
+
+
+# Not a user folder, whatever user-dirs.dirs or an app's settings say.
+SYSTEM_DIRS = tuple(
+    Path(p)
+    for p in (
+        "/bin",
+        "/boot",
+        "/dev",
+        "/etc",
+        "/lib",
+        "/lib64",
+        "/proc",
+        "/root",
+        "/sbin",
+        "/sys",
+        "/usr",
+        "/var",
+    )
+)
+
+
+def user_folder(path: Path, home: Path) -> bool:
+    """A folder that can hold the person's files: in the home, or on another disk.
+
+    Never the root, a folder above the home (that would take the whole disk or
+    other people's homes) or a system folder.
+    """
+    if path.is_relative_to(home) and path != home:
+        return True  # also when the home itself is under /var (/var/home)
+    if path == Path("/") or home.is_relative_to(path):
+        return False
+    return not any(path == d or path.is_relative_to(d) for d in SYSTEM_DIRS)
+
+
+def clean_folder(path: str) -> str:
+    """normpath, and one leading slash: POSIX keeps ``//x``, which nothing else matches."""
+    return "/" + os.path.normpath(path).lstrip("/")
 
 
 class SettingsError(Exception):
@@ -67,32 +113,63 @@ class Destination:
     def describe(self) -> str:
         """For people: the place without anything that looks like a credential."""
         loc = self.location
-        if "@" in loc and "://" in loc:
+        if "://" in loc:
             scheme, rest = loc.split("://", 1)
-            loc = f"{scheme}://{rest.split('@', 1)[1]}"
+            netloc, slash, path = rest.partition("/")
+            loc = f"{scheme}://{netloc.rpartition('@')[2]}{slash}{path}"
+        elif self.kind == "sftp" and "@" in loc:
+            # user:password@host:/path: never show what follows the first colon of the login.
+            user, _, host = loc.rpartition("@")
+            loc = f"{user.split(':', 1)[0]}@{host}"
         names = {"local": "disk", "sftp": "SFTP", "s3": "S3", "rest": "Vilna server"}
         return f"{names[self.kind]}: {loc}"
 
 
 def parse_destination(text: str) -> Destination:
     """``/media/usb/vilna``, ``sftp:user@host:/srv/vilna``, ``s3:https://...``, ``rest:https://...``."""
+    if not isinstance(text, str):
+        raise SettingsError("the destination is not text")
     text = text.strip()
     if not text:
         raise SettingsError("the destination is empty")
     if text.startswith("/"):
-        return Destination("local", os.path.normpath(text))
+        return validate_destination("local", text)
     kind, sep, location = text.partition(":")
     if not sep or kind not in DESTINATION_KINDS or kind == "local" or not location:
         raise SettingsError(
             "destination must be an absolute folder or start with sftp:, s3: or rest:"
         )
-    local_http = location.startswith(("http://127.0.0.1", "http://localhost"))
-    if kind in ("s3", "rest") and not location.startswith("https://") and not local_http:
+    return validate_destination(kind, location)
+
+
+def validate_destination(kind: Any, location: Any) -> Destination:
+    """The one check for a place, typed in or read back from a settings file."""
+    if kind not in DESTINATION_KINDS:
+        raise SettingsError("unknown destination kind")
+    if not isinstance(location, str) or not location or bad_path_char(location):
+        raise SettingsError("the destination is not a usable address")
+    if kind == "local":
+        if not location.startswith("/"):
+            raise SettingsError("a disk destination is an absolute folder")
+        return Destination("local", clean_folder(location))
+    if kind == "sftp":
+        login, _, host = location.rpartition("@")
+        if host.startswith("-") or location.startswith("-"):
+            raise SettingsError("an sftp address cannot start with '-'")
+        if ":" in login:
+            raise SettingsError("put the password in the key store, not in the address")
+        return Destination(kind, location)
+    scheme, sep, rest = location.partition("://")
+    netloc = rest.split("/", 1)[0] if sep else ""
+    host = netloc.rpartition(":")[0] if netloc.count(":") == 1 else netloc
+    if netloc.startswith("[") and "]" in netloc:
+        host = netloc[: netloc.index("]") + 1]
+    if not sep or not netloc or scheme not in ("https", "http"):
         raise SettingsError(f"{kind} needs an https:// address")
-    if kind in ("s3", "rest"):
-        netloc = location.split("://", 1)[1].split("/", 1)[0]
-        if "@" in netloc:
-            raise SettingsError("put the login in the key store, not in the address")
+    if scheme == "http" and host.lower() not in LOCAL_HOSTS:
+        raise SettingsError(f"{kind} needs an https:// address")
+    if "@" in netloc:
+        raise SettingsError("put the login in the key store, not in the address")
     return Destination(kind, location)
 
 
@@ -126,18 +203,32 @@ class Settings:
         return new
 
     def validate(self) -> None:
+        for name in _BOOL_FIELDS:
+            if not isinstance(getattr(self, name), bool):
+                raise SettingsError(f"{name} must be true or false")
         if self.preset not in PRESETS:
             raise SettingsError(f"preset must be one of {', '.join(PRESETS)}")
         if self.schedule not in SCHEDULES:
             raise SettingsError(f"schedule must be one of {', '.join(SCHEDULES)}")
         for p in (*self.include, *self.exclude):
-            if not isinstance(p, str) or not os.path.isabs(p) or "\x00" in p:
+            if not isinstance(p, str) or not os.path.isabs(p) or bad_path_char(p):
                 raise SettingsError(f"not an absolute folder: {p!r}")
         if self.limit_bytes is not None and (
-            not isinstance(self.limit_bytes, int) or self.limit_bytes <= 0
+            not isinstance(self.limit_bytes, int)
+            or isinstance(self.limit_bytes, bool)
+            or self.limit_bytes <= 0
         ):
             raise SettingsError("the limit must be a positive number of bytes")
-        if not isinstance(self.repo_id, str) or not self.repo_id.isalnum():
+        if self.destination is not None and not isinstance(self.destination, Destination):
+            raise SettingsError("bad destination")
+        for key_id in (self.device_key_id, self.recovery_key_id):
+            if key_id is not None and not isinstance(key_id, str):
+                raise SettingsError("bad key id")
+        if (
+            not isinstance(self.repo_id, str)
+            or not self.repo_id.isascii()
+            or not self.repo_id.isalnum()
+        ):
             raise SettingsError("bad repo_id")
 
     def to_json(self) -> dict[str, Any]:
@@ -157,9 +248,10 @@ def load_settings(path: Path | None = None) -> Settings:
         data = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return Settings()
-    except (OSError, ValueError) as e:
+    except (OSError, ValueError, RecursionError) as e:
         raise SettingsError(f"{path}: {e}") from None
-    if not isinstance(data, dict) or data.get("version") != FORMAT_VERSION:
+    version = data.get("version") if isinstance(data, dict) else None
+    if type(version) is not int or version != FORMAT_VERSION:
         raise SettingsError(f"{path}: unknown format")
     data.pop("version")
     known = set(Settings.__dataclass_fields__)
@@ -169,15 +261,18 @@ def load_settings(path: Path | None = None) -> Settings:
     dest = data.get("destination")
     try:
         if dest is not None:
-            data["destination"] = Destination(kind=dest["kind"], location=dest["location"])
-            if data["destination"].kind not in DESTINATION_KINDS:
-                raise SettingsError(f"{path}: unknown destination kind")
-        data["include"] = tuple(data.get("include", ()))
-        data["exclude"] = tuple(data.get("exclude", ()))
+            data["destination"] = validate_destination(dest["kind"], dest["location"])
+        for name in ("include", "exclude"):
+            value = data.get(name, ())
+            if not isinstance(value, list | tuple):
+                raise SettingsError(f"{name} must be a list of folders")
+            data[name] = tuple(value)
         settings = Settings(**data)
+        settings.validate()
     except (TypeError, KeyError) as e:
         raise SettingsError(f"{path}: {e}") from None
-    settings.validate()
+    except SettingsError as e:
+        raise SettingsError(f"{path}: {e}") from None
     return settings
 
 

@@ -24,6 +24,8 @@ EXIT_PARTIAL = 3
 EXIT_NO_REPO = 10
 EXIT_LOCKED = 11
 EXIT_WRONG_PASSWORD = 12
+# A restic error message is a line or two; the rest of a huge one says nothing more.
+MAX_DETAIL = 500
 
 
 class ResticError(Exception):
@@ -78,6 +80,8 @@ class Restic:
             raise ResticError("restic is not installed") from None
         except subprocess.TimeoutExpired:
             raise ResticError(f"restic {args[0]} took too long") from None
+        except (OSError, ValueError) as e:  # not runnable; output not UTF-8
+            raise ResticError(f"cannot run restic {args[0]}: {e}") from None
         if p.returncode not in ok_codes:
             raise ResticError(_explain(p.returncode, p.stderr), p.returncode)
         return p
@@ -88,8 +92,12 @@ class Restic:
         *,
         env: Mapping[str, str] | None = None,
         ok_codes: Sequence[int] = (0,),
+        outcome: dict[str, Any] | None = None,
     ) -> Iterator[dict[str, Any]]:
-        """Run restic and yield its JSON messages as they come."""
+        """Run restic and yield its JSON messages as they come.
+
+        ``outcome``, when given, gets the exit ``code`` and the ``stderr``.
+        """
         try:
             proc = subprocess.Popen(
                 self._cmd(args),
@@ -101,8 +109,9 @@ class Restic:
             )
         except FileNotFoundError:
             raise ResticError("restic is not installed") from None
+        except (OSError, ValueError) as e:
+            raise ResticError(f"cannot run restic {args[0]}: {e}") from None
         assert proc.stdout is not None and proc.stderr is not None
-        errors: list[dict[str, Any]] = []
         try:
             for line in proc.stdout:
                 line = line.strip()
@@ -110,14 +119,21 @@ class Restic:
                     continue
                 try:
                     msg = json.loads(line)
-                except ValueError:
+                except (ValueError, RecursionError):
                     continue
-                if msg.get("message_type") == "error":
-                    errors.append(msg)
-                yield msg
+                if isinstance(msg, dict):
+                    yield msg
+        except ValueError as e:  # not UTF-8
+            proc.kill()
+            raise ResticError(f"restic {args[0]} gave unreadable output: {e}") from None
         finally:
-            stderr = proc.stderr.read()
+            try:
+                stderr = proc.stderr.read()
+            except ValueError:
+                stderr = ""
             code = proc.wait()
+        if outcome is not None:
+            outcome.update(code=code, stderr=stderr)
         if code not in ok_codes:
             raise ResticError(_explain(code, stderr), code)
 
@@ -151,7 +167,7 @@ class Restic:
         return True
 
     def keys(self, env: Mapping[str, str] | None = None) -> list[dict[str, Any]]:
-        return json.loads(self.run(["key", "list", "--json"], env=env).stdout or "[]")
+        return _json_list(self.run(["key", "list", "--json"], env=env), "key list")
 
     def current_key_id(self) -> str | None:
         return next((k["id"] for k in self.keys() if k.get("current")), None)
@@ -192,7 +208,7 @@ class Restic:
         self.run(["copy"], env=env)
 
     def snapshots(self) -> list[dict[str, Any]]:
-        return json.loads(self.run(["snapshots", "--json"]).stdout or "[]") or []
+        return _json_list(self.run(["snapshots", "--json"]), "snapshots")
 
     def backup(
         self, files_from: Path, exclude_file: Path, tags: Sequence[str]
@@ -214,10 +230,18 @@ class Restic:
         args = ["check", "--json"]
         if read_data_subset:
             args.append(f"--read-data-subset={read_data_subset}")
-        summary: dict[str, Any] = {}
-        for msg in self.stream(args, ok_codes=(0, 1)):
+        summary: dict[str, Any] | None = None
+        outcome: dict[str, Any] = {}
+        for msg in self.stream(args, ok_codes=(0, 1), outcome=outcome):
             if msg.get("message_type") == "summary":
                 summary = msg
+        # Exit 1 is also a fatal error (no index, no network): without a summary
+        # nothing was checked, and silence must never read as "in order".
+        if summary is None or not isinstance(summary.get("num_errors", 0), int):
+            code = outcome.get("code")
+            if code:
+                raise ResticError(_explain(code, outcome.get("stderr", "")), code)
+            raise ResticError("restic check finished without a summary")
         return summary
 
     def restore(
@@ -267,4 +291,22 @@ def _explain(code: int, stderr: str) -> str:
     if code in known:
         return known[code]
     last = [x for x in stderr.strip().splitlines() if x.strip()]
-    return f"restic failed ({code}): {last[-1] if last else 'no details'}"
+    detail = last[-1][:MAX_DETAIL] if last else "no details"
+    return f"restic failed ({code}): {detail}"
+
+
+def _json_list(p: subprocess.CompletedProcess[str], what: str) -> list[dict[str, Any]]:
+    """A list of objects, or a ResticError: never a half-read answer taken as "none"."""
+    if not p.stdout.strip():
+        if "Fatal" in p.stderr:
+            raise ResticError(_explain(p.returncode or 1, p.stderr), p.returncode)
+        return []
+    try:
+        data = json.loads(p.stdout)
+    except (ValueError, RecursionError):
+        raise ResticError(f"restic {what} gave output that is not JSON") from None
+    if data is None:
+        return []
+    if not isinstance(data, list) or not all(isinstance(x, dict) for x in data):
+        raise ResticError(f"restic {what} gave an unexpected answer")
+    return data

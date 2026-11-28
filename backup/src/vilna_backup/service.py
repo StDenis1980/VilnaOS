@@ -33,6 +33,8 @@ from vilna_backup.settings import (
     Destination,
     Settings,
     SettingsError,
+    bad_path_char,
+    clean_folder,
     load_settings,
     save_settings,
     settings_path,
@@ -222,10 +224,11 @@ class Backup:
     def snapshots(self) -> list[dict[str, Any]]:
         out = []
         for snap in self.restic().snapshots():
-            summary = snap.get("summary") or {}
+            summary = snap.get("summary")
+            summary = summary if isinstance(summary, dict) else {}
             out.append(
                 {
-                    "id": snap.get("short_id") or snap.get("id", "")[:8],
+                    "id": str(snap.get("short_id") or snap.get("id") or "")[:8],
                     "time": snap.get("time"),
                     "files": summary.get("total_files_processed"),
                     "bytes": summary.get("total_bytes_processed"),
@@ -262,6 +265,10 @@ class Backup:
                 include.append(str(p))
         for raw in remove:
             p = self._own_folder(raw, by_assistant=False)
+            if by_assistant and self.layout.config.joinpath("vilna-backup").is_relative_to(p):
+                # Leaving out the home or ~/.config empties the backups while they
+                # still report "done": only the person can do that.
+                raise BackupError(f"leaving out {p} would leave out the backups themselves")
             if str(p) in include:
                 include.remove(str(p))
             elif str(p) not in exclude:
@@ -281,16 +288,23 @@ class Backup:
             raise BackupError(str(e)) from None
 
     def _own_folder(self, raw: str, by_assistant: bool) -> Path:
-        if not isinstance(raw, str) or not os.path.isabs(raw) or "\x00" in raw:
+        if not isinstance(raw, str) or not os.path.isabs(raw) or bad_path_char(raw):
             raise BackupError(f"not an absolute folder: {raw!r}")
         p = Path(os.path.normpath(raw))
         home = self.layout.home
         if by_assistant:
-            if not (p == home or p.is_relative_to(home)):
-                raise BackupError(f"{p} is outside the home folder")
-            for secret in plan.secret_paths(self.layout):
-                if p == secret or p.is_relative_to(secret) or secret.is_relative_to(p):
-                    raise BackupError(f"{p} holds system secrets: only the person can add it")
+            # The name as given and where it really leads: a link to ~/.ssh is ~/.ssh.
+            real_home = home.resolve()
+            secrets = plan.secret_paths(self.layout)
+            for q, h, sec in (
+                (p, home, secrets),
+                (p.resolve(), real_home, [x.resolve() for x in secrets]),
+            ):
+                if not (q == h or q.is_relative_to(h)):
+                    raise BackupError(f"{p} is outside the home folder")
+                for secret in sec:
+                    if q == secret or q.is_relative_to(secret) or secret.is_relative_to(q):
+                        raise BackupError(f"{p} holds system secrets: only the person can add it")
         return p
 
     def set_schedule(self, value: str) -> dict[str, Any]:
@@ -359,6 +373,15 @@ class Backup:
         p = plan.build_plan(s, self.layout)
         if not p.includes:
             raise BackupError("nothing to back up: none of the chosen folders exists")
+        if p.all_excluded():
+            raise BackupError("nothing to back up: every chosen folder is left out")
+        names = [str(x) for x in p.includes]
+        if any(bad_path_char(x) for x in names):
+            raise BackupError("a folder name has a line break; rename it to back it up")
+        try:
+            exclude_lines = p.exclude_lines()
+        except ValueError as e:
+            raise BackupError(str(e)) from None
         if s.limit_bytes is not None:
             size = plan.plan_size(p)
             if size > s.limit_bytes:
@@ -370,8 +393,8 @@ class Backup:
         self.state.mkdir(parents=True, exist_ok=True)
         files_from = self.state / "files-from.txt"
         exclude_file = self.state / "exclude.txt"
-        files_from.write_text("\n".join(str(x) for x in p.includes) + "\n", encoding="utf-8")
-        exclude_file.write_text("\n".join(p.exclude_lines()) + "\n", encoding="utf-8")
+        files_from.write_text("\n".join(names) + "\n", encoding="utf-8")
+        exclude_file.write_text("\n".join(exclude_lines) + "\n", encoding="utf-8")
         tags = [TAG, f"preset={s.preset}"]
         if "," not in str(self.layout.home):
             tags.append(f"home={self.layout.home}")
@@ -386,12 +409,13 @@ class Backup:
                 summary = msg
             elif kind == "error":
                 errors += 1
-        if not summary.get("snapshot_id"):
+        snapshot_id = summary.get("snapshot_id")
+        if not isinstance(snapshot_id, str) or not snapshot_id:
             raise BackupError("restic finished without making a snapshot")
         return self._log(
             "backup",
             ok=True,
-            snapshot=summary["snapshot_id"][:8],
+            snapshot=snapshot_id[:8],
             files=summary.get("total_files_processed"),
             bytes=summary.get("total_bytes_processed"),
             added=summary.get("data_added_packed", summary.get("data_added")),
@@ -432,7 +456,7 @@ class Backup:
             except ResticError as e:
                 return self._log("check", ok=False, read_data=read_data, message=str(e))
         errors = summary.get("num_errors", 0)
-        ok = not errors and not summary.get("broken_packs")
+        ok = errors == 0 and not summary.get("broken_packs")
         return self._log(
             "check",
             ok=ok,
@@ -446,10 +470,13 @@ class Backup:
         snaps = self.restic().snapshots()
         if not snaps:
             raise BackupError("there are no backups yet")
+        snaps = [x for x in snaps if isinstance(x.get("id"), str) and x["id"]]
+        if not snaps:
+            raise BackupError("restic gave a list of backups without ids")
         if snapshot == "latest":
-            return max(snaps, key=lambda x: x.get("time", ""))
+            return max(snaps, key=lambda x: str(x.get("time") or ""))
         for snap in snaps:
-            if snap.get("id", "").startswith(snapshot) and len(snapshot) >= 8:
+            if snap["id"].startswith(snapshot) and len(snapshot) >= 8:
                 return snap
         raise BackupError(f"no backup {snapshot}")
 
@@ -467,9 +494,16 @@ class Backup:
         """R2: bring back a backup (or one file or folder of it) into a new, empty folder."""
         if not os.path.isabs(target):
             raise BackupError("the target must be an absolute folder")
-        dest = Path(os.path.normpath(target))
+        if bad_path_char(target):
+            raise BackupError("the target must be an absolute folder")
+        dest = Path(clean_folder(target))
         home = self.layout.home
+        real = dest.resolve()
+        real_home = home.resolve()
         if dest == home or not dest.is_relative_to(home):
+            raise BackupError("restore into a new folder inside the home folder")
+        if real == real_home or not real.is_relative_to(real_home):
+            # A link inside the home that leads out of it.
             raise BackupError("restore into a new folder inside the home folder")
         if dest.exists() and (not dest.is_dir() or any(dest.iterdir())):
             raise BackupError(f"{dest} is not empty; choose a new folder")
@@ -505,7 +539,7 @@ class Backup:
         home = self.layout.home
         keyrings = self.layout.data / "keyrings"
         out = [
-            "/" + path.relative_to(home).as_posix()
+            plan.literal_pattern("/" + path.relative_to(home).as_posix(), file_line=False)
             for path in (self.layout.config / "vilna-backup", keyrings)
             if path.is_relative_to(home)
         ]
@@ -660,7 +694,9 @@ class Backup:
     def _progress(self) -> dict[str, Any] | None:
         try:
             data = json.loads(self._progress_file.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
+        except (OSError, ValueError, RecursionError):
+            return None
+        if not isinstance(data, dict):
             return None
         pid = data.get("pid")
         if not isinstance(pid, int):
