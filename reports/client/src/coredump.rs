@@ -211,6 +211,12 @@ pub fn report(entry: &Map<String, Value>, device: &Device, id: &str) -> Result<F
     if field(entry, "MESSAGE_ID").as_deref() != Some(COREDUMP_MESSAGE_ID) {
         return Err(Skip::NotACrash);
     }
+    // The journal itself sets `_UID` and `_COMM`: a program that writes the
+    // same MESSAGE_ID is not systemd-coredump and its entry is no crash.
+    let from = |name: &str, want: &str| field(entry, name).is_none_or(|v| v == want);
+    if !from("_UID", "0") || !from("_COMM", "systemd-coredum") {
+        return Err(Skip::NotACrash);
+    }
     let flatpak = field(entry, "COREDUMP_CGROUP")
         .as_deref()
         .and_then(flatpak_id);

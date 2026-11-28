@@ -43,7 +43,16 @@ impl Collector {
             Err(Skip::Invalid(why)) => return Err(why.to_string()),
         };
         let found_at = found.when_us.map(|us| us / 1_000_000).unwrap_or(now);
-        let report = Report::new(found.crash, found.uid, found_at.min(now));
+        let mut crash = found.crash;
+        // The server takes at most MAX_BODY_BYTES: frames from the end go
+        // first, so the report is not refused for good.
+        while !crash.frames.is_empty()
+            && serde_json::to_vec(&crash.to_wire()).map_or(0, |b| b.len())
+                > vilna_reports_protocol::MAX_BODY_BYTES
+        {
+            crash.frames.pop();
+        }
+        let report = Report::new(crash, found.uid, found_at.min(now));
         match self.spool.add(&report, now).map_err(|e| e.to_string())? {
             Added::Added => Ok(Some(id)),
             Added::Duplicate => Ok(None),
@@ -97,6 +106,13 @@ impl Collector {
         waiting.reverse();
         let mut sent = 0;
         for r in waiting {
+            // The person may say "never" while these go: ask again each time.
+            if self.consent() != Some(Consent::Auto) {
+                break;
+            }
+            if self.spool.get(&r.crash.id).is_none() {
+                continue; // gone, or a file of another name: not a reason to stop
+            }
             match self.send(&r.crash.id, now) {
                 Ok(_) => sent += 1,
                 Err(_)

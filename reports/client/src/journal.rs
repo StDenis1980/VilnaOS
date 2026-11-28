@@ -23,12 +23,14 @@ pub fn entries(output: impl Read) -> Vec<Map<String, Value>> {
     let mut out = Vec::new();
     let mut reader = BufReader::new(output);
     while out.len() < MAX_ENTRIES {
-        let mut line = String::new();
-        match (&mut reader).take(MAX_LINE).read_line(&mut line) {
+        // Bytes, not text: a cut inside a character ended the reading and
+        // lost every entry after it.
+        let mut line = Vec::new();
+        match (&mut reader).take(MAX_LINE).read_until(b'\n', &mut line) {
             Ok(0) | Err(_) => break,
             Ok(_) => {}
         }
-        if let Ok(Value::Object(entry)) = serde_json::from_str(&line) {
+        if let Ok(Value::Object(entry)) = serde_json::from_str(&String::from_utf8_lossy(&line)) {
             out.push(entry);
         }
     }
@@ -40,7 +42,11 @@ pub fn new_crashes(cursor_file: &Path) -> Result<Vec<Map<String, Value>>, String
     let mut cmd = Command::new("journalctl");
     cmd.args(["--output=json", "--no-pager", "--quiet"])
         .arg(format!("--cursor-file={}", cursor_file.display()))
-        .arg(format!("MESSAGE_ID={COREDUMP_MESSAGE_ID}"));
+        .arg(format!("MESSAGE_ID={COREDUMP_MESSAGE_ID}"))
+        // Written by systemd-coredump itself: the journal sets these fields,
+        // a program that logs with the same MESSAGE_ID cannot.
+        .arg("_UID=0")
+        .arg("_COMM=systemd-coredum");
     if !cursor_file.exists() {
         cmd.arg("--since=-1d");
     }

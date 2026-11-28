@@ -30,6 +30,32 @@ pub const KEEP_IDS: u64 = 90 * DAY;
 /// crashes. Above it, only the person whose program it was (and root).
 pub const FIRST_PERSON_UID: u32 = 1000;
 
+/// The longest report file read.
+const MAX_REPORT_FILE: u64 = 1024 * 1024;
+
+fn flags(f: rustix::fs::OFlags) -> i32 {
+    i32::try_from(f.bits()).unwrap_or(0)
+}
+
+/// A regular file of at most `MAX_REPORT_FILE`: a pipe named `*.json` would
+/// never answer and hold every reader.
+fn read_plain(path: &Path) -> Option<Vec<u8>> {
+    use std::io::Read;
+    let file = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(flags(
+            rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::NONBLOCK,
+        ))
+        .open(path)
+        .ok()?;
+    if !file.metadata().ok()?.is_file() {
+        return None;
+    }
+    let mut bytes = Vec::new();
+    file.take(MAX_REPORT_FILE).read_to_end(&mut bytes).ok()?;
+    Some(bytes)
+}
+
 /// Write a file so a reader sees the old or the new text, never half.
 pub fn write_atomic(path: &Path, data: &[u8], mode: u32) -> std::io::Result<()> {
     let dir = path.parent().unwrap_or(Path::new("."));
@@ -38,13 +64,16 @@ pub fn write_atomic(path: &Path, data: &[u8], mode: u32) -> std::io::Result<()> 
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_default();
-    let tmp = dir.join(format!(".{name}.{}.tmp", std::process::id()));
+    // A new name each time, never an existing file or a link: a link put at a
+    // name known in advance made this overwrite another file.
+    let random = crate::device::new_id().unwrap_or_else(|| format!("{}", std::process::id()));
+    let tmp = dir.join(format!(".{name}.{random}.tmp"));
     let result = (|| {
         let mut f = fs::OpenOptions::new()
             .write(true)
-            .create(true)
-            .truncate(true)
+            .create_new(true)
             .mode(mode)
+            .custom_flags(flags(rustix::fs::OFlags::NOFOLLOW))
             .open(&tmp)?;
         f.set_permissions(fs::Permissions::from_mode(mode))?;
         f.write_all(data)?;
@@ -150,15 +179,19 @@ impl Spool {
             .flatten()
             .flatten()
             .filter(|e| e.path().extension().is_some_and(|x| x == "json"))
-            .filter_map(|e| fs::read(e.path()).ok())
-            .filter_map(|b| serde_json::from_slice(&b).ok())
+            .filter_map(|e| Some((e.path(), read_plain(&e.path())?)))
+            .filter_map(|(path, b)| {
+                let r: Report = serde_json::from_slice(&b).ok()?;
+                // Only a file named by its own id: send() finds it by that name.
+                (self.report_path(&r.crash.id).as_deref() == Some(path.as_path())).then_some(r)
+            })
             .collect();
         out.sort_by_key(|r: &Report| std::cmp::Reverse(r.found));
         out
     }
 
     pub fn get(&self, id: &str) -> Option<Report> {
-        let bytes = fs::read(self.report_path(id)?).ok()?;
+        let bytes = read_plain(&self.report_path(id)?)?;
         serde_json::from_slice(&bytes).ok()
     }
 
@@ -284,13 +317,23 @@ impl Spool {
                 self.remove(&r.crash.id);
             }
         }
-        for entry in fs::read_dir(self.dir.join("feedback"))
-            .into_iter()
+        // Files the list does not show (another name, a copy) go by their age.
+        for entry in [self.dir.join("reports"), self.dir.join("feedback")]
+            .iter()
+            .flat_map(fs::read_dir)
             .flatten()
             .flatten()
         {
-            let old = entry
-                .metadata()
+            let name = entry.file_name();
+            let named_by_id = name.to_str().is_some_and(|n| {
+                n.strip_suffix(".json")
+                    .and_then(report_id)
+                    .is_some_and(|id| format!("{id}.json") == n)
+            });
+            if named_by_id && entry.path().parent() == Some(self.dir.join("reports").as_path()) {
+                continue; // aged by when it was found, above
+            }
+            let old = fs::symlink_metadata(entry.path())
                 .and_then(|m| m.modified())
                 .ok()
                 .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
