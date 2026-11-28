@@ -13,13 +13,15 @@ person, copies back what the action changed.
 
 from __future__ import annotations
 
+import codecs
+import contextlib
 import filecmp
 import json
 import os
 import pwd
 import secrets
 import shutil
-import tempfile
+import stat
 import time
 from collections.abc import Iterable
 from pathlib import Path
@@ -82,15 +84,62 @@ class Files:
     def resolve(self, path: str) -> Path:
         if not isinstance(path, str) or not path or "\x00" in path:
             raise FilesError("path must be a non-empty string")
+        try:
+            os.fsencode(path)  # a lone surrogate is no name on any disk
+        except UnicodeEncodeError:
+            raise FilesError("path has characters no file name can have") from None
         if not os.path.isabs(path):
             raise FilesError("path must be absolute")
         real = Path(os.path.realpath(path))
-        if not any(real == r or real.is_relative_to(r) for r in self.roots):
+        if not self._inside_roots(real):
             raise FilesError(f"{path} is outside the allowed folders")
         # Snapshots are Mitos's: read-only, and not for Gloxi to look into.
         if SNAPSHOTS in real.parts:
             raise FilesError(f"{path} is inside a snapshot folder")
+        # The undo copies are this server's own: a changed meta.json would
+        # make restore write anywhere.
+        backups = Path(os.path.realpath(self.backup_dir))
+        if real == backups or real.is_relative_to(backups):
+            raise FilesError(f"{path} is inside the undo copies of this tool")
         return real
+
+    def _inside_roots(self, real: Path) -> bool:
+        return any(real == r or real.is_relative_to(r) for r in self.roots)
+
+    def _open_dir(self, folder: Path) -> int:
+        """A descriptor for ``folder``, checked to be inside the roots *after* opening.
+
+        Names are looked up again on every use; between the check in
+        :meth:`resolve` and the use, another program could swap a folder
+        for a link to elsewhere. Working through the descriptor of a folder
+        that was checked once it was open closes that gap.
+        """
+        try:
+            fd = os.open(folder, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        except OSError as e:
+            raise FilesError(f"cannot open the folder {folder}: {e.strerror}") from None
+        if not self._inside_roots(_fd_path(fd)):
+            os.close(fd)
+            raise FilesError(f"{folder} moved outside the allowed folders")
+        return fd
+
+    def _open_file(self, f: Path) -> int:
+        """A descriptor of the regular file ``f``, never a FIFO or a device, never via a link."""
+        dir_fd = self._open_dir(f.parent)
+        try:
+            fd = os.open(
+                f.name,
+                os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC,
+                dir_fd=dir_fd,
+            )
+        except OSError as e:
+            raise FilesError(f"cannot open {f}: {e.strerror}") from None
+        finally:
+            os.close(dir_fd)
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            os.close(fd)
+            raise FilesError(f"{f} is not a regular file")
+        return fd
 
     # -- reading -----------------------------------------------------------
 
@@ -114,10 +163,14 @@ class Files:
         f = self.resolve(path)
         if not f.is_file():
             raise FilesError(f"{path} is not a file")
-        data = f.read_bytes()[: MAX_READ_BYTES + 1]
+        with os.fdopen(self._open_file(f), "rb") as handle:
+            data = handle.read(MAX_READ_BYTES + 1)  # never the whole of a huge file
         truncated = len(data) > MAX_READ_BYTES
         try:
-            text = data[:MAX_READ_BYTES].decode("utf-8")
+            # A cut can fall inside a letter: the decoder keeps such a tail back.
+            text = codecs.getincrementaldecoder("utf-8")().decode(
+                data[:MAX_READ_BYTES], final=not truncated
+            )
         except UnicodeDecodeError:
             raise FilesError(f"{path} is not a UTF-8 text file") from None
         return {"path": str(f), "text": text, "truncated": truncated}
@@ -130,54 +183,83 @@ class Files:
             raise FilesError("query must be a non-empty string")
         needle = query.casefold()
         matches = []
-        for dirpath, dirnames, filenames in os.walk(folder, followlinks=False):
+        unreadable: list[OSError] = []
+        for dirpath, dirnames, filenames in os.walk(
+            folder, followlinks=False, onerror=unreadable.append
+        ):
             dirnames[:] = sorted(d for d in dirnames if not d.startswith("."))
             for name in sorted(filenames):
                 p = Path(dirpath) / name
-                if p.is_symlink():
-                    continue
                 hit = "name" if needle in name.casefold() else None
                 if hit is None:
                     try:
-                        if p.stat().st_size <= MAX_SEARCH_FILE_BYTES:
-                            text = p.read_text(encoding="utf-8", errors="ignore")
+                        st = p.lstat()
+                        # Only regular files: a FIFO would block the server for ever.
+                        if stat.S_ISREG(st.st_mode) and st.st_size <= MAX_SEARCH_FILE_BYTES:
+                            with os.fdopen(self._open_file(p), "rb") as handle:
+                                text = handle.read(MAX_SEARCH_FILE_BYTES).decode(
+                                    "utf-8", errors="ignore"
+                                )
                             if needle in text.casefold():
                                 hit = "text"
-                    except OSError:
+                    except (OSError, FilesError):
                         continue
+                elif p.is_symlink():
+                    continue
                 if hit:
                     matches.append({"path": str(p), "match": hit})
                     if len(matches) >= MAX_SEARCH_RESULTS:
                         return {"matches": matches, "truncated": True}
-        return {"matches": matches, "truncated": False}
+        out: dict = {"matches": matches, "truncated": False}
+        if unreadable:
+            # "Nothing found" must not hide "not allowed to look".
+            out["unreadable_folders"] = len(unreadable)
+        return out
 
     # -- changing ----------------------------------------------------------
 
     def create(self, path: str, text: str) -> dict:
         f = self.resolve(path)
+        data = _encode(text)  # refused text leaves no undo copy behind
         if f.exists() or f.is_symlink():
             raise FilesError(f"{path} already exists")
         if not f.parent.is_dir():
             raise FilesError(f"folder {f.parent} does not exist")
         backup = self._backup(f)
-        self._write(f, text)
+        self._write(f, data)
         return {"path": str(f), "backup_id": backup}
 
     def write(self, path: str, text: str) -> dict:
         f = self.resolve(path)
+        data = _encode(text)
         if not f.is_file():
             raise FilesError(f"{path} is not an existing file (use create)")
+        if not os.access(f, os.W_OK):
+            raise FilesError(f"{path} is read-only")
         backup = self._backup(f)
-        self._write(f, text)
+        self._write(f, data)
         return {"path": str(f), "backup_id": backup}
 
     def delete(self, path: str) -> dict:
         f = self.resolve(path)
+        self._own(path, f)
         if not f.is_file():
             raise FilesError(f"{path} is not a file (folders are not deleted)")
+        if not os.access(f, os.W_OK):
+            raise FilesError(f"{path} is read-only")
         backup = self._backup(f)
-        f.unlink()
+        dir_fd = self._open_dir(f.parent)
+        try:
+            os.unlink(f.name, dir_fd=dir_fd)
+        finally:
+            os.close(dir_fd)
         return {"path": str(f), "backup_id": backup}
+
+    @staticmethod
+    def _own(path: str, real: Path) -> None:
+        """A link is not changed through: the change would land on another file."""
+        if Path(os.path.normpath(path)) != real and Path(path).is_symlink():
+            raise FilesError(f"{path} is a link; change the file it points to by its own name")
 
     def restore(self, path: str, backup_id: str) -> dict:
         """Put ``path`` back the way it was before the change ``backup_id``.
@@ -189,10 +271,16 @@ class Files:
         folder = self.backup_dir / backup_id
         try:
             meta = json.loads((folder / "meta.json").read_text(encoding="utf-8"))
-        except (OSError, ValueError):
+        except (OSError, ValueError, RecursionError):
             raise FilesError(
                 f"no backup {backup_id} (backups are kept {self.keep_seconds / 86400:g} days)"
             ) from None
+        if (
+            not isinstance(meta, dict)
+            or not isinstance(meta.get("path"), str)
+            or not isinstance(meta.get("existed"), bool)
+        ):
+            raise FilesError(f"backup {backup_id} is damaged")
         target = self.resolve(meta["path"])
         if target != self.resolve(path):
             raise FilesError(f"backup {backup_id} belongs to another file")
@@ -200,9 +288,13 @@ class Files:
         if meta["existed"]:
             if not target.parent.is_dir():
                 raise FilesError(f"folder {target.parent} no longer exists")
-            tmp = target.with_name(f".{target.name}.restore-{secrets.token_hex(4)}")
-            shutil.copy2(folder / "content", tmp)
-            os.replace(tmp, target)
+            tmp = target.with_name(_temp_name())
+            try:
+                shutil.copy2(folder / "content", tmp)
+                os.replace(tmp, target)
+            except OSError as e:
+                tmp.unlink(missing_ok=True)
+                raise FilesError(f"cannot put {target} back: {e.strerror}") from None
         elif target.exists():
             target.unlink()
         return {"path": str(target), "restored": backup_id, "backup_id": undo}
@@ -234,12 +326,19 @@ class Files:
             skipped.append({"path": str(t), "why": why})
 
         todo = []
+        real_before = Path(os.path.realpath(before))
         for t in sorted(set(targets), key=lambda t: (len(t.parts), str(t))):
             rel = t.relative_to(self.home)
+            src = before / rel
+            # A link in the snapshot on the way to the file would copy whatever
+            # it pointed to, from outside the home, into the home.
+            if not Path(os.path.realpath(src.parent)).is_relative_to(real_before):
+                skip(t, "links are not restored")
+                continue
             if after is not None and not _same(t, after / rel):
                 skip(t, "changed again after the action")
                 continue
-            todo.append((t, before / rel))
+            todo.append((t, src))
         # Folders and files first, from the top down; removals after, from the bottom up.
         for t, src in todo:
             if src.is_symlink():
@@ -258,7 +357,7 @@ class Files:
                     skip(t, "a folder is there now")
                     continue
                 t.parent.mkdir(parents=True, exist_ok=True)
-                tmp = t.with_name(f".{t.name}.restore-{secrets.token_hex(4)}")
+                tmp = t.with_name(_temp_name())
                 try:
                     shutil.copy2(src, tmp)
                     os.replace(tmp, t)
@@ -299,30 +398,67 @@ class Files:
         folder.mkdir(mode=0o700)
         existed = f.is_file()
         if existed:
-            shutil.copy2(f, folder / "content")
+            with os.fdopen(self._open_file(f), "rb") as src, open(folder / "content", "wb") as dst:
+                shutil.copyfileobj(src, dst)
+            shutil.copystat(f, folder / "content")
         meta = {"path": str(f), "existed": existed, "time": self.clock()}
         (folder / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
         return backup_id
 
-    @staticmethod
-    def _write(f: Path, text: str) -> None:
-        if not isinstance(text, str):
-            raise FilesError("text must be a string")
-        data = text.encode("utf-8")
-        if len(data) > MAX_WRITE_BYTES:
-            raise FilesError("text is too large")
-        fd, tmp = tempfile.mkstemp(dir=f.parent, prefix=f".{f.name}.")
+    def _write(self, f: Path, data: bytes) -> None:
+        dir_fd = self._open_dir(f.parent)
+        # A short name of our own: ".<name>.<random>" is too long for a 250-byte name.
+        tmp = _temp_name()
         try:
-            with os.fdopen(fd, "wb") as out:
-                out.write(data)
-                out.flush()
-                os.fsync(out.fileno())
-            if f.exists():
-                shutil.copymode(f, tmp)
-            os.replace(tmp, f)
-        except BaseException:
-            Path(tmp).unlink(missing_ok=True)
-            raise
+            fd = os.open(
+                tmp,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                0o600,
+                dir_fd=dir_fd,
+            )
+            try:
+                with os.fdopen(fd, "wb") as out:
+                    out.write(data)
+                    out.flush()
+                    os.fsync(out.fileno())
+                try:
+                    mode = os.stat(f.name, dir_fd=dir_fd, follow_symlinks=False).st_mode
+                    os.chmod(tmp, stat.S_IMODE(mode), dir_fd=dir_fd)
+                except FileNotFoundError:
+                    pass  # a new file stays private (0600), like the person's other notes
+                os.replace(tmp, f.name, src_dir_fd=dir_fd, dst_dir_fd=dir_fd)
+            except BaseException:
+                with contextlib.suppress(OSError):
+                    os.unlink(tmp, dir_fd=dir_fd)
+                raise
+        except OSError as e:
+            raise FilesError(f"cannot write {f}: {e.strerror}") from None
+        finally:
+            os.close(dir_fd)
+
+
+def _encode(text: str) -> bytes:
+    if not isinstance(text, str):
+        raise FilesError("text must be a string")
+    try:
+        data = text.encode("utf-8")
+    except UnicodeEncodeError:
+        raise FilesError("text has characters that are not Unicode text") from None
+    if len(data) > MAX_WRITE_BYTES:
+        raise FilesError("text is too large")
+    return data
+
+
+def _temp_name() -> str:
+    return f".vilna-{secrets.token_hex(6)}.tmp"
+
+
+def _fd_path(fd: int) -> Path:
+    """Where an open folder really is now, as the kernel sees it."""
+    try:
+        return Path(os.readlink(f"/proc/self/fd/{fd}"))
+    except OSError:
+        return Path(os.path.realpath(f"/dev/fd/{fd}"))
 
 
 def _same(a: Path, b: Path) -> bool:

@@ -142,6 +142,8 @@ class Server:
         if "id" not in msg:
             return None  # notifications (e.g. notifications/initialized)
         params = msg.get("params") or {}
+        if not isinstance(params, dict):
+            return _error(id_, -32602, "params must be an object")
         if method == "initialize":
             asked = params.get("protocolVersion")
             version = asked if asked in PROTOCOL_VERSIONS else PROTOCOL_VERSIONS[0]
@@ -162,7 +164,7 @@ class Server:
         return _error(id_, -32601, f"unknown method {method}")
 
     def call(self, name: Any, args: Any) -> dict:
-        if name not in self._handlers:
+        if not isinstance(name, str) or name not in self._handlers:
             return _tool_error(f"unknown tool {name}")
         try:
             out = self._handlers[name](**check_arguments(name, args))
@@ -171,7 +173,7 @@ class Server:
         except OSError as e:
             return _tool_error(f"{type(e).__name__}: {e.strerror or e}")
         return {
-            "content": [{"type": "text", "text": json.dumps(out, ensure_ascii=False)}],
+            "content": [{"type": "text", "text": dump(out)}],
             "structuredContent": out,
             "isError": False,
         }
@@ -182,13 +184,37 @@ class Server:
                 continue
             try:
                 msg = json.loads(line)
-            except ValueError:
+            except (ValueError, RecursionError):
                 response = _error(None, -32700, "not valid JSON")
             else:
-                response = self.handle(msg)
+                try:
+                    response = self.handle(msg)
+                except Exception as e:  # noqa: BLE001 - one bad call never ends the server
+                    id_ = msg.get("id") if isinstance(msg, dict) else None
+                    response = _error(_plain_id(id_), -32603, f"internal error: {type(e).__name__}")
             if response is not None:
-                stdout.write(json.dumps(response, ensure_ascii=False) + "\n")
+                stdout.write(dump(response) + "\n")
                 stdout.flush()
+
+
+def dump(value: Any) -> str:
+    """One JSON line that every reader splits the same way and every encoder can write.
+
+    U+0085, U+2028 and U+2029 are line breaks to ``str.splitlines``; a lone surrogate
+    (a name that is not UTF-8) cannot be written as UTF-8.
+    """
+    text = json.dumps(value, ensure_ascii=False)
+    try:
+        text.encode("utf-8")
+    except UnicodeEncodeError:
+        return json.dumps(value)
+    for sep in ("\x85", "\u2028", "\u2029"):
+        text = text.replace(sep, f"\\u{ord(sep):04x}")
+    return text
+
+
+def _plain_id(id_: Any) -> Any:
+    return id_ if isinstance(id_, str | int) and not isinstance(id_, bool) else None
 
 
 def _result(id_: Any, result: Any) -> dict:
