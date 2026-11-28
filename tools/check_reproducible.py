@@ -81,6 +81,7 @@ from __future__ import annotations
 import ast
 import re
 import subprocess
+import os
 import sys
 from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
@@ -1222,39 +1223,43 @@ def check_files(root: Path, files: Sequence[str]) -> tuple[list[Problem], list[s
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if any(a.startswith("-") for a in args):
-        print("usage: python3 tools/check_reproducible.py [FILE ...]", file=sys.stderr)
-        return 0 if args in (["-h"], ["--help"]) else 2
-    if args:
-        files = []
-        for arg in args:
-            rel = normalise(ROOT, arg)
-            if rel is None:
-                print(f"{arg}: not inside the repository", file=sys.stderr)
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        if any(a.startswith("-") for a in args):
+            print("usage: python3 tools/check_reproducible.py [FILE ...]", file=sys.stderr)
+            return 0 if args in (["-h"], ["--help"]) else 2
+        if args:
+            files = []
+            for arg in args:
+                rel = normalise(ROOT, arg)
+                if rel is None:
+                    print(f"{arg}: not inside the repository", file=sys.stderr)
+                    return 2
+                files.append(rel)
+        else:
+            try:
+                files = default_files(tracked_files(ROOT))
+            except (OSError, subprocess.CalledProcessError) as err:
+                print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
                 return 2
-            files.append(rel)
-    else:
-        try:
-            files = default_files(tracked_files(ROOT))
-        except (OSError, subprocess.CalledProcessError) as err:
-            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+            if not files:
+                print("no build files found", file=sys.stderr)
+                return 2
+        problems, errors = check_files(ROOT, files)
+        if errors:
+            for error in errors:
+                print(error, file=sys.stderr)
             return 2
-        if not files:
-            print("no build files found", file=sys.stderr)
-            return 2
-    problems, errors = check_files(ROOT, files)
-    if errors:
-        for error in errors:
-            print(error, file=sys.stderr)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        failures = sum(not p.warning for p in problems)
+        print(
+            f"{len(files)} build files checked: {failures} errors, {len(problems) - failures} warnings"
+        )
+        return 1 if failures else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    failures = sum(not p.warning for p in problems)
-    print(
-        f"{len(files)} build files checked: {failures} errors, {len(problems) - failures} warnings"
-    )
-    return 1 if failures else 0
 
 
 if __name__ == "__main__":

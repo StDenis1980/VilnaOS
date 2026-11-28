@@ -43,6 +43,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import os
 import sys
 import tomllib
 from collections import Counter
@@ -288,31 +289,35 @@ def tracked_data_files(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    usage = "usage: python3 tools/check_data_files.py [FILE.json | FILE.toml ...]"
-    if any(a.startswith("-") for a in args):
-        print(usage, file=sys.stderr)
-        return 0 if args in (["-h"], ["--help"]) else 2
-    if any(not a.lower().endswith(SUFFIXES) for a in args):
-        print(f"every file must be a .json or a .toml file\n{usage}", file=sys.stderr)
-        return 2
-    if args:
-        paths = args
-    else:
-        try:
-            paths = tracked_data_files(ROOT)
-        except (OSError, subprocess.CalledProcessError) as err:
-            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        usage = "usage: python3 tools/check_data_files.py [FILE.json | FILE.toml ...]"
+        if any(a.startswith("-") for a in args):
+            print(usage, file=sys.stderr)
+            return 0 if args in (["-h"], ["--help"]) else 2
+        if any(not a.lower().endswith(SUFFIXES) for a in args):
+            print(f"every file must be a .json or a .toml file\n{usage}", file=sys.stderr)
             return 2
-    if not paths:
-        print("no tracked *.json or *.toml files found", file=sys.stderr)
+        if args:
+            paths = args
+        else:
+            try:
+                paths = tracked_data_files(ROOT)
+            except (OSError, subprocess.CalledProcessError) as err:
+                print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+                return 2
+        if not paths:
+            print("no tracked *.json or *.toml files found", file=sys.stderr)
+            return 2
+        problems = check_files(Path.cwd() if args else ROOT, paths)
+        for found in problems:
+            print(found, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(f"{len(paths)} data files checked: {errors} errors, {len(problems) - errors} warnings")
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    problems = check_files(Path.cwd() if args else ROOT, paths)
-    for found in problems:
-        print(found, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(f"{len(paths)} data files checked: {errors} errors, {len(problems) - errors} warnings")
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

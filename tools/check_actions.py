@@ -43,6 +43,7 @@ from __future__ import annotations
 import posixpath
 import re
 import subprocess
+import os
 import sys
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
@@ -585,33 +586,37 @@ def tracked_files(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if args in (["-h"], ["--help"]):
-        print("usage: python3 tools/check_actions.py [FILE ...]")
-        return 0
-    if any(a.startswith("-") for a in args):
-        print("usage: python3 tools/check_actions.py [FILE ...]", file=sys.stderr)
-        return 2
-    only = [posixpath.normpath(a) for a in args] or None
-    if only:
-        for path in only:
-            if not (ROOT / path).is_file():
-                print(f"{path}: no such file", file=sys.stderr)
-                return 2
     try:
-        tracked = tracked_files(ROOT)
-    except (OSError, subprocess.CalledProcessError) as err:
-        print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+        args = sys.argv[1:] if argv is None else argv
+        if args in (["-h"], ["--help"]):
+            print("usage: python3 tools/check_actions.py [FILE ...]")
+            return 0
+        if any(a.startswith("-") for a in args):
+            print("usage: python3 tools/check_actions.py [FILE ...]", file=sys.stderr)
+            return 2
+        only = [posixpath.normpath(a) for a in args] or None
+        if only:
+            for path in only:
+                if not (ROOT / path).is_file():
+                    print(f"{path}: no such file", file=sys.stderr)
+                    return 2
+        try:
+            tracked = tracked_files(ROOT)
+        except (OSError, subprocess.CalledProcessError) as err:
+            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+            return 2
+        problems, stats = check(ROOT, tracked, only)
+        for item in problems:
+            print(item, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(
+            f"{stats['files']} workflows and actions ({stats['jobs']} jobs, {stats['steps']} steps) "
+            f"checked: {errors} errors, {len(problems) - errors} warnings"
+        )
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    problems, stats = check(ROOT, tracked, only)
-    for item in problems:
-        print(item, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(
-        f"{stats['files']} workflows and actions ({stats['jobs']} jobs, {stats['steps']} steps) "
-        f"checked: {errors} errors, {len(problems) - errors} warnings"
-    )
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

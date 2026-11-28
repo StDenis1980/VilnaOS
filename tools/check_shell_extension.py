@@ -46,6 +46,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import os
 import sys
 import xml.etree.ElementTree as ET
 from collections.abc import Sequence
@@ -1025,37 +1026,41 @@ def tracked_metadata(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    usage = "usage: python3 tools/check_shell_extension.py [metadata.json ...]"
-    if any(a.startswith("-") for a in args):
-        print(usage, file=sys.stderr)
-        return 0 if args in (["-h"], ["--help"]) else 2
-    if any(Path(a).name != "metadata.json" for a in args):
-        print(f"every file must be a metadata.json\n{usage}", file=sys.stderr)
-        return 2
-    if args:
-        paths = args
-        base = Path.cwd()
-    else:
-        base = ROOT
-        try:
-            paths = tracked_metadata(ROOT)
-        except (OSError, subprocess.CalledProcessError) as err:
-            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        usage = "usage: python3 tools/check_shell_extension.py [metadata.json ...]"
+        if any(a.startswith("-") for a in args):
+            print(usage, file=sys.stderr)
+            return 0 if args in (["-h"], ["--help"]) else 2
+        if any(Path(a).name != "metadata.json" for a in args):
+            print(f"every file must be a metadata.json\n{usage}", file=sys.stderr)
             return 2
-    if not paths:
-        print("no tracked extension metadata.json found", file=sys.stderr)
+        if args:
+            paths = args
+            base = Path.cwd()
+        else:
+            base = ROOT
+            try:
+                paths = tracked_metadata(ROOT)
+            except (OSError, subprocess.CalledProcessError) as err:
+                print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+                return 2
+        if not paths:
+            print("no tracked extension metadata.json found", file=sys.stderr)
+            return 2
+        missing = [a for a in args if not (base / a).is_file()]
+        if missing:
+            print(f"no such file: {', '.join(missing)}", file=sys.stderr)
+            return 2
+        problems = check_files(base, paths, None if args else PACKAGES_YAML)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(f"{len(paths)} extensions checked: {errors} errors, {len(problems) - errors} warnings")
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    missing = [a for a in args if not (base / a).is_file()]
-    if missing:
-        print(f"no such file: {', '.join(missing)}", file=sys.stderr)
-        return 2
-    problems = check_files(base, paths, None if args else PACKAGES_YAML)
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(f"{len(paths)} extensions checked: {errors} errors, {len(problems) - errors} warnings")
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

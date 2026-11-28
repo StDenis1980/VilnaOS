@@ -43,6 +43,7 @@ from __future__ import annotations
 import gzip
 import re
 import subprocess
+import os
 import sys
 from collections import defaultdict
 from collections.abc import Sequence
@@ -689,46 +690,50 @@ def tracked_icon_themes(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if any(a.startswith("-") for a in args):
-        print(
-            "usage: python3 tools/check_icon_theme.py [THEME ...]",
-            file=sys.stderr,
-        )
-        return 0 if args in (["-h"], ["--help"]) else 2
-    root = Path.cwd() if args else ROOT
-    all_files: list[str] | None
-    if args:
-        indexes = args
-        all_files = None
-        skip_sound = False
-    else:
-        try:
-            tracked = tracked_files(ROOT)
-        except (OSError, subprocess.CalledProcessError) as err:
-            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
-            return 2
-        indexes = [p for p in tracked if p == "index.theme" or p.endswith("/index.theme")]
-        all_files = tracked
-        skip_sound = True
-        if not indexes:
-            print("no tracked index.theme files found", file=sys.stderr)
-            return 2
-    problems = check_themes(root, indexes, all_files, skip_sound=skip_sound)
-    # A no-argument run that found only sound themes should say so clearly.
-    if not args and skip_sound:
-        checked = tracked_icon_themes(ROOT)
-        if not checked and not problems:
-            print("no tracked icon themes found", file=sys.stderr)
-            return 2
-        n_themes = len(checked)
-    else:
-        n_themes = len(indexes)
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(f"{n_themes} icon themes checked: {errors} errors, {len(problems) - errors} warnings")
-    return 1 if errors else 0
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        if any(a.startswith("-") for a in args):
+            print(
+                "usage: python3 tools/check_icon_theme.py [THEME ...]",
+                file=sys.stderr,
+            )
+            return 0 if args in (["-h"], ["--help"]) else 2
+        root = Path.cwd() if args else ROOT
+        all_files: list[str] | None
+        if args:
+            indexes = args
+            all_files = None
+            skip_sound = False
+        else:
+            try:
+                tracked = tracked_files(ROOT)
+            except (OSError, subprocess.CalledProcessError) as err:
+                print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+                return 2
+            indexes = [p for p in tracked if p == "index.theme" or p.endswith("/index.theme")]
+            all_files = tracked
+            skip_sound = True
+            if not indexes:
+                print("no tracked index.theme files found", file=sys.stderr)
+                return 2
+        problems = check_themes(root, indexes, all_files, skip_sound=skip_sound)
+        # A no-argument run that found only sound themes should say so clearly.
+        if not args and skip_sound:
+            checked = tracked_icon_themes(ROOT)
+            if not checked and not problems:
+                print("no tracked icon themes found", file=sys.stderr)
+                return 2
+            n_themes = len(checked)
+        else:
+            n_themes = len(indexes)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(f"{n_themes} icon themes checked: {errors} errors, {len(problems) - errors} warnings")
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

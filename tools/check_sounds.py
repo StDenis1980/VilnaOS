@@ -39,6 +39,7 @@ import posixpath
 import re
 import struct
 import subprocess
+import os
 import sys
 from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
@@ -1021,39 +1022,43 @@ def themes_from_args(root: Path, args: Sequence[str]) -> tuple[list[str], list[P
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if any(a.startswith("-") for a in args):
-        print("usage: python3 tools/check_sounds.py [THEME_OR_FILE ...]", file=sys.stderr)
-        return 0 if args in (["-h"], ["--help"]) else 2
-    root = Path.cwd() if args else ROOT
-    tracked: list[str] | None
-    if args:
-        theme_rels, problems = themes_from_args(root, args)
-        tracked = None
-        if not theme_rels and not problems:
-            print("no sounds/themes/vilna-* theme in the arguments", file=sys.stderr)
-            return 2
-    else:
-        problems = []
-        try:
-            tracked = tracked_theme_paths(ROOT)
-        except (OSError, subprocess.CalledProcessError) as err:
-            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
-            return 2
-        theme_rels = themes_from_tracked(tracked)
-        if not theme_rels:
-            print("no tracked sounds/themes/vilna-* themes found", file=sys.stderr)
-            return 2
-    if theme_rels:
-        problems += check_themes(root if args else ROOT, theme_rels, tracked)
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(
-        f"{len(theme_rels)} sound themes checked: "
-        f"{errors} errors, {len(problems) - errors} warnings"
-    )
-    return 1 if errors else 0
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        if any(a.startswith("-") for a in args):
+            print("usage: python3 tools/check_sounds.py [THEME_OR_FILE ...]", file=sys.stderr)
+            return 0 if args in (["-h"], ["--help"]) else 2
+        root = Path.cwd() if args else ROOT
+        tracked: list[str] | None
+        if args:
+            theme_rels, problems = themes_from_args(root, args)
+            tracked = None
+            if not theme_rels and not problems:
+                print("no sounds/themes/vilna-* theme in the arguments", file=sys.stderr)
+                return 2
+        else:
+            problems = []
+            try:
+                tracked = tracked_theme_paths(ROOT)
+            except (OSError, subprocess.CalledProcessError) as err:
+                print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+                return 2
+            theme_rels = themes_from_tracked(tracked)
+            if not theme_rels:
+                print("no tracked sounds/themes/vilna-* themes found", file=sys.stderr)
+                return 2
+        if theme_rels:
+            problems += check_themes(root if args else ROOT, theme_rels, tracked)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(
+            f"{len(theme_rels)} sound themes checked: "
+            f"{errors} errors, {len(problems) - errors} warnings"
+        )
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

@@ -714,22 +714,26 @@ def check_site(site: Path) -> tuple[Report, int]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if args in (["-h"], ["--help"]):
-        print(USAGE)
-        return 0
-    if len(args) > 1 or any(a.startswith("-") for a in args):
-        print(USAGE, file=sys.stderr)
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        if args in (["-h"], ["--help"]):
+            print(USAGE)
+            return 0
+        if len(args) > 1 or any(a.startswith("-") for a in args):
+            print(USAGE, file=sys.stderr)
+            return 2
+        site = Path(args[0]) if args else ROOT / "site"
+        if not (site / "src" / "i18n").is_dir() or not (site / "public").is_dir():
+            print(f"{site}: no src/i18n and public folders\n{USAGE}", file=sys.stderr)
+            return 2
+        report, pages = check_site(site)
+        for problem in report.sorted_problems():
+            print(problem, file=sys.stderr)
+        print(f"{pages} pages checked: {report.errors} errors, {report.warnings} warnings")
+        return 1 if report.errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    site = Path(args[0]) if args else ROOT / "site"
-    if not (site / "src" / "i18n").is_dir() or not (site / "public").is_dir():
-        print(f"{site}: no src/i18n and public folders\n{USAGE}", file=sys.stderr)
-        return 2
-    report, pages = check_site(site)
-    for problem in report.sorted_problems():
-        print(problem, file=sys.stderr)
-    print(f"{pages} pages checked: {report.errors} errors, {report.warnings} warnings")
-    return 1 if report.errors else 0
 
 
 if __name__ == "__main__":

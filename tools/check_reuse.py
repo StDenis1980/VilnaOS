@@ -45,6 +45,7 @@ from __future__ import annotations
 import fnmatch
 import re
 import subprocess
+import os
 import sys
 import tomllib
 from collections.abc import Iterable, Sequence
@@ -1037,37 +1038,41 @@ def list_files(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else list(argv)
-    usage = "usage: python3 tools/check_reuse.py [--verbose] [--root DIR]"
-    if args in (["-h"], ["--help"]):
-        print(usage)
-        return 0
-    verbose = False
-    root = ROOT
-    while args:
-        arg = args.pop(0)
-        if arg == "--verbose":
-            verbose = True
-        elif arg == "--root" and args:
-            root = Path(args.pop(0))
-        else:
-            print(usage, file=sys.stderr)
-            return 2
     try:
-        files = list_files(root)
-    except (OSError, subprocess.CalledProcessError) as err:
-        print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+        args = sys.argv[1:] if argv is None else list(argv)
+        usage = "usage: python3 tools/check_reuse.py [--verbose] [--root DIR]"
+        if args in (["-h"], ["--help"]):
+            print(usage)
+            return 0
+        verbose = False
+        root = ROOT
+        while args:
+            arg = args.pop(0)
+            if arg == "--verbose":
+                verbose = True
+            elif arg == "--root" and args:
+                root = Path(args.pop(0))
+            else:
+                print(usage, file=sys.stderr)
+                return 2
+        try:
+            files = list_files(root)
+        except (OSError, subprocess.CalledProcessError) as err:
+            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+            return 2
+        if not files:
+            print("no files found", file=sys.stderr)
+            return 2
+        legacy = LEGACY if root == ROOT else frozenset()
+        problems = check_repo(root, files, legacy=legacy, verbose=verbose)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(f"{len(files)} files checked: {errors} errors, {len(problems) - errors} warnings")
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    if not files:
-        print("no files found", file=sys.stderr)
-        return 2
-    legacy = LEGACY if root == ROOT else frozenset()
-    problems = check_repo(root, files, legacy=legacy, verbose=verbose)
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(f"{len(files)} files checked: {errors} errors, {len(problems) - errors} warnings")
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

@@ -55,6 +55,7 @@ import fnmatch
 import posixpath
 import re
 import subprocess
+import os
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -141,10 +142,12 @@ LEGACY: frozenset[tuple[str, str, str]] = frozenset(
 UNIT_NAME = re.compile(r"[A-Za-z0-9:_.\\@-]+")
 INSTANCE_NAME = re.compile(r"[A-Za-z0-9:_.\\-]+")
 CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
-SOURCE_LINE = re.compile(r"^\s*Source\d*\s*:\s*(\S+)", re.M)
-SPEC_NAME = re.compile(r"^\s*Name\s*:\s*(\S+)", re.M)
-SPEC_PACKAGE_N = re.compile(r"^\s*%package\s+-n\s+(\S+)", re.M)
-SPEC_REQUIRES = re.compile(r"^\s*Requires\s*:\s*(\S+)", re.M)
+SOURCE_LINE = re.compile(r"^[ \t]*Source\d*[ \t]*:[ \t]*(\S+)", re.M)
+# Only spaces and tabs before and inside: ``\s*`` at a line start would run over every blank
+# line that follows, which makes a long run of blank lines quadratic.
+SPEC_NAME = re.compile(r"^[ \t]*Name[ \t]*:[ \t]*(\S+)", re.M)
+SPEC_PACKAGE_N = re.compile(r"^[ \t]*%package[ \t]+-n[ \t]+(\S+)", re.M)
+SPEC_REQUIRES = re.compile(r"^[ \t]*Requires[ \t]*:[ \t]*(\S+)", re.M)
 KIWI_PACKAGE = re.compile(r"<package\s+name\s*=\s*[\"']([^\"']+)[\"']")
 XML_COMMENT = re.compile(r"<!--.*?-->", re.S)
 YAML_NAME = re.compile(r"\bname\s*:\s*([^\s,}]+)")
@@ -754,40 +757,44 @@ def tracked_files(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    usage = "usage: python3 tools/check_presets.py [--table] [PRESET ...]"
-    options = [a for a in args if a.startswith("-")]
-    if any(o not in ("--table", "-h", "--help") for o in options):
-        print(usage, file=sys.stderr)
-        return 2
-    if "-h" in options or "--help" in options:
-        print(usage, file=sys.stderr)
-        return 0
     try:
-        tracked = tracked_files(ROOT)
-    except (OSError, subprocess.CalledProcessError) as err:
-        print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+        args = sys.argv[1:] if argv is None else argv
+        usage = "usage: python3 tools/check_presets.py [--table] [PRESET ...]"
+        options = [a for a in args if a.startswith("-")]
+        if any(o not in ("--table", "-h", "--help") for o in options):
+            print(usage, file=sys.stderr)
+            return 2
+        if "-h" in options or "--help" in options:
+            print(usage, file=sys.stderr)
+            return 0
+        try:
+            tracked = tracked_files(ROOT)
+        except (OSError, subprocess.CalledProcessError) as err:
+            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+            return 2
+        all_presets = [p for p in tracked if p.endswith(".preset")]
+        only = [a.replace("\\", "/") for a in args if not a.startswith("-")]
+        unknown = [a for a in only if a not in all_presets]
+        if unknown:
+            print(f"not a tracked preset file: {', '.join(unknown)}", file=sys.stderr)
+            return 2
+        if not all_presets:
+            print("no tracked preset files found", file=sys.stderr)
+            return 2
+        problems = check_files(ROOT, tracked, only)
+        for item in problems:
+            print(item, file=sys.stderr)
+        if "--table" in options:
+            print(presets_table(ROOT, tracked))
+        errors = sum(not p.warning for p in problems)
+        print(
+            f"{len(only or all_presets)} preset files checked: "
+            f"{errors} errors, {len(problems) - errors} warnings"
+        )
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    all_presets = [p for p in tracked if p.endswith(".preset")]
-    only = [a.replace("\\", "/") for a in args if not a.startswith("-")]
-    unknown = [a for a in only if a not in all_presets]
-    if unknown:
-        print(f"not a tracked preset file: {', '.join(unknown)}", file=sys.stderr)
-        return 2
-    if not all_presets:
-        print("no tracked preset files found", file=sys.stderr)
-        return 2
-    problems = check_files(ROOT, tracked, only)
-    for item in problems:
-        print(item, file=sys.stderr)
-    if "--table" in options:
-        print(presets_table(ROOT, tracked))
-    errors = sum(not p.warning for p in problems)
-    print(
-        f"{len(only or all_presets)} preset files checked: "
-        f"{errors} errors, {len(problems) - errors} warnings"
-    )
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

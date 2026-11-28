@@ -351,36 +351,40 @@ def tracked_files(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    usage = "usage: python3 tools/check_secrets.py [FILE ...]"
-    if any(a.startswith("-") for a in args):
-        print(usage, file=sys.stderr)
-        return 0 if args in (["-h"], ["--help"]) else 2
-    if args:
-        base = Path.cwd()
-        paths = args
-        missing = [a for a in args if not os.path.lexists(base / a)]
-        if missing:
-            print(f"no such file: {', '.join(missing)}", file=sys.stderr)
-            return 2
-    else:
-        base = ROOT
-        try:
-            paths = tracked_files(ROOT)
-        except (OSError, subprocess.CalledProcessError) as err:
-            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
-            return 2
-    findings, stats = check_files(base, paths)
-    findings = apply_legacy(findings, whole_repo=not args)
-    for item in findings:
-        print(item, file=sys.stderr)
-    errors = sum(not f.warning for f in findings)
-    print(
-        f"{stats['files']} files ({stats['scanned']} scanned, {stats['binary']} binary, "
-        f"{stats['links']} links or special, {stats['large']} too large): "
-        f"{errors} errors, {len(findings) - errors} warnings"
-    )
-    return 1 if errors else 0
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        usage = "usage: python3 tools/check_secrets.py [FILE ...]"
+        if any(a.startswith("-") for a in args):
+            print(usage, file=sys.stderr)
+            return 0 if args in (["-h"], ["--help"]) else 2
+        if args:
+            base = Path.cwd()
+            paths = args
+            missing = [a for a in args if not os.path.lexists(base / a)]
+            if missing:
+                print(f"no such file: {', '.join(missing)}", file=sys.stderr)
+                return 2
+        else:
+            base = ROOT
+            try:
+                paths = tracked_files(ROOT)
+            except (OSError, subprocess.CalledProcessError) as err:
+                print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+                return 2
+        findings, stats = check_files(base, paths)
+        findings = apply_legacy(findings, whole_repo=not args)
+        for item in findings:
+            print(item, file=sys.stderr)
+        errors = sum(not f.warning for f in findings)
+        print(
+            f"{stats['files']} files ({stats['scanned']} scanned, {stats['binary']} binary, "
+            f"{stats['links']} links or special, {stats['large']} too large): "
+            f"{errors} errors, {len(findings) - errors} warnings"
+        )
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

@@ -51,6 +51,7 @@ import ast
 import math
 import re
 import subprocess
+import os
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -864,36 +865,40 @@ def lists_tools(root: Path, rel: str) -> bool:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    usage = "usage: python3 tools/check_mcp_schemas.py [--strict] [FILE.py ...]"
-    strict = "--strict" in args
-    files = [a for a in args if a != "--strict"]
-    if any(a.startswith("-") for a in files):
-        print(usage, file=sys.stderr)
-        return 0 if files in (["-h"], ["--help"]) else 2
-    if any(not a.endswith(".py") for a in files):
-        print(f"every file must be a .py file\n{usage}", file=sys.stderr)
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        usage = "usage: python3 tools/check_mcp_schemas.py [--strict] [FILE.py ...]"
+        strict = "--strict" in args
+        files = [a for a in args if a != "--strict"]
+        if any(a.startswith("-") for a in files):
+            print(usage, file=sys.stderr)
+            return 0 if files in (["-h"], ["--help"]) else 2
+        if any(not a.endswith(".py") for a in files):
+            print(f"every file must be a .py file\n{usage}", file=sys.stderr)
+            return 2
+        if files:
+            base = Path.cwd()
+            paths = files
+        else:
+            base = ROOT
+            try:
+                paths = [p for p in tracked_sources(ROOT) if lists_tools(ROOT, p)]
+            except (OSError, subprocess.CalledProcessError) as err:
+                print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+                return 2
+            if not paths:
+                print("no tracked mcp/*/src/**/*.py files found", file=sys.stderr)
+                return 2
+        tools, servers, problems = check_files(base, paths)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning or strict for p in problems)
+        warnings = len(problems) - errors
+        print(f"{tools} tools in {servers} files checked: {errors} errors, {warnings} warnings")
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    if files:
-        base = Path.cwd()
-        paths = files
-    else:
-        base = ROOT
-        try:
-            paths = [p for p in tracked_sources(ROOT) if lists_tools(ROOT, p)]
-        except (OSError, subprocess.CalledProcessError) as err:
-            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
-            return 2
-        if not paths:
-            print("no tracked mcp/*/src/**/*.py files found", file=sys.stderr)
-            return 2
-    tools, servers, problems = check_files(base, paths)
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning or strict for p in problems)
-    warnings = len(problems) - errors
-    print(f"{tools} tools in {servers} files checked: {errors} errors, {warnings} warnings")
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

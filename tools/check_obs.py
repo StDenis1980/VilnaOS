@@ -54,6 +54,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import os
 import sys
 import xml.etree.ElementTree as ET
 from collections.abc import Iterable, Sequence
@@ -776,51 +777,55 @@ USAGE = "usage: python3 tools/check_obs.py [--tumbleweed-list FILE] [obs/package
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = list(sys.argv[1:] if argv is None else argv)
-    if args in (["-h"], ["--help"]):
-        print(USAGE)
-        return 0
-    list_file: str | None = None
-    if "--tumbleweed-list" in args:
-        at = args.index("--tumbleweed-list")
-        if at + 1 >= len(args):
+    try:
+        args = list(sys.argv[1:] if argv is None else argv)
+        if args in (["-h"], ["--help"]):
+            print(USAGE)
+            return 0
+        list_file: str | None = None
+        if "--tumbleweed-list" in args:
+            at = args.index("--tumbleweed-list")
+            if at + 1 >= len(args):
+                print(USAGE, file=sys.stderr)
+                return 2
+            list_file = args[at + 1]
+            del args[at : at + 2]
+        if any(a.startswith("-") for a in args):
             print(USAGE, file=sys.stderr)
             return 2
-        list_file = args[at + 1]
-        del args[at : at + 2]
-    if any(a.startswith("-") for a in args):
-        print(USAGE, file=sys.stderr)
-        return 2
-    try:
-        tracked = tracked_files(ROOT)
-    except (OSError, subprocess.CalledProcessError) as err:
-        print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
-        return 2
-    if list_file is not None:
         try:
-            rel = Path(list_file).resolve().relative_to(ROOT).as_posix()
-        except ValueError:
-            print(f"{list_file}: the list must be a file of the repository", file=sys.stderr)
+            tracked = tracked_files(ROOT)
+        except (OSError, subprocess.CalledProcessError) as err:
+            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
             return 2
-        if not (ROOT / rel).is_file():
-            print(f"{list_file}: no such file", file=sys.stderr)
+        if list_file is not None:
+            try:
+                rel = Path(list_file).resolve().relative_to(ROOT).as_posix()
+            except ValueError:
+                print(f"{list_file}: the list must be a file of the repository", file=sys.stderr)
+                return 2
+            if not (ROOT / rel).is_file():
+                print(f"{list_file}: no such file", file=sys.stderr)
+                return 2
+            list_file = rel
+        available = cs.package_folders(tracked)
+        folders = [a.rstrip("/") for a in args] or available
+        unknown = [f for f in folders if f not in available]
+        if unknown:
+            print(f"not a package folder with tracked files: {', '.join(unknown)}", file=sys.stderr)
             return 2
-        list_file = rel
-    available = cs.package_folders(tracked)
-    folders = [a.rstrip("/") for a in args] or available
-    unknown = [f for f in folders if f not in available]
-    if unknown:
-        print(f"not a package folder with tracked files: {', '.join(unknown)}", file=sys.stderr)
+        if not folders:
+            print(f"no package folders found in {PACKAGES}", file=sys.stderr)
+            return 2
+        problems = check_folders(ROOT, folders, tracked, tumbleweed_list=list_file)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(f"{len(folders)} packages checked: {errors} errors, {len(problems) - errors} warnings")
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    if not folders:
-        print(f"no package folders found in {PACKAGES}", file=sys.stderr)
-        return 2
-    problems = check_folders(ROOT, folders, tracked, tumbleweed_list=list_file)
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(f"{len(folders)} packages checked: {errors} errors, {len(problems) - errors} warnings")
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

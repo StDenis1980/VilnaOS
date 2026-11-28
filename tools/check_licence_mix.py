@@ -52,6 +52,7 @@ import ast
 import posixpath
 import re
 import subprocess
+import os
 import sys
 from collections import deque
 from collections.abc import Sequence
@@ -636,6 +637,10 @@ def package_roots(comp: sbom.Component, files: Sequence[str]) -> set[str]:
     return names
 
 
+# A Python source this large is not code a person wrote; parsing it would take minutes.
+MAX_PYTHON_BYTES = 4 * 2**20
+
+
 def imported_roots(source: str) -> list[tuple[int, str]]:
     """(line, top-level module) of every absolute import of a Python source."""
     tree = ast.parse(source)
@@ -677,6 +682,11 @@ def check_imports(
         if comp is None or not is_apache_part(comp, rules):
             continue
         try:
+            if (root / path).stat().st_size > MAX_PYTHON_BYTES:
+                report.problems.append(
+                    problem(path, "read", f"larger than {MAX_PYTHON_BYTES // 2**20} MiB, not read", True)
+                )
+                continue
             text = (root / path).read_text(encoding="utf-8")
             imports = imported_roots(text)
         except (OSError, UnicodeDecodeError, SyntaxError, ValueError) as err:
@@ -793,38 +803,42 @@ def tracked_files(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if args in (["-h"], ["--help"]):
-        print(USAGE)
-        return 0
-    if len(args) > 1 or any(a.startswith("-") for a in args):
-        print(USAGE, file=sys.stderr)
-        return 2
-    root = Path(args[0]) if args else ROOT
-    if not root.is_dir():
-        print(f"{root}: not a folder\n{USAGE}", file=sys.stderr)
-        return 2
     try:
-        files = tracked_files(root)
-    except (OSError, subprocess.CalledProcessError) as err:
-        print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+        args = sys.argv[1:] if argv is None else argv
+        if args in (["-h"], ["--help"]):
+            print(USAGE)
+            return 0
+        if len(args) > 1 or any(a.startswith("-") for a in args):
+            print(USAGE, file=sys.stderr)
+            return 2
+        root = Path(args[0]) if args else ROOT
+        if not root.is_dir():
+            print(f"{root}: not a folder\n{USAGE}", file=sys.stderr)
+            return 2
+        try:
+            files = tracked_files(root)
+        except (OSError, subprocess.CalledProcessError) as err:
+            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+            return 2
+        if not files:
+            print(f"{root}: no tracked files", file=sys.stderr)
+            return 2
+        report = check(root, files)
+        for item in report.problems:
+            print(item, file=sys.stderr)
+        if report.unknown:
+            print(f"third-party packages with an unknown licence: {len(report.unknown)}")
+            for (eco, name, version), locks in sorted(report.unknown.items()):
+                print(f"  {eco} {name} {version}  ({', '.join(sorted(locks))})")
+        warnings = len(report.problems) - report.errors
+        print(
+            f"{report.components} own components, {report.third_party} third-party packages: "
+            f"{report.errors} errors, {warnings} warnings"
+        )
+        return 1 if report.errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    if not files:
-        print(f"{root}: no tracked files", file=sys.stderr)
-        return 2
-    report = check(root, files)
-    for item in report.problems:
-        print(item, file=sys.stderr)
-    if report.unknown:
-        print(f"third-party packages with an unknown licence: {len(report.unknown)}")
-        for (eco, name, version), locks in sorted(report.unknown.items()):
-            print(f"  {eco} {name} {version}  ({', '.join(sorted(locks))})")
-    warnings = len(report.problems) - report.errors
-    print(
-        f"{report.components} own components, {report.third_party} third-party packages: "
-        f"{report.errors} errors, {warnings} warnings"
-    )
-    return 1 if report.errors else 0
 
 
 if __name__ == "__main__":

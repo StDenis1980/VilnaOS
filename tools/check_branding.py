@@ -1079,30 +1079,34 @@ def list_files(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    usage = "usage: python3 tools/check_branding.py [--root DIR]"
-    if args in (["-h"], ["--help"]):
-        print(usage, file=sys.stderr)
-        return 0
-    root = ROOT
-    if args:
-        if len(args) != 2 or args[0] != "--root":
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        usage = "usage: python3 tools/check_branding.py [--root DIR]"
+        if args in (["-h"], ["--help"]):
             print(usage, file=sys.stderr)
+            return 0
+        root = ROOT
+        if args:
+            if len(args) != 2 or args[0] != "--root":
+                print(usage, file=sys.stderr)
+                return 2
+            root = Path(args[1])
+            if not root.is_dir():
+                print(f"not a folder: {args[1]}", file=sys.stderr)
+                return 2
+        tracked = list_files(root)
+        if not tracked:
+            print("no files found", file=sys.stderr)
             return 2
-        root = Path(args[1])
-        if not root.is_dir():
-            print(f"not a folder: {args[1]}", file=sys.stderr)
-            return 2
-    tracked = list_files(root)
-    if not tracked:
-        print("no files found", file=sys.stderr)
+        problems, checked = check_repo(root, tracked)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(f"{checked} branding files checked: {errors} errors, {len(problems) - errors} warnings")
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    problems, checked = check_repo(root, tracked)
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(f"{checked} branding files checked: {errors} errors, {len(problems) - errors} warnings")
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

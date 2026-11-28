@@ -1109,27 +1109,31 @@ def tracked_files(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if any(a.startswith("-") for a in args):
-        print("usage: python3 tools/check_flatpak_defaults.py [FILE ...]", file=sys.stderr)
-        return 0 if args in (["-h"], ["--help"]) else 2
-    if args:
-        paths, root = args, Path.cwd()
-    else:
-        try:
-            paths, root = tracked_files(ROOT), ROOT
-        except (OSError, subprocess.CalledProcessError) as err:
-            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+    try:
+        args = sys.argv[1:] if argv is None else argv
+        if any(a.startswith("-") for a in args):
+            print("usage: python3 tools/check_flatpak_defaults.py [FILE ...]", file=sys.stderr)
+            return 0 if args in (["-h"], ["--help"]) else 2
+        if args:
+            paths, root = args, Path.cwd()
+        else:
+            try:
+                paths, root = tracked_files(ROOT), ROOT
+            except (OSError, subprocess.CalledProcessError) as err:
+                print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+                return 2
+        problems, checked = check_files(root, paths)
+        if not checked:
+            print("no Flatpak default files found", file=sys.stderr)
             return 2
-    problems, checked = check_files(root, paths)
-    if not checked:
-        print("no Flatpak default files found", file=sys.stderr)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(f"{checked} Flatpak files checked: {errors} errors, {len(problems) - errors} warnings")
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(f"{checked} Flatpak files checked: {errors} errors, {len(problems) - errors} warnings")
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":

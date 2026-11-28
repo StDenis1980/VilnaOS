@@ -49,6 +49,7 @@ from __future__ import annotations
 import posixpath
 import re
 import subprocess
+import os
 import sys
 from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field
@@ -424,8 +425,14 @@ def split_blocks(path: str, text: str, skip_planned: bool = True) -> list[Block]
     return blocks
 
 
+# Security documents are a few pages; a file this large is not one and would take minutes.
+MAX_DOC_BYTES = 2 * 2**20
+
+
 def read_text(root: Path, rel: str) -> tuple[str | None, str | None]:
     try:
+        if (root / rel).stat().st_size > MAX_DOC_BYTES:
+            return None, f"larger than {MAX_DOC_BYTES // 2**20} MiB, not read"
         data = (root / rel).read_bytes()
     except OSError as err:
         return None, f"cannot read the file: {err}"
@@ -659,42 +666,46 @@ def format_report(report: Report) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = list(sys.argv[1:] if argv is None else argv)
-    usage = "usage: python3 tools/check_security_docs.py [--report] [--strict] [--today YYYY-MM-DD]"
-    show_report = strict = False
-    today: date | None = None
-    while args:
-        arg = args.pop(0)
-        if arg in ("-h", "--help"):
-            print(usage)
-            return 0
-        if arg == "--report":
-            show_report = True
-        elif arg == "--strict":
-            strict = True
-        elif arg == "--today" and args:
-            today = parse_today(args.pop(0))
-            if today is None:
-                print(f"--today needs a date like 2026-11-27\n{usage}", file=sys.stderr)
-                return 2
-        else:
-            print(usage, file=sys.stderr)
-            return 2
     try:
-        tracked = tracked_files(ROOT)
-    except (OSError, subprocess.CalledProcessError) as err:
-        print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+        args = list(sys.argv[1:] if argv is None else argv)
+        usage = "usage: python3 tools/check_security_docs.py [--report] [--strict] [--today YYYY-MM-DD]"
+        show_report = strict = False
+        today: date | None = None
+        while args:
+            arg = args.pop(0)
+            if arg in ("-h", "--help"):
+                print(usage)
+                return 0
+            if arg == "--report":
+                show_report = True
+            elif arg == "--strict":
+                strict = True
+            elif arg == "--today" and args:
+                today = parse_today(args.pop(0))
+                if today is None:
+                    print(f"--today needs a date like 2026-11-27\n{usage}", file=sys.stderr)
+                    return 2
+            else:
+                print(usage, file=sys.stderr)
+                return 2
+        try:
+            tracked = tracked_files(ROOT)
+        except (OSError, subprocess.CalledProcessError) as err:
+            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+            return 2
+        report = check_files(ROOT, tracked, today)
+        for problem in report.problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning for p in report.problems)
+        warnings = sum(p.warning for p in report.problems)
+        if show_report:
+            print(format_report(report))
+        scanned = len(doc_paths(tracked))
+        print(f"{scanned} security and docs files checked: {errors} errors, {warnings} warnings")
+        return 1 if errors or (strict and warnings) else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    report = check_files(ROOT, tracked, today)
-    for problem in report.problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning for p in report.problems)
-    warnings = sum(p.warning for p in report.problems)
-    if show_report:
-        print(format_report(report))
-    scanned = len(doc_paths(tracked))
-    print(f"{scanned} security and docs files checked: {errors} errors, {warnings} warnings")
-    return 1 if errors or (strict and warnings) else 0
 
 
 if __name__ == "__main__":

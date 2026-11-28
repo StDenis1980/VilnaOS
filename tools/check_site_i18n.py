@@ -36,6 +36,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import os
 import sys
 from collections import Counter
 from collections.abc import Sequence
@@ -382,37 +383,41 @@ def tracked_catalogs(root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    usage = "usage: python3 tools/check_site_i18n.py [FILE ...]"
-    options = [a for a in args if a.startswith("-")]
-    if any(o not in ("-h", "--help") for o in options):
-        print(usage, file=sys.stderr)
-        return 2
-    if options:
-        print(usage, file=sys.stderr)
-        return 0
     try:
-        tracked = tracked_catalogs(ROOT)
-    except (OSError, subprocess.CalledProcessError) as err:
-        print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+        args = sys.argv[1:] if argv is None else argv
+        usage = "usage: python3 tools/check_site_i18n.py [FILE ...]"
+        options = [a for a in args if a.startswith("-")]
+        if any(o not in ("-h", "--help") for o in options):
+            print(usage, file=sys.stderr)
+            return 2
+        if options:
+            print(usage, file=sys.stderr)
+            return 0
+        try:
+            tracked = tracked_catalogs(ROOT)
+        except (OSError, subprocess.CalledProcessError) as err:
+            print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+            return 2
+        only = [a.replace("\\", "/") for a in args]
+        unknown = [a for a in only if a not in tracked]
+        if unknown:
+            print(f"not a tracked site i18n file: {', '.join(unknown)}", file=sys.stderr)
+            return 2
+        if not tracked:
+            print("no tracked site i18n files found", file=sys.stderr)
+            return 2
+        problems = check_files(ROOT, only or tracked)
+        for problem in problems:
+            print(problem, file=sys.stderr)
+        errors = sum(not p.warning for p in problems)
+        print(
+            f"{len(only or tracked)} catalogues checked: "
+            f"{errors} errors, {len(problems) - errors} warnings"
+        )
+        return 1 if errors else 0
+    except (OSError, ValueError) as err:  # no traceback for a bad name, argument or bytes
+        print(f"{os.path.basename(__file__)}: cannot check: {err}", file=sys.stderr)
         return 2
-    only = [a.replace("\\", "/") for a in args]
-    unknown = [a for a in only if a not in tracked]
-    if unknown:
-        print(f"not a tracked site i18n file: {', '.join(unknown)}", file=sys.stderr)
-        return 2
-    if not tracked:
-        print("no tracked site i18n files found", file=sys.stderr)
-        return 2
-    problems = check_files(ROOT, only or tracked)
-    for problem in problems:
-        print(problem, file=sys.stderr)
-    errors = sum(not p.warning for p in problems)
-    print(
-        f"{len(only or tracked)} catalogues checked: "
-        f"{errors} errors, {len(problems) - errors} warnings"
-    )
-    return 1 if errors else 0
 
 
 if __name__ == "__main__":
