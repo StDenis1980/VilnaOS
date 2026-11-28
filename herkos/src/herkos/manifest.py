@@ -202,12 +202,29 @@ class Manifest:
         """(known, level) of one command: the id itself, else its nearest group."""
         if command in self.commands:
             return True, self.commands[command]
-        parts = command.split(".")
+        # A group has at most 8 parts before its ".*": longer prefixes cannot
+        # match, and trying each of them took seconds on a long run of parts.
+        parts = command.split(".", 8)
         for n in range(len(parts) - 1, 0, -1):
             group = ".".join(parts[:n]) + _GROUP_SUFFIX
             if group in self.commands:
                 return True, self.commands[group]
         return False, None
+
+
+MAX_SUMMARY = 200
+MAX_DESCRIPTION = 1000
+# Shown to the person as written: no control, format or line-separator characters.
+_UNSHOWN = re.compile(
+    r"[\x00-\x1f\x7f-\x9f\u00ad\u061c\u180e\u200b-\u200f\u2028-\u202e\u2060-\u2069\ufeff]"
+)
+
+
+def _check_shown(text: str, limit: int, what: str) -> None:
+    if len(text) > limit:
+        raise ManifestError(f"{what} is longer than {limit} characters")
+    if _UNSHOWN.search(text):
+        raise ManifestError(f"{what} holds a control or invisible character")
 
 
 def is_command(value: object) -> bool:
@@ -225,6 +242,7 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
     description = data.get("description", "")
     if not isinstance(description, str):
         raise ManifestError(f"{source}: 'description' must be a string")
+    _check_shown(description, MAX_DESCRIPTION, f"{source}: 'description'")
     ops_data = data.get("operations")
     if not isinstance(ops_data, dict) or not ops_data:
         raise ManifestError(f"{source}: at least one [operations.<name>] is required")
@@ -263,6 +281,7 @@ def parse_manifest(data: Mapping[str, Any], source: str = "<manifest>") -> Manif
         summary = op.get("summary", name)
         if not isinstance(summary, str):
             raise ManifestError(f"{where}: 'summary' must be a string")
+        _check_shown(summary, MAX_SUMMARY, f"{where}: 'summary'")
         command_arg = op.get("command_arg")
         command_key = op.get("command_key")
         for key, value in (("command_arg", command_arg), ("command_key", command_key)):
@@ -344,6 +363,7 @@ def _parse_dbus(data: Any, where: str) -> tuple[DbusCall, ...]:
             or len(name) > 255
             or not _DBUS_NAME.fullmatch(name)
             or name.removesuffix(".*") == "org.freedesktop.DBus"
+            or (name.endswith(".*") and "org.freedesktop.DBus".startswith(name[:-1]))
         ):
             raise ManifestError(f"{at}: 'name' must be a well-known bus name")
         if not isinstance(path, str) or len(path) > 255 or not _DBUS_PATH.fullmatch(path):
@@ -419,6 +439,9 @@ def _parse_flatpak(data: dict[str, Any], program: str, where: str) -> Flatpak | 
             raise ManifestError(
                 f"{where}: 'command', 'fixed' and 'root_flags' go only with 'flatpak'"
             )
+        if program.startswith(EXT_PREFIX):
+            # The name of a Flatpak program's unit: taken, it hid the real one.
+            raise ManifestError(f"{where}: a program named {EXT_PREFIX}… needs 'flatpak'")
         return None
     app = data["flatpak"]
     if not isinstance(app, str) or len(app) > 255 or not _APP_ID.fullmatch(app):
@@ -460,6 +483,12 @@ class ManifestRegistry:
     def add(self, manifest: Manifest) -> None:
         if manifest.tool in self._by_tool:
             raise ManifestError(f"duplicate manifest for {manifest.tool}")
+        program = manifest.launch.program if manifest.launch else None
+        if program and any(
+            m.launch and m.launch.program == program for m in self._by_tool.values()
+        ):
+            # Another tool's program would run under this manifest's levels.
+            raise ManifestError(f"{manifest.tool}: the program {program} belongs to another tool")
         self._by_tool[manifest.tool] = manifest
 
     def get(self, tool: str) -> Manifest | None:

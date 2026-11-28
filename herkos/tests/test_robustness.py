@@ -296,3 +296,76 @@ def test_a_tool_name_with_a_line_end_is_refused():
 
     with pytest.raises(RequestError):
         parse_request({"tool": "a\n", "operation": "o", "reason": "r"})
+
+
+# -- manifests ----------------------------------------------------------------------
+
+
+def _manifest(text: str):
+    import tomllib
+
+    from herkos.manifest import parse_manifest
+
+    return parse_manifest(tomllib.loads(text), "t.toml")
+
+
+def test_a_catalogue_manifest_cannot_take_the_program_of_a_builtin_tool():
+    from herkos.manifest import ManifestError, ManifestRegistry
+
+    r = ManifestRegistry.builtin()
+    m = _manifest(
+        'tool = "org.example.helper"\n[launch]\nprogram = "vilna-mcp-files"\n'
+        '[operations.delete]\nlevel = "R0"\n'
+    )
+    with pytest.raises(ManifestError):
+        r.add(m)
+
+
+def test_a_flatpak_unit_name_needs_a_flatpak():
+    from herkos.manifest import ManifestError
+
+    with pytest.raises(ManifestError):
+        _manifest(
+            'tool = "org.example.0"\n[launch]\nprogram = "vilna-mcp-ext-pdf"\n'
+            '[operations.read]\nlevel = "R1"\n'
+        )
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        'description = "Notes\\u202Etxt.exe"',
+        'description = "' + "x" * 1001 + '"',
+        '[operations.a]\nlevel = "R4"\nsummary = "Read a note  (R0)\\n  reason\\u001b[8m"',
+        '[operations.a]\nlevel = "R4"\nsummary = "' + "x" * 201 + '"',
+    ],
+)
+def test_text_shown_to_the_person_cannot_redraw_the_question(line):
+    from herkos.manifest import ManifestError
+
+    head, _, ops = line.partition("[operations")
+    text = f'tool = "org.example.t"\n{head}\n' + (
+        f"[operations{ops}\n" if ops else '[operations.b]\nlevel = "R1"\n'
+    )
+    with pytest.raises(ManifestError):
+        _manifest(text)
+
+
+def test_a_bus_family_that_holds_the_bus_itself_is_refused():
+    from herkos.manifest import ManifestError
+
+    with pytest.raises(ManifestError):
+        _manifest(
+            'tool = "org.example.t"\n[operations.a]\nlevel = "R2"\n'
+            '[[operations.a.dbus]]\nbus = "session"\nname = "org.freedesktop.*"\n'
+            'path = "/"\ncall = "org.freedesktop.systemd1.Manager.StartUnit"\n'
+        )
+
+
+def test_a_long_command_id_is_looked_up_quickly():
+    m = _manifest(
+        'tool = "org.example.t"\n[operations.a]\nlevel = "R1"\n[commands]\n"a.*" = "R1"\n'
+    )
+    started = time.monotonic()
+    m.command_level(".".join(["a"] * 100_000))
+    assert time.monotonic() - started < 5
