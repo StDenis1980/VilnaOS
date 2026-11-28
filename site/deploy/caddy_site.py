@@ -9,6 +9,9 @@ not, so this turns both into Caddy directives. The spare host then sends
 the same security headers, the same /en/ redirect and the same 404 page
 per language as the main one. The certificate comes from lego
 (site/deploy/cert.sh), not from Caddy, so it exists before a failover.
+Let's Encrypt reaches lego's files through the _redirects rule for
+/.well-known/acme-challenge/ while statichost is active, and straight
+here after a failover.
 
 Stdlib only. Run by site/deploy/update.sh on the VPS, and by CI through
 tools/test_site_dns.py, so a header added to _headers cannot be missed.
@@ -25,6 +28,10 @@ PUBLIC = ROOT / "site" / "public"
 WEBROOT = "/var/www/vilnaos.com/current"
 CERT = "/etc/caddy/certs/vilnaos.com.crt"
 KEY = "/etc/caddy/certs/vilnaos.com.key"
+# lego --http.webroot writes the challenge files here (site/deploy/cert.sh).
+ACME_ROOT = "/var/www/acme-challenge"
+ACME_PATH = "/.well-known/acme-challenge/"
+ACME_HOST = "acme.vilnaos.com"
 ZONE = "vilnaos.com"
 
 
@@ -54,6 +61,8 @@ def redirects(public: Path) -> tuple[list[tuple[str, str]], list[str]]:
         if not parts or parts[0].startswith("#"):
             continue
         src, dst, code = parts
+        if src == ACME_PATH + "*" and dst == f"http://{ACME_HOST}{ACME_PATH}:splat":
+            continue  # served by the handle in render()
         if code == "301" and src.endswith("/*") and dst.endswith("/:splat"):
             moves.append((src[:-1], dst[: -len(":splat")]))
         elif code == "404" and (m := re.fullmatch(r"/([a-z]{2})/\*", src)):
@@ -83,6 +92,13 @@ def render(public: Path = PUBLIC) -> str:
     ]
     lines += [f"\t\t{name} {quote(value)}" for name, value in headers(public)]
     lines.append("\t}")
+    lines += [
+        f"\t@acme path {ACME_PATH}*",
+        "\thandle @acme {",
+        f"\t\troot * {ACME_ROOT}",
+        "\t\tfile_server",
+        "\t}",
+    ]
     for i, (src, dst) in enumerate(moves):
         lines += [
             f"\t@move{i} path_regexp move{i} ^{re.escape(src)}(.*)$",

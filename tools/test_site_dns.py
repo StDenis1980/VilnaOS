@@ -221,6 +221,19 @@ class SpareHost(unittest.TestCase):
         for lang in langs:
             self.assertIn(lang, self.text.split("@lang path_regexp", 1)[1].split("\n", 1)[0])
 
+    def test_acme_challenge_reaches_the_spare_host(self) -> None:
+        # statichost sends Let's Encrypt to ACME_HOST; that name must point at
+        # the spare host, and the spare host must serve the challenge files
+        # itself after a failover.
+        z = sd.load()
+        name = self.cs.ACME_HOST.removesuffix("." + z.zone)
+        acme = {r.value for r in z.records if r.name == name and r.type == "A"}
+        self.assertTrue(acme)
+        self.assertEqual(acme, set(z.site_hosts["ionos"]["A"]))
+        rules = (ROOT / "site" / "public" / "_redirects").read_text(encoding="utf-8")
+        self.assertIn(f"http://{self.cs.ACME_HOST}{self.cs.ACME_PATH}", rules)
+        self.assertIn(f"root * {self.cs.ACME_ROOT}", self.text)
+
     def test_unknown_redirect_rule_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as d:
             pub = Path(d)

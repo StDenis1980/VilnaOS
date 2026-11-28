@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# HTTP only: Let's Encrypt fetches lego's challenge files here for the
+# vilnaos.com certificate (site/deploy/cert.sh, ADR 0032). statichost sends
+# /.well-known/acme-challenge/* on vilnaos.com here (site/public/_redirects),
+# so the check works while the site is still on statichost. Installed by
+# site/deploy/install.sh as /etc/caddy/sites/acme.vilnaos.com.caddy.
+http://acme.vilnaos.com {
+	header -Server
+	@challenge path /.well-known/acme-challenge/*
+	handle @challenge {
+		root * /var/www/acme-challenge
+		file_server
+	}
+	handle {
+		respond 404
+	}
+}
