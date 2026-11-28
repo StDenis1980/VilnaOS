@@ -31,8 +31,20 @@ LANGUAGES=${VILNA_FLATPAK_LANGUAGES:-uk;en;es;pl;de;fr;it;ro;cs;lt;ca;gl;eu;pt}
 NM_ONLINE=${VILNA_FLATPAK_NM_ONLINE:-nm-online}
 TEMPFAIL=75
 
+# One application id per word; anything else (an option such as --user, a
+# typo) is left out with a word in the log, never passed to flatpak install.
 read_list() {
-    sed -e 's/#.*//' -e 's/[[:space:]]//g' "$1" | grep -v '^$' || true
+    local line word words
+    while IFS= read -r line || [ -n "$line" ]; do
+        read -ra words <<< "${line%%#*}"
+        for word in "${words[@]}"; do
+            if [[ $word =~ ^[A-Za-z_][A-Za-z0-9_-]*(\.[A-Za-z_][A-Za-z0-9_-]*)+$ ]]; then
+                printf '%s\n' "$word"
+            else
+                echo "$1: '$word' is not an application id, left out" >&2
+            fi
+        done
+    done < "$1"
 }
 
 # install_from REMOTE REPOFILE LIST
