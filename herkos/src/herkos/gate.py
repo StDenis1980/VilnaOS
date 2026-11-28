@@ -39,6 +39,8 @@ from herkos.request import ActionRequest, RequestError, parse_request
 from herkos.risk import Level
 from herkos.tools import ToolError, ToolRegistry
 
+LATE_GRACE = 1.0  # seconds a confirmer may take past confirm_timeout to hand its answer
+
 JOURNAL_MAX_RESOURCES = 50
 
 
@@ -466,10 +468,14 @@ class Gate:
             content=dict(request.arguments) if exact else None,
         )
         with self._ask_lock:
+            started = time.monotonic()
             try:
                 answer = self.confirmer.ask(question, self.config.confirm_timeout)
             except Exception:  # a broken dialog is a "no"
                 answer = Answer.FAILED
+            # The gate keeps the time itself: an answer after it ran out is no answer.
+            if time.monotonic() - started > self.config.confirm_timeout + LATE_GRACE:
+                answer = Answer.TIMED_OUT if answer is not Answer.FAILED else answer
         if answer is Answer.FAILED:
             return Outcome(
                 action_id, False, a.level, "denied_error", "the question could not be shown"
@@ -520,12 +526,22 @@ class Gate:
         except Exception as e:  # the tool must not take the gate down with it
             name = type(e).__name__
             result, ok, code, message = None, False, "tool_error", f"tool failed: {name}"
+        recorded = None
+        if ok:
+            try:
+                recorded = digest(result)
+            except (TypeError, ValueError):  # a lone surrogate, or not JSON at all
+                result, ok, code = None, False, "tool_error"
+                message = "the tool's answer cannot be recorded"
         keros = None
-        record: dict[str, Any] = {"ok": ok, "code": code, "result": digest(result) if ok else None}
-        if ok and op.returns_external:
+        record: dict[str, Any] = {"ok": ok, "code": code, "result": recorded}
+        # A tool's error text is its content too: it reaches Gloxi through the same checks.
+        external = op.returns_external and (ok or code == "tool_error")
+        if external:
             source = f"{request.tool}.{request.operation}"
             session.taint(source)
-            findings = session.keros.inspect(source, result, model=self.model_check)
+            seen = result if ok else {"error": message}
+            findings = session.keros.inspect(source, seen, model=self.model_check)
             keros = {
                 "source": source,
                 "untrusted": True,

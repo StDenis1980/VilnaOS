@@ -50,6 +50,23 @@ class Grant:
         return all(r is not None and str(r) in allowed for r in roots)
 
 
+def _grant(item: object) -> Grant:
+    """A grant from one entry of the file; ValueError when the entry has another shape."""
+    if not isinstance(item, dict):
+        raise ValueError(f"an entry is not an object: {item!r:.50}")
+    roots = item.get("roots")
+    # A string here would be split into letters, and "/" would cover everything.
+    if not isinstance(roots, list) or not all(isinstance(r, str) and r for r in roots):
+        raise ValueError(f"roots must be a list of folders, got {roots!r:.50}")
+    for key in ("id", "tool", "operation", "level", "duration"):
+        if not isinstance(item.get(key), str):
+            raise ValueError(f"{key} must be text")
+    created = item.get("created")
+    if isinstance(created, bool) or not isinstance(created, (int, float)):
+        raise ValueError("created must be a time")
+    return Grant(**{**item, "roots": tuple(roots)})
+
+
 class GrantStore:
     def __init__(self, path: Path, *, clock: Callable[[], float] = time.time) -> None:
         self.path = path
@@ -79,8 +96,7 @@ class GrantStore:
             raw = json.loads(self.path.read_text(encoding="utf-8"))
             grants = {}
             for item in raw.get("permissions", []):
-                item["roots"] = tuple(item["roots"])
-                g = Grant(**item)
+                g = _grant(item)
                 if g.duration == "permanent" and Level.parse(g.level) <= PERMANENT_MAX_LEVEL:
                     grants[g.id] = g
             return grants
@@ -159,7 +175,12 @@ class GrantStore:
         else:
             self._refresh()
             self._permanent[g.id] = g
-            self._save()
+            try:
+                self._save()
+            except BaseException:
+                # Not written, not given: the next such request asks again.
+                self._permanent.pop(g.id, None)
+                raise
         return g
 
     def revoke(self, grant_id: str) -> bool:

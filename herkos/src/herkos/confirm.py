@@ -9,12 +9,14 @@ not at all (every question is a "no"). No answer within the timeout is a "no".
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
 import json
 import os
 import select
 import subprocess
 import sys
+import termios
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
@@ -180,25 +182,31 @@ def content_lines(content: dict) -> list[str]:
     return lines
 
 
+def shown(text: str) -> str:
+    """One line a terminal prints as it is: control, escape and direction characters
+    are written out (``\\x1b``), so a reason or a file name cannot redraw the question."""
+    return "".join(c if c.isprintable() else f"\\u{ord(c):04x}" for c in text)
+
+
 def render(question: Question) -> str:
     lines = [
         "",
         f"─── {_('Herkos: Gloxi asks for permission')} ───",
-        f"  {question.summary}  ({question.level.name})",
-        "  " + _("Gloxi's reason: ") + question.reason,
+        f"  {shown(question.summary)}  ({question.level.name})",
+        "  " + _("Gloxi's reason: ") + shown(question.reason),
     ]
-    lines += [f"    • {readable_resource(r)}" for r in question.resources[:10]]
+    lines += [f"    • {shown(readable_resource(r))}" for r in question.resources[:10]]
     if len(question.resources) > 10:
         lines.append("    " + _("… and {n} more").format(n=len(question.resources) - 10))
     lines.append("  " + (_("Can be undone.") if question.undoable else _("Cannot be undone.")))
     for why in question.raises:
-        lines.append("  " + _("Riskier than usual: {why}.").format(why=why))
+        lines.append("  " + _("Riskier than usual: {why}.").format(why=shown(why)))
     if question.taint_sources:
-        src = ", ".join(question.taint_sources)
+        src = shown(", ".join(question.taint_sources))
         lines.append("  " + _("Untrusted content came from: {src}").format(src=src))
     if question.content is not None:
         lines.append("  " + _("Exactly this will be done:"))
-        lines += [f"    {line}" for line in content_lines(question.content)]
+        lines += [f"    {shown(line)}" for line in content_lines(question.content)]
     options = [_(_LABELS[c]) for c in question.choices] + [_("[n] deny")]
     lines.append("  " + "   ".join(options))
     return "\n".join(lines) + "\n> "
@@ -240,13 +248,20 @@ class Terminal:
         ready, _unused, _none = select.select([reader], [], [], timeout)
         if not ready:
             writer.write("\n  " + _("No answer: denied.") + "\n")
+            _forget_typed(reader)  # a late answer must not answer the next question
             return Answer.TIMED_OUT
         key = reader.readline().strip().lower()[:1]
+        _forget_typed(reader)  # nor anything typed after this answer
         answer = _KEYS.get(key, Answer.DENY)
         if answer not in question.choices:
             answer = Answer.DENY
         writer.write("  " + (_("Denied.") if answer is Answer.DENY else _("Allowed.")) + "\n")
         return answer
+
+
+def _forget_typed(reader: TextIO) -> None:
+    with contextlib.suppress(OSError, ValueError, termios.error):  # not a terminal
+        termios.tcflush(reader.fileno(), termios.TCIFLUSH)
 
 
 def question_to_json(question: Question) -> dict:
@@ -284,7 +299,9 @@ class Dialog:
             return Answer.TIMED_OUT  # run() kills the window on timeout
         except OSError:
             return Answer.FAILED
-        lines = done.stdout.decode(errors="replace").strip().splitlines()
+        if done.returncode != 0:  # a window that failed has not asked anybody
+            return Answer.FAILED
+        lines = done.stdout[-4096:].decode(errors="replace").strip().splitlines()
         try:
             answer = Answer(lines[-1].strip()) if lines else Answer.FAILED
         except ValueError:
