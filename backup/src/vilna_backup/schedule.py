@@ -9,6 +9,7 @@ reads back 5% of the data, see ``service.check``).
 from __future__ import annotations
 
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -45,12 +46,11 @@ def unit_word(text: str, *, exec_line: bool) -> str:
     """
     if any(ord(c) < 0x20 or ord(c) == 0x7F for c in text):
         raise ValueError(f"cannot put a control character in a unit file: {text!r}")
-    if text and all(c.isalnum() or c in "/._-+=:,@" for c in text):
-        return text
-    text = text.replace("\\", "\\\\").replace('"', '\\"').replace("%", "%%")
+    text = text.replace("\\", "\\\\").replace("%", "%%")
     if exec_line:
         text = text.replace("$", "$$")
-    return f'"{text}"'
+    # Quoted as the shell does: systemd splits such a word the same way.
+    return shlex.quote(text)
 
 
 def service_text(description: str, args: Sequence[str], *, keystore_env: str | None) -> str:

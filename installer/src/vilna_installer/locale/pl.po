@@ -445,6 +445,9 @@ msgstr "Dyski zmieniły się od czasu sprawdzenia (włożono lub wyjęto pendriv
 msgid "The chosen disk is not in the computer now. Choose the disk again."
 msgstr "Wybranego dysku nie ma teraz w komputerze. Wybierz dysk ponownie."
 
+msgid "Two disks have the same id. Unplug the one that is not meant for Vilna."
+msgstr "Dwa dyski mają ten sam identyfikator. Odłącz ten, który nie jest dla Vilna."
+
 msgid "This is the USB stick Vilna is running from. Choose another disk."
 msgstr "To jest pendrive, z którego działa Vilna. Wybierz inny dysk."
 

@@ -540,13 +540,13 @@ def validate(plan: Any, survey: dict[str, Any], *, stage: str = "alpha") -> dict
         r.error("not_a_plan", "", "the plan must be a JSON object")
         return _result(r)
     if stage not in STAGE_LAYOUTS:
-        r.error("bad_stage", "", f"unknown stage {stage!r}")
+        r.error("not_a_plan", "", f"unknown stage {stage!r}")
         return _result(r)
     try:
         _check_all(plan, survey, r, stage)
     except (TypeError, ValueError, OverflowError, AttributeError, KeyError) as e:
         # A plan edited by hand with a value of the wrong type: a problem, never a crash.
-        r.error("unreadable", "", f"the plan has a value of the wrong type ({type(e).__name__})")
+        r.error("not_a_plan", "", f"the plan has a value of the wrong type ({type(e).__name__})")
     return _result(r)
 
 

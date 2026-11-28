@@ -151,7 +151,7 @@ def validate_destination(kind: Any, location: Any) -> Destination:
     if kind == "local":
         if not location.startswith("/"):
             raise SettingsError("a disk destination is an absolute folder")
-        return Destination("local", clean_folder(location))
+        return Destination("local", os.path.normpath(location))
     if kind == "sftp":
         login, _, host = location.rpartition("@")
         if host.startswith("-") or location.startswith("-"):

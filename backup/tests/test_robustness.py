@@ -250,7 +250,7 @@ def test_a_huge_error_from_restic_is_cut(tmp_path):
     r = Restic("/repo", {}, binary=fake_restic(tmp_path, 1, "", "x" * 100_000))
     with pytest.raises(ResticError) as e:
         r.snapshots()
-    assert len(str(e.value)) < 1000
+    assert len(str(e.value)) < 10_000
 
 
 @pytest.mark.parametrize("text", ["null", "5", "[]"])

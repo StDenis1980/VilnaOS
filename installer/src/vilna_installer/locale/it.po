@@ -445,6 +445,9 @@ msgstr "I dischi sono cambiati da quando sono stati esaminati (una chiavetta USB
 msgid "The chosen disk is not in the computer now. Choose the disk again."
 msgstr "Il disco scelto ora non è nel computer. Scegli di nuovo il disco."
 
+msgid "Two disks have the same id. Unplug the one that is not meant for Vilna."
+msgstr "Due dischi hanno lo stesso identificativo. Scollega quello che non è per Vilna."
+
 msgid "This is the USB stick Vilna is running from. Choose another disk."
 msgstr "Questa è la chiavetta USB da cui funziona Vilna. Scegli un altro disco."
 

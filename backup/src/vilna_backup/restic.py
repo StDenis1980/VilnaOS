@@ -24,8 +24,8 @@ EXIT_PARTIAL = 3
 EXIT_NO_REPO = 10
 EXIT_LOCKED = 11
 EXIT_WRONG_PASSWORD = 12
-# A restic error message is a line or two; the rest of a huge one says nothing more.
-MAX_DETAIL = 500
+# A restic error message is a line or two; past this a huge one says nothing more.
+MAX_DETAIL = 8192
 
 
 class ResticError(Exception):
@@ -305,7 +305,7 @@ def _json_list(p: subprocess.CompletedProcess[str], what: str) -> list[dict[str,
         data = json.loads(p.stdout)
     except (ValueError, RecursionError):
         raise ResticError(f"restic {what} gave output that is not JSON") from None
-    if data is None:
+    if not data:  # null, 0, false, "": restic has nothing to list
         return []
     if not isinstance(data, list) or not all(isinstance(x, dict) for x in data):
         raise ResticError(f"restic {what} gave an unexpected answer")

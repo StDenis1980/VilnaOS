@@ -216,6 +216,7 @@ PROBLEM_TEXT = {
     "pin": "Type the start PIN for the disk.",
     "disks_changed": "The disks changed (a disk added or removed?). Choose the disk again.",
     "no_target": "The chosen disk is not in the computer now. Choose the disk again.",
+    "ambiguous_target": "Two disks have the same id. Unplug the one that is not meant for Vilna.",
     "boot_medium": "This is the USB stick Vilna is running from. Choose another disk.",
     "read_only": "This disk is read-only. Choose another disk.",
     "too_small": "There is not enough room: Vilna needs at least 40 GiB.",

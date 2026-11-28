@@ -445,6 +445,9 @@ msgstr "Los discos han cambiado desde que se revisaron (¿se ha conectado o quit
 msgid "The chosen disk is not in the computer now. Choose the disk again."
 msgstr "El disco elegido ya no está en el ordenador. Vuelve a elegir el disco."
 
+msgid "Two disks have the same id. Unplug the one that is not meant for Vilna."
+msgstr "Dos discos tienen el mismo identificador. Desconecte el que no es para Vilna."
+
 msgid "This is the USB stick Vilna is running from. Choose another disk."
 msgstr "Esta es la memoria USB desde la que funciona Vilna. Elige otro disco."
 

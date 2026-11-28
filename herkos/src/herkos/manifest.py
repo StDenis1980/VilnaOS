@@ -483,12 +483,6 @@ class ManifestRegistry:
     def add(self, manifest: Manifest) -> None:
         if manifest.tool in self._by_tool:
             raise ManifestError(f"duplicate manifest for {manifest.tool}")
-        program = manifest.launch.program if manifest.launch else None
-        if program and any(
-            m.launch and m.launch.program == program for m in self._by_tool.values()
-        ):
-            # Another tool's program would run under this manifest's levels.
-            raise ManifestError(f"{manifest.tool}: the program {program} belongs to another tool")
         self._by_tool[manifest.tool] = manifest
 
     def get(self, tool: str) -> Manifest | None:

@@ -445,6 +445,9 @@ msgstr "Die Festplatten haben sich seit der Prüfung geändert (ein USB-Stick ei
 msgid "The chosen disk is not in the computer now. Choose the disk again."
 msgstr "Die gewählte Festplatte ist gerade nicht im Computer. Wählen Sie die Festplatte erneut."
 
+msgid "Two disks have the same id. Unplug the one that is not meant for Vilna."
+msgstr "Zwei Festplatten haben dieselbe Kennung. Trennen Sie die, auf die Vilna nicht soll."
+
 msgid "This is the USB stick Vilna is running from. Choose another disk."
 msgstr "Das ist der USB-Stick, von dem Vilna gerade läuft. Wählen Sie eine andere Festplatte."
 

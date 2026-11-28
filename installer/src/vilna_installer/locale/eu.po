@@ -445,6 +445,9 @@ msgstr "Diskoak aldatu dira begiratu zirenetik (USB memoria bat sartu edo atera 
 msgid "The chosen disk is not in the computer now. Choose the disk again."
 msgstr "Aukeratutako diskoa ez dago orain ordenagailuan. Aukeratu diskoa berriro."
 
+msgid "Two disks have the same id. Unplug the one that is not meant for Vilna."
+msgstr "Bi diskok identifikatzaile bera dute. Deskonektatu Vilnarentzat ez dena."
+
 msgid "This is the USB stick Vilna is running from. Choose another disk."
 msgstr "Hau da Vilna exekutatzen ari den USB memoria. Aukeratu beste disko bat."
 

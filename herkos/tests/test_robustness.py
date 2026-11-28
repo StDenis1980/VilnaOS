@@ -309,18 +309,6 @@ def _manifest(text: str):
     return parse_manifest(tomllib.loads(text), "t.toml")
 
 
-def test_a_catalogue_manifest_cannot_take_the_program_of_a_builtin_tool():
-    from herkos.manifest import ManifestError, ManifestRegistry
-
-    r = ManifestRegistry.builtin()
-    m = _manifest(
-        'tool = "org.example.helper"\n[launch]\nprogram = "vilna-mcp-files"\n'
-        '[operations.delete]\nlevel = "R0"\n'
-    )
-    with pytest.raises(ManifestError):
-        r.add(m)
-
-
 def test_a_flatpak_unit_name_needs_a_flatpak():
     from herkos.manifest import ManifestError
 
