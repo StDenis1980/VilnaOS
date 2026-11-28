@@ -91,11 +91,16 @@ def _check_app(app: str) -> str:
     return app
 
 
+def _seconds(text: str) -> bool:
+    """A time the store keeps: ASCII digits only (not ² or ١٢٣)."""
+    return text.isascii() and text.isdigit()
+
+
 def _check_value(permission: str, value: list) -> list[str]:
     if not value or not all(isinstance(v, str) and len(v) <= 32 for v in value):
         raise ToolError("'previous' must be a list of short strings")
     if permission == "location":
-        if len(value) != 2 or value[0] not in ACCURACIES or not value[1].isdigit():
+        if len(value) != 2 or value[0] not in ACCURACIES or not _seconds(value[1]):
             raise ToolError("'previous' for location is [accuracy, time]")
     elif len(value) != 1 or value[0] not in WORDS:
         raise ToolError(f"'previous' must be one of {[[w] for w in WORDS]}")
@@ -146,8 +151,17 @@ class Portals:
     def _change(self, app: str, permission: str, allow: bool) -> dict:
         _check_app(app)
         before = self._lookup(permission).get(app)
+        if before:
+            try:
+                _check_value(permission, before)
+            except ToolError:
+                # restore would refuse it: a change now could not be undone.
+                raise ToolError(
+                    "the permission holds a value Gloxi cannot put back; "
+                    "the person can change it in Settings"
+                ) from None
         if permission == "location":
-            used = before[1] if before and len(before) == 2 and before[1].isdigit() else "0"
+            used = before[1] if before and len(before) == 2 and _seconds(before[1]) else "0"
             value = ["EXACT" if allow else "NONE", used]
         else:
             value = ["yes" if allow else "no"]

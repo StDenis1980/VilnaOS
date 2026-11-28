@@ -445,6 +445,9 @@ msgstr "Диски змінилися після огляду (вставили 
 msgid "The chosen disk is not in the computer now. Choose the disk again."
 msgstr "Вибраного диска зараз немає в комп'ютері. Виберіть диск ще раз."
 
+msgid "Two disks have the same id. Unplug the one that is not meant for Vilna."
+msgstr "Два диски мають однаковий ідентифікатор. Від'єднайте той, на який Vilna ставити не треба."
+
 msgid "This is the USB stick Vilna is running from. Choose another disk."
 msgstr "З цієї флешки зараз працює Vilna. Виберіть інший диск."
 

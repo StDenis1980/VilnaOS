@@ -178,6 +178,15 @@ def _raise_for_status(response: httpx.Response) -> None:
     raise ModelError(f"model endpoint returned HTTP {response.status_code}: {detail}")
 
 
+MAX_STREAM_CALLS = 64  # tool calls kept from one answer
+MAX_CALL_ID = 64
+
+
+def _list(value: object) -> list:
+    """A list the model sent, or nothing: ``null``, a string or a number are no list."""
+    return value if isinstance(value, list) else []
+
+
 def _parse_sse(lines: Iterator[str]) -> Iterator[str | ToolCall]:
     # Tool calls arrive in fragments keyed by index; hand them out whole at the end.
     calls: dict[int, dict[str, str]] = {}
@@ -189,22 +198,34 @@ def _parse_sse(lines: Iterator[str]) -> Iterator[str | ToolCall]:
             break
         try:
             chunk = json.loads(data)
-        except json.JSONDecodeError as exc:
+        except (ValueError, RecursionError) as exc:
             raise ModelError(f"bad stream chunk: {data[:200]}") from exc
+        if not isinstance(chunk, dict):
+            raise ModelError(f"bad stream chunk: {data[:200]}")
         if "error" in chunk:
-            raise ModelError(str(chunk["error"]))
-        for choice in chunk.get("choices", []):
-            delta = choice.get("delta") or {}
+            raise ModelError(str(chunk["error"])[:500])
+        for choice in _list(chunk.get("choices")):
+            delta = choice.get("delta") if isinstance(choice, dict) else None
+            if not isinstance(delta, dict):
+                continue
             piece = delta.get("content")
-            if piece:
+            if isinstance(piece, str) and piece:
                 yield piece
-            for part in delta.get("tool_calls") or []:
-                slot = calls.setdefault(part.get("index", 0), {"id": "", "name": "", "args": ""})
-                if part.get("id"):
-                    slot["id"] = part["id"]
-                fn = part.get("function") or {}
-                slot["name"] += fn.get("name") or ""
-                slot["args"] += fn.get("arguments") or ""
+            for part in _list(delta.get("tool_calls")):
+                if not isinstance(part, dict):
+                    continue
+                index = part.get("index", 0)
+                if type(index) is not int or not 0 <= index < MAX_STREAM_CALLS:
+                    continue
+                slot = calls.setdefault(index, {"id": "", "name": "", "args": ""})
+                if isinstance(part.get("id"), str) and part["id"]:
+                    slot["id"] = part["id"][:MAX_CALL_ID]
+                fn = part.get("function")
+                fn = fn if isinstance(fn, dict) else {}
+                if isinstance(fn.get("name"), str):
+                    slot["name"] += fn["name"]
+                if isinstance(fn.get("arguments"), str):
+                    slot["args"] += fn["arguments"]
     for index in sorted(calls):
         slot = calls[index]
         yield ToolCall(slot["id"] or f"call_{index}", slot["name"], slot["args"] or "{}")

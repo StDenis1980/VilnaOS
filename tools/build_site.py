@@ -232,7 +232,10 @@ def main(argv: list[str]) -> int:
     for rel in sorted(generated_paths(PUBLIC) | files.keys()):
         path = PUBLIC / rel
         want = files.get(rel)
-        have = path.read_text(encoding="utf-8") if path.is_file() else None
+        try:
+            have = path.read_bytes().decode("utf-8") if path.is_file() else None
+        except (OSError, UnicodeDecodeError):
+            have = "\0"  # not what the builder wrote: out of date, rewritten without --check
         if want == have:
             continue
         stale.append(rel)

@@ -1051,3 +1051,53 @@ fn reading_the_override_never_panics() {
         assert_eq!(Resolver::parse(r.name()), Ok(r));
     }
 }
+
+// ---------------------------------------------------- weaker spots found later
+
+#[test]
+fn a_link_named_by_digits_alone_is_not_one_resolvectl_reads_as_a_name() {
+    let routes = r#"[{"dev":"3","gateway":"192.0.2.1"},{"dev":".","gateway":"192.0.2.1"},{"dev":"eth0","gateway":"192.0.2.1"}]"#;
+    let links = vilna_netguard::portal_dns::default_links(&[routes]);
+    assert_eq!(links.into_iter().collect::<Vec<_>>(), ["eth0"]);
+    assert!(vilna_netguard::portal_dns::parse_relaxed("3\t\n..\n").is_empty());
+}
+
+#[test]
+fn a_clock_that_went_back_does_not_keep_the_kill_switch_open() {
+    use vilna_netguard::state::State;
+    let mut s = State {
+        enabled: true,
+        ..State::default()
+    };
+    s.open_portal(1_795_000_000, 300).expect("open");
+    assert!(s.portal_open(1_795_000_000));
+    assert!(!s.portal_open(1_795_000_000 - 86_400 * 30));
+    let forever = State::from_json(r#"{"enabled":true,"portal_until":18446744073709551615}"#);
+    assert!(!forever.portal_open(1_795_000_000));
+}
+
+#[test]
+fn a_group_broadcast_or_local_address_is_not_a_vpn_server() {
+    use vilna_netguard::endpoints::parse_wg_endpoints;
+    let text = "wg0\tK\t224.0.0.251:5353\nwg0\tK\t255.255.255.255:67\nwg0\tK\t127.0.0.1:53\n\
+                wg0\tK\t[ff02::1]:53\nwg0\tK\t1.2.3.4:5\textra\n";
+    assert!(parse_wg_endpoints(text).is_empty());
+    let mut many = "wg0\tK\t1.1.1.1:1\n".repeat(300);
+    many.push_str("wg0\tK\t2.2.2.2:2\n");
+    assert_eq!(
+        parse_wg_endpoints(&many).len(),
+        2,
+        "copies do not push out a server"
+    );
+}
+
+#[test]
+fn many_gateways_of_one_link_do_not_push_out_another_link() {
+    let mut routes: Vec<String> = (1..=8)
+        .map(|i| format!(r#"{{"dev":"eth0","gateway":"192.0.2.{i}"}}"#))
+        .collect();
+    routes.push(r#"{"dev":"wlan0","gateway":"198.51.100.1"}"#.to_owned());
+    let json = format!("[{}]", routes.join(","));
+    let links = vilna_netguard::portal_dns::default_links(&[&json]);
+    assert!(links.contains("wlan0"), "{links:?}");
+}

@@ -37,10 +37,26 @@ def command() -> list[str]:
     return [exe] if exe else [sys.executable, "-m", "vilna_backup"]
 
 
+def unit_word(text: str, *, exec_line: bool) -> str:
+    """One word in a systemd unit file, read back exactly as given.
+
+    systemd has its own rules, not the shell's: ``%`` starts a specifier and,
+    on an ExecStart line, ``$`` a variable. A line break would start a new
+    setting, so it is refused.
+    """
+    if any(ord(c) < 0x20 or ord(c) == 0x7F for c in text):
+        raise ValueError(f"cannot put a control character in a unit file: {text!r}")
+    text = text.replace("\\", "\\\\").replace("%", "%%")
+    if exec_line:
+        text = text.replace("$", "$$")
+    # Quoted as the shell does: systemd splits such a word the same way.
+    return shlex.quote(text)
+
+
 def service_text(description: str, args: Sequence[str], *, keystore_env: str | None) -> str:
     env = ""
     if keystore_env:
-        env = f"Environment={shlex.quote('VILNA_BACKUP_KEYSTORE=' + keystore_env)}\n"
+        env = f"Environment={unit_word('VILNA_BACKUP_KEYSTORE=' + keystore_env, exec_line=False)}\n"
     return (
         "# Written by vilna-backup; changes are overwritten.\n"
         "[Unit]\n"
@@ -49,7 +65,7 @@ def service_text(description: str, args: Sequence[str], *, keystore_env: str | N
         "\n"
         "[Service]\n"
         "Type=oneshot\n"
-        f"ExecStart={shlex.join([*command(), *args])}\n"
+        f"ExecStart={' '.join(unit_word(w, exec_line=True) for w in [*command(), *args])}\n"
         f"{env}"
         "Nice=10\n"
         "IOSchedulingClass=idle\n"

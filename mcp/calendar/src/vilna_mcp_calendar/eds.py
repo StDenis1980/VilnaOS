@@ -22,7 +22,17 @@ gi.require_version("ECal", "2.0")
 gi.require_version("ICalGLib", "3.0")
 from gi.repository import ECal, EDataServer, GLib, ICalGLib  # noqa: E402
 
-from vilna_mcp_calendar.calendar import Calendar, CalendarError, Draft, Event  # noqa: E402
+from vilna_mcp_calendar.calendar import (  # noqa: E402
+    MAX_DESCRIPTION,
+    MAX_ID,
+    MAX_LOCATION,
+    MAX_TITLE,
+    Calendar,
+    CalendarError,
+    Draft,
+    Event,
+    _cut,
+)
 
 CONNECT_TIMEOUT = 10  # seconds EDS may take to open a calendar
 # Instances read from one calendar before we stop: a daily event repeating
@@ -83,7 +93,10 @@ class EdsStore:
             found: list[Event] = []
 
             def take(comp, istart, iend, *_data, uid=uid, found=found) -> bool:
-                event = _event(uid, comp, istart, iend)
+                try:
+                    event = _event(uid, comp, istart, iend)
+                except Exception:  # noqa: BLE001 - one odd event never hides the others
+                    return True
                 if event is not None:
                     found.append(event)
                 return len(found) < MAX_INSTANCES
@@ -252,16 +265,19 @@ def _event(uid: str, comp, istart, iend) -> Event | None:
     if end is None or end <= start:
         end = start + (timedelta(days=1) if all_day else timedelta(0))
     tzid = "" if all_day or istart.is_utc() else (istart.get_tzid() or "")
+    tzid = _cut(tzid.removeprefix(_LIBICAL_ZONES), MAX_ZONE)
+    event_uid = comp.get_uid() or ""
+    # Texts are cut here, once, not in each of a few thousand repeats.
     return Event(
         calendar_id=uid,
-        title=comp.get_summary() or "",
+        title=_cut(comp.get_summary() or "", MAX_TITLE),
         start=start,
         end=end,
         all_day=all_day,
-        location=comp.get_location() or "",
-        description=comp.get_description() or "",
+        location=_cut(comp.get_location() or "", MAX_LOCATION),
+        description=_cut(comp.get_description() or "", MAX_DESCRIPTION),
         timezone=tzid,
-        uid=comp.get_uid() or "",
+        uid=event_uid if len(event_uid) <= MAX_ID else "",  # too long to name in a change
         recurring=any(comp.count_properties(kind) > 0 for kind in _REPEATS),
         attendees=comp.count_properties(ICalGLib.PropertyKind.ATTENDEE_PROPERTY) > 0,
     )
@@ -274,10 +290,21 @@ _REPEATS = (
 )
 
 
+_LIBICAL_ZONES = "/freeassociation.sourceforge.net/"
+MAX_ZONE = 100
+
+
 def _when(t) -> datetime | None:
     """An ICalGLib.Time as an aware datetime (all-day: midnight, local)."""
     if t is None or t.is_null_time() or not t.is_valid_time():
         return None
+    try:
+        return _datetime(t)
+    except (ValueError, OverflowError, OSError):  # 29 February 2027, year 0 or 10000
+        return None
+
+
+def _datetime(t) -> datetime:
     if t.is_date():
         d = date(t.get_year(), t.get_month(), t.get_day())
         return datetime(d.year, d.month, d.day).astimezone()

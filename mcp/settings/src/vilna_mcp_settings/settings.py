@@ -45,21 +45,40 @@ def _boolean(v: Any) -> bool:
 def _number(lo: float, hi: float) -> Callable[[Any], bool]:
     def check(v: Any) -> bool:
         return (
-            isinstance(v, int | float)
-            and not isinstance(v, bool)
-            and math.isfinite(v)
-            and lo <= v <= hi
+            isinstance(v, int | float) and not isinstance(v, bool) and _finite(v) and lo <= v <= hi
         )
 
     return check
 
 
+def _finite(v: int | float) -> bool:
+    try:
+        return math.isfinite(v)
+    except OverflowError:  # a whole number too large for a float
+        return False
+
+
 def _events(v: Any) -> bool:
+    return _names(v) and all(e in SOUND_EVENTS for e in v)
+
+
+def _names(v: Any) -> bool:
+    """Distinct, plain names; an undo may hold events a newer Shell wrote."""
     return (
         isinstance(v, list)
+        and len(v) <= MAX_NAMES
+        and all(isinstance(e, str) and 0 < len(e) <= MAX_NAME and e.isprintable() for e in v)
         and len(v) == len(set(v))
-        and all(isinstance(e, str) and e in SOUND_EVENTS for e in v)
     )
+
+
+def _short(name: object) -> str:
+    text = repr(name)
+    return text if len(text) <= MAX_NAME else text[: MAX_NAME - 1] + "…"
+
+
+MAX_NAMES = 100
+MAX_NAME = 100
 
 
 def _whole(lo: int, hi: int) -> Callable[[Any], bool]:
@@ -133,6 +152,7 @@ KEYS: dict[str, Key] = {
         SHELL, "disabled-sounds", _events, f"a list of distinct events from {SOUND_EVENTS}"
     ),
 }
+# What an undo may put back that a change itself may not ask for.
 
 
 class Backend(Protocol):
@@ -182,6 +202,7 @@ class Settings:
     def __init__(self, backend: Backend, sound: Backend | None = None) -> None:
         self.backend = backend
         self.sound = sound
+        self._boosted: set[int] = set()  # louder than 100 % volumes an undo may put back
 
     def _for(self, k: Key) -> Backend | None:
         return self.sound if k.schema == SOUND else self.backend
@@ -270,22 +291,42 @@ class Settings:
         current = self.backend.get(k.schema, k.key)
         if current is None:
             raise SettingsError("disabled_sounds is not available on this system")
-        # Keep the order of SOUND_EVENTS and drop names this version does not know.
+        # Keep the order of SOUND_EVENTS; names a newer Shell wrote stay as they were,
+        # so that the undo can put back exactly this list.
         off = (set(current) | {event}) if not enabled else (set(current) - {event})
-        return self._apply({"disabled_sounds": [e for e in SOUND_EVENTS if e in off]})
+        kept = [e for e in current if isinstance(e, str) and e not in SOUND_EVENTS]
+        value = [e for e in SOUND_EVENTS if e in off] + list(dict.fromkeys(kept))
+        return self._apply({"disabled_sounds": value}, {"disabled_sounds": self._sounds_check()})
+
+    def _sounds_check(self) -> Callable[[Any], bool]:
+        """Known events, and the unknown ones the key already holds."""
+        k = KEYS["disabled_sounds"]
+        current = self.backend.get(k.schema, k.key)
+        held = {e for e in current if isinstance(e, str)} if isinstance(current, list) else set()
+        return lambda v: _names(v) and all(e in SOUND_EVENTS or e in held for e in v)
 
     def restore(self, values: Any) -> dict:
         """Put keys back as they were (the undo of an earlier change)."""
         if not isinstance(values, dict) or not values:
             raise SettingsError("'values' must be a non-empty object")
-        return self._apply(values)
+        boosted = self._boosted
+        checks: dict[str, Callable[[Any], bool]] = {
+            # PipeWire lets the sound go past 100 % (GNOME's louder sound). An undo may put
+            # back exactly the louder volume a change here found, and nothing else.
+            "volume": lambda v: KEYS["volume"].check(v) or (type(v) is int and v in boosted)
+        }
+        if "disabled_sounds" in values:
+            checks["disabled_sounds"] = self._sounds_check()
+        return self._apply(values, checks)
 
-    def _apply(self, changes: Mapping[str, Any]) -> dict:
+    def _apply(
+        self, changes: Mapping[str, Any], checks: Mapping[str, Callable[[Any], bool]] | None = None
+    ) -> dict:
         for name, value in changes.items():
-            k = KEYS.get(name)
+            k = KEYS.get(name) if isinstance(name, str) else None
             if k is None:
-                raise SettingsError(f"unknown setting {name!r}")
-            if not k.check(value):
+                raise SettingsError(f"unknown setting {_short(name)}")
+            if not (checks or {}).get(name, k.check)(value):
                 raise SettingsError(f"{name} must be {k.allowed}")
         before: dict[str, Value] = {}
         for name in changes:
@@ -309,6 +350,9 @@ class Settings:
                 with contextlib.suppress(Exception):
                     self._for(k).set(k.schema, k.key, before[name])
             raise
+        old_volume = before.get("volume")
+        if type(old_volume) is int and old_volume > 100:
+            self._boosted.add(old_volume)
         return {
             "changed": dict(changes),
             "before": before,

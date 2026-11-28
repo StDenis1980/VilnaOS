@@ -14,6 +14,8 @@ use std::time::Duration;
 pub const DEFAULT_SERVER: &str = "https://reports.vilnaos.com";
 const TIMEOUT: Duration = Duration::from_secs(30);
 const MAX_ANSWER: u64 = 64 * 1024;
+/// The longest reason for a refusal that is kept and shown.
+const MAX_REASON: usize = 500;
 
 /// What the server said.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -35,8 +37,14 @@ pub trait Transport: Send + Sync {
 pub fn answer(status: u16, body: &[u8]) -> Answer {
     let json: serde_json::Value = serde_json::from_slice(body).unwrap_or_default();
     match status {
-        200 | 201 => Answer::Taken(json),
-        429 | 500..=599 => Answer::Later(format!("the server answered {status}")),
+        // A page that is not our JSON (a portal, a proxy) has not taken it.
+        200 | 201 if json.is_object() => Answer::Taken(json),
+        200 | 201 => Answer::Later("the server's answer was not a receipt".into()),
+        // Only the server's own "never" is for good; moved, not allowed or
+        // too early may change.
+        429 | 500..=599 | 204 | 300..=399 | 401 | 403 | 404 | 408 | 425 => {
+            Answer::Later(format!("the server answered {status}"))
+        }
         _ => {
             let why = json
                 .get("message")
@@ -46,7 +54,7 @@ pub fn answer(status: u16, body: &[u8]) -> Answer {
                     None => m.to_owned(),
                 })
                 .unwrap_or_else(|| format!("the server answered {status}"));
-            Answer::Refused(why)
+            Answer::Refused(why.chars().take(MAX_REASON).collect())
         }
     }
 }
@@ -133,7 +141,21 @@ mod tests {
     #[test]
     fn the_status_decides() {
         assert!(matches!(answer(201, b"{\"id\":\"x\"}"), Answer::Taken(_)));
-        assert!(matches!(answer(200, b""), Answer::Taken(_)));
+        assert!(matches!(answer(200, b"{}"), Answer::Taken(_)));
+        // Not a receipt (a portal's page): not taken, tried again later.
+        assert!(matches!(answer(200, b""), Answer::Later(_)));
+        assert!(matches!(answer(200, b"<html>"), Answer::Later(_)));
+        for moved_or_not_now in [204, 301, 302, 307, 401, 403, 404, 408, 425] {
+            assert!(
+                matches!(answer(moved_or_not_now, b""), Answer::Later(_)),
+                "{moved_or_not_now}"
+            );
+        }
+        let long = format!(r#"{{"message":"{}"}}"#, "x".repeat(70_000));
+        match answer(400, long.as_bytes()) {
+            Answer::Refused(why) => assert!(why.chars().count() <= 500),
+            other => panic!("{other:?}"),
+        }
         assert!(matches!(answer(429, b""), Answer::Later(_)));
         assert!(matches!(answer(503, b""), Answer::Later(_)));
         assert_eq!(

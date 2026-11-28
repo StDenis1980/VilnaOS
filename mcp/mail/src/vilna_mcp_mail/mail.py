@@ -67,6 +67,15 @@ AI_HEADERS = (
     ),
 )
 _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+# Signs that change how text looks without being seen: direction overrides,
+# zero-width spaces, and line breaks that only some readers break on.
+_INVISIBLE = re.compile("[\u200b\u200e\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]")
+_UNICODE_BREAKS = re.compile("[\u0085\u2028\u2029]")
+# Bytes of one header read before it is parsed: parsing many encoded words is
+# quadratic, and nothing past this is shown anyway (MAX_HEADER characters).
+MAX_RAW_HEADER = 8 * 1024
+# Years the clock can show; a later one ("9999") cannot be moved to a time zone.
+MAX_YEAR = 9000
 
 
 class MailError(Exception):
@@ -155,31 +164,74 @@ class Store(Protocol):
 
 
 def clip(text: str, limit: int) -> str:
-    text = _CONTROL.sub("", text)
+    text = _INVISIBLE.sub("", _CONTROL.sub("", _UNICODE_BREAKS.sub(" ", text)))
     return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
+def one_line(text: str, limit: int) -> str:
+    """A name from a message (a header, a file name) as one plain line."""
+    return clip(" ".join(_UNICODE_BREAKS.sub(" ", text).split()), limit)
+
+
+def cap_headers(raw: bytes) -> bytes:
+    """The message with every header cut to MAX_RAW_HEADER bytes before parsing."""
+    end = len(raw)
+    for sep in (b"\r\n\r\n", b"\n\n"):
+        i = raw.find(sep)
+        if i != -1:
+            end = min(end, i)
+    head, body = raw[:end], raw[end:]
+    if len(head) <= MAX_RAW_HEADER:
+        return raw
+    out: list[bytes] = []
+    used = 0
+    for line in head.splitlines(keepends=True):
+        folded = line[:1] in (b" ", b"\t")
+        if not folded:
+            used = 0
+        if used >= MAX_RAW_HEADER:
+            continue  # the rest of a header that is too long
+        keep = line[: MAX_RAW_HEADER - used]
+        if len(keep) < len(line) and not keep.endswith(b"\n"):
+            keep += b"\r\n"
+        used += len(keep)
+        out.append(keep)
+    return b"".join(out) + body
+
+
 def parse_headers(raw: bytes) -> Message:
-    return BytesParser(policy=policy.default).parsebytes(raw, headersonly=True)
+    return BytesParser(policy=policy.default).parsebytes(cap_headers(raw), headersonly=True)
+
+
+ADDRESS_HEADERS = ("from", "to", "cc", "reply-to", "sender", "bcc")
 
 
 def header(msg: Message, name: str) -> str:
     try:
         value = msg.get(name)
+        # An address list the parser had to guess at ("boss@example.com
+        # <x@example.org>" without quotes) may drop the real address: show it
+        # as written instead.
+        if name.lower() in ADDRESS_HEADERS and value is not None and value.defects:
+            value = next((v for k, v in msg.raw_items() if k.lower() == name.lower()), value)
+    except MemoryError:
+        raise
     except Exception:  # a header the parser cannot read: leave it out
         value = ""
-    return clip(" ".join(str(value or "").split()), MAX_HEADER)
+    return one_line(str(value or ""), MAX_HEADER)
 
 
 def when(msg: Message) -> str:
     raw = header(msg, "Date")
     try:
         moment = parsedate_to_datetime(raw)
-    except (TypeError, ValueError, IndexError):
+        if moment.year > MAX_YEAR:
+            return raw
+        if moment.tzinfo is None:
+            return moment.isoformat(timespec="minutes")
+        return moment.astimezone().isoformat(timespec="minutes")
+    except (TypeError, ValueError, IndexError, OverflowError, OSError):
         return raw
-    if moment.tzinfo is None:
-        return moment.isoformat(timespec="minutes")
-    return moment.astimezone().isoformat(timespec="minutes")
 
 
 def summary_dict(s: Summary) -> dict:
@@ -196,30 +248,70 @@ def summary_dict(s: Summary) -> dict:
     }
 
 
+_HIDDEN_STYLE = re.compile(
+    r"display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0+(\.0+)?\s*(px|pt|em|rem|%)?\s*(;|$)"
+    r"|opacity\s*:\s*0+(\.0+)?\s*(;|$)|(left|top|text-indent)\s*:\s*-\d{3,}",
+    re.IGNORECASE,
+)
+_VOID = frozenset(
+    {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source"}
+    | {"track", "wbr"}
+)
+_BODY_START = frozenset({"body", "p", "div", "table", "span", "a", "h1", "h2", "h3", "ul", "ol"})
+
+
 class _Text(HTMLParser):
-    """HTML to plain text: what a person would read, without scripts or styles."""
+    """HTML to plain text: what a person would read, without scripts, styles or hidden text.
+
+    Text the person cannot see (display:none, zero size, far off screen) is
+    left out too: it would reach the model only, a channel for instructions
+    the person never sees.
+    """
 
     BREAK = {"br", "p", "div", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote"}
+    SKIP = {"script", "style", "head", "title", "template"}
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.parts: list[str] = []
-        self._skip = 0
+        # Open elements, each with whether it hides what is inside.
+        self._open: list[tuple[str, bool]] = []
+
+    def _hidden(self) -> bool:
+        return any(h for _, h in self._open)
 
     def handle_starttag(self, tag: str, attrs: Any) -> None:
-        if tag in ("script", "style", "head", "title"):
-            self._skip += 1
-        elif tag in self.BREAK:
+        if tag in _BODY_START:
+            # An unclosed <head> must not hide the whole message.
+            while self._open and self._open[-1][0] in ("head", "title"):
+                self._open.pop()
+        if tag in self.BREAK and not self._hidden():
+            self.parts.append("\n")
+        if tag in _VOID:
+            return
+        values = {k: (v or "") for k, v in attrs}
+        hides = (
+            tag in self.SKIP
+            or "hidden" in values
+            or values.get("aria-hidden", "").lower() == "true"
+            or bool(_HIDDEN_STYLE.search(values.get("style", "")))
+        )
+        self._open.append((tag, hides))
+
+    def handle_startendtag(self, tag: str, attrs: Any) -> None:
+        if tag in self.BREAK and not self._hidden():
             self.parts.append("\n")
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in ("script", "style", "head", "title"):
-            self._skip = max(0, self._skip - 1)
-        elif tag in self.BREAK:
+        for i in range(len(self._open) - 1, -1, -1):
+            if self._open[i][0] == tag:
+                del self._open[i:]
+                break
+        if tag in self.BREAK and not self._hidden():
             self.parts.append("\n")
 
     def handle_data(self, data: str) -> None:
-        if not self._skip:
+        if not self._hidden():
             self.parts.append(data)
 
 
@@ -248,7 +340,30 @@ def _content(part: Message) -> str:
 
 
 def message_dict(raw: bytes, s: Summary, folder: str) -> dict:
-    msg = BytesParser(policy=policy.default).parsebytes(raw)
+    try:
+        return _message_dict(raw, s, folder)
+    except RecursionError:
+        # Parts nested a thousand deep: still say who wrote it and what about.
+        msg = parse_headers(raw)
+        return {
+            "uid": s.uid,
+            "folder": folder,
+            "from": header(msg, "From"),
+            "to": header(msg, "To"),
+            "cc": header(msg, "Cc"),
+            "reply_to": header(msg, "Reply-To"),
+            "subject": header(msg, "Subject"),
+            "date": when(msg),
+            "message_id": header(msg, "Message-ID"),
+            "unread": not s.seen,
+            "text": "[the message is built too deeply to read; open it in the mail program]",
+            "text_truncated": True,
+            "attachments": [],
+        }
+
+
+def _message_dict(raw: bytes, s: Summary, folder: str) -> dict:
+    msg = BytesParser(policy=policy.default).parsebytes(cap_headers(raw))
     body = None
     try:
         body = msg.get_body(preferencelist=("plain", "html"))
@@ -269,7 +384,7 @@ def message_dict(raw: bytes, s: Summary, folder: str) -> dict:
         payload = part.get_payload(decode=True)
         attachments.append(
             {
-                "name": clip(part.get_filename() or "", 255),
+                "name": one_line(part.get_filename() or "", 255),
                 "type": part.get_content_type(),
                 "size": len(payload) if isinstance(payload, bytes) else 0,
             }
@@ -302,8 +417,10 @@ def address(raw: Any) -> str:
     """``ola@example.org`` or ``Ola Nowak <ola@example.org>``, checked, as a header value."""
     if not isinstance(raw, str) or not raw.strip() or len(raw) > MAX_ADDRESS + 200:
         raise MailError("each recipient is an address such as ola@example.org")
-    if "\n" in raw or "\r" in raw or _CONTROL.search(raw):
+    if "\n" in raw or "\r" in raw or _CONTROL.search(raw) or _UNICODE_BREAKS.search(raw):
         raise MailError("an address cannot hold line breaks or control characters")
+    if _INVISIBLE.search(raw):
+        raise MailError("an address cannot hold invisible or direction-changing signs")
     if ("<" in raw or ">" in raw) and not _NAMED.fullmatch(raw.strip()):
         raise MailError(f"{raw!r} is not an email address")
     found = getaddresses([raw])
@@ -314,6 +431,9 @@ def address(raw: Any) -> str:
         raise MailError(f"{raw!r} is not an email address")
     if not name:
         return addr
+    if "@" in name:
+        # "boss@example.com" <evil@example.net> looks like one address and goes to another.
+        raise MailError(f"{raw!r}: the name before the address cannot look like an address")
     try:
         return str(HeaderAddress(display_name=name, addr_spec=addr))
     except (ValueError, IndexError) as e:
@@ -354,7 +474,12 @@ class Draft:
             raise MailError(f"at most {MAX_RECIPIENTS} recipients in one message")
         if not isinstance(subject, str) or len(subject) > MAX_SUBJECT:
             raise MailError(f"'subject' must be text of at most {MAX_SUBJECT} characters")
-        if "\n" in subject or "\r" in subject or _CONTROL.search(subject):
+        if (
+            "\n" in subject
+            or "\r" in subject
+            or _CONTROL.search(subject)
+            or _UNICODE_BREAKS.search(subject)
+        ):
             raise MailError("the subject is one line, without control characters")
         if not isinstance(text, str) or len(text) > MAX_BODY:
             raise MailError(f"'text' must be text of at most {MAX_BODY} characters")

@@ -984,5 +984,22 @@ class Main(Base):
         self.assertIn(" 0 errors", out)
 
 
+
+class WaysAroundTheRules(Base):
+    def test_a_permissive_domain_is_an_error(self) -> None:
+        self.assertErrors(check(te("type a_t;\npermissive a_t;\n")), "permissive")
+        cil = {"herkos/selinux/demo.cil": "; " + SPDX + "(type a_t)\n(typepermissive a_t)\n"}
+        self.assertErrors(check(cil), "permissive")
+
+    def test_sys_admin_behind_a_macro_is_an_error(self) -> None:
+        body = "define(`my_caps',`sys_admin')\ntype a_t;\nallow a_t self:capability my_caps;\n"
+        self.assertErrors(check(te(body)), "sys-admin")
+
+    def test_every_ioctl_number_is_a_wildcard(self) -> None:
+        body = "type a_t;\nallowxperm a_t self:file ioctl { 0x0000-0xffff };\n"
+        self.assertErrors(check(te(body)), "wildcard")
+        narrow = "type a_t;\nallowxperm a_t self:file ioctl { 0x8900-0x89ff };\n"
+        self.assertClean(check(te(narrow)))
+
 if __name__ == "__main__":
     unittest.main()

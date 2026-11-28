@@ -580,7 +580,7 @@ def check(
 
 def tracked_files(root: Path) -> list[str]:
     out = subprocess.run(
-        ["git", "ls-files"], cwd=root, check=True, capture_output=True, text=True
+        ["git", "ls-files"], cwd=root, check=True, capture_output=True, text=True, errors="surrogateescape"
     ).stdout
     return out.splitlines()
 
@@ -620,4 +620,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

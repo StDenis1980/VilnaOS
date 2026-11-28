@@ -343,18 +343,23 @@ def mentions_guard(tokens: Sequence[Token]) -> bool:
     )
 
 
-def paren_before(tokens: Sequence[Token], pairs: dict[int, int], brace: int) -> int | None:
-    """Index of the ``(`` of ``if (...) {`` for the brace at ``brace``; None for other blocks."""
+def paren_before(
+    tokens: Sequence[Token], openers: dict[int, int], brace: int
+) -> int | None:
+    """Index of the ``(`` of ``if (...) {`` for the brace at ``brace``; None for other blocks.
+    ``openers`` maps each closing bracket to its opening one."""
     if brace == 0 or tokens[brace - 1].text != ")":
         return None
-    for opening, closing in pairs.items():
-        if closing == brace - 1 and opening > 0 and tokens[opening - 1].text == "if":
-            return opening
+    opening = openers.get(brace - 1)
+    if opening is not None and opening > 0 and tokens[opening - 1].text == "if":
+        return opening
     return None
 
 
-def guarded_by_header(tokens: Sequence[Token], pairs: dict[int, int], brace: int) -> bool:
-    opening = paren_before(tokens, pairs, brace)
+def guarded_by_header(
+    tokens: Sequence[Token], pairs: dict[int, int], openers: dict[int, int], brace: int
+) -> bool:
+    opening = paren_before(tokens, openers, brace)
     return opening is not None and mentions_guard(tokens[opening : pairs[opening]])
 
 
@@ -399,16 +404,24 @@ def guarded_by_earlier_if(
 def check_yes_returns(path: str, tokens: Sequence[Token]) -> list[Problem]:
     """Heuristic: ``return polkit.Result.YES`` should follow a check of user or group."""
     pairs = match_pairs(tokens)
+    openers = {c: o for o, c in pairs.items()}
     problems = []
     wanted = ["return", "polkit", ".", "Result", ".", "YES"]
-    for i in range(len(tokens) - len(wanted) + 1):
+    # The braces open at each token, kept while walking once (asking every pair for every
+    # return took quadratic time).
+    open_braces: list[int] = []
+    for i in range(len(tokens)):
+        if tokens[i].text == "{" and i in pairs:
+            open_braces.append(i)
+        elif open_braces and i == pairs[open_braces[-1]]:
+            open_braces.pop()
         if texts(tokens[i : i + len(wanted)]) != wanted:
             continue
-        blocks = [(o, c) for o, c in pairs.items() if tokens[o].text == "{" and o < i < c]
-        blocks.sort(key=lambda b: b[0], reverse=True)  # innermost first
+        blocks = open_braces[::-1]  # innermost first
         guarded = any(
-            guarded_by_header(tokens, pairs, o) or guarded_by_earlier_if(tokens, pairs, o, i)
-            for o, _ in blocks
+            guarded_by_header(tokens, pairs, openers, o)
+            or guarded_by_earlier_if(tokens, pairs, o, i)
+            for o in blocks
         )
         if not guarded:
             problems.append(
@@ -574,6 +587,7 @@ def tracked_polkit_files(root: Path) -> list[str]:
         check=True,
         capture_output=True,
         text=True,
+        errors="surrogateescape",
     ).stdout
     return sorted(p for p in out.split("\0") if p)
 
@@ -607,4 +621,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

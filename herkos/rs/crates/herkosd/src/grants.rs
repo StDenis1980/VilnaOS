@@ -169,7 +169,7 @@ impl GrantStore {
     }
 
     fn load(&mut self) -> BTreeMap<String, Grant> {
-        let text = match fs::read_to_string(&self.path) {
+        let text = match crate::config::read_small(&self.path, crate::config::MAX_FILE_BYTES) {
             Ok(t) => t,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => return BTreeMap::new(),
             Err(e) => {

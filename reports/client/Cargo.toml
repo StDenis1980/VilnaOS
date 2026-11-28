@@ -19,7 +19,7 @@ serde_json.workspace = true
 # Random report ids (no device id, ADR 0018 section 2).
 getrandom = "0.3"
 # Who is on the other end of the control socket (SO_PEERCRED), without unsafe.
-rustix = { version = "1", default-features = false, features = ["std", "net"] }
+rustix = { version = "1", default-features = false, features = ["std", "net", "fs"] }
 
 [lints]
 workspace = true

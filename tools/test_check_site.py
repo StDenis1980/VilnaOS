@@ -233,6 +233,42 @@ class ExternalResources(unittest.TestCase):
         )
 
 
+class WaysAroundTheRules(unittest.TestCase):
+    def test_base_style_element_and_svg_use_are_reported(self) -> None:
+        cases = {
+            '<base href="https://evil.example/">': "<base> is not allowed",
+            "<style>@import url(https://evil.example/x.css);</style>": "<style> element",
+            '<svg><use href="https://evil.example/x.svg#a"/></svg>': "from another host",
+        }
+        for html, expected in cases.items():
+            with self.subTest(html=html):
+
+                def tweak(public: Path, html: str = html) -> None:
+                    put(public, "index.html", html_page("en", head=html + "\n"))
+
+                problems = build_and_check(tweak)
+                self.assertTrue(any(expected in p for p in problems), problems)
+
+    def test_rel_is_read_as_words_in_any_case(self) -> None:
+        def tweak(public: Path) -> None:
+            head = (
+                '<link rel="Alternate" hreflang="uk" href="https://vilnaos.example/uk/">\n'
+                '<link rel="alternate stylesheet" href="https://evil.example/x.css">\n'
+            )
+            put(public, "index.html", html_page("en", head=head))
+
+        self.assertEqual(
+            build_and_check(tweak),
+            ["index.html: loads https://evil.example/x.css from another host"],
+        )
+
+    def test_a_page_that_cannot_be_read_is_a_problem_not_a_traceback(self) -> None:
+        def tweak(public: Path) -> None:
+            (public / "index.html").write_bytes(b"\xff\xfe<html>")
+
+        self.assertEqual(build_and_check(tweak), ["index.html: is not valid UTF-8"])
+
+
 class LocalLinks(unittest.TestCase):
     def test_link_to_a_missing_file_is_reported(self) -> None:
         def tweak(public: Path) -> None:

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import posixpath
 import re
+import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -75,9 +76,9 @@ def parse_request(params: Any) -> ActionRequest:
         raise RequestError(f"unknown fields: {sorted(unknown)}")
 
     tool, operation = params.get("tool"), params.get("operation")
-    if not isinstance(tool, str) or not _NAME.match(tool):
+    if not isinstance(tool, str) or not _NAME.fullmatch(tool):
         raise RequestError("'tool' must be a tool name such as org.vilna.mcp.files")
-    if not isinstance(operation, str) or not _NAME.match(operation):
+    if not isinstance(operation, str) or not _NAME.fullmatch(operation):
         raise RequestError("'operation' must be an operation name")
 
     raw_resources = params.get("resources", [])
@@ -92,6 +93,9 @@ def parse_request(params: Any) -> ActionRequest:
         raise RequestError("'reason' (an explanation for the user) is required")
     if len(reason) > MAX_REASON:
         raise RequestError(f"'reason' is longer than {MAX_REASON} characters")
+    if not plain_reason(reason).translate(_BLANK).strip():
+        # Invisible characters only: the person would see an empty explanation.
+        raise RequestError("'reason' (an explanation for the user) is required")
 
     user_turn = None
     origin = params.get("origin", {})
@@ -114,3 +118,14 @@ def parse_request(params: Any) -> ActionRequest:
         user_turn=user_turn,
         arguments=dict(arguments),
     )
+
+
+# Letters that show as nothing: Hangul fillers, the blank Braille pattern.
+_BLANK = str.maketrans(dict.fromkeys("\u115f\u1160\u3164\uffa0\u2800", " "))
+
+
+def plain_reason(text: str) -> str:
+    """The reason as one plain line: control, format and line-separator characters
+    (escapes, bidi marks, zero-width) become spaces, so it cannot redraw a question."""
+    out = "".join(" " if unicodedata.category(c) in ("Cc", "Cf", "Zl", "Zp") else c for c in text)
+    return " ".join(out.split())

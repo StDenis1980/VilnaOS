@@ -132,7 +132,8 @@ const MAX_KEY: usize = 256;
 /// The model key from `path`: one line of URL-safe characters, so it can
 /// never end the header it goes into.
 pub fn read_key(path: &std::path::Path) -> Result<String, String> {
-    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let text =
+        crate::config::read_small(path, 4096).map_err(|e| format!("{}: {e}", path.display()))?;
     let key = text.trim();
     let fine = |c: char| c.is_ascii_alphanumeric() || "-._~+/=".contains(c);
     if key.is_empty() || key.len() > MAX_KEY || !key.chars().all(fine) {
@@ -143,6 +144,12 @@ pub fn read_key(path: &std::path::Path) -> Result<String, String> {
 
 /// Accept only http(s) URLs on this machine: content must not leave it.
 pub fn require_loopback(url: &str) -> Result<String, String> {
+    if url.chars().any(|c| c.is_control() || c.is_whitespace()) {
+        // A line break would end up in the HTTP request as a header of its own.
+        return Err(format!(
+            "the model URL holds a space or a control character: {url:?}"
+        ));
+    }
     let rest = url
         .strip_prefix("http://")
         .or_else(|| url.strip_prefix("https://"))
@@ -477,6 +484,18 @@ impl ModelCheck {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
+
+    #[test]
+    fn a_model_url_with_a_line_break_is_refused() {
+        for url in [
+            "http://127.0.0.1:8080/v1\r\nX-Injected: yes",
+            "http://127.0.0.1:8080/v1 x",
+            "http://127.0.0.1:8080/v\u{0}1",
+        ] {
+            assert!(require_loopback(url).is_err(), "{url:?}");
+        }
+        assert!(require_loopback("http://127.0.0.1:8080/v1").is_ok());
+    }
     use std::net::TcpListener;
     use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};

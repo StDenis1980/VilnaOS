@@ -54,6 +54,9 @@ class GSettingsBackend:
         settings, info = self._lookup(schema, key)
         if settings is None:
             raise SettingsError(f"{schema} {key} is not available on this system")
+        texts = value if isinstance(value, list) else [value]
+        if any(isinstance(t, str) and "\0" in t for t in texts):
+            raise SettingsError(f"{key}: a text cannot hold a NUL character")
         variant = GLib.Variant(info.get_value_type().dup_string(), value)
         if not info.range_check(variant):
             raise SettingsError(f"{key}: {value!r} is out of range on this system")

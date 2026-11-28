@@ -55,6 +55,7 @@ MAX_PROGRAM_SAID = 400
 # Function names: what llama-server and OpenAI-style APIs accept.
 MAX_FUNCTION_NAME = 64
 MAX_REASON = 500
+MAX_PARAMETERS_JSON = 4000
 # Small local models have small context windows.
 MAX_RESULT_CHARS = 6000
 
@@ -310,6 +311,8 @@ class FileTools:
             return ()  # not cached: the next turn tries again
         except HerkosError as exc:
             listed = None if exc.code == METHOD_NOT_FOUND else []
+        if listed is not None and not isinstance(listed, list):
+            listed = []  # an answer of another shape lists nothing
         if listed is None:
             names = set(LITE_OPERATIONS)
         else:
@@ -317,7 +320,7 @@ class FileTools:
                 op.get("name")
                 for t in listed
                 if isinstance(t, dict) and t.get("tool") == FILES_TOOL
-                for op in t.get("operations") or []
+                for op in _items(t.get("operations"))
                 if isinstance(op, dict)
             }
         self._offer = tuple(n for n in OPERATIONS if n in names)
@@ -506,10 +509,11 @@ class FileTools:
         # from calling a function it was never given.
         offered = self._offer if self._offer is not None else LITE_OPERATIONS
         if op is None or op.name not in offered:
-            return _error(op_name, None, f"there is no function {name}")
+            missing = f"there is no function {_short_name(name)}"
+            return _error(op_name[:MAX_FUNCTION_NAME], None, missing)
         try:
             args = json.loads(raw_arguments or "{}")
-        except json.JSONDecodeError:
+        except (ValueError, RecursionError):  # also nested too deep
             return _error(op.name, None, "the arguments are not valid JSON")
         if not isinstance(args, dict):
             return _error(op.name, None, "the arguments must be a JSON object")
@@ -522,18 +526,20 @@ class FileTools:
             return _error(op.name, args["path"], "use an absolute path in an allowed folder")
         arguments = {k: args[k] for k in op.params}
         arguments["path"] = str(path)
-        reason = str(args.get("reason") or "").strip() or f"Gloxi wants to {op.description.lower()}"
+        reason = plain_line(str(args.get("reason") or "")) or (
+            f"Gloxi wants to {op.description.lower()}"
+        )
 
         return self._request(op, path, arguments, reason[:MAX_REASON], user_turn)
 
     def _call_program(self, op: ProgramOperation, raw: str, user_turn: int) -> ToolOutcome:
         try:
             args = json.loads(raw or "{}")
-        except json.JSONDecodeError:
+        except (ValueError, RecursionError):  # also nested too deep
             return _error(op.name, None, "the arguments are not valid JSON")
         if not isinstance(args, dict):
             return _error(op.name, None, "the arguments must be a JSON object")
-        reason = str(args.pop("reason", "") or "").strip()
+        reason = plain_line(str(args.pop("reason", "") or ""))
         reason = reason or f"Gloxi wants to use {op.label}: {op.name}"
         # Herkos checks the files an action names against its resources: send
         # each resource argument as an absolute path, and the same path as a resource.
@@ -615,6 +621,12 @@ class FileTools:
             return program.external
         op = OPERATIONS.get(name.removeprefix("files_")) if name.startswith("files_") else None
         return op is not None and op.external
+
+    def not_run(self, name: str, why: str) -> ToolOutcome:
+        """A call Gloxi does not pass on to Herkos (chat.Conversation), and why."""
+        program = self._programs.get(name)
+        op_name = program.name if program is not None else name.removeprefix("files_")
+        return _error(op_name[:MAX_FUNCTION_NAME], None, f"not run: {why}")
 
     def not_yet(self, name: str, read: str) -> ToolOutcome:
         """A call made in the same answer as ``read``, before the model saw what
@@ -1019,6 +1031,27 @@ def _one_edit(a: str, b: str) -> bool:
     return any(long[:i] + long[i + 1 :] == short for i in range(len(long)))
 
 
+_INVISIBLE = re.compile("[\u061c\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]")
+
+
+def plain_line(text: str) -> str:
+    """One line as written: no line breaks, control or direction marks (the Herkos window)."""
+    text = _INVISIBLE.sub("", text)
+    return " ".join("".join(c if c.isprintable() else " " for c in text).split())
+
+
+def _own_tool(tool: Any) -> bool:
+    return isinstance(tool, str) and tool.startswith("org.vilna.")
+
+
+def _short_name(name: str) -> str:
+    return name if len(name) <= MAX_FUNCTION_NAME else name[: MAX_FUNCTION_NAME - 1] + "…"
+
+
+def _items(value: Any) -> list:
+    return value if isinstance(value, list) else []
+
+
 def _error(operation: str, path: str | None, message: str) -> ToolOutcome:
     payload = {"status": "error", "message": message}
     return ToolOutcome(operation, path, "error", "error", message, _json(payload))
@@ -1027,7 +1060,10 @@ def _error(operation: str, path: str | None, message: str) -> ToolOutcome:
 def _program_operations(listed: Sequence[Any]) -> dict[str, ProgramOperation]:
     """One function per operation of every listed tool that is not built in."""
     out: dict[str, ProgramOperation] = {}
-    for t in listed:
+    # Vilna's own programs first: one of another maker named like them
+    # (org.evil.settings) never takes their short names (settings_*).
+    own = [t for t in listed if isinstance(t, dict) and _own_tool(t.get("tool"))]
+    for t in own + [t for t in listed if t not in own]:
         if not isinstance(t, dict):
             continue
         tool = t.get("tool")
@@ -1035,7 +1071,7 @@ def _program_operations(listed: Sequence[Any]) -> dict[str, ProgramOperation]:
             continue
         label = _slug(tool.rsplit(".", 1)[-1]) or "program"
         about = str(t.get("description") or "")
-        for op in t.get("operations") or []:
+        for op in _items(t.get("operations")):
             p = _program_operation(tool, label, about, op, out)
             if p is not None:
                 out[p.function] = p
@@ -1064,13 +1100,15 @@ def _program_operation(
         "properties": {**properties, "reason": _REASON},
         "required": [*dict.fromkeys([*required, "reason"])],
     }
+    if len(json.dumps(parameters)) > MAX_PARAMETERS_JSON:
+        return None  # sent with every request: a program cannot fill the model's context
     function = _function_name(tool, label, name, taken)
     if function is None:
         return None
     # The function name already names the program, and the prompt says once
     # that these descriptions come from programs: the summary and what the
     # program says, without repeating the program's own description each time.
-    summary = str(op.get("summary") or name).strip().rstrip(".")
+    summary = plain_line(str(op.get("summary") or name))[:MAX_PROGRAM_SAID].rstrip(".")
     description = f"{summary}."
     said = str(op.get("server_description") or "").strip()[:MAX_PROGRAM_SAID]
     if said and said.casefold().rstrip(".") != summary.casefold():
@@ -1139,7 +1177,8 @@ def _program_words() -> dict[str, dict[str, tuple[str, ...]]]:
     for tool, entry in data.items():
         if not isinstance(entry, dict):
             continue
-        lists = {"": entry.get("words"), **(entry.get("operations") or {})}
+        operations = entry.get("operations")
+        lists = {"": entry.get("words"), **(operations if isinstance(operations, dict) else {})}
         out[tool] = {
             op: tuple(dict.fromkeys(_fold(w) for w in words if isinstance(w, str) and w))
             for op, words in lists.items()

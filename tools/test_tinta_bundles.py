@@ -252,6 +252,19 @@ class FirstBoot(unittest.TestCase):
         self.assertTrue(all(" flathub" not in c for c in self.calls()))
         self.assertTrue((self.state / "flatpak-defaults-all.done").exists())
 
+    def test_only_application_ids_reach_flatpak_install(self) -> None:
+        (self.share / "vilna.flatpakrepo").write_text("[Flatpak Repo]\n")
+        with (self.share / "flatpaks.list").open("a", encoding="utf-8") as f:
+            f.write("--user\n*\norg.example.One org.example.Two\n")
+        r = self.run_script()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        install = next(c for c in self.calls() if " --or-update flathub " in c).split()
+        self.assertNotIn("--user", install)
+        self.assertNotIn("*", install)
+        self.assertIn("org.example.One", install)
+        self.assertIn("org.example.Two", install)
+        self.assertIn("--user", r.stderr)
+
     def test_offline_is_not_a_failure(self) -> None:
         # Build15.6 VM: offline it must neither fail the unit nor call flatpak;
         # 75 makes systemd try again later (SuccessExitStatus, RestartForceExitStatus).

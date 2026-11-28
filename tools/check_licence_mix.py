@@ -692,6 +692,11 @@ def check_imports(
         except (OSError, UnicodeDecodeError, SyntaxError, ValueError) as err:
             report.problems.append(problem(path, "read", f"cannot read as Python: {err}", True))
             continue
+        except (RecursionError, MemoryError) as err:  # nested too deep for the parser
+            report.problems.append(
+                problem(path, "read", f"cannot read as Python: {type(err).__name__}", True)
+            )
+            continue
         in_tests = any(part in ("tests", "test") for part in PurePosixPath(path).parts)
         for line, name in imports:
             if name in gpl_names and name not in own_names:
@@ -797,7 +802,7 @@ def check(root: Path, files: Sequence[str]) -> Report:
 
 def tracked_files(root: Path) -> list[str]:
     out = subprocess.run(
-        ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True, text=True
+        ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True, text=True, errors="surrogateescape"
     ).stdout
     return sorted(p for p in out.split("\0") if p)
 
@@ -842,4 +847,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

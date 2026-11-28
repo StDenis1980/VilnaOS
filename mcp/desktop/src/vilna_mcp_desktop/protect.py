@@ -44,6 +44,23 @@ SECURITY = {
     "authenticator",
     "kwalletmanager5",
     "kwalletmanager6",
+    "kwalletd5",
+    "kwalletd6",
+    "pinentry-curses",
+    "pinentry-tty",
+    "pinentry-fltk",
+    "lxpolkit",
+    "mate-polkit",
+    "xfce-polkit",
+    "hyprpolkitagent",
+    "gnome-keyring-prompter",
+    "gnome-keyring-daemon",
+    "keepassxc.keepassxc",
+    "bitwarden-desktop",
+    "enpass",
+    "nordpass",
+    "dashlane",
+    "keeweb",
 }
 # Administration, where a click could go around Herkos: settings, software,
 # app permissions, disks, the settings database, extensions, terminals.
@@ -79,6 +96,26 @@ ADMINISTRATION = {
     "ghostty",
     "systemsettings",
     "discover",
+    # Wi-Fi passwords, processes, sessions, devices, printers, virtual machines.
+    "nm-connection-editor",
+    "gnome-tweaks",
+    "gnome-system-monitor",
+    "gnome-session-properties",
+    "blueman-manager",
+    "system-config-printer",
+    "virt-manager",
+    "gnome-boxes",
+    "xfce4-terminal",
+    "mate-terminal",
+    "qterminal",
+    "lxterminal",
+    "urxvt",
+    "rxvt",
+    "st",
+    "guake",
+    "yakuake",
+    "tilda",
+    "cool-retro-term",
 }
 FLATPAKS = {
     "org.gnome.seahorse.Application",
@@ -111,6 +148,9 @@ OWN_PREFIXES = ("herkos", "gloxi", "vilna", "io.github.stdenis1980.vilna")
 _INTERPRETER = re.compile(r"(python[0-9.]*|ruby[0-9.]*|perl|gjs|node|nodejs|bash|sh|dash)")
 _SCOPE = re.compile(r"app-flatpak-([A-Za-z0-9_.-]+?)-[0-9]+\.scope")
 MAX_ARGV = 8
+MAX_ARGS_READ = 64  # arguments looked through for a script or module
+# Python options that take the next argument as their value.
+_VALUE_OPTIONS = {"-W", "-X", "-Q", "--check-hash-based-pycs"}
 
 
 @dataclass(frozen=True)
@@ -139,9 +179,10 @@ def identify(pid: int, proc: Path = Path("/proc")) -> Process | None:
         exe = ""
     try:
         raw = (base / "cmdline").read_bytes()[:4096]
-        argv = tuple(a.decode("utf-8", "replace") for a in raw.split(b"\0") if a)[:MAX_ARGV]
+        args = tuple(a.decode("utf-8", "replace") for a in raw.split(b"\0") if a)[:MAX_ARGS_READ]
     except OSError:
-        argv = ()
+        args = ()
+    argv = args[:MAX_ARGV]
     uid = None
     try:
         for line in (base / "status").read_text(errors="replace").splitlines():
@@ -152,7 +193,9 @@ def identify(pid: int, proc: Path = Path("/proc")) -> Process | None:
         pass
     flatpak = None
     try:
-        m = _SCOPE.search((base / "cgroup").read_text(errors="replace"))
+        # systemd may write the scope's dashes escaped: app\x2dflatpak\x2d...
+        cgroup = (base / "cgroup").read_text(errors="replace").replace("\\x2d", "-")
+        m = _SCOPE.search(cgroup)
         flatpak = m.group(1) if m else None
     except OSError:
         pass
@@ -165,11 +208,18 @@ def identify(pid: int, proc: Path = Path("/proc")) -> Process | None:
     first = os.path.basename(argv[0]) if argv else ""
     names.add(first)
     if _INTERPRETER.fullmatch(exe) or _INTERPRETER.fullmatch(first):
-        rest = list(argv[1:])
+        rest = list(args[1:])
         while rest:
             a = rest.pop(0)
-            if a == "-m" and rest:
-                names.add(rest.pop(0))
+            if a in ("-m", "-c") and rest:
+                if a == "-m":
+                    names.add(rest.pop(0))
+                break
+            if a in _VALUE_OPTIONS and rest:
+                rest.pop(0)  # -W ignore, -X dev: the value is not the script
+                continue
+            if a.startswith("-") and not a.startswith("--") and a.endswith("m") and rest:
+                names.add(rest.pop(0))  # -Im module
                 break
             if not a.startswith("-"):
                 names.add(os.path.basename(a))

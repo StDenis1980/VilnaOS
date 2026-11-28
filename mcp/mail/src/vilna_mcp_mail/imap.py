@@ -32,6 +32,7 @@ from datetime import date
 from typing import Protocol
 
 from vilna_mcp_mail.mail import (
+    _CONTROL,
     MAX_FOLDERS,
     MAX_RAW,
     Account,
@@ -264,6 +265,9 @@ def search_terms(criteria: Criteria) -> tuple[list[str], bytes | None]:
         keys += ["SENTSINCE", imap_date(criteria.since)]
     if criteria.before:
         keys += ["SENTBEFORE", imap_date(criteria.before)]
+    for value in (criteria.sender, criteria.text):
+        if value and _CONTROL.search(value):
+            raise MailError("search words cannot hold control characters")
     if criteria.sender:
         pending.append(("FROM", criteria.sender))
     if criteria.text:
@@ -372,7 +376,10 @@ class ImapSmtpStore:
             for i, (name, _flags) in enumerate(listed):
                 messages = unread = None
                 if i < MAX_STATUS:
-                    typ, data = conn.status(quote(name), "(MESSAGES UNSEEN)")
+                    try:
+                        typ, data = conn.status(quote(name), "(MESSAGES UNSEEN)")
+                    except UnicodeEncodeError:  # a server name that is not 7-bit
+                        typ, data = "NO", []
                     line = data[0] if typ == "OK" and data and isinstance(data[0], bytes) else b""
                     m = re.search(rb"MESSAGES (\d+)", line)
                     u = re.search(rb"UNSEEN (\d+)", line)

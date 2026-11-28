@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
 from vilna_backup import keys
@@ -117,7 +118,8 @@ MONTHS = (
 
 
 def _day_number(t: time.struct_time) -> int:
-    return int(time.mktime((t.tm_year, t.tm_mon, t.tm_mday, 12, 0, 0, 0, 0, -1)) // 86400)
+    """The calendar day, as a count: the same in every time zone and on clock-change days."""
+    return date(t.tm_year, t.tm_mon, t.tm_mday).toordinal()
 
 
 def _parse_iso(text: str) -> float | None:

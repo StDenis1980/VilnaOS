@@ -14,6 +14,7 @@ and not as instructions (installer.md, end of section 3).
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import os
@@ -217,7 +218,7 @@ def _bool(value: Any) -> bool:
 def _int(value: Any) -> int:
     try:
         return int(value or 0)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):  # OverflowError: "Infinity"
         return 0
 
 
@@ -240,19 +241,32 @@ def parse_lsblk(
     by_id = by_id or {}
     boot = set(boot_names)
     disks = []
-    for dev in json.loads(text).get("blockdevices", []):
-        if dev.get("type") != "disk":
+    try:
+        devices = json.loads(text).get("blockdevices") or []
+    except (ValueError, RecursionError, AttributeError) as e:
+        raise MachineError(f"lsblk gave output that is not a list of disks: {e}") from None
+    if not isinstance(devices, list):
+        raise MachineError("lsblk gave output that is not a list of disks")
+    for dev in devices:
+        if not isinstance(dev, dict) or dev.get("type") != "disk":
             continue
         name = str(dev.get("name") or "")
         if not name or name.startswith(("loop", "zram", "ram", "sr")):
             continue
         children = dev.get("children") or []
+        if not isinstance(children, list):
+            children = []
         parts = []
         for child in children:
-            if child.get("type") != "part":
+            if not isinstance(child, dict) or child.get("type") != "part":
                 continue
             child_name = str(child.get("name") or "")
-            mounted = _mounted(child) or any(_mounted(c) for c in child.get("children") or [])
+            grandchildren = child.get("children") or []
+            if not isinstance(grandchildren, list):
+                grandchildren = []
+            mounted = _mounted(child) or any(
+                _mounted(c) for c in grandchildren if isinstance(c, dict)
+            )
             parts.append(
                 Partition(
                     id=_text(child.get("partuuid")) or child_name,
@@ -283,15 +297,33 @@ def parse_lsblk(
                 fstype=_text(dev.get("fstype")) if not parts else None,
             )
         )
-    return disks
+    return _unique_ids(disks)
+
+
+def _unique_ids(disks: list[Disk]) -> list[Disk]:
+    """Two sticks of one model with one serial get one id: tell them apart by device name.
+
+    The plan names its disk by id; an id shared by two disks would let the
+    installer erase whichever comes first in the list, and that order can
+    change between the plan and the install.
+    """
+    count: dict[str, int] = {}
+    for d in disks:
+        count[d.id] = count.get(d.id, 0) + 1
+    return [dataclasses.replace(d, id=f"{d.id}@{d.name}") if count[d.id] > 1 else d for d in disks]
+
+
+def _id_text(text: str, keep: str = "") -> str:
+    """Only letters, digits and ``._-`` (plus ``keep``): the model reads ids as names."""
+    return re.sub(rf"[^A-Za-z0-9._{re.escape(keep)}-]+", "_", text)
 
 
 def _stable_id(dev: dict[str, Any]) -> str | None:
     if wwn := _text(dev.get("wwn")):
-        return f"wwn-{wwn}"
+        return _id_text(f"wwn-{wwn}")
     model, serial = _text(dev.get("model")), _text(dev.get("serial"))
     if model and serial:
-        return re.sub(r"[^A-Za-z0-9._-]+", "_", f"{dev.get('tran') or 'disk'}-{model}_{serial}")
+        return _id_text(f"{dev.get('tran') or 'disk'}-{model}_{serial}")
     return None
 
 
@@ -311,7 +343,7 @@ def by_id_links(directory: Path = Path("/dev/disk/by-id")) -> dict[str, str]:
             continue
         current = links.get(target)
         if current is None or current.startswith(("wwn-", "nvme-eui.")):
-            links[target] = link.name
+            links[target] = _id_text(link.name, keep=":+")
     return links
 
 

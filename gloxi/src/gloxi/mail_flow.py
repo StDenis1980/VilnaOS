@@ -44,6 +44,7 @@ from gloxi.tools import (
     _folded_words,
     _has,
     _stems,
+    plain_line,
 )
 
 # How many of the latest emails the model chooses from.
@@ -709,7 +710,7 @@ class MailFlow:
             return None
         try:
             value = json.loads(text.strip().removeprefix("```json").removesuffix("```"))
-        except json.JSONDecodeError:
+        except (ValueError, RecursionError):  # also nested too deep
             return None
         return value if isinstance(value, dict) else None
 
@@ -719,7 +720,8 @@ def _checked(answer: dict[str, Any], *, fallback_title: str) -> Facts:
         value = answer.get(key)
         return value.strip()[:limit] if isinstance(value, str) else ""
 
-    title = text("title", MAX_TITLE) or fallback_title[:MAX_TITLE]
+    # A title and a place are one line in the Herkos window: no breaks or direction marks.
+    title = plain_line(text("title", MAX_TITLE) or fallback_title)[:MAX_TITLE]
     day, start_time, end_time = text("date", 10), text("start_time", 5), text("end_time", 5)
     day = _fixed_day(day, text("weekday", 10), answer.get("day_of_month"))
     start = end = ""
@@ -735,7 +737,8 @@ def _checked(answer: dict[str, Any], *, fallback_title: str) -> Facts:
                 if later > begins:
                     ends = later
             start, end = begins.strftime("%Y-%m-%dT%H:%M"), ends.strftime("%Y-%m-%dT%H:%M")
-    return Facts(title, start, end, text("location", MAX_TITLE), text("reply", MAX_REPLY))
+    place = plain_line(text("location", MAX_TITLE))
+    return Facts(title, start, end, place, text("reply", MAX_REPLY))
 
 
 # How far from the model's date the day it named may be: a week each way.

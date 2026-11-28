@@ -324,6 +324,7 @@ def tracked_metainfo_files(root: Path) -> list[str]:
         check=True,
         capture_output=True,
         text=True,
+        errors="surrogateescape",
     ).stdout
     return sorted(p for p in out.split("\0") if p)
 
@@ -333,6 +334,9 @@ def main(argv: list[str] | None = None) -> int:
     if any(a.startswith("-") for a in args):
         print("usage: python3 tools/check_metainfo.py [FILE.metainfo.xml ...]", file=sys.stderr)
         return 0 if args in (["-h"], ["--help"]) else 2
+    if any("\0" in a for a in args):
+        print("a file name cannot hold a NUL byte", file=sys.stderr)
+        return 2
     if args:
         paths = args
     else:
@@ -355,4 +359,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

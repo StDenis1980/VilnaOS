@@ -70,11 +70,24 @@ fn prepare_socket_dir(path: &Path) -> Result<(), String> {
     match fs::symlink_metadata(path) {
         Err(_) => Ok(()),
         Ok(m) if m.file_type().is_socket() => {
+            refuse_live(path)?;
             // Stale socket from an earlier run.
             fs::remove_file(path).map_err(|e| format!("{}: {e}", path.display()))
         }
         Ok(_) => Err(format!("{} exists and is not a socket", path.display())),
     }
+}
+
+/// A socket somebody still listens on is not stale: taking it over left the
+/// running herkosd without clients.
+fn refuse_live(path: &Path) -> Result<(), String> {
+    if std::os::unix::net::UnixStream::connect(path).is_ok() {
+        return Err(format!(
+            "{}: another herkosd is listening there",
+            path.display()
+        ));
+    }
+    Ok(())
 }
 
 fn encode(msg: &Value) -> Vec<u8> {
@@ -195,23 +208,32 @@ fn which(name: &str) -> Option<PathBuf> {
         .find(|p| fs::metadata(p).is_ok_and(|m| m.is_file() && m.mode() & 0o111 != 0))
 }
 
-fn start_tool(tools: &mut mcp::McpTools, name: &str, program: &str, args: Vec<String>) {
+/// A tool server that started, its name and the command that starts it again.
+type Started = (mcp::McpStdio, String, Vec<String>);
+
+/// A tool server starting in its own thread: one that does not answer holds
+/// up only itself, not the others and not the socket (a minute per tool before).
+fn start_tool(
+    name: &str,
+    program: &str,
+    args: Vec<String>,
+) -> Option<thread::JoinHandle<Option<Started>>> {
     let Some(path) = which(program) else {
         eprintln!("herkosd: {program} is not installed; no {name}");
-        return;
+        return None;
     };
     let mut command = vec![path.display().to_string()];
     command.extend(args);
-    match mcp::McpStdio::start(name, &command, mcp::CALL_TIMEOUT) {
-        Ok(t) => {
-            let name = name.to_owned();
-            tools.add_relaunching(
-                t,
-                Box::new(move || mcp::McpStdio::start(&name, &command, mcp::CALL_TIMEOUT)),
-            );
+    let name = name.to_owned();
+    Some(thread::spawn(move || {
+        match mcp::McpStdio::start(&name, &command, mcp::CALL_TIMEOUT) {
+            Ok(t) => Some((t, name, command)),
+            Err(e) => {
+                eprintln!("herkosd: {name} failed to start: {e}");
+                None
+            }
         }
-        Err(e) => eprintln!("herkosd: {name} failed to start: {e}"),
-    }
+    }))
 }
 
 /// The tools whose manifests say how to start them (ADR 0017), if installed.
@@ -228,6 +250,7 @@ fn start_tools(config: &config::Config) -> mcp::McpTools {
         .collect();
     let backups = config.state_dir.join("backups").join("files");
     let programs = programs::ProgramStore::new(&config.state_dir.join("programs.json"));
+    let mut starting = Vec::new();
     for manifest in manifests.iter() {
         if !manifests.is_builtin(&manifest.tool) && !programs.enabled(&manifest.tool) {
             eprintln!(
@@ -248,11 +271,19 @@ fn start_tools(config: &config::Config) -> mcp::McpTools {
             continue;
         }
         match mcp::launch_args(launch, &backups, &roots) {
-            Some(args) => start_tool(&mut tools, &manifest.tool, &launch.program, args),
+            Some(args) => starting.extend(start_tool(&manifest.tool, &launch.program, args)),
             None => eprintln!(
                 "herkosd: none of allowed_roots exists; no {}",
                 manifest.tool
             ),
+        }
+    }
+    for handle in starting {
+        if let Ok(Some((t, name, command))) = handle.join() {
+            tools.add_relaunching(
+                t,
+                Box::new(move || mcp::McpStdio::start(&name, &command, mcp::CALL_TIMEOUT)),
+            );
         }
     }
     tools
@@ -323,6 +354,7 @@ fn bind_public(path: &Path) -> Result<UnixListener, String> {
         if !m.file_type().is_socket() {
             return Err(format!("{} exists and is not a socket", path.display()));
         }
+        refuse_live(path)?;
         fs::remove_file(path).map_err(|e| format!("{}: {e}", path.display()))?;
     }
     let listener = UnixListener::bind(path).map_err(|e| format!("{}: {e}", path.display()))?;
@@ -539,5 +571,25 @@ fn main() -> ExitCode {
             eprintln!("herkosd: {e}");
             ExitCode::from(2)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_socket_somebody_listens_on_is_not_taken_over() {
+        let dir = std::env::temp_dir().join(format!("herkosd-live-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).expect("dir");
+        fs::set_permissions(&dir, fs::Permissions::from_mode(0o700)).expect("chmod");
+        let path = dir.join("s.sock");
+        let listener = UnixListener::bind(&path).expect("bind");
+        assert!(prepare_socket_dir(&path).is_err(), "a live socket");
+        assert!(path.exists());
+        drop(listener);
+        assert!(prepare_socket_dir(&path).is_ok(), "a stale socket");
+        let _ = fs::remove_dir_all(&dir);
     }
 }

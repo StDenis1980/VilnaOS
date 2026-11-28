@@ -23,17 +23,41 @@ def expected_licence(path: str) -> str:
     return "Apache-2.0" if path.startswith(APACHE_DIRS) else "GPL-3.0-or-later"
 
 
+def head_of(path: Path) -> list[str] | None:
+    """The first lines of a regular file, or ``None`` when it cannot be read."""
+    try:
+        if not path.is_file():
+            return None
+        with path.open("rb") as f:
+            data = f.read(4096)
+    except OSError:
+        return None
+    return data.decode("utf-8", errors="replace").splitlines()[:HEAD_LINES]
+
+
 def main() -> int:
     root = Path(__file__).resolve().parent.parent
-    files = subprocess.run(
-        ["git", "ls-files"], cwd=root, check=True, capture_output=True, text=True
-    ).stdout.splitlines()
+    try:
+        files = subprocess.run(
+            ["git", "ls-files", "-z"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+            errors="surrogateescape",
+        ).stdout.split("\0")
+    except (OSError, subprocess.CalledProcessError) as err:
+        print(f"cannot list files with git ls-files: {err}", file=sys.stderr)
+        return 2
     problems = []
     for rel in files:
         path = root / rel
-        if path.suffix not in SOURCE_SUFFIXES or path.name in SKIP:
+        if not rel or path.suffix not in SOURCE_SUFFIXES or path.name in SKIP:
             continue
-        head = path.read_text(encoding="utf-8", errors="replace").splitlines()[:HEAD_LINES]
+        head = head_of(path)
+        if head is None:
+            problems.append(f"{rel}: tracked, but not a file that can be read")
+            continue
         if not any(line.strip() for line in head):
             continue  # empty file
         want = f"SPDX-License-Identifier: {expected_licence(rel)}"
@@ -46,4 +70,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

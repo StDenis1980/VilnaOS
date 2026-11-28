@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import contextlib
 import datetime as dt
+import math
 import os
 import shutil
 import socket
@@ -69,9 +70,11 @@ def _pairing_until(key: dict[str, Any]) -> float | None:
     if not host.startswith(_UNTIL):
         return None
     try:
-        return float(host.removeprefix(_UNTIL))
+        until = float(host.removeprefix(_UNTIL))
     except ValueError:
         return None
+    # "until-nan" or "until-inf" would make a code that never runs out.
+    return until if math.isfinite(until) else None
 
 
 def _kind(key: dict[str, Any], s: Settings) -> str:
@@ -87,6 +90,16 @@ def _keys(b: Backup, s: Settings) -> list[dict[str, Any]]:
         return b.restic(s).keys()
     except ResticError as e:
         raise _error(f"cannot read the list of devices: {e}") from None
+
+
+def shown_name(name: Any) -> str:
+    """A device name as another device wrote it, safe to show: one short line of text.
+
+    A key added with restic directly never went through :func:`clean_name`.
+    """
+    text = "".join(c if c.isprintable() else " " for c in str(name or ""))
+    text = " ".join(text.split())[:MAX_NAME]
+    return text or "?"
 
 
 def clean_name(name: str) -> str:
@@ -116,9 +129,9 @@ def list_devices(b: Backup) -> list[dict[str, Any]]:
             "id": str(k.get("id", ""))[:MIN_ID_PREFIX],
             "kind": kind,
             "name": {"recovery": "recovery sheet", "pairing": "code to add a device"}.get(
-                kind, str(k.get("hostName") or "?")
+                kind, shown_name(k.get("hostName"))
             ),
-            "added": k.get("created"),
+            "added": shown_name(k.get("created"))[:40] if k.get("created") else None,
             "this_device": bool(k.get("current")),
         }
         if until is not None:
@@ -242,7 +255,7 @@ def block(b: Backup, key_id: str, *, stolen: bool = False) -> dict[str, Any]:
         b.restic(s).remove_key(k["id"])
     except ResticError as e:
         raise _error(f"cannot block the device: {e}") from None
-    name = str(k.get("hostName") or "?")
+    name = shown_name(k.get("hostName"))
     b._log("device-blocked", ok=True, key=k["id"][:MIN_ID_PREFIX], stolen=stolen)
     out: dict[str, Any] = {"blocked": k["id"][:MIN_ID_PREFIX], "name": name}
     if stolen:

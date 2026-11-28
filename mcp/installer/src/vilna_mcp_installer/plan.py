@@ -152,8 +152,8 @@ def load(path: Path) -> dict[str, Any]:
         plan = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return new_plan()
-    except (OSError, ValueError) as e:
-        raise PlanError(f"cannot read the plan {path}: {e}") from e
+    except (OSError, ValueError, RecursionError) as e:
+        raise PlanError(f"cannot read the plan {path}: {e}") from None
     if not isinstance(plan, dict):
         raise PlanError(f"the plan {path} is not a JSON object")
     plan.setdefault("version", VERSION)
@@ -247,7 +247,12 @@ def set_network(
         raise PlanError(f"'mode' must be one of {list(NETWORK)}")
     net: dict[str, Any] = {"mode": mode}
     if mode == "wifi":
-        net["wifi"] = _text(ssid, "ssid", limit=64)
+        # The name exactly as the network sends it: "My  Wifi" is another network.
+        if not isinstance(ssid, str) or not ssid.strip() or len(ssid) > 64:
+            raise PlanError("'ssid' must be a network name from the scan (at most 64)")
+        if any(unicodedata.category(c) == "Cc" for c in ssid):
+            raise PlanError("'ssid' must not have control characters")
+        net["wifi"] = ssid
         if secured:
             old = plan.get("network") or {}
             same = old.get("wifi") == net["wifi"] and old.get("secret") == ENTERED
@@ -273,6 +278,8 @@ def set_disk(
     if disk is None:
         ids = [d["id"] for d in survey.get("disks", []) if not d.get("boot_medium")]
         raise PlanError(f"no disk {target!r} in the survey; disks: {ids}")
+    if _disk_count(survey, disk["id"]) > 1:
+        raise PlanError(f"two disks have the id {disk['id']!r}; they cannot be told apart")
     if layout not in LAYOUTS:
         raise PlanError(f"'layout' must be one of {list(LAYOUTS)}")
     old = plan.get("disk") or {}
@@ -287,6 +294,8 @@ def set_disk(
         ("erase_partitions", erase_partitions),
     ):
         if value:
+            if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
+                raise PlanError(f"'{key}' must be a list of partition ids")
             bad = [v for v in value if v not in known]
             if bad:
                 raise PlanError(f"no partitions {bad} on {disk['id']}; partitions: {sorted(known)}")
@@ -494,7 +503,13 @@ def _find_disk(survey: dict[str, Any], disk_id: Any) -> dict[str, Any] | None:
     return None
 
 
+def _disk_count(survey: dict[str, Any], disk_id: Any) -> int:
+    return sum(1 for d in survey.get("disks", []) if d.get("id") == disk_id)
+
+
 def _size(n: int) -> str:
+    if n >= 1 << 70:  # beyond any disk; n / GiB would overflow a float for a huge n
+        return "more than 1 ZiB"
     return f"{n / GiB:.0f} GiB" if n >= GiB else f"{n / (1 << 20):.0f} MiB"
 
 
@@ -524,7 +539,19 @@ def validate(plan: Any, survey: dict[str, Any], *, stage: str = "alpha") -> dict
     if not isinstance(plan, dict):
         r.error("not_a_plan", "", "the plan must be a JSON object")
         return _result(r)
-    if plan.get("version") != VERSION:
+    if stage not in STAGE_LAYOUTS:
+        r.error("not_a_plan", "", f"unknown stage {stage!r}")
+        return _result(r)
+    try:
+        _check_all(plan, survey, r, stage)
+    except (TypeError, ValueError, OverflowError, AttributeError, KeyError) as e:
+        # A plan edited by hand with a value of the wrong type: a problem, never a crash.
+        r.error("not_a_plan", "", f"the plan has a value of the wrong type ({type(e).__name__})")
+    return _result(r)
+
+
+def _check_all(plan: dict[str, Any], survey: dict[str, Any], r: _Report, stage: str) -> None:
+    if type(plan.get("version")) is not int or plan.get("version") != VERSION:
         r.error("version", "version", f"only plan version {VERSION} is known")
     for key in plan:
         if key not in TOP_LEVEL:
@@ -539,7 +566,6 @@ def validate(plan: Any, survey: dict[str, Any], *, stage: str = "alpha") -> dict
         r.error(
             "confirmed_invalid", "confirmed_by_user", "a plan with problems cannot be confirmed"
         )
-    return _result(r)
 
 
 def _check_privacy(privacy: Any, r: _Report) -> None:
@@ -632,7 +658,13 @@ def _check_user(user: Any, r: _Report) -> None:
     ):
         r.missing.append("user")
         return
-    if not isinstance(user["full_name"], str) or not full_name_ok(user["full_name"]):
+    name = user["full_name"]
+    if (
+        not isinstance(name, str)
+        or not name.strip()
+        or len(name) > MAX_TEXT
+        or not full_name_ok(name)
+    ):
         r.error("bad_full_name", "user.full_name", NAME_HINT)
     if not isinstance(user["username"], str) or not USERNAME_RE.match(user["username"]):
         r.error("bad_username", "user.username", "invalid login name")
@@ -680,6 +712,13 @@ def _check_disk(plan: dict[str, Any], survey: dict[str, Any], r: _Report, stage:
     target = _find_disk(survey, disk["target"])
     if target is None:
         r.error("no_target", "disk.target", f"disk {disk['target']!r} is not in the computer now")
+        return
+    if _disk_count(survey, disk["target"]) > 1:
+        r.error(
+            "ambiguous_target",
+            "disk.target",
+            f"two disks have the id {disk['target']!r}; unplug the one not meant for Vilna",
+        )
         return
     if target.get("boot_medium"):
         r.error("boot_medium", "disk.target", "this is the disk Vilna is running from now")
@@ -943,7 +982,7 @@ def _shrink_of(disk: dict[str, Any], pid: str) -> int | None:
     shrink = disk.get("shrink")
     if isinstance(shrink, dict) and shrink.get("partition") == pid:
         to = shrink.get("to")
-        return to if isinstance(to, int) else None
+        return to if isinstance(to, int) and not isinstance(to, bool) else None
     return None
 
 
@@ -993,5 +1032,7 @@ def _check_migrate(
                 where,
                 "the files are on a partition that is erased; copy them to another disk first",
             )
-        elif other.get("largest_free", 0) < int(move.get("size") or 0):
+        elif not isinstance(move.get("size", 0), int) or isinstance(move.get("size"), bool):
+            r.error("bad_migrate", where, "'size' must be a whole number of bytes")
+        elif other.get("largest_free", 0) < (move.get("size") or 0):
             r.error("no_room_for_copy", where, "the other disk has no room for the copy")

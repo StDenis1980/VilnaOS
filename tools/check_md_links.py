@@ -72,8 +72,11 @@ DEFINITION = re.compile(
 )
 HTML_ANCHOR = re.compile(r"""<[A-Za-z][^<>]*?\b(?:name|id)\s*=\s*["']([^"']+)["']""")
 CODE_SPAN = re.compile(r"(?<!`)(`+)(?!`)((?:(?!\n[ \t]*\n).)+?)(?<!`)\1(?!`)", re.S)
-COMMENT = re.compile(r"<!--.*?-->", re.S)
 BLANK_LINE = re.compile(r"\n[ \t]*\n")
+# A destination nests at most this many parentheses, as in CommonMark's reference parser.
+MAX_PAREN_DEPTH = 32
+# The longest <destination> or title looked for; a longer one is not a link.
+MAX_DESTINATION = 4096
 
 
 @dataclass(frozen=True)
@@ -141,10 +144,26 @@ def strip_fences(text: str) -> str:
     return "\n".join(out)
 
 
+def blank_comments(text: str) -> str:
+    """Blank every ``<!-- ... -->``. One pass: an unclosed ``<!--`` ends the search, so
+    thousands of them take linear time (a regular expression tried each one to the end)."""
+    out: list[str] = []
+    pos = 0
+    while True:
+        start = text.find("<!--", pos)
+        end = text.find("-->", start + 4) if start != -1 else -1
+        if end == -1:
+            out.append(text[pos:])
+            return "".join(out)
+        out.append(text[pos:start])
+        out.append(blank(text[start : end + 3]))
+        pos = end + 3
+
+
 def prose(text: str) -> str:
     """Text where links are looked for: no fenced blocks, comments or inline code."""
     no_fences = strip_fences(text.replace("\r\n", "\n").replace("\r", "\n"))
-    no_comments = COMMENT.sub(lambda m: blank(m.group()), no_fences)
+    no_comments = blank_comments(no_fences)
     return CODE_SPAN.sub(lambda m: blank(m.group()), no_comments)
 
 
@@ -155,8 +174,8 @@ def parse_destination(text: str, start: int) -> tuple[str, int] | None:
     while i < n and text[i] in " \t\n":
         i += 1
     if i < n and text[i] == "<":
-        end = text.find(">", i)
-        if end == -1 or "\n" in text[i:end]:
+        end = text.find(">", i, i + MAX_DESTINATION)
+        if end == -1 or text.find("\n", i, end) != -1:
             return None
         target, i = text[i + 1 : end], end + 1
     else:
@@ -167,6 +186,8 @@ def parse_destination(text: str, start: int) -> tuple[str, int] | None:
                 continue
             if text[i] == "(":
                 depth += 1
+                if depth > MAX_PAREN_DEPTH:
+                    return None
             elif text[i] == ")":
                 if depth == 0:
                     break
@@ -177,7 +198,7 @@ def parse_destination(text: str, start: int) -> tuple[str, int] | None:
         i += 1
     if i < n and text[i] in "\"'(":
         closer = ")" if text[i] == "(" else text[i]
-        end = text.find(closer, i + 1)
+        end = text.find(closer, i + 1, i + MAX_DESTINATION)
         if end == -1:
             return None
         i = end + 1
@@ -188,19 +209,28 @@ def parse_destination(text: str, start: int) -> tuple[str, int] | None:
     return None
 
 
-def opening_bracket(text: str, close: int, floor: int) -> int | None:
-    """Index of the ``[`` that matches the ``]`` at ``close`` (not before ``floor``)."""
-    depth = 0
-    for i in range(close, floor - 1, -1):
-        if i > 0 and text[i - 1] == "\\" and (i < 2 or text[i - 2] != "\\"):
+def escaped_at(text: str, i: int) -> bool:
+    return i > 0 and text[i - 1] == "\\" and (i < 2 or text[i - 2] != "\\")
+
+
+def bracket_pairs(text: str, starts: Sequence[int]) -> dict[int, int]:
+    """For each ``]``, the ``[`` it closes within its paragraph, in one pass (scanning
+    back from every ``]`` took quadratic time on ``[a](`` repeated)."""
+    pairs: dict[int, int] = {}
+    stack: list[int] = []
+    paragraph = iter(starts)
+    next_start = next(paragraph, None)
+    for i, ch in enumerate(text):
+        while next_start is not None and i >= next_start:
+            stack.clear()
+            next_start = next(paragraph, None)
+        if ch not in "[]" or escaped_at(text, i):
             continue
-        if text[i] == "]":
-            depth += 1
-        elif text[i] == "[":
-            depth -= 1
-            if depth == 0:
-                return i
-    return None
+        if ch == "[":
+            stack.append(i)
+        elif stack:
+            pairs[i] = stack.pop()
+    return pairs
 
 
 def extract_links(text: str) -> list[Link]:
@@ -213,12 +243,11 @@ def extract_links(text: str) -> list[Link]:
         return bisect.bisect_left(newlines, pos) + 1
 
     links: list[Link] = []
+    pairs = bracket_pairs(clean, starts)
     pos = clean.find("](")
     while pos != -1:
         escaped = pos > 0 and clean[pos - 1] == "\\"
-        floor = starts[bisect.bisect_right(starts, pos) - 1] if starts else 0
-        floor = floor if floor <= pos else 0
-        opener = None if escaped else opening_bracket(clean, pos, floor)
+        opener = None if escaped else pairs.get(pos)
         parsed = parse_destination(clean, pos + 1) if opener is not None else None
         if parsed is not None and opener is not None:
             kind = "image" if opener > 0 and clean[opener - 1] == "!" else "link"
@@ -268,7 +297,7 @@ def slugify(text: str) -> str:
 def heading_slugs(text: str) -> list[str]:
     """The anchors GitHub gives to the headings of the text, in document order."""
     lines = strip_fences(text.replace("\r\n", "\n").replace("\r", "\n"))
-    lines = COMMENT.sub(lambda m: blank(m.group()), lines).split("\n")
+    lines = blank_comments(lines).split("\n")
     raws: list[str] = []
     for i, line in enumerate(lines):
         atx = ATX_HEADING.match(line)
@@ -423,7 +452,7 @@ def check_repo(root: Path, tracked: Sequence[str], only: Sequence[str] = ()) -> 
 
 def tracked_files(root: Path) -> list[str]:
     out = subprocess.run(
-        ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True, text=True
+        ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True, text=True, errors="surrogateescape"
     ).stdout
     return sorted(p for p in out.split("\0") if p)
 
@@ -458,4 +487,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

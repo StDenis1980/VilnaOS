@@ -2423,3 +2423,156 @@ fn from_a_hostile_journal_to_the_server_nothing_personal_goes_out() {
         }
     }
 }
+
+// ------------------------------------------- what once went wrong here --
+
+#[test]
+fn an_entry_another_program_wrote_with_the_coredump_id_is_no_crash() {
+    let rig = Rig::new("forged", None);
+    for forged in [
+        json!({"_UID": "1000", "_COMM": "evil", "COREDUMP_UID": "1001"}),
+        json!({"_UID": "1000", "_COMM": "systemd-coredum"}),
+        json!({"_UID": "0", "_COMM": "bash"}),
+    ] {
+        assert!(matches!(
+            rig.c.found(&entry(forged), NOW),
+            Ok(None) | Err(_)
+        ));
+    }
+    assert!(rig.c.spool.reports().is_empty());
+    let real = entry(json!({"_UID": "0", "_COMM": "systemd-coredum"}));
+    assert!(matches!(rig.c.found(&real, NOW), Ok(Some(_))));
+}
+
+#[test]
+fn an_answer_taken_back_during_a_round_stops_the_rest() {
+    struct Revoke(Arc<Server>, PathBuf);
+    impl Transport for Revoke {
+        fn post(&self, path: &str, body: &[u8]) -> Answer {
+            let _ = consent::write(&self.1, Consent::Never);
+            Wire(self.0.clone()).post(path, body)
+        }
+    }
+    let mut rig = Rig::new("revoked-mid-round", Some(Consent::Auto));
+    rig.c.transport = Box::new(Revoke(rig.server.clone(), rig.dir.path().to_path_buf()));
+    for i in 0..5u64 {
+        rig.wait("gedit", &format!("f{i}"), Some(1000), 10 + i);
+    }
+    assert_eq!(rig.c.send_waiting(NOW), 1);
+    assert_eq!(rig.server.count(), 1);
+}
+
+#[test]
+fn a_report_file_with_another_name_neither_blocks_the_others_nor_stays() {
+    let rig = Rig::new("misnamed", Some(Consent::Auto));
+    let old = Report::new(crash("gedit", "old"), Some(1000), 5);
+    let bytes = serde_json::to_vec(&old).unwrap_or_default();
+    write_raw(&rig.reports_dir(), "copy-of-report.json", &bytes);
+    rig.wait("gedit", "new", Some(1000), 50);
+    assert_eq!(rig.c.send_waiting(NOW), 1);
+    assert_eq!(rig.server.count(), 1);
+    let now = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs());
+    assert!(rig.c.spool.prune(now + KEEP + DAY).is_ok());
+    assert!(!rig.reports_dir().join("copy-of-report.json").exists());
+}
+
+#[test]
+fn a_named_pipe_in_the_queue_does_not_hold_the_collector() {
+    let rig = Rig::new("fifo", None);
+    let id = rig.wait("gedit", "f", Some(1000), 10);
+    let fifo = rig.reports_dir().join("x.json");
+    let made = std::process::Command::new("mkfifo").arg(&fifo).status();
+    assert!(made.is_ok_and(|s| s.success()));
+    let dir = rig.state_dir();
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let _ = tx.send(open_spool(&dir).reports().len());
+    });
+    assert_eq!(rx.recv_timeout(Duration::from_secs(10)).ok(), Some(1));
+    // A pipe at a report's own name is no report either.
+    assert!(std::fs::remove_file(rig.reports_dir().join(format!("{id}.json"))).is_ok());
+    let at_name = rig.reports_dir().join(format!("{id}.json"));
+    let made = std::process::Command::new("mkfifo").arg(&at_name).status();
+    assert!(made.is_ok_and(|s| s.success()));
+    let dir = rig.state_dir();
+    let (tx, rx) = std::sync::mpsc::channel();
+    let wanted = id.clone();
+    std::thread::spawn(move || {
+        let _ = tx.send(open_spool(&dir).get(&wanted).is_none());
+    });
+    assert_eq!(rx.recv_timeout(Duration::from_secs(10)).ok(), Some(true));
+}
+
+#[test]
+fn a_link_put_where_a_save_writes_first_is_not_followed() {
+    let rig = Rig::new("tmp-link", None);
+    let victim = rig.dir.path().join("victim.txt");
+    write_raw(rig.dir.path(), "victim.txt", b"precious");
+    let r = Report::new(crash("gedit", "f"), Some(1000), 5);
+    let tmp = rig
+        .reports_dir()
+        .join(format!(".{}.json.{}.tmp", r.crash.id, std::process::id()));
+    assert!(std::os::unix::fs::symlink(&victim, &tmp).is_ok());
+    assert!(rig.c.spool.save(&r).is_ok());
+    assert_eq!(
+        std::fs::read(&victim).ok().as_deref(),
+        Some(&b"precious"[..])
+    );
+    assert!(rig.c.spool.get(&r.crash.id).is_some());
+}
+
+#[test]
+fn a_report_of_wide_letters_is_cut_to_what_the_server_takes() {
+    let function = "😀".repeat(200);
+    let module = format!("{}.so", "m".repeat(120));
+    let mut m = String::from("Stack trace of thread 1:\n");
+    for i in 0..MAX_FRAMES {
+        m.push_str(&format!("#{i}  0x1 {function} ({module} + 0x10)\n"));
+    }
+    m.push_str(&format!(
+        "Module {module} with build-id {}\n",
+        "a".repeat(128)
+    ));
+    let rig = Rig::new("wide", None);
+    let got = rig.c.found(&entry(json!({"MESSAGE": m})), NOW);
+    let id = match got {
+        Ok(Some(id)) => id,
+        other => panic!("{other:?}"),
+    };
+    let kept = rig.c.spool.get(&id).map(|r| r.crash);
+    let body = kept
+        .as_ref()
+        .and_then(|c| serde_json::to_vec(&c.to_wire()).ok())
+        .unwrap_or_default();
+    assert!(
+        !body.is_empty() && body.len() <= MAX_BODY_BYTES,
+        "{}",
+        body.len()
+    );
+    assert!(kept.is_some_and(|c| !c.frames.is_empty()));
+}
+
+#[test]
+fn only_a_receipt_is_taken_and_only_a_refusal_is_final() {
+    for status in [204, 301, 302, 307, 401, 403, 404, 408, 425] {
+        assert!(matches!(answer(status, b""), Answer::Later(_)), "{status}");
+    }
+    assert!(matches!(
+        answer(200, b"<html>sign in</html>"),
+        Answer::Later(_)
+    ));
+    let long = format!(r#"{{"message":"{}"}}"#, "x".repeat(60_000));
+    assert!(matches!(answer(413, long.as_bytes()), Answer::Refused(w) if w.len() < 1000));
+}
+
+#[test]
+fn one_line_cut_inside_a_letter_does_not_hide_the_entries_after_it() {
+    let mut text = String::from("{\"A\":\"x");
+    while text.len() < (1 << 20) + 10 {
+        text.push('ш');
+    }
+    text.push_str("\"}\n{\"B\":\"c\"}\n{\"C\":\"d\"}\n");
+    assert!(journal::entries(text.as_bytes()).len() >= 2);
+}

@@ -189,7 +189,8 @@ def assess(
     if op.egress and level < Level.R3:
         level = Level.R3
         raises.append(_("data leaves this device"))
-    if op.egress and session.keros.leaks(request.arguments):
+    arguments = request.arguments
+    if op.egress and (session.keros.leaks(arguments) or session.keros.unsure(arguments)):
         level = Level.R4
         raises.append(_("it sends data to an address that came from untrusted content"))
 

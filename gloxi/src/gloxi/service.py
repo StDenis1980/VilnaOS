@@ -515,7 +515,7 @@ def build_controller(view: EventView, owner_uid: int | None = None):
     """
     from gloxi.backup_intro import backup_intro
     from gloxi.chat import Conversation
-    from gloxi.config import load_settings
+    from gloxi.config import check_addresses, load_settings
     from gloxi.gui.controller import ChatController
     from gloxi.llm import ChatClient
     from gloxi.network import herkos_network
@@ -524,7 +524,7 @@ def build_controller(view: EventView, owner_uid: int | None = None):
     from gloxi.tools import file_tools
     from gloxi.vpn_intro import vpn_intro
 
-    settings = load_settings()
+    settings = check_addresses(load_settings())
     local = ChatClient(settings.local)
     cloud = ChatClient(settings.cloud) if settings.cloud else None
     # The service may reach only this computer; the cloud needs a yes from

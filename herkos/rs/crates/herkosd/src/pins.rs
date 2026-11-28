@@ -46,15 +46,12 @@ pub struct PinStore {
 }
 
 fn load(path: &Path) -> Result<Pins, String> {
-    let meta = match fs::metadata(path) {
-        Ok(m) => m,
+    // The size of a device or pipe says nothing: read at most the limit.
+    let text = match crate::config::read_small(path, MAX_PINS_BYTES) {
+        Ok(t) => t,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Pins::new()),
         Err(e) => return Err(e.to_string()),
     };
-    if meta.len() > MAX_PINS_BYTES {
-        return Err("too big".into());
-    }
-    let text = fs::read_to_string(path).map_err(|e| e.to_string())?;
     let Value::Object(data) = serde_json::from_str(&text).map_err(|e| e.to_string())? else {
         return Err("not an object".into());
     };

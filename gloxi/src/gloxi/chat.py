@@ -19,6 +19,9 @@ DEFAULT_MAX_TURNS = 20
 # add, save the draft), so four left no room for a model that first looks at
 # the accounts or the folders. Each round is one more request to the model.
 MAX_TOOL_ROUNDS = 6
+# Calls run from one answer of the model; a looping model may send hundreds,
+# and each could open a window for the person.
+MAX_CALLS_PER_ANSWER = 8
 
 # Letters Russian has and Ukrainian does not.
 _RUSSIAN_ONLY = frozenset("ыэъёЫЭЪЁ")
@@ -184,6 +187,7 @@ class Conversation:
             self.history.append(pending)
             self.history.append({"role": "assistant", "content": "".join(parts)})
             return
+        refused: set[tuple[str, str]] = set()  # the person said no, this message
         for round_ in range(MAX_TOOL_ROUNDS + 1):
             # The last round offers no tools, so the model has to answer in words.
             offered = tools.definitions(text) if tools and round_ < MAX_TOOL_ROUNDS else None
@@ -196,8 +200,9 @@ class Conversation:
                     said.append(event)
                     parts.append(event)
                     yield event
-            if not calls or tools is None:
-                break
+            if not calls or tools is None or not offered:
+                break  # in the last round no function was offered: none runs
+            names = {d["function"]["name"] for d in offered}
             request.append(
                 {
                     "role": "assistant",
@@ -210,11 +215,21 @@ class Conversation:
             # mail, 2026-11-23). After a read, the rest waits for the next round.
             read: str | None = None
             not_sent: ToolOutcome | None = None
-            for call in calls:
-                if read is not None and not tools.reads_outside(call.name):
+            for i, call in enumerate(calls):
+                key = (call.name, call.arguments)
+                if i >= MAX_CALLS_PER_ANSWER:
+                    outcome = tools.not_run(call.name, f"at most {MAX_CALLS_PER_ANSWER} at once")
+                elif call.name not in names:
+                    # Only what was offered this time (Herkos decides anyway).
+                    outcome = tools.not_run(call.name, "it was not offered now")
+                elif key in refused:
+                    outcome = tools.not_run(call.name, "the person already said no to this")
+                elif read is not None and not tools.reads_outside(call.name):
                     outcome = tools.not_yet(call.name, read)
                 else:
                     outcome = tools.call(call.name, call.arguments, user_turn=self.user_turn)
+                    if outcome.status == "denied":
+                        refused.add(key)
                     if outcome.status == "done" and tools.reads_outside(call.name):
                         read = call.name
                     if self.on_tool:

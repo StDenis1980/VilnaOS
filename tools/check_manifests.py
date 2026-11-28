@@ -248,6 +248,8 @@ def read_server(where: str, sources: Mapping[str, str]) -> tuple[Server, list[st
             trees[path] = ast.parse(text, filename=path)
         except (SyntaxError, ValueError) as err:
             notes.append(f"cannot parse {path}: {err}")
+        except (RecursionError, MemoryError) as err:  # nested too deep for the parser
+            notes.append(f"cannot parse {path}: too complex ({type(err).__name__})")
     shared: dict[str, ast.expr] = {}
     for tree in trees.values():
         for name, value in module_constants(tree).items():
@@ -614,7 +616,7 @@ def table(rows: Sequence[Row]) -> str:
 
 def tracked_files(root: Path) -> list[str]:
     out = subprocess.run(
-        ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True, text=True
+        ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True, text=True, errors="surrogateescape"
     ).stdout
     return sorted(p for p in out.split("\0") if p)
 
@@ -653,4 +655,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

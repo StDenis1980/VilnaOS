@@ -877,6 +877,7 @@ def tracked_files(root: Path) -> list[str]:
         check=True,
         capture_output=True,
         text=True,
+        errors="surrogateescape",
     ).stdout
     return sorted(p for p in out.split("\0") if p)
 
@@ -898,7 +899,11 @@ def main(argv: list[str] | None = None) -> int:
         print(usage, file=sys.stderr)
         return 2
     root = Path(args[0]) if args else ROOT
-    if not root.is_dir():
+    try:
+        is_dir = "\0" not in str(root) and root.is_dir()
+    except OSError:  # a name too long for the file system
+        is_dir = False
+    if not is_dir:
         print(f"{root}: not a folder\n{usage}", file=sys.stderr)
         return 2
     try:
@@ -921,4 +926,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main())

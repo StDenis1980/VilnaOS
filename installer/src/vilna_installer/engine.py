@@ -661,7 +661,10 @@ class Engine:
         if problems:
             raise EngineError("; ".join(problems))
         target = (plan.get("disk") or {})["target"]
-        disk = next(d for d in disks if d.id == target)
+        matches = [d for d in disks if d.id == target]
+        if len(matches) != 1:
+            raise EngineError("the chosen disk cannot be told apart from another one")
+        disk = matches[0]
         # The survey found it through /dev/disk/by-id a moment ago.
         self.disk = _safe(disk.path, r"/dev/[A-Za-z0-9_./-]+", "disk")
         self.target = disk

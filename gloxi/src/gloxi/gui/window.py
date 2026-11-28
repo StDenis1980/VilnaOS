@@ -19,7 +19,7 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango  # noqa: E402
 from gloxi import ai_notice, crash  # noqa: E402
 from gloxi.backup_intro import BackupIntro, backup_intro  # noqa: E402
 from gloxi.chat import Conversation  # noqa: E402
-from gloxi.config import ConfigError, load_settings  # noqa: E402
+from gloxi.config import ConfigError, check_addresses, load_settings  # noqa: E402
 from gloxi.gui import (  # noqa: E402
     APP_ID,
     panel,
@@ -1325,7 +1325,7 @@ class GloxiApp(Adw.Application):
 
     def _build_window(self) -> ChatWindow | None:
         try:
-            settings = load_settings()
+            settings = check_addresses(load_settings())
         except ConfigError as exc:
             print(f"gloxi: {exc}", file=sys.stderr)
             self.quit()

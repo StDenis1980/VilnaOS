@@ -24,7 +24,12 @@ LOOPBACK = ("127.0.0.1", "localhost", "::1")
 
 
 def is_local_url(url: str) -> bool:
-    return (urlsplit(url).hostname or "127.0.0.1") in LOOPBACK
+    """Whether ``url`` is a server on this computer; an address without a host is not."""
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return False
+    return parts.scheme in ("http", "https") and parts.hostname in LOOPBACK
 
 
 def headers_for(url: str, api_key: str | None = None) -> dict[str, str]:

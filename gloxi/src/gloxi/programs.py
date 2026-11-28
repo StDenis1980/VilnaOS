@@ -60,13 +60,18 @@ def _herkos_text(text: str) -> str:
     return herkos_(text)
 
 
+def _items(value: Any) -> list:
+    """A list Herkos sent, or nothing: an answer of another shape lists nothing."""
+    return value if isinstance(value, list) else []
+
+
 def _program(raw: Any) -> Program | None:
     if not isinstance(raw, dict) or not isinstance(raw.get("tool"), str):
         return None
     hidden = []
-    for h in raw.get("hidden") or []:
+    for h in _items(raw.get("hidden")):
         if isinstance(h, dict) and isinstance(h.get("operation"), str):
-            why = tuple(_herkos_text(w) for w in h.get("why") or [] if isinstance(w, str))
+            why = tuple(_herkos_text(w) for w in _items(h.get("why")) if isinstance(w, str))
             hidden.append(Hidden(h["operation"], why))
     return Program(
         tool=raw["tool"],
@@ -97,7 +102,7 @@ class Programs:
             return []
         finally:
             client.close()
-        return [p for p in (_program(r) for r in raw) if p is not None]
+        return [p for p in (_program(r) for r in _items(raw)) if p is not None]
 
     def set(self, tool: str, on: bool) -> Change:
         from herkos.client import HerkosError, HerkosUnavailable
@@ -113,6 +118,8 @@ class Programs:
             return Change(not on, error=str(exc))
         finally:
             client.close()
+        if not isinstance(answer, dict):
+            return Change(not on, error="Herkos gave an answer Gloxi cannot read")
         enabled = answer.get("enabled") is True
         return Change(
             enabled=enabled,

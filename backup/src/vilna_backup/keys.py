@@ -76,7 +76,11 @@ def normalise_pairing_code(text: str) -> str:
 
 
 def _normalise(text: str, groups: int, what: str) -> str:
-    cleaned = "".join(c for c in text.upper() if c not in " -\t\n")
+    # ASCII spaces and dashes are forgiven, \r\n from Windows too. Anything not
+    # ASCII is refused before upper(): "ı".upper() is "I" and "ß".upper() is "SS".
+    if not text.isascii():
+        raise KeysError(f"{what} has a sign that is not on the sheet (only A-Z and 0-9)")
+    cleaned = "".join(c for c in text.upper() if not c.isspace() and c != "-")
     cleaned = cleaned.translate(str.maketrans({"O": "0", "I": "1", "L": "1", "U": "V"}))
     if len(cleaned) != groups * RECOVERY_GROUP_LEN or any(c not in _ALPHABET for c in cleaned):
         raise KeysError(f"{what} is {groups} groups of {RECOVERY_GROUP_LEN} letters and digits")
@@ -108,6 +112,15 @@ class KeyStore(Protocol):
 Runner = Callable[..., subprocess.CompletedProcess]
 
 
+def _key_name(name: str) -> bool:
+    return isinstance(name, str) and name.isascii() and name.isalnum()
+
+
+def _check_names(repo_id: str, item: str) -> None:
+    if not _key_name(repo_id) or not _key_name(item.replace("-", "").replace("_", "")):
+        raise KeysError("bad key name")
+
+
 class LibsecretStore:
     """GNOME Keyring through ``secret-tool`` (libsecret-tools)."""
 
@@ -120,15 +133,18 @@ class LibsecretStore:
         return ["vilna", "backup-repo", "repo", repo_id, "item", item]
 
     def put(self, repo_id: str, item: str, value: str) -> None:
+        _check_names(repo_id, item)
         label = f"Vilna Backup ({item})"
         cmd = [self.tool, "store", f"--label={label}", *self.attributes(repo_id, item)]
         self._call(cmd, value)
 
     def get(self, repo_id: str, item: str) -> str | None:
+        _check_names(repo_id, item)
         out = self._call([self.tool, "lookup", *self.attributes(repo_id, item)], None, check=False)
         return out or None
 
     def delete(self, repo_id: str, item: str) -> None:
+        _check_names(repo_id, item)
         self._call([self.tool, "clear", *self.attributes(repo_id, item)], None, check=False)
 
     def password_env(self, repo_id: str) -> dict[str, str]:
@@ -139,7 +155,7 @@ class LibsecretStore:
     def _call(self, cmd: list[str], stdin: str | None, *, check: bool = True) -> str:
         try:
             p = self.run(cmd, input=stdin, capture_output=True, text=True, timeout=30)
-        except (OSError, subprocess.TimeoutExpired) as e:
+        except (OSError, ValueError, subprocess.TimeoutExpired) as e:
             raise KeysError(f"the key store is unavailable: {e}") from None
         if check and p.returncode != 0:
             raise KeysError(f"the key store refused: {p.stderr.strip() or p.returncode}")
@@ -157,22 +173,34 @@ class FileStore:
         self.folder = Path(folder)
 
     def _path(self, repo_id: str, item: str) -> Path:
-        if not repo_id.isalnum() or not item.replace("-", "").replace("_", "").isalnum():
+        if not _key_name(repo_id) or not _key_name(item.replace("-", "").replace("_", "")):
             raise KeysError("bad key name")
         return self.folder / repo_id / item
 
     def put(self, repo_id: str, item: str, value: str) -> None:
         path = self._path(repo_id, item)
-        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, stat.S_IRUSR | stat.S_IWUSR)
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write(value)
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+            # Never through a link, and owner-only even if the file was there before.
+            fd = os.open(
+                path,
+                os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW,
+                stat.S_IRUSR | stat.S_IWUSR,
+            )
+            os.fchmod(fd, stat.S_IRUSR | stat.S_IWUSR)
+            with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
+                f.write(value)
+        except OSError as e:
+            raise KeysError(f"cannot write the key: {e}") from None
 
     def get(self, repo_id: str, item: str) -> str | None:
         try:
-            return self._path(repo_id, item).read_text(encoding="utf-8")
+            with open(self._path(repo_id, item), encoding="utf-8", newline="") as f:
+                return f.read()
         except FileNotFoundError:
             return None
+        except (OSError, ValueError) as e:
+            raise KeysError(f"cannot read the key: {e}") from None
 
     def delete(self, repo_id: str, item: str) -> None:
         self._path(repo_id, item).unlink(missing_ok=True)

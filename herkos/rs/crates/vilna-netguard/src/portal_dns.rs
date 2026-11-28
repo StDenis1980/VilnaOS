@@ -36,6 +36,10 @@ fn plain_name(name: &str) -> bool {
     !name.is_empty()
         && name.len() <= 15
         && !name.starts_with('-')
+        // resolvectl reads "3" as interface number 3, which may be a tunnel.
+        && !name.bytes().all(|b| b.is_ascii_digit())
+        && name != "."
+        && name != ".."
         && name
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || b"-_.@".contains(&b))
@@ -64,7 +68,11 @@ fn default_routes(json_outputs: &[&str]) -> BTreeSet<(String, String)> {
                             .all(|b| b.is_ascii_hexdigit() || b == b'.' || b == b':')
                 })
                 .unwrap_or("");
-            if plain_name(dev) && !is_tunnel(dev) && routes.len() < MAX_LINKS {
+            // The limit counts links, not routes: eight gateways of one link
+            // must not leave out the next one.
+            let links: BTreeSet<&String> = routes.iter().map(|(d, _)| d).collect();
+            let room = links.len() < MAX_LINKS || links.iter().any(|d| d.as_str() == dev);
+            if plain_name(dev) && !is_tunnel(dev) && room {
                 routes.insert((dev.to_owned(), gateway.to_owned()));
             }
         }

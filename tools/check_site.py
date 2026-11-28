@@ -32,6 +32,25 @@ ROOT = Path(__file__).resolve().parent.parent
 RESOURCE_ATTRS = {"src", "srcset", "poster", "data"}
 
 
+# rel values of a <link> the browser does not load: it only names another address.
+NAVIGATION_RELS = {"alternate", "canonical"}
+# rel values that make the browser fetch the address (even next to "alternate").
+LOADING_RELS = {
+    "stylesheet",
+    "icon",
+    "preload",
+    "prefetch",
+    "modulepreload",
+    "manifest",
+    "apple-touch-icon",
+    "mask-icon",
+    "preconnect",
+    "dns-prefetch",
+}
+# The longest page read; a bigger file is a problem, not something to parse.
+MAX_PAGE_BYTES = 8 * 1024 * 1024
+
+
 class Page(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -48,6 +67,12 @@ class Page(HTMLParser):
             self.problems.append("<script> is not allowed")
         if tag == "iframe":
             self.problems.append("<iframe> is not allowed")
+        if tag == "base":
+            # Every relative link of the page would then go to that address.
+            self.problems.append("<base> is not allowed")
+        if tag == "style":
+            # Inline CSS, @import included: the Content-Security-Policy refuses it.
+            self.problems.append("<style> element is not allowed")
         for name in a:
             if name.startswith("on"):
                 self.problems.append(f"event handler attribute {name}=")
@@ -58,11 +83,35 @@ class Page(HTMLParser):
                 url = part.strip().split(" ")[0]
                 if url:
                     self.resources.append(url)
-        if "href" in a:
-            if tag == "a":
-                self.links.append(a["href"])
-            elif tag == "link" and a.get("rel") not in ("alternate", "canonical"):
-                self.resources.append(a["href"])
+        for name in ("href", "xlink:href"):
+            if name not in a:
+                continue
+            rels = set(a.get("rel", "").lower().split())
+            if tag == "a" or (
+                tag == "link" and rels & NAVIGATION_RELS and not rels & LOADING_RELS
+            ):
+                self.links.append(a[name])
+            else:
+                # <link rel=stylesheet>, <use href>, <image href>: the browser loads it.
+                self.resources.append(a[name])
+
+
+def read_page(page: Path) -> tuple[str | None, str]:
+    """The text of a page, or ``None`` and why it cannot be read."""
+    try:
+        with page.open("rb") as f:
+            data = f.read(MAX_PAGE_BYTES + 1)
+    except (OSError, ValueError) as err:
+        return None, f"cannot be read ({err.__class__.__name__})"
+    if len(data) > MAX_PAGE_BYTES:
+        return None, f"is larger than {MAX_PAGE_BYTES // (1024 * 1024)} MiB"
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return None, "is not valid UTF-8"
+    if "\0" in text:
+        return None, "holds a NUL byte"
+    return text, ""
 
 
 def is_external(url: str) -> bool:
@@ -77,21 +126,34 @@ def target(public: Path, page: Path, url: str) -> Path | None:
         return None
     path = unquote(parts.path)
     base = public if path.startswith("/") else page.parent
-    resolved = (base / path.lstrip("/")).resolve()
-    if path.endswith("/") or resolved.is_dir():
-        resolved = resolved / "index.html"
+    if "\0" in path:
+        return None
+    try:
+        resolved = (base / path.lstrip("/")).resolve()
+        if path.endswith("/") or resolved.is_dir():
+            resolved = resolved / "index.html"
+    except (OSError, RuntimeError):  # a link loop, a name too long
+        return base / "\uFFFD-unresolvable"
     return resolved
 
 
 def check(public: Path) -> list[str]:
     problems: list[str] = []
-    pages = sorted(public.rglob("*.html"))
+    try:
+        pages = sorted(public.rglob("*.html")) if public.is_dir() else []
+        site = public.resolve()
+    except (OSError, ValueError, RuntimeError) as err:
+        return [f"{public}: cannot be read ({err.__class__.__name__})"]
     if not pages:
         return [f"{public}: no pages"]
     for page in pages:
         rel = page.relative_to(public)
+        text, why = read_page(page)
+        if text is None:
+            problems.append(f"{rel}: {why}")
+            continue
         parser = Page()
-        parser.feed(page.read_text(encoding="utf-8"))
+        parser.feed(text)
         problems += [f"{rel}: {p}" for p in parser.problems]
         if not parser.lang:
             problems.append(f"{rel}: <html> has no lang")
@@ -102,9 +164,9 @@ def check(public: Path) -> list[str]:
             dest = target(public, page, url)
             if dest is None:
                 continue
-            if not dest.is_relative_to(public.resolve()):
+            if not dest.is_relative_to(site):
                 problems.append(f"{rel}: {url} points outside the site")
-            elif not dest.is_file():
+            elif not is_file(dest):
                 problems.append(f"{rel}: {url} does not exist")
         # Language twins: /x <-> /<lang>/x for every site language.
         first = rel.parts[0] if len(rel.parts) > 1 else ""
@@ -114,18 +176,28 @@ def check(public: Path) -> list[str]:
         base = rel if lang == build_site.DEFAULT else Path(*rel.parts[1:])
         for other in build_site.LANGUAGES:
             twin = base if other == build_site.DEFAULT else Path(other) / base
-            if not (public / twin).is_file():
+            if not is_file(public / twin):
                 problems.append(f"{rel}: no {other} translation at {twin}")
     problems += check_security_txt(public)
     return problems
 
 
+def is_file(path: Path) -> bool:
+    try:
+        return path.is_file()
+    except (OSError, ValueError):
+        return False
+
+
 def check_security_txt(public: Path) -> list[str]:
     path = public / ".well-known" / "security.txt"
-    if not path.is_file():
+    if not is_file(path):
         return [".well-known/security.txt is missing"]
+    text, why = read_page(path)
+    if text is None:
+        return [f".well-known/security.txt {why}"]
     fields: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in text.splitlines():
         if line.startswith("#") or ":" not in line:
             continue
         key, _, value = line.partition(":")
@@ -148,8 +220,15 @@ def check_security_txt(public: Path) -> list[str]:
 
 def main(argv: list[str]) -> int:
     public = Path(argv[1]) if len(argv) > 1 else ROOT / "site" / "public"
+    if "\0" in str(public):
+        print("a folder name cannot hold a NUL byte", file=sys.stderr)
+        return 2
     problems = check(public)
-    if public.resolve() == build_site.PUBLIC.resolve() and build_site.main(["", "--check"]):
+    try:
+        same = public.resolve() == build_site.PUBLIC.resolve()
+    except (OSError, RuntimeError):
+        same = False
+    if same and build_site.main(["", "--check"]):
         problems.append("site/public is out of date: run python3 tools/build_site.py")
     for p in problems:
         print(p, file=sys.stderr)
@@ -159,4 +238,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    # A file name that is not UTF-8 is printed escaped, not as a traceback.
+    sys.stdout.reconfigure(errors="backslashreplace")  # type: ignore[union-attr]
     sys.exit(main(sys.argv))

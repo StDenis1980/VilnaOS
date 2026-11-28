@@ -34,6 +34,7 @@ import argparse
 import datetime as dt
 import getpass
 import json
+import math
 import sys
 from typing import Any
 
@@ -166,6 +167,8 @@ def _snapshots(b: Backup, args: argparse.Namespace) -> int:
 def _set(b: Backup, args: argparse.Namespace) -> int:
     limit: Any = False
     if args.limit_gb is not None:
+        if not math.isfinite(args.limit_gb) or args.limit_gb < 0:
+            raise BackupError("the limit is a number of GB, 0 for no limit")
         limit = None if args.limit_gb == 0 else int(args.limit_gb * GB)
     history = None if args.history is None else args.history == "yes"
     s = b.set_paths(

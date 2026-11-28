@@ -13,6 +13,7 @@ import gzip
 import io
 import re
 import xml.etree.ElementTree as ET
+import zlib
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -20,6 +21,8 @@ from pathlib import Path
 # A Flathub appstream.xml is ~50 MB unpacked; anything far larger is not one.
 MAX_APPSTREAM_BYTES = 256 * 1024 * 1024
 MAX_FIELD_CHARS = 300
+MAX_LANGUAGES = 200  # translations of one name or summary kept
+MAX_LANG_CHARS = 35  # BCP 47 tags are short
 XML_LANG = "{http://www.w3.org/XML/1998/namespace}lang"
 
 # Where GNOME Software reads AppStream catalogues from (vilna-software-picks
@@ -101,9 +104,11 @@ def _component(el: ET.Element) -> Component | None:
     c = Component(id=app_id)
     for child in el:
         lang = child.get(XML_LANG, "")
-        if child.tag == "name":
+        if len(lang) > MAX_LANG_CHARS:
+            continue
+        if child.tag == "name" and (lang in c.names or len(c.names) < MAX_LANGUAGES):
             c.names[lang] = _text(child)
-        elif child.tag == "summary":
+        elif child.tag == "summary" and (lang in c.summaries or len(c.summaries) < MAX_LANGUAGES):
             c.summaries[lang] = _text(child)
         elif child.tag == "developer_name" and not lang and not c.developer:
             c.developer = _text(child)
@@ -127,7 +132,11 @@ def _component(el: ET.Element) -> Component | None:
 
 def read_components(path: Path) -> Iterator[Component]:
     """The apps in one AppStream file (``.xml`` or ``.xml.gz``)."""
-    raw = path.read_bytes() if path.suffix != ".gz" else _gunzip(path)
+    if path.suffix == ".gz":
+        raw = _gunzip(path)
+    else:
+        with path.open("rb") as f:  # never more than a catalogue can be
+            raw = f.read(MAX_APPSTREAM_BYTES + 1)
     yield from parse_components(raw)
 
 
@@ -156,7 +165,7 @@ def read_picks(files: Iterable[Path] = PICKS_FILES) -> dict[str, str]:
     for path in files:
         try:
             components = list(read_components(path))
-        except (OSError, ValueError, ET.ParseError):
+        except (OSError, ValueError, EOFError, LookupError, zlib.error, ET.ParseError):
             continue
         for c in components:
             if c.custom.get(PICK_KEY):

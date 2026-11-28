@@ -29,7 +29,8 @@ def main(argv: list[str] | None = None) -> int:
     machine = DemoMachine(args.demo) if args.demo else Machine()
     try:
         report = plans.validate(plans.load(args.plan), survey(machine.disks()), stage=args.stage)
-    except (plans.PlanError, MachineError) as e:
+    except (plans.PlanError, MachineError, OSError, ValueError) as e:
+        # 2: not read. Never 1, which says the plan was read and is incomplete.
         print(f"vilna-plan-check: {e}", file=sys.stderr)
         return 2
     json.dump(report, sys.stdout, ensure_ascii=False, indent=2)
