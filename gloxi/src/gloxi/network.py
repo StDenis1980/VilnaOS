@@ -80,7 +80,7 @@ class Network:
     """IPAddressAllow of one person's gloxi@<uid>.service, and nothing else."""
 
     def __init__(self, uid: int, runner: Runner = _run) -> None:
-        if not FIRST_UID <= uid <= LAST_UID:
+        if type(uid) is not int or not FIRST_UID <= uid <= LAST_UID:
             raise ValueError(f"not a person's uid: {uid}")
         self.unit = f"gloxi@{uid}.service"
         self.run = runner
@@ -131,7 +131,8 @@ class Server:
         method, id_ = msg.get("method"), msg.get("id")
         if "id" not in msg:
             return None
-        params = msg.get("params") or {}
+        params = msg.get("params", {})
+        params = {} if params is None else params
         if not isinstance(params, dict):
             return _error(id_, -32602, "params must be an object")
         if method == "initialize":
@@ -156,7 +157,7 @@ class Server:
     def call(self, name: Any, args: Any) -> dict:
         handler = self._handlers.get(name) if isinstance(name, str) else None
         if handler is None:
-            return _tool_error(f"unknown tool {name}")
+            return _tool_error(f"unknown tool {repr(name)[:100]}")
         if args not in (None, {}):
             return _tool_error(f"{name} takes no arguments")
         try:
@@ -175,13 +176,22 @@ class Server:
                 continue
             try:
                 msg = json.loads(line)
-            except ValueError:
+            except (ValueError, RecursionError):
                 response = _error(None, -32700, "not valid JSON")
             else:
-                response = self.handle(msg)
+                try:
+                    response = self.handle(msg)
+                except Exception as exc:  # noqa: BLE001 - one bad call never ends the server
+                    response = _error(None, -32603, f"internal error: {type(exc).__name__}")
             if response is not None:
+                if "id" in response and not _plain_id(response["id"]):
+                    response["id"] = None  # NaN or Infinity is not JSON
                 stdout.write(json.dumps(response) + "\n")
                 stdout.flush()
+
+
+def _plain_id(id_: Any) -> bool:
+    return id_ is None or (isinstance(id_, str | int) and not isinstance(id_, bool))
 
 
 def _result(id_: Any, result: Any) -> dict:
@@ -238,8 +248,9 @@ class CloudNetwork:
             self.open = False
             try:
                 status = self._ask("status", _("Gloxi checks whether it may reach the internet."))
-                if not _result_of(status).get("cloud"):
-                    return True
+                closed = _result_of(status).get("cloud") is False
+                if status.get("decision") == "allowed" and closed:
+                    return True  # Herkos says it is closed already
                 answer = self._ask("block_cloud", _("The cloud is turned off."))
             except NetworkRefused:
                 return False

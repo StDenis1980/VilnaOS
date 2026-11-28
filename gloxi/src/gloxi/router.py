@@ -30,6 +30,7 @@ from urllib.parse import urlsplit
 from gloxi.config import ROUTER_MODES, RouterPolicy
 from gloxi.i18n import N_
 from gloxi.llm import ChatClient, Message, ToolCall
+from gloxi.localkey import is_local_url
 
 Target = Literal["local", "cloud"]
 
@@ -210,7 +211,10 @@ class Router:
 
     def _route(self, target: Target, reason: str) -> Route:
         client = self.local if target == "local" else self.cloud
-        destination = "this computer" if target == "local" else _host(client.endpoint.url)
+        url = client.endpoint.url
+        # A [local] address on another computer is not "this computer": say where.
+        here = target == "local" and is_local_url(url)
+        destination = "this computer" if here else _host(url)
         return Route(target=target, reason=reason, destination=destination)
 
 

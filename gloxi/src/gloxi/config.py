@@ -31,10 +31,13 @@ environment variables. The config file lives at
 
 from __future__ import annotations
 
+import math
 import os
+import stat
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlsplit
 
 DEFAULT_LOCAL_URL = "http://127.0.0.1:8080/v1"
 
@@ -56,7 +59,7 @@ def _slot(value: object) -> int | None:
     """A llama-server slot number; a negative one lets the server choose."""
     try:
         slot = int(str(value))
-    except ValueError as exc:
+    except ValueError as exc:  # also a number with 5000 digits
         raise ConfigError(f"slot must be a whole number, got {value!r}") from exc
     return slot if slot >= 0 else None
 
@@ -125,7 +128,7 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
     if path.is_file():
         try:
             data = tomllib.loads(path.read_text(encoding="utf-8"))
-        except (OSError, tomllib.TOMLDecodeError) as exc:
+        except (OSError, ValueError, RecursionError) as exc:  # also not UTF-8, too deep
             raise ConfigError(f"cannot read {path}: {exc}") from exc
 
     local = _table(data, "local", path)
@@ -134,9 +137,9 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
     tools = _table(data, "tools", path)
 
     local_endpoint = ModelEndpoint(
-        url=_get(env, "GLOXI_LOCAL_URL", local, "url", DEFAULT_LOCAL_URL).rstrip("/"),
-        model=_get(env, "GLOXI_LOCAL_MODEL", local, "model", "local"),
-        timeout=_number(_get(env, "GLOXI_LOCAL_TIMEOUT", local, "timeout", 120), "timeout"),
+        url=_url(_get(env, "GLOXI_LOCAL_URL", local, "url", DEFAULT_LOCAL_URL), "[local] url"),
+        model=_text(_get(env, "GLOXI_LOCAL_MODEL", local, "model", "local"), "[local] model"),
+        timeout=_seconds(_get(env, "GLOXI_LOCAL_TIMEOUT", local, "timeout", 120)),
         api_key=_key_file(env.get("GLOXI_LOCAL_KEY_FILE", "")),
         slot=_slot(_get(env, "GLOXI_LOCAL_SLOT", local, "slot", 0)),
         repeat_penalty=_penalty(
@@ -148,35 +151,34 @@ def load_settings(path: Path | None = None, env: dict[str, str] | None = None) -
     cloud_url = _get(env, "GLOXI_CLOUD_URL", cloud, "url", "")
     if cloud_url:
         cloud_endpoint = ModelEndpoint(
-            url=cloud_url.rstrip("/"),
-            model=_get(env, "GLOXI_CLOUD_MODEL", cloud, "model", ""),
-            timeout=_number(_get(env, "GLOXI_CLOUD_TIMEOUT", cloud, "timeout", 120), "timeout"),
-            api_key=_get(env, "GLOXI_CLOUD_API_KEY", cloud, "api_key", "") or None,
+            url=_url(cloud_url, "[cloud] url"),
+            model=_text(_get(env, "GLOXI_CLOUD_MODEL", cloud, "model", ""), "[cloud] model"),
+            timeout=_seconds(_get(env, "GLOXI_CLOUD_TIMEOUT", cloud, "timeout", 120)),
+            api_key=_text(_get(env, "GLOXI_CLOUD_API_KEY", cloud, "api_key", ""), "api_key")
+            or None,
         )
         if not cloud_endpoint.model:
             raise ConfigError("[cloud] needs a model name")
 
     mode = _get(env, "GLOXI_ROUTER_MODE", router, "mode", "auto")
-    if mode not in ROUTER_MODES:
+    if not isinstance(mode, str) or mode not in ROUTER_MODES:
         raise ConfigError(f"router mode must be one of {', '.join(ROUTER_MODES)}, got {mode!r}")
     policy = RouterPolicy(
         mode=mode,
         cloud_allowed=_flag(_get(env, "GLOXI_CLOUD_ALLOWED", router, "cloud_allowed", False)),
-        long_message_chars=int(
-            _number(_get(env, "", router, "long_message_chars", 1500), "long_message_chars")
-        ),
+        long_message_chars=_characters(_get(env, "", router, "long_message_chars", 1500)),
         mask_cloud=_flag(_get(env, "GLOXI_MASK_CLOUD", router, "mask_cloud", True)),
         mask_strict=_flag(_get(env, "GLOXI_MASK_STRICT", router, "mask_strict", False)),
     )
     if policy.cloud_allowed and cloud_endpoint is None:
         raise ConfigError("cloud_allowed is on, but no [cloud] url is configured")
 
-    system_prompt = data.get("system_prompt") or DEFAULT_SYSTEM_PROMPT
+    system_prompt = _text(data.get("system_prompt") or DEFAULT_SYSTEM_PROMPT, "system_prompt")
     return Settings(
         local=local_endpoint,
         cloud=cloud_endpoint,
         router=policy,
-        system_prompt=str(system_prompt),
+        system_prompt=system_prompt,
         tools_enabled=_flag(_get(env, "GLOXI_TOOLS", tools, "enabled", True)),
         start_server=_flag(_get(env, "GLOXI_START_SERVER", local, "start_server", True)),
     )
@@ -187,6 +189,12 @@ def _key_file(name: str) -> str | None:
     if not name:
         return None
     try:
+        # A pipe would never answer, a huge file would fill the memory: look first.
+        info = os.stat(name)
+        if not stat.S_ISREG(info.st_mode):
+            raise ConfigError(f"cannot read the local model key {name}: not a file")
+        if info.st_size > MAX_KEY_FILE:
+            raise ConfigError(f"{name} does not hold a key")
         key = Path(name).read_text(encoding="ascii").strip()
     except FileNotFoundError:
         # The shared model has not started yet (no weights): Gloxi still
@@ -194,9 +202,69 @@ def _key_file(name: str) -> str | None:
         return None
     except (OSError, UnicodeDecodeError) as exc:
         raise ConfigError(f"cannot read the local model key {name}: {exc}") from exc
-    if not key or len(key) > 512 or any(c.isspace() for c in key):
+    if not key or len(key) > MAX_KEY or not all(c.isprintable() and not c.isspace() for c in key):
         raise ConfigError(f"{name} does not hold a key")
     return key
+
+
+MAX_KEY = 512
+MAX_KEY_FILE = 4096
+MAX_TIMEOUT = 3600.0  # seconds; longer is no answer at all
+MAX_CHARS = 10_000_000
+
+
+def _text(raw, name: str) -> str:
+    if not isinstance(raw, str):
+        raise ConfigError(f"{name} must be text, got {raw!r}")
+    return raw
+
+
+def _url(raw, name: str) -> str:
+    return _text(raw, name).rstrip("/")
+
+
+def address_problem(url: str, *, cloud: bool = False) -> str | None:
+    """Why a client cannot use ``url``, or None. The cloud only over https."""
+    try:
+        parts = urlsplit(url)
+        _ = parts.port  # raises for a port that is not a number or out of range
+    except ValueError as exc:  # [::1 , :abc, 65536
+        return f"not an address: {url!r} ({exc})"
+    host = parts.hostname or ""
+    if parts.scheme not in ("http", "https") or not host or not host.isascii():
+        return f"must be an http:// or https:// address, got {url!r}"
+    if parts.port == 0:
+        return f"port 0 is not a port to listen on: {url!r}"
+    if cloud and parts.scheme != "https" and host not in ("127.0.0.1", "localhost", "::1"):
+        # The key and every message would cross the internet unencrypted.
+        return f"must start with https://, got {url!r}"
+    return None
+
+
+def check_addresses(settings: Settings) -> Settings:
+    """``settings`` if a client can open its addresses, else a ConfigError (not a crash)."""
+    endpoints = (("[local]", settings.local, False), ("[cloud]", settings.cloud, True))
+    for name, endpoint, cloud in endpoints:
+        problem = address_problem(endpoint.url, cloud=cloud) if endpoint else None
+        if problem:
+            raise ConfigError(f"{name} url {problem}")
+    return settings
+
+
+def _seconds(raw) -> float:
+    if isinstance(raw, bool):
+        raise ConfigError(f"timeout must be a number of seconds, got {raw!r}")
+    value = _number(raw, "timeout")
+    if not 0 < value <= MAX_TIMEOUT:  # also NaN
+        raise ConfigError(f"timeout must be between 0 and {MAX_TIMEOUT:.0f} seconds, got {raw!r}")
+    return value
+
+
+def _characters(raw) -> int:
+    value = _number(raw, "long_message_chars") if not isinstance(raw, bool) else math.nan
+    if not 1 <= value <= MAX_CHARS:  # -1 or 0 would send every message to the cloud
+        raise ConfigError(f"long_message_chars must be between 1 and {MAX_CHARS}, got {raw!r}")
+    return int(value)
 
 
 def _table(data: dict, name: str, path: Path) -> dict:

@@ -255,7 +255,9 @@ def verified(model: ModelFile, dest_dir: Path) -> Path | None:
 
 def _host_port(url: str) -> tuple[str, int]:
     parts = urlsplit(url)
-    return parts.hostname or "127.0.0.1", parts.port or 80
+    default = 443 if parts.scheme == "https" else 80
+    # Port 0 stays 0 (the server says it cannot listen there), never quietly 80.
+    return parts.hostname or "127.0.0.1", default if parts.port is None else parts.port
 
 
 def is_local_url(url: str) -> bool:

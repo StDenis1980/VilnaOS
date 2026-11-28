@@ -39,15 +39,15 @@ words = [
 
 ["org.vilna.mcp.mail".operations]
 list_messages = [
-  "останн", "нов", "непрочит", "вхідн",
+  "останн", "нов$", "нові$", "новий$", "нових$", "нове$", "нова$", "непрочит", "вхідн",
   "latest", "last$", "new$", "unread", "recent",
   "ultim", "nuev", "bandeja",
-  "ostatni", "now", "nieprzeczyt",
-  "letzt", "neu", "ungelesen",
+  "ostatni", "nowe$", "nowy$", "nowa$", "nowych$", "nieprzeczyt",
+  "letzt", "neu$", "neue$", "neuen$", "neues$", "ungelesen",
   "dernier", "nouveau", "nouvel",
   "ultim", "nuov",
   "ultim", "nou$", "noi$", "necitit",
-  "posledn", "nov", "neprect",
+  "posledn", "nove$", "novy$", "nova$", "novych$", "neprect",
   "paskutin", "nauj", "neperskait",
   "darrer", "nou$", "nous$", "nova$", "noves$",
   "novo$", "novos$", "nova$", "novas$",
@@ -183,7 +183,7 @@ create_event = [
   "add$", "create", "put$", "schedule", "book",
   "anad", "crea", "agend", "apunt", "pon$",
   "dodaj", "utworz", "zapisz", "zaplan", "wpisz",
-  "hinzufug", "fug", "erstell", "eintrag", "trag", "plan",
+  "hinzufug", "fug$", "fuge$", "fugen$", "fugt$", "erstell", "eintrag", "trag", "plan",
   "ajout", "cree", "creer", "planifi", "note$", "inscri",
   "aggiung", "crea", "inseris", "segna", "pianific",
   "adaug", "crea", "programeaz", "noteaz",
@@ -208,7 +208,7 @@ update_event = [
   "canvi", "mou$", "moure", "traslad", "ajorn",
   "cambi", "move", "mover", "traslad", "adia",
   "aldatu", "aldaketa", "mugitu", "atzeratu",
-  "mud", "alter", "move", "mover", "adia", "reagend",
+  "muda$", "mudar$", "mude$", "mudes$", "alter", "move", "mover", "adia", "reagend",
 ]
 delete_event = [
   "видал", "скасу", "прибер",

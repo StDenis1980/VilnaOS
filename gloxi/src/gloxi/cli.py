@@ -23,7 +23,7 @@ import httpx
 from gloxi import __version__, ai_notice, check, crash, upgrade
 from gloxi.backup_intro import BackupIntro, Turn, backup_intro
 from gloxi.chat import Conversation
-from gloxi.config import ROUTER_MODES, ConfigError, Settings, load_settings
+from gloxi.config import ROUTER_MODES, ConfigError, Settings, check_addresses, load_settings
 from gloxi.engine import (
     DECIMAL_POINT,
     LARGE_MODEL,
@@ -416,7 +416,7 @@ def _settings(args: argparse.Namespace) -> Settings:
         settings = replace(settings, local=replace(settings.local, **overrides))
     if args.mode:
         settings = replace(settings, router=replace(settings.router, mode=args.mode))
-    return settings
+    return check_addresses(settings)
 
 
 def _leave(signum: int, _frame: object) -> None:
