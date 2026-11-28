@@ -176,8 +176,11 @@ def check_arguments(name: str, args: Any) -> dict:
             raise CalendarError(f"'{k}' must be one of {prop['enum']}")
         if "maxLength" in prop and len(v) > prop["maxLength"]:
             raise CalendarError(f"'{k}' must be at most {prop['maxLength']} characters")
-        if "minimum" in prop and not prop["minimum"] <= v <= prop["maximum"]:
-            raise CalendarError(f"'{k}' must be from {prop['minimum']} to {prop['maximum']}")
+        # Either bound may stand alone in a schema.
+        if "minimum" in prop and v < prop["minimum"]:
+            raise CalendarError(f"'{k}' must be at least {prop['minimum']}")
+        if "maximum" in prop and v > prop["maximum"]:
+            raise CalendarError(f"'{k}' must be at most {prop['maximum']}")
     return args
 
 

@@ -159,3 +159,10 @@ def test_a_snapshot_link_never_brings_outside_files_into_the_home(tmp_path):
     out = files.restore_snapshot(1, [str(home / "Documents" / "passwd")])
     assert out["restored"] == []
     assert not (home / "Documents" / "passwd").exists()
+
+
+def test_a_snapshot_number_below_the_schemas_minimum_is_refused():
+    from vilna_mcp_files.server import check_arguments
+
+    with pytest.raises(FilesError):
+        check_arguments("restore_snapshot", {"pre": -5, "paths": ["/a"]})

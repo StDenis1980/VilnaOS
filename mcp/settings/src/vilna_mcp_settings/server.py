@@ -164,6 +164,31 @@ _TYPES: dict[str, Callable[[Any], bool]] = {
 }
 
 
+def _limit_problem(key: str, value: Any, prop: dict) -> str | None:
+    """What the limits the schema declares (minimum, maxLength, maxItems...) say about a
+    value: the schema promised them to the model, so they hold here too."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        if value != value:  # NaN passes every comparison
+            return f"'{key}' must be a number"
+        if "minimum" in prop and value < prop["minimum"]:
+            return f"'{key}' must be at least {prop['minimum']}"
+        if "maximum" in prop and value > prop["maximum"]:
+            return f"'{key}' must be at most {prop['maximum']}"
+    elif isinstance(value, str):
+        if len(value) > prop.get("maxLength", len(value)):
+            return f"'{key}' must be at most {prop['maxLength']} characters"
+        if len(value) < prop.get("minLength", 0):
+            return f"'{key}' must be at least {prop['minLength']} characters"
+    elif isinstance(value, list):
+        if len(value) > prop.get("maxItems", len(value)):
+            return f"'{key}' must have at most {prop['maxItems']} items"
+        if len(value) < prop.get("minItems", 0):
+            return f"'{key}' must have at least {prop['minItems']} items"
+    return None
+
+
 def check_arguments(name: str, args: Any) -> dict:
     schema = _SCHEMAS[name]
     if not isinstance(args, dict):
@@ -180,6 +205,9 @@ def check_arguments(name: str, args: Any) -> dict:
             raise SettingsError(f"'{k}' must be a {prop['type']}")
         if "enum" in prop and v not in prop["enum"]:
             raise SettingsError(f"'{k}' must be one of {prop['enum']}")
+        problem = _limit_problem(k, v, prop)
+        if problem:
+            raise SettingsError(problem)
     return args
 
 

@@ -70,3 +70,19 @@ def test_one_line_never_ends_the_server(line):
     )
     out.getvalue().encode("utf-8")
     assert json.loads(out.getvalue().splitlines()[-1])["result"] == {}
+
+
+@pytest.mark.parametrize(
+    ("name", "arguments"),
+    [
+        ("set_volume", {"percent": 10**9}),
+        ("set_volume", {"percent": -1}),
+        ("set_text_scale", {"scale": 1e9}),
+        ("set_text_scale", {"scale": float("nan")}),
+    ],
+)
+def test_a_value_outside_the_schemas_limits_is_refused(name, arguments):
+    from vilna_mcp_settings.server import SettingsError, check_arguments
+
+    with pytest.raises(SettingsError):
+        check_arguments(name, arguments)
