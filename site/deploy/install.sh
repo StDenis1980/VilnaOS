@@ -23,6 +23,10 @@ install -d -m 0755 /usr/local/lib/vilna-site /etc/caddy/sites /var/www/vilnaos.c
 install -d -m 0700 /etc/vilna-site /var/lib/vilna-site
 install -m 0755 "$here/update.sh" /usr/local/lib/vilna-site/update.sh
 install -m 0755 "$here/cert.sh" /usr/local/lib/vilna-site/cert.sh
+install -d -m 0755 /var/www/acme-challenge
+install -m 0644 "$here/acme.caddy" /etc/caddy/sites/acme.vilnaos.com.caddy
+caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null
+systemctl reload caddy
 for unit in vilna-site-update.service vilna-site-update.timer vilna-site-cert.service vilna-site-cert.timer; do
 	install -m 0644 "$here/$unit" "/etc/systemd/system/$unit"
 done
@@ -31,11 +35,10 @@ systemctl daemon-reload
 /usr/local/lib/vilna-site/update.sh
 systemctl enable --now vilna-site-update.timer vilna-site-cert.timer
 
-if [ -s /etc/vilna-site/desec_token ]; then
-	systemctl start vilna-site-cert.service
+# Let's Encrypt needs the A record acme.vilnaos.com (site/dns/vilnaos.com.toml)
+# and the _redirects rule live on statichost; see site/deploy/README.md.
+if systemctl start vilna-site-cert.service; then
 	echo "Certificate: systemctl status vilna-site-cert.service"
 else
-	echo "Next: put the deSEC token for the ACME zone in /etc/vilna-site/desec_token"
-	echo "(install -m 0600 /dev/stdin /etc/vilna-site/desec_token), then"
-	echo "systemctl start vilna-site-cert.service."
+	echo "No certificate yet: journalctl -u vilna-site-cert" >&2
 fi

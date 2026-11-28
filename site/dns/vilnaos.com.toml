@@ -18,7 +18,7 @@ ttl = 3600
 [site]
 names = ["", "www"]
 active = "statichost"
-ttl = 3600  # 300 once deSEC lowers the minimum TTL for this account
+ttl = 3600  # deSEC allows 300 only with DNSSEC (ADR 0032)
 
 [site.hosts.statichost]
 # statichost.eu (Hetzner, Finland); site/README.md, "Розгортання".
@@ -48,17 +48,16 @@ name = "flatpak"
 type = "CNAME"
 values = ["vilna-flatpak.b-cdn.net."]
 
-# Certificates for the site on the VPS (site/deploy/README.md): lego follows
-# a CNAME _acme-challenge -> vilnaos-acme.dedyn.io. and writes the ACME token
-# in a small zone of its own at deSEC, so the VPS token can touch nothing else.
-# Not published yet: that zone does not exist in our deSEC account (new
-# accounts get one domain), and a CNAME to a name anyone could register would
-# let them get certificates for vilnaos.com. Add it back once the zone is ours:
-#
-# [[rrset]]
-# name = "_acme-challenge"
-# type = "CNAME"
-# values = ["vilnaos-acme.dedyn.io."]
+[[rrset]]
+# Certificates for the site on the VPS (site/deploy/cert.sh): Let's Encrypt
+# fetches lego's HTTP-01 files here; statichost redirects
+# /.well-known/acme-challenge/* on vilnaos.com to this name. No DNS token on
+# the VPS. A DNS-01 zone of its own at deSEC is not possible: deSEC no longer
+# registers .dedyn.io names, and more domains need DNSSEC, which bunny DNS
+# cannot sign together with deSEC (ADR 0032).
+name = "acme"
+type = "A"
+values = ["217.160.125.31"]
 
 # Mail: mailbox.org (business/mail/mailbox-org-plan.md in the project files).
 [[rrset]]
