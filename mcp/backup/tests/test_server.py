@@ -141,3 +141,51 @@ def test_serve_over_stdio():
     answers = [json.loads(x) for x in out.getvalue().splitlines()]
     assert [a["id"] for a in answers] == [1, 2]
     assert answers[0]["result"]["serverInfo"]["name"] == "vilna-mcp-backup"
+
+
+def serve_lines(server, *lines):
+    out = io.StringIO()
+    server.serve(io.StringIO("".join(line + "\n" for line in lines)), out)
+    return [json.loads(x) for x in out.getvalue().splitlines()]
+
+
+def test_one_bad_message_never_ends_the_server():
+    def broken(cmd, **kw):
+        raise PermissionError(13, "not allowed")
+
+    server = Server(["vilna-backup"], broken)
+    answers = serve_lines(
+        server,
+        '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":"x"}',
+        '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":["a"]}}',
+        '{"jsonrpc":"2.0","id":3,"method":"initialize","params":[1]}',
+        "[" * 100_000,
+        '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"status"}}',
+        '{"jsonrpc":"2.0","id":5,"method":"ping"}',
+    )
+    assert len(answers) == 6
+    assert answers[4]["result"]["isError"] is True
+    assert answers[5]["result"] == {}
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+def test_a_limit_that_is_not_a_finite_number_is_refused(value):
+    with pytest.raises(ToolFailure):
+        check_arguments("set_paths", {"limit_gb": value})
+
+
+def test_long_errors_are_cut_and_line_separators_escaped():
+    server = Server(["vilna-backup"], FakeProgram({"error": "x" * 100_000}, code=1))
+    text = call(server, "status")["content"][0]["text"]
+    assert len(text) < 2000
+    server = Server(["vilna-backup"], FakeProgram({"name": "a b"}))
+    (line,) = serve_lines(
+        server, '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"status"}}'
+    )
+    assert line["result"]["structuredContent"] == {"name": "a b"}
+    out = io.StringIO()
+    server.serve(
+        io.StringIO('{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"status"}}\n'),
+        out,
+    )
+    assert len(out.getvalue().splitlines()) == 1
