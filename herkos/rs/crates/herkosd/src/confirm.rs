@@ -23,6 +23,7 @@ use std::thread;
 use std::time::Duration;
 
 use herkos_core::policy::Raise;
+use herkos_core::request::shown;
 
 use crate::gate::{Answer, Confirmer, Question};
 
@@ -108,10 +109,15 @@ pub fn render(q: &Question) -> String {
     let mut lines = vec![
         String::new(),
         "─── Herkos: Gloxi asks for permission ───".to_owned(),
-        format!("  {}  ({})", q.summary, q.level),
-        format!("  Gloxi's reason: {}", q.reason),
+        format!("  {}  ({})", shown(&q.summary), q.level),
+        format!("  Gloxi's reason: {}", shown(&q.reason)),
     ];
-    lines.extend(q.resources.iter().take(10).map(|r| format!("    • {r}")));
+    lines.extend(
+        q.resources
+            .iter()
+            .take(10)
+            .map(|r| format!("    • {}", shown(r))),
+    );
     if q.resources.len() > 10 {
         lines.push(format!("    … and {} more", q.resources.len() - 10));
     }
@@ -126,12 +132,12 @@ pub fn render(q: &Question) -> String {
     lines.extend(
         q.raises
             .iter()
-            .map(|r| format!("  Riskier than usual: {}.", Raise::text(r))),
+            .map(|r| format!("  Riskier than usual: {}.", shown(&Raise::text(r)))),
     );
     if let Some(content) = &q.content {
         let text = serde_json::to_string_pretty(content).unwrap_or_default();
         lines.push("  Exactly this will be done:".to_owned());
-        lines.extend(text.lines().take(40).map(|l| format!("    {l}")));
+        lines.extend(text.lines().take(40).map(|l| format!("    {}", shown(l))));
         if text.lines().count() > 40 {
             lines.push("    …".to_owned());
         }
@@ -139,7 +145,7 @@ pub fn render(q: &Question) -> String {
     if !q.taint_sources.is_empty() {
         lines.push(format!(
             "  Untrusted content came from: {}",
-            q.taint_sources.join(", ")
+            shown(&q.taint_sources.join(", "))
         ));
     }
     let mut options: Vec<&str> = q.choices.iter().map(|c| label(*c)).collect();

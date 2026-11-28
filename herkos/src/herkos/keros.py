@@ -131,7 +131,25 @@ RULES: tuple[Rule, ...] = (
 )
 
 # Zero-width, BOM, word joiner and invisible operators; bidi controls; Unicode tags.
-_INVISIBLE = re.compile("[​-‏⁠-⁤﻿‪-‮⁦-⁩\U000e0000-\U000e007f]")
+_INVISIBLE = re.compile(
+    "[\u200b-\u200f\u2060-\u2064\ufeff\u202a-\u202e\u2066-\u2069\U000e0000-\U000e007f]"
+)
+# Also left out before matching (they show nothing, or join what is around them):
+# soft hyphen, grapheme joiner, Hangul fillers, Mongolian vowel separator,
+# variation selectors.
+_IGNORED = re.compile(
+    "[\u200b-\u200f\u2060-\u2064\ufeff\u202a-\u202e\u2066-\u2069\U000e0000-\U000e007f"
+    "\u00ad\u034f\u115f\u1160\u3164\uffa0\u180e\ufe00-\ufe0f\U000e0100-\U000e01ef]"
+)
+_SPACES = re.compile(r"\s+")
+# Letters typed one by one with a space between: "i g n o r e".
+_SPACED = re.compile(r"(?<!\S)\w(?: \w(?!\S)){2,}")
+# Letters that look the same in Cyrillic, Greek and Latin (a small skeleton, UTS 39).
+_CYRILLIC = "аеорсухіјѕԁԛԝвнмкт"
+_LATIN = "aeopcyxijsdqwbhmkt"
+_TO_LATIN = str.maketrans(_CYRILLIC + "οαιρτνκ", _LATIN + "oaiptvk")
+_TO_CYRILLIC = str.maketrans("aeopcyxi", "аеорсухі")
+_HAS_CYRILLIC = re.compile("[\u0400-\u04ff]")
 _URL = re.compile(r"https?://[^\s\"'<>()\]]+", re.IGNORECASE)
 _EMAIL = re.compile(r"\b[\w.+-]{1,64}@[\w-]{1,63}(?:\.[\w-]{1,63})+\b")
 
@@ -166,19 +184,55 @@ def strings(value: Any, limit: int = MAX_SCAN_CHARS) -> Iterator[str]:
     yield from walk(value)
 
 
+UNREAD = Finding("unread", "is too long to be checked in full")
+
+
+def readings(text: str) -> list[str]:
+    """The ways a text is matched: as written, then with look-alikes folded.
+
+    Full-width letters (NFKC), invisible and joining characters, combining marks,
+    line breaks and runs of spaces, letters spaced out and letters of another
+    script that look the same do not hide a phrase from the rules.
+    """
+    folded = _IGNORED.sub("", unicodedata.normalize("NFKC", text))
+    flat = _SPACED.sub(lambda m: m.group(0).replace(" ", ""), _SPACES.sub(" ", folded))
+    out = [folded] if flat == folded else [folded, flat]
+    if not flat.isascii():
+        marks = unicodedata.normalize("NFKD", flat)
+        kept = "".join(c for c in marks if not unicodedata.combining(c))
+        bare = unicodedata.normalize("NFC", kept)
+        out.append(bare.translate(_TO_LATIN))
+        if _HAS_CYRILLIC.search(flat):
+            out.append(flat.translate(_TO_CYRILLIC))
+    return out
+
+
 def scan(value: Any) -> list[Finding]:
     found: dict[str, Finding] = {}
-    for text in strings(value):
+    texts = list(strings(value))
+    if _count(value) > len(texts):
+        found["unread"] = UNREAD  # what was not read cannot be called clean
+    for text in texts:
         if "invisible" not in found and _INVISIBLE.search(text):
             found["invisible"] = Finding(
                 "invisible", "contains invisible or direction-changing characters"
             )
-        # Fold look-alike characters (full-width letters etc.) before matching.
-        folded = _INVISIBLE.sub("", unicodedata.normalize("NFKC", text))
-        for rule in RULES:
-            if rule.name not in found and rule.pattern.search(folded):
-                found[rule.name] = Finding(rule.name, rule.description)
+        for reading in readings(text):
+            for rule in RULES:
+                if rule.name not in found and rule.pattern.search(reading):
+                    found[rule.name] = Finding(rule.name, rule.description)
     return list(found.values())
+
+
+def _count(value: Any) -> int:
+    """How many strings ``value`` holds, keys included, with no budget."""
+    if isinstance(value, str):
+        return 1
+    if isinstance(value, dict):
+        return sum(1 + _count(x) for x in value.values())
+    if isinstance(value, list | tuple):
+        return sum(_count(x) for x in value)
+    return 0
 
 
 def addresses(value: Any) -> set[str]:
@@ -189,6 +243,35 @@ def addresses(value: Any) -> set[str]:
             out.add(_url_key(m.group(0)))
         for m in _EMAIL.finditer(text):
             out.add(m.group(0).lower())
+    return out
+
+
+# Where an address points, however it is written: a host without user, port,
+# scheme or final dot; a mailbox without its "+tag".
+_ANY_URL = re.compile(r"(?:https?:)?//(?:[^\s/?#@\"'<>()\]]*@)?([^\s/?#:\"'<>()\]]+)", re.I)
+
+
+def _fold_address_text(text: str) -> str:
+    text = _IGNORED.sub("", unicodedata.normalize("NFKC", text))
+    for code, char in (("%40", "@"), ("%2f", "/"), ("%2e", ".")):
+        text = re.sub(re.escape(code), char, text, flags=re.I)
+    return text.lower().translate(_TO_LATIN)
+
+
+def destinations(value: Any) -> dict[str, str]:
+    """Where the addresses in ``value`` point (see above), each with how it is shown."""
+    out: dict[str, str] = {}
+    for text in strings(value):
+        flat = _fold_address_text(text)
+        for m in _ANY_URL.finditer(flat):
+            host = m.group(1).rstrip(".")
+            if host:
+                scheme = m.group(0).split("//", 1)[0].rstrip(":") or "https"
+                shown = _url_key(m.group(0)) if m.group(0).startswith("http") else host
+                out.setdefault(f"{scheme}://{host}", shown)
+        for m in _EMAIL.finditer(flat):
+            local, _, domain = m.group(0).rpartition("@")
+            out.setdefault(f"mail:{local.split('+')[0]}@{domain.rstrip('.')}", m.group(0))
     return out
 
 
@@ -222,22 +305,26 @@ class Keros:
 
     findings: list[tuple[str, Finding]] = field(default_factory=list)  # (source, finding)
     _seen: set[str] = field(default_factory=set)
+    # More addresses came in than are remembered: any address sent out is suspect.
+    _full: bool = False
     last_report: Report | None = None  # the model check of the latest inspect()
 
     def inspect(self, source: str, result: Any, model: ModelCheck | None = None) -> list[Finding]:
         found = scan(result)
         self.last_report = None
         # The model is slow: ask it only when the rules saw nothing.
-        if model is not None and not found:
+        if model is not None and all(f == UNREAD for f in found):
             self.last_report = model.check("\n".join(strings(result)))
             if self.last_report.status == "injection":
                 found.append(MODEL_FINDING)
         for f in found:
             if (source, f) not in self.findings:
                 self.findings.append((source, f))
-        for a in addresses(result):
+        for a in destinations(result):
             if len(self._seen) < MAX_REMEMBERED:
                 self._seen.add(a)
+            elif a not in self._seen:
+                self._full = True
         return found
 
     @property
@@ -246,4 +333,9 @@ class Keros:
 
     def leaks(self, arguments: Any) -> set[str]:
         """Addresses in an action's arguments that came from untrusted content."""
-        return addresses(arguments) & self._seen
+        return {shown for key, shown in destinations(arguments).items() if key in self._seen}
+
+    def unsure(self, arguments: Any) -> bool:
+        """More addresses came in than are remembered, and this action names one:
+        it may be one that was not remembered."""
+        return self._full and bool(destinations(arguments))

@@ -307,11 +307,9 @@ pub fn assess(
             Raise::plain("data leaves this device"),
         );
     }
+    let arguments = Value::Object(request.arguments.clone());
     if op.egress
-        && !session
-            .keros
-            .leaks(&Value::Object(request.arguments.clone()))
-            .is_empty()
+        && (!session.keros.leaks(&arguments).is_empty() || session.keros.unsure(&arguments))
     {
         let why = Raise::plain("it sends data to an address that came from untrusted content");
         raise(&mut level, Level::R4, why);

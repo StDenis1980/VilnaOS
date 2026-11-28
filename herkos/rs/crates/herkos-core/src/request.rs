@@ -7,7 +7,39 @@
 
 use std::fmt;
 
+use std::sync::LazyLock;
+
+use regex::Regex;
 use serde_json::{Map, Value};
+
+static UNSHOWN: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]").unwrap_or_else(|e| panic!("constant pattern: {e}"))
+});
+static UNPRINTABLE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"[\p{C}\p{Zl}\p{Zp}]|[\p{Zs}--[ ]]")
+        .unwrap_or_else(|e| panic!("constant pattern: {e}"))
+});
+
+/// The reason as one plain line: control, format and line-separator characters
+/// (escapes, bidi marks, zero-width) become spaces, so it cannot redraw a
+/// question. Mirrors `request.plain_reason`.
+pub fn plain_reason(text: &str) -> String {
+    let spaced = UNSHOWN.replace_all(text, " ");
+    spaced.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// One line a terminal prints as it is: characters that are not printable are
+/// written out (`\u001b`), so a summary or a file name cannot redraw the
+/// question. Mirrors `confirm.shown`.
+pub fn shown(text: &str) -> String {
+    UNPRINTABLE
+        .replace_all(text, |c: &regex::Captures| {
+            c[0].chars()
+                .map(|ch| format!("\\u{:04x}", u32::from(ch)))
+                .collect::<String>()
+        })
+        .into_owned()
+}
 
 pub const MAX_RESOURCES: usize = 1000;
 pub const MAX_REASON: usize = 500;
@@ -110,6 +142,14 @@ pub fn parse_request(params: &Value) -> Result<ActionRequest, RequestError> {
     };
     if reason.chars().count() > MAX_REASON {
         return err(format!("'reason' is longer than {MAX_REASON} characters"));
+    }
+    let blank = ['\u{115f}', '\u{1160}', '\u{3164}', '\u{ffa0}', '\u{2800}'];
+    if plain_reason(reason)
+        .chars()
+        .all(|c| c == ' ' || blank.contains(&c))
+    {
+        // Invisible characters only: the person would see an empty explanation.
+        return err("'reason' (an explanation for the user) is required");
     }
 
     let user_turn = match obj.get("origin") {
@@ -257,6 +297,16 @@ pub fn normpath(path: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_reason_that_shows_nothing_is_refused_and_unprintable_text_is_written_out() {
+        for reason in ["\u{200b}\u{3164}\u{2800}\u{feff}", "\u{200b}"] {
+            let v = json!({"tool": "a", "operation": "b", "reason": reason});
+            assert!(parse_request(&v).is_err(), "{reason:?}");
+        }
+        let line = shown("ok\u{1b}[2J\rSYSTEM\u{202e}");
+        assert!(!line.contains(['\u{1b}', '\r', '\u{202e}']), "{line}");
+    }
     use serde_json::json;
 
     fn ok(v: Value) -> ActionRequest {
