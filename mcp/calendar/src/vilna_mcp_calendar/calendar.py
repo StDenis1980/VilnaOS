@@ -16,6 +16,7 @@ event as it was before, so Mitos can undo it through ``restore``.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
@@ -23,9 +24,10 @@ import secrets
 import time as clock
 from collections.abc import Iterable
 from dataclasses import dataclass, replace
-from datetime import date, datetime, time, timedelta, tzinfo
+from datetime import UTC, date, datetime, time, timedelta, tzinfo
 from pathlib import Path
 from typing import Protocol
+from zoneinfo import ZoneInfo
 
 MAX_EVENTS = 200
 MAX_DAYS = 366
@@ -324,7 +326,10 @@ def resolve_period(
     if start is None:
         raise CalendarError("give 'period', or 'start' (and maybe 'end') as ISO 8601 dates")
     lo = _parse(start, tz, end_of_day=False)
-    hi = _parse(end, tz, end_of_day=True) if end is not None else lo + timedelta(days=1)
+    try:
+        hi = _parse(end, tz, end_of_day=True) if end is not None else lo + timedelta(days=1)
+    except OverflowError:  # the last day there is
+        raise CalendarError(f"dates must be between {FIRST_YEAR} and {LAST_YEAR}") from None
     if hi <= lo:
         raise CalendarError("'end' must be after 'start'")
     if hi - lo > timedelta(days=MAX_DAYS):
@@ -348,11 +353,30 @@ def _parse(text: str, tz: tzinfo | None, *, end_of_day: bool) -> datetime:
             d = date.fromisoformat(text)
             return _at_midnight(d + timedelta(days=1) if end_of_day else d, tz)
         value = datetime.fromisoformat(text)
-    except ValueError:
+    except (ValueError, OverflowError):
         raise CalendarError(
             f"not an ISO 8601 date: {text!r} (such as 2027-03-05 or 2027-03-05T14:00)"
         ) from None
     return value if value.tzinfo is not None else value.replace(tzinfo=tz)
+
+
+def local_zone() -> tzinfo:
+    """The person's zone with its summer time rules, not today's fixed offset."""
+    name = os.environ.get("TZ", "").removeprefix(":")
+    if not name:
+        with contextlib.suppress(OSError):
+            target = os.path.realpath("/etc/localtime")
+            if "/zoneinfo/" in target:
+                name = target.split("/zoneinfo/", 1)[1]
+    if name:
+        with contextlib.suppress(KeyError, ValueError, OSError):  # not a zone this system has
+            return ZoneInfo(name)
+    return datetime.now().astimezone().tzinfo or UTC
+
+
+def _later(moment: datetime, length: timedelta) -> datetime:
+    """``moment`` plus a real length of time, also across a change of the clocks."""
+    return (moment.astimezone(UTC) + length).astimezone(moment.tzinfo)
 
 
 def _cut(text: str, limit: int) -> str:
@@ -362,7 +386,7 @@ def _cut(text: str, limit: int) -> str:
 class Calendars:
     def __init__(self, store: Store, now=None, undo: UndoStore | None = None) -> None:
         self.store = store
-        self._now = now or (lambda: datetime.now().astimezone())
+        self._now = now or (lambda: datetime.now(local_zone()))
         self.undo = undo or MemoryUndo()
 
     def list_calendars(self) -> dict:
@@ -656,7 +680,7 @@ def _moment(text: object, tz: tzinfo | None, name: str) -> tuple[datetime, bool]
             value, date_only = _at_midnight(date.fromisoformat(text), tz), True
         else:
             value, date_only = datetime.fromisoformat(text), False
-    except ValueError:
+    except (ValueError, OverflowError):
         raise CalendarError(
             f"'{name}' is not an ISO 8601 date: {text!r} (such as 2027-03-05 or 2027-03-05T14:00)"
         ) from None
@@ -746,12 +770,12 @@ def _draft(
             if date_only:
                 raise CalendarError("give 'end' with a time, such as 2027-03-05T15:00")
         elif base is not None and not base.all_day:
-            hi = lo + (base.end - base.start)
+            hi = _later(lo, base.end.astimezone(UTC) - base.start.astimezone(UTC))
         else:
-            hi = lo + timedelta(hours=1)
-        if hi <= lo:
+            hi = _later(lo, timedelta(hours=1))
+        if hi.astimezone(UTC) <= lo.astimezone(UTC):
             raise CalendarError("'end' must be after 'start'")
-        if hi - lo > timedelta(days=MAX_DAYS):
+        if hi.astimezone(UTC) - lo.astimezone(UTC) > timedelta(days=MAX_DAYS):
             raise CalendarError(f"an event may last at most {MAX_DAYS} days")
     texts = {
         "title": _text(title, "title", MAX_TITLE, required=True) if title is not None else None,
