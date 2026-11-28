@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 import sys
+import unicodedata
 from collections.abc import Callable
 from typing import Protocol
 
@@ -30,14 +31,42 @@ MAX_NODES = 1500
 MAX_TEXT_PER_NODE = 2000
 MAX_TEXT_TOTAL = 64 * 1024
 MAX_SET_TEXT = 10_000
+MAX_VISITED = 10 * MAX_NODES  # nodes looked at, written or not
+MAX_NAME_SHOWN = 300
+MAX_WORD = 64  # an action or role name
 PASSWORD_ROLES = {"password text"}
+# A field named like a secret is a password field too, whatever its role says
+# (a "show password" toggle turns it into plain text; codes, PINs, tokens).
+_SECRET_NAME = re.compile(
+    r"pass(word|phrase|code)|пароль|парол|contrase|hasło|haslo|mot de passe|passwort"
+    r"|\bpin\b|\btoken\b|secret|секрет|\botp\b|one[- ]time|2fa|код підтвердження",
+    re.IGNORECASE,
+)
 # States worth telling the model about.
 STATES = ("focused", "checked", "selected", "pressed", "expanded", "editable")
 # Which action "activate" uses when Gloxi does not name one.
 PREFERRED_ACTIONS = ("click", "press", "activate", "toggle", "jump", "open")
 # Actions that move the clipboard: pasting could carry a password the person
 # copied into a web form, copying could hand Gloxi's text to another app.
-_CLIPBOARD = re.compile(r"clipboard|(^|[._ -])(paste|copy|cut)($|[._ -])", re.IGNORECASE)
+_CAMEL = re.compile(r"(?<=[a-z])(?=[A-Z])")
+# Letters of other scripts that look like the Latin ones of copy, cut, paste.
+_LOOKALIKE = str.maketrans("орсаеухіОРСАЕТХ", "opcaeyxiOPCAETX")
+
+
+def moves_clipboard(action: str) -> bool:
+    """Whether an action name means copy, cut or paste, however it is written."""
+    plain = unicodedata.normalize("NFKC", action)
+    plain = "".join(c for c in plain if unicodedata.category(c) != "Cf").translate(_LOOKALIKE)
+    words = re.split(r"[^a-z0-9+]+", _CAMEL.sub(" ", plain).lower())
+    if "clipboard" in plain.lower() or any(re.fullmatch(r"ctrl\+[cvx]", w) for w in words):
+        return True
+    return any(w.startswith(("paste", "copy", "cut")) for w in words)
+
+
+def is_secret(role: str, name: str) -> bool:
+    return role in PASSWORD_ROLES or bool(_SECRET_NAME.search(name))
+
+
 _ID = re.compile(r"([0-9]{1,9}):([0-9]{1,4}(?:\.[0-9]{1,4}){1,41})")
 
 
@@ -165,11 +194,15 @@ class Apps:
 
     def _checked(self, element: str, name: str) -> tuple[Process, Node, Node]:
         process, window, node = self._resolve(element)
-        if node.name() != name:
+        now = node.name()
+        if name not in (now, text(now, MAX_NAME_SHOWN)):  # read_window shows it cut
             raise ToolError(
                 f"the window changed: that element is now {text(node.name(), 80)!r}, "
                 f"not {text(name, 80)!r}; read it again"
             )
+        if node is not window and "showing" not in node.states():
+            # read_window never shows it, and the person does not see it.
+            raise ToolError("that element is not shown in the window now; read it again")
         return process, window, node
 
     # --- operations -----------------------------------------------------
@@ -178,23 +211,28 @@ class Apps:
         desktop = self._desktop()
         windows = []
         for a in range(min(desktop.child_count(), MAX_APPS)):
-            opened = self._open_app(desktop.child(a))
-            if opened is None:
-                continue
-            app, process = opened
-            for w in range(min(app.child_count(), MAX_WINDOWS)):
-                win = app.child(w)
-                if win is None:
+            try:
+                opened = self._open_app(desktop.child(a))
+                if opened is None:
                     continue
-                states = win.states()
-                windows.append(
-                    {
+                app, process = opened
+                count = min(app.child_count(), MAX_WINDOWS)
+            except Exception:  # noqa: BLE001 - a hung or broken app hides only itself
+                continue
+            for w in range(count):
+                try:
+                    win = app.child(w)
+                    if win is None:
+                        continue
+                    entry = {
                         "window": f"{process.pid}:{a}.{w}",
                         "app": process.label,
                         "title": text(win.name()),
-                        "active": "active" in states,
+                        "active": "active" in win.states(),
                     }
-                )
+                except Exception:  # noqa: BLE001
+                    continue
+                windows.append(entry)
         return {"windows": windows}
 
     def read_window(self, window: str) -> dict:
@@ -202,39 +240,41 @@ class Apps:
         if node is not win:
             raise ToolError("that is an element, not a window; use an id from list_windows")
         out: list[dict] = []
-        budget = [MAX_TEXT_TOTAL]
-        self._walk(win, window, 0, out, budget)
+        walk = _Walk()
+        self._walk(win, window, 0, out, walk)
         return {
             "app": process.label,
             "title": text(win.name()),
             "elements": out,
-            "complete": len(out) < MAX_NODES and budget[0] > 0,
+            "complete": len(out) < MAX_NODES and walk.text > 0 and not walk.cut,
         }
 
-    def _walk(self, node: Node, id_: str, depth: int, out: list[dict], budget: list[int]) -> None:
-        if len(out) >= MAX_NODES or depth > MAX_DEPTH:
+    def _walk(self, node: Node, id_: str, depth: int, out: list[dict], walk: _Walk) -> None:
+        if len(out) >= MAX_NODES or depth > MAX_DEPTH or walk.visited >= MAX_VISITED:
+            walk.cut = True
             return
+        walk.visited += 1
         states = node.states()
         if "showing" not in states and depth > 0:
             return
         role, name = node.role(), node.name()
-        entry: dict = {"id": id_, "role": role, "depth": depth}
+        entry: dict = {"id": id_, "role": text(role, MAX_WORD), "depth": depth}
         if name:
-            entry["name"] = text(name, 300)
-        if role in PASSWORD_ROLES:
+            entry["name"] = text(name, MAX_NAME_SHOWN)
+        if is_secret(role, name):
             entry["hidden"] = True  # never read
         else:
             value = node.text()
-            if value and value != name and budget[0] > 0:
-                value = text(value, min(MAX_TEXT_PER_NODE, budget[0]))
-                budget[0] -= len(value)
+            if value and value != name and walk.text > 0:
+                value = text(value, min(MAX_TEXT_PER_NODE, walk.text))
+                walk.text -= len(value)
                 entry["text"] = value
         told = [s for s in STATES if s in states]
         if "enabled" not in states and "sensitive" not in states:
             told.append("disabled")
         if told:
             entry["states"] = told
-        actions = [a for a in node.actions() if a and not _CLIPBOARD.search(a)]
+        actions = [text(a, MAX_WORD) for a in node.actions() if a and not moves_clipboard(a)]
         if actions:
             entry["actions"] = actions[:8]
         if depth == 0 or len(entry) > 3 or actions:
@@ -242,7 +282,7 @@ class Apps:
         for i in range(node.child_count()):
             child = node.child(i)
             if child is not None:
-                self._walk(child, f"{id_}.{i}", depth + 1, out, budget)
+                self._walk(child, f"{id_}.{i}", depth + 1, out, walk)
 
     def describe(self, element: str, name: str) -> dict:
         process, window, node = self._checked(element, name)
@@ -251,33 +291,40 @@ class Apps:
             "Window": text(window.name(), 120) or "(no title)",
             "Control": f"{node.role()} «{text(node.name(), 120)}»",
         }
-        if node.editable() and node.role() not in PASSWORD_ROLES:
+        if node.editable() and not is_secret(node.role(), node.name()):
             facts["Text now"] = text(node.text() or "", 200) or "(empty)"
         return {"facts": facts}
 
     def activate(self, element: str, name: str, action: str | None = None) -> dict:
         _, _, node = self._checked(element, name)
-        actions = [a if not _CLIPBOARD.search(a) else "" for a in node.actions()]
+        actions = [a if not moves_clipboard(a) else "" for a in node.actions()]
         if action is not None:
             if not action or action not in actions:
-                raise ToolError(f"it has no action {action!r}; it has {actions}")
+                has = [text(a, MAX_WORD) for a in actions if a][:8]
+                raise ToolError(f"it has no action {text(action, MAX_WORD)!r}; it has {has}")
             index = actions.index(action)
         else:
             usable = [i for i, a in enumerate(actions) if a]
             if not usable:
                 raise ToolError("it cannot be pressed")
             index = next((actions.index(a) for a in PREFERRED_ACTIONS if a in actions), usable[0])
+        done = text(actions[index], MAX_WORD)
         if not node.do_action(index):
-            raise ToolError(f"{actions[index]!r} did not work")
-        return {"done": actions[index], "element": element, "name": node.name()}
+            raise ToolError(f"{done!r} did not work")
+        return {"done": done, "element": element, "name": text(node.name(), MAX_NAME_SHOWN)}
 
     def set_text(self, element: str, name: str, text: str) -> dict:
         _, _, node = self._checked(element, name)
-        if node.role() in PASSWORD_ROLES:
+        if is_secret(node.role(), node.name()):
             raise ToolError("a password field: Gloxi never reads or fills it")
         if not node.editable():
             raise ToolError("that is not a field one can type in")
         before = node.text() or ""
+        if len(before) > MAX_TEXT_PER_NODE:
+            # Only the start of it could be put back: an undo would lose the rest.
+            raise ToolError(
+                "the field holds more text than Gloxi can put back; the person can change it"
+            )
         if not node.set_text(text):
             raise ToolError("the app did not take the text")
         return {
@@ -288,6 +335,15 @@ class Apps:
 
     def restore(self, element: str, name: str, text: str) -> dict:
         return self.set_text(element, name, text)
+
+
+class _Walk:
+    """What one read_window may still spend, and whether it stopped early."""
+
+    def __init__(self) -> None:
+        self.text = MAX_TEXT_TOTAL
+        self.visited = 0
+        self.cut = False
 
 
 class AtspiNode:
