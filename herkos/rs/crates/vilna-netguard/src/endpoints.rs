@@ -16,12 +16,30 @@ pub const MAX_ENDPOINTS: usize = 256;
 /// where the endpoint is `1.2.3.4:51820`, `[2001:db8::1]:51820` or `(none)`.
 /// Lines that do not look like that are skipped.
 pub fn parse_wg_endpoints(text: &str) -> BTreeSet<SocketAddr> {
-    text.lines()
-        .filter_map(|line| line.split('\t').nth(2))
-        .filter_map(|endpoint| endpoint.trim().parse::<SocketAddr>().ok())
-        .filter(|addr| addr.port() != 0 && !addr.ip().is_unspecified())
-        .take(MAX_ENDPOINTS)
-        .collect()
+    let mut out = BTreeSet::new();
+    let lines = text.lines().filter_map(|line| {
+        let fields: Vec<&str> = line.split('\t').collect();
+        (fields.len() == 3).then(|| fields[2])
+    });
+    for endpoint in lines {
+        let Ok(addr) = endpoint.trim().parse::<SocketAddr>() else {
+            continue;
+        };
+        if addr.port() != 0 && is_server(addr.ip()) {
+            out.insert(addr);
+            // Distinct servers count: copies of one line do not push out the next.
+            if out.len() >= MAX_ENDPOINTS {
+                break;
+            }
+        }
+    }
+    out
+}
+
+/// A server on the internet, not this computer, a group or everybody on a network.
+fn is_server(ip: std::net::IpAddr) -> bool {
+    let broadcast = matches!(ip, std::net::IpAddr::V4(v4) if v4.is_broadcast());
+    !ip.is_unspecified() && !ip.is_multicast() && !ip.is_loopback() && !broadcast
 }
 
 #[cfg(test)]

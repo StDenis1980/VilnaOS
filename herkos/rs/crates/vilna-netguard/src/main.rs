@@ -451,6 +451,11 @@ fn sync_portal_dns(paths: &Paths, want: &BTreeSet<String>) -> Result<(), String>
     for args in portal_dns::changes(&names, want) {
         let link = &args[1];
         if args[2] == "no" {
+            if !now_relaxed.contains_key(link) && now_relaxed.len() >= portal_dns::MAX_LINKS {
+                // The file keeps only so many: a link opened past them would
+                // never be closed again.
+                continue;
+            }
             let old = resolvectl(paths, &["domain", link])
                 .ok()
                 .map(|out| portal_dns::parse_domains(&out));

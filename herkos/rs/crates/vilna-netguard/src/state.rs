@@ -147,8 +147,10 @@ impl State {
         })
     }
 
+    /// A window ends at most [`MAX_PORTAL_SECONDS`] from now: one further away
+    /// (the clock went back, or the file says so) is not open.
     pub fn portal_open(&self, now: u64) -> bool {
-        self.portal_until > now
+        self.portal_until > now && self.portal_until - now <= MAX_PORTAL_SECONDS
     }
 
     pub fn allow_lan(&mut self, lan: Lan) -> Result<(), String> {
